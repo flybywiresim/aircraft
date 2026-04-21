@@ -25,6 +25,7 @@ static void FailuresConsumerCommBusHandler(const char* buf, unsigned int bufSize
 }
 
 FailuresConsumer::FailuresConsumer() {
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Rollout, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim1, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim2, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim3, false));

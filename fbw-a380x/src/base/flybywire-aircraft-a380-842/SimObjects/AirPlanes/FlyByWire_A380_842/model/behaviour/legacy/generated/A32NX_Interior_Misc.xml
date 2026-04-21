@@ -571,4 +571,99 @@
 }
         </Update>
     </Template>
+
+    <Template Name="FBW_A380X_Knob_Aircond_Cabin">
+        <Parameters Type="Default">
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <INCREMENT>1</INCREMENT>
+            <WHEEL_INCREMENT>4</WHEEL_INCREMENT>
+            <EXTRA_INTERACTION/>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_0></ANIMTIP_0>
+            <ANIMTIP_1></ANIMTIP_1>
+            <ANIM_LAG>60</ANIM_LAG>
+            <ANIM_WRAP>True</ANIM_WRAP>
+        </Parameters>
+        <Parameters Type="Default">
+            <DECREMENT>#INCREMENT#</DECREMENT>
+            <WHEEL_DECREMENT>#WHEEL_INCREMENT#</WHEEL_DECREMENT>
+            <SET_CODE>(&gt;#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#)</SET_CODE>
+        </Parameters>
+
+        <Parameters Type="Override">
+            <Condition Valid="POTENTIOMETER">
+                <True>
+                    <ANIM_SIMVAR>#ANIM_SIMVAR#:#POTENTIOMETER#</ANIM_SIMVAR>
+                    <SET_CODE>#POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)</SET_CODE>
+                </True>
+            </Condition>
+        </Parameters>
+
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
+            </ANIM_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+            <!-- If we have INFINITE_ROTATION we allow the knob to rotate 3 times -->
+            <Condition Valid="INFINITE_ROTATION">
+                <True>
+                    <CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
+                    </CLOCKWISE_CODE>
+                    <ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
+                    </ANTICLOCKWISE_CODE>
+                    <Condition Valid="WHEEL_INCREMENT">
+                        <True>
+                            <WHEEL_CLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
+                            </WHEEL_CLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                    <Condition Valid="WHEEL_DECREMENT">
+                        <True>
+                            <WHEEL_ANTICLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
+                            </WHEEL_ANTICLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                </True>
+                <False>
+                    <CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+                    </CLOCKWISE_CODE>
+                    <ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+                    </ANTICLOCKWISE_CODE>
+
+                    <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
+                    <Condition Valid="WHEEL_INCREMENT">
+                        <True>
+                            <WHEEL_CLOCKWISE_CODE>
+                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+                            </WHEEL_CLOCKWISE_CODE>
+                        </True>
+                    </Condition>
+                    <Condition Valid="WHEEL_DECREMENT">
+                        <WHEEL_ANTICLOCKWISE_CODE>
+                            (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+                        </WHEEL_ANTICLOCKWISE_CODE>
+                    </Condition>
+                </False>
+            </Condition>
+        </UseTemplate>
+
+        <Condition Valid="WWISE_EVENT">
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+            </UseTemplate>
+        </Condition>
+    </Template>
 </ModelBehaviors>

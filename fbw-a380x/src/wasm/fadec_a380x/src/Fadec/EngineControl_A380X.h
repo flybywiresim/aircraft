@@ -34,7 +34,12 @@ class EngineControl_A380X {
   FadecSimData_A380X simData{};
 
   // ATC ID for the aircraft used to load and store the fuel levels
-  std::string atcId{};
+  std::string atcId = "A380X";
+
+  // Whether we have already loaded the fuel configuration from the config file
+  bool hasLoadedFuelConfig = false;
+
+  bool fadecInitialized = false;
 
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A380X fuelConfiguration{};
@@ -48,8 +53,8 @@ class EngineControl_A380X {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature = 0.0;
-  double prevThrustLimitType = 0.0;
+  double latchedFlexTemperature = 0.0;
+  double prevThrustLimitType    = 0.0;
 
   // FLX->CLB thrust limit transition
   bool   wasFlexActive;
@@ -128,10 +133,21 @@ class EngineControl_A380X {
 
  private:
   /**
+   * @brief Initializes the required data for the engine simulation if it has not been initialized
+   */
+  void loadFuelConfigIfPossible();
+
+  /**
    * @brief Initialize the FADEC and Fuel model
    * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
+
+  /**
+   * @brief Initializes the fuel tanks based on a default config or the saved state of this livery
+   * This method may be called multiple times during initialization
+   */
+  void initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter);
 
   /**
    * @brief Generate Idle / Initial Engine Parameters (non-imbalanced)

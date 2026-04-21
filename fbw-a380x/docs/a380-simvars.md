@@ -13,10 +13,12 @@
     - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
-  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+  - [Flaps / Slats (ATA 27)](#flight-controls-ata-27)
+  - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+  - [Landing Gear ATA 32](#landing-gear-ata-32)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -465,6 +467,10 @@
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
+- A380X_FMS_DEST_EFOB_BELOW_MIN
+    - Bool
+    - Indicates if the FMS predicted fuel at destination is below minimum.
+
 ## Communications ATA 23
 
 ### Placeholder Types
@@ -830,6 +836,42 @@
 
 ## Flight Controls (ATA 27)
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
+
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
+
 - A32NX_FCDC_{number}_DISCRETE_WORD_1
     - Arinc429<Discrete>
     - | Bit |                Description               |
@@ -854,35 +896,75 @@
       | 28  | FCDC Opposite Fault                      |
       | 29  | SEC 3 Fault                              |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
-    - Slat/Flap actual position discrete word of the SFCC bus output
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_4
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
-    - | Bit |      Description A380X, if different     |
-      |:---:|:----------------------------------------:|
-      | 11  | Slat Data Valid                          |
-      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
-      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
-      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
-      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
-      | 16  | Slat WTB Engaged                         |
-      | 17  | Slat Fault                               |
-      | 18  | Flap Data Valid                          |
-      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
-      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
-      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
-      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
-      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
-      | 24  | Flap WTB engaged                         |
-      | 25  | Flap Fault                               |
-      | 26  | Spoiler Lift Demand                      |
-      | 27  | Spoiler Limit Demand                     |
-      | 28  | Slat System Jam                          |
-      | 29  | Flap System Jam                          |
+    - Bits marked with ? are guessed/unknown
+      | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | AP Instinctive Disc               |
+      | 12  | AP Engaged                        |
+      | 13  | FD Engaged                        |
+      | 14  | LAND TRK mode active              |
+      | 16  | LAND 2 Capability                 |
+      | 17  | LAND 3 FAIL PASSIVE Capability    |
+      | 18  | LAND 3 FAIL OP Capability         |
+      | 19  | AP Inop                           |
+      | 20  | LAND 2 Inop                       |
+      | 21  | LAND 3 FAIL PASSIVE Inop          |
+      | 22  | LAND 3 FAIL OP Inop               |
+      | 23  | LAND 2 Capacity                   |
+      | 24  | LAND 3 FAIL PASSIVE Capacity      |
+      | 25  | LAND 3 FAIL OP Capacity           |
+      | 26  | RWY Heading memorized             |
+      | 27  | ? FD Auto Disengage Command       |
+      | 28  | AP/FD Mode reversion              |
+      | 29  | V/S Target not held               |
+
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_8
+    - Arinc429<Discrete>
+    - Bits marked with ? are guessed/unknown
+      | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Capability Downgrade triple click |
+      | 12  | Mode reversion triple click       |
+      | 13  | BTV triple click                  |
+      | 14  | AP 1 INOP                         |
+      | 15  | AP 2 INOP                         |
+      | 16  | FD 1 INOP                         |
+      | 17  | FD 1 INOP                         |
+      | 18  | ROLLOUT INOP                      |
+
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - This ARINC word has been adapted from the A320 with A380 angles
+    - Arinc429<Discrete>
+    - | Bit |      Description A380X, if different        |
+      |:---:|:-------------------------------------------:|
+      | 11  | Slat Data Valid                             |
+      | 12  | Slats Retracted 0° (9.5° > FPPU > -16°)     |
+      | 13  | Slats >= 20° (343° >= FPPU >= 276.9°)       |
+      | 14  | Slats >= 23 (343° >= FPPU >= 317.8°)        |
+      | 15  | Slats Extended 23° (343° >= FPPU >= 317.8°) |
+      | 16  | Slat WTB Engaged                            |
+      | 17  | Slat Fault                                  |
+      | 18  | Flap Data Valid                             |
+      | 19  | Flaps Retracted 0° (10° > FPPU > -10°)      |
+      | 20  | Flaps >= 8° (350° >= FPPU >= 208.0°)        |
+      | 21  | Flaps >= 17° (350° >= FPPU >= 251.6°)       |
+      | 22  | Flaps >= 26° (350° >= FPPU >= 289.9°)       |
+      | 23  | Flaps Extended 33° (350° >= FPPU >= 331°)   |
+      | 24  | Flap WTB engaged                            |
+      | 25  | Flap Fault                                  |
+      | 26  | Spoiler Lift Demand                         |
+      | 27  | Spoiler Limit Demand                        |
+      | 28  | Slat System Jam                             |
+      | 29  | Flap System Jam                             |
 
 - A32NX_FLAPS_CONF_INDEX
   - Number
   - Indicates the desired flap configuration index according to the table
+        DO NOT USE IN SYSTEMS, USE SFCC INSTEAD
   - Value | Meaning
             --- | ---
       0 | Conf0
@@ -892,6 +974,107 @@
       4 | Conf2S
       5 | Conf3
       6 | Conf4
+
+## Fuel ATA 28
+- A32NX_TOTAL_FUEL_QUANTITY
+  - Number in kilogramm
+  - The total physical quantity of fuel in the tanks
+
+- A32NX_TOTAL_FUEL_VOLUME
+  - Number in Gallons
+  - The total physical volume of fuel in the tanks
+
+- A32NX_FQMS_STATUS_WORD
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | FMS Data unavailable |
+    | 12   | FMS Data disagrees   |
+    | 13   | |
+    | 14   | |
+    | 15   | |
+    | 16   | |
+    | 17   | |
+    | 18   | |
+    | 19   | |
+    | 20   | |
+    | 21  | |
+    | 22  | |
+    | 23  | |
+    | 24  | |
+    | 25  | |
+    | 26  | |
+    | 27  | |
+    | 28  | |
+    | 29  | |
+
+- A32NX_FQMS_TOTAL_FUEL_ON_BOARD
+  - Arinc429<Kilogram>
+  - The total quantity of fuel in the tanks
+
+- A32NX_FQMS_GROSS_WEIGHT
+  - Arinc429<Kilogram>
+  - The total weight of the aircraft
+
+- A32NX_FQMS_CENTER_OF_GRAVITY_MAC
+  - Arinc429<Percent>
+  - The center of gravity of the aircraft
+
+- A32NX_FQMS_{tank}_TANK_QUANTITY
+  - Arinc429<Kilogram>
+  - The fuel quantity in a specific tank
+  -{tank}
+    - FEED_1
+    - FEED_2
+    - FEED_3
+    - FEED_4
+    - LEFT_OUTER
+    - LEFT_MID
+    - LEFT_INNER
+    - RIGHT_OUTER
+    - RIGHT_MID
+    - RIGHT_INNER
+    - TRIM
+
+- A32NX_FQMS_{side}_FUEL_PUMP_RUNNING_WORD
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - {side}
+    - LEFT
+    - RIGHT
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | Main Feed Pump 1/3 running |
+    | 12   | Standby Feed Pump 1/3 running |
+    | 13   | Main Feed Pump 2/4 running |
+    | 14   | Standby Feed Pump 2/4 running |
+    | 15   | {side} Outer Pump running |
+    | 16   | {side} Mid Fwd Pump running |
+    | 17   | {side} Mid Aft Pump running |
+    | 18   | {side} Inner Fwd Pump running |
+    | 19   | {side} Inner Aft Pump running |
+    | 20   | {side} Trim Pump running |
+    | 21-29 | Unused |
+
+- A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
+  - Arinc429<Kilogram>
+  - The fuel quantity in a specific tank (AGP value)
+  - {id}
+    - 1
+    - 2
+  -{tank}
+    - FEED_1
+    - FEED_2
+    - FEED_3
+    - FEED_4
+    - LEFT_OUTER
+    - LEFT_MID
+    - LEFT_INNER
+    - RIGHT_OUTER
+    - RIGHT_MID
+    - RIGHT_INNER
+    - TRIM
 
 ## Indicating-Recording ATA 31
 
@@ -1042,6 +1225,19 @@
     - Pre-selected QNH when in STD mode, or 0 when not displayed.
     - Not for FBW systems use!
     - {side} = L or R
+
+## Landing Gear ATA 32
+
+- A32NX_BTV_STATE
+    - Boolean
+    - Indicates the current state of the BTV system
+    - | State             | Value |
+      |-------------------|-------|
+      | DISABLED          | 0     |
+      | ARMED             | 1     |
+      | ROT OPTIMIZATION  | 2     |
+      | DECEL             | 3     |
+      | END OF BRAKING    | 4     |
 
 ## Bleed Air ATA 36
 

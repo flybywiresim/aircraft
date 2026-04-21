@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { clampAngle } from 'msfs-geo';
-import { Feature, LineString } from '@turf/turf';
+import { Feature, LineString } from 'geojson';
 import { ArraySubject } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { FmsDataStore } from './';
+import { MathUtils, OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 import { filterLabel, labelStyle, OancLabelFilter } from './OancLabelFilter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle } from './OancMapUtils';
@@ -203,7 +202,7 @@ export class OancLabelManager<T extends number> {
   }
 
   public updateLabelClasses(
-    fmsDataStore: FmsDataStore,
+    fmsDataStore: OansFmsDataStore,
     isFmsOrigin: boolean,
     isFmsDestination: boolean,
     btvSelectedRunway?: string,

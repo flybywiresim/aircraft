@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TypeIIMessage } from '../messages/NXSystemMessages';
 import { ScratchpadDataLink } from './A320_Neo_CDU_Scratchpad';
 

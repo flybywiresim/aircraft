@@ -21,8 +21,7 @@ export interface EnrouteWaypoint extends BaseWaypoint<SectionCode.Enroute> {
 }
 
 export interface TerminalWaypoint extends BaseWaypoint<SectionCode.Airport> {
-  // FIXME hack for runways
-  subSectionCode: AirportSubsectionCode.TerminalWaypoints | AirportSubsectionCode.Runways;
+  subSectionCode: AirportSubsectionCode.TerminalWaypoints;
   area: WaypointArea.Terminal;
   airportIdent: string;
 }

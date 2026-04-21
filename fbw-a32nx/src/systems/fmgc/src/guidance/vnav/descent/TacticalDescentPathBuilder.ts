@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -15,6 +16,7 @@ import {
   ApproachCheckpoint,
   MaxSpeedConstraint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointForDeceleration,
   VerticalCheckpointReason,
@@ -26,8 +28,7 @@ import {
   VerticalProfileComputationParametersObserver,
 } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { WindComponent } from '@fmgc/guidance/vnav/wind';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
+import { WindInterface } from '@fmgc/guidance/vnav/wind/WindProfile';
 
 type MinimumDescentAltitudeConstraint = {
   distanceFromStart: NauticalMiles;
@@ -80,7 +81,6 @@ export class TacticalDescentPathBuilder {
     profile: NavGeometryProfile,
     descentStrategy: DescentStrategy,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     schedule: DecelerationSchedule,
   ) {
     const start = profile.lastCheckpoint;
@@ -99,7 +99,7 @@ export class TacticalDescentPathBuilder {
       ({ distanceFromStart }) => distanceFromStart < decelPointDistance,
     );
 
-    const phaseTable = new PhaseTable(this.observer.get(), windProfile);
+    const phaseTable = new PhaseTable(this.observer.get(), profile.winds);
     phaseTable.start = start;
     phaseTable.phases = [
       new DescendToAltitude(profile.finalAltitude).withReasonAfter(VerticalCheckpointReason.Landing),
@@ -140,7 +140,6 @@ export class TacticalDescentPathBuilder {
     profile: BaseGeometryProfile,
     descentStrategy: DescentStrategy,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     finalAltitude: Feet,
     schedule: DecelerationSchedule,
   ) {
@@ -160,7 +159,7 @@ export class TacticalDescentPathBuilder {
       ({ distanceFromStart }) => distanceFromStart < decelPointDistance,
     );
 
-    const phaseTable = new PhaseTable(this.observer.get(), windProfile);
+    const phaseTable = new PhaseTable(this.observer.get(), profile.winds);
     phaseTable.start = start;
     phaseTable.phases = [
       new DescendToAltitude(finalAltitude).withReasonAfter(VerticalCheckpointReason.CrossingFcuAltitudeDescent),
@@ -609,7 +608,7 @@ class PhaseTable {
 
   constructor(
     private readonly parameters: VerticalProfileComputationParameters,
-    private readonly winds: HeadwindProfile,
+    private readonly winds: WindInterface,
   ) {}
 
   execute(descentStrategy: DescentStrategy, levelFlightStrategy: DescentStrategy): TemporaryCheckpointSequence {
@@ -625,13 +624,9 @@ class PhaseTable {
       }
 
       if (phase.shouldExecute(sequence.lastCheckpoint)) {
-        const headwind = this.winds.getHeadwindComponent(
-          sequence.lastCheckpoint.distanceFromStart,
-          sequence.lastCheckpoint.altitude,
-        );
         const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(
           sequence.lastCheckpoint,
-          headwind,
+          -this.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
           this.configuration.setFromSpeed(sequence.lastCheckpoint.speed, this.parameters),
         );
 
@@ -639,7 +634,7 @@ class PhaseTable {
           (sequence.lastCheckpoint as VerticalCheckpointForDeceleration).targetSpeed = phase.toSpeed;
         }
 
-        sequence.addCheckpointFromStep(phaseResult, phase.reasonAfter);
+        sequence.addCheckpointFromStep(phaseResult, phase.reasonAfter, ProfilePhase.Descent);
 
         phase.lastResult = sequence.lastCheckpoint;
       } else {
@@ -668,7 +663,7 @@ abstract class SubPhase {
 
   abstract execute(
     strategy: DescentStrategy,
-  ): (start: VerticalCheckpoint, headwind: WindComponent, configuration?: AircraftConfiguration) => StepResults;
+  ): (start: VerticalCheckpoint, headwind: number, configuration?: AircraftConfiguration) => StepResults;
 
   protected scaleStepBasedOnLastCheckpoint(lastCheckpoint: VerticalCheckpoint, step: StepResults, scaling: number) {
     step.distanceTraveled *= scaling;
@@ -727,7 +722,7 @@ class DescendingDeceleration extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
+    return (start: VerticalCheckpoint, headwind: number, configuration: AircraftConfiguration) => {
       const step = strategy.predictToSpeed(
         start.altitude,
         this.toSpeed,
@@ -764,7 +759,7 @@ class DescendToAltitude extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent) =>
+    return (start: VerticalCheckpoint, headwind: number) =>
       strategy.predictToAltitude(
         start.altitude,
         this.toAltitude,
@@ -793,7 +788,7 @@ class DescendToDistance extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
+    return (start: VerticalCheckpoint, headwind: number, configuration: AircraftConfiguration) => {
       const step = strategy.predictToDistance(
         start.altitude,
         this.toDistance - start.distanceFromStart,

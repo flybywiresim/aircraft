@@ -1,5 +1,5 @@
-use fxhash::{FxHashMap, FxHashSet};
 use rand::Rng;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::{cell::Ref, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -301,12 +301,12 @@ impl<T: Aircraft> SimulationTestBed<T> {
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
     pub fn run_multiple_frames(&mut self, delta: Duration) {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let mut executed_duration = Duration::from_secs(0);
         while executed_duration < delta {
             // Randomly set delta for 12 to 200ms, giving a simulated 83 to 5 fps refresh
-            let current_delta = Duration::from_millis(rng.gen_range(12..200));
+            let current_delta = Duration::from_millis(rng.random_range(12..200));
 
             if executed_duration + current_delta > delta {
                 self.simulation.tick(

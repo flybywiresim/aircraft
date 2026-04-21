@@ -1,7 +1,8 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTriggers } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { RwyLsMismatchLeft, RwyLsMismatchRight } from '@fmgc/components/fms-messages/RwyLsMismatch';
 import {
@@ -25,6 +26,9 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { FMMessageTriggers } from './FmMessages';
+import { ClockIsTakeoffTime } from './ClockIsTakeoffTime';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -47,8 +51,9 @@ export class FmsMessages implements FmgcComponent {
   };
 
   private messageSelectors: FMMessageSelector[] = [
-    new GpsPrimary(),
-    new GpsPrimaryLost(),
+    new ClockIsTakeoffTime(),
+    new GpsPrimary(this.bus),
+    new GpsPrimaryLost(this.bus),
     new MapPartlyDisplayedLeft(),
     new MapPartlyDisplayedRight(),
     new TurnAreaExceedanceLeft(),
@@ -63,9 +68,11 @@ export class FmsMessages implements FmgcComponent {
     new RwyLsMismatchRight(),
     new TdReached(),
     new StepAhead(),
-    new StepDeleted(),
+    new StepDeleted(this.bus),
     new TooSteepPathAhead(),
   ];
+
+  constructor(private readonly bus: EventBus) {}
 
   init(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
     for (const selector of this.messageSelectors) {

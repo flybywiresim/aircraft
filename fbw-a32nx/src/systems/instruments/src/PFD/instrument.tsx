@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, IrBusPublisher } from '@flybywiresim/fbw-sdk';
 import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -56,10 +57,11 @@ class A32NX_PFD extends BaseInstrument {
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
   private readonly fwcBusPublisher = new A32NXFwcBusPublisher(this.bus);
   private readonly elecSystemPublisher = new A32NXElectricalSystemPublisher(this.bus);
+  private readonly irBusPublisher = new IrBusPublisher(this.bus);
 
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
-  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus, this.pseudoDmc.isAcPowered);
 
   /**
    * "mainmenu" = 0
@@ -84,6 +86,7 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
     this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
     this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
+    this.backplane.addPublisher('IrBus', this.irBusPublisher);
     this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
     this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
   }

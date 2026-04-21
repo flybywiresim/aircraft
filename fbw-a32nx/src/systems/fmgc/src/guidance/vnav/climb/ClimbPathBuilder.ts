@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,9 +9,8 @@ import { ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
-import { VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
+import { ProfilePhase, VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
 import { BaseGeometryProfile } from '../profile/BaseGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
 
@@ -30,7 +30,6 @@ export class ClimbPathBuilder {
     config: AircraftConfig,
     climbStrategy: ClimbStrategy,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     targetAltitude: Feet,
   ) {
     const { fcuVerticalMode, fcuArmedVerticalMode } = this.computationParametersObserver.get();
@@ -40,7 +39,6 @@ export class ClimbPathBuilder {
       config,
       climbStrategy,
       speedProfile,
-      windProfile,
       targetAltitude,
       VerticalCheckpointReason.TopOfClimb,
     );
@@ -59,7 +57,6 @@ export class ClimbPathBuilder {
     config: AircraftConfig,
     climbStrategy: ClimbStrategy,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     finalAltitude: Feet,
     finalAltitudeReason: VerticalCheckpointReason = VerticalCheckpointReason.AtmosphericConditions,
   ) {
@@ -85,7 +82,6 @@ export class ClimbPathBuilder {
           profile,
           climbStrategy,
           speedProfile,
-          windProfile,
           profile.lastCheckpoint.altitude,
           constraintAltitude,
         );
@@ -108,9 +104,7 @@ export class ClimbPathBuilder {
           this.buildIteratedDistanceStep(
             profile,
             climbStrategy,
-            windProfile,
             currentSpeedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
-            managedClimbSpeedMach,
             VerticalCheckpointReason.SpeedConstraint,
           );
 
@@ -120,7 +114,6 @@ export class ClimbPathBuilder {
             profile,
             climbStrategy,
             speedProfile,
-            windProfile,
             profile.lastCheckpoint.altitude,
             constraintAltitude,
           );
@@ -152,15 +145,13 @@ export class ClimbPathBuilder {
 
       const speedTarget = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Climb);
       if (speedTarget - speed > 1) {
-        const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
-
         const accelerationStep = climbStrategy.predictToSpeed(
           altitude,
           speedTarget,
           speed,
           managedClimbSpeedMach,
           remainingFuelOnBoard,
-          headwind,
+          -profile.winds.getClimbTailwind(distanceFromStart, altitude),
         );
 
         // If we shoot through the final altitude trying to accelerate, pretend we didn't accelerate all the way
@@ -181,9 +172,7 @@ export class ClimbPathBuilder {
         this.buildIteratedDistanceStep(
           profile,
           climbStrategy,
-          windProfile,
           speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
-          managedClimbSpeedMach,
           VerticalCheckpointReason.SpeedConstraint,
         );
 
@@ -197,7 +186,6 @@ export class ClimbPathBuilder {
             profile,
             climbStrategy,
             speedProfile,
-            windProfile,
             profile.lastCheckpoint.altitude,
             finalAltitude,
           );
@@ -210,7 +198,6 @@ export class ClimbPathBuilder {
       profile,
       climbStrategy,
       speedProfile,
-      windProfile,
       profile.lastCheckpoint.altitude,
       finalAltitude,
     );
@@ -221,7 +208,6 @@ export class ClimbPathBuilder {
     profile: BaseGeometryProfile,
     climbStrategy: ClimbStrategy,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     startingAltitude: Feet,
     targetAltitude: Feet,
   ): void {
@@ -236,7 +222,7 @@ export class ClimbPathBuilder {
       const isAboveCrossoverAltitude =
         speedTarget > this.atmosphericConditions.computeCasFromMach(altitude, managedClimbSpeedMach);
 
-      const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
+      const headwind = -profile.winds.getClimbTailwind(distanceFromStart, altitude);
 
       // If we're below the target speed, we need to accelerate, unless we're above the crossover altitude. In that case, IAS is always below the managed IAS speed.
       const step =
@@ -275,47 +261,35 @@ export class ClimbPathBuilder {
   private buildIteratedDistanceStep(
     profile: BaseGeometryProfile,
     climbStrategy: ClimbStrategy,
-    windProfile: HeadwindProfile,
     distance: NauticalMiles,
-    mach: Mach,
     reason: VerticalCheckpointReason,
   ) {
     let distanceCrossed = 0;
     for (; distanceCrossed + 3 < distance; distanceCrossed += 3) {
       // The reason we don't check the actual distance travelled is because we don't want to have an infinite loop if the distance step travels no distance for some reason.
       // With this loop, it terminates at some point at least
-      this.distanceStepFromLastCheckpoint(
-        profile,
-        climbStrategy,
-        windProfile,
-        3,
-        mach,
-        VerticalCheckpointReason.AtmosphericConditions,
-      );
+      this.distanceStepFromLastCheckpoint(profile, climbStrategy, 3, VerticalCheckpointReason.AtmosphericConditions);
     }
 
-    this.distanceStepFromLastCheckpoint(profile, climbStrategy, windProfile, distance - distanceCrossed, mach, reason);
+    this.distanceStepFromLastCheckpoint(profile, climbStrategy, distance - distanceCrossed, reason);
   }
 
   private distanceStepFromLastCheckpoint(
     profile: BaseGeometryProfile,
     climbStrategy: ClimbStrategy,
-    windProfile: HeadwindProfile,
     distance: NauticalMiles,
-    mach: Mach,
     reason: VerticalCheckpointReason,
   ) {
     const { managedClimbSpeedMach } = this.computationParametersObserver.get();
     const { distanceFromStart, altitude, speed: initialSpeed, remainingFuelOnBoard } = profile.lastCheckpoint;
 
-    const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
     const step = climbStrategy.predictToDistance(
       altitude,
       distance,
       initialSpeed,
       managedClimbSpeedMach,
       remainingFuelOnBoard,
-      headwind,
+      -profile.winds.getClimbTailwind(distanceFromStart, altitude),
     );
 
     this.addCheckpointFromStep(profile, step, reason);
@@ -432,7 +406,7 @@ export class ClimbPathBuilder {
     initialSpeed: Knots,
     fuelWeight: number,
   ): StepResults {
-    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
 
     return Predictions.levelFlightStep(
       config,
@@ -445,6 +419,7 @@ export class ClimbPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 
@@ -455,7 +430,7 @@ export class ClimbPathBuilder {
     speedTarget: Knots,
     fuelWeight: number,
   ): StepResults {
-    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
 
     const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(altitude);
 
@@ -473,6 +448,7 @@ export class ClimbPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 
@@ -528,6 +504,7 @@ export class ClimbPathBuilder {
       speed: step.speed,
       remainingFuelOnBoard: remainingFuelOnBoard - step.fuelBurned,
       mach: this.computationParametersObserver.get().managedClimbSpeedMach,
+      profilePhase: ProfilePhase.Climb,
     }));
   }
 

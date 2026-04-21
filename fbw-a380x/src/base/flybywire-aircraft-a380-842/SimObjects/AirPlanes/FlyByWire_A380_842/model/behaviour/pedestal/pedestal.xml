@@ -36,6 +36,7 @@
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_2</NODE_ID>
                 <ANIM_NAME>throttle_lever_2</ANIM_NAME>
+                <ANIM_NAME_REVERSER_LEVER>LEVER_THROTTLE_2_REVERSE</ANIM_NAME_REVERSER_LEVER>
                 <ID>2</ID>
                 <DRAG_SPEED>-10</DRAG_SPEED>
                 <POSITION_TYPE>L</POSITION_TYPE>
@@ -47,6 +48,7 @@
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_3</NODE_ID>
                 <ANIM_NAME>throttle_lever_3</ANIM_NAME>
+                <ANIM_NAME_REVERSER_LEVER>LEVER_THROTTLE_3_REVERSE</ANIM_NAME_REVERSER_LEVER>
                 <ID>3</ID>
                 <DRAG_SPEED>-10</DRAG_SPEED>
                 <POSITION_TYPE>L</POSITION_TYPE>
@@ -241,6 +243,71 @@
             </Component>
 
             <Component ID="WeatherRadar">
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_TCAS_ABV</NODE_ID>
+                    <TOOLTIPID>TOGGLE TCAS ABOVE MODE</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_TCAS_BLW</NODE_ID>
+                    <TOOLTIPID>TOGGLE TCAS BELOW MODE</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_TCAS_TAONLY</NODE_ID>
+                    <TOOLTIPID>SET TCAS TA ONLY</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_GS_MODE</NODE_ID>
+                    <TOOLTIPID>SET G/S MODE</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_WXR_TAWS_SYS1</NODE_ID>
+                    <TOOLTIPID>SET WXR TAWS SYS 1</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_WXR_TAWS_SYS2</NODE_ID>
+                    <TOOLTIPID>SET WXR TAW SYS 2</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_XPDR_TCAS_SYS1</NODE_ID>
+                    <TOOLTIPID>SET XPDR TCAS SYS 1</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+                    <NODE_ID>PUSH_SURV_XPDR_TCAS_SYS2</NODE_ID>
+                    <TOOLTIPID>SET XPDR TCAS SYS 2</TOOLTIPID>
+                    <INDICATOR_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</INDICATOR_CODE>
+                    <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+                    <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+                </UseTemplate>
+
                 <UseTemplate Name="FBW_AIRBUS_WeatherRadar_Template">
                     <NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
                     <PART_ID>KNOB_RADAR_MODE</PART_ID>

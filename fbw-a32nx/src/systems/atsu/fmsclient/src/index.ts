@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -22,6 +23,8 @@ import {
   EnvironmentData,
   FlightStateData,
   PositionReportData,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { EventBus, Instrument, InstrumentBackplane, MappedSubject } from '@microsoft/msfs-sdk';
@@ -57,6 +60,11 @@ export class FmsClient implements Instrument {
 
   private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] =
     [];
+
+  private windsResponseCallbacks: ((
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+    requestId: number,
+  ) => boolean)[] = [];
 
   private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
@@ -112,33 +120,8 @@ export class FmsClient implements Instrument {
     this.backplane.addPublisher('FmBus', new A32NXFmBusPublisher(this.bus));
 
     // register the system control handlers
-    this.subscriber.on('aocResetData').handle(() => this.messageStorage.resetAocData());
-    this.subscriber.on('atcResetData').handle(() => {
-      this.messageStorage.resetAtcData();
-      this.atisAutoUpdates = [];
-      this.atisReportsPrintActive = false;
-      this.automaticPositionReportIsActive = false;
-
-      this.atcStationStatus = {
-        current: '',
-        next: '',
-        notificationTime: 0,
-        mode: FansMode.FansNone,
-        logonInProgress: false,
-      };
-
-      this.datalinkStatus = {
-        vhf: DatalinkStatusCode.NotInstalled,
-        satellite: DatalinkStatusCode.NotInstalled,
-        hf: DatalinkStatusCode.NotInstalled,
-      };
-
-      this.datalinkMode = {
-        vhf: DatalinkModeCode.None,
-        satellite: DatalinkModeCode.None,
-        hf: DatalinkModeCode.None,
-      };
-    });
+    this.subscriber.on('aocResetData').handle(this.onAocReset.bind(this));
+    this.subscriber.on('atcResetData').handle(this.onAtcReset.bind(this));
 
     // register the streaming handlers
     this.subscriber.on('atcSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
@@ -220,6 +203,15 @@ export class FmsClient implements Instrument {
         return true;
       });
     });
+    this.subscriber.on('aocWindsResponse').handle((response) => {
+      this.windsResponseCallbacks.every((callback, index) => {
+        if (callback(response.data, response.requestId)) {
+          this.windsResponseCallbacks.splice(index, 1);
+          return false;
+        }
+        return true;
+      });
+    });
   }
 
   /** @inheritdoc */
@@ -230,6 +222,47 @@ export class FmsClient implements Instrument {
   /** @inheritdoc */
   public onUpdate(): void {
     this.backplane.onUpdate();
+  }
+
+  /** Handles FMS reset (completion of flight, nav DB swap, etc.) */
+  public onFmsReset(): void {
+    this.resetAtisAutoUpdate();
+    this.onAocReset();
+    this.onAtcReset();
+  }
+
+  private onAocReset(): void {
+    this.messageStorage.resetAocData();
+  }
+
+  private onAtcReset(): void {
+    this.messageStorage.resetAtcData();
+    this.atisAutoUpdates = [];
+    this.atisReportsPrintActive = false;
+    this.automaticPositionReportIsActive = false;
+
+    // FIXME don't allocate a new object
+    this.atcStationStatus = {
+      current: '',
+      next: '',
+      notificationTime: 0,
+      mode: FansMode.FansNone,
+      logonInProgress: false,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkStatus = {
+      vhf: DatalinkStatusCode.NotInstalled,
+      satellite: DatalinkStatusCode.NotInstalled,
+      hf: DatalinkStatusCode.NotInstalled,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkMode = {
+      vhf: DatalinkModeCode.None,
+      satellite: DatalinkModeCode.None,
+      hf: DatalinkModeCode.None,
+    };
   }
 
   public maxUplinkDelay: number = -1;
@@ -317,6 +350,22 @@ export class FmsClient implements Instrument {
     });
   }
 
+  public receiveWindUplink(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      sentCallback();
+
+      this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
+        if (id === requestId) resolve(response);
+        return id === requestId;
+      });
+    });
+  }
+
   public registerMessages(messages: AtsuMessage[]): void {
     if (messages[0].Type === AtsuMessageType.CPDLC) {
       this.publisher.pub('atcRegisterCpdlcMessages', messages as CpdlcMessage[], true, false);
@@ -379,6 +428,10 @@ export class FmsClient implements Instrument {
         return id === requestId;
       });
     });
+  }
+
+  public hasActiveAtc(): boolean {
+    return this.atcStationStatus.current !== '';
   }
 
   public currentStation(): string {

@@ -209,6 +209,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmTargetVerticalSpeed;
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
+  std::unique_ptr<LocalVariable> idFmNavCaptureCondition;
 
   std::unique_ptr<LocalVariable> idTcasFault;
   std::unique_ptr<LocalVariable> idTcasMode;
@@ -329,13 +330,14 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idLgciuDiscreteWord4[2];
 
   // SFCC inputs
-  std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord;
-  std::unique_ptr<LocalVariable> idSfccSlatFlapSystemStatusWord;
-  std::unique_ptr<LocalVariable> idSfccSlatFlapActualPositionWord;
-  std::unique_ptr<LocalVariable> idSfccSlatActualPositionWord;
-  std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord;
+  std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord[2];
+  std::unique_ptr<LocalVariable> idSfccSlatFlapSystemStatusWord[2];
+  std::unique_ptr<LocalVariable> idSfccSlatFlapActualPositionWord[2];
+  std::unique_ptr<LocalVariable> idSfccSlatActualPositionWord[2];
+  std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord[2];
 
   // ADR bus inputs
   std::unique_ptr<LocalVariable> idAdrAltitudeStandard[3];
@@ -685,8 +687,6 @@ class FlyByWireInterface {
   bool updateLgciu(int lgciuIndex);
 
   bool updateSfcc(int sfccIndex);
-
-  bool updateFadec(int fadecIndex);
 
   bool updateIls(int ilsIndex);
 

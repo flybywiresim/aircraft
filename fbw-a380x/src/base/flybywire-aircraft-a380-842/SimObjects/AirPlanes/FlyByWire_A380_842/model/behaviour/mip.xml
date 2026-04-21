@@ -104,7 +104,7 @@
             <!-- RTO ARM pb -->
             <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_RTO_ARM</NODE_ID>
-                <TOOLTIPID>TT:A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_RTO</TOOLTIPID>
+                <TOOLTIPID>TT:A380X.TOOLTIPS.AUTOBRAKE_RTO</TOOLTIPID>
                 <DISABLE_SEQ1 />
                 <MOMENTARY />
                 <SEQ2_CODE>(L:A32NX_AUTOBRAKES_RTO_ARMED)</SEQ2_CODE>

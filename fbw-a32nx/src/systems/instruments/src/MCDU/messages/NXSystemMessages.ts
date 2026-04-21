@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -63,9 +64,11 @@ export class TypeIIMessage extends McduMessage {
 export const NXSystemMessages = {
   acPositionInvalid: new TypeIIMessage('A/C POSITION INVALID', true),
   aocActFplnUplink: new TypeIIMessage('AOC ACT F-PLN UPLINK'),
+  aocSecFplnUplink: new TypeIIMessage('AOC SEC F-PLN UPLINK'),
   arptTypeAlreadyInUse: new TypeIMessage('ARPT/TYPE ALREADY USED'), // FIXME move out of FMS
   awyWptMismatch: new TypeIMessage('AWY/WPT MISMATCH'),
   cancelAtisUpdate: new TypeIMessage('CANCEL UPDATE BEFORE'), // FIXME move out of FMS
+  checkAltnWind: new TypeIIMessage('CHECK ALTN WIND'),
   checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
   checkSpeedMode: new TypeIIMessage('CHECK SPEED MODE'),
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
@@ -78,6 +81,7 @@ export const NXSystemMessages = {
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   invalidFplnUplink: new TypeIIMessage('INVALID F-PLN UPLINK', false),
+  invalidWindTempUplk: new TypeIIMessage('INVALID WIND/TEMP UPLK'),
   mandatoryFields: new TypeIMessage('ENTER MANDATORY FIELDS'), // FIXME move out of FMS
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
@@ -96,6 +100,7 @@ export const NXSystemMessages = {
   notAllowed: new TypeIMessage('NOT ALLOWED'),
   notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
+  onlySpdEntryAllowed: new TypeIMessage('ONLY SPD ENTRY ALLOWED'),
   rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
   selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'), // FIXME move out of FMS (is part of MCDU itself)
   setHoldSpeed: new TypeIIMessage('SET HOLD SPEED'),
@@ -110,6 +115,10 @@ export const NXSystemMessages = {
   stepAboveMaxFl: new TypeIIMessage('STEP ABOVE MAX FL'),
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
+  temporaryFplnExists: new TypeIMessage('TEMPORARY F-PLN EXISTS'),
+  windTempDataUplk: new TypeIIMessage('WIND/TEMP DATA UPLK'),
+  windTempUplkPending: new TypeIIMessage('WIND/TEMP UPLK PENDING', true),
+  noAnswerToRequest: new TypeIMessage('NO ANSWER TO REQUEST'),
 };
 
 // FIXME move ATSU messages out of FMS
@@ -136,7 +145,7 @@ export const NXFictionalMessages = {
   noWptInfos: new TypeIMessage('NO WAYPOINT INFOS'),
   emptyMessage: new TypeIMessage(''),
   reloadPlaneApply: new TypeIIMessage('RELOAD A/C TO APPLY', true),
-  noHoppieConnection: new TypeIMessage('NO HOPPIE CONNECTION'),
+  noAcarsConnection: new TypeIMessage('NO ACARS CONNECTION'),
   unknownAtsuMessage: new TypeIMessage('UNKNOWN ATSU MESSAGE'),
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
 };

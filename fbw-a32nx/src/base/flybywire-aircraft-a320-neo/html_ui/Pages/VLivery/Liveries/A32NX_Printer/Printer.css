@@ -5,11 +5,6 @@
   font-style: normal;
 }
 
-body {
-  background-color: rgba(255, 255, 255, 1);
-  opacity: 100;
-}
-
 #lines {
   padding: 30px;
 }

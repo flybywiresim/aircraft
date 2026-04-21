@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct Arinc429Word<T: Copy> {
     value: T,
     ssm: SignStatus,
@@ -12,6 +12,29 @@ impl<T: Copy> Arinc429Word<T> {
         self.value
     }
 
+    pub fn set_value(&mut self, value: T) {
+        self.value = value;
+    }
+
+    pub fn value_or(&self, default: T) -> T {
+        if self.is_failure_warning() {
+            default
+        } else {
+            self.value
+        }
+    }
+
+    pub fn value_or_default(&self) -> T
+    where
+        T: Default,
+    {
+        if self.is_failure_warning() {
+            T::default()
+        } else {
+            self.value
+        }
+    }
+
     /// Returns `Some` value when the SSM indicates normal operation, `None` otherwise.
     pub fn normal_value(&self) -> Option<T> {
         if self.is_normal_operation() {
@@ -23,6 +46,10 @@ impl<T: Copy> Arinc429Word<T> {
 
     pub fn ssm(&self) -> SignStatus {
         self.ssm
+    }
+
+    pub fn set_ssm(&mut self, ssm: SignStatus) {
+        self.ssm = ssm;
     }
 
     pub fn is_failure_warning(&self) -> bool {
@@ -85,8 +112,9 @@ impl From<Arinc429Word<f64>> for f64 {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SignStatus {
+    #[default]
     FailureWarning,
     NoComputedData,
     FunctionalTest,
@@ -142,8 +170,8 @@ mod tests {
     #[case(SignStatus::NoComputedData)]
     #[case(SignStatus::NormalOperation)]
     fn conversion_is_symmetric(#[case] expected_ssm: SignStatus) {
-        let mut rng = rand::thread_rng();
-        let expected_value: f64 = rng.gen_range(0.0..10000.0);
+        let mut rng = rand::rng();
+        let expected_value: f64 = rng.random_range(0.0..10000.0);
 
         let word = Arinc429Word::new(expected_value, expected_ssm);
 
@@ -164,14 +192,14 @@ mod tests {
     #[case(SignStatus::NoComputedData)]
     #[case(SignStatus::NormalOperation)]
     fn bit_conversion_is_symmetric(#[case] expected_ssm: SignStatus) {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let mut word = Arinc429Word::new(0, expected_ssm);
 
         let mut expected_values: [bool; 30] = [false; 30];
 
         for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
-            *item = rng.gen();
+            *item = rng.random();
             word.set_bit(i as u8, *item);
         }
 

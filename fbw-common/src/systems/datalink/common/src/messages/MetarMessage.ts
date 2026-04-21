@@ -12,7 +12,7 @@ export class MetarMessage extends WeatherMessage {
   constructor() {
     super();
     this.Type = AtsuMessageType.METAR;
-    this.Station = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+    this.Station = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
   }
 
   public static deserialize(jsonData: MetarMessage | Record<string, unknown>): MetarMessage {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -513,7 +514,12 @@ export const QuickControls = () => {
   return (
     <>
       <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
-        <div onClick={() => setShowQuickControlsPane((old) => !old)}>
+        <div
+          onClick={(ev) => {
+            ev.stopPropagation();
+            setShowQuickControlsPane((old) => !old);
+          }}
+        >
           <Gear size={26} />
         </div>
       </TooltipWrapper>

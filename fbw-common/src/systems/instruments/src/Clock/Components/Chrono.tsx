@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { debouncedTimeDelta } from '../shared/Utils';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';

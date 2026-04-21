@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -5,6 +6,7 @@
 import { Common } from '@fmgc/guidance/vnav/common';
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import {
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointForDeceleration,
   VerticalCheckpointReason,
@@ -33,7 +35,7 @@ export class TemporaryCheckpointSequence {
     this.checkpoints.splice(this.checkpoints.length - 1);
   }
 
-  addCheckpointFromStep(step: StepResults, reason: VerticalCheckpointReason) {
+  addCheckpointFromStep(step: StepResults, reason: VerticalCheckpointReason, profilePhase: ProfilePhase) {
     this.checkpoints.push({
       reason,
       distanceFromStart: this.lastCheckpoint.distanceFromStart + step.distanceTraveled,
@@ -42,10 +44,16 @@ export class TemporaryCheckpointSequence {
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard - step.fuelBurned,
       speed: step.speed,
       mach: this.lastCheckpoint.mach,
+      profilePhase,
     });
   }
 
-  addDecelerationCheckpointFromStep(step: StepResults, reason: VerticalCheckpointReason, targetSpeed: Knots) {
+  addDecelerationCheckpointFromStep(
+    step: StepResults,
+    reason: VerticalCheckpointReason,
+    targetSpeed: Knots,
+    profilePhase: ProfilePhase,
+  ) {
     this.checkpoints.push({
       reason,
       distanceFromStart: this.lastCheckpoint.distanceFromStart + step.distanceTraveled,
@@ -55,6 +63,7 @@ export class TemporaryCheckpointSequence {
       speed: step.speed,
       mach: this.lastCheckpoint.mach,
       targetSpeed,
+      profilePhase,
     } as VerticalCheckpointForDeceleration);
   }
 

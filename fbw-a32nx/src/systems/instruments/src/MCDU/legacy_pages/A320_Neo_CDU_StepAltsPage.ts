@@ -1,51 +1,58 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 
 export class CDUStepAltsPage {
   static Return() {}
 
-  static ShowPage(mcdu: LegacyFmsPageInterface) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.pageUpdate = () => {};
 
     mcdu.page.Current = mcdu.page.StepAltsPage;
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.StepAltsPage) {
-        CDUStepAltsPage.ShowPage(mcdu);
+        CDUStepAltsPage.ShowPage(mcdu, forPlan);
       }
     }, mcdu.PageTimeout.Medium);
 
-    const activePlan = mcdu.flightPlanService.active;
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const plan = mcdu.getFlightPlan(forPlan);
 
-    /** @type {FlightPlanLeg[]} */
-    const legsWithSteps = activePlan.allLegs.filter((it) => it.isDiscontinuity === false && it.cruiseStep);
+    const legsWithSteps = plan.allLegs
+      .filter((it) => it.isDiscontinuity === false)
+      .filter((it) => it.cruiseStep !== undefined);
 
-    const isFlying =
-      mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && mcdu.flightPhaseManager.phase < FmgcFlightPhase.Done;
-    const transitionAltitude = activePlan.performanceData.transitionAltitude;
+    const transitionAltitude = plan.performanceData.transitionAltitude.get();
 
     const predictions =
-      mcdu.guidanceController.vnavDriver.mcduProfile && mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay
+      isActivePlan &&
+      mcdu.guidanceController.vnavDriver.mcduProfile &&
+      mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay
         ? mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions
         : null;
 
+    const fpIndex = isActivePlan ? FlightPlanIndex.Active : FlightPlanIndex.FirstSecondary;
+
     mcdu.setTemplate([
-      ['STEP ALTS {small}FROM{end} {green}FL' + mcdu.cruiseLevel + '{end}'],
+      [
+        `${!isActivePlan ? 'SEC ' : ''}STEP ALTS {small}FROM{end} {green}FL${plan.performanceData.cruiseFlightLevel.get() ?? ''}{end}`,
+      ],
       ['\xa0ALT\xa0/\xa0WPT', 'DIST\xa0TIME'],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 1, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 1, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 2, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 2, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 3, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 3, predictions, transitionAltitude, fpIndex),
       [''],
       CDUStepAltsPage.formatOptStepLine(legsWithSteps),
       [''],
@@ -54,7 +61,14 @@ export class CDUStepAltsPage {
 
     for (let i = 0; i < 4; i++) {
       mcdu.onLeftInput[i] = (value, scratchpadCallback) =>
-        CDUStepAltsPage.tryAddOrUpdateCruiseStepFromLeftInput(mcdu, scratchpadCallback, legsWithSteps, i, value);
+        CDUStepAltsPage.tryAddOrUpdateCruiseStepFromLeftInput(
+          mcdu,
+          scratchpadCallback,
+          legsWithSteps,
+          i,
+          value,
+          forPlan,
+        );
     }
 
     mcdu.onLeftInput[4] = () => {};
@@ -71,14 +85,14 @@ export class CDUStepAltsPage {
     mcdu.onRightInput[5] = () => {};
   }
 
-  static formatFl(altitude, transAlt) {
+  static formatFl(altitude: number, transAlt: number) {
     if (transAlt >= 100 && altitude > transAlt) {
       return 'FL' + Math.round(altitude / 100);
     }
     return altitude;
   }
 
-  static formatOptStepLine(steps) {
+  static formatOptStepLine(steps: FlightPlanLeg[]) {
     if (steps.length > 0) {
       return ['', ''];
     }
@@ -91,7 +105,14 @@ export class CDUStepAltsPage {
   /**
    * @param legsWithSteps {FlightPlanLeg[]}
    */
-  static formatStepClimbLine(mcdu, legsWithSteps, index, predictions, isFlying, transitionAltitude) {
+  static formatStepClimbLine(
+    mcdu: LegacyFmsPageInterface,
+    legsWithSteps: FlightPlanLeg[],
+    index: number,
+    predictions: Map<number, VerticalWaypointPrediction>,
+    transitionAltitude: number,
+    forPlan: FlightPlanIndex,
+  ) {
     if (!legsWithSteps || index > legsWithSteps.length) {
       return [''];
     } else if (index === legsWithSteps.length) {
@@ -121,11 +142,7 @@ export class CDUStepAltsPage {
             lastColumn = 'STEP\xa0AHEAD[s-text]';
           } else {
             const distanceCell = '{green}' + Math.round(distanceFromAircraft).toFixed(0) + '{end}';
-
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-            const timeCell = isFlying
-              ? `{green}${FmsFormatters.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
-              : `{green}${FmsFormatters.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
+            const timeCell = `{green}${mcdu.getTimePrediction(secondsFromPresent, forPlan)}[s-text]{end}`;
 
             lastColumn = distanceCell + '\xa0' + timeCell;
           }
@@ -139,12 +156,16 @@ export class CDUStepAltsPage {
     }
   }
 
-  /**
-   * @param stepLegs {FlightPlanLeg[]}
-   */
-  static tryAddOrUpdateCruiseStepFromLeftInput(mcdu, scratchpadCallback, stepLegs, index, input) {
+  static tryAddOrUpdateCruiseStepFromLeftInput(
+    mcdu: LegacyFmsPageInterface,
+    scratchpadCallback: () => void,
+    stepLegs: FlightPlanLeg[],
+    index: number,
+    input: string,
+    forPlan: FlightPlanIndex,
+  ) {
     if (index < stepLegs.length) {
-      this.onClickExistingStepClimb(mcdu, scratchpadCallback, stepLegs, index, input);
+      this.onClickExistingStepClimb(mcdu, scratchpadCallback, stepLegs, index, input, forPlan);
 
       return;
     }
@@ -173,7 +194,7 @@ export class CDUStepAltsPage {
       return;
     }
 
-    const plan = mcdu.flightPlanService.active; // TODO allow other plans, maybe (fms-v2)
+    const plan = mcdu.getFlightPlan(forPlan);
     const legIndex = plan.findLegIndexByFixIdent(rawIdentInput);
 
     if (legIndex < 0) {
@@ -186,7 +207,7 @@ export class CDUStepAltsPage {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       scratchpadCallback();
       return;
-    } else if (!this.checkStepInsertionRules(mcdu, stepLegs, legIndex, alt)) {
+    } else if (!this.checkStepInsertionRules(stepLegs, legIndex, alt, plan.performanceData.cruiseFlightLevel.get())) {
       // Step too small or step descent after step climb
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       scratchpadCallback();
@@ -202,7 +223,7 @@ export class CDUStepAltsPage {
       return;
     }
 
-    mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, alt, FlightPlanIndex.Active);
+    mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, alt, forPlan);
 
     if (CDUStepAltsPage.checkIfStepAboveMaxFl(mcdu, alt)) {
       mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
@@ -228,17 +249,21 @@ export class CDUStepAltsPage {
     return altValue;
   }
 
-  /**
-   * @param stepLegs {FlightPlanLeg[]}
-   */
-  static onClickExistingStepClimb(mcdu, scratchpadCallback, stepLegs, index, input) {
-    const plan = mcdu.flightPlanService.active;
+  static onClickExistingStepClimb(
+    mcdu: LegacyFmsPageInterface,
+    scratchpadCallback: () => void,
+    stepLegs: FlightPlanLeg[],
+    index: number,
+    input: string,
+    forPlan: FlightPlanIndex,
+  ) {
+    const plan = mcdu.getFlightPlan(forPlan);
 
     const stepWaypoint = stepLegs[index];
     const clickedStep = stepWaypoint.cruiseStep;
 
     if (input === Keypad.clrValue) {
-      mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
+      mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex, forPlan);
 
       return true;
     }
@@ -252,14 +277,21 @@ export class CDUStepAltsPage {
         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         scratchpadCallback();
         return;
-      } else if (!this.checkStepInsertionRules(mcdu, stepLegs, clickedStep.waypointIndex, clickedStep.toAltitude)) {
+      } else if (
+        !this.checkStepInsertionRules(
+          stepLegs,
+          clickedStep.waypointIndex,
+          clickedStep.toAltitude,
+          plan.performanceData.cruiseFlightLevel.get(),
+        )
+      ) {
         // Step too small or step descent after step climb
         mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
         scratchpadCallback();
         return;
       }
 
-      mcdu.flightPlanService.addOrUpdateCruiseStep(clickedStep.waypointIndex, altitude);
+      mcdu.flightPlanService.addOrUpdateCruiseStep(clickedStep.waypointIndex, altitude, forPlan);
 
       if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
         mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
@@ -279,8 +311,8 @@ export class CDUStepAltsPage {
 
       if (rawAltitudeInput === '') {
         // /Waypoint
-        mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, clickedStep.toAltitude);
-        mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
+        mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, clickedStep.toAltitude, forPlan);
+        mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex, forPlan);
       } else {
         // Altitude/waypoint
         const altitude = this.tryParseAltitude(rawAltitudeInput);
@@ -291,8 +323,8 @@ export class CDUStepAltsPage {
           return;
         }
 
-        mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, altitude);
-        mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex);
+        mcdu.flightPlanService.addOrUpdateCruiseStep(legIndex, altitude, forPlan);
+        mcdu.flightPlanService.removeCruiseStep(clickedStep.waypointIndex, forPlan);
 
         if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
           mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
@@ -318,13 +350,14 @@ export class CDUStepAltsPage {
    * - S/C follows step descent
    * TODO: It's possible that the insertion of a step in between already inserted steps causes a step descent after step climb
    * I don't know how the plane handles this.
-   * @param {*} mcdu
-   * @param {FlightPlanLeg[]} stepLegs Existing steps
-   * @param {*} insertAtIndex Index of waypoint to insert step at
-   * @param {*} toAltitude Altitude of step
    */
-  static checkStepInsertionRules(mcdu, stepLegs, insertAtIndex, toAltitude) {
-    let altitude = mcdu.cruiseLevel * 100;
+  static checkStepInsertionRules(
+    stepLegs: FlightPlanLeg[],
+    insertAtIndex: number,
+    toAltitude: number,
+    cruiseLevel: number,
+  ) {
+    let altitude = cruiseLevel * 100;
     let doesHaveStepDescent = false;
 
     let i = 0;

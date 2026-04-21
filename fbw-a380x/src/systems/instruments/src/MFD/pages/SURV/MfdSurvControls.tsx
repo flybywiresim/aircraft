@@ -22,6 +22,8 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { SurvButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvButton';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { FmsErrorType } from '@fmgc/FmsError';
 
 interface MfdSurvControlsProps extends AbstractMfdPageProps {}
 
@@ -72,8 +74,14 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   );
 
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
+  private readonly tcasTaraRadioColor = this.tcasTaraSelectedIndex.map((it) =>
+    it === 0 ? RadioButtonColor.Green : RadioButtonColor.White,
+  );
 
   private readonly tcasNormAbvBlwSelectedIndex = Subject.create<number | null>(0);
+  private readonly tcasNormAbvBlwRadioColor = this.tcasNormAbvBlwSelectedIndex.map((it) =>
+    it === 0 ? RadioButtonColor.Green : RadioButtonColor.Cyan,
+  );
 
   private readonly wxrFailed = Subject.create<boolean>(true);
 
@@ -179,6 +187,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.xpdrState,
       this.xpdrAltRptgDisabled,
       this.xpdrStatusRadioColor,
+      this.tcasTaraRadioColor,
+      this.tcasNormAbvBlwRadioColor,
       this.tcasFailed,
       this.tcasRadioGroupDisabled,
       this.activeSystemGroupWxrTaws,
@@ -203,7 +213,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private xpdrStatusChanged() {
     const state = this.xpdrState.get();
-    const isOnGround = this.props.fmcService.master?.fmgc.isOnGround();
+    const isOnGround = this.props.fmcService.master.fmgc.isOnGround();
 
     this.xpdrStatusSelectedIndex.set(
       state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS ? 0 : 1,
@@ -256,12 +266,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONTROLS')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONTROLS')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-surv-controls-first-section">
@@ -280,7 +285,17 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   }
                   value={this.squawkCode}
                   containerStyle="width: 100px; margin-bottom: 5px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => {
+                    if (e.type == FmsErrorType.FormatError) {
+                      this.props.fmcService.master.addMessageToQueue(
+                        NXSystemMessages.sqwkCodeNotValid,
+                        undefined,
+                        undefined,
+                      );
+                    } else {
+                      this.props.fmcService.master.showFmsErrorMessage(e.type, e.details);
+                    }
+                  }}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   alignText={'center'}
@@ -328,7 +343,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
                   valuesDisabled={this.tcasRadioGroupDisabled}
-                  color={Subject.create(RadioButtonColor.Green)}
+                  color={this.tcasTaraRadioColor}
                 />
               </div>
               <div class="mfd-surv-controls-tcas-right">
@@ -341,7 +356,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   valuesDisabled={this.tcasRadioGroupDisabled}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
-                  color={Subject.create(RadioButtonColor.Green)}
+                  color={this.tcasNormAbvBlwRadioColor}
                 />
               </div>
             </div>
@@ -485,7 +500,12 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

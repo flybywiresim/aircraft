@@ -39,6 +39,61 @@
   padding: 10px;
 }
 
+.hidden {
+  display: none;
+}
+
+.fr {
+  display: flex;
+  flex-direction: row;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+}
+
+.jc {
+  justify-content: center;
+}
+
+.jend {
+  justify-content: flex-end;
+}
+
+.aic {
+  align-items: center;
+}
+
+.ass {
+  align-self: stretch;
+}
+
+.mt20 {
+  margin-top: 20px;
+}
+
+.mr15 {
+  margin-right: 15px;
+}
+
+.tc {
+  text-align: center;
+}
+
+.w5 {
+  width: 5%;
+}
+
+.w15 {
+  width: 15%;
+}
+
+.f1 {
+  flex: 1;
+}
+
+
 .oit-page-container {
   display: flex;
   flex: 1 1 auto;
@@ -108,18 +163,9 @@
 
 .oit-header-row {
   display: flex;
+  width: 100%;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.fr {
-  display: flex;
-  flex-direction: row;
-}
-
-.fc {
-  display: flex;
-  flex-direction: column;
 }
 
 .oit-flt-ops-menu-column {
@@ -173,10 +219,459 @@
   flex-direction: row;
 }
 
+.oit-avncs-sub-header-title {
+  font-size: 22px;
+  color: $display-white;
+  width: 250px;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-avncs-header-flt-nbr {
+  flex-grow: 1;
+  font-size: 24px;
+  color: $display-magenta;
+  padding: 11px;
+  align-items: flex-start;
+  margin-left: 10px;
+}
+
+.oit-flt-ops-loading-screen-container {
+  display: block;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.oit-flt-ops-loading-screen-container.hidden {
+  display: none;
+}
+
+.LoadingProgressBarBackground {
+  position: absolute;
+  width: 40%;
+  height: 25px;
+  left: 30%;
+  top: 597.5px;
+  border: 1px solid #ffffff;
+}
+
+.LoadingProgressBarFill {
+  position: absolute;
+  width: 0%;
+  height: 25px;
+  left: 30%;
+  top: 597.5px;
+  border: 1px solid #ffffff;
+  background-color: rgb(0, 224, 254);
+}
+
+.FbwTail {
+  position: absolute;
+  top: 377.5px;
+  left: 591.5px;
+  background-image: url('/Images/fbw-a380x/Common/fbw-tail.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 160px;
+  height: 150px;
+}
+
+.LoadingTextTopLeft {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 26px;
+  color: $display-white;
+  font-family: "OIT";
+}
+
+.oit-login-page-heading {
+  position: absolute;
+  top: 25%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.oit-login-page-sub-heading {
+  position: absolute;
+  top: 32%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.oit-login-page-sub-sub-heading {
+  position: absolute;
+  top: 39%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.oit-login-page-button-container {
+  position: absolute;
+  top: 65%;
+  left: 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oit-login-page-bottom-left-text {
+  position: absolute;
+  bottom: 28px;
+  left: 5px;
+}
+
+.oit-login-page-bottom-left-button {
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+}
+
+.oit-avncs-navigator-container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  width: 100%;
+}
+
+.oit-avncs-navigator-left {
+  display: flex;
+  flex-direction: column;
+  border: 3px solid #c4c6cf;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  overflow: auto;
+  max-height: 795px;
+  width: 300px;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar {
+  width: 20px;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-track {
+  background: $display-mfd-darker-grey;
+  border: 3px solid $display-dark-grey;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-thumb {
+  background: $display-dark-grey;
+  border: 3px solid $display-light-grey;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button {
+  background: no-repeat $display-dark-grey;
+  background-size: 0.75em;
+  background-position: center bottom;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' fill='#c4c6cf'><polygon points='0,12.5 25,12.5 12.5,0'/></svg>");
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' fill='#c4c6cf'><polygon points='0,0 25,0 12.5,12.5'/></svg>");
+}
+
+.oit-avncs-navigator-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-avncs-navigator-folder-container {
+  display: block;
+  padding: 5px 5px 5px 15px;
+}
+
+.oit-avncs-navigator-folder {
+  display: block;
+}
+
+.oit-avncs-navigator-folder-icon {
+  font-size: 0.1px;
+  color: transparent;
+  width: 35px;
+  height: 35px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oit-avncs-navigator-folder-children {
+  display: block;
+}
+
+.oit-avncs-navigator-file {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px 5px 5px 25px;
+  min-height: 35px;
+}
+
+.oit-avncs-navigator-file-name {
+  background-color: transparent;
+}
+
+.oit-avncs-navigator-file-name.selected {
+  background-color: $display-light-grey;
+}
+
+.oit-avncs-navigator-file-name.disabled {
+  color: $display-dark-grey;
+}
+
+.oit-avncs-navigator-right-exit-ois {
+  position: relative;
+  left: 10px;
+  top: 10px;
+}
+
+.oit-avncs-navigator-right-center-buttons {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-avncs-icon-folder-opener {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid $display-light-grey;
+  background-color: $display-white;
+  color: $display-background;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-size: 10px;
+  margin-right: 7px;
+}
+
+.oit-avncs-icon-folder {
+  font-size: 0.1px;
+  color: transparent;
+  width: 68px;
+  height: 74px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oit-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.oit-labeled-box-container {
+  align-self: stretch;
+  position: relative;
+  border: 1px solid $display-light-grey;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 20px 20px 20px;
+  padding: 15px;
+}
+
+.oit-labeled-box-label {
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  text-align: right;
+  align-self: center;
+  background-color: #000000;
+  padding: 0px 8px 0px 8px;
+}
+
+.oit-align-right-sp25 {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 25px;
+}
+
+.oit-ccom-headline {
+  align-self: stretch;
+  font-size: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+  padding-top: 10px;
+  margin: 10px 0px 10px 0px;
+  border: 2px solid $display-light-grey;
+  border-left: none;
+}
+
+.oit-green-text {
+  color: $display-green;
+}
+
+.oit-ccom-flight-log-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto;
+  gap: 10px;
+  margin: 10px 0px 10px 0px;
+}
+
+.oit-ccom-flight-log-oooi-table {
+  width: 400px;
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr;
+  border: 2px solid $display-light-grey;
+}
+
+.oit-ccom-flight-log-oooi-table-header {
+  background-color: $display-grey;
+  text-align: center;
+}
+
+.oit-table-ib {
+  border-bottom: 1px solid $display-light-grey;
+  border-right: 1px solid $display-light-grey;
+}
+
+.oit-ccom-flight-log-bottom-structure {
+  display: flex;
+  align-self: stretch;
+  flex-direction: row;
+  border-bottom: 1px solid $display-light-grey;
+  padding-bottom: 40px;
+}
+.oit-ccom-flight-log-bottom-structure-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 100px;
+}
+
+.oit-ccom-flight-log-bottom-structure-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+
+}
+
+.oit-ccom-flight-log-bottom-structure-right1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 25px;
+}
+
+.oit-ccom-flight-log-bottom-structure-right2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 125px 150px 0px 100px;
+}
+
+.oit-ccom-inbox-msg-table {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid $display-light-grey;
+  border-left: none;
+  min-height: 200px;
+  overflow: auto;
+}
+
+.oit-ccom-inbox-msg-table-header {
+  background-color: $display-grey;
+  text-align: center;
+  height: 30px;
+}
+
+.oit-ccom-inbox-msg-details {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  margin: 5px 10px 10px 10px;
+}
+
+.oit-ccom-inbox-msg-box {
+  align-self: stretch;
+  display: block;
+  border: 2px solid $display-light-grey;
+  border-left: none;
+  min-height: 400px;
+  overflow: auto;
+  padding: 5px;
+}
+
+.oit-ccom-inbox-msg-table-line {
+  display: flex;
+  height: 40px;
+  align-items: center;
+}
+
+.oit-ccom-inbox-msg-table-line.selected {
+  background-color: $display-white;
+  color: $display-background;
+}
+
 $font-file-path: '/Fonts/fbw-a380x/EFB';
 
 @import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
 
 .nopointer {
   pointer-events: none;
+}
+
+
+.oit-a380x-systems-app-ldg-cap {
+  font-size: 0.1px;
+  color: transparent;
+  width: 450px;
+  height: 700px;
+  margin-left: 30px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/a380x-systems-app-ldg-cap.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.oit-a380x-systems-app-ldg-cap-table {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+}
+
+.oit-a380x-systems-app-ldg-cap-td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid $display-white;
+  height: 50px;
+  padding: 5px;
+  background-color: #8B0000;
+}
+
+.oit-a380x-systems-app-ldg-cap-td.transparentbg {
+  background-color: transparent;
+}
+
+.oit-a380x-systems-app-ldg-cap-td.green {
+  background-color: #006400;
 }

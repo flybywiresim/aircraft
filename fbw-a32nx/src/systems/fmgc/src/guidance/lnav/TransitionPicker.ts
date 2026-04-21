@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022, 2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -205,8 +206,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
-      // FIXME fixed radius / revert to path capture
-      return new PathCaptureTransition(from, to);
+      return new FixedRadiusTransition(from, to);
     }
     if (to instanceof DFLeg) {
       return new DirectToFixTransition(from, to);

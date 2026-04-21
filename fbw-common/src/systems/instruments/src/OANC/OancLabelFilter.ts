@@ -1,8 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureType } from '@flybywiresim/fbw-sdk';
-import { FmsDataStore } from './OancControlPanelUtils';
+import { FeatureType, OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from './Oanc';
 
 export interface BaseOancLabelFilter {
@@ -89,7 +88,7 @@ export function filterLabel(
 
 export function labelStyle(
   label: Label,
-  fmsDataStore: FmsDataStore,
+  fmsDataStore: OansFmsDataStore,
   isFmsOrigin: boolean,
   isFmsDestination: boolean,
   btvSelectedRunway?: string,

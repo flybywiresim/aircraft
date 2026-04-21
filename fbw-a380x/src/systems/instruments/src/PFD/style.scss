@@ -251,6 +251,12 @@ tspan.Green {
   stroke: $display-amber;
   fill: none;
 }
+
+.Amber.Fill {
+  fill: $display-amber;
+  stroke: none;
+}
+
 text.Amber {
   fill: $display-amber;
   stroke: none;

@@ -77,7 +77,7 @@ export class FbwAircraftSentryClient {
    * @param config a {@link FbwAircraftSentryClientConfiguration} object
    */
   private async runClientSubscription(config: FbwAircraftSentryClientConfiguration) {
-    NXDataStore.getAndSubscribe(SENTRY_CONSENT_KEY, (key, value) => {
+    NXDataStore.getAndSubscribeLegacy(SENTRY_CONSENT_KEY, (key, value) => {
       if (value === SentryConsentState.Given) {
         console.log('[SentryClient] Synchronised consent state is Given. Initializing sentry');
         FbwAircraftSentryClient.attemptInitializeSentry(config);
@@ -97,7 +97,7 @@ export class FbwAircraftSentryClient {
    * @returns a `Promise<boolean>` that indicates the result of the root client flow
    */
   private async runRootClientFlow(config: FbwAircraftSentryClientConfiguration): Promise<boolean> {
-    const consentValue = NXDataStore.get(SENTRY_CONSENT_KEY, SentryConsentState.Unknown) as SentryConsentState;
+    const consentValue = NXDataStore.getLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Unknown) as SentryConsentState;
 
     switch (consentValue) {
       case SentryConsentState.Given:
@@ -117,14 +117,14 @@ export class FbwAircraftSentryClient {
               FbwAircraftSentryClient.requestConsent()
                 .then((didConsent) => {
                   if (didConsent) {
-                    NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
+                    NXDataStore.setLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Given);
 
                     console.log('[SentryClient] User requested consent state Given. Initializing sentry');
 
                     return FbwAircraftSentryClient.attemptInitializeSentry(config);
                   }
 
-                  NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+                  NXDataStore.setLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
                   console.log('[SentryClient] User requested consent state Refused. Doing nothing');
 
@@ -226,7 +226,7 @@ export class FbwAircraftSentryClient {
 
     console.log('[SentryClient] Sentry initialized');
 
-    NXDataStore.getAndSubscribe('A32NX_SENTRY_SESSION_ID', (_, value) => {
+    NXDataStore.getAndSubscribeLegacy('A32NX_SENTRY_SESSION_ID', (_, value) => {
       if (value) {
         Sentry.setTag('session_id', value);
         console.log('[SentryClient] Sentry tag "session_id" set to', value);

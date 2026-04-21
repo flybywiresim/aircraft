@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LegacyCfdiuPageInterface } from '../../../../legacy/LegacyCfdiuPageInterface';
 import { CDU_CFDS_Test_Inst_EIS_Menu } from './A320_Neo_CDU_CFDS_Test_Inst_EIS_Menu';
 import { CDU_CFDS_Test_Inst_EIS_Tests_Display } from './A320_Neo_CDU_CFDS_Test_Inst_EIS_Tests_Display';

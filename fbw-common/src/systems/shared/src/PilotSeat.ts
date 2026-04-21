@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -44,7 +45,7 @@ export class PilotSeatManager implements Instrument {
   constructor(private readonly flightDeckBounds: FlightDeckBounds) {}
 
   public init(): void {
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_PILOT_SEAT',
       (_, config: PilotSeatConfig) => (this.configSeat = config),
       DefaultPilotSeatConfig,

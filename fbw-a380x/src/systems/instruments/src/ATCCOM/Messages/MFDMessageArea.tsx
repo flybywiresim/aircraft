@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Layer } from '@instruments/common/utils';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';

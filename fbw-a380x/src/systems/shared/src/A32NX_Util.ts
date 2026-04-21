@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -49,26 +50,6 @@ export class A32NX_Util {
       },
     };
     return machine;
-  }
-
-  /**
-   * Compute a true heading from a magnetic heading
-   * @param {Number} heading true heading
-   * @param {Number=} magVar falls back to current aircraft position magvar
-   * @returns magnetic heading
-   */
-  public static trueToMagnetic(heading: number, magVar?: number) {
-    return (720 + heading - (magVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
-  }
-
-  /**
-   * Compute a magnetic heading from a true heading
-   * @param {Number} heading magnetic heading
-   * @param {Number=} magVar falls back to current aircraft position magvar
-   * @returns true heading
-   */
-  public static magneticToTrue(heading, magVar) {
-    return (720 + heading + (magVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
   }
 
   /**
@@ -170,20 +151,6 @@ export class A32NX_Util {
    */
   public static getIsaTempDeviation(alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) {
     return sat - A32NX_Util.getIsaTemp(alt);
-  }
-
-  /**
-   * Get the magvar to use for radials from a wp.
-   * @param {VhfNavaid} facility The waypoint.
-   */
-  public static getRadialMagVar(facility) {
-    if (facility.subSectionCode === 0 /* VhfNavaid */) {
-      if (facility.stationDeclination !== undefined) {
-        return facility.stationDeclination;
-      }
-    }
-
-    return Facilities.getMagVar(facility.location.lat, facility.location.long);
   }
 
   public static meterToFeet(meterValue: number): number {

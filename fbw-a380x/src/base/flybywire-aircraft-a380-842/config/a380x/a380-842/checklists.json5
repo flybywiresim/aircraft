@@ -223,27 +223,27 @@
     },
     {
       // departureChangeChecklistA380X =================================================",
-      "name": "<<DEPARTURE CHANGE>>",
+      "name": "<< DEPARTURE CHANGE >>",
       "flightphase": 2,
       "items": [
         {
           "item": "RWY & SID",
-          "result": "___",
+          "result": "RWY __, ____",
         },
         {
           "item": "FLAPS SETTING",
-          "action": "CONF ___ (BOTH)",
-          "result": "CONF ___",
+          "action": "CONF ____ (BOTH)",
+          "result": "CONF ____",
         },
         {
           "item": "T.O SPEEDS & THRUST",
-          "action": "CHECK (BOTH)",
-          "result": "CHECKED"
+          "action": "V1 __, VR __, V2 __, FLEX __/TOGA (BOTH)",
+          "result": "V1 __, VR __, V2 __, FLEX __/TOGA",
         },
         {
           "item": "FCU ALT",
-          "action": "___",
-          "result": "SET"
+          "action": "____",
+          "result": "____ SET"
         }
       ]
     },

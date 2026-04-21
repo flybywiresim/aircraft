@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "文字サイズを大きくする",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "文字サイズを小さくする"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "SimBriefのデータはまだインポートされていません。"
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "逆噴射の使用",
       "Runway": "Runway",
+      "RunwayAltitude": "滑走路の標高",
+      "RunwayAltitudeUnit": "ft(海抜高度)",
       "RunwayCondition": "滑走路の状態",
       "RunwayConditions": {
         "Dry": "乾燥(6)",
@@ -333,7 +338,11 @@
       "Title": "着陸",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "重量",
       "Wind": "Wind",
+      "WindDirection": "風向",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "風速",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "同期",
@@ -377,6 +386,8 @@
       "Packs": "空調",
       "Qnh": "QNH",
       "Runway": "滑走路",
+      "RunwayBearing": "滑走路の方位",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "滑走路の状態",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "乾いた雪 - 100 mm/4\"",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBriefユーザーIDの上書き",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBriefのユーザー名、またはパイロットIDが正しく入力されているか確認してください。",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "連携されたNavigraphアカウントの代わりに使用するSimBriefユーザー ID"
       },

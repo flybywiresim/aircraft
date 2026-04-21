@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,6 +8,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { MagVar } from '@flybywiresim/fbw-sdk';
 
 export class CDUFixInfoPage {
   static ShowPage(mcdu: LegacyFmsPageInterface, page: 1 | 2 | 3 | 4 = 1) {
@@ -111,7 +113,7 @@ export class CDUFixInfoPage {
                 }
                 fixInfo.radials[i] = {
                   magneticBearing: degrees,
-                  trueBearing: A32NX_Util.magneticToTrue(degrees, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                  trueBearing: MagVar.magneticToTrue(degrees, MagVar.getForFix(fixInfo.fix) ?? 0),
                 };
                 return fixInfo;
               });

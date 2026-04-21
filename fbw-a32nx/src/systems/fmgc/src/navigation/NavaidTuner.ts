@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -291,7 +292,7 @@ export class NavaidTuner {
     // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
     // FIXME use the framework manager when the framework is updated
     Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
-    NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.call('INTERCEPT_KEY_EVENT', key, 1));
+    NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.trigger('INTERCEPT_KEY_EVENT', key, 1));
 
     for (const backbeam of this.backbeamOutput) {
       backbeam.selected.sub((v) => SimVar.SetSimVarValue(backbeam.localVar, SimVarValueType.Bool, v), true);

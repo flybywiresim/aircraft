@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -5,19 +6,16 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
+
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Airway, Fix } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
-// FIXME rogue import from EFB
-import {
-  ISimbriefData,
-  simbriefDataParser,
-} from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -114,9 +112,15 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
+  private static logTroubleshootingError(fms: FmsDisplayInterface, msg: any) {
+    fms.logTroubleshootingError(String(msg));
+    console.warn(msg);
+  }
+
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService<P>,
+    intoPlan: number,
     ofp: ISimbriefData,
     options: SimBriefUplinkOptions,
   ) {
@@ -126,13 +130,24 @@ export class SimBriefUplinkAdapter {
 
     fms.onUplinkInProgress();
 
-    await flightPlanService.newCityPair(route.from.ident, route.to.ident, undefined, FlightPlanIndex.Uplink);
+    try {
+      await flightPlanService.newCityPair(route.from.ident, route.to.ident, undefined, FlightPlanIndex.Uplink);
+    } catch (e) {
+      SimBriefUplinkAdapter.logTroubleshootingError(
+        fms,
+        `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set city pair: ${e}`,
+      );
+      throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set city pair: ${e}`);
+    }
 
     // Set alternate  airport separately, so the active flight plan uplink still works even if the alternate fails
     try {
       await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
     } catch (e) {
-      console.error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set alternate: ${e}`);
+      SimBriefUplinkAdapter.logTroubleshootingError(
+        fms,
+        `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set alternate: ${e}`,
+      );
     }
 
     if (doUplinkProcedures) {
@@ -152,9 +167,6 @@ export class SimBriefUplinkAdapter {
       cruiseFlightLevel: ofp.cruiseAltitude / 100,
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
-
-    // used by FlightPhaseManager
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
 
     plan.setFlightNumber(route.callsign);
 
@@ -180,9 +192,9 @@ export class SimBriefUplinkAdapter {
 
     setInsertHeadToEndOfEnroute();
 
-    const ensureAirwaysFinalized = () => {
+    const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.finaliseAirwayEntry(FlightPlanIndex.Uplink);
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -284,7 +296,8 @@ export class SimBriefUplinkAdapter {
               );
               insertHead++;
             } else {
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
               );
 
@@ -324,7 +337,8 @@ export class SimBriefUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            SimBriefUplinkAdapter.logTroubleshootingError(
+              fms,
               `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
 
@@ -373,9 +387,13 @@ export class SimBriefUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await flightPlanService.continueAirwayEntryViaAirway(
+                pickAirway(airways, chunk.locationHint),
+                FlightPlanIndex.Uplink,
+              );
             } else {
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
               );
               fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
@@ -399,7 +417,8 @@ export class SimBriefUplinkAdapter {
             if (!plan.pendingAirways) {
               // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
               // we add the termination fix with a disco in between
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
               );
 
@@ -423,12 +442,13 @@ export class SimBriefUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              plan.pendingAirways.thenTo(airwayFix);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, false, FlightPlanIndex.Uplink);
 
-              ensureAirwaysFinalized();
+              await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
               );
 
@@ -451,7 +471,8 @@ export class SimBriefUplinkAdapter {
               break;
             }
           } else {
-            console.warn(
+            SimBriefUplinkAdapter.logTroubleshootingError(
+              fms,
               `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
 
@@ -471,15 +492,17 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(true, intoPlan);
   }
 
-  static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
+  static async downloadOfpForUserID(username?: string, userID?: string): Promise<ISimbriefData> {
     let url = `${SIMBRIEF_API_URL}`;
     if (userID) {
       url += `&userid=${userID}`;
-    } else {
+    } else if (username) {
       url += `&username=${username}`;
+    } else {
+      throw new Error('SimBriefUplinkAdapter.downloadOfpForUserID: Either username or userID must be provided');
     }
 
     try {

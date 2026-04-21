@@ -91,7 +91,7 @@ export class NavigationDatabase {
 
   async searchAirway(ident: string, fromFix: Fix): Promise<Airway[]> {
     if (fromFix) {
-      const airways = await this.backendDatabase.getAirwaysByFix(fromFix, ident);
+      const airways = await this.backendDatabase.getAirwayByFix(fromFix, ident);
 
       return airways.filter((it) => it.ident === ident);
     }

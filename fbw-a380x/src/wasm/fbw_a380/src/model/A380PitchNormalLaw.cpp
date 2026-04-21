@@ -1082,11 +1082,11 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   real_T rtb_Gain_px;
   real_T rtb_Loaddemand2;
   real_T rtb_ManualSwitch;
-  real_T rtb_Product_d;
   real_T rtb_Product_fu;
   real_T rtb_Saturation_ix;
   real_T rtb_Sum1;
   real_T rtb_Sum1_c;
+  real_T rtb_Sum1_ly;
   real_T rtb_Sum1_mw;
   real_T rtb_Sum_ma;
   real_T rtb_Y_c;
@@ -1101,8 +1101,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   real_T rtb_eta_trim_deg_rate_limit_lo_deg_s;
   real_T rtb_eta_trim_deg_rate_limit_up_deg_s;
   real_T rtb_v_target;
-  real_T rtb_y_c;
-  real_T y;
+  real_T rtb_y_e;
   int32_T rtb_in_flare;
   boolean_T rtb_AND;
   boolean_T rtb_eta_trim_deg_should_freeze;
@@ -1182,8 +1181,11 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
       break;
 
      default:
-      if (!*rtu_In_tracking_mode_on) {
+      rtb_AND = !*rtu_In_tracking_mode_on;
+      if (rtb_AND) {
         A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_automatic;
+      } else if (rtb_AND && (A380PitchNormalLaw_B.in_flight == 0.0)) {
+        A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_manual;
       }
       break;
     }
@@ -1269,7 +1271,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
-      } else if (A380PitchNormalLaw_B.in_flight == 0.0) {
+      } else if ((A380PitchNormalLaw_B.in_flight == 0.0) && (*rtu_In_flaps_handle_index == 0.0)) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
         rtb_eta_trim_deg_rate_limit_up_deg_s = 0.25;
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.25;
@@ -1328,14 +1330,14 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   if (A380PitchNormalLaw_B.in_flight > A380PitchNormalLaw_rtP.Saturation_UpperSat_c) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation_UpperSat_c;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation_UpperSat_c;
   } else if (A380PitchNormalLaw_B.in_flight < A380PitchNormalLaw_rtP.Saturation_LowerSat_n) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation_LowerSat_n;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation_LowerSat_n;
   } else {
-    rtb_Product_d = A380PitchNormalLaw_B.in_flight;
+    rtb_Saturation_ix = A380PitchNormalLaw_B.in_flight;
   }
 
-  A380PitchNormalLaw_RateLimiter(rtb_Product_d, A380PitchNormalLaw_rtP.RateLimiterVariableTs_up,
+  A380PitchNormalLaw_RateLimiter(rtb_Saturation_ix, A380PitchNormalLaw_rtP.RateLimiterVariableTs_up,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_pa, &A380PitchNormalLaw_DWork.sf_RateLimiter);
   if (A380PitchNormalLaw_DWork.is_active_c6_A380PitchNormalLaw == 0) {
@@ -1359,14 +1361,14 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   if (rtb_in_flare > A380PitchNormalLaw_rtP.Saturation1_UpperSat) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation1_UpperSat;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation1_UpperSat;
   } else if (rtb_in_flare < A380PitchNormalLaw_rtP.Saturation1_LowerSat) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation1_LowerSat;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation1_LowerSat;
   } else {
-    rtb_Product_d = rtb_in_flare;
+    rtb_Saturation_ix = rtb_in_flare;
   }
 
-  A380PitchNormalLaw_RateLimiter(rtb_Product_d, A380PitchNormalLaw_rtP.RateLimiterVariableTs1_up,
+  A380PitchNormalLaw_RateLimiter(rtb_Saturation_ix, A380PitchNormalLaw_rtP.RateLimiterVariableTs1_up,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs1_lo, rtu_In_time_dt,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_lv,
     &A380PitchNormalLaw_DWork.sf_RateLimiter_p);
@@ -1412,11 +1414,11 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   rtb_Y_d = rtb_Cos / std::cos(A380PitchNormalLaw_rtP.Gain1_Gain_l * *rtu_In_Phi_deg);
   rtb_Y_g = A380PitchNormalLaw_rtP.Gain2_Gain * rtb_Y_k - rtb_Loaddemand2;
   if (*rtu_In_V_tas_kn > A380PitchNormalLaw_rtP.Saturation3_UpperSat) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation3_UpperSat;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation3_UpperSat;
   } else if (*rtu_In_V_tas_kn < A380PitchNormalLaw_rtP.Saturation3_LowerSat) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Saturation3_LowerSat;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Saturation3_LowerSat;
   } else {
-    rtb_Product_d = *rtu_In_V_tas_kn;
+    rtb_Saturation_ix = *rtu_In_V_tas_kn;
   }
 
   if (rtb_Y_g > A380PitchNormalLaw_rtP.Saturation1_UpperSat_i) {
@@ -1429,8 +1431,9 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   rtb_Y_m = (A380PitchNormalLaw_rtP.Gain1_Gain_e * *rtu_In_qk_deg_s * (A380PitchNormalLaw_rtP.Gain_Gain_c *
               A380PitchNormalLaw_rtP.Vm_currentms_Value) + rtb_Gain_g) - (look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNormalLaw_rtP.uDLookupTable_bp01Data, A380PitchNormalLaw_rtP.uDLookupTable_tableData, 6U) /
-    (A380PitchNormalLaw_rtP.Gain5_Gain * rtb_Product_d) + A380PitchNormalLaw_rtP.Bias_Bias) * ((rtb_Y_d + look1_binlxpw
-    (rtb_Y_g, A380PitchNormalLaw_rtP.Loaddemand1_bp01Data, A380PitchNormalLaw_rtP.Loaddemand1_tableData, 2U)) - rtb_Y_d);
+    (A380PitchNormalLaw_rtP.Gain5_Gain * rtb_Saturation_ix) + A380PitchNormalLaw_rtP.Bias_Bias) * ((rtb_Y_d +
+    look1_binlxpw(rtb_Y_g, A380PitchNormalLaw_rtP.Loaddemand1_bp01Data, A380PitchNormalLaw_rtP.Loaddemand1_tableData, 2U))
+    - rtb_Y_d);
   rtb_ManualSwitch = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain * *rtu_In_qk_deg_s;
   rtb_Gain_px = rtb_Y_m * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNormalLaw_rtP.DLUT_bp01Data,
     A380PitchNormalLaw_rtP.DLUT_tableData, 1U) * A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain;
@@ -1447,15 +1450,14 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
                A380PitchNormalLaw_rtP.Gain3_Gain + rtb_Y_m * look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNormalLaw_rtP.PLUT_bp01Data, A380PitchNormalLaw_rtP.PLUT_tableData, 1U)) + (rtb_Gain_px -
     A380PitchNormalLaw_DWork.Delay_DSTATE_n) / *rtu_In_time_dt) + A380PitchNormalLaw_rtP.Gain_Gain_l * rtb_Y_k;
-  rtb_Product_d = std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos);
-  A380PitchNormalLaw_WashoutFilter(rtb_Product_d, A380PitchNormalLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_k,
-    &A380PitchNormalLaw_DWork.sf_WashoutFilter_k);
+  A380PitchNormalLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
+    A380PitchNormalLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_k, &A380PitchNormalLaw_DWork.sf_WashoutFilter_k);
   if (rtb_Y_k > A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat) {
-    y = A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat;
+    rtb_Sum1_ly = A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat;
   } else if (rtb_Y_k < A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat) {
-    y = A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat;
+    rtb_Sum1_ly = A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat;
   } else {
-    y = rtb_Y_k;
+    rtb_Sum1_ly = rtb_Y_k;
   }
 
   rtb_Gain_e = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_Gain_i * *rtu_In_qk_deg_s;
@@ -1487,8 +1489,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
                   A380PitchNormalLaw_rtP.Gain3_Gain_m + rtb_Y_m * look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNormalLaw_rtP.PLUT_bp01Data_b, A380PitchNormalLaw_rtP.PLUT_tableData_b, 1U)) + (rtb_Gain_ep -
     A380PitchNormalLaw_DWork.Delay_DSTATE_k) / *rtu_In_time_dt) + A380PitchNormalLaw_rtP.Gain_Gain_j * rtb_Y_k;
-  A380PitchNormalLaw_WashoutFilter(rtb_Product_d, A380PitchNormalLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_k,
-    &A380PitchNormalLaw_DWork.sf_WashoutFilter_c);
+  A380PitchNormalLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
+    A380PitchNormalLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_k, &A380PitchNormalLaw_DWork.sf_WashoutFilter_c);
   if (rtb_Y_k > A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g) {
     rtb_Gain_ch = A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_g;
   } else if (rtb_Y_k < A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_j) {
@@ -1501,7 +1503,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     A380PitchNormalLaw_rtP.RateLimiterVariableTs2_lo_k, rtu_In_time_dt,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition_f, &rtb_Sum_ma,
     &A380PitchNormalLaw_DWork.sf_RateLimiter_nx);
-  rtb_y_c = (*rtu_In_alpha_max - *rtu_In_alpha_prot) * rtb_Sum_ma;
+  rtb_y_e = (*rtu_In_alpha_max - *rtu_In_alpha_prot) * rtb_Sum_ma;
   if ((!A380PitchNormalLaw_DWork.pY_not_empty) || (!A380PitchNormalLaw_DWork.pU_not_empty)) {
     A380PitchNormalLaw_DWork.pU = *rtu_In_alpha_deg;
     A380PitchNormalLaw_DWork.pU_not_empty = true;
@@ -1509,17 +1511,17 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     A380PitchNormalLaw_DWork.pY_not_empty = true;
   }
 
-  rtb_Y_k = *rtu_In_time_dt * A380PitchNormalLaw_rtP.LagFilter1_C1;
-  ca = rtb_Y_k / (rtb_Y_k + 2.0);
-  A380PitchNormalLaw_DWork.pY = (2.0 - rtb_Y_k) / (rtb_Y_k + 2.0) * A380PitchNormalLaw_DWork.pY + (*rtu_In_alpha_deg *
-    ca + A380PitchNormalLaw_DWork.pU * ca);
+  denom = *rtu_In_time_dt * A380PitchNormalLaw_rtP.LagFilter1_C1 + 2.0;
+  ca = *rtu_In_time_dt * A380PitchNormalLaw_rtP.LagFilter1_C1 / denom;
+  A380PitchNormalLaw_DWork.pY = (2.0 - *rtu_In_time_dt * A380PitchNormalLaw_rtP.LagFilter1_C1) / denom *
+    A380PitchNormalLaw_DWork.pY + (*rtu_In_alpha_deg * ca + A380PitchNormalLaw_DWork.pU * ca);
   A380PitchNormalLaw_DWork.pU = *rtu_In_alpha_deg;
   A380PitchNormalLaw_WashoutFilter(std::fmax(std::fmax(0.0, *rtu_In_Theta_deg - 22.5), std::fmax(0.0, (std::abs
     (*rtu_In_Phi_deg) - 3.0) / 6.0)), A380PitchNormalLaw_rtP.WashoutFilter_C1_b, rtu_In_time_dt, &rtb_Sum_ma,
     &A380PitchNormalLaw_DWork.sf_WashoutFilter_h);
-  rtb_Y_m = (rtb_y_c - (A380PitchNormalLaw_DWork.pY - *rtu_In_alpha_prot)) - rtb_Sum_ma;
-  rtb_y_c = A380PitchNormalLaw_rtP.Subsystem1_Gain * rtb_Y_m;
-  denom = (rtb_y_c - A380PitchNormalLaw_DWork.Delay_DSTATE_f) / *rtu_In_time_dt;
+  rtb_Y_m = (rtb_y_e - (A380PitchNormalLaw_DWork.pY - *rtu_In_alpha_prot)) - rtb_Sum_ma;
+  rtb_y_e = A380PitchNormalLaw_rtP.Subsystem1_Gain * rtb_Y_m;
+  denom = (rtb_y_e - A380PitchNormalLaw_DWork.Delay_DSTATE_f) / *rtu_In_time_dt;
   rtb_Y_g = *rtu_In_time_dt * A380PitchNormalLaw_rtP.Subsystem1_C1;
   rtb_Saturation_ix = rtb_Y_g + A380PitchNormalLaw_rtP.Constant_Value_f;
   A380PitchNormalLaw_DWork.Delay1_DSTATE = 1.0 / rtb_Saturation_ix * (A380PitchNormalLaw_rtP.Constant_Value_f - rtb_Y_g)
@@ -1657,7 +1659,6 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
               A380PitchNormalLaw_rtP.PLUT_bp01Data_f, A380PitchNormalLaw_rtP.PLUT_tableData_k, 1U)) + (rtb_Cos -
     A380PitchNormalLaw_DWork.Delay_DSTATE_jh) / *rtu_In_time_dt;
   rtb_Y_k = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_c * *rtu_In_V_tas_kn;
-  rtb_Sum_ma = A380PitchNormalLaw_DWork.Delay_DSTATE_dy;
   A380PitchNormalLaw_LagFilter((rtb_Y_k - A380PitchNormalLaw_DWork.Delay_DSTATE_dy) / *rtu_In_time_dt,
     A380PitchNormalLaw_rtP.LagFilter_C1_pt, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_LagFilter_i);
   if (rtb_Sum_ma > A380PitchNormalLaw_rtP.SaturationV_dot_UpperSat_b) {
@@ -1667,8 +1668,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   rtb_v_target = A380PitchNormalLaw_rtP.Gain_Gain_f * rtb_Sum_ma;
-  A380PitchNormalLaw_WashoutFilter(rtb_Product_d, A380PitchNormalLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Sum_ma,
-    &A380PitchNormalLaw_DWork.sf_WashoutFilter_l);
+  A380PitchNormalLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
+    A380PitchNormalLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_WashoutFilter_l);
   if (rtb_Sum_ma > A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_o) {
     rtb_Sum_ma = A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_o;
   } else if (rtb_Sum_ma < A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_jl) {
@@ -1698,7 +1699,6 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
               A380PitchNormalLaw_rtP.PLUT_bp01Data_a, A380PitchNormalLaw_rtP.PLUT_tableData_o, 1U)) + (rtb_Y_dd -
     A380PitchNormalLaw_DWork.Delay_DSTATE_gz) / *rtu_In_time_dt;
   rtb_Gain_ct = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_a * *rtu_In_V_tas_kn;
-  rtb_Sum_ma = A380PitchNormalLaw_DWork.Delay_DSTATE_lf;
   A380PitchNormalLaw_LagFilter((rtb_Gain_ct - A380PitchNormalLaw_DWork.Delay_DSTATE_lf) / *rtu_In_time_dt,
     A380PitchNormalLaw_rtP.LagFilter_C1_l, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_LagFilter_g);
   if (rtb_Sum_ma > A380PitchNormalLaw_rtP.SaturationV_dot_UpperSat_m) {
@@ -1708,8 +1708,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   rtb_Saturation_ix = A380PitchNormalLaw_rtP.Gain_Gain_k * rtb_Sum_ma;
-  A380PitchNormalLaw_WashoutFilter(rtb_Product_d, A380PitchNormalLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Sum_ma,
-    &A380PitchNormalLaw_DWork.sf_WashoutFilter_d);
+  A380PitchNormalLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
+    A380PitchNormalLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_WashoutFilter_d);
   rtb_Gain_ch = rtb_Gain_ch * look1_binlxpw(*rtu_In_H_radio_ft,
     A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_n, A380PitchNormalLaw_rtP.ScheduledGain_Table_b, 3U) +
     rtb_Sum1_mw;
@@ -1769,7 +1769,6 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
               A380PitchNormalLaw_rtP.PLUT_bp01Data_e, A380PitchNormalLaw_rtP.PLUT_tableData_g, 1U)) + (rtb_Loaddemand2 -
     A380PitchNormalLaw_DWork.Delay_DSTATE_ds) / *rtu_In_time_dt;
   rtb_Gain_g = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_Gain_p * *rtu_In_V_tas_kn;
-  rtb_Sum_ma = A380PitchNormalLaw_DWork.Delay_DSTATE_jt;
   A380PitchNormalLaw_LagFilter((rtb_Gain_g - A380PitchNormalLaw_DWork.Delay_DSTATE_jt) / *rtu_In_time_dt,
     A380PitchNormalLaw_rtP.LagFilter_C1_f, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_LagFilter);
   if (rtb_Sum_ma > A380PitchNormalLaw_rtP.SaturationV_dot_UpperSat_j2) {
@@ -1779,12 +1778,13 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   rtb_Gain_ch = A380PitchNormalLaw_rtP.Gain_Gain_l0 * rtb_Sum_ma;
-  A380PitchNormalLaw_WashoutFilter(rtb_Product_d, A380PitchNormalLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Sum_ma,
-    &A380PitchNormalLaw_DWork.sf_WashoutFilter);
+  A380PitchNormalLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
+    A380PitchNormalLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Sum_ma, &A380PitchNormalLaw_DWork.sf_WashoutFilter);
   rtb_Saturation_ix = look1_binlxpw(*rtu_In_H_radio_ft, A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
     A380PitchNormalLaw_rtP.ScheduledGain_Table_e, 3U);
-  rtb_Y_g = y * look1_binlxpw(*rtu_In_H_radio_ft, A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1,
-    A380PitchNormalLaw_rtP.ScheduledGain_Table, 3U) + rtb_Sum1;
+  rtb_Y_g = rtb_Sum1_ly * look1_binlxpw(*rtu_In_H_radio_ft,
+    A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1, A380PitchNormalLaw_rtP.ScheduledGain_Table, 3U) +
+    rtb_Sum1;
   if (rtb_Sum_ma > A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m) {
     rtb_Sum_ma = A380PitchNormalLaw_rtP.SaturationSpoilers_UpperSat_m;
   } else if (rtb_Sum_ma < A380PitchNormalLaw_rtP.SaturationSpoilers_LowerSat_d) {
@@ -1825,12 +1825,12 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   }
 
   if (rtb_eta_trim_deg_should_freeze == A380PitchNormalLaw_rtP.CompareToConstant_const_d) {
-    rtb_Product_d = A380PitchNormalLaw_rtP.Constant_Value_b;
+    rtb_Saturation_ix = A380PitchNormalLaw_rtP.Constant_Value_b;
   } else {
-    rtb_Product_d = A380PitchNormalLaw_DWork.Delay_DSTATE_o;
+    rtb_Saturation_ix = A380PitchNormalLaw_DWork.Delay_DSTATE_o;
   }
 
-  rtb_Sum_ma = A380PitchNormalLaw_rtP.Gain_Gain_cy * rtb_Product_d;
+  rtb_Sum_ma = A380PitchNormalLaw_rtP.Gain_Gain_cy * rtb_Saturation_ix;
   if (rtb_Sum_ma > rtb_eta_trim_deg_rate_limit_up_deg_s) {
     *rty_Out_eta_trim_dot_deg_s = rtb_eta_trim_deg_rate_limit_up_deg_s;
   } else if (rtb_Sum_ma < rtb_eta_trim_deg_rate_limit_lo_deg_s) {
@@ -1847,8 +1847,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     rtb_Sum_ma = rtb_Y_pa;
   }
 
-  rtb_Product_d = A380PitchNormalLaw_DWork.Delay_DSTATE_o * rtb_Sum_ma;
-  rtb_Sum1 = A380PitchNormalLaw_rtP.Constant_Value_o1 - rtb_Sum_ma;
+  rtb_Sum1 = A380PitchNormalLaw_DWork.Delay_DSTATE_o * rtb_Sum_ma;
+  rtb_Sum1_ly = A380PitchNormalLaw_rtP.Constant_Value_o1 - rtb_Sum_ma;
   A380PitchNormalLaw_RateLimiter_h(rtu_In_delta_eta_pos, A380PitchNormalLaw_rtP.RateLimiterVariableTs_up_na,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs_lo_i, rtu_In_time_dt,
     A380PitchNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_m, &rtb_Y_d,
@@ -1870,7 +1870,6 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   rtb_Y_d = A380PitchNormalLaw_rtP.Gain_Gain_pt * rtb_Saturation_ix;
   rtb_eta_trim_deg_rate_limit_lo_deg_s = A380PitchNormalLaw_rtP.Gain1_Gain_d * rtb_Saturation_ix *
     A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_Gain_g;
-  rtb_Saturation_ix = A380PitchNormalLaw_DWork.Delay_DSTATE_e4;
   A380PitchNormalLaw_LagFilter(*rtu_In_qk_deg_s + A380PitchNormalLaw_rtP.Gain5_Gain_h * *rtu_In_qk_dot_deg_s2,
     A380PitchNormalLaw_rtP.LagFilter_C1_k, rtu_In_time_dt, &rtb_Saturation_ix, &A380PitchNormalLaw_DWork.sf_LagFilter_f);
   rtb_Sum_ma = (((((rtb_eta_trim_deg_rate_limit_lo_deg_s - A380PitchNormalLaw_DWork.Delay_DSTATE_e4) / *rtu_In_time_dt +
@@ -1937,8 +1936,8 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     rtb_Y_g = A380PitchNormalLaw_rtP.Saturation_LowerSat_kf;
   }
 
-  rtb_Y_g = (A380PitchNormalLaw_rtP.Gain_Gain_m * rtb_Y_m + rtb_Y_g) * rtb_Sum_ma + (rtb_Sum1 * rtb_Gain + rtb_Product_d)
-    * (A380PitchNormalLaw_rtP.Constant_Value_fw - rtb_Sum_ma);
+  rtb_Y_g = (A380PitchNormalLaw_rtP.Gain_Gain_m * rtb_Y_m + rtb_Y_g) * rtb_Sum_ma + (rtb_Sum1_ly * rtb_Gain + rtb_Sum1) *
+    (A380PitchNormalLaw_rtP.Constant_Value_fw - rtb_Sum_ma);
   if (rtb_Y_g > A380PitchNormalLaw_rtP.Saturation_UpperSat_kp) {
     rtb_Y_g = A380PitchNormalLaw_rtP.Saturation_UpperSat_kp;
   } else if (rtb_Y_g < A380PitchNormalLaw_rtP.Saturation_LowerSat_a4) {
@@ -1954,7 +1953,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   A380PitchNormalLaw_DWork.Delay_DSTATE_l = rtb_Gain_e;
   A380PitchNormalLaw_DWork.Delay_DSTATE_k = rtb_Gain_ep;
   A380PitchNormalLaw_DWork.Delay_DSTATE_d = rtb_Gain_a;
-  A380PitchNormalLaw_DWork.Delay_DSTATE_f = rtb_y_c;
+  A380PitchNormalLaw_DWork.Delay_DSTATE_f = rtb_y_e;
   A380PitchNormalLaw_DWork.Delay_DSTATE_g = denom;
   A380PitchNormalLaw_DWork.Delay_DSTATE_j = ca;
   A380PitchNormalLaw_DWork.Delay_DSTATE_ca = rtb_Divide_nq;

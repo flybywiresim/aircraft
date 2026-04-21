@@ -95,12 +95,7 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('STATUS & SWITCHING')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('STATUS & SWITCHING')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">
@@ -246,7 +241,12 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

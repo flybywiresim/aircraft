@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ClientState, SimBridgeClientState } from './components/ClientState';
 import { CompanyRoute } from './components/Coroute';
 import { Viewer } from './components/Viewer';

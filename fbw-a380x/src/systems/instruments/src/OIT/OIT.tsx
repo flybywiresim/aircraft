@@ -3,34 +3,38 @@
 
 import {
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
-  MappedSubject,
-  SimVarValueType,
-  Subject,
+  MappedSubscribable,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { InternalKbdKeyEvent } from './OitSimvarPublisher';
-import { OitUiService, OitUriInformation } from './OitUiService';
-import { OitNotFound } from './Pages/OitNotFound';
-import { pageForUrl } from './OitPageDirectory';
-import { OitHeader } from './OitHeader';
-import { OitFooter } from './OitFooter';
-import { getDisplayIndex, OitDisplayUnit, OitDisplayUnitID } from './OitDisplayUnit';
+import { OitDisplayUnit, OitDisplayUnitID } from './OitDisplayUnit';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OisLaptop } from './OisLaptop';
-import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { OitFltOpsContainer } from './OitFltOpsContainer';
+import { OitUiService } from './OitUiService';
+import { OitAvncsContainer } from './OitAvncsContainer';
+import { OitSimvars } from './OitSimvarPublisher';
+import { AnsuOps } from './System/AnsuOps';
 
-export interface AbstractOitPageProps extends ComponentProps {
+export interface AbstractOitFltOpsPageProps extends ComponentProps {
   bus: EventBus;
-  oit: OIT;
+  uiService: OitUiService;
+  container: OitFltOpsContainer;
 }
 
-export type OisOperationMode = 'nss' | 'flt-ops';
+export interface AbstractOitAvncsPageProps extends ComponentProps {
+  bus: EventBus;
+  uiService: OitUiService;
+  container: OitAvncsContainer;
+}
+
+export type OisDomain = 'nss-avncs' | 'flt-ops';
 
 export interface OitProps {
   readonly bus: EventBus;
@@ -38,92 +42,30 @@ export interface OitProps {
   readonly captOrFo: 'CAPT' | 'FO';
   readonly failuresConsumer: FailuresConsumer;
   readonly laptop: OisLaptop;
+  readonly avncsAnsu: AnsuOps;
 }
 
 export class OIT extends DisplayComponent<OitProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
+  private readonly sub = this.props.bus.getSubscriber<OitSimvars>();
 
-  get uiService() {
-    return this.#uiService;
-  }
+  /** True: NSS AVNCS, False: FLT OPS */
+  private readonly oisDomainSwitch = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'oisDomainSwitchCapt' : 'oisDomainSwitchFo'),
+    false,
+  );
 
-  get laptop() {
-    return this.props.laptop;
-  }
-
-  get laptopData() {
-    return this.props.laptop.data;
-  }
-
-  public readonly operationMode = Subject.create<OisOperationMode>('flt-ops');
-
-  public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
-
-  public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
-
-  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
+  public readonly avncsOrFltOps: MappedSubscribable<OisDomain> = this.oisDomainSwitch.map((domainSwitch) =>
+    domainSwitch ? 'nss-avncs' : 'flt-ops',
+  );
 
   private readonly displayUnitRef = FSComponent.createRef<OitDisplayUnit>();
-
-  private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
-
-  private activePage: VNode = (<OitNotFound bus={this.props.bus} oit={this} />);
-
-  private readonly showChartsSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`;
-  private readonly showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(
-      this.uiService.activeUri.sub((uri) => {
-        this.activeUriChanged(uri);
-      }),
-      MappedSubject.create(
-        ([uri, displayFailed, displayPowered, operationMode]) => {
-          // Activate EFB overlay if on charts or flt-folder page
-          SimVar.SetSimVarValue(
-            this.showChartsSimvar,
-            SimVarValueType.Bool,
-            uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-          );
-          SimVar.SetSimVarValue(
-            this.showOfpSimvar,
-            SimVarValueType.Bool,
-            uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-          );
-        },
-        this.uiService.activeUri,
-        this.displayUnitRef.instance.failed,
-        this.displayUnitRef.instance.powered,
-        this.operationMode,
-      ),
-    );
-
-    this.uiService.navigateTo('flt-ops/sts');
-  }
-
-  private activeUriChanged(uri: OitUriInformation) {
-    // Remove and destroy old OIT page
-    if (this.activePageRef.getOrDefault()) {
-      while (this.activePageRef.instance.firstChild) {
-        this.activePageRef.instance.removeChild(this.activePageRef.instance.firstChild);
-      }
-    }
-    if (this.activePage && this.activePage.instance instanceof DisplayComponent) {
-      this.activePage.instance.destroy();
-    }
-
-    // Mapping from URL to page component
-    if (uri.page) {
-      this.activePage = pageForUrl(`${uri.sys}/${uri.page}`, this.props.bus, this);
-    } else {
-      this.activePage = pageForUrl(`${uri.sys}`, this.props.bus, this);
-    }
-
-    FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());
+    this.subscriptions.push(this.oisDomainSwitch, this.avncsOrFltOps);
   }
 
   destroy(): void {
@@ -141,13 +83,22 @@ export class OIT extends DisplayComponent<OitProps> {
         bus={this.props.bus}
         displayUnitId={this.props.captOrFo === 'CAPT' ? OitDisplayUnitID.CaptOit : OitDisplayUnitID.FoOit}
         failuresConsumer={this.props.failuresConsumer}
-        nssOrFltOps={this.operationMode}
+        avncsOrFltOps={this.avncsOrFltOps}
       >
-        <div ref={this.topRef} class="oit-main">
-          <OitHeader uiService={this.uiService} oit={this} />
-          <div ref={this.activePageRef} class="mfd-navigator-container" />
-          <OitFooter uiService={this.uiService} oit={this} />
-        </div>
+        <OitFltOpsContainer
+          bus={this.props.bus}
+          laptop={this.props.laptop}
+          displayUnitRef={this.displayUnitRef}
+          captOrFo={this.props.captOrFo}
+          avncsOrFltOps={this.avncsOrFltOps}
+        />
+        <OitAvncsContainer
+          bus={this.props.bus}
+          ansu={this.props.avncsAnsu}
+          displayUnitRef={this.displayUnitRef}
+          captOrFo={this.props.captOrFo}
+          avncsOrFltOps={this.avncsOrFltOps}
+        />
       </OitDisplayUnit>
     );
   }

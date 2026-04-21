@@ -10,7 +10,7 @@ use crate::{
     shared::arinc825::{from_arinc825, to_arinc825, Arinc825Word},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
@@ -62,13 +62,14 @@ impl VariableIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
 pub enum StartState {
     Hangar,
     Apron,
     Taxi,
     Runway,
     Climb,
+    #[default]
     Cruise,
     Approach,
     Final,
@@ -103,12 +104,6 @@ impl From<StartState> for f64 {
             StartState::Approach => 7.,
             StartState::Final => 8.,
         }
-    }
-}
-
-impl Default for StartState {
-    fn default() -> Self {
-        Self::Cruise
     }
 }
 
@@ -855,8 +850,8 @@ mod tests {
 
     mod start_state {
         use super::*;
-        use fxhash::FxHashMap;
         use ntest::assert_about_eq;
+        use rustc_hash::FxHashMap;
 
         #[rstest]
         #[case(1., StartState::Hangar)]

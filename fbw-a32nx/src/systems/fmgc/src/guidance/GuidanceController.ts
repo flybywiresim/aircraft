@@ -1,8 +1,17 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import {
+  EfisSide,
+  EfisNdMode,
+  ApproachUtils,
+  SimVarString,
+  ApproachType,
+  LegType,
+  MagVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -22,8 +31,6 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -34,14 +41,14 @@ import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { A32NX_Util } from '../../../shared/src/A32NX_Util';
+import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 
 export interface Fmgc {
   getZeroFuelWeight(): number;
-  getFOB(): number;
+  getFOB(forPlan: FlightPlanIndex): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
@@ -50,7 +57,6 @@ export interface Fmgc {
   getAccelerationAltitude(): Feet;
   getThrustReductionAltitude(): Feet;
   getOriginTransitionAltitude(): Feet | undefined;
-  getCruiseAltitude(): Feet;
   getFlightPhase(): FmgcFlightPhase;
   getManagedCruiseSpeed(): Knots;
   getManagedCruiseSpeedMach(): Mach;
@@ -66,13 +72,12 @@ export interface Fmgc {
   getSlatRetractionSpeed(): Knots;
   getCleanSpeed(): Knots;
   getTripWind(): number;
-  getWinds(): FmcWinds;
-  getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
-  getDestEFOB(useFob: boolean): number; // Metric tons
+  getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
+  getPerformanceFactorPercent(): number | null;
 }
 
 export class GuidanceController {
@@ -94,8 +99,8 @@ export class GuidanceController {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Temporary);
   }
 
-  get secondaryGeometry(): Geometry | null {
-    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+  secondaryGeometry(secIndex: number = 1): Geometry | null {
+    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1);
   }
 
   hasGeometryForFlightPlan(index: number, alternate = false) {
@@ -122,7 +127,7 @@ export class GuidanceController {
 
   activeTransIndex: number;
 
-  activeLegDtg: NauticalMiles;
+  activeLegDtg?: NauticalMiles;
 
   /** Used for lateral guidance */
   activeLegCompleteLegPathDtg: NauticalMiles;
@@ -130,17 +135,10 @@ export class GuidanceController {
   displayActiveLegCompleteLegPathDtg: NauticalMiles;
 
   /**
-   * Used for display in the MCDU and vertical guidance.
-   * This is distinctly different from {@link activeLegCompleteLegPathDtg}. For example, path capture transitions use dtg = 1 for lateral guidance,
-   * but vertical guidance and predictions need an accurate distance.
+   * Along track distance to destination in nautical miles per flight plan.
+   * May be undefined if it could not be computed for some reason.
    */
-  activeLegAlongTrackCompletePathDtg: NauticalMiles;
-
-  /**
-   * Along track distance to destination in nautical miles.
-   * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA
-   */
-  alongTrackDistanceToDestination?: number;
+  private alongTrackDistancesToDestination: Map<FlightPlanIndex, number> = new Map();
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -161,8 +159,6 @@ export class GuidanceController {
   verticalProfileComputationParametersObserver: VerticalProfileComputationParametersObserver;
 
   viewListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
-
-  private windProfileFactory: WindProfileFactory;
 
   public atmosphericConditions: AtmosphericConditions;
 
@@ -232,7 +228,7 @@ export class GuidanceController {
     } else {
       const runway = this.flightPlanService.active.destinationRunway;
       if (runway) {
-        const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+        const distanceToDestination = this.getAlongTrackDistanceToDestination() ?? -1;
 
         if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
           const appr = this.flightPlanService.active.approach;
@@ -274,8 +270,11 @@ export class GuidanceController {
           : activeLeg.getPathEndPoint();
       const ppos = this.lnavDriver.ppos;
       const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
+      const magVar = MagVar.get(ppos);
       const efisBearing = termination
-        ? A32NX_Util.trueToMagnetic(efisTrueBearing, Facilities.getMagVar(ppos.lat, ppos.long))
+        ? magVar !== null
+          ? MagVar.trueToMagnetic(efisTrueBearing, magVar)
+          : efisTrueBearing
         : -1;
 
       // Don't compute distance and ETA for XM legs
@@ -310,23 +309,28 @@ export class GuidanceController {
       fmgc,
       flightPlanService,
     );
-    this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
     this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
     this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
+      bus,
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,
       this.atmosphericConditions,
-      this.windProfileFactory,
       this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
     this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
+    this.bus
+      .getSubscriber<FlightPlanOperationEvents>()
+      .on('fms_set_hold_immediate_exit')
+      .handle((immExit) => {
+        this.holdImmediateExit(immExit.index, immExit.exit);
+      });
   }
 
   init() {
@@ -355,22 +359,7 @@ export class GuidanceController {
     Coherent.on(
       'A32NX_IMM_EXIT',
       (fpIndex, immExit) => {
-        const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
-        const geometryLeg = this.activeGeometry.legs.get(fpIndex);
-
-        const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
-
-        if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
-          fpLeg.holdImmExit = immExit;
-
-          this.flightPlanService.active.incrementVersion();
-        }
-
-        if (geometryLeg instanceof HMLeg) {
-          geometryLeg.setImmediateExit(immExit, this.lnavDriver.ppos, tas);
-
-          this.automaticSequencing = true;
-        }
+        this.holdImmediateExit(fpIndex, immExit);
       },
       undefined,
     );
@@ -390,7 +379,6 @@ export class GuidanceController {
 
     try {
       this.verticalProfileComputationParametersObserver.update();
-      this.windProfileFactory.updateFmgcInputs();
       this.atmosphericConditions.update();
     } catch (e) {
       console.error('[FMS] Error during update of VNAV input parameters. See exception below.');
@@ -401,8 +389,11 @@ export class GuidanceController {
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true);
+
+      for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false);
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true);
+      }
 
       if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
         this.geometryRecomputationTimer = 0;
@@ -410,8 +401,11 @@ export class GuidanceController {
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true, true);
+
+        for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false, true);
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true, true);
+        }
 
         if (this.activeGeometry) {
           try {
@@ -531,14 +525,15 @@ export class GuidanceController {
       gs,
       this.lnavDriver.ppos,
       trueTrack,
+      plan,
       plan.activeLegIndex,
       plan.activeLegIndex, // TODO active transition index for temporary plan...?
     );
 
     // Update distance to destination
-    geometry.updateDistances(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
+    geometry.updateCalculatedData(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
     // Update distances in missed approach segment
-    geometry.updateDistances(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
+    geometry.updateCalculatedData(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
   }
 
   /**
@@ -583,5 +578,32 @@ export class GuidanceController {
 
   get lastCrosstrackError(): NauticalMiles {
     return this.lnavDriver.lastXTE;
+  }
+
+  setAlongTrackDistanceToDestination(distance: number, forPlan = FlightPlanIndex.Active) {
+    this.alongTrackDistancesToDestination.set(forPlan, distance);
+  }
+
+  getAlongTrackDistanceToDestination(forPlan = FlightPlanIndex.Active) {
+    return this.alongTrackDistancesToDestination.get(forPlan);
+  }
+
+  private holdImmediateExit(fpIndex: FlightPlanIndex, immExit: boolean) {
+    const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
+    const geometryLeg = this.activeGeometry.legs.get(fpIndex);
+
+    const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+
+    if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
+      fpLeg.holdImmExit = immExit;
+
+      this.flightPlanService.active.incrementVersion();
+    }
+
+    if (geometryLeg instanceof HMLeg) {
+      geometryLeg.setImmediateExit(immExit, this.lnavDriver.ppos, tas);
+
+      this.automaticSequencing = true;
+    }
   }
 }
