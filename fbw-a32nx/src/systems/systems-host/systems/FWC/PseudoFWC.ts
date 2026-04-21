@@ -4513,10 +4513,8 @@ export class PseudoFWC {
 
     const hasRightSideSecondaryFailure = orderedFailureArrayRight.some((code) => isEwdSecondaryFailureCode(code));
 
-    if (ewdLeftLayout.overflow || hasRightSideSecondaryFailure) {
-      const overflowGroupTitleCodes = ewdLeftLayout.overflow
-        ? ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group))
-        : [];
+    if (ewdLeftLayout.hiddenItemTitleGroups.length > 0 || hasRightSideSecondaryFailure) {
+      const overflowGroupTitleCodes = ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group));
       const rightSideLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight];
       const rightSideSpecialLines: string[] = [];
       const rightSideSecondaryFailures: string[] = [];
@@ -4533,15 +4531,11 @@ export class PseudoFWC {
       rightSideSpecialLines.sort(compareEwdMessageCodes);
       rightSideSecondaryFailures.sort(compareEwdMessageCodes);
 
-      if (overflowGroupTitleCodes.length > 0 || rightSideSecondaryFailures.length > 0) {
-        orderedMemoArrayRight = [
-          ...rightSideSpecialLines,
-          ...overflowGroupTitleCodes,
-          ...rightSideSecondaryFailures,
-        ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
-      } else if (orderedFailureArrayRight.length > 0) {
-        orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
-      }
+      orderedMemoArrayRight = [
+        ...rightSideSpecialLines,
+        ...overflowGroupTitleCodes,
+        ...rightSideSecondaryFailures,
+      ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
     } else if (orderedFailureArrayRight.length > 0) {
       orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
     }
