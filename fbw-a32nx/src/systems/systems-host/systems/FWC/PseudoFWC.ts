@@ -1549,8 +1549,6 @@ export class PseudoFWC {
 
   /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
-  public minimumEmitted = false;
-  public hundredAboveEmitted = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -1764,17 +1762,25 @@ export class PseudoFWC {
 
     this.autoCallouts.hundredAboveAudio.sub((v) => {
       if (!v) {
-        this.hundredAboveEmitted = false;
+        this.soundManager.hundredAboveEmitted = false;
       }
       this.soundManager.handleSoundCondition('hundred_above', v);
     });
 
     this.autoCallouts.minimumAudio.sub((v) => {
       if (!v) {
-        this.minimumEmitted = false;
+        this.soundManager.minimumEmitted = false;
       }
       this.soundManager.handleSoundCondition('minimums', v);
     });
+  }
+
+  public getMinimumEmitted() {
+    return this.soundManager.minimumEmitted;
+  }
+
+  public getHundredAboveEmitted() {
+    return this.soundManager.hundredAboveEmitted;
   }
 
   private registerKeyEvents() {

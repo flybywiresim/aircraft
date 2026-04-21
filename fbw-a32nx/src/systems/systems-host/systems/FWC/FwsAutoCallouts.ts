@@ -296,14 +296,12 @@ export class FwsAutoCallouts {
 
   private computeMinimumsCallouts(deltaTime: number, height: number | null) {
     // 100 ABV
+    const hundredAboveEmitted = this.fws.getHundredAboveEmitted();
     // MDA
     const hundredAboveDmc =
       this.dmcLDiscreteWord270.bitValueOr(20, false) || this.dmcRDiscreteWord270.bitValueOr(20, false);
     const hundredAboveDmcMtrig = this.hundredAboveMdaMtrig.write(hundredAboveDmc, deltaTime);
-    const hundredAboveMdaMemory = this.hundredAboveMdaMemoryNode.write(
-      this.fws.hundredAboveEmitted,
-      !hundredAboveDmcMtrig,
-    );
+    const hundredAboveMdaMemory = this.hundredAboveMdaMemoryNode.write(hundredAboveEmitted, !hundredAboveDmcMtrig);
     const hundredAboveMda = !this.mdaInhibit && !hundredAboveMdaMemory && hundredAboveDmcMtrig;
     // DH
     const dhValue = this.dmcDhToUse.valueOr(0);
@@ -314,18 +312,16 @@ export class FwsAutoCallouts {
       (dhLessThan90Feet && dhAndRaFirstComparison) || (!dhLessThan90Feet && dhAndRaSecondComparison);
     const dhHundredAboveDhConf = this.hundredAboveDhConfNode.write(dhHundredAbovePreRequisite, deltaTime);
     const hundredAboveDhMtrig = this.hundredAboveDhMtrig.write(dhHundredAboveDhConf, deltaTime);
-    const hundredAboveDhMemory = this.hundredAboveDhMemoryNode.write(
-      this.fws.hundredAboveEmitted,
-      !hundredAboveDhMtrig,
-    );
+    const hundredAboveDhMemory = this.hundredAboveDhMemoryNode.write(hundredAboveEmitted, !hundredAboveDhMtrig);
     const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.dhInhibit;
     const hundredAbove = hundredAboveMda || hundredAboveDh;
     this.hundredAboveAudio.set(hundredAbove);
     /// Minimums
+    const minimumEmitted = this.fws.getMinimumEmitted();
     // MDA
     const minimumDmc = this.dmcLDiscreteWord270.bitValueOr(21, false) || this.dmcRDiscreteWord270.bitValueOr(21, false);
     const minimumDmcMtrig = this.minimumMdaMtrigNode.write(minimumDmc, deltaTime);
-    const minimumMdaMemory = this.minimumMdaMemoryNode.write(this.fws.minimumEmitted, !minimumDmcMtrig);
+    const minimumMdaMemory = this.minimumMdaMemoryNode.write(minimumEmitted, !minimumDmcMtrig);
     const minimumMda = !this.mdaInhibit && !minimumMdaMemory && minimumDmcMtrig;
 
     // DH
@@ -335,11 +331,11 @@ export class FwsAutoCallouts {
       (dhLessThan90Feet && dhAndRaMinimumFirstComparison) || (!dhLessThan90Feet && dhAndRaMinimumSecondComparison);
     const dhMinimumConf = this.dhMinimumConfNode.write(dhMinimumPreRequisite, deltaTime);
     const dhMinimumMtrig = this.dhMinimumMtrigNode.write(dhMinimumConf, deltaTime);
-    const minimumDhMemory = this.minimumDhMemoryNode.write(this.fws.minimumEmitted, !dhMinimumMtrig);
+    const minimumDhMemory = this.minimumDhMemoryNode.write(minimumEmitted, !dhMinimumMtrig);
     const minimumDh = !minimumDhMemory && dhMinimumMtrig && !this.dhInhibit;
 
     const minimum = minimumMda || minimumDh;
-    this.minimumGenerated = this.fws.minimumEmitted || this.fws.hundredAboveEmitted || hundredAbove || minimum;
+    this.minimumGenerated = minimumEmitted || hundredAboveEmitted || hundredAbove || minimum;
     this.minimumAudio.set(minimum);
   }
 
