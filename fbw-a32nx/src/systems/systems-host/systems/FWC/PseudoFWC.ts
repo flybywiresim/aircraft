@@ -142,6 +142,17 @@ const compareEwdMessageCodes = (a: string, b: string): number =>
   EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!;
 
 const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: number): EwdLayout => {
+  if (entries.length === 0) {
+    return {
+      orderedEntries: [],
+      displayedEntries: [],
+      overflow: false,
+      visibleGroups: [],
+      visibleItemKeys: [],
+      hiddenItemTitleGroups: [],
+    };
+  }
+
   const orderedEntries = [...entries].sort((a, b) => a.codeOrder - b.codeOrder);
   const displayedEntries = orderedEntries.slice(0, displayedLineCount);
   const visibleItemEntries = displayedEntries.filter((entry) => entry.isItemTitle);
@@ -1715,6 +1726,7 @@ export class PseudoFWC {
           });
         } else {
           this.ewdFailureTiming.delete(key);
+          this.ewdProcedureLinesCleared.delete(key);
         }
       }, true);
     }
@@ -1875,9 +1887,16 @@ export class PseudoFWC {
       return [codeToReturn];
     }
 
-    return codeToReturn
-      .filter((codeIndex): codeIndex is number => codeIndex !== null)
-      .map((codeIndex) => item.codesToReturn[codeIndex]);
+    const codes: string[] = [];
+    for (let i = 0; i < codeToReturn.length; i++) {
+      const codeIndex = codeToReturn[i];
+
+      if (codeIndex !== null) {
+        codes.push(item.codesToReturn[codeIndex]);
+      }
+    }
+
+    return codes;
   }
 
   private getEwdFailureLayoutEntries(failureKey: string): EwdOrderedFailureLine[] {
@@ -1911,6 +1930,16 @@ export class PseudoFWC {
 
   private updateRecallFailuresFromDisplayedFailures(): void {
     this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+  }
+
+  private pruneInactiveFailureKeys(keys: string[]): void {
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const item = this.ewdMessageFailures[keys[i]];
+
+      if (item === undefined || !item.simVarIsActive.get()) {
+        keys.splice(i, 1);
+      }
+    }
   }
 
   private clearFailureGroup(targetGroup: string): void {
@@ -4295,14 +4324,9 @@ export class PseudoFWC {
     let activeMasterCautionFailureCount = 0;
 
     // Update failure lists in case failures have been resolved
-    for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (!value.simVarIsActive.get()) {
-        failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
-        failureKeysRight = failureKeysRight.filter((e) => e !== key);
-        recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
-        this.ewdProcedureLinesCleared.delete(key);
-      }
-    }
+    this.pruneInactiveFailureKeys(failureKeysLeft);
+    this.pruneInactiveFailureKeys(failureKeysRight);
+    this.pruneInactiveFailureKeys(recallFailureKeys);
 
     this.recallFailures.length = 0;
     this.recallFailures.push(...recallFailureKeys);
@@ -4426,7 +4450,6 @@ export class PseudoFWC {
 
     const ewdLeftLayout = buildEwdLayout(tempFailureEntriesLeft, PseudoFWC.EWD_MESSAGE_LINES);
     const failLeft = ewdLeftLayout.orderedEntries.length > 0;
-    const orderedFailureArrayLeft = ewdLeftLayout.displayedEntries.map((entry) => entry.code);
     const orderedFailureArrayRight = tempFailureArrayRight.sort(compareEwdMessageCodes);
     this.currentEwdLeftLayout = ewdLeftLayout;
     this.ewdLeftFailureActive.set(failLeft);
@@ -4442,7 +4465,7 @@ export class PseudoFWC {
     this.failuresRight.push(...failureKeysRight);
 
     if (failLeft) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
+      this.ewdMessageLinesLeft.forEach((l, i) => l.set(ewdLeftLayout.displayedEntries[i]?.code));
     }
 
     for (const [, value] of Object.entries(this.ewdMessageMemos)) {
@@ -4486,23 +4509,37 @@ export class PseudoFWC {
 
     this.masterWarning.set(this.requestMasterWarningFromFaults);
 
-    const overflowGroupTitleCodes = ewdLeftLayout.overflow
-      ? ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group))
-      : [];
-    const rightSideLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight];
-    const rightSideSpecialLines = rightSideLines
-      .filter((code) => isEwdSpecialLineCode(code))
-      .sort(compareEwdMessageCodes);
-    const rightSideSecondaryFailures = rightSideLines
-      .filter((code) => isEwdSecondaryFailureCode(code))
-      .sort(compareEwdMessageCodes);
+    const hasRightSideSecondaryFailure = orderedFailureArrayRight.some((code) => isEwdSecondaryFailureCode(code));
 
-    if (overflowGroupTitleCodes.length > 0 || rightSideSecondaryFailures.length > 0) {
-      orderedMemoArrayRight = [
-        ...rightSideSpecialLines,
-        ...overflowGroupTitleCodes,
-        ...rightSideSecondaryFailures,
-      ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
+    if (ewdLeftLayout.overflow || hasRightSideSecondaryFailure) {
+      const overflowGroupTitleCodes = ewdLeftLayout.overflow
+        ? ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group))
+        : [];
+      const rightSideLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight];
+      const rightSideSpecialLines: string[] = [];
+      const rightSideSecondaryFailures: string[] = [];
+      for (let i = 0; i < rightSideLines.length; i++) {
+        const code = rightSideLines[i];
+
+        if (isEwdSpecialLineCode(code)) {
+          rightSideSpecialLines.push(code);
+        }
+        if (isEwdSecondaryFailureCode(code)) {
+          rightSideSecondaryFailures.push(code);
+        }
+      }
+      rightSideSpecialLines.sort(compareEwdMessageCodes);
+      rightSideSecondaryFailures.sort(compareEwdMessageCodes);
+
+      if (overflowGroupTitleCodes.length > 0 || rightSideSecondaryFailures.length > 0) {
+        orderedMemoArrayRight = [
+          ...rightSideSpecialLines,
+          ...overflowGroupTitleCodes,
+          ...rightSideSecondaryFailures,
+        ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
+      } else if (orderedFailureArrayRight.length > 0) {
+        orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
+      }
     } else if (orderedFailureArrayRight.length > 0) {
       orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
     }
