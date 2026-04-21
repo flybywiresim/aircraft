@@ -138,19 +138,22 @@ const getUniqueOrderedValues = <T>(values: T[]): T[] => {
   return orderedValues;
 };
 
+const compareEwdMessageCodes = (a: string, b: string): number =>
+  EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!;
+
 const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: number): EwdLayout => {
   const orderedEntries = [...entries].sort((a, b) => a.codeOrder - b.codeOrder);
   const displayedEntries = orderedEntries.slice(0, displayedLineCount);
   const visibleGroups = getUniqueOrderedValues(
-    displayedEntries.map((entry) => entry.group).filter((group): group is string => group !== undefined),
+    displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.group!),
   );
   const visibleGroupSet = new Set(visibleGroups);
   const visibleItemKeys = displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.failureKey);
   const hiddenItemTitleGroups = getUniqueOrderedValues(
     orderedEntries
       .slice(displayedLineCount)
-      .filter((entry) => entry.isItemTitle && entry.group !== undefined && !visibleGroupSet.has(entry.group))
-      .map((entry) => entry.group as string),
+      .filter((entry) => entry.isItemTitle && !visibleGroupSet.has(entry.group!))
+      .map((entry) => entry.group!),
   );
 
   return {
@@ -1865,11 +1868,6 @@ export class PseudoFWC {
     this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 
-  mapOrder(array: string[]): string[] {
-    array.sort((a, b) => EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!);
-    return array;
-  }
-
   private getEwdMessageCodes(item: EWDMessageItem): string[] {
     const codeToReturn = item.whichCodeToReturn();
 
@@ -1890,9 +1888,7 @@ export class PseudoFWC {
     }
 
     const codes = this.getEwdMessageCodes(item);
-    const displayCodes = this.ewdProcedureLinesCleared.has(failureKey)
-      ? codes.filter((code) => getEwdMessageGroup(code) !== undefined)
-      : codes;
+    const displayCodes = this.ewdProcedureLinesCleared.has(failureKey) ? [codes[0]!] : codes;
 
     return displayCodes.map((code) => {
       const group = getEwdMessageGroup(code);
@@ -1919,9 +1915,8 @@ export class PseudoFWC {
 
   private getFailureGroup(failureKey: string): string | undefined {
     const codes = this.getEwdMessageCodes(this.ewdMessageFailures[failureKey]);
-    const titleCode = codes.find((code) => getEwdMessageGroup(code) !== undefined) ?? codes[0]!;
 
-    return getEwdMessageGroup(titleCode);
+    return getEwdMessageGroup(codes[0]!);
   }
 
   private updateRecallFailuresFromDisplayedFailures(): void {
@@ -4460,7 +4455,7 @@ export class PseudoFWC {
     const ewdLeftLayout = buildEwdLayout(tempFailureEntriesLeft, PseudoFWC.EWD_MESSAGE_LINES);
     const failLeft = ewdLeftLayout.orderedEntries.length > 0;
     const orderedFailureArrayLeft = ewdLeftLayout.displayedEntries.map((entry) => entry.code);
-    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight);
+    const orderedFailureArrayRight = tempFailureArrayRight.sort(compareEwdMessageCodes);
     this.ewdLeftFailureActive.set(failLeft);
     this.ewdLowerLeftOverflow.set(ewdLeftLayout.overflow);
 
@@ -4500,8 +4495,8 @@ export class PseudoFWC {
       topFailureKey === undefined ? EcamSysPage.NONE : this.ewdMessageFailures[topFailureKey].sysPage,
     );
 
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft);
-    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight);
+    const orderedMemoArrayLeft = tempMemoArrayLeft.sort(compareEwdMessageCodes);
+    let orderedMemoArrayRight: string[] = tempMemoArrayRight.sort(compareEwdMessageCodes);
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
@@ -4523,12 +4518,12 @@ export class PseudoFWC {
       : [];
 
     if (overflowGroupTitleCodes.length > 0) {
-      const rightSideSpecialLines = this.mapOrder(
-        [...orderedMemoArrayRight, ...orderedFailureArrayRight].filter((code) => isEwdSpecialLineCode(code)),
-      );
-      const rightSideSecondaryFailures = this.mapOrder(
-        [...orderedMemoArrayRight, ...orderedFailureArrayRight].filter((code) => isEwdSecondaryFailureCode(code)),
-      );
+      const rightSideSpecialLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight]
+        .filter((code) => isEwdSpecialLineCode(code))
+        .sort(compareEwdMessageCodes);
+      const rightSideSecondaryFailures = [...orderedMemoArrayRight, ...orderedFailureArrayRight]
+        .filter((code) => isEwdSecondaryFailureCode(code))
+        .sort(compareEwdMessageCodes);
 
       orderedMemoArrayRight = [
         ...rightSideSpecialLines,
@@ -4536,7 +4531,7 @@ export class PseudoFWC {
         ...rightSideSecondaryFailures,
       ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
     } else if (orderedFailureArrayRight.length > 0) {
-      orderedMemoArrayRight = this.mapOrder([...orderedMemoArrayRight, ...orderedFailureArrayRight]);
+      orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));

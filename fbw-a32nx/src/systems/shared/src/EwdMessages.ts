@@ -566,9 +566,9 @@ export const getEwdMessageGroup = (code: string): string | undefined => EwdMessa
 
 export const getEwdGroupTitleCode = (group: string): string => EwdGroupTitles.get(group)!.code;
 
-export const isEwdSpecialLineCode = (code: string): boolean => EwdMessages.get(code)?.specialLine === true;
+export const isEwdSpecialLineCode = (code: string): boolean => !!EwdMessages.get(code)?.specialLine;
 
-export const isEwdSecondaryFailureCode = (code: string): boolean => EwdMessages.get(code)?.secondaryFailure === true;
+export const isEwdSecondaryFailureCode = (code: string): boolean => !!EwdMessages.get(code)?.secondaryFailure;
 
 // eslint-disable-next-line no-control-regex
 const getVisibleTextWidth = (text: string) => text.replace(/\x1b[^m]*m/g, '').length;
