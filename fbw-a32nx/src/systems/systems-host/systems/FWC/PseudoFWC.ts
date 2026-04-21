@@ -144,14 +144,14 @@ const compareEwdMessageCodes = (a: string, b: string): number =>
 const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: number): EwdLayout => {
   const orderedEntries = [...entries].sort((a, b) => a.codeOrder - b.codeOrder);
   const displayedEntries = orderedEntries.slice(0, displayedLineCount);
-  const visibleGroups = getUniqueOrderedValues(
-    displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.group!),
-  );
-  const visibleItemKeys = displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.failureKey);
+  const visibleItemEntries = displayedEntries.filter((entry) => entry.isItemTitle);
+  const visibleGroups = getUniqueOrderedValues(visibleItemEntries.map((entry) => entry.group!));
+  const visibleGroupSet = new Set(visibleGroups);
+  const visibleItemKeys = visibleItemEntries.map((entry) => entry.failureKey);
   const hiddenItemTitleGroups = getUniqueOrderedValues(
     orderedEntries
       .slice(displayedLineCount)
-      .filter((entry) => entry.isItemTitle && !new Set(visibleGroups).has(entry.group!))
+      .filter((entry) => entry.isItemTitle && !visibleGroupSet.has(entry.group!))
       .map((entry) => entry.group!),
   );
 
@@ -1972,11 +1972,6 @@ export class PseudoFWC {
           this.updateRecallFailuresFromDisplayedFailures();
         }
 
-        return;
-      }
-
-      if (layout.visibleGroups.length > 1) {
-        this.clearFailureGroup(layout.visibleGroups[0]);
         return;
       }
     }
@@ -4376,14 +4371,11 @@ export class PseudoFWC {
           allFailureKeys.push(key);
         }
 
-        let newCode: string[] = [];
-        if (!recallFailureKeys.includes(key)) {
-          newCode = this.getEwdMessageCodes(value);
-        }
-        if (value.side === 'LEFT' && !recallFailureKeys.includes(key)) {
-          tempFailureEntriesLeft = tempFailureEntriesLeft.concat(this.getEwdFailureLayoutEntries(key));
-        } else if (value.side === 'RIGHT') {
-          tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
+        const isRecalled = recallFailureKeys.includes(key);
+        if (value.side === 'LEFT' && !isRecalled) {
+          tempFailureEntriesLeft.push(...this.getEwdFailureLayoutEntries(key));
+        } else if (value.side === 'RIGHT' && !isRecalled) {
+          tempFailureArrayRight.push(...this.getEwdMessageCodes(value));
         }
       }
 
