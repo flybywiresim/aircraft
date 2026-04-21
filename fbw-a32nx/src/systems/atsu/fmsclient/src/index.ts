@@ -23,6 +23,8 @@ import {
   EnvironmentData,
   FlightStateData,
   PositionReportData,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { EventBus, Instrument, InstrumentBackplane, MappedSubject } from '@microsoft/msfs-sdk';
@@ -58,6 +60,11 @@ export class FmsClient implements Instrument {
 
   private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] =
     [];
+
+  private windsResponseCallbacks: ((
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+    requestId: number,
+  ) => boolean)[] = [];
 
   private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
@@ -191,6 +198,15 @@ export class FmsClient implements Instrument {
       this.positionReportDataCallbacks.every((callback, index) => {
         if (callback(response.data, response.requestId)) {
           this.positionReportDataCallbacks.splice(index, 1);
+          return false;
+        }
+        return true;
+      });
+    });
+    this.subscriber.on('aocWindsResponse').handle((response) => {
+      this.windsResponseCallbacks.every((callback, index) => {
+        if (callback(response.data, response.requestId)) {
+          this.windsResponseCallbacks.splice(index, 1);
           return false;
         }
         return true;
@@ -334,6 +350,22 @@ export class FmsClient implements Instrument {
     });
   }
 
+  public receiveWindUplink(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      sentCallback();
+
+      this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
+        if (id === requestId) resolve(response);
+        return id === requestId;
+      });
+    });
+  }
+
   public registerMessages(messages: AtsuMessage[]): void {
     if (messages[0].Type === AtsuMessageType.CPDLC) {
       this.publisher.pub('atcRegisterCpdlcMessages', messages as CpdlcMessage[], true, false);
@@ -396,6 +428,10 @@ export class FmsClient implements Instrument {
         return id === requestId;
       });
     });
+  }
+
+  public hasActiveAtc(): boolean {
+    return this.atcStationStatus.current !== '';
   }
 
   public currentStation(): string {

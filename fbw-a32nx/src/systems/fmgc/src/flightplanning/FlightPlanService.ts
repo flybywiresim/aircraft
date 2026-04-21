@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -21,6 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -120,7 +121,24 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     active.performanceData.pipeTo(sec.performanceData, isBeforeEngineStart);
 
+    sec.flags = 0;
     sec.flags |= FlightPlanFlags.CopiedFromActive;
+  }
+
+  async secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean) {
+    // TODO copy predictions
+    // We don't copy predictions for now because we don't have the computation of predictions for the secondary flight plan
+    // To keep things consistent, we don't show predictions anywhere and we don't want to show any computed turn radii
+    this.flightPlanManager.copy(
+      FlightPlanIndex.FirstSecondary + (from - 1),
+      FlightPlanIndex.FirstSecondary + (to - 1),
+      // CopyOptions.CopyPredictions,
+    );
+
+    const fromFpln = this.secondary(from);
+    const toFpln = this.secondary(to);
+
+    fromFpln.performanceData.pipeTo(toFpln.performanceData, isBeforeEngineStart);
   }
 
   async secondaryDelete(index: number) {
@@ -157,7 +175,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const oldBlockFuel = this.active?.performanceData.blockFuel.get() ?? null;
     const oldTaxiFuel = this.active?.performanceData.taxiFuel.get() ?? null;
     const oldCostIndex = this.active?.performanceData.costIndex.get() ?? null;
-    const oldFlightNumber = this.active?.flightNumber;
+    const oldFlightNumber = this.active?.flightNumber.get() ?? null;
 
     const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
@@ -193,7 +211,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.setPerformanceData('costIndex', oldCostIndex, FlightPlanIndex.Active);
     }
 
-    if (oldFlightNumber !== undefined && this.active.flightNumber === undefined) {
+    if (oldFlightNumber !== null && this.active.flightNumber.get() === null) {
       this.setFlightNumber(oldFlightNumber, FlightPlanIndex.Active);
     }
 
@@ -251,6 +269,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       });
     }
 
+    temporaryPlan.wasModified = true;
+
     this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
     this.flightPlanManager.delete(FlightPlanIndex.Temporary);
   }
@@ -305,6 +325,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
       finalIndex = FlightPlanIndex.Temporary;
     }
+    this.flightPlanManager.get(finalIndex).wasModified = true;
 
     return finalIndex;
   }
@@ -321,13 +342,15 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     if (this.flightPlanManager.has(planIndex)) {
       this.flightPlanManager.delete(planIndex);
     }
-    this.flightPlanManager.create(planIndex);
+    this.flightPlanManager.create(planIndex, true, FlightPlanFlags.ManualCreation);
 
-    await this.flightPlanManager.get(planIndex).setOriginAirport(fromIcao);
-    await this.flightPlanManager.get(planIndex).setDestinationAirport(toIcao);
+    const plan = this.flightPlanManager.get(planIndex);
+
+    await plan.setOriginAirport(fromIcao);
+    await plan.setDestinationAirport(toIcao);
 
     if (altnIcao) {
-      await this.flightPlanManager.get(planIndex).setAlternateDestinationAirport(altnIcao);
+      await plan.setAlternateDestinationAirport(altnIcao);
     }
 
     // Support code for TELEX API, should move somewhere else
@@ -335,12 +358,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     NXDataStore.setLegacy('PLAN_DESTINATION', toIcao);
   }
 
-  async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
+  async setAlternate(altnIcao: string | undefined, planIndex = FlightPlanIndex.Active) {
     if (planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPM] Cannot set alternate on temporary flight plan');
     }
 
     const plan = this.flightPlanManager.get(planIndex);
+    plan.wasModified = true;
 
     if (altnIcao === undefined) {
       return plan.deleteAlternateFlightPlan();
@@ -728,6 +752,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -748,6 +773,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -763,6 +789,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -783,6 +810,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -803,6 +831,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -818,6 +847,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -897,5 +927,86 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   public closeBatch(uuid: string): Promise<FlightPlanBatch> {
     return this.flightPlanManager.closeBatch(uuid);
+  }
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex = FlightPlanIndex.Active) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.propagateWindsAt(atIndex, result, this.config.NUM_CRUISE_WIND_LEVELS);
+  }
+
+  addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.addCruiseWindEntry(atIndex, entry, this.config.NUM_CRUISE_WIND_LEVELS);
+  }
+
+  deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.deleteCruiseWindEntry(atIndex, altitude);
+  }
+
+  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
+  }
+
+  setClimbWindEntry(altitude: number, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
+  }
+
+  setDescentWindEntry(
+    altitude: number,
+    entry: FlightPlanWindEntry | null,
+    planIndex: number,
+    shouldUpdateTwrWind: boolean = true,
+  ): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS, shouldUpdateTwrWind);
+  }
+
+  async deleteAllClimbWindEntries() {
+    this.deleteClimbWindEntries(FlightPlanIndex.Active);
+
+    for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+      const sec = this.secondary(i);
+
+      if (sec.isActiveOrCopiedFromActive()) {
+        this.deleteClimbWindEntries(sec.index);
+      }
+    }
+  }
+
+  deleteClimbWindEntries(planIndex: number) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.deleteClimbWindEntries();
+  }
+
+  deleteDescentWindEntries(planIndex: number) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.deleteDescentWindEntries();
+  }
+
+  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setAlternateWind(entry);
+  }
+
+  insertWindUplink(planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.insertWindUplink(
+      this.config.NUM_CLIMB_WIND_LEVELS,
+      this.config.NUM_CRUISE_WIND_LEVELS,
+      this.config.NUM_DESCENT_WIND_LEVELS,
+    );
   }
 }

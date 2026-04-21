@@ -5,8 +5,10 @@ import {
   ComponentProps,
   DisplayComponent,
   FSComponent,
+  MutableSubscribable,
   Subject,
   Subscribable,
+  SubscribableUtils,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -22,7 +24,7 @@ export enum RadioButtonColor {
 interface RadioButtonGroupProps extends ComponentProps {
   values: string[];
   valuesDisabled?: Subscribable<boolean[]>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subscribable<number | null> | MutableSubscribable<number | null>;
   idPrefix: string;
   /** If this function is defined, selectedIndex is not automatically updated. This function should take care of that. */
   onModified?: (newSelectedIndex: number) => void;
@@ -43,7 +45,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   private changeEventHandler(i: number) {
     if (this.props.onModified) {
       this.props.onModified(i);
-    } else {
+    } else if (SubscribableUtils.isMutableSubscribable(this.props.selectedIndex)) {
       this.props.selectedIndex.set(i);
     }
   }

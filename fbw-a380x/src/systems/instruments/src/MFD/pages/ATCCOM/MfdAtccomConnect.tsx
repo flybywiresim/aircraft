@@ -59,7 +59,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div style="display: flex; justify-content: center">
                 <Button
                   label="NOTIFY"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="margin-right: 10px; width: 120px;"
                 />
@@ -95,7 +95,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="DISCONNECT ALL"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 20px"
                 />
@@ -103,7 +103,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="MODIFY<br /> MAX UPLINK DELAY"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 30px"
                 />
@@ -166,7 +166,12 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

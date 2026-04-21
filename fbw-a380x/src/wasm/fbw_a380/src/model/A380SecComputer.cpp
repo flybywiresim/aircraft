@@ -137,12 +137,8 @@ void A380SecComputer::A380SecComputer_MATLABFunction_e(const boolean_T rtu_u[19]
 
 void A380SecComputer::step()
 {
-  real_T rtb_xi_inboard_deg;
-  real_T rtb_xi_midboard_deg;
-  real_T rtb_xi_outboard_deg;
-  real_T rtb_xi_spoiler_deg;
-  real_T rtb_zeta_upper_deg;
-  real_T rtb_zeta_lower_deg;
+  real_T rtb_xi_deg;
+  real_T rtb_zeta_deg;
   real_T rtb_eta_deg;
   real_T rtb_eta_trim_dot_deg_s;
   real_T rtb_eta_trim_limit_lo;
@@ -151,6 +147,7 @@ void A380SecComputer::step()
   base_arinc_429 rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_mi;
   real_T ca;
   real_T denom;
+  real_T rtb_Gain1;
   real_T rtb_Switch1_k;
   real_T rtb_Switch7_e;
   real32_T rtb_Data_c2;
@@ -1102,13 +1099,13 @@ void A380SecComputer::step()
     }
 
     if (A380SecComputer_DWork.Delay_DSTATE_d) {
-      ca = A380SecComputer_P.Gain_Gain * A380SecComputer_U.in.analog_inputs.ths_pos_deg;
-      if (ca > A380SecComputer_P.Saturation_UpperSat) {
+      rtb_Gain1 = A380SecComputer_P.Gain_Gain * A380SecComputer_U.in.analog_inputs.ths_pos_deg;
+      if (rtb_Gain1 > A380SecComputer_P.Saturation_UpperSat) {
         A380SecComputer_B.logic.ths_manual_mode_c_deg_s = A380SecComputer_P.Saturation_UpperSat;
-      } else if (ca < A380SecComputer_P.Saturation_LowerSat) {
+      } else if (rtb_Gain1 < A380SecComputer_P.Saturation_LowerSat) {
         A380SecComputer_B.logic.ths_manual_mode_c_deg_s = A380SecComputer_P.Saturation_LowerSat;
       } else {
-        A380SecComputer_B.logic.ths_manual_mode_c_deg_s = ca;
+        A380SecComputer_B.logic.ths_manual_mode_c_deg_s = rtb_Gain1;
       }
     } else if (A380SecComputer_U.in.discrete_inputs.pitch_trim_down_pressed) {
       A380SecComputer_B.logic.ths_manual_mode_c_deg_s = denom;
@@ -1187,13 +1184,13 @@ void A380SecComputer::step()
       denom = A380SecComputer_U.in.analog_inputs.capt_pitch_stick_pos;
     }
 
-    ca += denom;
-    if (ca > A380SecComputer_P.Saturation_UpperSat_d) {
+    rtb_Gain1 = ca + denom;
+    if (rtb_Gain1 > A380SecComputer_P.Saturation_UpperSat_d) {
       A380SecComputer_B.logic.total_sidestick_pitch_command = A380SecComputer_P.Saturation_UpperSat_d;
-    } else if (ca < A380SecComputer_P.Saturation_LowerSat_h) {
+    } else if (rtb_Gain1 < A380SecComputer_P.Saturation_LowerSat_h) {
       A380SecComputer_B.logic.total_sidestick_pitch_command = A380SecComputer_P.Saturation_LowerSat_h;
     } else {
-      A380SecComputer_B.logic.total_sidestick_pitch_command = ca;
+      A380SecComputer_B.logic.total_sidestick_pitch_command = rtb_Gain1;
     }
 
     if (!A380SecComputer_DWork.pRightStickDisabled) {
@@ -1208,13 +1205,13 @@ void A380SecComputer::step()
       denom = A380SecComputer_U.in.analog_inputs.capt_roll_stick_pos;
     }
 
-    ca += denom;
-    if (ca > A380SecComputer_P.Saturation1_UpperSat) {
+    rtb_Gain1 = ca + denom;
+    if (rtb_Gain1 > A380SecComputer_P.Saturation1_UpperSat) {
       A380SecComputer_B.logic.total_sidestick_roll_command = A380SecComputer_P.Saturation1_UpperSat;
-    } else if (ca < A380SecComputer_P.Saturation1_LowerSat) {
+    } else if (rtb_Gain1 < A380SecComputer_P.Saturation1_LowerSat) {
       A380SecComputer_B.logic.total_sidestick_roll_command = A380SecComputer_P.Saturation1_LowerSat;
     } else {
-      A380SecComputer_B.logic.total_sidestick_roll_command = ca;
+      A380SecComputer_B.logic.total_sidestick_roll_command = rtb_Gain1;
     }
 
     A380SecComputer_B.logic.phased_lift_dumping_active = false;
@@ -1315,10 +1312,9 @@ void A380SecComputer::step()
       &A380SecComputer_B.laws.rudder_trim_command_deg, &A380SecComputer_DWork.sf_RateLimiter_bh);
     rtb_NOT_bl = (A380SecComputer_B.logic.master_prim == A380SecComputer_P.CompareToConstant_const_l);
     LawMDLOBJ1.step(&A380SecComputer_U.in.time.dt, &A380SecComputer_B.logic.total_sidestick_roll_command,
-                    &A380SecComputer_U.in.analog_inputs.rudder_pedal_pos_deg, &rtb_xi_inboard_deg, &rtb_xi_midboard_deg,
-                    &rtb_xi_outboard_deg, &rtb_xi_spoiler_deg, &rtb_zeta_upper_deg, &rtb_zeta_lower_deg);
+                    &A380SecComputer_U.in.analog_inputs.rudder_pedal_pos_deg, &rtb_xi_deg, &rtb_zeta_deg);
     if (static_cast<int32_T>(A380SecComputer_B.logic.active_lateral_law) == 1) {
-      rtb_Switch1_k = rtb_xi_inboard_deg;
+      rtb_Switch1_k = rtb_xi_deg;
     } else {
       rtb_Switch1_k = A380SecComputer_P.Constant_Value_c;
     }
@@ -1332,15 +1328,15 @@ void A380SecComputer::step()
     A380SecComputer_RateLimiter(ca, A380SecComputer_P.RateLimiterVariableTs2_up,
       A380SecComputer_P.RateLimiterVariableTs2_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_P.RateLimiterVariableTs2_InitialCondition, &rtb_Switch7_e, &A380SecComputer_DWork.sf_RateLimiter);
-    ca = A380SecComputer_P.Gain_Gain_e * rtb_Switch1_k + rtb_Switch7_e;
-    if (ca > A380SecComputer_P.Saturation2_UpperSat) {
-      ca = A380SecComputer_P.Saturation2_UpperSat;
-    } else if (ca < A380SecComputer_P.Saturation2_LowerSat) {
-      ca = A380SecComputer_P.Saturation2_LowerSat;
+    rtb_Gain1 = A380SecComputer_P.Gain_Gain_e * rtb_Switch1_k + rtb_Switch7_e;
+    if (rtb_Gain1 > A380SecComputer_P.Saturation2_UpperSat) {
+      rtb_Gain1 = A380SecComputer_P.Saturation2_UpperSat;
+    } else if (rtb_Gain1 < A380SecComputer_P.Saturation2_LowerSat) {
+      rtb_Gain1 = A380SecComputer_P.Saturation2_LowerSat;
     }
 
     rtb_AND4_e = !rtb_NOT_bl;
-    A380SecComputer_RateLimiter_e(ca, A380SecComputer_P.RateLimiterGenericVariableTs_up_l,
+    A380SecComputer_RateLimiter_e(rtb_Gain1, A380SecComputer_P.RateLimiterGenericVariableTs_up_l,
       A380SecComputer_P.RateLimiterGenericVariableTs_lo_o, A380SecComputer_U.in.time.dt,
       A380SecComputer_U.in.analog_inputs.left_aileron_1_pos_deg, ((!A380SecComputer_B.logic.left_aileron_1_engaged) ||
       rtb_AND4_e), &denom, &A380SecComputer_DWork.sf_RateLimiter_e);
@@ -1448,11 +1444,13 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.left_aileron_1_command_deg = rtb_leftAileron1Command;
     }
 
-    ca = rtb_Switch7_e + rtb_Switch1_k;
-    if (ca > A380SecComputer_P.Saturation1_UpperSat_o) {
+    rtb_Gain1 = rtb_Switch7_e + rtb_Switch1_k;
+    if (rtb_Gain1 > A380SecComputer_P.Saturation1_UpperSat_o) {
       ca = A380SecComputer_P.Saturation1_UpperSat_o;
-    } else if (ca < A380SecComputer_P.Saturation1_LowerSat_n) {
+    } else if (rtb_Gain1 < A380SecComputer_P.Saturation1_LowerSat_n) {
       ca = A380SecComputer_P.Saturation1_LowerSat_n;
+    } else {
+      ca = rtb_Gain1;
     }
 
     A380SecComputer_RateLimiter_e(ca, A380SecComputer_P.RateLimiterGenericVariableTs1_up,
@@ -1463,12 +1461,6 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.right_aileron_1_command_deg = denom;
     } else {
       A380SecComputer_B.laws.lateral_law_outputs.right_aileron_1_command_deg = rtb_rightAileron1Command;
-    }
-
-    if (static_cast<int32_T>(A380SecComputer_B.logic.active_lateral_law) == 1) {
-      rtb_Switch1_k = rtb_xi_midboard_deg;
-    } else {
-      rtb_Switch1_k = A380SecComputer_P.Constant_Value_c;
     }
 
     ca = A380SecComputer_P.Gain3_Gain * rtb_Switch1_k + rtb_Switch7_e;
@@ -1488,14 +1480,13 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.left_aileron_2_command_deg = rtb_Data_i5;
     }
 
-    ca = rtb_Switch7_e + rtb_Switch1_k;
-    if (ca > A380SecComputer_P.Saturation4_UpperSat) {
-      ca = A380SecComputer_P.Saturation4_UpperSat;
-    } else if (ca < A380SecComputer_P.Saturation4_LowerSat) {
-      ca = A380SecComputer_P.Saturation4_LowerSat;
+    if (rtb_Gain1 > A380SecComputer_P.Saturation4_UpperSat) {
+      rtb_Gain1 = A380SecComputer_P.Saturation4_UpperSat;
+    } else if (rtb_Gain1 < A380SecComputer_P.Saturation4_LowerSat) {
+      rtb_Gain1 = A380SecComputer_P.Saturation4_LowerSat;
     }
 
-    A380SecComputer_RateLimiter_e(ca, A380SecComputer_P.RateLimiterGenericVariableTs3_up,
+    A380SecComputer_RateLimiter_e(rtb_Gain1, A380SecComputer_P.RateLimiterGenericVariableTs3_up,
       A380SecComputer_P.RateLimiterGenericVariableTs3_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_U.in.analog_inputs.right_aileron_2_pos_deg, ((!A380SecComputer_B.logic.right_aileron_2_engaged) ||
       rtb_AND4_e), &denom, &A380SecComputer_DWork.sf_RateLimiter_p);
@@ -1508,12 +1499,7 @@ void A380SecComputer::step()
     A380SecComputer_RateLimiter(A380SecComputer_P.Constant6_Value, A380SecComputer_P.RateLimiterVariableTs4_up,
       A380SecComputer_P.RateLimiterVariableTs4_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_P.RateLimiterVariableTs4_InitialCondition, &rtb_Switch7_e, &A380SecComputer_DWork.sf_RateLimiter_b);
-    if (static_cast<int32_T>(A380SecComputer_B.logic.active_lateral_law) == 1) {
-      rtb_Switch1_k = rtb_xi_spoiler_deg;
-    } else {
-      rtb_Switch1_k = A380SecComputer_P.Constant_Value_c;
-    }
-
+    rtb_Gain1 = A380SecComputer_P.Gain1_Gain * rtb_Switch1_k;
     if ((!A380SecComputer_DWork.pY_not_empty_k) || A380SecComputer_P.reset_Value) {
       A380SecComputer_DWork.pY_e = A380SecComputer_P.RateLimiterGenericVariableTs25_InitialCondition;
       A380SecComputer_DWork.pY_not_empty_k = true;
@@ -1533,16 +1519,16 @@ void A380SecComputer::step()
         (A380SecComputer_P.RateLimiterGenericVariableTs25_lo) * A380SecComputer_U.in.time.dt);
     }
 
-    if (rtb_Switch1_k >= 0.0) {
-      denom = A380SecComputer_DWork.pY_e - rtb_Switch1_k;
-      rtb_Switch1_k = A380SecComputer_DWork.pY_e;
+    if (rtb_Gain1 >= 0.0) {
+      denom = A380SecComputer_DWork.pY_e - rtb_Gain1;
+      rtb_Gain1 = A380SecComputer_DWork.pY_e;
     } else {
       denom = A380SecComputer_DWork.pY_e;
-      rtb_Switch1_k += A380SecComputer_DWork.pY_e;
+      rtb_Gain1 += A380SecComputer_DWork.pY_e;
     }
 
-    ca = std::fmax(denom - (rtb_Switch1_k - std::fmax(rtb_Switch1_k, -45.0)), -45.0);
-    rtb_Switch1_k = std::fmax(rtb_Switch1_k - (denom - std::fmax(denom, -45.0)), -45.0);
+    ca = std::fmax(denom - (rtb_Gain1 - std::fmax(rtb_Gain1, -45.0)), -45.0);
+    rtb_Gain1 = std::fmax(rtb_Gain1 - (denom - std::fmax(denom, -45.0)), -45.0);
     A380SecComputer_RateLimiter_e(ca, A380SecComputer_P.RateLimiterGenericVariableTs8_up,
       A380SecComputer_P.RateLimiterGenericVariableTs8_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_U.in.analog_inputs.left_spoiler_1_pos_deg,
@@ -1562,7 +1548,7 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.left_spoiler_1_command_deg = rtb_mach_d;
     }
 
-    A380SecComputer_RateLimiter_e(rtb_Switch1_k, A380SecComputer_P.RateLimiterGenericVariableTs9_up,
+    A380SecComputer_RateLimiter_e(rtb_Gain1, A380SecComputer_P.RateLimiterGenericVariableTs9_up,
       A380SecComputer_P.RateLimiterGenericVariableTs9_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_U.in.analog_inputs.right_spoiler_1_pos_deg,
       ((!A380SecComputer_B.logic.right_spoiler_1_hydraulic_mode_engaged) || rtb_AND4_e), &denom,
@@ -1592,7 +1578,7 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.left_spoiler_2_command_deg = rtb_theta_dot;
     }
 
-    A380SecComputer_RateLimiter_e(rtb_Switch1_k, A380SecComputer_P.RateLimiterGenericVariableTs11_up,
+    A380SecComputer_RateLimiter_e(rtb_Gain1, A380SecComputer_P.RateLimiterGenericVariableTs11_up,
       A380SecComputer_P.RateLimiterGenericVariableTs11_lo, A380SecComputer_U.in.time.dt,
       A380SecComputer_U.in.analog_inputs.right_spoiler_2_pos_deg,
       ((!A380SecComputer_B.logic.right_spoiler_2_hydraulic_mode_engaged) || rtb_AND4_e), &denom,
@@ -1604,7 +1590,7 @@ void A380SecComputer::step()
     }
 
     if (static_cast<int32_T>(A380SecComputer_B.logic.active_lateral_law) == 1) {
-      ca = rtb_zeta_upper_deg;
+      ca = rtb_zeta_deg;
     } else {
       ca = A380SecComputer_P.Constant_Value_c;
     }
@@ -1627,12 +1613,6 @@ void A380SecComputer::step()
       A380SecComputer_B.laws.lateral_law_outputs.rudder_1_command_deg = denom;
     } else {
       A380SecComputer_B.laws.lateral_law_outputs.rudder_1_command_deg = rtb_Data_c2;
-    }
-
-    if (static_cast<int32_T>(A380SecComputer_B.logic.active_lateral_law) == 1) {
-      ca = rtb_zeta_lower_deg;
-    } else {
-      ca = A380SecComputer_P.Constant_Value_c;
     }
 
     A380SecComputer_RateLimiter_e(ca, A380SecComputer_P.RateLimiterGenericVariableTs7_up,
@@ -1719,9 +1699,9 @@ void A380SecComputer::step()
     }
 
     if (static_cast<int32_T>(A380SecComputer_B.logic.active_pitch_law) == 5) {
-      rtb_Switch1_k = rtb_eta_trim_limit_up;
+      denom = rtb_eta_trim_limit_up;
     } else {
-      rtb_Switch1_k = A380SecComputer_P.Constant2_Value_l;
+      denom = A380SecComputer_P.Constant2_Value_l;
     }
 
     if (A380SecComputer_B.logic.ths_automatic_mode_active) {
@@ -1737,15 +1717,15 @@ void A380SecComputer::step()
       rtb_AND4_e = !A380SecComputer_B.logic.ths_engaged;
     }
 
-    denom = A380SecComputer_P.DiscreteTimeIntegratorVariableTsLimit_Gain * ca * A380SecComputer_U.in.time.dt;
+    ca = A380SecComputer_P.DiscreteTimeIntegratorVariableTsLimit_Gain * ca * A380SecComputer_U.in.time.dt;
     A380SecComputer_DWork.icLoad_l = (rtb_AND4_e || A380SecComputer_DWork.icLoad_l);
     if (A380SecComputer_DWork.icLoad_l) {
-      A380SecComputer_DWork.Delay_DSTATE_c = A380SecComputer_U.in.analog_inputs.ths_pos_deg - denom;
+      A380SecComputer_DWork.Delay_DSTATE_c = A380SecComputer_U.in.analog_inputs.ths_pos_deg - ca;
     }
 
-    A380SecComputer_DWork.Delay_DSTATE_c += denom;
-    if (A380SecComputer_DWork.Delay_DSTATE_c > rtb_Switch1_k) {
-      A380SecComputer_DWork.Delay_DSTATE_c = rtb_Switch1_k;
+    A380SecComputer_DWork.Delay_DSTATE_c += ca;
+    if (A380SecComputer_DWork.Delay_DSTATE_c > denom) {
+      A380SecComputer_DWork.Delay_DSTATE_c = denom;
     } else {
       if (static_cast<int32_T>(A380SecComputer_B.logic.active_pitch_law) == 5) {
         denom = rtb_eta_trim_limit_lo;
@@ -2034,7 +2014,7 @@ void A380SecComputer::step()
       static_cast<real32_T>(A380SecComputer_U.in.analog_inputs.capt_pitch_stick_pos);
     A380SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.SSM = static_cast<uint32_T>
       (A380SecComputer_P.EnumeratedConstant1_Value);
-    A380SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.Data = A380SecComputer_P.Gain1_Gain *
+    A380SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.Data = A380SecComputer_P.Gain1_Gain_a *
       static_cast<real32_T>(A380SecComputer_U.in.analog_inputs.fo_pitch_stick_pos);
     A380SecComputer_Y.out.bus_outputs.left_sidestick_roll_command_deg.SSM = static_cast<uint32_T>
       (A380SecComputer_P.EnumeratedConstant1_Value);
