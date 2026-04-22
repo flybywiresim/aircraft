@@ -117,7 +117,9 @@
 1. [A380X/Fuel] Only try to equalize feedtanks when each is below transfer limit - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/MFD] Added IMMEDIATE EXIT/RESUME HOLD button to the F-PLN page - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add message grouping and order messages based on priority - @FozzieHi (fozzie)
+1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
