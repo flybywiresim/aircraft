@@ -33,7 +33,7 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
   disabled?: Subscribable<boolean>;
   /** Whether field can be cleared by user */
-  canBeCleared?: Subscribable<boolean>;
+  canBeCleared?: Subscribable<boolean> | boolean;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
   freeText?: boolean;
@@ -127,6 +127,8 @@ export class InputField<
   private readonly canOverFlow = this.props.freeText || this.props.dataEntryFormat.maxOverflowDigits !== undefined;
 
   private isOverFlow = false;
+
+  private readonly canBeCleared = SubscribableUtils.toSubscribable(this.props.canBeCleared ?? true, true);
 
   private onNewValue() {
     // Don't update if field is being edited
@@ -235,8 +237,8 @@ export class InputField<
   private onKeyDownHandler = this.onKeyDown.bind(this);
 
   private handleBackspace() {
-    if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get()) {
-      this.modifiedFieldValue.set('');
+    if (this.modifiedFieldValue.get() === null && this.canBeCleared.get()) {
+      this.modifiedFieldValue.set(''); // TODO should give "NOT ALLOWED" if we try to clear and it is empty.
     } else if (this.modifiedFieldValue.get()?.length === 0) {
       // Do nothing
     } else {
@@ -458,9 +460,6 @@ export class InputField<
     }
     if (this.props.disabled === undefined) {
       this.props.disabled = Subject.create(false);
-    }
-    if (this.props.canBeCleared === undefined) {
-      this.props.canBeCleared = Subject.create(true);
     }
     if (this.props.enteredByPilot === undefined) {
       this.props.enteredByPilot = Subject.create(true);

@@ -16,6 +16,7 @@ import {
   Subscribable,
   SubscribableUtils,
   Subscription,
+  Vec2Math,
 } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
@@ -23,6 +24,7 @@ import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -72,6 +74,16 @@ export class FmgcData {
   static fmcFormatValue(sub: Subscribable<number | null>, numberDashes = 3) {
     return sub.map((it) => (it !== null ? it.toFixed(0) : '-'.repeat(numberDashes)));
   }
+
+  public readonly draftWindsPilotEntry: WindEntry[] = Array.from(
+    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
+    () => {
+      return {
+        vector: Vec2Math.create(),
+        altitude: NaN,
+      };
+    },
+  );
 
   public readonly flightPhase = Subject.create(FmgcFlightPhase.Preflight);
 
