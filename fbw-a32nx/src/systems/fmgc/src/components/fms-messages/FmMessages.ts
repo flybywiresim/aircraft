@@ -192,4 +192,10 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'White',
     clearable: true,
   },
+  LateralDiscontinuityAhead: {
+    id: 22,
+    text: 'LAT DISCONT AHEAD',
+    color: 'Amber',
+    clearable: true,
+  },
 };

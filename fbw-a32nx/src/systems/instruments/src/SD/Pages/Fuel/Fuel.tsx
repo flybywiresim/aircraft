@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useEffect, useState } from 'react';
-import { useSimVar, useArinc429Var, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
@@ -25,13 +25,13 @@ export const FuelPage = () => {
   const [modelSelectManual] = useSimVar('L:A32NX_OVHD_FUEL_MODESEL_MANUAL', 'bool', 500);
   const [autoShutoffRequired] = useSimVar('FUELSYSTEM TRIGGER STATUS:9', 'bool', 500);
 
-  const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
 
   const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000); // Note these values are in KG
   const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
 
-  const leftFuelUsed = fuelForDisplay(leftConsumption, unit);
-  const rightFuelUsed = fuelForDisplay(rightConsumption, unit);
+  const leftFuelUsed = fuelForDisplay(leftConsumption, useMetric);
+  const rightFuelUsed = fuelForDisplay(rightConsumption, useMetric);
 
   const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
 
@@ -54,7 +54,7 @@ export const FuelPage = () => {
           {leftFuelUsed + rightFuelUsed}
         </text>
         <text className="Unit" textAnchor="middle" x={301} y={98}>
-          {unit === '1' ? 'KG' : 'LBS'}
+          {useMetric ? 'KG' : 'LBS'}
         </text>
 
         {/* Left engine */}
@@ -91,10 +91,10 @@ export const FuelPage = () => {
 
         {/* Quantities */}
         <text className="TankQuantity" x={80} y={285}>
-          {fuelInTanksForDisplay(tankLeftOuter, unit, fuelWeightPerGallon)}
+          {fuelInTanksForDisplay(tankLeftOuter, useMetric, fuelWeightPerGallon)}
         </text>
         <text className="TankQuantity" x={190} y={285}>
-          {fuelInTanksForDisplay(tankLeftInner, unit, fuelWeightPerGallon)}
+          {fuelInTanksForDisplay(tankLeftInner, useMetric, fuelWeightPerGallon)}
         </text>
 
         {leftOuterInnerValve ? <Triangle x={77} y={319} colour="Green" fill={0} orientation={90} /> : null}
@@ -139,7 +139,7 @@ export const FuelPage = () => {
 
         {/* Quantities */}
         <text className="TankQuantity" x={330} y={315}>
-          {fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}
+          {fuelInTanksForDisplay(tankCenter, useMetric, fuelWeightPerGallon)}
         </text>
       </>
 
@@ -162,10 +162,10 @@ export const FuelPage = () => {
 
         {/* Quantities */}
         <text className="TankQuantity" x={472} y={285}>
-          {fuelInTanksForDisplay(tankRightInner, unit, fuelWeightPerGallon)}
+          {fuelInTanksForDisplay(tankRightInner, useMetric, fuelWeightPerGallon)}
         </text>
         <text className="TankQuantity" x={580} y={285}>
-          {fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}
+          {fuelInTanksForDisplay(tankRightOuter, useMetric, fuelWeightPerGallon)}
         </text>
         {rightOuterInnerValve && <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} />}
 
@@ -175,10 +175,10 @@ export const FuelPage = () => {
       </>
 
       {/* F. FLOW */}
-      <FuelFlow unit={unit} />
+      <FuelFlow useMetric={useMetric} />
 
       {/* FOB */}
-      <FOB unit={unit} />
+      <FOB useMetric={useMetric} />
     </EcamPage>
   );
 };
@@ -211,10 +211,10 @@ const Apu = () => {
 };
 
 type FuelFlowProps = {
-  unit: string;
+  useMetric: boolean;
 };
 
-const FuelFlow = ({ unit }: FuelFlowProps) => {
+const FuelFlow = ({ useMetric }: FuelFlowProps) => {
   const [leftFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // KG/HR
   const [rightFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 1000);
 
@@ -232,11 +232,11 @@ const FuelFlow = ({ unit }: FuelFlowProps) => {
       </text>
 
       <text id="FuelFlowValue" x={201} y={455}>
-        {fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}
+        {fuelForDisplay(leftFuelFlow + rightFuelFlow, useMetric, 60)}
       </text>
 
       <text id="FuelFlowUnit" x={215} y={455}>
-        {unit === '1' ? 'KG' : 'LBS'}
+        {useMetric ? 'KG' : 'LBS'}
         /MIN
       </text>
     </>
@@ -244,10 +244,10 @@ const FuelFlow = ({ unit }: FuelFlowProps) => {
 };
 
 type FOBProps = {
-  unit: string;
+  useMetric: boolean;
 };
 
-const FOB = ({ unit }: FOBProps) => {
+const FOB = ({ useMetric }: FOBProps) => {
   const [fob] = useSimVar('L:A32NX_TOTAL_FUEL_QUANTITY', 'number', 1000);
 
   return (
@@ -262,11 +262,11 @@ const FOB = ({ unit }: FOBProps) => {
       </text>
 
       <text id="FobValue" x={204} y={485}>
-        {fuelForDisplay(fob, unit, 1, 2)}
+        {fuelForDisplay(fob, useMetric, 1, 2)}
       </text>
 
       <text id="FobUnit" x={215} y={487}>
-        {unit === '1' ? 'KG' : 'LBS'}
+        {useMetric ? 'KG' : 'LBS'}
       </text>
     </>
   );

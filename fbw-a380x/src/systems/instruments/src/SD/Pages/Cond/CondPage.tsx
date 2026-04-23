@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 import React from 'react';
-import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../Generic/PageTitle';
 import A380Cond from './elements/A380Cond';
 import CabinTemperatures from './elements/CabinTemperatures';
@@ -14,7 +14,7 @@ import AvionicsVentilation from './elements/AvionicsVentilation';
 import '../../../index.scss';
 
 export const CondPage = () => {
-  const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
 
   const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
   const vcsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
@@ -45,7 +45,7 @@ export const CondPage = () => {
         COND
       </PageTitle>
       <text className="F24 Cyan" x={100} y={34}>
-        {unit === '1' ? '°C' : '°F'}
+        {useMetric ? '°C' : '°F'}
       </text>
 
       <A380Cond />

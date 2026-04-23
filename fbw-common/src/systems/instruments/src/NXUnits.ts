@@ -8,21 +8,16 @@
  */
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Accessible } from '@microsoft/msfs-sdk';
 
 export class NXUnits {
-  private static metricWeightVal: boolean;
+  private static metricWeightVal: Accessible<boolean> | undefined;
 
   static get metricWeight() {
     if (NXUnits.metricWeightVal === undefined) {
-      NXDataStore.getAndSubscribeLegacy(
-        'CONFIG_USING_METRIC_UNIT',
-        (key, value) => {
-          NXUnits.metricWeightVal = value === '1';
-        },
-        '1',
-      );
+      NXUnits.metricWeightVal = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
     }
-    return NXUnits.metricWeightVal;
+    return NXUnits.metricWeightVal.get();
   }
 
   static userToKg(value) {

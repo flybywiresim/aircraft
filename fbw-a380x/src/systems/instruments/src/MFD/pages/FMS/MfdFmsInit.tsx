@@ -1,15 +1,7 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-import {
-  ArraySubject,
-  FSComponent,
-  MappedSubject,
-  MappedSubscribable,
-  Subject,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -76,24 +68,21 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fromIcao, toIcao, fpIndex]) =>
-      (fp > FmgcFlightPhase.Preflight &&
-        (fromIcao || toIcao) &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
+    ([fp, tmpy, fpIndex]) =>
+      (fp > FmgcFlightPhase.Preflight && this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
       tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
-    this.fromIcao,
-    this.toIcao,
     this.loadedFlightPlanIndex,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
 
   private readonly altnDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, tmpy]) => tmpy || !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
+    this.tmpyActive,
   );
 
   private readonly cpnyRte = Subject.create<string | null>(null); // FIXME not found
@@ -110,18 +99,22 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, ciMode, fpIndex]) =>
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([toIcao, fromIcao, flightPhase, fpIndex]) =>
       !toIcao ||
       !fromIcao ||
-      ciMode === CostIndexMode.LRC ||
       (flightPhase >= FmgcFlightPhase.Descent &&
         this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
-    this.costIndexMode,
     this.loadedFlightPlanIndex,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.costIndexMode,
   );
 
   private readonly tropopause = Subject.create<number | null>(null);
@@ -155,8 +148,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly crzTempDisabled = this.crzFl.map((it) => it === null);
 
   private readonly flightNumber = Subject.create<string | null>(null);
-
-  private pipeSubs: Subscription[] = [];
 
   /** FIXME workaround as newCity pair deletes the flightplan and we don't want to show ---- on the FROM/TO pair */
   private creationInProgress = false;
@@ -202,7 +193,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     );
 
     this.subs.push(
-      this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
       this.mandatoryAndActiveFpln,
       this.visibilityOnlyInActive,
@@ -213,9 +203,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.tripWindDisabled,
       this.cpnyRteMandatory,
       this.departureButtonDisabled,
+      this.costIndexModeDisabled,
     );
   }
-
   private invalidateDataFields() {
     if (!this.creationInProgress) {
       this.toIcao.set(null);
@@ -233,14 +223,33 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.cruiseTemperatureIsPilotEntered.set(false);
     this.costIndex.set(null);
     this.costIndexMode.set(CostIndexMode.ECON);
-    this.pipeSubs.forEach((s) => s.destroy());
-    this.pipeSubs = [];
+  }
+
+  private loadFlightPlanPerformanceData(): void {
+    const fp = this.loadedFlightPlan;
+
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    const pd = fp?.performanceData;
+
+    this.tropopause.set(pd?.tropopause.get() ?? null);
+    this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
+    this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
+    this.flightNumber.set(
+      this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
+    );
+    this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+    this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
+    this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
+    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
+    this.costIndex.set(pd?.costIndex.get() ?? null);
   }
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
+
+    this.loadFlightPlanPerformanceData();
 
     // Update internal subjects for display purposes or input fields
     if (this.loadedFlightPlan.originAirport) {
@@ -292,21 +301,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const hasfp = this.loadedFlightPlan !== null && this.props.flightPlanInterface.has(fpIndex);
     this.noFlightPlan.set(!hasfp);
     if (hasfp) {
-      this.pipeSubs.forEach((s) => s.destroy());
-      this.pipeSubs = [];
-      this.pipeSubs.push(
-        this.loadedFlightPlan!.performanceData.tropopause.pipe(this.tropopause),
-        this.loadedFlightPlan!.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
-        this.loadedFlightPlan!.performanceData.costIndexMode!.pipe(this.costIndexMode),
-        this.props.flightPlanInterface.get(fpIndex).getFlightNumber().pipe(this.flightNumber),
-        this.loadedFlightPlan!.performanceData.pilotTripWind.pipe(this.tripWind),
-        this.loadedFlightPlan!.performanceData.cruiseTemperature.pipe(this.cruiseTemperature),
-        this.loadedFlightPlan!.performanceData.isCruiseTemperaturePilotEntered.pipe(
-          this.cruiseTemperatureIsPilotEntered,
-        ),
-        this.loadedFlightPlan!.performanceData.cruiseFlightLevel.pipe(this.crzFl),
-        this.loadedFlightPlan!.performanceData.costIndex.pipe(this.costIndex),
-      );
+      this.loadFlightPlanPerformanceData();
     } else {
       this.invalidateDataFields();
     }
@@ -374,7 +369,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   public destroy(): void {
     this.flightPlanChangeNotifier.destroy();
-    this.pipeSubs.forEach((s) => s.destroy());
 
     super.destroy();
   }
@@ -399,7 +393,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 canBeCleared={Subject.create(false)}
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -436,7 +430,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.fromIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -452,7 +446,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.toIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -460,9 +454,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.altnIcao.set(v);
+                  this.altnIcao.set(v === 'NONE' ? null : v);
                   if (v) {
-                    await this.props.flightPlanInterface.setAlternate(v, this.loadedFlightPlanIndex.get());
+                    await this.props.flightPlanInterface.setAlternate(
+                      v === 'NONE' ? undefined : v,
+                      this.loadedFlightPlanIndex.get(),
+                    );
                     this.props.fmcService.master.acInterface.updateFmsData();
                   }
                 }}
@@ -470,7 +467,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 disabled={this.altnDisabled}
                 value={this.altnIcao}
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -485,12 +482,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 disabled={Subject.create(true)} // TODO
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="RTE SEL"
                 onClick={() => console.log('RTE SEL')}
                 buttonStyle="margin-right: 10px; width: 200px;"
@@ -505,7 +502,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.altnRte}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -527,8 +524,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}
-                containerStyle="margin-right: 100px;"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                class="mfd-init-crz-fl"
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -549,7 +546,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 readonlyValue={this.cruiseTemperature}
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -558,6 +555,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             <div class="mfd-fms-init-line" style="margin-top: 10px;">
               <div class="mfd-label init-input-field">MODE</div>
               <DropdownMenu
+                disabled={this.costIndexModeDisabled}
                 values={this.costIndexModeLabels}
                 selectedIndex={this.costIndexMode}
                 onModified={(v) =>
@@ -574,7 +572,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 alignLabels="center"
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
-                disabled={this.noFlightPlan}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 TROPO
@@ -593,7 +590,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 readonlyValue={this.tropopause}
                 onModified={() => {}}
                 alignText="flex-end"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -620,7 +617,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   value={this.costIndex}
                   containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -637,20 +634,20 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="WIND"
                 onClick={() => console.log('WIND')}
                 buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="CPNY WIND<br />REQUEST"
                 onClick={() => console.log('CPNY WIND REQUEST')}
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
@@ -674,7 +671,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                 />
                 <Button
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   label="RTE SUMMARY"
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/route')}
                   buttonStyle="margin-left: 50px; margin-bottom: 10px;"
@@ -706,7 +703,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 />
                 <div style="flex-grow: 1" />
                 <Button
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   label="CPNY T.O.<br />REQUEST"
                   onClick={() => console.log('CPNY T.O. REQUEST')}
                   buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { useSimVar, usePersistentProperty, useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -34,13 +34,13 @@ export const CrzPage = () => (
 );
 
 export const FuelComponent = () => {
-  const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
 
   const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
   const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
 
-  const leftFuel = fuelForDisplay(leftConsumption, unit);
-  const rightFuel = fuelForDisplay(rightConsumption, unit);
+  const leftFuel = fuelForDisplay(leftConsumption, useMetric);
+  const rightFuel = fuelForDisplay(rightConsumption, useMetric);
 
   return (
     <>
@@ -60,7 +60,7 @@ export const FuelComponent = () => {
         {leftFuel + rightFuel}
       </text>
       <text id="FuelUsedUnit" className="Standard Cyan Center" x="300" y="132">
-        {unit === '1' ? 'KG' : 'LBS'}
+        {useMetric ? 'KG' : 'LBS'}
       </text>
       <path className="WingPlaneSym" d="M230 80 l20 -2" />
       <path className="WingPlaneSym" d="M370 80 l-20 -2" />
@@ -352,12 +352,12 @@ export const PressureComponent = () => {
 };
 
 export const CondComponent = () => {
-  const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
   let [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
   let [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
   let [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
-  if (unit === '0') {
+  if (!useMetric) {
     //  converting to F if 'lbs' selected in EFB
     cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
     fwdCabinTemp = UnitType.CELSIUS.convertTo(fwdCabinTemp, UnitType.FAHRENHEIT);
@@ -390,7 +390,7 @@ export const CondComponent = () => {
         {aftCabinTemp.toFixed(0)}
       </text>
       <text className="Medium Cyan" x="310" y="455">
-        {unit === '1' ? '°C' : '°F'}
+        {useMetric ? '°C' : '°F'}
       </text>
     </>
   );

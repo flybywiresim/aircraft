@@ -28,29 +28,11 @@ export class CpnyFplnButtonUtils {
       ? MappedSubject.create(
           ([avail, uplinkInProgress]) => {
             if (uplinkInProgress) {
-              return (
-                <span>
-                  REQUEST
-                  <br />
-                  PENDING...
-                </span>
-              );
+              return 'REQUEST\nPENDING...';
             } else if (!avail) {
-              return (
-                <span>
-                  CPNY F-PLN
-                  <br />
-                  REQUEST
-                </span>
-              );
+              return 'CPNY F-PLN\nREQUEST';
             } else {
-              return (
-                <span>
-                  RECEIVED
-                  <br />
-                  CPNY F-PLN
-                </span>
-              );
+              return 'RECEIVED\nCPNY F-PLN';
             }
           },
           fmc.fmgc.data.cpnyFplnAvailable,

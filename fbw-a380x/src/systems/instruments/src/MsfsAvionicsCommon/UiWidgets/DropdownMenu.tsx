@@ -226,6 +226,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
         }
       }, true),
+      this.dropdownArrowFill,
       this.props.disabled.sub((val) => {
         if (!this.props.inactive?.get()) {
           if (val) {
@@ -237,9 +238,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           }
         }
       }, true),
-      this.dropdownArrowFill,
     );
-
     // TODO add KCCU events
   }
 
@@ -305,15 +304,16 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               value={this.inputFieldValue}
               containerStyle="border: 2px inset transparent"
               alignText={this.props.alignLabels}
-              canOverflow={this.props.freeTextAllowed}
+              freeText={this.props.freeTextAllowed}
               onModified={(text) => this.onFieldSubmit(text ?? '')}
               onInput={(text) => this.onFieldChanged(text)}
               inactive={this.props.inactive}
+              disabled={this.props.disabled}
               handleFocusBlurExternally
               tmpyActive={this.props.tmpyActive}
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
-              disabled={this.props.disabled}
+              errorHandler={() => {}}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">

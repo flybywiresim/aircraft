@@ -65,8 +65,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     return icao == null || icao == '----';
   });
 
-  private readonly messageStatusSpan = this.messageStatusLabel.map((s) => <>{s}</>);
-
   private readonly isAutoUpdateNotAllowed = MappedSubject.create(
     ([atisType, isIcaoEmpty]) => {
       return atisType === AtisType.Departure || isIcaoEmpty;
@@ -204,7 +202,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.dropdownMenuVisible,
       this.combinedMenuVisible,
       this.statusButtonVisible,
-      this.messageStatusSpan,
       this.isAutoUpdateNotAllowed,
     );
   }
@@ -225,7 +222,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             value={this.atisIcao}
             containerStyle="width: 106px; margin-left: 5px; position: absolute; top: 12px; height:40px"
             alignText="center"
-            errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e)}
+            errorHandler={(e) => this.props.atcService?.showAtcErrorMessage(e.type, e.details)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />
@@ -254,8 +251,8 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
           <div>
             {/* FSM Status Message Button */}
             <Button
-              label={this.messageStatusSpan}
-              disabled={Subject.create(false)}
+              label={this.messageStatusLabel}
+              disabled={false}
               onClick={() => {}}
               visible={this.statusButtonVisible}
               highlighted={Subject.create(true)}
@@ -264,7 +261,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="UPDATE<br/>OR PRINT"
-              disabled={Subject.create(false)}
+              disabled={false}
               onClick={() => {}}
               visible={this.combinedMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
@@ -318,7 +315,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         <div>
           <Button
             label=">>>"
-            disabled={Subject.create(false)}
+            disabled={false}
             visible={this.readMoreVisible}
             onClick={() => {
               this.props.data.lastReadAtis = this.atisCode.get();

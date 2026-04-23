@@ -18,7 +18,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
+import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   a380EfisRangeSettings,
@@ -88,8 +88,6 @@ export const A380X_NUM_LEGS_ON_FPLN_PAGE = 9;
  */
 export class FlightManagementComputer implements FmcInterface {
   protected readonly subs = [] as Subscription[];
-
-  private pipeSubs: Subscription[] = [];
 
   // TODO change after tracers PR
   private readonly healythSimvar = RegisteredSimVar.createBoolean(
@@ -365,13 +363,8 @@ export class FlightManagementComputer implements FmcInterface {
         }
       }, true),
       this.enginesWereStarted.sub((val) => {
-        if (
-          val &&
-          this.flightPlanInterface.hasActive &&
-          !Number.isFinite(this.flightPlanInterface.active.performanceData.costIndex.get())
-        ) {
-          this.flightPlanInterface.active.setPerformanceData('costIndex', 0);
-          this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
+        if (val) {
+          this.setCi0AndLrcIfActiveFlightplanHasNoCi();
         }
       }),
       this.legacyFmsIsHealthy.sub((v) => {
@@ -401,6 +394,11 @@ export class FlightManagementComputer implements FmcInterface {
         }
       }),
       this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
+      this.zeroFuelWeight.sub((zfw) => {
+        if (zfw !== null) {
+          this.setCi0AndLrcIfActiveFlightplanHasNoCi();
+        }
+      }),
     );
 
     this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
@@ -425,6 +423,17 @@ export class FlightManagementComputer implements FmcInterface {
       lastUpdateTime = now;
     }, 100);
 
+    // Start the check routine for system health and status
+    setInterval(() => {
+      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
+        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
+          this.destDataCheckedInCruise = true;
+          this.checkDestData();
+        }
+      }
+    }, 15000);
+
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
 
@@ -432,9 +441,6 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPlanChangeNotifier.destroy();
     this.#fmgc.destroy();
     for (const s of this.subs) {
-      s.destroy();
-    }
-    for (const s of this.pipeSubs) {
       s.destroy();
     }
   }
@@ -599,20 +605,31 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** @inheritdoc */
-  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+  public getRecMaxAltitude(forplan = FlightPlanIndex.Active, grossWeight?: number): number | null {
+    if (forplan !== FlightPlanIndex.Active && forplan !== FlightPlanIndex.Temporary) {
+      return null;
+    }
     const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }
 
     const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
+    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt);
+  }
+
+  /** @inheritdoc */
+  public getRecMaxFlightLevel(forplan = FlightPlanIndex.Active, grossWeight?: number): number | null {
+    const recMax = this.getRecMaxAltitude(forplan, grossWeight);
+    return recMax !== null ? recMax / 100 : null;
   }
 
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
-    return recMax !== null ? Math.floor((0.96 * recMax) / 5) * 5 : null; // FIXME remove magic
+    return recMax != null && !this.fmgc.data.engineOut.get() && this.flightPhaseManager.phase <= FmgcFlightPhase.Cruise
+      ? Math.floor((0.96 * recMax) / 5) * 5
+      : null; // FIXME remove magic
   }
 
   /** @inheritdoc */
@@ -723,17 +740,6 @@ export class FlightManagementComputer implements FmcInterface {
       SimVar.SetSimVarValue('K:TOGGLE_GPS_DRIVES_NAV1', 'Bool', 0);
     }
     SimVar.SetSimVarValue('K:VS_SLOT_INDEX_SET', 'number', 1);
-
-    // Start the check routine for system health and status
-    setInterval(() => {
-      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
-        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
-          this.destDataCheckedInCruise = true;
-          this.checkDestData();
-        }
-      }
-    }, 15000);
   }
 
   public clearLatestFmsErrorMessage() {
@@ -917,26 +923,8 @@ export class FlightManagementComputer implements FmcInterface {
       if (flightNumber !== null) {
         await this.onActiveFlightNumberChanged(flightNumber);
       }
-
-      this.pipeSubs.forEach((s) => s.destroy());
-      this.pipeSubs = [];
-      this.pipeSubs.push(
-        this.flightPlanInterface.active.performanceData.approachFlapsThreeSelected.pipe(
-          this.approachFlapsThreeSelected,
-        ),
-        this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-        this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-          this.zeroFuelWeightCenterOfGravity,
-        ),
-        this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
-        this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
-        this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-        this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-        this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumDestinationFuel),
-        this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
-        this.flightPlanInterface.active.performanceData.finalHoldingFuel.pipe(this.finalFuelWeight),
-      );
     }
+    this.loadActiveFlightPlanFuelAndApproachData();
   }
 
   public async updateFlightNumber(
@@ -944,11 +932,6 @@ export class FlightManagementComputer implements FmcInterface {
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
-    if (flightNumber.length > 7) {
-      this.addMessageToQueue(NXSystemMessages.formatError);
-      return callback(false);
-    }
-
     await this.#flightPlanService.setFlightNumber(flightNumber, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
@@ -978,7 +961,12 @@ export class FlightManagementComputer implements FmcInterface {
       Arinc429SignStatusMatrix.NormalOperation,
     );
     this.acInterface.arincFlightNumber4.setIso5Value(
-      flightNumber.substring(6, 7),
+      flightNumber.substring(6, 8),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+
+    this.acInterface.arincFlightNumber5.setIso5Value(
+      flightNumber.substring(9, 10),
       Arinc429SignStatusMatrix.NormalOperation,
     );
 
@@ -1046,14 +1034,15 @@ export class FlightManagementComputer implements FmcInterface {
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
+   * @param details extra text to be appended on the second line of the message area
    */
-  showFmsErrorMessage(errorType: FmsErrorType) {
+  showFmsErrorMessage(errorType: FmsErrorType, details?: string) {
     switch (errorType) {
       case FmsErrorType.EntryOutOfRange:
-        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined, details);
         break;
       case FmsErrorType.FormatError:
-        this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined, details);
         break;
       case FmsErrorType.NotInDatabase:
         this.addMessageToQueue(NXSystemMessages.notInDatabase, undefined, undefined);
@@ -1087,11 +1076,13 @@ export class FlightManagementComputer implements FmcInterface {
    * @param _message MessageObject
    * @param _isResolvedOverride Function that determines if the error is resolved at this moment (type II only).
    * @param _onClearOverride Function that executes when the error is actively cleared by the pilot (type II only).
+   * @param details text to be appended to the second line of the message if applicable
    */
   public addMessageToQueue(
     _message: TypeIMessage | TypeIIMessage,
     _isResolvedOverride: (() => boolean) | undefined = undefined,
     _onClearOverride: (() => void) | undefined = undefined,
+    details?: string,
   ) {
     const message =
       _isResolvedOverride === undefined && _onClearOverride === undefined
@@ -1100,7 +1091,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     const msg: FmsErrorMessage = {
       message: _message,
-      messageText: message.text,
+      messageText: details ? message.text.concat('\n').concat(details) : message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
       onClearOverride: isTypeIIMessage(message) ? message.onClear : () => {},
@@ -1331,6 +1322,7 @@ export class FlightManagementComputer implements FmcInterface {
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();
+            this.acInterface.resetDestinationPredictions();
             SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
               this.mfdReference?.uiService.navigateTo('fms/data/status');
               this.isReset.set(true);
@@ -1426,6 +1418,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
+      this.loadActiveFlightPlanFuelAndApproachData();
       if (this.flightPlanInterface.hasActive) {
         const flightPhase = this.flightPhase.get();
         this.enginesWereStarted.set(
@@ -1448,11 +1441,9 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
         this.acInterface.checkEngineOut(throttledDt);
-
+        this.acInterface.checkLateralDiscontinuityAhead();
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
-        if (toFlaps) {
-          this.acInterface.setTakeoffFlaps(toFlaps);
-        }
+        this.acInterface.setTakeoffFlaps(toFlaps ?? null);
 
         const thsFor = this.flightPlanInterface.active.performanceData.takeoffThsFor.get();
         if (thsFor) {
@@ -1460,11 +1451,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-        if (destPred) {
-          this.acInterface.updateDestinationPredictions(destPred);
-        } else {
-          this.acInterface.resetDestinationPredictions();
-        }
+        this.acInterface.updateDestinationPredictions(destPred);
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
       } else {
         this.acInterface.resetDestinationPredictions();
@@ -1692,6 +1679,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.clearLatestFmsErrorMessage();
     this.mfdReference?.uiService.navigateTo('fms/data/status');
     this.navigation.resetState();
+    this.acInterface.resetDestinationPredictions();
   }
 
   public logTroubleshootingError(msg: any) {
@@ -1721,5 +1709,30 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.ndMessageFlags[side] !== old) {
       SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
     }
+  }
+
+  private setCi0AndLrcIfActiveFlightplanHasNoCi(): void {
+    if (this.flightPlanInterface.hasActive && this.flightPlanInterface.active.destinationAirport !== undefined) {
+      const pd = this.flightPlanInterface.active.performanceData;
+      if (pd.costIndex.get() === null) {
+        pd.costIndex.set(0);
+        pd.costIndexMode.set(CostIndexMode.LRC);
+        this.addMessageToQueue(NXSystemMessages.lrcInUse);
+      }
+    }
+  }
+
+  private loadActiveFlightPlanFuelAndApproachData(): void {
+    const pd = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active?.performanceData : null;
+    this.approachFlapsThreeSelected.set(pd?.approachFlapsThreeSelected.get() ?? false);
+    this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
+    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+    this.approachQnh.set(pd?.approachQnh.get() ?? null);
+    this.approachTemperature.set(pd?.approachTemperature.get() ?? null);
+    this.approachWindDirection.set(pd?.approachWindDirection.get() ?? null);
+    this.approachWindMagnitude.set(pd?.approachWindMagnitude.get() ?? null);
+    this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
+    this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
+    this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
   }
 }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';
@@ -14,7 +14,7 @@ export const CondPage = () => {
   const gaugeOffset = -43; // This the range of travel for each 'zones' respective gauge is -43->+43 degrees.
   // These gauges denote the Physical position of the valve. No relation to air temperature or set point!
 
-  const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
 
   const acsc1DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
   const acsc2DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
@@ -41,7 +41,7 @@ export const CondPage = () => {
   const cabFanHasFault1 = acscDiscreteWord1.bitValueOr(25, false);
   const cabFanHasFault2 = acscDiscreteWord1.bitValueOr(26, false);
 
-  if (unit === '0') {
+  if (!useMetric) {
     //  converting to F if 'lbs' selected in EFB
     cockpitTrimTemp = UnitType.CELSIUS.convertTo(cockpitTrimTemp, UnitType.FAHRENHEIT);
     cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
@@ -71,7 +71,7 @@ export const CondPage = () => {
           :
         </text>
         <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">
-          {unit === '1' ? '°C' : '°F'}
+          {useMetric ? '°C' : '°F'}
         </text>
         <text id="LeftFanWarning" className={`Large Amber ${cabFanHasFault1 ? 'Show' : 'Hide'}`} x="180" y="75">
           FAN

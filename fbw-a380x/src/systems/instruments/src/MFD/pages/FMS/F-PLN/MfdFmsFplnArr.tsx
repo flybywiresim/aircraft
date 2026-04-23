@@ -1,4 +1,14 @@
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  Unit,
+  UnitFamily,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
@@ -6,6 +16,9 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { getApproachName } from '../../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 import './MfdFmsFpln.scss';
 
@@ -39,7 +52,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private readonly rwyIdent = Subject.create<string>('');
 
-  private readonly rwyLength = Subject.create<string>('');
+  private rwyLength = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
 
   private readonly rwyCrs = Subject.create<string>('');
 
@@ -79,6 +92,10 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private readonly apprButtonScrollTo = Subject.create<number>(0);
 
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
+
   protected onNewData(): void {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
@@ -89,33 +106,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       isAltn && this.loadedAlternateFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan.destinationAirport) {
-      this.toIcao.set(flightPlan.destinationAirport.ident);
-
-      const runways: ButtonMenuItem[] = [];
-      const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
-      sortedRunways.forEach((rw) => {
-        runways.push({
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
-          action: async () => {
-            await this.props.flightPlanInterface.setDestinationRunway(
-              rw.ident,
-              this.loadedFlightPlanIndex.get(),
-              isAltn,
-            );
-            await this.props.flightPlanInterface.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-            await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-          },
-        });
-      });
-      this.rwyOptions.set(runways);
-
+      this.generateRunwayOptions(flightPlan, isAltn);
       if (flightPlan.destinationRunway) {
         this.rwyIdent.set(flightPlan.destinationRunway.ident.substring(4));
-        this.rwyLength.set(flightPlan.destinationRunway.length.toFixed(0) ?? '----');
+        this.rwyLength.set(Number(flightPlan.destinationRunway.length.toFixed(0)), UnitType.METER);
         this.rwyCrs.set(flightPlan.destinationRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
       } else {
         this.rwyIdent.set('---');
-        this.rwyLength.set('----');
+        this.rwyLength.set(NaN);
         this.rwyCrs.set('---');
       }
 
@@ -349,6 +347,42 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     }
   }
 
+  private generateRunwayOptions(
+    flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
+    isAltn: boolean,
+  ) {
+    if (flightPlan.destinationAirport) {
+      this.toIcao.set(flightPlan.destinationAirport.ident);
+
+      const runways: ButtonMenuItem[] = [];
+      const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      sortedRunways.forEach((rw) => {
+        runways.push({
+          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())}`,
+          action: async () => {
+            await this.props.flightPlanInterface.setDestinationRunway(
+              rw.ident,
+              this.loadedFlightPlanIndex.get(),
+              isAltn,
+            );
+            await this.props.flightPlanInterface.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+            await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+          },
+        });
+      });
+      this.rwyOptions.set(runways);
+    }
+  }
+
+  private lengthNumberFormatter = NumberFormatter.create({
+    nanString: '----',
+    precision: 1,
+  });
+
+  private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
+    return unit === UnitType.METER ? 'M' : 'FT';
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -360,6 +394,24 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         }
       }, true),
     );
+
+    this.subs.push(
+      this.lengthUnit.sub(() => {
+        if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+          return;
+        }
+
+        const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
+        const flightPlan =
+          isAltn && this.loadedAlternateFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+
+        if (flightPlan.destinationAirport) {
+          this.generateRunwayOptions(flightPlan, isAltn);
+        }
+      }, true),
+    );
+
+    this.subs.push(this.lengthUnit);
   }
 
   render(): VNode {
@@ -418,9 +470,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     sec: this.secActive,
                   }}
                 >
-                  {this.rwyLength}
+                  {this.rwyLength.asUnit(this.lengthUnit).map((v) => this.lengthNumberFormatter(v))}
                 </span>
-                <span class="mfd-label-unit mfd-unit-trailing">M</span>
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
+                </span>
               </div>
             </div>
             <div class="fc" style="flex: 0.2;">

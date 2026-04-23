@@ -80,6 +80,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div style="flex-grow: 1" />
               </div>
@@ -96,6 +97,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div class="oit-label bigger" style="width: 100px; padding-left: 40px;">
                   TO
@@ -109,6 +111,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div style="flex-grow: 1" />
               </div>

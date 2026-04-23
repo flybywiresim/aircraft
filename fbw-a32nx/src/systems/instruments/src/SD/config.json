@@ -1,4 +1,8 @@
 {
   "index": "./index.tsx",
-  "isInteractive": false
+  "isInteractive": false,
+  "extraDeps": [
+    "/fbw-a32nx/src/systems/shared/src/EwdMessages.ts",
+    "/fbw-a32nx/src/systems/shared/src/SdPages.ts"
+  ]
 }

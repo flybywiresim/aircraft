@@ -258,13 +258,12 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           <div class="mfd-atccom-datis-footer">
             <Button
               label="RETURN<br />TO LIST"
-              disabled={Subject.create(false)}
               onClick={() => this.props.mfd.uiService.navigateTo('atccom/d-atis/list')}
               buttonStyle="width: 190px; height:62px"
             />
             <Button
               label="PRINT"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 190px; height:62px"
               containerStyle="position:absolute; top:2px; right:0px"

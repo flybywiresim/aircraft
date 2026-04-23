@@ -100,6 +100,7 @@ export const NXSystemMessages = {
   notAllowed: new TypeIMessage('NOT ALLOWED'),
   notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
+  onlySpdEntryAllowed: new TypeIMessage('ONLY SPD ENTRY ALLOWED'),
   rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
   selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'), // FIXME move out of FMS (is part of MCDU itself)
   setHoldSpeed: new TypeIIMessage('SET HOLD SPEED'),

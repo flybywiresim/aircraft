@@ -92,7 +92,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 inactive={Subject.create(false)}
                 value={this.newDest}
                 alignText="center"
-                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e.type)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />

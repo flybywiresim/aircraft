@@ -9,6 +9,7 @@ import {
   EventBus,
   HEventPublisher,
   InstrumentBackplane,
+  MathUtils,
   StallWarningPublisher,
 } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
@@ -81,7 +82,7 @@ class SystemsHost extends BaseInstrument {
       .on('simTimeHiFreq')
       .atFrequency(50)
       .handle((now) => {
-        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        const dt = lastUpdateTime === undefined ? 0 : MathUtils.clamp(now - lastUpdateTime, 0, 1000);
         lastUpdateTime = now;
 
         this.pseudoFwc.update(dt);
