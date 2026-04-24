@@ -552,7 +552,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Altitude);
                           }}
-                          errorHandler={(e) => this.props.fmcService.master.handleInputErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={
@@ -569,7 +569,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Speed);
                           }}
-                          errorHandler={(e) => this.props.fmcService.master.handleInputErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindSpeedFormat()}
@@ -582,7 +582,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Direction);
                           }}
-                          errorHandler={(e) => this.props.fmcService.master.handleInputErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}

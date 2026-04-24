@@ -2497,6 +2497,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       case FmsErrorType.AwyWptMismatch:
         this.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
         break;
+      case FmsErrorType.NotAllowed:
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        break;
     }
   }
 

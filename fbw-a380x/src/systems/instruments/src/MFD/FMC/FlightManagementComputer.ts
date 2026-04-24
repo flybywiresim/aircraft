@@ -1056,6 +1056,9 @@ export class FlightManagementComputer implements FmcInterface {
       case FmsErrorType.NotYetImplemented:
         this.addMessageToQueue(NXFictionalMessages.notYetImplemented, undefined, undefined);
         break;
+      case FmsErrorType.NotAllowed:
+        this.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        break;
       default:
         break;
     }
