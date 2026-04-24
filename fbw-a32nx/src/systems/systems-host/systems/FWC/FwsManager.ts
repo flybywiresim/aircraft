@@ -17,7 +17,7 @@ import { A32NXElectricalSystemEvents } from '@shared/publishers/A32NXElectricalS
 export class FwsManager {
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
-  private static readonly FWC_PROCESSING_INTERVAL_MS = 240;
+  private static readonly FWC_PROCESSING_INTERVAL_MS = 60;
   /** Process twice as fast as the main FWC due to time sensitivity regarding sounds and to prevent potential cycle delays */
   private static readonly FWC_SOUND_PROCESSING_INTERVAL_MS = FwsManager.FWC_PROCESSING_INTERVAL_MS / 2;
   private readonly fwsSoundManager: FwsSoundManager;

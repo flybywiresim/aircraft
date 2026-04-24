@@ -6,6 +6,7 @@ import {
   NXLogicPulseNode,
   NXLogicMemoryNode,
   NXLogicTriggeredMonostableNode,
+  LowPassFilter,
   Arinc429WordData,
   Arinc429Register,
   RegisteredSimVar,
@@ -170,6 +171,7 @@ export class FwsAutoCallouts {
   private inhibitCalloutDueToRetard = false;
   private generalRetardInhibit = false;
 
+  private readonly heightIncreasingFilter = new LowPassFilter(10);
   private readonly heightNotDecreasingConfirmNode = new NXLogicConfirmNode(0.3, false);
   private previousHeight: number | null = null;
   private heightAbove410Feet = false;
@@ -365,14 +367,15 @@ export class FwsAutoCallouts {
       this.twentyFeetThreshold ||
       this.tenFeetThreshold ||
       this.fiveFeetThreshold;
-    const heightIncreased = height !== null && this.previousHeight !== null && height > this.previousHeight;
+    const filteredHeight = this.heightIncreasingFilter.step(height ?? 0, deltaTime / 1000);
+    const heightIncreased = height !== null && this.previousHeight !== null && filteredHeight > this.previousHeight;
     const heightLessThan3Feet = height !== null && height <= 3;
     const radioHeightNotDecreasing = this.heightNotDecreasingConfirmNode.write(heightIncreased, deltaTime);
     const climbingOrOnGround = heightLessThan3Feet || heightIncreased;
     this.heightCallOutInhibition1 = climbingOrOnGround || this.minimumGenerated || this.gpwsActive;
     this.heightCallOutInhibition2 = climbingOrOnGround || this.minimumGenerated;
     this.heightCallOutInhibition3 = heightLessThan3Feet || radioHeightNotDecreasing || this.minimumGenerated;
-    this.previousHeight = height;
+    this.previousHeight = filteredHeight;
   }
 
   private computeInhbits(
