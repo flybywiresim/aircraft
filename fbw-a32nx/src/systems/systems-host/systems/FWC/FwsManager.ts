@@ -13,17 +13,15 @@ import { FwsSoundManager } from './FwsSoundManager';
 import { PseudoFWC } from './PseudoFWC';
 import { UpdateThrottler } from '../../../../../../fbw-common/src/systems/shared/src';
 import { A32NXElectricalSystemEvents } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { FwsLegacyFlightPhases } from './FwsLegacyFlightPhases';
 
 export class FwsManager {
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
-  private static readonly FWC_PROCESSING_INTERVAL_MS = 60;
-  /** Process twice as fast as the main FWC due to time sensitivity regarding sounds and to prevent potential cycle delays */
-  private static readonly FWC_SOUND_PROCESSING_INTERVAL_MS = FwsManager.FWC_PROCESSING_INTERVAL_MS / 2;
+  private static readonly FWC_PROCESSING_INTERVAL_MS = 120;
   private readonly fwsSoundManager: FwsSoundManager;
   private readonly pseudoFwc: PseudoFWC;
-
-  private readonly fwsSoundUpdateThrottler = new UpdateThrottler(FwsManager.FWC_SOUND_PROCESSING_INTERVAL_MS);
+  private readonly fwcFlightPhases = new FwsLegacyFlightPhases();
   private readonly fwsUpdateThrottler = new UpdateThrottler(FwsManager.FWC_PROCESSING_INTERVAL_MS); // has to be > 100 due to pulse nodes
   private readonly acEssBusPowered = ConsumerSubject.create(
     this.bus.getSubscriber<A32NXElectricalSystemEvents>().on('a32nx_elec_ac_ess_bus_is_powered'),
@@ -65,13 +63,11 @@ export class FwsManager {
   }
 
   public update(deltaTime: number): void {
-    const fwsDeltaTime = this.fwsUpdateThrottler.canUpdate(deltaTime);
-    if (fwsDeltaTime !== -1 && deltaTime !== 0) {
-      this.pseudoFwc.update(fwsDeltaTime);
-    }
-    const soundDeltaTime = this.fwsSoundUpdateThrottler.canUpdate(deltaTime);
-    if (soundDeltaTime !== -1 && deltaTime !== 0) {
-      this.fwsSoundManager.onUpdate(soundDeltaTime);
+    const deltaTimeThrottled = this.fwsUpdateThrottler.canUpdate(deltaTime);
+    if (deltaTimeThrottled !== -1 && deltaTime !== 0) {
+      this.fwcFlightPhases.update(deltaTimeThrottled);
+      this.pseudoFwc.update(deltaTimeThrottled);
+      this.fwsSoundManager.onUpdate(deltaTimeThrottled);
     }
   }
 }
