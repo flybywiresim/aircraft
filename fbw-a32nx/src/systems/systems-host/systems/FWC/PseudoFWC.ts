@@ -1618,7 +1618,7 @@ export class PseudoFWC {
     });
 
     this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
-    this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
+    this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true));
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
 
@@ -1835,47 +1835,47 @@ export class PseudoFWC {
     const warningButtons = this.ecpWarningButtonStatus.get();
 
     this.ecpClearPulseUp = this.ecpClearPulseTrigger.write(
-      this.ecpClear1Pulse.write(warningButtons.bitValue(11), deltaTime) ||
-        this.ecpClear2Pulse.write(warningButtons.bitValue(16), deltaTime) ||
-        this.ecpClearWirePulse.write(this.ecpClearButtonHardwired.get(), deltaTime),
+      this.ecpClear1Pulse.write(warningButtons.bitValue(11)) ||
+        this.ecpClear2Pulse.write(warningButtons.bitValue(16)) ||
+        this.ecpClearWirePulse.write(this.ecpClearButtonHardwired.get()),
       deltaTime,
     );
 
     this.ecpRecallPulseUp = this.ecpRecallPulseUpTrigger.write(
-      this.ecpRecallBusPulseUp.write(warningButtons.bitValue(14), deltaTime) ||
-        this.ecpRecallWirePulseUp.write(this.ecpRecallButtonHardwired.get(), deltaTime),
+      this.ecpRecallBusPulseUp.write(warningButtons.bitValue(14)) ||
+        this.ecpRecallWirePulseUp.write(this.ecpRecallButtonHardwired.get()),
       deltaTime,
     );
     this.ecpRecallPulseDown =
       this.ecpRecallPulseDownTrigger.write(
-        this.ecpRecallBusPulseDown.write(warningButtons.bitValue(14), deltaTime) ||
-          this.ecpRecallWirePulseDown.write(this.ecpRecallButtonHardwired.get(), deltaTime),
+        this.ecpRecallBusPulseDown.write(warningButtons.bitValue(14)) ||
+          this.ecpRecallWirePulseDown.write(this.ecpRecallButtonHardwired.get()),
         deltaTime,
       ) && !warningButtons.isFailureWarning();
     this.ecpRecallLevel = warningButtons.bitValue(14) || this.ecpRecallButtonHardwired.get();
 
     this.ecpStatusPulseUp = this.ecpStatusPulseUpTrigger.write(
-      this.ecpStatusBusPulseUp.write(warningButtons.bitValue(13), deltaTime) ||
-        this.ecpStatusWirePulseUp.write(this.ecpStatusButtonHardwired.get(), deltaTime),
+      this.ecpStatusBusPulseUp.write(warningButtons.bitValue(13)) ||
+        this.ecpStatusWirePulseUp.write(this.ecpStatusButtonHardwired.get()),
       deltaTime,
     );
     this.ecpStatusPulseDown =
       this.ecpStatusPulseDownTrigger.write(
-        this.ecpStatusBusPulseDown.write(warningButtons.bitValue(13), deltaTime) ||
-          this.ecpStatusWirePulseDown.write(this.ecpStatusButtonHardwired.get(), deltaTime),
+        this.ecpStatusBusPulseDown.write(warningButtons.bitValue(13)) ||
+          this.ecpStatusWirePulseDown.write(this.ecpStatusButtonHardwired.get()),
         deltaTime,
       ) && !warningButtons.isFailureWarning();
     this.ecpStatusLevel = warningButtons.bitValue(13) || this.ecpStatusButtonHardwired.get();
 
     this.ecpEmergencyCancelPulseUp = this.ecpEmergencyCancelPulseUpTrigger.write(
-      this.ecpEmergencyCancelBusPulseUp.write(warningButtons.bitValue(17), deltaTime) ||
-        this.ecpEmergencyCancelWirePulseUp.write(this.ecpEmergencyCancelButtonHardwired.get(), deltaTime),
+      this.ecpEmergencyCancelBusPulseUp.write(warningButtons.bitValue(17)) ||
+        this.ecpEmergencyCancelWirePulseUp.write(this.ecpEmergencyCancelButtonHardwired.get()),
       deltaTime,
     );
     this.ecpEmergencyCancelPulseDown =
       this.ecpEmergencyCancelPulseDownTrigger.write(
-        this.ecpEmergencyCancelBusPulseDown.write(warningButtons.bitValue(17), deltaTime) ||
-          this.ecpEmergencyCancelWirePulseDown.write(this.ecpEmergencyCancelButtonHardwired.get(), deltaTime),
+        this.ecpEmergencyCancelBusPulseDown.write(warningButtons.bitValue(17)) ||
+          this.ecpEmergencyCancelWirePulseDown.write(this.ecpEmergencyCancelButtonHardwired.get()),
         deltaTime,
       ) && !warningButtons.isFailureWarning();
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
@@ -1975,16 +1975,16 @@ export class PseudoFWC {
     // Inputs update
     this.processEcpButtons(deltaTime);
 
-    this.flightPhaseEndedPulseNode.write(false, deltaTime);
+    this.flightPhaseEndedPulseNode.write(false);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
-    this.flightPhase2PulseNode.write(flightPhase === 2, deltaTime);
-    this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
-    this.flightPhase4PulseNode.write(flightPhase === 4, deltaTime);
-    this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
-    this.flightPhase8PulseNode.write(flightPhase === 8, deltaTime);
-    this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
+    this.flightPhase2PulseNode.write(flightPhase === 2);
+    this.flightPhase3PulseNode.write(flightPhase === 3);
+    this.flightPhase4PulseNode.write(flightPhase === 4);
+    this.flightPhase7PulseNode.write(flightPhase === 7);
+    this.flightPhase8PulseNode.write(flightPhase === 8);
+    this.flightPhase9PulseNode.write(flightPhase === 9);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
@@ -2002,7 +2002,7 @@ export class PseudoFWC {
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
-    this.toConfigPulseNode.write(toConfigTest, deltaTime);
+    this.toConfigPulseNode.write(toConfigTest);
     this.toConfigTestHeldMin1s5Pulse.set(
       this.toConfigTestHeldMin1s5PulseNode.write(toConfigTest, deltaTime) || toConfigTest,
     );
@@ -2145,7 +2145,7 @@ export class PseudoFWC {
     // TODO: Check !NORM+ALTN BRK FAULT when implemented
     const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
-    const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
+    const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds);
     this.antiSkidOffWarning.set(this.sdac00200Word.bitValue(23) && !acBusOff && !phase2For60SecondsPulse);
 
     this.parkBrakeMemo.set(this.sdac00200Word.bitValue(22) && this.flightPhase12910.get());
@@ -2279,10 +2279,10 @@ export class PseudoFWC {
     const anyApEngaged: boolean =
       SimVar.GetSimVarValue('L:A32NX_FMGC_1_AP_ENGAGED', SimVarValueType.Bool) ||
       SimVar.GetSimVarValue('L:A32NX_FMGC_2_AP_ENGAGED', SimVarValueType.Bool);
-    this.apOffVoluntaryPulse1.write(anyApEngaged, deltaTime);
+    this.apOffVoluntaryPulse1.write(anyApEngaged);
     this.apOffVoluntaryConfirm.write(!anyApEngaged, deltaTime);
 
-    this.apOffVoluntaryPulse3.write(this.apInstinctiveDisconnectPressed, deltaTime);
+    this.apOffVoluntaryPulse3.write(this.apInstinctiveDisconnectPressed);
     this.apOffVoluntaryMtrig1.write(this.apInstinctiveDisconnectPressed, deltaTime);
 
     const apOffAndInstinctiveDisc = this.apOffVoluntaryPulse1.read() && this.apOffVoluntaryMtrig1.read();
@@ -2304,10 +2304,10 @@ export class PseudoFWC {
     // If a cavalry charge is currently being emitted by the sound manager.
     const cavChargeEmitted = this.soundManager.getCurrentSoundPlaying() == 'cavalryCharge';
     this.apOffVoluntaryMtrig3.write(cavChargeEmitted, deltaTime);
-    this.apOffVoluntaryPulse2.write(this.apOffVoluntaryMtrig3.read(), deltaTime);
+    this.apOffVoluntaryPulse2.write(this.apOffVoluntaryMtrig3.read());
 
     this.apOffVoluntaryMtrig2.write(apOffAndInstinctiveDisc, deltaTime);
-    this.apOffVoluntaryPulse4.write(this.apOffVoluntaryMtrig2.read(), deltaTime);
+    this.apOffVoluntaryPulse4.write(this.apOffVoluntaryMtrig2.read());
 
     this.apOffVoluntaryMemory.write(
       apOffAndInstinctiveDisc,
@@ -2324,13 +2324,12 @@ export class PseudoFWC {
 
     // AP OFF Involuntary
     this.apOffInvoluntaryMtrig1.write(this.apInstinctiveDisconnectPressed, deltaTime);
-    this.apOffInvoluntaryPulse1.write(anyApEngaged, deltaTime);
-    this.apOffInvoluntaryPulse2.write(this.apInstinctiveDisconnectPressed, deltaTime);
-    this.apOffInvoluntaryPulse3.write(anyApEngaged, deltaTime);
-    this.apOffInvoluntaryPulse4.write(this.fwcFlightPhase.get() == 1, deltaTime);
+    this.apOffInvoluntaryPulse1.write(anyApEngaged);
+    this.apOffInvoluntaryPulse2.write(this.apInstinctiveDisconnectPressed);
+    this.apOffInvoluntaryPulse3.write(anyApEngaged);
+    this.apOffInvoluntaryPulse4.write(this.fwcFlightPhase.get() == 1);
     this.apOffInvoluntaryPulse5.write(
       !anyApEngaged && cavChargeEmitted && (masterWarningButtonLeft || masterWarningButtonRight),
-      deltaTime,
     );
 
     const apOffInvoluntaryInhibitConditions =
@@ -2339,7 +2338,7 @@ export class PseudoFWC {
       !apOffInvoluntaryInhibitConditions && !this.apOffInvoluntaryMtrig1.read() && this.apOffInvoluntaryPulse1.read(),
       this.apOffInvoluntaryPulse3.read() || this.apOffInvoluntaryPulse4.read(),
     );
-    this.apOffInvoluntaryPulse6.write(this.apOffInvoluntaryMemory1.read(), deltaTime);
+    this.apOffInvoluntaryPulse6.write(this.apOffInvoluntaryMemory1.read());
     this.apOffInvoluntaryMtrig2.write(this.apOffInvoluntaryPulse6.read(), deltaTime);
 
     const apOffInvoluntaryCancelAfterDelay =
@@ -2418,8 +2417,8 @@ export class PseudoFWC {
     this.autoThrustOffVoluntaryMtrigNodeFalling1.write(aThrEngaged, deltaTime);
     this.autoThrustOffVoluntaryMtrigNodeRising1.write(this.autoThrustInstinctiveDisconnectPressed, deltaTime);
     this.autoThrustOffVoluntaryConfNode1.write(!aThrEngaged, deltaTime);
-    this.autoThrustOffVoluntaryPulseNodeRising1.write(this.autoThrustInstinctiveDisconnectPressed, deltaTime);
-    this.autoThrustOffVoluntaryPulseNodeRising2.write(masterCautionButtonLeft || masterCautionButtonRight, deltaTime);
+    this.autoThrustOffVoluntaryPulseNodeRising1.write(this.autoThrustInstinctiveDisconnectPressed);
+    this.autoThrustOffVoluntaryPulseNodeRising2.write(masterCautionButtonLeft || masterCautionButtonRight);
 
     const athrNotEngagedAndReset =
       this.autoThrustOffVoluntaryConfNode1.read() &&
@@ -2446,9 +2445,9 @@ export class PseudoFWC {
     );
 
     // A/THR OFF INVOLUNTARY
-    this.autoThrustOffInvoluntaryPulseNode1.write(aThrEngaged, deltaTime);
-    this.autoThrustOffInvoluntaryPulseNode2.write(aThrEngaged, deltaTime);
-    this.autoThrustOffInvoluntaryPulseNode3.write(this.fwcFlightPhase.get() == 1, deltaTime);
+    this.autoThrustOffInvoluntaryPulseNode1.write(aThrEngaged);
+    this.autoThrustOffInvoluntaryPulseNode2.write(aThrEngaged);
+    this.autoThrustOffInvoluntaryPulseNode3.write(this.fwcFlightPhase.get() == 1);
     this.autoThrustOffInvoluntaryMrtrigNode1.write(this.allThrottleIdle.get(), deltaTime);
 
     this.autoThrustOffInvoluntaryFlipFlop1.write(
@@ -2459,7 +2458,7 @@ export class PseudoFWC {
       this.autoThrustOffInvoluntaryPulseNode2.read() || this.autoThrustOffInvoluntaryPulseNode3.read(),
     );
 
-    this.autoThrustOffInvoluntaryPulseNodeFlipFlop.write(this.autoThrustOffInvoluntaryFlipFlop1.read(), deltaTime);
+    this.autoThrustOffInvoluntaryPulseNodeFlipFlop.write(this.autoThrustOffInvoluntaryFlipFlop1.read());
 
     this.autoThrustOffInvoluntaryFlipFlop2.write(
       this.autoThrustOffInvoluntaryPulseNodeFlipFlop.read(),
@@ -2487,10 +2486,7 @@ export class PseudoFWC {
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
 
     // AUTO BRAKE OFF
-    this.autobrakeDeactivatedPulseNode.write(
-      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
-      deltaTime,
-    );
+    this.autobrakeDeactivatedPulseNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'));
 
     const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedMemoTriggeredNode.write(
       this.autobrakeDeactivatedPulseNode.read() && onGround && this.computedAirSpeedToNearest2.get() > 33,
@@ -2665,7 +2661,7 @@ export class PseudoFWC {
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
 
-    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && toConfigTest, deltaTime);
+    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && toConfigTest);
 
     if (fmToSpeedsNotInserted && (toConfigTest || this.fwcFlightPhase.get() === 3) && !this.toSpeedsNotInserted) {
       this.toSpeedsNotInserted = true;
@@ -3139,8 +3135,7 @@ export class PseudoFWC {
     );
     this.configParkBrakeOnAural.set(phase3ParkBrakeOn);
     this.configParkBrakeOnWarning.set(
-      !this.flightPhase3ParkBrakeOnPulseNode.write(phase3ParkBrakeOn, deltaTime) &&
-        this.configParkBrakeOnMemoryNode.read(),
+      !this.flightPhase3ParkBrakeOnPulseNode.write(phase3ParkBrakeOn) && this.configParkBrakeOnMemoryNode.read(),
     );
 
     const speedbrakesNotInToPos = fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
@@ -3298,8 +3293,8 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
-    this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
+    this.speedBrakeCaution1Pulse.write(speedBrakeCaution1);
+    this.speedBrakeCaution2Pulse.write(speedBrakeCaution2);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
 
     // spd brk disagree
@@ -3377,7 +3372,6 @@ export class PseudoFWC {
 
     const gearLeverSelectDownPhase67Pulse = this.gearLeverSelectDownPhase67PulseNode.write(
       gearLeverSelectDown && this.flightPhase67.get(),
-      deltaTime,
     );
     this.gearNotDownlockedMemoryNode.write(
       this.gearNotDownlocked.get() && gearLeverSelectDownPhase67Pulse,
@@ -3428,8 +3422,7 @@ export class PseudoFWC {
       flightPhase6 &&
       this.lgNotDownlocked.get();
     const lgNotDownResetPulse =
-      this.lgNotDownPulse1.write(below750Condition, deltaTime) ||
-      this.lgNotDownPulse2.write(flapsApprCondition, deltaTime);
+      this.lgNotDownPulse1.write(below750Condition) || this.lgNotDownPulse2.write(flapsApprCondition);
     this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
     const n1Eng1 = this.N1Eng1.get();
     const n1Eng2 = this.N1Eng2.get();
@@ -3588,7 +3581,7 @@ export class PseudoFWC {
     this.gen2NotOperating.set(gen2NotOperating);
     this.gen12NotOperating.set(gen12NotOperating);
 
-    this.gen12NotOperatingPhase3Pulse.write(this.fwcFlightPhase.get() === 3 && this.gen12NotOperating.get(), deltaTime);
+    this.gen12NotOperatingPhase3Pulse.write(this.fwcFlightPhase.get() === 3 && this.gen12NotOperating.get());
 
     const gen1FaultPart2 =
       this.gen12NotOperatingPhase3Pulse.read() ||
@@ -3596,14 +3589,14 @@ export class PseudoFWC {
     const gen2FaultPart2 = gen1FaultPart2;
 
     this.gen1FaultWarning.set(this.gen1FaultMemory.read() && !gen1FaultPart2);
-    this.gen1PbNotOffPulseNode.write(!gen1PbOff, deltaTime);
+    this.gen1PbNotOffPulseNode.write(!gen1PbOff);
     this.gen1CycleMemoryNode.write(
       this.gen1FaultMemory.read() && this.gen1PbNotOffPulseNode.read(),
       !this.gen1FaultMemory.read() || this.flightPhase110.get(),
     );
 
     this.gen2FaultWarning.set(this.gen2FaultMemory.read() && !gen2FaultPart2);
-    this.gen2PbNotOffPulseNode.write(!gen2PbOff, deltaTime);
+    this.gen2PbNotOffPulseNode.write(!gen2PbOff);
     this.gen2CycleMemoryNode.write(
       this.gen2FaultMemory.read() && this.gen2PbNotOffPulseNode.read(),
       !this.gen2FaultMemory.read() || this.flightPhase110.get(),
@@ -3709,9 +3702,9 @@ export class PseudoFWC {
       dmcLeftIr3DiscreteWord.bitValue(23) ||
       (dmcLeftIr3DiscreteWord.bitValue(22) && this.alignTime === 1);
     this.irAlignProblem = ir1NotAligned || ir2NotAligned || ir3NotAligned;
-    this.ir1NotAlignedPulse.write(ir1NotAligned, deltaTime);
-    this.ir2NotAlignedPulse.write(ir2NotAligned, deltaTime);
-    this.ir3NotAlignedPulse.write(ir3NotAligned, deltaTime);
+    this.ir1NotAlignedPulse.write(ir1NotAligned);
+    this.ir2NotAlignedPulse.write(ir2NotAligned);
+    this.ir3NotAlignedPulse.write(ir3NotAligned);
     this.irNotAlignedWarning.set(
       this.irAlignProblem &&
         !this.ir1NotAlignedPulse.read() &&
@@ -3785,10 +3778,10 @@ export class PseudoFWC {
         !dmcLIsStd &&
         !dmcRIsStd);
 
-    this.altAlertInhibitPulse1.write(altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
-    this.altAlertInhibitPulse2.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
-    this.altAlertInhibitPulse3.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
-    this.altAlertInhibitPulse4.write(!altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertInhibitPulse1.write(altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit);
+    this.altAlertInhibitPulse2.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit);
+    this.altAlertInhibitPulse3.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit);
+    this.altAlertInhibitPulse4.write(!altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit);
     this.altAlertInhibitMtrig1.write(this.lgDownlocked.get(), deltaTime);
     this.altAlertInhibitMtrig2.write(selectedAltChanged, deltaTime);
 
@@ -3807,7 +3800,7 @@ export class PseudoFWC {
     const altAlertBelow200And750 = altDeltaBelow750 && altDeltaBelow200 && !altAlertGeneralInhibit;
     const altAlertAbove200And750 = !altDeltaBelow750 && !altDeltaBelow200 && !altAlertGeneralInhibit;
 
-    this.altAlertPulse.write(apFdTcasModeEngaged, deltaTime);
+    this.altAlertPulse.write(apFdTcasModeEngaged);
     this.altAlertMtrig1.write(!anyApEngaged && this.altAlertPulse.read() && !altAlertGeneralInhibit, deltaTime);
     this.altAlertMtrig2.write(!anyApEngaged && altAlertBetween200And750, deltaTime);
 

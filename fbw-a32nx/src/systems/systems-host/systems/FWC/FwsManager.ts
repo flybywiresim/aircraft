@@ -18,7 +18,7 @@ import { FwsLegacyFlightPhases } from './FwsLegacyFlightPhases';
 export class FwsManager {
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
-  private static readonly FWC_PROCESSING_INTERVAL_MS = 120;
+  private static readonly FWC_PROCESSING_INTERVAL_MS = 60;
   private readonly fwsSoundManager: FwsSoundManager;
   private readonly pseudoFwc: PseudoFWC;
   private readonly fwcFlightPhases = new FwsLegacyFlightPhases();

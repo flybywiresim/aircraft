@@ -436,7 +436,7 @@ export class FwsAutoCallouts {
     const twoThousandFiveHundredActivePreviously = this.twoThousandFiveHundredActivePrev;
     const twoThousandFiveHundredMemory = this.twoThousandFiveHundredHasPlayedMemoryNode.write(
       twoThousandFiveHundredActivePreviously,
-      this.twoThousandFiveHundredHystherisisPulseNode.write(twoThousandFiveHundredHysteresis, deltaTime),
+      this.twoThousandFiveHundredHystherisisPulseNode.write(twoThousandFiveHundredHysteresis),
     );
 
     const twoThousandFiveHundredActive =
@@ -445,10 +445,8 @@ export class FwsAutoCallouts {
       !twoThousandFiveHundredMemory &&
       !this.autoCalloutInhibit;
 
-    this.twoThousandFiveHundredActivePrev = this.twoThousandFiveHundredAudioPulseNode.write(
-      twoThousandFiveHundredActive,
-      deltaTime,
-    );
+    this.twoThousandFiveHundredActivePrev =
+      this.twoThousandFiveHundredAudioPulseNode.write(twoThousandFiveHundredActive);
     this.twentyFiveHundredAudio.set(twentyFiveHundredPin && twoThousandFiveHundredActive);
     this.twoThousandFiveHundredAudio.set(twoThousandFiveHundredPin && twoThousandFiveHundredActive);
 
@@ -463,12 +461,12 @@ export class FwsAutoCallouts {
     const twoThousandFeetActivePreviously = this.twoThousandActivePrev;
     const twoThousandFeetMemory = this.twoThousandHasPlayedMemoryNode.write(
       twoThousandFeetActivePreviously,
-      this.twoThousandHystherisisPulseNode.write(twoThousandFeetHysteresis, deltaTime),
+      this.twoThousandHystherisisPulseNode.write(twoThousandFeetHysteresis),
     );
     const twoThousandAudio =
       twoThousandThresholdAndActive && twoThousandFeetHysteresis && !twoThousandFeetMemory && !this.autoCalloutInhibit;
     this.twoThousandAudio.set(twoThousandAudio);
-    this.twoThousandActivePrev = this.twoThousandAudioPulseNode.write(twoThousandAudio, deltaTime);
+    this.twoThousandActivePrev = this.twoThousandAudioPulseNode.write(twoThousandAudio);
 
     // 1000
     const inhibit1OrTcas = this.heightCallOutInhibition1 || this.tcasAudio;
@@ -482,12 +480,12 @@ export class FwsAutoCallouts {
     const oneThousandFeetActivePreviously = this.oneThousandActivePrev;
     const oneThousandFeetMemory = this.oneThousandHasPlayedMemoryNode.write(
       oneThousandFeetActivePreviously,
-      this.oneThousandHystherisisPulseNode.write(oneThousandFeetHysteresis, deltaTime),
+      this.oneThousandHystherisisPulseNode.write(oneThousandFeetHysteresis),
     );
     const oneThousandAudio =
       oneThousandThresholdAndActive && oneThousandFeetHysteresis && !oneThousandFeetMemory && !this.autoCalloutInhibit;
     this.oneThousandAudio.set(oneThousandAudio);
-    this.oneThousandActivePrev = this.oneThousandAudioPulseNode.write(oneThousandAudio, deltaTime);
+    this.oneThousandActivePrev = this.oneThousandAudioPulseNode.write(oneThousandAudio);
 
     // 500
     const fiveHundredFeetThreshold = this.fiveHundredWithinRangeConfNode.write(
@@ -676,10 +674,7 @@ export class FwsAutoCallouts {
     const eng2RunningAndIdleAndEng1NotRunning = engine2TlaIdle && !engine2NotRunning && engine1NotRunning;
     const bothEnginesRunningAndIdle = engine1TlaIdle && engine2TlaIdle && !engine1NotRunning && !engine2NotRunning;
     const bothEnginesIdle = engine1TlaIdle && engine2TlaIdle;
-    const phase6Or7StartedPulse = this.phase6Or7StartedPulseNode.write(
-      flightPhase === 6 || flightPhase === 7,
-      deltaTime,
-    );
+    const phase6Or7StartedPulse = this.phase6Or7StartedPulseNode.write(flightPhase === 6 || flightPhase === 7);
 
     const retardToga = this.togaRetardInhibitMemoryNode.write(
       (bothEnginesIdle && flightPhase === 8) || (this.fws.flightPhase8PulseNode.read() && !phase6Or7StartedPulse),

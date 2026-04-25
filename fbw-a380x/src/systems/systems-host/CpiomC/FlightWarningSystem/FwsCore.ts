@@ -2435,7 +2435,7 @@ export class FwsCore {
       this.flightPhase.sub((fp) => {
         SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', fp || 0);
         if (fp !== null) {
-          this.flightPhaseEndedPulseNode.write(true, 0);
+          this.flightPhaseEndedPulseNode.write(true);
         }
       }),
     );
@@ -2780,24 +2780,24 @@ export class FwsCore {
     this.soundManager.onUpdate(deltaTime);
 
     // Write pulse nodes for buffered inputs
-    this.toConfigPulseNode.write(this.toConfigInputBuffer.read(), deltaTime);
-    this.clrPulseNode.write(this.clearButtonInputBuffer.read(), deltaTime);
-    this.rclUpPulseNode.write(this.recallButtonInputBuffer.read(), deltaTime);
-    this.clPulseNode.write(this.clInputBuffer.read(), deltaTime);
-    this.clCheckPulseNode.write(this.clCheckInputBuffer.read(), deltaTime);
-    this.clUpPulseNode.write(this.clUpInputBuffer.read(), deltaTime);
-    this.clDownPulseNode.write(this.clDownInputBuffer.read(), deltaTime);
-    this.abnProcPulseNode.write(this.abnProcInputBuffer.read(), deltaTime);
+    this.toConfigPulseNode.write(this.toConfigInputBuffer.read());
+    this.clrPulseNode.write(this.clearButtonInputBuffer.read());
+    this.rclUpPulseNode.write(this.recallButtonInputBuffer.read());
+    this.clPulseNode.write(this.clInputBuffer.read());
+    this.clCheckPulseNode.write(this.clCheckInputBuffer.read());
+    this.clUpPulseNode.write(this.clUpInputBuffer.read());
+    this.clDownPulseNode.write(this.clDownInputBuffer.read());
+    this.abnProcPulseNode.write(this.abnProcInputBuffer.read());
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
-    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
+    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read());
 
     // Inputs update
     const flightPhase = this.flightPhase.get();
-    this.flightPhaseEndedPulseNode.write(false, deltaTime);
+    this.flightPhaseEndedPulseNode.write(false);
     const phase3 = flightPhase === 3;
     const phase6 = flightPhase === 6;
     const flightPhase8 = flightPhase === 8;
-    this.flightPhase3PulseNode.write(phase3, deltaTime);
+    this.flightPhase3PulseNode.write(phase3);
 
     // flight phase convinence vars
     const flightPhase6789 = this.flightPhase6789.get();
@@ -2816,7 +2816,7 @@ export class FwsCore {
 
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0 && !this.fwsEcpFailed.get();
-    this.toConfigPulseNode.write(this.toConfigTestRaw, _deltaTime);
+    this.toConfigPulseNode.write(this.toConfigTestRaw);
     const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
     if (toConfigTest !== this.toConfigTest) {
       // temporary var for the old FWC stuff
@@ -3464,7 +3464,7 @@ export class FwsCore {
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
-    this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
+    this.autoPilotDisengagedInstantPulse.write(apEngaged);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
     this.autoPilotInstinctiveDiscPressedInLast1p9Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
@@ -3472,12 +3472,11 @@ export class FwsCore {
     const voluntaryApDisc =
       this.autoPilotDisengagedInstantPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
     this.autoPilotOffVoluntaryEndAfter1p9s.write(voluntaryApDisc, deltaTime);
-    this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
+    this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
     this.autoPilotOffVoluntaryFirstCavalryChargeEndedPulse.write(
       this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
-      deltaTime,
     );
 
     this.autoPilotFirstCavalryStillWithinFirst0p3s.write(

@@ -232,23 +232,14 @@ export class NXLogicPulseNode {
 
   private lastInput = false;
 
-  private remainingTime = 0;
+  constructor(private risingEdge = true) {}
 
-  constructor(
-    private risingEdge = true,
-    private time = 0.1,
-  ) {}
-
-  write(input: boolean, deltaTime: number): boolean {
+  write(input: boolean): boolean {
     if (this.output) {
-      this.remainingTime -= deltaTime / 1000;
-      if (this.remainingTime <= 0) {
-        this.output = false;
-      }
+      this.output = false;
     }
 
     if ((this.risingEdge && input && !this.lastInput) || (!this.risingEdge && !input && this.lastInput)) {
-      this.remainingTime = this.time;
       this.output = true;
     }
 
