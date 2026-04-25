@@ -60,7 +60,7 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
           <line class="Separator" x1="484" y1="540" x2="484" y2="730" />
           <path
             class="GreenFill"
-            d="m 482 735 h 4 v 18 h 4 l -6,11 l -6,-11 h 4 v -18"
+            d="m 481 734 h 6 v 17 h 4 l -7,14 l -7,-14 h 4 v -17"
             visibility={this.lowerLeftOverflow.map((overflow) => (overflow ? 'visible' : 'hidden'))}
           />
           <LowerRightDisplay bus={this.props.bus} />
