@@ -1926,19 +1926,22 @@ export class PseudoFWC {
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
     this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
+
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
     this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
     this.flightPhase110.set(flightPhase === 1 || flightPhase === 10);
-    this.flightPhase12910.set(this.flightPhase129.get() || flightPhase === 10);
+    this.flightPhase12910.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9 || flightPhase === 10);
     this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
-    this.flightPhase23489.set(this.flightPhase23.get() || flightPhase === 4 || flightPhase === 8 || flightPhase === 9);
+    this.flightPhase23489.set(
+      flightPhase === 2 || flightPhase === 3 || flightPhase === 4 || flightPhase === 8 || flightPhase === 9,
+    );
     this.flightPhase29.set(flightPhase === 2 || flightPhase === 9);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
-    this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase345.set(flightPhase === 3 || flightPhase === 4 || flightPhase === 5);
     this.flightPhase567.set(flightPhase === 5 || flightPhase === 6 || flightPhase === 7);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
-    this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
+    this.flightPhase678.set(flightPhase === 6 || flightPhase === 7 || flightPhase === 8);
     this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
 
     // TO Config convenience vars
