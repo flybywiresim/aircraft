@@ -278,7 +278,7 @@ export class PseudoFWC {
 
   private recallFailures: string[] = [];
 
-  private readonly ewdProcedureLinesCleared = new Set<string>();
+  private readonly ewdPrimaryFailuresClearedLines = new Map<string, number>();
   private readonly ewdSecondaryFailuresCleared = new Set<string>();
 
   private requestMasterCautionFromFaults = false;
@@ -1730,7 +1730,7 @@ export class PseudoFWC {
           });
         } else {
           this.ewdFailureTiming.delete(key);
-          this.ewdProcedureLinesCleared.delete(key);
+          this.ewdPrimaryFailuresClearedLines.delete(key);
           this.ewdSecondaryFailuresCleared.delete(key);
         }
       }, true);
@@ -1912,7 +1912,9 @@ export class PseudoFWC {
     }
 
     const codes = this.getEwdMessageCodes(item);
-    const displayCodes = this.ewdProcedureLinesCleared.has(failureKey) ? [codes[0]!] : codes;
+    const clearedProcedureLineCount = this.ewdPrimaryFailuresClearedLines.get(failureKey) ?? 0;
+    const displayCodes =
+      clearedProcedureLineCount > 0 ? [codes[0]!, ...codes.slice(clearedProcedureLineCount + 1)] : codes;
 
     return displayCodes.map((code) => {
       const group = getEwdMessageGroup(code);
@@ -1937,6 +1939,27 @@ export class PseudoFWC {
     this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
   }
 
+  private clearVisibleProcedureLines(failureKey: string, layout: EwdLayout): void {
+    let visibleProcedureLineCount = 0;
+
+    for (let i = 0; i < layout.displayedEntries.length; i++) {
+      const entry = layout.displayedEntries[i];
+
+      if (entry.failureKey === failureKey && !entry.isItemTitle) {
+        visibleProcedureLineCount++;
+      }
+    }
+
+    if (visibleProcedureLineCount === 0) {
+      return;
+    }
+
+    this.ewdPrimaryFailuresClearedLines.set(
+      failureKey,
+      (this.ewdPrimaryFailuresClearedLines.get(failureKey) ?? 0) + visibleProcedureLineCount,
+    );
+  }
+
   private pruneInactiveFailureKeys(keys: string[]): void {
     for (let i = keys.length - 1; i >= 0; i--) {
       const item = this.ewdMessageFailures[keys[i]];
@@ -1949,6 +1972,7 @@ export class PseudoFWC {
 
   private clearFailureGroup(targetGroup: string): void {
     const remainingFailures: string[] = [];
+    const clearedFailures: string[] = [];
     let canClearTargetGroup = true;
 
     for (const failureKey of this.failuresLeft) {
@@ -1959,6 +1983,8 @@ export class PseudoFWC {
           canClearTargetGroup = false;
           break;
         }
+
+        clearedFailures.push(failureKey);
       } else {
         remainingFailures.push(failureKey);
       }
@@ -1969,6 +1995,9 @@ export class PseudoFWC {
     }
 
     this.failuresLeft.splice(0, this.failuresLeft.length, ...remainingFailures);
+    for (const failureKey of clearedFailures) {
+      this.ewdPrimaryFailuresClearedLines.delete(failureKey);
+    }
     this.updateRecallFailuresFromDisplayedFailures();
   }
 
@@ -1997,12 +2026,8 @@ export class PseudoFWC {
         const [failureKey] = layout.visibleItemKeys;
         const timing = this.ewdFailureTiming.get(failureKey);
 
-        if (
-          timing !== undefined &&
-          timing.clearEligible &&
-          layout.displayedEntries.some((entry) => entry.failureKey === failureKey && !entry.isItemTitle)
-        ) {
-          this.ewdProcedureLinesCleared.add(failureKey);
+        if (timing !== undefined && timing.clearEligible) {
+          this.clearVisibleProcedureLines(failureKey, layout);
         }
 
         return;
@@ -2019,7 +2044,7 @@ export class PseudoFWC {
             this.failuresLeft.length,
             ...this.failuresLeft.filter((key) => key !== firstClearableVisibleItem),
           );
-          this.ewdProcedureLinesCleared.delete(firstClearableVisibleItem);
+          this.ewdPrimaryFailuresClearedLines.delete(firstClearableVisibleItem);
           this.updateRecallFailuresFromDisplayedFailures();
         }
 
@@ -4304,7 +4329,7 @@ export class PseudoFWC {
         this.failuresLeft.push(...this.recallFailures.splice(0));
       }
 
-      this.ewdProcedureLinesCleared.clear();
+      this.ewdPrimaryFailuresClearedLines.clear();
       this.ewdSecondaryFailuresCleared.clear();
       this.ecpRecallPulseUpHandled = true;
     }
