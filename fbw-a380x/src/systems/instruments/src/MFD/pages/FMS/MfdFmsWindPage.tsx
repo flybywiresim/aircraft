@@ -482,7 +482,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
             <TopTabNavigatorPage containerStyle="padding-bottom:3px;">
               {/* HISTORY */}
               <div class="mfd-fms-wind-page-container">
-                <div class="mfd-fms-wind-page-title-container"></div>
+                <div class="mfd-fms-wind-page-title-container history"></div>
                 <MfdFmsWindPageTableHeader
                   headerDisplay={this.tableHeaderDisplay}
                   messageAreaDisplay={this.temporaryMessageAreaDisplay}
@@ -560,12 +560,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                     <div
                       style={{
                         visibility: this.climbWindRowsVisibility[value],
-                        display: 'flex',
-                        'flex-direction': 'row',
                       }}
+                      class="mfd-fms-wind-page-entry-row"
                     >
-                      <div class="mfd-fms-wind-climb-altitude-entry">
+                      <div class="mfd-fms-wind-altitude-entry-container">
                         <InputField
+                          containerStyle="width:157px; height:40px;"
                           inactive={this.climbWindDisabledRows[value]}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
@@ -581,21 +581,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           canBeCleared={true}
                         ></InputField>
                       </div>
-                      <div class="mfd-fms-wind-climb-wind-entry-container">
+                      <div class="mfd-fms-wind-direction-speed-entry-container">
                         <InputField
-                          inactive={this.climbWindDisabledRows[value]}
-                          disabled={this.climbWindsDisabled}
-                          onModified={(v) => {
-                            this.onWindEntryModified(value, v, WindEntryData.Speed);
-                          }}
-                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
-                          hEventConsumer={this.props.mfd.hEventConsumer}
-                          interactionMode={this.props.mfd.interactionMode}
-                          dataEntryFormat={new WindSpeedFormat()}
-                          value={this.displayedClimbWindSpeeds[value]}
-                          canBeCleared={false}
-                        ></InputField>
-                        <InputField
+                          containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.climbWindDisabledRows[value]}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
@@ -606,6 +594,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedClimbWindHeadings[value]}
+                          canBeCleared={false}
+                        ></InputField>
+                        <InputField
+                          containerStyle="height: 42px; width:115px;"
+                          inactive={this.climbWindDisabledRows[value]}
+                          disabled={this.climbWindsDisabled}
+                          onModified={(v) => {
+                            this.onWindEntryModified(value, v, WindEntryData.Speed);
+                          }}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                          hEventConsumer={this.props.mfd.hEventConsumer}
+                          interactionMode={this.props.mfd.interactionMode}
+                          dataEntryFormat={new WindSpeedFormat()}
+                          value={this.displayedClimbWindSpeeds[value]}
                           canBeCleared={false}
                         ></InputField>
                       </div>
@@ -659,7 +661,7 @@ export class MfdFmsWindPageTableHeader extends DisplayComponent<MfdFmsWindPageTa
           <span class="mfd-label bigger">T.WIND</span>
         </div>
         <div
-          class="mfd-fms-wind-page-table-message-area mfd-value amber"
+          class="mfd-fms-wind-page-table-message-area mfd-value smaller amber"
           style={{ display: this.props.messageAreaDisplay }}
         >
           WIND ENTRY NOT ALLOWED: TMPY F-PLN EXISTING

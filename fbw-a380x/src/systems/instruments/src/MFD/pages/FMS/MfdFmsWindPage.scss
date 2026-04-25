@@ -1,6 +1,7 @@
 @import "../../../MsfsAvionicsCommon/definitions.scss";
 
-$table-margin: 92px;
+$table-margin-history: 92px;
+$table-margin-no-history: 125px;
 $header-height: 65px;
 $history-fl-label-padding-top: 41px;
 $history-fl-value-padding-top: 39px;
@@ -10,36 +11,47 @@ $history-fl-value-padding-top: 39px;
 }
 
 .mfd-fms-wind-page-title-container {
-  margin-left: $table-margin;
+  margin-left: $table-margin-no-history;
   display: flex;
   flex-direction: row;
   height: 58px;
 }
 
+.mfd-fms-wind-page-title-container.history {
+  margin-left: $table-margin-history;
+}
+
 .mfd-fms-wind-page-table-row {
-  margin-left: $table-margin;
+  margin-left: $table-margin-no-history;
   display: flex;
   flex-direction: row;
   border: 1px solid $display-grey;
-  width: 485px;
+  width: 465px;
 }
 
 .mfd-fms-wind-page-table-row.history {
   width: 522px;
+  margin-left: $table-margin-history;
 }
 
 .mfd-fms-wind-page-table-message-area {
   padding-top: 16px;
-  padding-left: 11px;
+  padding-left: 60px;
   height: $header-height;
 }
 
 .mfd-fms-wind-page-table-row.header {
-  justify-content: space-between;
+    justify-content: space-between;
+    height: $header-height;
+    padding-left: 53px;
+    padding-top: 18px;
+    padding-right: 67px;
+}
+
+.mfd-fms-wind-page-table-row.header.history {
   padding-left: 95px;
-  padding-right: 80px;
   padding-top: 16px;
-  height: $header-height;
+  padding-right: 80px;
 }
 
 .mfd-fms-wind-page-table-row.entry.first {
@@ -79,10 +91,31 @@ $history-fl-value-padding-top: 39px;
   padding-top: 38px;
 }
 
+.mfd-fms-wind-direction-speed-entry-container {
+  display: flex;
+  width: 231px;
+  flex-direction: row;
+  border: 1px solid #4f5467;
+  margin-top: 25px;
+  padding: 5px;
+  height: 55px;
+}
+
 .mfd-fms-wind-bottom-buttons-container {
   display: flex;
   flex-direction: row;
   padding-bottom:4px;
   padding-top:10px;
   align-items: flex-end;
+}
+
+.mfd-fms-wind-page-entry-row {
+  display: flex;
+  flex-direction: row;
+  padding-left: 10px;
+}
+
+.mfd-fms-wind-altitude-entry-container {
+  padding-top: 33px;
+  width: 215px;
 }

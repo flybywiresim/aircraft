@@ -406,7 +406,7 @@ export class WindAltitudeFormat extends SubscriptionCollector implements DataEnt
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, ''] as FieldFormatTuple;
+      return [this.placeholder, null, '\xa0\xa0'] as FieldFormatTuple;
     }
 
     if (value <= this.groundAltitude.get()!) {
