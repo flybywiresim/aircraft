@@ -5732,7 +5732,6 @@ export class PseudoFWC {
         this.cabAltSetResetState2.get() ? 13 : null,
         14,
         15,
-        16,
       ],
       codesToReturn: [
         '213122101',
