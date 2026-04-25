@@ -389,7 +389,7 @@ export class InputField<
     let updateWasSuccessful = true;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
-      if (newValue === null && !this.canBeCleared.get()) {
+      if (newValue === null && !this.canBeCleared.get() && this.readValue.get() !== null) {
         throw new FmsError(FmsErrorType.NotAllowed);
       }
     } catch (msg: unknown) {

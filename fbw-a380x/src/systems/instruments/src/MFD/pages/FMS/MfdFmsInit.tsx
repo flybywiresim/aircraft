@@ -30,6 +30,8 @@ import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanCh
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CpnyFplnButtonUtils } from '../../shared/CpnyFplnButtonUtils';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -432,11 +434,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.fromIcao.set(v);
-                  this.cityPairModified();
+                  if (v) {
+                    const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                    if (!airport) {
+                      throw new FmsError(FmsErrorType.NotInDatabase);
+                    }
+                    this.fromIcao.set(v);
+                    this.cityPairModified();
+                  }
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 value={this.fromIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
@@ -447,12 +455,18 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-space-lr">TO</div>
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  this.toIcao.set(v);
-                  this.cityPairModified();
+                onModified={async (v) => {
+                  if (v) {
+                    const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                    if (!airport) {
+                      throw new FmsError(FmsErrorType.NotInDatabase);
+                    }
+                    this.toIcao.set(v);
+                    this.cityPairModified();
+                  }
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 value={this.toIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
@@ -463,11 +477,18 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-space-lr">ALTN</div>
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  this.altnIcao.set(v === 'NONE' ? null : v);
+                onModified={async (v) => {
+                  const isClear = v === 'NONE';
+                  this.altnIcao.set(isClear ? null : v);
                   if (v) {
+                    if (!isClear) {
+                      const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                      if (!airport) {
+                        throw new FmsError(FmsErrorType.NotInDatabase);
+                      }
+                    }
                     await this.props.flightPlanInterface.setAlternate(
-                      v === 'NONE' ? undefined : v,
+                      isClear ? undefined : v,
                       this.loadedFlightPlanIndex.get(),
                     );
                     this.props.fmcService.master.acInterface.updateFmsData();
@@ -475,6 +496,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 disabled={this.altnDisabled}
+                canBeCleared={false}
                 value={this.altnIcao}
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}

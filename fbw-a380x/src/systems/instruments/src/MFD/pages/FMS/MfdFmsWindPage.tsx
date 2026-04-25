@@ -68,7 +68,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private wasSecPreviouslyActive = false;
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
-  private readonly displayedWindHeader = Subject.create('');
+  private readonly displayedWindHeader = Subject.create('CLB WIND');
   private readonly temporaryMessageAreaDisplay = this.tmpyActive.map((exists) => (exists ? 'block' : 'none'));
   private readonly tableHeaderDisplay = this.tmpyActive.map((exists) => (exists ? 'none' : 'flex'));
 
@@ -332,7 +332,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.displayedWindHeader.set('CLB WIND');
         break;
       case WindPageMenu.Cruise:
-        this.displayedWindHeader.set('CRZ WIND');
+        this.displayedWindHeader.set('CRZ WIND AT');
         break;
       case WindPageMenu.Descent:
         this.displayedWindHeader.set('DES WIND');
