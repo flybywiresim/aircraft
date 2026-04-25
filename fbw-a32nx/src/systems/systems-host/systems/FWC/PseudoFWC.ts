@@ -1354,11 +1354,11 @@ export class PseudoFWC {
 
   private readonly eng2AntiIce = Subject.create(false);
 
-  private readonly throttle1Position = Subject.create(0);
+  private readonly thr1TLA = Subject.create(0);
 
-  private readonly throttle2Position = Subject.create(0);
+  private readonly thr2TLA = Subject.create(0);
 
-  public readonly allThrottleIdle = Subject.create(false);
+  public readonly allThrTLAIdle = Subject.create(false);
 
   private readonly thr1TLAMCT = Subject.create(false);
 
@@ -1388,7 +1388,17 @@ export class PseudoFWC {
 
   private readonly atsDiscreteWord = Arinc429Register.empty();
 
+  private readonly ecu1StatusWord3Var = RegisteredSimVar.create<number>(
+    'L:A32NX_ECU_1_STATUS_WORD_3',
+    SimVarValueType.Number,
+  );
+
   private readonly ecu1StatusWord3 = Arinc429Register.empty();
+
+  private readonly ecu2StatusWord3Var = RegisteredSimVar.create<number>(
+    'L:A32NX_ECU_2_STATUS_WORD_3',
+    SimVarValueType.Number,
+  );
 
   private readonly ecu2StatusWord3 = Arinc429Register.empty();
 
@@ -2006,34 +2016,30 @@ export class PseudoFWC {
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
     this.eng1AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:1', 'bool'));
     this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
-    this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
-    this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
+    this.thr1TLA.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
+    this.thr2TLA.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.atsDiscreteWord.setFromSimVar('L:A32NX_FCU_ATS_DISCRETE_WORD');
-    this.ecu1StatusWord3.setFromSimVar('L:A32NX_ECU_1_STATUS_WORD_3');
-    this.ecu2StatusWord3.setFromSimVar('L:A32NX_ECU_2_STATUS_WORD_3');
+    this.ecu1StatusWord3.set(this.ecu1StatusWord3Var.get());
+    this.ecu2StatusWord3.set(this.ecu2StatusWord3Var.get());
     this.ecu1MaintenanceWord6.setFromSimVar('L:A32NX_ECU_1_MAINTENANCE_WORD_6');
     this.ecu2MaintenanceWord6.setFromSimVar('L:A32NX_ECU_2_MAINTENANCE_WORD_6');
-    this.allThrottleIdle.set(
-      this.throttle1Position.get() < 2.6 &&
-        this.throttle1Position.get() > -2 &&
-        this.throttle2Position.get() < 2.6 &&
-        this.throttle2Position.get() > -2,
-    );
 
-    const thr1Pos = this.throttle1Position.get();
-    const thr2Pos = this.throttle2Position.get();
+    const thr1TLA = this.thr1TLA.get();
+    const thr2TLA = this.thr2TLA.get();
 
-    this.thr1TLAMCT.set(thr1Pos > 33.3 && thr1Pos < 36.7);
-    this.thr2TLAMCT.set(thr2Pos > 33.3 && thr2Pos < 36.7);
-    this.thr1TLAEndOfMCT.set(thr1Pos > 36.6 && thr1Pos < 36.7);
-    this.thr2TLAEndOfMCT.set(thr2Pos > 36.6 && thr2Pos < 36.7);
+    this.thr1TLAMCT.set(thr1TLA > 33.3 && thr1TLA < 36.7);
+    this.thr2TLAMCT.set(thr2TLA > 33.3 && thr2TLA < 36.7);
+    this.thr1TLAEndOfMCT.set(thr1TLA > 36.6 && thr1TLA < 36.7);
+    this.thr2TLAEndOfMCT.set(thr2TLA > 36.6 && thr2TLA < 36.7);
 
-    this.thr1TLABetweenCLAndMCT.set(thr1Pos > 22.9 && thr1Pos <= 33.3);
-    this.thr2TLABetweenCLAndMCT.set(thr2Pos > 22.9 && thr2Pos <= 33.3);
+    this.thr1TLABetweenCLAndMCT.set(thr1TLA > 22.9 && thr1TLA <= 33.3);
+    this.thr2TLABetweenCLAndMCT.set(thr2TLA > 22.9 && thr2TLA <= 33.3);
 
-    this.thr1TLAReverse.set(this.throttle1Position.get() < -4.3);
-    this.thr2TLAReverse.set(this.throttle2Position.get() < -4.3);
+    this.allThrTLAIdle.set(thr1TLA < 2.6 && thr1TLA > -2 && thr2TLA < 2.6 && thr2TLA > -2);
+
+    this.thr1TLAReverse.set(thr1TLA < -4.3);
+    this.thr2TLAReverse.set(thr2TLA < -4.3);
     this.allThrTLAReverse.set(this.thr1TLAReverse.get() && this.thr2TLAReverse.get());
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
@@ -2367,7 +2373,7 @@ export class PseudoFWC {
     // A/THR OFF VOLUNTARY
     const athrOffVoluntaryBelow50ft = this.radioHeight1.valueOr(2500) < 50 || this.radioHeight2.valueOr(2500) < 50;
     const athrOffAllThrottleIdleMtrig = this.autoThrustOffVoluntaryAllThrottleIdleMtrigNode.write(
-      this.allThrottleIdle.get(),
+      this.allThrTLAIdle.get(),
       deltaTime,
     );
     const athrOffVoluntaryAbove50AndIdle = !athrOffVoluntaryBelow50ft && athrOffAllThrottleIdleMtrig;
@@ -2407,7 +2413,7 @@ export class PseudoFWC {
     this.autoThrustOffInvoluntaryPulseNode1.write(aThrEngaged, deltaTime);
     this.autoThrustOffInvoluntaryPulseNode2.write(aThrEngaged, deltaTime);
     this.autoThrustOffInvoluntaryPulseNode3.write(this.fwcFlightPhase.get() == 1, deltaTime);
-    this.autoThrustOffInvoluntaryMrtrigNode1.write(this.allThrottleIdle.get(), deltaTime);
+    this.autoThrustOffInvoluntaryMrtrigNode1.write(this.allThrTLAIdle.get(), deltaTime);
 
     this.autoThrustOffInvoluntaryFlipFlop1.write(
       !this.allThrTLAReverse.get() &&
@@ -2516,10 +2522,10 @@ export class PseudoFWC {
     // FIXME ECU doesn't have the necessary output words so we go purely on TLA
     const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
     const toPower =
-      this.throttle1Position.get() >= 45 ||
-      (this.throttle1Position.get() >= 35 && flexThrustLimit) ||
-      this.throttle2Position.get() >= 45 ||
-      (this.throttle2Position.get() >= 35 && flexThrustLimit);
+      this.thr1TLA.get() >= 45 ||
+      (this.thr1TLA.get() >= 35 && flexThrustLimit) ||
+      this.thr2TLA.get() >= 45 ||
+      (this.thr2TLA.get() >= 35 && flexThrustLimit);
     this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
     const raAbove1500 = this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500;
     this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
@@ -4835,7 +4841,7 @@ export class PseudoFWC {
         !this.emergencyGeneratorOn.get() ? 1 : null,
         5,
         !(this.apuMasterSwitch.get() === 1 || this.apuAvail.get() === 1) && this.radioAlt.get() < 2500 ? 6 : null,
-        this.throttle1Position.get() > 0 || this.throttle2Position.get() > 0 ? 7 : null,
+        this.thr1TLA.get() > 0 || this.thr2TLA.get() > 0 ? 7 : null,
         this.fac1Failed.get() === 1 ? 8 : null,
         9,
         10,
@@ -4881,10 +4887,8 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [
         0,
-        this.throttle1Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
-        (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
-          ? 2
-          : null,
+        this.thr1TLA.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
+        (this.thr1TLA.get() !== 0 || this.thr2TLA.get() !== 0) && this.aircraftOnGround.get() ? 2 : null,
         !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 3 : null,
         !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 4 : null,
         this.aircraftOnGround.get() ? 5 : null,
@@ -4937,10 +4941,8 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [
         0,
-        this.throttle2Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
-        (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
-          ? 2
-          : null,
+        this.thr2TLA.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
+        (this.thr1TLA.get() !== 0 || this.thr2TLA.get() !== 0) && this.aircraftOnGround.get() ? 2 : null,
         !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 3 : null,
         !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 4 : null,
         this.aircraftOnGround.get() ? 5 : null,
@@ -5337,7 +5339,7 @@ export class PseudoFWC {
         this.cabAltSetResetState2.get() ? 3 : null,
         this.cabAltSetResetState1.get() ? 4 : null,
         this.cabAltSetResetState2.get() &&
-        (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) &&
+        (this.thr1TLA.get() !== 0 || this.thr2TLA.get() !== 0) &&
         this.autoThrustStatus.get() !== 2
           ? 5
           : null,
