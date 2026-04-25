@@ -49,11 +49,11 @@ enum WindEntryData {
   Speed,
 }
 
-interface PhaseWindDisplayEntry {
+interface WindDisplayEntry {
   altitude: number | null;
   direction: number | null;
   speed: number | null;
-  disabled: boolean;
+  enteredByPilot: boolean;
 }
 
 export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
@@ -118,12 +118,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   );
   private readonly climbWindsDisabled = Subject.create(false);
 
+  private readonly climbWindsInactive = Subject.create(false);
+
   private readonly displayedClimbWindAltitudes = Array.from(
     { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
     () => Subject.create<number | null>(null),
   );
 
-  private readonly displayedClimbWindHeadings = Array.from(
+  private readonly displayedClimbWindDirections = Array.from(
     { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
     () => Subject.create<number | null>(null),
   );
@@ -133,14 +135,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     () => Subject.create<number | null>(null),
   );
 
-  private readonly climbWindRowsVisible = Array.from(
+  private readonly displayedClimbWindAltitudeIsEnteredByPilot = Array.from(
     { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
     () => Subject.create(true),
   );
 
-  private readonly climbWindDisabledRows = Array.from(
+  private readonly climbWindRowsVisible = Array.from(
     { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => Subject.create(false),
+    () => Subject.create(true),
   );
 
   private readonly climbWindRowsVisibility = this.climbWindRowsVisible.map((sub) =>
@@ -148,9 +150,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   );
 
   /** The entries used to feed the displayed data */
-  private readonly climbWindMockEntries: PhaseWindDisplayEntry[] = Array.from(
+  private readonly climbWindDisplayEntries: WindDisplayEntry[] = Array.from(
     { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => ({ altitude: null, direction: null, speed: null, disabled: false }),
+    () => ({ altitude: null, direction: null, speed: null, disabled: false, enteredByPilot: true }),
   );
 
   private readonly transitionAltitude = Subject.create<number | null>(null);
@@ -204,15 +206,17 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     } else if (this.selectedPageMenu === WindPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
-      this.climbWindsDisabled.set(
-        fp === undefined ||
-          this.tmpyActive.get() ||
-          (isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Climb),
+      this.climbWindsDisabled.set(fp === undefined || this.tmpyActive.get());
+      this.climbWindsInactive.set(
+        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() != FmgcFlightPhase.Preflight,
       );
       if (fp) {
-        this.fillDisplayWindEntriesFromFlightPlan(fp.performanceData.climbWindEntries.get(), this.climbWindMockEntries);
+        this.fillDisplayWindEntriesFromFlightPlan(
+          fp.performanceData.climbWindEntries.get(),
+          this.climbWindDisplayEntries,
+        );
       } else {
-        this.clearAllDisplayWindEntries(this.climbWindMockEntries);
+        this.clearAllDisplayWindEntries(this.climbWindDisplayEntries);
       }
       this.updateClimbWindDisplayRows();
       this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
@@ -349,29 +353,27 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     }
   }
 
-  private clearDisplayWindEntry(entries: PhaseWindDisplayEntry[], index: number) {
+  private clearDisplayWindEntry(entries: WindDisplayEntry[], index: number) {
     const row = entries[index];
     row.altitude = null;
     row.direction = null;
     row.speed = null;
-    row.disabled = false;
   }
 
   // Used when there's no flightplan to insert the winds in.
-  private clearAllDisplayWindEntries(entries: PhaseWindDisplayEntry[]) {
+  private clearAllDisplayWindEntries(entries: WindDisplayEntry[]) {
     for (let i = 0; i < entries.length; i++) {
       this.clearDisplayWindEntry(entries, i);
     }
   }
 
-  private upshiftDisplayedWindEntriesFrom(entries: PhaseWindDisplayEntry[], index: number) {
+  private shiftUpDisplayedWindEntriesFromIndex(entries: WindDisplayEntry[], index: number) {
     for (let i = index; i < entries.length - 1; i++) {
       const next = entries[i + 1];
       const current = entries[i];
       current.altitude = next.altitude;
       current.direction = next.direction;
       current.speed = next.speed;
-      current.disabled = next.disabled;
     }
 
     // Clear the last entry as all has been shifted up.
@@ -381,10 +383,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   /**
    * Fills the display wind entries buffer from flightplan wind entries.
    */
-  private fillDisplayWindEntriesFromFlightPlan(
-    windEntries: FlightPlanWindEntry[],
-    displayEntries: PhaseWindDisplayEntry[],
-  ) {
+  private fillDisplayWindEntriesFromFlightPlan(windEntries: FlightPlanWindEntry[], displayEntries: WindDisplayEntry[]) {
     for (let i = 0; i < displayEntries.length; i++) {
       this.clearDisplayWindEntry(displayEntries, i);
       const windEntry = windEntries[i];
@@ -394,7 +393,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         row.altitude = windEntry.altitude;
         row.direction = extractWindDirectionFromVector(windEntry.vector);
         row.speed = extractWindSpeedFromVector(windEntry.vector);
-        row.disabled = (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) > 0;
+        row.enteredByPilot =
+          (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) !==
+          FlightPlanWindEntryFlags.InsertedFromHistory;
       }
     }
 
@@ -406,25 +407,25 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
    */
   private updateClimbWindDisplayRows() {
     for (let i = 0; i < A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS; i++) {
-      const entry = this.climbWindMockEntries[i];
-      this.climbWindDisabledRows[i].set(entry.disabled);
-      this.displayedClimbWindHeadings[i].set(entry.direction);
+      const entry = this.climbWindDisplayEntries[i];
+      this.displayedClimbWindDirections[i].set(entry.direction);
       this.displayedClimbWindSpeeds[i].set(entry.speed);
       this.displayedClimbWindAltitudes[i].set(entry.altitude);
+      this.displayedClimbWindAltitudeIsEnteredByPilot[i].set(entry.enteredByPilot);
     }
   }
 
-  private sortDisplayWindEntriesByAltitude(entries: PhaseWindDisplayEntry[]) {
+  private sortDisplayWindEntriesByAltitude(entries: WindDisplayEntry[]) {
     entries.sort((a, b) => (b.altitude ?? 0) - (a.altitude ?? 0));
   }
 
   private onWindEntryModified(index: number, value: number | null, dataType: WindEntryData) {
-    const displayEntry = this.climbWindMockEntries[index];
+    const displayEntry = this.climbWindDisplayEntries[index];
     const oldAltitude = displayEntry.altitude;
     // Altitude was cleared meaning we need to delete the entry and shift rows accordingly.
     if (value === null && dataType === WindEntryData.Altitude) {
       const existsInFlightPlan = oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
-      this.upshiftDisplayedWindEntriesFrom(this.climbWindMockEntries, index);
+      this.shiftUpDisplayedWindEntriesFromIndex(this.climbWindDisplayEntries, index);
       if (existsInFlightPlan) {
         this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
           oldAltitude,
@@ -434,10 +435,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         displayEntry.altitude = null;
         displayEntry.speed = null;
         displayEntry.direction = null;
+        displayEntry.enteredByPilot = true;
       } else {
         displayEntry.altitude = null;
         displayEntry.speed = null;
         displayEntry.direction = null;
+        displayEntry.enteredByPilot = true;
         // Draft entry which was not in the flightplan.
         this.updateClimbWindDisplayRows();
         this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
@@ -449,6 +452,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       displayEntry.altitude = currentAlt;
       displayEntry.direction = currentDir;
       displayEntry.speed = currentSpeed;
+      displayEntry.enteredByPilot = true;
       if (currentAlt !== null && currentDir != null && currentSpeed != null) {
         const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
         this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
@@ -459,7 +463,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       } else {
         const altitudeChanged = oldAltitude !== currentAlt;
         if (altitudeChanged) {
-          this.sortDisplayWindEntriesByAltitude(this.climbWindMockEntries);
+          this.sortDisplayWindEntriesByAltitude(this.climbWindDisplayEntries);
         }
         this.updateClimbWindDisplayRows();
         // Change visibility if it is a new entry or if it was cleared.
@@ -582,7 +586,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       <div class="mfd-fms-wind-altitude-entry-container">
                         <InputField
                           containerStyle="width:157px; height:40px;"
-                          inactive={this.climbWindDisabledRows[value]}
+                          inactive={this.climbWindsInactive}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Altitude);
@@ -595,12 +599,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           }
                           value={this.displayedClimbWindAltitudes[value]}
                           canBeCleared={true}
+                          enteredByPilot={this.displayedClimbWindAltitudeIsEnteredByPilot[value]}
                         ></InputField>
                       </div>
                       <div class="mfd-fms-wind-direction-speed-entry-container">
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
-                          inactive={this.climbWindDisabledRows[value]}
+                          inactive={this.climbWindsInactive}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Direction);
@@ -609,12 +614,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}
-                          value={this.displayedClimbWindHeadings[value]}
+                          value={this.displayedClimbWindDirections[value]}
                           canBeCleared={false}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
-                          inactive={this.climbWindDisabledRows[value]}
+                          inactive={this.climbWindsInactive}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
                             this.onWindEntryModified(value, v, WindEntryData.Speed);
