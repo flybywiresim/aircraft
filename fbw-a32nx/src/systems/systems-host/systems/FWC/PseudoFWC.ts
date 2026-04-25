@@ -259,6 +259,7 @@ export class PseudoFWC {
 
   private readonly ewdLowerLeftOverflow = Subject.create(false);
   private currentEwdLeftLayout = EMPTY_EWD_LAYOUT;
+  private currentEwdSecondaryFailureKey: string | undefined;
 
   private readonly ewdLeftFailureActive = Subject.create(false);
   private readonly activeFailureSysPage = Subject.create<EcamSysPage>(EcamSysPage.NONE);
@@ -278,6 +279,7 @@ export class PseudoFWC {
   private recallFailures: string[] = [];
 
   private readonly ewdProcedureLinesCleared = new Set<string>();
+  private readonly ewdSecondaryFailuresCleared = new Set<string>();
 
   private requestMasterCautionFromFaults = false;
   private requestMasterCautionFromABrkOff = false;
@@ -1729,6 +1731,7 @@ export class PseudoFWC {
         } else {
           this.ewdFailureTiming.delete(key);
           this.ewdProcedureLinesCleared.delete(key);
+          this.ewdSecondaryFailuresCleared.delete(key);
         }
       }, true);
     }
@@ -1969,6 +1972,23 @@ export class PseudoFWC {
     this.updateRecallFailuresFromDisplayedFailures();
   }
 
+  private clearSecondaryFailure(): void {
+    const failureKey = this.currentEwdSecondaryFailureKey;
+
+    if (failureKey === undefined || !this.ewdFailureTiming.get(failureKey)?.clearEligible) {
+      return;
+    }
+
+    for (let i = this.failuresRight.length - 1; i >= 0; i--) {
+      if (this.failuresRight[i] === failureKey) {
+        this.failuresRight.splice(i, 1);
+        break;
+      }
+    }
+
+    this.ewdSecondaryFailuresCleared.add(failureKey);
+  }
+
   private clearEwdFailure(): void {
     const layout = this.currentEwdLeftLayout;
 
@@ -2011,6 +2031,8 @@ export class PseudoFWC {
 
     if (targetGroup !== undefined) {
       this.clearFailureGroup(targetGroup);
+    } else if (layout.orderedEntries.length === 0) {
+      this.clearSecondaryFailure();
     }
   }
 
@@ -4283,6 +4305,7 @@ export class PseudoFWC {
       }
 
       this.ewdProcedureLinesCleared.clear();
+      this.ewdSecondaryFailuresCleared.clear();
       this.ecpRecallPulseUpHandled = true;
     }
 
@@ -4313,17 +4336,19 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
-    let tempFailureEntriesLeft: EwdOrderedFailureLine[] = [];
-    let failureKeysLeft: string[] = [...this.failuresLeft];
-    let recallFailureKeys: string[] = [...this.recallFailures];
-    let tempFailureArrayRight: string[] = [];
-    let failureKeysRight: string[] = [...this.failuresRight];
+    const tempFailureEntriesLeft: EwdOrderedFailureLine[] = [];
+    const failureKeysLeft: string[] = [...this.failuresLeft];
+    const recallFailureKeys: string[] = [...this.recallFailures];
+    const tempFailureArrayRight: string[] = [];
+    const failureKeysRight: string[] = [...this.failuresRight];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
     let activeMasterWarningFailureCount = 0;
     let activeMasterCautionFailureCount = 0;
+    let topSecondaryFailureKey: string | undefined;
+    let topSecondaryFailureCode: string | undefined;
 
     // Update failure lists in case failures have been resolved
     this.pruneInactiveFailureKeys(failureKeysLeft);
@@ -4339,7 +4364,7 @@ export class PseudoFWC {
       // new warning?
       const newWarning =
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
-        (value.side === 'RIGHT' && !this.failuresRight.includes(key));
+        (value.side === 'RIGHT' && !this.failuresRight.includes(key) && !this.ewdSecondaryFailuresCleared.has(key));
 
       if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
@@ -4397,11 +4422,21 @@ export class PseudoFWC {
           allFailureKeys.push(key);
         }
 
-        const isRecalled = recallFailureKeys.includes(key);
-        if (value.side === 'LEFT' && !isRecalled) {
+        if (value.side === 'LEFT' && !recallFailureKeys.includes(key)) {
           tempFailureEntriesLeft.push(...this.getEwdFailureLayoutEntries(key));
-        } else if (value.side === 'RIGHT' && !isRecalled) {
-          tempFailureArrayRight.push(...this.getEwdMessageCodes(value));
+        } else if (value.side === 'RIGHT' && !this.ewdSecondaryFailuresCleared.has(key)) {
+          const codes = this.getEwdMessageCodes(value);
+          tempFailureArrayRight.push(...codes);
+          for (let i = 0; i < codes.length; i++) {
+            const code = codes[i];
+
+            if (isEwdSecondaryFailureCode(code)) {
+              if (topSecondaryFailureCode === undefined || compareEwdMessageCodes(code, topSecondaryFailureCode) < 0) {
+                topSecondaryFailureKey = key;
+                topSecondaryFailureCode = code;
+              }
+            }
+          }
         }
       }
 
@@ -4454,6 +4489,7 @@ export class PseudoFWC {
     const failLeft = ewdLeftLayout.orderedEntries.length > 0;
     const orderedFailureArrayRight = tempFailureArrayRight.sort(compareEwdMessageCodes);
     this.currentEwdLeftLayout = ewdLeftLayout;
+    this.currentEwdSecondaryFailureKey = topSecondaryFailureKey;
     this.ewdLeftFailureActive.set(failLeft);
     this.ewdLowerLeftOverflow.set(ewdLeftLayout.overflow);
 
@@ -4488,7 +4524,7 @@ export class PseudoFWC {
       }
     }
 
-    const topFailureKey = ewdLeftLayout.orderedEntries[0]?.failureKey;
+    const topFailureKey = ewdLeftLayout.orderedEntries[0]?.failureKey ?? topSecondaryFailureKey;
     this.activeFailureSysPage.set(
       topFailureKey === undefined ? EcamSysPage.NONE : this.ewdMessageFailures[topFailureKey].sysPage,
     );
@@ -4602,6 +4638,7 @@ export class PseudoFWC {
 
       if (!isActive) {
         this.ewdFailureTiming.delete(key);
+        this.ewdSecondaryFailuresCleared.delete(key);
         continue;
       }
 
