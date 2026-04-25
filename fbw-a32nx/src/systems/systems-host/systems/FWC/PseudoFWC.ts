@@ -124,20 +124,6 @@ interface EwdLayout {
   hiddenItemTitleGroups: string[];
 }
 
-const getUniqueOrderedValues = <T>(values: T[]): T[] => {
-  const seenValues = new Set<T>();
-  const orderedValues: T[] = [];
-
-  for (const value of values) {
-    if (!seenValues.has(value)) {
-      seenValues.add(value);
-      orderedValues.push(value);
-    }
-  }
-
-  return orderedValues;
-};
-
 const compareEwdMessageCodes = (a: string, b: string): number =>
   EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!;
 
@@ -155,23 +141,51 @@ const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: nu
     return EMPTY_EWD_LAYOUT;
   }
 
-  const orderedEntries = [...entries].sort((a, b) => a.codeOrder - b.codeOrder);
-  const displayedEntries = orderedEntries.slice(0, displayedLineCount);
-  const visibleItemEntries = displayedEntries.filter((entry) => entry.isItemTitle);
-  const visibleGroups = getUniqueOrderedValues(visibleItemEntries.map((entry) => entry.group!));
-  const visibleGroupSet = new Set(visibleGroups);
-  const visibleItemKeys = visibleItemEntries.map((entry) => entry.failureKey);
-  const hiddenItemTitleGroups = getUniqueOrderedValues(
-    orderedEntries
-      .slice(displayedLineCount)
-      .filter((entry) => entry.isItemTitle && !visibleGroupSet.has(entry.group!))
-      .map((entry) => entry.group!),
-  );
+  entries.sort((a, b) => a.codeOrder - b.codeOrder);
+
+  const overflow = entries.length > displayedLineCount;
+  const displayedEntries: EwdOrderedFailureLine[] = overflow ? [] : entries;
+  const visibleGroups: string[] = [];
+  const visibleItemKeys: string[] = [];
+  const hiddenItemTitleGroups: string[] = [];
+  const displayedEntryCount = Math.min(entries.length, displayedLineCount);
+
+  for (let i = 0; i < displayedEntryCount; i++) {
+    const entry = entries[i];
+
+    if (overflow) {
+      displayedEntries.push(entry);
+    }
+
+    if (entry.isItemTitle) {
+      const group = entry.group!;
+
+      if (!visibleGroups.includes(group)) {
+        visibleGroups.push(group);
+      }
+
+      visibleItemKeys.push(entry.failureKey);
+    }
+  }
+
+  if (overflow) {
+    for (let i = displayedLineCount; i < entries.length; i++) {
+      const entry = entries[i];
+
+      if (entry.isItemTitle) {
+        const group = entry.group!;
+
+        if (!visibleGroups.includes(group) && !hiddenItemTitleGroups.includes(group)) {
+          hiddenItemTitleGroups.push(group);
+        }
+      }
+    }
+  }
 
   return {
-    orderedEntries,
+    orderedEntries: entries,
     displayedEntries,
-    overflow: orderedEntries.length > displayedLineCount,
+    overflow,
     visibleGroups,
     visibleItemKeys,
     hiddenItemTitleGroups,
