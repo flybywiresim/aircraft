@@ -99,7 +99,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     Subject.create(false),
   );
   private readonly historyWindFlightLevelLabel = this.isHistoryWindCruiseFlightLevel.map((v) =>
-    v.map((isCruise) => (isCruise ? 'CRZ' : '\xa0'.repeat(3))),
+    v.map((isCruise) => (isCruise ? '\xa0CRZ\xa0' : '\xa0'.repeat(5))),
   );
   private readonly historyWindsUnitVisiblity = this.historyWindUnitsVisible.map((sub) =>
     sub.map((v) => (v ? 'visible' : 'hidden')),
@@ -477,9 +477,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
-          <div style="height: 15px;" />
+          <div style="height: 11px;" />
           <TopTabNavigator pageTitles={this.pageTitles} selectedPageIndex={this.selectedTabIndex}>
-            <TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="padding-bottom:3px;">
               {/* HISTORY */}
               <div class="mfd-fms-wind-page-container">
                 <div class="mfd-fms-wind-page-title-container"></div>
@@ -498,17 +498,27 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       }}
                     >
                       <div class="mfd-fms-wind-history-fl-entry">
-                        <span class="mfd-label bigger">{this.historyWindFlightLevelLabel[value]}</span>
-                        <span class="mfd-label-unit bigger">FL</span>
-                        <span class="mfd-label green bigger">{this.historyWindFlightLevels[value]}</span>
+                        <span class="mfd-label bigger mfd-fms-wind-page-history-wind-fl-label">
+                          {this.historyWindFlightLevelLabel[value]}
+                        </span>
+                        <span class="mfd-label-unit bigger mfd-fms-wind-page-history-wind-fl-label">FL</span>
+                        <span class="mfd-label green biggest mfd-fms-wind-page-history-wind-fl-value">
+                          {this.historyWindFlightLevels[value]}
+                        </span>
                       </div>
                       <div class="mfd-fms-wind-history-wind-entry">
-                        <span class="mfd-label green">{this.historyWindDirections[value]}</span>
-                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
-                          °
+                        <span class="mfd-label green biggest">{this.historyWindDirections[value]}</span>
+                        <span
+                          class="mfd-label-unit bigger"
+                          style={{ visibility: this.historyWindsUnitVisiblity[value] }}
+                        >
+                          °&nbsp;&nbsp;
                         </span>
-                        <span class="mfd-label green">{this.historyWindSpeeds[value]}</span>
-                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
+                        <span class="mfd-label green biggest">{this.historyWindSpeeds[value]}</span>
+                        <span
+                          class="mfd-label-unit bigger"
+                          style={{ visibility: this.historyWindsUnitVisiblity[value] }}
+                        >
                           KT
                         </span>
                       </div>
@@ -518,7 +528,16 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               </div>
               <div class="history-wind-button-container">
                 <Button
-                  label={'INSERT\n HISTORY WIND*'}
+                  label={
+                    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                      <span style="text-align: center; vertical-align: center; margin-right: 5px;">
+                        INSERT
+                        <br />
+                        HISTORY WIND
+                      </span>
+                      <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                    </div>
+                  }
                   onClick={this.insertHistoryWind.bind(this)}
                   visible={this.historyWindButtonVisible}
                   disabled={this.tmpyActive}
@@ -526,7 +545,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               </div>
             </TopTabNavigatorPage>
 
-            <TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="padding-bottom:3px;">
               {/* CLIMB */}
               <div class="mfd-fms-wind-page-container">
                 <div class="mfd-fms-wind-page-title-container">
@@ -596,15 +615,18 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               </div>
             </TopTabNavigatorPage>
           </TopTabNavigator>
-
-          <div style="flex-grow: 1;" />
-          {/* fill space vertically */}
-          <div class="fr">
+          <div class="mfd-fms-wind-bottom-buttons-container">
             <Button
               label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 5px; width:150px;"
               visible={this.returnButtonVisible}
+            />
+            <Button
+              disabled={true}
+              label="CPNY WIND<br />REQUEST"
+              onClick={() => console.log('CPNY WIND REQUEST')}
+              buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
             />
           </div>
         </div>

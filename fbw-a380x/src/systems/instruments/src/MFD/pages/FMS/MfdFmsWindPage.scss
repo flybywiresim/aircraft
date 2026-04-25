@@ -2,6 +2,8 @@
 
 $table-margin: 92px;
 $header-height: 65px;
+$history-fl-label-padding-top: 41px;
+$history-fl-value-padding-top: 39px;
 
 .mfd-fms-wind-page-container {
   margin-top: 26px;
@@ -11,7 +13,7 @@ $header-height: 65px;
   margin-left: $table-margin;
   display: flex;
   flex-direction: row;
-  height: 70px;
+  height: 58px;
 }
 
 .mfd-fms-wind-page-table-row {
@@ -34,8 +36,8 @@ $header-height: 65px;
 
 .mfd-fms-wind-page-table-row.header {
   justify-content: space-between;
-  padding-left: 93px;
-  padding-right: 78px;
+  padding-left: 95px;
+  padding-right: 80px;
   padding-top: 16px;
   height: $header-height;
 }
@@ -50,16 +52,37 @@ $header-height: 65px;
 
 .history-wind-button-container {
   display: flex;
+  width: 100%;
   flex-direction: row;
+  justify-content: flex-end;
   align-items: flex-end;
+  flex-grow: 1;
+}
+
+.mfd-fms-wind-page-history-wind-fl-label {
+  padding-top: $history-fl-label-padding-top;
+}
+
+.mfd-fms-wind-page-history-wind-fl-value {
+  padding-top: $history-fl-value-padding-top;
 }
 
 .mfd-fms-wind-history-fl-entry {
   display: flex;
   flex-direction: row;
+  margin-right: 115px;
 }
 
 .mfd-fms-wind-history-wind-entry {
   display: flex;
   flex-direction: row;
+  padding-top: 38px;
+}
+
+.mfd-fms-wind-bottom-buttons-container {
+  display: flex;
+  flex-direction: row;
+  padding-bottom:4px;
+  padding-top:10px;
+  align-items: flex-end;
 }
