@@ -6321,7 +6321,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900126: {
-      // *HYD  - Blue reservoir overheat
+      // HYD B RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.blueRvrOvht,
       whichCodeToReturn: () => [0, this.blueElecPumpPBAuto.get() ? 1 : null],
@@ -6332,7 +6332,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900127: {
-      // *HYD  - Yellow reservoir overheat
+      // HYD Y RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.yellowRvrOvht,
       whichCodeToReturn: () => [
@@ -6348,7 +6348,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900128: {
-      // *HYD  - Green reservoir overheat
+      // HYD G RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.greenRvrOvht,
       whichCodeToReturn: () => [0, this.ptuAuto.get() ? 1 : null, this.eng1pumpPBisAuto.get() ? 2 : null],
@@ -6359,7 +6359,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900310: {
-      // *HYD  - Blue
+      // *HYD BLUE (AC BUS 1)
       flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(
         ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) =>
@@ -6383,7 +6383,7 @@ export class PseudoFWC {
       side: 'RIGHT',
     },
     2900312: {
-      // *HYD  - Green Engine 1 //
+      // *HYD GREEN (ENG 1)
       flightPhaseInhib: [1, 2, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) =>
