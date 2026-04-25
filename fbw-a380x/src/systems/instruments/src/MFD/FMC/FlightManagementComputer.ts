@@ -1731,8 +1731,10 @@ export class FlightManagementComputer implements FmcInterface {
       this.flightPlanInterface.hasActive
     ) {
       const fp = this.flightPlanInterface.active;
-      const historyWinds = this.historyWinds.getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false);
-      if (historyWinds.some((entry) => entry.isEmpty === false)) {
+      const historyWinds = this.historyWinds
+        .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
+        .filter((entry) => entry.isEmpty === false);
+      if (historyWinds.length > 0) {
         const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
           return {
             altitude: entry.altitude,

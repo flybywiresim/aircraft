@@ -51,7 +51,7 @@ export interface Fmgc {
   getFOB(forPlan: FlightPlanIndex): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
-  getTropoPause(): Feet;
+  getTropoPause(): Feet | null;
   getManagedClimbSpeed(): Knots;
   getManagedClimbSpeedMach(): Mach;
   getAccelerationAltitude(): Feet;

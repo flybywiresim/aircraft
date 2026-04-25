@@ -26,9 +26,9 @@ export class HistoryWind {
     { altitude: 15_000, vector: Vec2Math.create(), isEmpty: true },
     { altitude: 25_000, vector: Vec2Math.create(), isEmpty: true },
   ];
-  private readonly recordedCruiseWind = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly recordedCruiseWind: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
 
-  private readonly interpolationCache = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly interpolationCache: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
 
   private readonly historyWinds: (HistoryWindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
@@ -89,7 +89,6 @@ export class HistoryWind {
     if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
       this.recordedCruiseWind.altitude = cruiseAltitude;
       Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector);
-
       this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
     }
 
@@ -114,10 +113,10 @@ export class HistoryWind {
     const shouldAddInterpolatedWind =
       cruiseAltitude !== null &&
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
-      interpolationSourceWinds.length > 0 &&
+      interpolationSourceWinds.length >= 0 &&
       (!this.filterEmptyOnInterpolation || // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
-        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude) &&
-          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude)));
+        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && !wind.isEmpty) &&
+          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && !wind.isEmpty)));
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;

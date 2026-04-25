@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -16,7 +15,6 @@ import {
   Subscribable,
   SubscribableUtils,
   Subscription,
-  Vec2Math,
 } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
@@ -24,7 +22,6 @@ import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
-import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -74,16 +71,6 @@ export class FmgcData {
   static fmcFormatValue(sub: Subscribable<number | null>, numberDashes = 3) {
     return sub.map((it) => (it !== null ? it.toFixed(0) : '-'.repeat(numberDashes)));
   }
-
-  public readonly draftWindsPilotEntry: WindEntry[] = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => {
-      return {
-        vector: Vec2Math.create(),
-        altitude: NaN,
-      };
-    },
-  );
 
   public readonly flightPhase = Subject.create(FmgcFlightPhase.Preflight);
 
@@ -165,7 +152,7 @@ export class FmgcData {
 
   /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
    */
-  public readonly fuelPenaltyPercentage = Subject.create<number>(null);
+  public readonly fuelPenaltyPercentage = Subject.create<number | null>(null);
 
   public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null && v > 0);
 
@@ -280,7 +267,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in feet */
-  getTropoPause(): number {
+  getTropoPause(): number | null {
     return this.flightPlanService.active.performanceData.tropopause.get();
   }
 
@@ -401,7 +388,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   getTakeoffFlapsSetting(): FlapConf | undefined {
-    return this.flightPlanService.active.performanceData.takeoffFlaps.get();
+    return this.flightPlanService.active.performanceData.takeoffFlaps.get() ?? undefined;
   }
 
   /** in knots */
@@ -495,7 +482,7 @@ export class FmgcDataService implements Fmgc {
   /** in feet. null if not set */
   getDepartureElevation(): number | null {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt
+      ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt ?? null
       : null;
   }
 
@@ -510,7 +497,7 @@ export class FmgcDataService implements Fmgc {
 
   getDestinationRunway(): Runway | null {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? this.flightPlanService?.active?.destinationRunway
+      ? this.flightPlanService?.active?.destinationRunway ?? null
       : null;
   }
 
