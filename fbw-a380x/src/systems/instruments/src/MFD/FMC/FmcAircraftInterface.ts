@@ -2121,7 +2121,7 @@ export class FmcAircraftInterface {
     );
   }
 
-  checkEngineOut(deltaTime: number) {
+  checkEngineOut() {
     this.engineFailurePulseNode.write(this.fmgc.isFlying() && !this.fmgc.isAllEngineOn());
     if (!this.fmgc.data.engineOut.get() && this.engineFailurePulseNode.read()) {
       this.fmgc.data.engineOut.set(true);

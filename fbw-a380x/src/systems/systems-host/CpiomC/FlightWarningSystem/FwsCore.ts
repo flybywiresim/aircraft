@@ -3530,7 +3530,7 @@ export class FwsCore {
       this.soundManager.setVolume(FwsAuralVolume.Full);
     }
 
-    this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
+    this.autoPilotInstinctiveDiscPressedPulse.write(false);
 
     // Triple clicks from FCDC: Capability downgrade or BTV exit missed
     this.fcdcDualFaultTripleClick.write(
@@ -3552,7 +3552,7 @@ export class FwsCore {
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
-    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read(), deltaTime);
+    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read());
     if (this.checkFmaTripleClickPulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
     }
@@ -3565,7 +3565,7 @@ export class FwsCore {
     // A/THR OFF
     const athrEngagedOrArmed = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
     this.autoThrustEngaged.set(athrEngagedOrArmed);
-    this.autoThrustDisengagedInstantPulse.write(athrEngagedOrArmed, deltaTime);
+    this.autoThrustDisengagedInstantPulse.write(athrEngagedOrArmed);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
     const below50ft =
@@ -3657,7 +3657,7 @@ export class FwsCore {
     );
 
     this.autobrakeDeactivatedPulseNode // AUTO BRAKE OFF
-      .write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+      .write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'));
 
     const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
       this.autobrakeDeactivatedPulseNode.read() &&
@@ -3754,7 +3754,7 @@ export class FwsCore {
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
 
-    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
+    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw);
 
     if (fmToSpeedsNotInserted && (this.toConfigTestRaw || phase3) && !this.toSpeedsNotInserted) {
       this.toSpeedsNotInserted = true;
@@ -4358,21 +4358,21 @@ export class FwsCore {
     this.sec1FaultCondition.set(
       !(flightPhase112 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
     );
-    this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get(), deltaTime);
+    this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get());
     this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
     this.sec2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.sec2FaultCondition.set(
       !(flightPhase112 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
     );
-    this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get(), deltaTime);
+    this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get());
     this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
 
     this.sec3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.sec3FaultCondition.set(
       !(flightPhase112 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
     );
-    this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
+    this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get());
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
 
     this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
@@ -4380,21 +4380,21 @@ export class FwsCore {
     this.prim1FaultCondition.set(
       !(flightPhase112 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
     );
-    this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get(), deltaTime);
+    this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get());
     this.prim1OffThenOnMemoryNode.write(this.prim1OffThenOnPulseNode.read(), !this.prim1FaultCondition.get());
 
     this.prim2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.prim2FaultCondition.set(
       !(flightPhase112 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
     );
-    this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get(), deltaTime);
+    this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get());
     this.prim2OffThenOnMemoryNode.write(this.prim2OffThenOnPulseNode.read(), !this.prim2FaultCondition.get());
 
     this.prim3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.prim3FaultCondition.set(
       !(flightPhase112 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
     );
-    this.prim3OffThenOnPulseNode.write(!this.prim3PbOff.get(), deltaTime);
+    this.prim3OffThenOnPulseNode.write(!this.prim3PbOff.get());
     this.prim3OffThenOnMemoryNode.write(this.prim3OffThenOnPulseNode.read(), !this.prim3FaultCondition.get());
 
     this.prim2FailedBeforeTakeoff.write(
@@ -4665,8 +4665,8 @@ export class FwsCore {
         !this.flightPhase89.get(),
     );
     const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
-    this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
-    this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
+    this.speedBrakeCaution1Pulse.write(speedBrakeCaution1);
+    this.speedBrakeCaution2Pulse.write(speedBrakeCaution2);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
     this.speedBrakesStillExtended.set(
       !this.speedBrakeCaution1Pulse.read() &&
@@ -4762,8 +4762,7 @@ export class FwsCore {
       flightPhase8 &&
       gearNotDownlocked;
     const lgNotDownResetPulse =
-      this.lgNotDownPulse1.write(below750Condition, deltaTime) ||
-      this.lgNotDownPulse2.write(flapsApprCondition, deltaTime);
+      this.lgNotDownPulse1.write(below750Condition) || this.lgNotDownPulse2.write(flapsApprCondition);
     this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
     const n1Eng1 = this.N1Eng1.get();
     const n1Eng2 = this.N1Eng2.get();
@@ -5108,7 +5107,7 @@ export class FwsCore {
     );
     this.eng1WasRunningMemoryNode.write(
       this.eng1NotStartingConfNode.read(),
-      this.engine1masterOnPulseNode.write(this.engine1Master.get(), deltaTime),
+      this.engine1masterOnPulseNode.write(this.engine1Master.get()),
     );
     this.eng2NotStartingConfNode.write(
       this.engine2State.get() !== engineState.STARTING && this.engine2Running.get(),
@@ -5116,7 +5115,7 @@ export class FwsCore {
     );
     this.eng2WasRunningMemoryNode.write(
       this.eng2NotStartingConfNode.read(),
-      this.engine2masterOnPulseNode.write(this.engine2Master.get(), deltaTime),
+      this.engine2masterOnPulseNode.write(this.engine2Master.get()),
     );
     this.eng3NotStartingConfNode.write(
       this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING,
@@ -5124,7 +5123,7 @@ export class FwsCore {
     );
     this.eng3WasRunningMemoryNode.write(
       this.eng3NotStartingConfNode.read(),
-      this.engine3masterOnPulseNode.write(this.engine3Master.get(), deltaTime),
+      this.engine3masterOnPulseNode.write(this.engine3Master.get()),
     );
     this.eng4NotStartingConfNode.write(
       this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING,
@@ -5132,7 +5131,7 @@ export class FwsCore {
     );
     this.eng4WasRunningMemoryNode.write(
       this.eng4NotStartingConfNode.read(),
-      this.engine4masterOnPulseNode.write(this.engine4Master.get(), deltaTime),
+      this.engine4masterOnPulseNode.write(this.engine4Master.get()),
     );
 
     this.eng1Fail.set(
@@ -5894,11 +5893,8 @@ export class FwsCore {
     const sdStsShown = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Number) === 14;
     this.ecamEwdShowStsIndication.set(!this.ecamStatusNormal.get() && !sdStsShown);
 
-    this.approachAutoDisplayQnhSetPulseNode.write(
-      Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD',
-      deltaTime,
-    );
-    this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0, deltaTime);
+    this.approachAutoDisplayQnhSetPulseNode.write(Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD');
+    this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0);
 
     const chimeRequested =
       (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
