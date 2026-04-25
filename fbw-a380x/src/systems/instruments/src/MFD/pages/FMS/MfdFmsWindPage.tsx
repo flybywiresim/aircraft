@@ -431,7 +431,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           null,
           this.loadedFlightPlanIndex.get(),
         );
+        displayEntry.altitude = null;
+        displayEntry.speed = null;
+        displayEntry.direction = null;
       } else {
+        displayEntry.altitude = null;
+        displayEntry.speed = null;
+        displayEntry.direction = null;
         // Draft entry which was not in the flightplan.
         this.updateClimbWindDisplayRows();
         this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
@@ -450,6 +456,16 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           entry,
           this.loadedFlightPlanIndex.get(),
         );
+      } else {
+        const altitudeChanged = oldAltitude !== currentAlt;
+        if (altitudeChanged) {
+          this.sortDisplayWindEntriesByAltitude(this.climbWindMockEntries);
+        }
+        this.updateClimbWindDisplayRows();
+        // Change visibility if it is a new entry or if it was cleared.
+        if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
+          this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
+        }
       }
     }
   }

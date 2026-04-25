@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { MappedSubject, MutableSubscribable, Subject, Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
 import {
   ClimbDerated,
   CostIndexMode,
@@ -135,6 +135,20 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.costIndexMode?.set(this.costIndexMode.get());
     cloned.climbDerated?.set(this.climbDerated.get());
     cloned.descentCabinRate?.set(this.descentCabinRate.get());
+    cloned.climbWindEntries.set(
+      this.climbWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+    cloned.descentWindEntries.set(
+      this.descentWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+    const alternateWind = this.alternateWind.get();
+    cloned.alternateWind.set(alternateWind !== null ? Vec2Math.copy(alternateWind, Vec2Math.create()) : null);
 
     return cloned;
   }
