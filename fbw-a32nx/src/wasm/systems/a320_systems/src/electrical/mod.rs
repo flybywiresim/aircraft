@@ -1896,9 +1896,10 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.apu_gen_contactor_is_open());
         assert!(!test_bed.apu_gen_has_fault());
 
-        test_bed = test_bed.then_continue_with().apu_gen_on().run_waiting_for(
-            APU_GENERATOR_STABILIZATION_TIME - Duration::from_millis(1),
-        );
+        test_bed = test_bed
+            .then_continue_with()
+            .apu_gen_on()
+            .run_waiting_for(APU_GENERATOR_STABILIZATION_TIME - Duration::from_millis(1));
 
         assert!(test_bed.apu_gen_contactor_is_open());
         assert!(test_bed.apu_gen_has_fault());
