@@ -685,6 +685,8 @@ export class PseudoFWC {
 
   private readonly gen2OffOut = Subject.create(false);
 
+  private readonly genApuInop = Subject.create(false);
+
   private readonly apuGenFaultMemory = new NXLogicMemoryNode(false);
 
   private readonly apuGenFaultConfirmNode = new NXLogicConfirmNode(5, true);
@@ -3559,12 +3561,10 @@ export class PseudoFWC {
       !this.gen2FaultMemory.read() || this.flightPhase110.get(),
     );
 
+    this.genApuInop.set(this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19));
     this.apuGenFaultWarning.set(
       this.apuGenFaultMemory.write(
-        this.apuGenFaultConfirmNode.write(
-          !this.sdac05201Word.bitValue(14) && this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19),
-          deltaTime,
-        ),
+        this.apuGenFaultConfirmNode.write(!this.sdac05201Word.bitValue(14) && this.genApuInop.get(), deltaTime),
         this.apuGenFaultResetConfirmNode.write(
           (!this.sdac05201Word.bitValue(14) && !this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19)) ||
             this.fwcFlightPhase.get() === 1,
