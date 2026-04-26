@@ -49,7 +49,7 @@ Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
-Texture=A380X_TAXI_LIGHT.PNG
+Texture=fx_0.png
 Bounce=0.0
 Color Start=179, 183, 255, 1
 Color End=179, 183, 255, 1
@@ -67,10 +67,10 @@ MinProjSize=0.4
 [LightAttributes.0]
 Type=spot
 Size=0.0
-Range=150
-Intensity=314159.265
+Range=80
+Intensity=31415.927
 Softness=0.0
-SpotInner=2.0
-SpotOuter=20.0
-Volumetric=0
+SpotInner=24.0
+SpotOuter=46.0
+Volumetric=1
 ScatDir=0.0
