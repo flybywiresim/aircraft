@@ -245,6 +245,9 @@ export const FwsAuralsList: Record<string, FwsAural> = {
 // FIXME Not all sounds are added to this yet (e.g. CIDS chimes), consider adding them in the future
 // Also, single chimes are not filtered (in RL only once every two seconds)
 export class FwsSoundManager {
+  private static readonly DEBUG_LOGGING = true;
+  private static readonly DEBUG_LOG_IGNORED_DEQUEUES = false;
+
   private readonly soundQueue = new Set<keyof typeof FwsAuralsList>();
 
   private singleChimesPending = 0;
@@ -266,16 +269,42 @@ export class FwsSoundManager {
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
   ) {
+    this.debugLog(
+      `initial sound LVars ${Object.values(FwsAuralsList)
+        .filter((a) => a.localVarName)
+        .map((a) => `${a.localVarName}=${SimVar.GetSimVarValue(`L:${a.localVarName}`, SimVarValueType.Bool)}`)
+        .join(' ')}`,
+    );
+
     // Stop all sounds
     Object.values(FwsAuralsList).forEach((a) => {
       if (a.localVarName) {
         SimVar.SetSimVarValue(`L:${a.localVarName}`, SimVarValueType.Bool, false);
       }
     });
+    this.debugLog('initial sound LVars reset to false');
 
     const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
     sub.on('enqueueSound').handle((s) => this.enqueueSound(s));
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
+
+    this.startupCompleted.sub((started) => {
+      this.debugLog(
+        `startupCompleted=${started} current=${this.currentSoundPlaying ?? 'none'} queued=${this.soundQueue.size} repeat=${
+          this.soundToRepeat ?? 'none'
+        }`,
+      );
+    }, true);
+  }
+
+  private debugLog(message: string) {
+    if (!FwsSoundManager.DEBUG_LOGGING) {
+      return;
+    }
+
+    const simTimeSeconds = SimVar.GetSimVarValue('E:SIMULATION TIME', SimVarValueType.Seconds);
+    const simTime = Number.isFinite(simTimeSeconds) ? simTimeSeconds.toFixed(3) : 'n/a';
+    console.log(`[FWS Sound ${new Date().toISOString()} sim=${simTime}] ${message}`);
   }
 
   /** Get the current emitted sound or the sound which is about to be repeated, for example for the AP OFF logic computation. */
@@ -292,21 +321,38 @@ export class FwsSoundManager {
 
     if (sound.type === FwsAuralWarningType.SyntheticVoice || sound.type === FwsAuralWarningType.AuralWarning) {
       this.soundQueue.add(soundKey);
+      this.debugLog(
+        `enqueue ${soundKey} startupCompleted=${this.startupCompleted.get()} queued=${this.soundQueue.size}`,
+      );
     } else if (sound.type === FwsAuralWarningType.SingleChime) {
       this.singleChimesPending++;
+      this.debugLog(
+        `enqueue ${soundKey} startupCompleted=${this.startupCompleted.get()} pendingSC=${this.singleChimesPending}`,
+      );
     }
   }
 
   /** Remove sound from queue, e.g. when condition doesn't apply anymore. If sound is currently playing, stops sound immediately */
   dequeueSound(soundKey: keyof typeof FwsAuralsList) {
+    const wasPlaying = this.currentSoundPlaying === soundKey;
+    const wasQueued = this.soundQueue.has(soundKey);
+    const wasScheduledToRepeat = soundKey === this.soundToRepeat;
+
     // Check if this sound is currently playing
-    if (this.currentSoundPlaying === soundKey && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
+    if (wasPlaying && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
       this.stopCurrentSound();
     }
     this.soundQueue.delete(soundKey);
-    if (soundKey === this.soundToRepeat) {
+    if (wasScheduledToRepeat) {
       this.soundToRepeatDelay = null;
       this.soundToRepeat = null;
+    }
+    if (wasPlaying || wasQueued || wasScheduledToRepeat || FwsSoundManager.DEBUG_LOG_IGNORED_DEQUEUES) {
+      this.debugLog(
+        `dequeue ${soundKey} wasPlaying=${wasPlaying} wasQueued=${wasQueued} wasRepeat=${wasScheduledToRepeat} current=${
+          this.currentSoundPlaying ?? 'none'
+        } queued=${this.soundQueue.size} repeat=${this.soundToRepeat ?? 'none'}`,
+      );
     }
   }
 
@@ -318,6 +364,7 @@ export class FwsSoundManager {
       FwsAuralsList[this.currentSoundPlaying]?.continuous
     ) {
       SimVar.SetSimVarValue(`L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`, SimVarValueType.Bool, false);
+      this.debugLog(`stopCurrentSound ${this.currentSoundPlaying}`);
       this.currentSoundPlaying = null;
       this.currentSoundPlayTimeRemaining = 0;
     }
@@ -359,6 +406,11 @@ export class FwsSoundManager {
       this.numberOfTimesToRepeatSound = sound.repeatFor ? sound.repeatFor - 1 : null; // Subtract one for subsequent plays
     }
     this.soundQueue.delete(soundKey);
+    this.debugLog(
+      `play ${soundKey} startupCompleted=${this.startupCompleted.get()} remaining=${this.currentSoundPlayTimeRemaining} repeat=${
+        this.soundToRepeat ?? 'none'
+      } queued=${this.soundQueue.size}`,
+    );
   }
   /** Find most important sound from soundQueue and play */
   private selectAndPlayMostImportantSound(deltaTime: number): keyof typeof FwsAuralsList | null {
@@ -370,6 +422,7 @@ export class FwsSoundManager {
       this.soundToRepeatDelay -= deltaTime / 1_000;
       if (this.soundToRepeatDelay <= 0) {
         this.soundQueue.add(this.soundToRepeat);
+        this.debugLog(`repeat ready ${this.soundToRepeat}`);
         this.soundToRepeatDelay = null;
         this.soundToRepeat = null;
       }
@@ -425,6 +478,7 @@ export class FwsSoundManager {
         if (sound.localVarName) {
           SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
         }
+        this.debugLog(`finish ${this.currentSoundPlaying}`);
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
         // Enforce one cycle delay before repeating the sound if applicable, otherwise sim won't interrupt the sound.
