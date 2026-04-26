@@ -707,6 +707,10 @@ export class FmcAircraftInterface {
   updateFmsData() {
     const activeFlightPlan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
 
+    const originChanged = this.fmsOrigin.get() !== (activeFlightPlan?.originAirport?.ident ?? null);
+    const arrivalChanged = this.fmsDestination.get() !== (activeFlightPlan?.destinationAirport?.ident ?? null);
+    const alternateChanged = this.fmsAlternate.get() !== (activeFlightPlan?.alternateDestinationAirport?.ident ?? null);
+
     this.fmsOrigin.set(activeFlightPlan?.originAirport?.ident ? activeFlightPlan.originAirport.ident : null);
 
     this.fmsDepartureRunway.set(activeFlightPlan?.originRunway?.ident ? activeFlightPlan.originRunway.ident : null);
@@ -724,6 +728,10 @@ export class FmcAircraftInterface {
     );
 
     this.fmgc.data.atcCallsign.set(activeFlightPlan?.flightNumber?.get() ?? null);
+
+    if (originChanged || arrivalChanged || alternateChanged) {
+      this.fmc.resetAtisAutoUpdate();
+    }
   }
 
   activatePreSelSpeedMach(preSel: number) {

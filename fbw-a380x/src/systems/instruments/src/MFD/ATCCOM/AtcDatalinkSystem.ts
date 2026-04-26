@@ -26,6 +26,7 @@ import {
   NXSystemMessages,
 } from '../shared/NXSystemMessages';
 import { AtsuToFmsEvents, FmsToAtsuEvents } from '../shared/FmcAtsuEvents';
+import { logTroubleshootingError } from '../shared/utils';
 
 export type AirportAtis = {
   icao: string;
@@ -81,7 +82,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   private atisAutoUpdates: string[] = [];
 
-  /**Reqeust id as key. Flightplan index as value  */
+  /** Map containing the wind request ids associated with the flightplan index which they belong to */
   private readonly uplinkWindRequestFlightPlanMap: Map<number, number> = new Map();
 
   private atisReportsPrintActive: boolean = false;
@@ -214,11 +215,23 @@ export class AtcDatalinkSystem implements Instrument {
       this.windsResponseCallbacks.every((callback, index) => {
         if (callback(response.data, response.requestId)) {
           this.windsResponseCallbacks.splice(index, 1);
-          this.fmsBusPublisher.pub('wind_uplink_response', {
-            status: response.data[0],
-            message: response.data[1],
-            flightPlan: this.uplinkWindRequestFlightPlanMap.get(response.requestId) ?? -1,
-          });
+          const flightPlanIndex = this.uplinkWindRequestFlightPlanMap.get(response.requestId) ?? -1;
+          if (flightPlanIndex === -1) {
+            console.warn(
+              `Received wind uplink response for request id ${response.requestId} but no matching flightplan.`,
+            );
+            logTroubleshootingError(
+              this.bus,
+              `Received wind uplink response for request id ${response.requestId} but no matching flightplan was found.`,
+            );
+          } else {
+            this.fmsBusPublisher.pub('wind_uplink_response', {
+              status: response.data[0],
+              message: response.data[1],
+              flightPlan: flightPlanIndex,
+            });
+          }
+          this.uplinkWindRequestFlightPlanMap.delete(response.requestId);
           return false;
         }
         return true;

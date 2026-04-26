@@ -339,7 +339,8 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly atsuBusSubscriber = this.bus.getSubscriber<AtsuToFmsEvents>();
 
   private readonly companyWindUplinkTimeout = new NXLogicConfirmNode(240);
-  private readonly noCompanyReply = Subject.create(false);
+  private readonly noCompanyReply = Subject.create(false); //TODO affect with flightplan requests too.
+  private readonly pendingFlightPlanWindUplink = Subject.create<number | null>(null);
 
   constructor(
     private instance: FmcIndex,
@@ -492,6 +493,14 @@ export class FlightManagementComputer implements FmcInterface {
         if (v) {
           this.addMessageToQueue(NXSystemMessages.noCompanyReply);
           this.fmgc.data.cpnyWindUplinkInProgress.set(false);
+          if (this.pendingFlightPlanWindUplink.get() !== null) {
+            const fp = this.flightPlanInterface.has(this.pendingFlightPlanWindUplink.get()!)
+              ? this.flightPlanInterface.get(this.pendingFlightPlanWindUplink.get()!)
+              : null;
+            if (fp) {
+              fp.pendingWindUplink.onUplinkAborted();
+            }
+          }
         }
       }),
       this.atsuBusSubscriber
@@ -903,21 +912,24 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   requestCpnyWind(flightPlanIndex: FlightPlanIndex) {
-    const hasfp = this.flightPlanInterface.has(flightPlanIndex);
-    if (!hasfp) {
-      return;
-    }
-    const fp = this.flightPlanInterface.get(
-      flightPlanIndex === FlightPlanIndex.Temporary ? FlightPlanIndex.Active : flightPlanIndex,
-    );
+    if (!this.fmgc.data.uplinkRequestInProgress.get()) {
+      const hasfp = this.flightPlanInterface.has(flightPlanIndex);
+      if (!hasfp) {
+        return;
+      }
+      const fp = this.flightPlanInterface.get(
+        flightPlanIndex === FlightPlanIndex.Temporary ? FlightPlanIndex.Active : flightPlanIndex,
+      );
 
-    fp.pendingWindUplink.onUplinkRequested();
-    const windReq: WindRequestMessage = null; // TODO
-    this.atsuBusPublisher.pub('wind_uplink_request', {
-      flightPlan: flightPlanIndex,
-      request: windReq,
-    });
-    this.fmgc.data.cpnyWindUplinkInProgress.set(true);
+      fp.pendingWindUplink.onUplinkRequested();
+      const windReq: WindRequestMessage = null; // TODO
+      this.atsuBusPublisher.pub('wind_uplink_request', {
+        flightPlan: flightPlanIndex,
+        request: windReq,
+      });
+      this.fmgc.data.cpnyWindUplinkInProgress.set(true);
+      this.pendingFlightPlanWindUplink.set(flightPlanIndex);
+    }
   }
 
   insertCpnyWind(flightPlanIndex: number): void {
@@ -1536,6 +1548,10 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
+  resetAtisAutoUpdate() {
+    this.atsuBusPublisher.pub('reset_auto_update', null, true, false);
+  }
+
   private checkDestData(): void {
     if (!this.destDataEntered.get()) {
       this.addMessageToQueue(NXSystemMessages.enterDestData);
@@ -1648,7 +1664,11 @@ export class FlightManagementComputer implements FmcInterface {
           this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get(), throttledDt) &&
             this.#flightPlanService.hasActive,
         );
-        this.companyWindUplinkTimeout.write(this.fmgc.data.cpnyWindUplinkInProgress.get(), throttledDt);
+        const windTimeOut = this.companyWindUplinkTimeout.write(
+          this.fmgc.data.cpnyWindUplinkInProgress.get(),
+          throttledDt,
+        );
+        this.noCompanyReply.set(windTimeOut);
       }
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
@@ -1857,7 +1877,6 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async reset(): Promise<void> {
-    this.atsuBusPublisher.pub('reset_auto_update', null, true, false);
     this.wasReset = true;
     await this.flightPlanInterface.reset();
     this.fmgc.data.reset();
@@ -1867,10 +1886,11 @@ export class FlightManagementComputer implements FmcInterface {
     this.mfdReference?.uiService.navigateTo('fms/data/status');
     this.navigation.resetState();
     this.acInterface.resetDestinationPredictions();
+    this.resetAtisAutoUpdate();
   }
 
   public logTroubleshootingError(msg: any) {
-    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+    logTroubleshootingError(this.bus, msg);
   }
 
   // TODO refactor in order to transmit message text to the ND. E.g. LEG/AREA/MAN RNP XXX.X
@@ -1966,9 +1986,9 @@ export class FlightManagementComputer implements FmcInterface {
         'Received company wind uplink for plan index ' + planIndex + ', but no such plan exists',
       );
       this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
-      return;
     } else {
       const status = response.status;
+      const plan = this.flightPlanInterface.get(planIndex);
       if (status === AtsuStatusCodes.Ok) {
         const message = response.message;
         if (message === null) {
@@ -1977,9 +1997,9 @@ export class FlightManagementComputer implements FmcInterface {
             'Received OK status for company wind uplink, but message was null for plan ' + planIndex,
           );
           this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
+          plan.pendingWindUplink.onUplinkAborted();
         } else {
           try {
-            const plan = this.flightPlanInterface.get(planIndex);
             PendingWindUplinkParser.setFromUplink(
               message,
               plan,
@@ -1990,14 +2010,18 @@ export class FlightManagementComputer implements FmcInterface {
             console.warn('Error processing company wind uplink for plan ' + planIndex, e);
             this.logTroubleshootingError(e);
             this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
+            plan.pendingWindUplink.onUplinkAborted();
           }
         }
       } else if (status === AtsuStatusCodes.RequestTimeout) {
-        this.noCompanyReply.set(true);
+        plan.pendingWindUplink.onUplinkAborted();
+        this.addMessageToQueue(NXSystemMessages.noCompanyReply);
       } else {
         this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
+        plan.pendingWindUplink.onUplinkAborted();
       }
     }
     this.fmgc.data.cpnyWindUplinkInProgress.set(false);
+    this.pendingFlightPlanWindUplink.set(null);
   }
 }

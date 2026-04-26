@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
-import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+import { DateTimeFormatter, EventBus } from '@microsoft/msfs-sdk';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -74,3 +74,7 @@ export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadP
 export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
 export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
 export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
+
+export function logTroubleshootingError(bus: EventBus, msg: any) {
+  bus.pub('troubleshooting_log_error', String(msg), true, false);
+}

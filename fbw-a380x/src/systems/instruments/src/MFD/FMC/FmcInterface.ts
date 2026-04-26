@@ -337,4 +337,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /** Clean up all subscriptions */
   destroy(): void;
+
+  /** Sends a request to the AOC to reset the ATIS auto update airports */
+  resetAtisAutoUpdate(): void;
 }
