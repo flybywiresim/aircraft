@@ -1358,8 +1358,6 @@ export class PseudoFWC {
 
   private readonly thr2TLA = Subject.create(0);
 
-  public readonly allThrTLAIdle = Subject.create(false);
-
   private readonly thr1TLAMCT = Subject.create(false);
 
   private readonly thr2TLAMCT = Subject.create(false);
@@ -1372,11 +1370,11 @@ export class PseudoFWC {
 
   private readonly thr2TLABetweenCLAndMCT = Subject.create(false);
 
+  private readonly allThrTLAIdle = Subject.create(false);
+
   private readonly thr1TLAReverse = Subject.create(false);
 
   private readonly thr2TLAReverse = Subject.create(false);
-
-  private readonly revSetWarning = Subject.create(false);
 
   private readonly allThrTLAReverse = Subject.create(false);
 
@@ -1433,6 +1431,8 @@ export class PseudoFWC {
   private readonly thrLeversNotSetFlex = Subject.create(false);
 
   private readonly thrLeversNotSetWarning = Subject.create(false);
+
+  private readonly revSetWarning = Subject.create(false);
 
   private readonly eng1Or2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
