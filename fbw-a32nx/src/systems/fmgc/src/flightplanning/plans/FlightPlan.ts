@@ -938,4 +938,28 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.pendingWindUplink.onUplinkInserted();
   }
+
+  /**
+   * Computes the cruise level for the alternate.
+   * @returns the cruise level in hundres of feet, or udnefined, if no alternate or destination exist.
+   */
+  public computeAlternateCruiseLevel(): number | undefined {
+    if (!this.destinationAirport || !this.alternateDestinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      this.destinationAirport.location,
+      this.alternateDestinationAirport.location,
+    );
+
+    if (distance > 200) {
+      return 310;
+    } else if (distance > 100) {
+      return 220;
+    }
+
+    return 100;
+  }
 }

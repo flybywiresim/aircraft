@@ -242,10 +242,28 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   cpnyFplnRequest(forPlan: FlightPlanIndex): void;
 
   /**
+   * Request CPNY WIND from ACARS
+   * @param forPlan flight plan to request CPNY WIND for
+   */
+  requestCpnyWind(forPlan: FlightPlanIndex): void;
+
+  /**
    * Insert CPNY FPLN into flight plan where request has been made from
    * @param intoPlan Flight plan to insert CPNY FPLN into
    */
   insertCpnyFpln(intoPlan: FlightPlanIndex): void;
+
+  /**
+   * Inserts the CPNY WIND into the flight plan where the request has been made from.
+   * @param flightPlanIndex flight plan to insert
+   */
+  insertCpnyWind(flightPlanIndex: number): void;
+
+  /**
+   * Deletes the CPNY WIND Uplink from the flight plan where the request has been made from.
+   * @param flightPlanIndex flight plan to delete CPNY WIND Uplink from
+   */
+  deleteCpnyWind(flightPlanIndex: number): void;
 
   /**
    * Whether the secondary flight plan can be activated or swapped with the active flight plan

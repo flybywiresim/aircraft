@@ -15,7 +15,7 @@ export class CpnyFplnButtonUtils {
               (enginesStarted ||
                 hasActiveFlightPlan ||
                 (forPlan !== null && forPlan >= FlightPlanIndex.FirstSecondary))),
-          fmc.fmgc.data.cpnyFplnUplinkInProgress,
+          fmc.fmgc.data.uplinkRequestInProgress,
           fmc.fmgc.data.cpnyFplnRequestedForPlan,
           fmc.enginesWereStarted,
           fmc.hasActiveFlightPlan,

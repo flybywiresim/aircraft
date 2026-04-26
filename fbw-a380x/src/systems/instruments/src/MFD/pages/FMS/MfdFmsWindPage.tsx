@@ -33,6 +33,7 @@ import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { WindAltitudeFormat, WindDirectionFormat, WindSpeedFormat } from '../common/DataEntryFormats';
 import { MathUtils } from '../../../../../../../../fbw-common/src/systems/shared/src/MathUtils';
+import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
@@ -69,8 +70,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
   private readonly displayedWindHeader = Subject.create('CLB WIND');
-  private readonly temporaryMessageAreaDisplay = this.tmpyActive.map((exists) => (exists ? 'block' : 'none'));
-  private readonly tableHeaderDisplay = this.tmpyActive.map((exists) => (exists ? 'none' : 'flex'));
+  private readonly temporaryMessageAreaDisplay = this.tmpyExists.map((exists) => (exists ? 'block' : 'none'));
+  private readonly tableHeaderDisplay = this.tmpyExists.map((exists) => (exists ? 'none' : 'flex'));
+  private readonly uplinkAvailableForPlan = Subject.create(false);
 
   // History Wind
   private static readonly NUM_HISTORY_WIND_ENTRIES = 5;
@@ -178,6 +180,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     const fp = hasFP ? this.props.fmcService.master.flightPlanInterface.get(loadedFlightPlanIndex) : null;
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
+    this.uplinkAvailableForPlan.set(fp?.pendingWindUplink.isWindUplinkReadyToInsert() ?? false);
     // History wind methods
     if (this.selectedPageMenu === WindPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
@@ -206,7 +209,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     } else if (this.selectedPageMenu === WindPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
-      this.climbWindsDisabled.set(fp === undefined || this.tmpyActive.get());
+      this.climbWindsDisabled.set(fp === undefined || this.tmpyExists.get());
       this.climbWindsInactive.set(
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() != FmgcFlightPhase.Preflight,
       );
@@ -560,7 +563,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                   }
                   onClick={this.insertHistoryWind.bind(this)}
                   visible={this.historyWindButtonVisible}
-                  disabled={this.tmpyActive}
+                  disabled={this.tmpyExists}
                 />
               </div>
             </TopTabNavigatorPage>
@@ -645,9 +648,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               buttonStyle="margin-right: 5px; width:150px;"
               visible={this.returnButtonVisible}
             />
-            <Button
-              disabled={true}
-              label="CPNY WIND<br />REQUEST"
+            <CpnyWindRequestButton
+              fmc={this.props.fmcService.master}
+              flightPlanIndex={this.loadedFlightPlanIndex}
+              tmpyExists={this.tmpyExists}
+              uplinkAvailableForPlan={this.uplinkAvailableForPlan}
               onClick={() => console.log('CPNY WIND REQUEST')}
               buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
             />

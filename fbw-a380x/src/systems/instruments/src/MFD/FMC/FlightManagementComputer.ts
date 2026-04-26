@@ -6,6 +6,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import {
   ArraySubject,
+  ClockEvents,
   ConsumerSubject,
   EventBus,
   MappedSubject,
@@ -264,6 +265,7 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly approachTemperature = Subject.create<number | null>(null);
   private readonly approachWindDirection = Subject.create<number | null>(null);
   private readonly approachWindMagnitude = Subject.create<number | null>(null);
+  private readonly destDataIsPilotEntered = Subject.create(false);
 
   private readonly destDataEntered = MappedSubject.create(
     ([qnh, temperature, windDirection, windMagnitude]) =>
@@ -285,11 +287,17 @@ export class FlightManagementComputer implements FmcInterface {
     this.finalFuelWeight,
   );
 
+  private readonly checkDestDataMessage = Subject.create(false);
+
   public readonly approachFlapsThreeSelected = Subject.create(false);
 
   private destDataCheckedInCruise = false;
 
+  private readonly cruiseMessageCheckThrotter = new UpdateThrottler(15000);
+
   private simBriefOfp: ISimbriefData | null = null;
+
+  private lastUpdateTime: number | null = 0;
 
   constructor(
     private instance: FmcIndex,
@@ -399,6 +407,13 @@ export class FlightManagementComputer implements FmcInterface {
           this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
         }
       }),
+      this.checkDestDataMessage.sub((v) => {
+        if (v) {
+          this.addMessageToQueue(NXSystemMessages.checkDestData);
+        } else {
+          this.removeMessageFromQueue(NXSystemMessages.checkDestData.text);
+        }
+      }),
       this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
       this.zeroFuelWeight.sub((zfw) => {
         if (zfw !== null) {
@@ -419,26 +434,16 @@ export class FlightManagementComputer implements FmcInterface {
       }),
     );
 
-    let lastUpdateTime = Date.now();
-    setInterval(() => {
-      const now = Date.now();
-      const dt = now - lastUpdateTime;
-
-      this.onUpdate(dt);
-
-      lastUpdateTime = now;
-    }, 100);
-
-    // Start the check routine for system health and status
-    setInterval(() => {
-      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
-        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
-          this.destDataCheckedInCruise = true;
-          this.checkDestData();
-        }
-      }
-    }, 15000);
+    this.subs.push(
+      this.bus
+        .getSubscriber<ClockEvents>()
+        .on('simTimeHiFreq')
+        .atFrequency(10)
+        .handle((time) => {
+          this.onUpdate(time - (this.lastUpdateTime ?? 0));
+          this.lastUpdateTime = time;
+        }),
+    );
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
@@ -796,6 +801,17 @@ export class FlightManagementComputer implements FmcInterface {
       this.addMessageToQueue(NXSystemMessages.receivedCpnyFplnNotValid, undefined, undefined);
       this.onUplinkDone(false);
     }
+  }
+
+  async requestCpnyWind(intoPlan: FlightPlanIndex) {
+    this.fmgc.data.cpnyWindUplinkInProgress.set(true);
+  }
+
+  insertCpnyWind(flightPlanIndex: number): void {
+    throw new Error('Method not implemented.');
+  }
+  deleteCpnyWind(flightPlanIndex: number): void {
+    throw new Error('Method not implemented.');
   }
 
   async insertCpnyFpln(intoPlan: FlightPlanIndex) {
@@ -1377,6 +1393,8 @@ export class FlightManagementComputer implements FmcInterface {
     if (!this.destDataEntered.get()) {
       this.addMessageToQueue(NXSystemMessages.enterDestData);
     }
+    const shoudTriggerCheckDestData = this.approachWindDirection.get() !== null && !this.destDataIsPilotEntered.get();
+    this.checkDestDataMessage.set(shoudTriggerCheckDestData);
   }
 
   private zfwInitDisplayed = 0;
@@ -1471,6 +1489,15 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.acInterface.checkSpeedLimit();
       this.acInterface.thrustReductionAccelerationChecks();
+      if (this.cruiseMessageCheckThrotter.canUpdate(dt) !== -1) {
+        if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
+          const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+          if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
+            this.destDataCheckedInCruise = true;
+            this.checkDestData();
+          }
+        }
+      }
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
     }
@@ -1769,6 +1796,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.approachTemperature.set(pd?.approachTemperature.get() ?? null);
     this.approachWindDirection.set(pd?.approachWindDirection.get() ?? null);
     this.approachWindMagnitude.set(pd?.approachWindMagnitude.get() ?? null);
+    this.destDataIsPilotEntered.set(pd?.isApproachWindPilotEntered.get() ?? false);
     this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
     this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
     this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);

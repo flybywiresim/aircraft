@@ -54,7 +54,10 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected currentFlightPlanVersion: number = 0;
 
+  /** Indicates whether the temporary flight plan is the active */
   protected readonly tmpyActive = Subject.create<boolean>(false);
+
+  protected readonly tmpyExists = Subject.create<boolean>(false);
 
   /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
   private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
@@ -188,6 +191,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   protected onFlightPlanChanged(dueToEvent = true) {
     const activeUri = this.props.mfd.uiService.activeUri.get();
     const hasTmpy = this.props.flightPlanInterface.hasTemporary;
+    this.tmpyExists.set(hasTmpy);
     switch (activeUri.category) {
       case 'active':
         if (this.props.flightPlanInterface.hasActive || hasTmpy) {

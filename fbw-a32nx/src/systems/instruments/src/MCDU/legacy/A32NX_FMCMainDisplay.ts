@@ -5576,27 +5576,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
     const plan = this.getFlightPlan(forPlan);
-    if (!plan) {
-      return undefined;
-    }
-
-    if (!plan.destinationAirport || !plan.alternateDestinationAirport) {
-      return undefined;
-    }
-
-    // TODO use actual flight plan distance rather than great circle distance
-    const distance = Avionics.Utils.computeGreatCircleDistance(
-      plan.destinationAirport.location,
-      plan.alternateDestinationAirport.location,
-    );
-
-    if (distance > 200) {
-      return 310;
-    } else if (distance > 100) {
-      return 220;
-    }
-
-    return 100;
+    return plan?.computeAlternateCruiseLevel();
   }
 
   public goToFuelPredPage(forPlan: FlightPlanIndex) {
