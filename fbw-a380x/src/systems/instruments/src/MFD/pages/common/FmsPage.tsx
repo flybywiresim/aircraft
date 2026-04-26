@@ -130,6 +130,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     const flightPlanSyncSub = this.props.bus.getSubscriber<FlightPlanEvents>();
 
     this.subs.push(
+      //FIXME. Should the pages listen to the events directly or get them from the FMC?
       flightPlanSyncSub.on('flightPlanManager.create').handle(() => {
         this.onFlightPlanChanged();
       }),

@@ -5576,7 +5576,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
     const plan = this.getFlightPlan(forPlan);
-    return plan?.computeAlternateCruiseLevel();
+    return plan?.getAlternateCruiseLevel();
   }
 
   public goToFuelPredPage(forPlan: FlightPlanIndex) {

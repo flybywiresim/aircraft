@@ -59,8 +59,8 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
   );
 
   private readonly menuItems = MappedSubject.create(
-    ([avail]) =>
-      avail
+    ([avail, tmpy]) =>
+      avail && !tmpy
         ? [
             {
               label: 'INSERT*',
@@ -75,6 +75,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
           ]
         : [],
     this.props.uplinkAvailableForPlan,
+    this.props.tmpyExists,
   );
 
   public render(): VNode {

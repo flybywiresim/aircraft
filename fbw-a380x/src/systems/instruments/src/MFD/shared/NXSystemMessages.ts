@@ -78,9 +78,9 @@ export class ATCCOMMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
-  awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
+  awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'), // TODO
   crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
-  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
+  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'), // TODO
   checkAltnWind: new TypeIIMessage('CHECK ALTN WIND'),
   checkDestData: new TypeIIMessage('CHECK DEST DATA', true),
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
@@ -93,19 +93,19 @@ export const NXSystemMessages = {
     false,
   ),
   comWindRecievedPendingInsertionInSecondary: new TypeIIMessage(
-    'COMPANY WIND RECIEVED\nWAITING FOR INSERTION IN SECX',
+    'COMPANY WIND RECIEVED\nWAITING FOR INSERTION IN SEC X',
     false,
     'X',
   ),
-  comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
+  comWindUplinkPending: new TypeIIMessage('COMPANY WIND UPLINK PENDING', true),
+  comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'), // TODO
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
-  databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
-  draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'),
+  draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'), // TODO
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   formatError: new TypeIMessage('FORMAT ERROR'),
-  fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
+  fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'), // TODO
   initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
   newAccAlt: new TypeIIMessage('NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
   newCrzAlt: new TypeIIMessage('NEW CRZ ALT: HHHHH', false, 'HHHHH'),
@@ -113,11 +113,10 @@ export const NXSystemMessages = {
   noCompanyReply: new TypeIIMessage('NO COMPANY REPLY'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
-  notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
   receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
   receivedCpnyWindNotValid: new TypeIIMessage('RECEIVED COMPANY WIND NOT VALID', false),
-  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
+  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true), // TODO
   setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
   tdReached: new TypeIIMessage('T/D REACHED'),
   spdLimExceeded: new TypeIIMessage('SPD LIMIT EXCEEDED', true),

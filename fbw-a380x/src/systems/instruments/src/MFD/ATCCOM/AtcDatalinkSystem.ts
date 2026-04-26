@@ -1,9 +1,18 @@
 // Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { AocFmsMessages, FmsAocMessages } from '@datalink/aoc';
 import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
-import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
+import {
+  AtisMessage,
+  AtisType,
+  AtsuStatusCodes,
+  DatalinkModeCode,
+  DatalinkStatusCode,
+  WindRequestMessage,
+  WindUplinkMessage,
+} from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
 import { FmsData } from '@flybywiresim/fbw-sdk';
@@ -16,6 +25,7 @@ import {
   NXFictionalMessages,
   NXSystemMessages,
 } from '../shared/NXSystemMessages';
+import { AtsuToFmsEvents, FmsToAtsuEvents } from '../shared/FmcAtsuEvents';
 
 export type AirportAtis = {
   icao: string;
@@ -46,11 +56,20 @@ export interface AtcErrorMessage {
 }
 
 export class AtcDatalinkSystem implements Instrument {
+  // TODO this should be hosted in the ANSU.
   private readonly messageStorage: MessageStorage;
 
-  private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages & FmsRouterMessages>();
+  private readonly publisher = this.bus.getPublisher<
+    AtcDatalinkMessages & FmsAtcMessages & FmsRouterMessages & FmsAocMessages
+  >();
 
-  private readonly sub = this.bus.getSubscriber<AtcFmsMessages & FmsData & RouterFmsMessages & FmsRouterMessages>();
+  private readonly sub = this.bus.getSubscriber<
+    AtcFmsMessages & FmsData & RouterFmsMessages & FmsRouterMessages & AocFmsMessages
+  >();
+
+  private readonly fmsBusSub = this.bus.getSubscriber<FmsToAtsuEvents>();
+
+  private readonly fmsBusPublisher = this.bus.getPublisher<AtsuToFmsEvents>();
 
   private requestId: number = 0;
 
@@ -62,7 +81,15 @@ export class AtcDatalinkSystem implements Instrument {
 
   private atisAutoUpdates: string[] = [];
 
+  /**Reqeust id as key. Flightplan index as value  */
+  private readonly uplinkWindRequestFlightPlanMap: Map<number, number> = new Map();
+
   private atisReportsPrintActive: boolean = false;
+
+  private windsResponseCallbacks: ((
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+    requestId: number,
+  ) => boolean)[] = [];
 
   #atcErrors = ArraySubject.create<AtcErrorMessage>();
 
@@ -178,6 +205,25 @@ export class AtcDatalinkSystem implements Instrument {
       .handle((icao) => {
         this.initAtis(2, icao);
       });
+
+    this.fmsBusSub.on('reset_auto_update').handle(() => {
+      this.resetAtisAutoUpdate();
+    });
+
+    this.sub.on('aocWindsResponse').handle((response) => {
+      this.windsResponseCallbacks.every((callback, index) => {
+        if (callback(response.data, response.requestId)) {
+          this.windsResponseCallbacks.splice(index, 1);
+          this.fmsBusPublisher.pub('wind_uplink_response', {
+            status: response.data[0],
+            message: response.data[1],
+            flightPlan: this.uplinkWindRequestFlightPlanMap.get(response.requestId) ?? -1,
+          });
+          return false;
+        }
+        return true;
+      });
+    });
   }
 
   init(): void {}
@@ -448,5 +494,25 @@ export class AtcDatalinkSystem implements Instrument {
       default:
         return DatalinkModeCode.None;
     }
+  }
+
+  private resetAtisAutoUpdate(): void {
+    this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
+  }
+
+  public receiveWindUplink(
+    request: WindRequestMessage,
+    flightPlan: number,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      this.uplinkWindRequestFlightPlanMap.set(requestId, flightPlan);
+
+      this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
+        if (id === requestId) resolve(response);
+        return id === requestId;
+      });
+    });
   }
 }

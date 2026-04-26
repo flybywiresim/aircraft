@@ -940,10 +940,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   /**
-   * Computes the cruise level for the alternate.
-   * @returns the cruise level in hundres of feet, or udnefined, if no alternate or destination exist.
+   * Get the computed cruise level for the alternate.
+   * @returns the cruise level in hundreds of feet, or undefined, if no alternate or destination exist.
    */
-  public computeAlternateCruiseLevel(): number | undefined {
+  public getAlternateCruiseLevel(): number | undefined {
     if (!this.destinationAirport || !this.alternateDestinationAirport) {
       return undefined;
     }
