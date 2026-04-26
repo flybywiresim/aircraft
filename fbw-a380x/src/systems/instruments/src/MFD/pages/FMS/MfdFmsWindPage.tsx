@@ -653,9 +653,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               flightPlanIndex={this.loadedFlightPlanIndex}
               tmpyExists={this.tmpyExists}
               uplinkAvailableForPlan={this.uplinkAvailableForPlan}
-              onClick={() => {
-                this.props.fmcService.master.requestCpnyWind(this.loadedFlightPlanIndex.get());
-              }}
               buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
             />
           </div>

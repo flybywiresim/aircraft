@@ -32,6 +32,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CpnyFplnButtonUtils } from '../../shared/CpnyFplnButtonUtils';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -153,6 +154,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly flightNumber = Subject.create<string | null>(null);
 
+  private readonly uplinkAvailableForPlan = Subject.create(false);
+
   /** FIXME workaround as newCity pair deletes the flightplan and we don't want to show ---- on the FROM/TO pair */
   private creationInProgress = false;
 
@@ -230,9 +233,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const fp = this.loadedFlightPlan;
-
     const fpIndex = this.loadedFlightPlanIndex.get();
+    const fp = this.props.flightPlanInterface.has(fpIndex) ? this.props.flightPlanInterface.get(fpIndex) : undefined;
     const pd = fp?.performanceData;
 
     this.tropopause.set(pd?.tropopause.get() ?? null);
@@ -254,6 +256,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
     this.costIndex.set(pd?.costIndex.get() ?? null);
+    this.uplinkAvailableForPlan.set(fp?.pendingWindUplink.isWindUplinkReadyToInsert() ?? false);
   }
 
   protected onNewData() {
@@ -346,7 +349,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private requestId = 0;
 
-  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = []; //FIXME this should not be here. Move to datalink system instead.
 
   private async connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
     const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
@@ -681,10 +684,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />
-              <Button
-                disabled={true}
-                label="CPNY WIND<br />REQUEST"
-                onClick={() => console.log('CPNY WIND REQUEST')}
+              <CpnyWindRequestButton
+                fmc={this.props.fmcService.master}
+                flightPlanIndex={this.loadedFlightPlanIndex}
+                tmpyExists={this.tmpyExists}
+                uplinkAvailableForPlan={this.uplinkAvailableForPlan}
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
               />
             </div>

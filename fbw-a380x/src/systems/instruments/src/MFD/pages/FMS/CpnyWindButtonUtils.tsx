@@ -33,7 +33,6 @@ export interface CpnyWindRequestButtonProps extends ComponentProps {
   flightPlanIndex: Subscribable<number>;
   tmpyExists: Subscribable<boolean>;
   uplinkAvailableForPlan: Subscribable<boolean>;
-  onClick: () => void;
   buttonStyle?: string;
 }
 
