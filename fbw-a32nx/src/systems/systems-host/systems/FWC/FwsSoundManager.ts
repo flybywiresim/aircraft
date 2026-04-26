@@ -276,12 +276,7 @@ export class FwsSoundManager {
         .join(' ')}`,
     );
 
-    // Stop all sounds
-    Object.values(FwsAuralsList).forEach((a) => {
-      if (a.localVarName) {
-        SimVar.SetSimVarValue(`L:${a.localVarName}`, SimVarValueType.Bool, false);
-      }
-    });
+    this.resetSoundState();
     this.debugLog('initial sound LVars reset to false');
 
     const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
@@ -289,6 +284,9 @@ export class FwsSoundManager {
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
 
     this.startupCompleted.sub((started) => {
+      if (!started) {
+        this.silenceForStartupShutdown();
+      }
       this.debugLog(
         `startupCompleted=${started} current=${this.currentSoundPlaying ?? 'none'} queued=${this.soundQueue.size} repeat=${
           this.soundToRepeat ?? 'none'
@@ -305,6 +303,41 @@ export class FwsSoundManager {
     const simTimeSeconds = SimVar.GetSimVarValue('E:SIMULATION TIME', SimVarValueType.Seconds);
     const simTime = Number.isFinite(simTimeSeconds) ? simTimeSeconds.toFixed(3) : 'n/a';
     console.log(`[FWS Sound ${new Date().toISOString()} sim=${simTime}] ${message}`);
+  }
+
+  private resetSoundState() {
+    this.silenceAllSoundLVars();
+    this.soundQueue.clear();
+    this.singleChimesPending = 0;
+    this.currentSoundPlaying = null;
+    this.currentSoundPlayTimeRemaining = 0;
+    this.soundToRepeatDelay = null;
+    this.soundToRepeat = null;
+  }
+
+  private silenceForStartupShutdown() {
+    const currentSoundKey = this.currentSoundPlaying;
+    const currentSound = currentSoundKey ? FwsAuralsList[currentSoundKey] : undefined;
+
+    this.silenceAllSoundLVars();
+
+    if (currentSoundKey && (currentSound?.continuous || currentSound?.periodicWithPause)) {
+      this.soundQueue.add(currentSoundKey);
+    }
+
+    this.currentSoundPlaying = null;
+    this.currentSoundPlayTimeRemaining = 0;
+    this.singleChimesPending = 0;
+    this.soundToRepeatDelay = null;
+    this.soundToRepeat = null;
+  }
+
+  private silenceAllSoundLVars() {
+    Object.values(FwsAuralsList).forEach((a) => {
+      if (a.localVarName) {
+        SimVar.SetSimVarValue(`L:${a.localVarName}`, SimVarValueType.Bool, false);
+      }
+    });
   }
 
   /** Get the current emitted sound or the sound which is about to be repeated, for example for the AP OFF logic computation. */
