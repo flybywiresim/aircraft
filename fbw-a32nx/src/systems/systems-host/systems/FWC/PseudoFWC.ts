@@ -263,10 +263,15 @@ export class PseudoFWC {
   /* SDAC */
   private readonly sdac00100Word = Arinc429Register.empty();
 
+  private readonly sdac00101Word = Arinc429Register.empty();
+
   private readonly sdac00200Word = Arinc429Register.empty();
 
   private readonly sdac00201Word = Arinc429Register.empty();
   private readonly sdac00210Word = Arinc429Register.empty();
+  private readonly sdac00211Word = Arinc429Register.empty();
+
+  private readonly sdac00300Word = Arinc429Register.empty();
 
   private readonly sdac00401Word = Arinc429Register.empty();
   private readonly sdac00410Word = Arinc429Register.empty();
@@ -663,6 +668,24 @@ export class PseudoFWC {
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_2_bus_is_powered'), false);
 
+  private readonly ratOutMemo = Subject.create(false);
+
+  private readonly elecEmergency = Subject.create(false);
+
+  private readonly elecEmerConfigWarning = Subject.create(false);
+
+  private readonly elecEmerBusTieOffGen1ResetMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly elecEmerBusTieOffGen2ResetMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly elecEmerGenReset = Subject.create(false);
+
+  private readonly elecEmerGen1ResetMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly elecEmerGen2ResetMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly elecEmerGen12Reset = Subject.create(false);
+
   private readonly gen1Inop = Subject.create(false);
 
   private readonly gen1FaultMemory = new NXLogicMemoryNode(false);
@@ -800,6 +823,10 @@ export class PseudoFWC {
   private readonly flapsHandle = Subject.create(0);
 
   private readonly lrElevFaultCondition = Subject.create(false);
+
+  private readonly fac1Healthy = RegisteredSimVar.createBoolean('L:A32NX_FAC_1_HEALTHY');
+
+  private readonly fac2Healthy = RegisteredSimVar.createBoolean('L:A32NX_FAC_2_HEALTHY');
 
   private readonly sec1FaultCondition = Subject.create(false);
 
@@ -998,8 +1025,6 @@ export class PseudoFWC {
   private readonly hydPTU = Subject.create(false);
 
   private readonly ptuAuto = Subject.create(false);
-
-  private readonly ratDeployed = Subject.create(0);
 
   private readonly yellowLP = Subject.create(false);
 
@@ -1875,16 +1900,29 @@ export class PseudoFWC {
 
   private readonly xpdr1StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
   private readonly xpdr2StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
+
+  private readonly ratDeployedVar = RegisteredSimVar.create(
+    'L:A32NX_RAT_STOW_POSITION',
+    SimVarValueType.PercentOver100,
+  );
+
   private readonly bat1PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO');
   private readonly bat2PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO');
   private readonly elecContactor9XU1Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED');
   private readonly elecContactor9XU2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED');
+  private readonly elecContactor3XGVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED');
+
+  private readonly avionicsVentExtractPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_EXTRACT_TOGGLE');
+  private readonly avionicsVentBlowerPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_BLOWER_TOGGLE');
+
+  private readonly elecBusTiePbVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO');
   // TODO: Check actual parking brake position
   private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
   private readonly antiSkidOnVar = RegisteredSimVar.createBoolean('A:ANTISKID BRAKES ACTIVE');
 
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
   private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
+  private readonly elecContactor2XEVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED');
   private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
   private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
@@ -1926,8 +1964,13 @@ export class PseudoFWC {
         xpdr2Status === TransponderState.Test,
     );
 
+    this.sdac00101Word.set(0);
+    this.sdac00101Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00101Word.setBitValue(28, this.ratDeployedVar.get() > 0);
+
     this.sdac00200Word.set(0);
     this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00200Word.setBitValue(21, !this.elecBusTiePbVar.get());
     this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
     this.sdac00200Word.setBitValue(23, !this.antiSkidOnVar.get());
 
@@ -1939,6 +1982,14 @@ export class PseudoFWC {
     this.sdac00210Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00210Word.setBitValue(14, !this.elecContactor9XU2Var.get());
     this.sdac00210Word.setBitValue(24, !this.bat2PbAutoVar.get());
+    this.sdac00211Word.set(0);
+    this.sdac00211Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00211Word.setBitValue(15, this.elecContactor3XGVar.get());
+
+    this.sdac00300Word.set(0);
+    this.sdac00300Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00300Word.setBitValue(14, !this.avionicsVentExtractPbVar.get());
+    this.sdac00300Word.setBitValue(19, !this.avionicsVentBlowerPbVar.get());
 
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1947,6 +1998,7 @@ export class PseudoFWC {
     this.sdac00410Word.set(0);
     this.sdac00410Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00410Word.setBitValue(26, this.ir2AlignDiscreteVar.get());
+    this.sdac00410Word.setBitValue(27, this.elecContactor2XEVar.get());
     this.sdac00410Word.setBitValue(28, this.ir2FaultDiscreteVar.get());
     this.sdac00411Word.set(0);
     this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -2124,7 +2176,6 @@ export class PseudoFWC {
     this.greenRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
     this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
     this.ptuAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'bool'));
-    this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_RAT_STOW_POSITION', 'percent over 100'));
     this.yellowLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool'));
     this.yellowRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
     this.yepumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'bool'));
@@ -3331,12 +3382,10 @@ export class PseudoFWC {
     // rudder trim not takeoff
     const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
     const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
-    const fac1Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_1_HEALTHY', 'boolean') > 0;
-    const fac2Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_2_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (fac1Healthy && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
-      (fac2Healthy && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+      (this.fac1Healthy.get() && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
+      (this.fac2Healthy.get() && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase129.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
@@ -3612,6 +3661,8 @@ export class PseudoFWC {
     );
 
     /* ELECTRICAL */
+    this.ratOutMemo.set(this.sdac00101Word.bitValue(28));
+
     this.bat1Off.set(
       this.sdac00201Word.bitValue(24) && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2),
     );
@@ -3754,6 +3805,38 @@ export class PseudoFWC {
 
     this.idg1DisconnectedWarning.set(this.idg1DisconnectWarn.get() && !idg1DisconnectedWarningPart2);
     this.idg2DisconnectedWarning.set(this.idg2DisconnectWarn.get() && !idg2DisconnectedWarningPart2);
+
+    this.elecEmergency.set(
+      (!this.sdac00211Word.bitValue(15) &&
+        (this.sdac05001Word.bitValue(19) || this.gen1Inop.get()) &&
+        (this.sdac05010Word.bitValue(19) || this.gen2Inop.get()) &&
+        (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
+        (!this.ac1BusPowered.get() && !this.ac2BusPowered.get()),
+    );
+    // TODO: Check SMOKE
+    this.elecEmerConfigWarning.set(this.elecEmergency.get() && !this.engDualFault.get());
+
+    this.elecEmerBusTieOffGen1ResetMemoryNode.write(
+      this.gen1PbNotOffPulseNode.read() && this.elecEmergency.get() && this.sdac00200Word.bitValue(21),
+      !this.elecEmergency.get(),
+    );
+    this.elecEmerBusTieOffGen2ResetMemoryNode.write(
+      this.gen2PbNotOffPulseNode.read() && this.elecEmergency.get() && this.sdac00200Word.bitValue(21),
+      !this.elecEmergency.get(),
+    );
+    this.elecEmerGenReset.set(
+      !(this.elecEmerBusTieOffGen1ResetMemoryNode.read() && this.elecEmerBusTieOffGen2ResetMemoryNode.read()),
+    );
+
+    this.elecEmerGen1ResetMemoryNode.write(
+      this.elecEmergency.get() && this.gen1PbNotOffPulseNode.read(),
+      !this.elecEmergency.get(),
+    );
+    this.elecEmerGen2ResetMemoryNode.write(
+      this.elecEmergency.get() && this.gen2PbNotOffPulseNode.read(),
+      !this.elecEmergency.get(),
+    );
+    this.elecEmerGen12Reset.set(!(this.elecEmerGen1ResetMemoryNode.read() && this.elecEmerGen2ResetMemoryNode.read()));
 
     /* NAV logic */
     const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
@@ -4669,6 +4752,56 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     // 24 - ELECTRICAL
+    2400031: {
+      // ELEC EMER CONFIG
+      flightPhaseInhib: [4, 8],
+      simVarIsActive: this.elecEmerConfigWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.sdac00101Word.bitValue(28) && !this.aircraftOnGround.get() ? 1 : null,
+        this.elecEmerGen12Reset.get() ? 2 : null,
+        this.elecEmerGenReset.get() ? 3 : null,
+        !this.sdac00200Word.bitValue(21) && this.elecEmerGenReset.get() ? 4 : null,
+        this.elecEmerGenReset.get() ? 5 : null,
+        !this.sdac00410Word.bitValue(27) ? 6 : null,
+        !this.engSelectorPosition.map((v) => v === 2) ? 7 : null,
+        8,
+        !this.aircraftOnGround.get() ? 9 : null,
+        !this.aircraftOnGround.get() ? 10 : null,
+        !this.fac1Healthy.get() && !this.aircraftOnGround.get() ? 11 : null,
+        this.sdac00200Word.bitValue(21) ? 12 : null,
+        !this.aircraftOnGround.get() ? 13 : null,
+        !(this.sdac00300Word.bitValue(14) && this.sdac00300Word.bitValue(19)) && !this.aircraftOnGround.get()
+          ? 14
+          : null,
+        // TODO: Properly check increased fuel consumpt and fms pred unreliable
+        15,
+        16,
+      ],
+      codesToReturn: [
+        '240003101',
+        '240003102',
+        '240003103',
+        '240003104',
+        '240003105',
+        '240003106',
+        '240003107',
+        '240003108',
+        '240003109',
+        '240003110',
+        '240003111',
+        '240003112',
+        '240003113',
+        '240003114',
+        '240003115',
+        '240003116',
+        '240003117',
+      ],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: EcamSysPage.ELEC,
+      side: 'LEFT',
+    },
     2400600: {
       // BAT 1 OFF
       flightPhaseInhib: [1, 3, 4, 5, 7, 8, 10],
@@ -6678,7 +6811,7 @@ export class PseudoFWC {
     '0000210': {
       // RAT OUT
       flightPhaseInhib: [],
-      simVarIsActive: this.ratDeployed.map((v) => v > 0),
+      simVarIsActive: this.ratOutMemo,
       whichCodeToReturn: () => [[1, 2].includes(this.fwcFlightPhase.get()) ? 1 : 0],
       codesToReturn: ['000021001', '000021002'],
       memoInhibit: () => false,
