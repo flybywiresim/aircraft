@@ -1650,7 +1650,7 @@ class BC3Cell extends DisplayComponent<{
 
 class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
   private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm108.1 1.8143h19.994v6.0476h-19.994z';
-  private static readonly FiveCharactersPerLineTwoLinesModeChangePath = 'm107.1 1.8143h22.994v13.506h-22.994z';
+  private static readonly SixCharactersPerLineTwoLinesModeChangePath = 'm107.1 1.8143h22.994v13.506h-22.994z';
   private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm110.1 1.8143h15.994v13.506h-15.994z';
 
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents>();
@@ -1696,11 +1696,11 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'SINGLE';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
+      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
     } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
+      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
     } else if (false) {
       text1 = 'LAND1';
       text2 = '';
@@ -1711,7 +1711,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     } else if (false) {
       text1 = 'F-APP';
       text2 = '+ RAW';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
+      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
     } else if (false) {
       text1 = 'RAW';
       text2 = 'ONLY';
