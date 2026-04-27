@@ -37,7 +37,7 @@ class PopupInstrument implements FsInstrument {
     this.backplane.onUpdate();
   }
 
-  public onInteractionEvent(args: string[]): void {}
+  public onInteractionEvent(_args: string[]): void {}
 
   onGameStateChanged(_oldState: GameState, _newState: GameState) {
     // noop
