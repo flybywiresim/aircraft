@@ -4841,9 +4841,7 @@ export class PseudoFWC {
         !(this.sdac00300Word.bitValue(14) && this.sdac00300Word.bitValue(19)) && !this.aircraftOnGround.get()
           ? 14
           : null,
-        // TODO: Properly check increased fuel consumpt and fms pred unreliable
-        15,
-        16,
+        // TODO: Check increased fuel consumpt and fms pred unreliable for 15 and 16
       ],
       codesToReturn: [
         '240003101',
