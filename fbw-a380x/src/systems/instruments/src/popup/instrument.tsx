@@ -37,8 +37,7 @@ class PopupInstrument implements FsInstrument {
     this.backplane.onUpdate();
   }
 
-  public onInteractionEvent(args: string[]): void {
-  }
+  public onInteractionEvent(args: string[]): void {}
 
   onGameStateChanged(_oldState: GameState, _newState: GameState) {
     // noop
@@ -53,7 +52,7 @@ class PopupInstrument implements FsInstrument {
   }
 }
 
-class A32NX_POPUP extends FsBaseInstrument<PopupInstrument> {
+class A380X_POPUP extends FsBaseInstrument<PopupInstrument> {
   constructInstrument(): PopupInstrument {
     return new PopupInstrument();
   }
@@ -63,8 +62,8 @@ class A32NX_POPUP extends FsBaseInstrument<PopupInstrument> {
   }
 
   get templateID(): string {
-    return 'A32NX_popup';
+    return 'A380X_popup';
   }
 }
 
-registerInstrument('a32nx-popup', A32NX_POPUP);
+registerInstrument('a380x-popup', A380X_POPUP);
