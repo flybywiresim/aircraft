@@ -1173,11 +1173,11 @@ export class PseudoFWC {
 
   private readonly lgNotDownPulse2 = new NXLogicPulseNode();
 
-  private readonly lhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_LEFT_GEAR_NOT_LOCKED');
+  private readonly lhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_LEFT_GEAR_UNLOCKED');
 
-  private readonly rhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_RIGHT_GEAR_NOT_LOCKED');
+  private readonly rhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_RIGHT_GEAR_UNLOCKED');
 
-  private readonly noseLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_NOSE_GEAR_NOT_LOCKED');
+  private readonly noseLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_NOSE_GEAR_UNLOCKED');
 
   private readonly lgNotLocked = Subject.create(false);
 

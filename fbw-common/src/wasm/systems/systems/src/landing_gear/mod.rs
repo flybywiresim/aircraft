@@ -474,27 +474,6 @@ impl LgciuSensorInputs {
             GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
         }
     }
-
-    fn not_locked_state(&self, wheel_id: GearWheel) -> bool {
-        let gear_uplocked = match wheel_id {
-            GearWheel::LEFT => self.left_gear_up_and_locked,
-            GearWheel::NOSE => self.nose_gear_up_and_locked,
-            GearWheel::RIGHT => self.right_gear_up_and_locked,
-            // TODO gear not implemented, wing bogey is copied from body gear state
-            GearWheel::WINGLEFT => self.left_gear_up_and_locked,
-            GearWheel::WINGRIGHT => self.right_gear_up_and_locked,
-        };
-        let gear_downlocked = match wheel_id {
-            GearWheel::LEFT => self.left_gear_down_and_locked,
-            GearWheel::NOSE => self.nose_gear_down_and_locked,
-            GearWheel::RIGHT => self.right_gear_down_and_locked,
-            // TODO gear not implemented, wing bogey is copied from body gear state
-            GearWheel::WINGLEFT => self.left_gear_down_and_locked,
-            GearWheel::WINGRIGHT => self.right_gear_down_and_locked,
-        };
-
-        !gear_uplocked && !gear_downlocked
-    }
 }
 impl SimulationElement for LgciuSensorInputs {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -894,13 +873,10 @@ enum LgciuStatus {
 pub struct LandingGearControlInterfaceUnit {
     left_gear_downlock_id: VariableIdentifier,
     left_gear_unlock_id: VariableIdentifier,
-    left_gear_not_locked_id: Option<VariableIdentifier>,
     nose_gear_downlock_id: VariableIdentifier,
     nose_gear_unlock_id: VariableIdentifier,
-    nose_gear_not_locked_id: Option<VariableIdentifier>,
     right_gear_downlock_id: VariableIdentifier,
     right_gear_unlock_id: VariableIdentifier,
-    right_gear_not_locked_id: Option<VariableIdentifier>,
 
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
@@ -946,9 +922,6 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_LEFT_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
-            // Hardwired into the FWC
-            left_gear_not_locked_id: (lgciu_id == LgciuId::Lgciu1)
-                .then(|| context.get_identifier("LGCIU_1_LEFT_GEAR_NOT_LOCKED".to_owned())),
             nose_gear_downlock_id: context.get_identifier(format!(
                 "LGCIU_{}_NOSE_GEAR_DOWNLOCKED",
                 lgciu_number(lgciu_id)
@@ -957,9 +930,6 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_NOSE_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
-            // Hardwired into the FWC
-            nose_gear_not_locked_id: (lgciu_id == LgciuId::Lgciu1)
-                .then(|| context.get_identifier("LGCIU_1_NOSE_GEAR_NOT_LOCKED".to_owned())),
             right_gear_downlock_id: context.get_identifier(format!(
                 "LGCIU_{}_RIGHT_GEAR_DOWNLOCKED",
                 lgciu_number(lgciu_id)
@@ -968,9 +938,6 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_RIGHT_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
-            // Hardwired into the FWC
-            right_gear_not_locked_id: (lgciu_id == LgciuId::Lgciu1)
-                .then(|| context.get_identifier("LGCIU_1_RIGHT_GEAR_NOT_LOCKED".to_owned())),
 
             discrete_word_1_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_1", lgciu_number(lgciu_id))),
@@ -1315,12 +1282,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.left_gear_downlock_id,
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::LEFT),
         );
-        if let Some(id) = &self.left_gear_not_locked_id {
-            writer.write(
-                id,
-                self.is_powered && self.sensor_inputs.not_locked_state(GearWheel::LEFT),
-            );
-        }
 
         writer.write(
             &self.nose_gear_unlock_id,
@@ -1333,12 +1294,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.nose_gear_downlock_id,
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::NOSE),
         );
-        if let Some(id) = &self.nose_gear_not_locked_id {
-            writer.write(
-                id,
-                self.is_powered && self.sensor_inputs.not_locked_state(GearWheel::NOSE),
-            );
-        }
 
         writer.write(
             &self.right_gear_unlock_id,
@@ -1351,12 +1306,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.right_gear_downlock_id,
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
-        if let Some(id) = &self.right_gear_not_locked_id {
-            writer.write(
-                id,
-                self.is_powered && self.sensor_inputs.not_locked_state(GearWheel::RIGHT),
-            );
-        }
 
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
@@ -1850,20 +1799,14 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_UNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_UNLOCKED"));
-        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_NOT_LOCKED"));
-        assert!(!test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_NOT_LOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_UNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_UNLOCKED"));
-        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_NOT_LOCKED"));
-        assert!(!test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_NOT_LOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_UNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_UNLOCKED"));
-        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_NOT_LOCKED"));
-        assert!(!test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_NOT_LOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_1"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_1"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_2"));
