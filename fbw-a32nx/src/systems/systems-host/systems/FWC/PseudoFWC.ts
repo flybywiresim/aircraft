@@ -4831,7 +4831,7 @@ export class PseudoFWC {
         !this.sdac00200Word.bitValue(21) && this.elecEmerGenReset.get() ? 4 : null,
         this.elecEmerGenReset.get() ? 5 : null,
         !this.sdac00410Word.bitValue(27) ? 6 : null,
-        this.engSelectorPosition.map((v) => v !== 2) ? 7 : null,
+        this.engSelectorPosition.get() !== 2 ? 7 : null,
         8,
         !this.aircraftOnGround.get() ? 9 : null,
         !this.aircraftOnGround.get() ? 10 : null,
