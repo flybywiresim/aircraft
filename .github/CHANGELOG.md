@@ -119,6 +119,7 @@
 1. [A32NX/FWS] Add message grouping and order messages based on priority - @FozzieHi (fozzie)
 1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add `THR LEVERS NOT SET` master caution - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
 
