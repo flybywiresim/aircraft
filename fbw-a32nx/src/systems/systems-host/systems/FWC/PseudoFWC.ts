@@ -678,6 +678,8 @@ export class PseudoFWC {
 
   private readonly ratOutMemo = Subject.create(false);
 
+  private readonly emerGenMemo = Subject.create(false);
+
   private readonly elecEmergency = Subject.create(false);
 
   private readonly elecEmerConfigWarning = Subject.create(false);
@@ -767,6 +769,10 @@ export class PseudoFWC {
   private readonly bat1Off = Subject.create(false);
 
   private readonly bat2Off = Subject.create(false);
+
+  private readonly emerGen1LinePbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON');
+
+  private readonly emerGen1LineOffWarning = Subject.create(false);
 
   private readonly gen1NotOperating = Subject.create(false);
 
@@ -3687,12 +3693,20 @@ export class PseudoFWC {
 
     /* ELECTRICAL */
     this.ratOutMemo.set(this.sdac00101Word.bitValue(28));
+    this.emerGenMemo.set(
+      this.sdac00410Word.bitValue(27) && this.sdac00101Word.bitValue(28) && !this.aircraftOnGround.get(),
+    );
 
     this.bat1Off.set(
       this.sdac00201Word.bitValue(24) && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2),
     );
     this.bat2Off.set(
       this.sdac00210Word.bitValue(24) && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2),
+    );
+
+    // TODO: Check SMOKE
+    this.emerGen1LineOffWarning.set(
+      !this.emerGen1LinePbOn.get() && (this.fwcFlightPhase.get() === 2 || this.flightPhase6For60Seconds.read()),
     );
 
     const engine1NotRunning = this.engine1State.get() !== EngineState.On;
@@ -4887,6 +4901,17 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 1,
       sysPage: EcamSysPage.ELEC,
+      side: 'LEFT',
+    },
+    2400620: {
+      // EMER GEN 1 LINE OFF
+      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+      simVarIsActive: this.emerGen1LineOffWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240062001'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },
     2400001: {
@@ -6879,6 +6904,15 @@ export class PseudoFWC {
       simVarIsActive: this.ratOutMemo,
       whichCodeToReturn: () => [[1, 2].includes(this.fwcFlightPhase.get()) ? 1 : 0],
       codesToReturn: ['000021001', '000021002'],
+      memoInhibit: () => false,
+      side: 'RIGHT',
+    },
+    '0000310': {
+      // EMER GEN
+      flightPhaseInhib: [],
+      simVarIsActive: this.emerGenMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['000031001'],
       memoInhibit: () => false,
       side: 'RIGHT',
     },
