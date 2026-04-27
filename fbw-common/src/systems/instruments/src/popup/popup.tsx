@@ -1,3 +1,7 @@
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ConsumerSubject, DisplayComponent, EventBus, VNode, FSComponent } from '@microsoft/msfs-sdk';
 import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
 

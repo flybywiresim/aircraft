@@ -1,3 +1,7 @@
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export type PopupSimvars = {
