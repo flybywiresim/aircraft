@@ -1399,8 +1399,6 @@ export class PseudoFWC {
 
   private readonly emergencyElectricGeneratorPotential = Subject.create(0);
 
-  private readonly emergencyGeneratorOn = this.emergencyElectricGeneratorPotential.map((it) => it > 0);
-
   private readonly apuMasterSwitch = Subject.create(0);
 
   private readonly apuAvail = Subject.create(0);
@@ -3071,7 +3069,7 @@ export class PseudoFWC {
     this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
     this.noSmokingSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Enum'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
-    this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool'));
+    this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool') && !this.elecEmergency.get());
     this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
@@ -3224,7 +3222,9 @@ export class PseudoFWC {
 
     // DIRECT LAW computation
     const SPBUL =
-      (false && SFCDC12FT) || fcdc1DiscreteWord1.bitValueOr(15, false) || fcdc2DiscreteWord1.bitValueOr(15, false);
+      (this.lgDownlocked.get() && this.elecEmergency.get() && SFCDC12FT) ||
+      fcdc1DiscreteWord1.bitValueOr(15, false) ||
+      fcdc2DiscreteWord1.bitValueOr(15, false);
     this.directLawCondition.set(SPBUL && ![1, 10].includes(this.fwcFlightPhase.get()));
 
     // L+R ELEV FAULT computation
@@ -3737,11 +3737,15 @@ export class PseudoFWC {
 
     this.gen1FaultMemory.write(
       this.gen1FaultSetConfirmNode.write(!(idg1Disconnected || gen1PbOff) && this.gen1Inop.get(), deltaTime),
-      this.gen1LineContactorNotOffFor2s.write(!gen1LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
+      this.gen1LineContactorNotOffFor2s.write(!gen1LineContactorOff, deltaTime) ||
+        this.flightPhase110.get() ||
+        this.elecEmergency.get(), // TODO: Check SMOKE
     );
     this.gen2FaultMemory.write(
       this.gen2FaultSetConfirmNode.write(!(idg2Disconnected || gen2PbOff) && this.gen2Inop.get(), deltaTime),
-      this.gen2LineContactorNotOffFor2s.write(!gen2LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
+      this.gen2LineContactorNotOffFor2s.write(!gen2LineContactorOff, deltaTime) ||
+        this.flightPhase110.get() ||
+        this.elecEmergency.get(), // TODO: Check SMOKE
     );
 
     const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(gen1PbOff, deltaTime);
@@ -4227,7 +4231,7 @@ export class PseudoFWC {
           this.eng2FireTest.get() ||
           this.fireButtonAPU.get() ||
           this.apuFireTest.get() ||
-          this.emergencyGeneratorOn.get() ||
+          this.elecEmergency.get() ||
           (this.engine1State.get() === EngineState.Off && this.engine2State.get() === EngineState.Off) ||
           (this.greenLP.get() && this.yellowLP.get()) ||
           (this.yellowLP.get() && this.blueLP.get()) ||
@@ -5188,7 +5192,7 @@ export class PseudoFWC {
       simVarIsActive: this.engDualFault,
       whichCodeToReturn: () => [
         0,
-        !this.emergencyGeneratorOn.get() ? 1 : null,
+        !this.sdac00410Word.bitValue(27) ? 1 : null,
         5,
         !(this.apuMasterSwitch.get() === 1 || this.apuAvail.get() === 1) && this.radioAlt.get() < 2500 ? 6 : null,
         this.thr1TLA.get() > 0 || this.thr2TLA.get() > 0 ? 7 : null,
@@ -5917,7 +5921,8 @@ export class PseudoFWC {
       // COND CTL 1-A FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
       simVarIsActive: MappedSubject.create(
-        ([acsc1Lane1Fault, acsc1Lane2Fault]) => acsc1Lane1Fault && !acsc1Lane2Fault,
+        ([elecEmergency, acsc1Lane1Fault, acsc1Lane2Fault]) => !elecEmergency && acsc1Lane1Fault && !acsc1Lane2Fault,
+        this.elecEmergency,
         this.acsc1Lane1Fault,
         this.acsc1Lane2Fault,
       ),
@@ -5932,7 +5937,8 @@ export class PseudoFWC {
       // COND CTL 1-B FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
       simVarIsActive: MappedSubject.create(
-        ([acsc1Lane1Fault, acsc1Lane2Fault]) => !acsc1Lane1Fault && acsc1Lane2Fault,
+        ([elecEmergency, acsc1Lane1Fault, acsc1Lane2Fault]) => !elecEmergency && !acsc1Lane1Fault && acsc1Lane2Fault,
+        this.elecEmergency,
         this.acsc1Lane1Fault,
         this.acsc1Lane2Fault,
       ),
@@ -5947,7 +5953,8 @@ export class PseudoFWC {
       // COND CTL 2-A FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
       simVarIsActive: MappedSubject.create(
-        ([acsc2Lane1Fault, acsc2Lane2Fault]) => acsc2Lane1Fault && !acsc2Lane2Fault,
+        ([elecEmergency, acsc2Lane1Fault, acsc2Lane2Fault]) => !elecEmergency && acsc2Lane1Fault && !acsc2Lane2Fault,
+        this.elecEmergency,
         this.acsc2Lane1Fault,
         this.acsc2Lane2Fault,
       ),
@@ -5962,7 +5969,8 @@ export class PseudoFWC {
       // COND CTL 2-B FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
       simVarIsActive: MappedSubject.create(
-        ([acsc2Lane1Fault, acsc2Lane2Fault]) => !acsc2Lane1Fault && acsc2Lane2Fault,
+        ([elecEmergency, acsc2Lane1Fault, acsc2Lane2Fault]) => !elecEmergency && !acsc2Lane1Fault && acsc2Lane2Fault,
+        this.elecEmergency,
         this.acsc2Lane1Fault,
         this.acsc2Lane2Fault,
       ),
@@ -6395,18 +6403,18 @@ export class PseudoFWC {
       // *HYD  - Blue
       flightPhaseInhib: [1, 4, 5, 10],
       simVarIsActive: MappedSubject.create(
-        ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) =>
+        ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, elecEmergency]) =>
           !(blueRvrOvht || blueRvrLow || !blueElecPumpPBAuto) &&
           (!dcESSBusPowered || !ac1BusPowered) &&
           blueLP &&
-          !emergencyGeneratorOn,
+          !elecEmergency,
         this.blueRvrOvht,
         this.blueRvrLow,
         this.blueElecPumpPBAuto,
         this.dcESSBusPowered,
         this.ac1BusPowered,
         this.blueLP,
-        this.emergencyGeneratorOn,
+        this.elecEmergency,
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031001'],
@@ -6419,14 +6427,14 @@ export class PseudoFWC {
       // *HYD  - Green Engine 1 //
       flightPhaseInhib: [1, 2, 9, 10],
       simVarIsActive: MappedSubject.create(
-        ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) =>
+        ([greenLP, eng1pumpPBisAuto, elecEmergency]) =>
           greenLP &&
           // && ENG 1 OUT - not implemented
           eng1pumpPBisAuto &&
-          !emergencyGeneratorOn,
+          !elecEmergency,
         this.greenLP,
         this.eng1pumpPBisAuto,
-        this.emergencyGeneratorOn,
+        this.elecEmergency,
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031201'],
@@ -6555,10 +6563,8 @@ export class PseudoFWC {
       simVarIsActive: this.ldgMemo,
       whichCodeToReturn: () => [
         this.lgDownlocked.get() ? 1 : 0,
-        SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 3
-          : 2,
+        !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') && !this.elecEmergency.get() ? 2 : null,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') && !this.elecEmergency.get() ? 3 : null,
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
         this.spoilersArmed.get() ? 7 : 6,
         !SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') &&
@@ -7076,7 +7082,7 @@ export class PseudoFWC {
       side: 'RIGHT',
     },
     '0000300': {
-      // GPWS FLAPS 3
+      // GPWS FLAP 3
       flightPhaseInhib: [],
       simVarIsActive: this.gpwsFlaps3,
       whichCodeToReturn: () => [0],
