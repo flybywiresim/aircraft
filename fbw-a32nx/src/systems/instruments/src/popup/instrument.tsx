@@ -38,11 +38,6 @@ class PopupInstrument implements FsInstrument {
   }
 
   public onInteractionEvent(args: string[]): void {
-    /*     if (args[0].endsWith(`A32NX_EFIS_${this.efisSide}_CHRONO_PUSHED`)) {
-      this.bus.getPublisher<NDControlEvents>().pub('chrono_pushed', undefined);
-    }
-
-    this.hEventPublisher.dispatchHEvent(args[0]); */
   }
 
   onGameStateChanged(_oldState: GameState, _newState: GameState) {
