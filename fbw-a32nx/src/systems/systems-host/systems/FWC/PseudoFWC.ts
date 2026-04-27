@@ -3508,25 +3508,25 @@ export class PseudoFWC {
     const lgciu1LhGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(11, false);
     const lgciu2LhGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(11, false);
     const lhGearLockUp =
-      (!lgciu1Or2DiscreteWord1Invalid && !lgciu1LhGearNotLockUp && !lgciu2LhGearNotLockUp) ||
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1LhGearNotLockUp && !lgciu2LhGearNotLockUp) ||
       (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1LhGearNotLockUp) ||
       (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2LhGearNotLockUp);
 
     const lgciu1RhGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(12, false);
     const lgciu2RhGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(12, false);
     const rhGearLockUp =
-      (!lgciu1Or2DiscreteWord1Invalid && !lgciu1RhGearNotLockUp && !lgciu2RhGearNotLockUp) ||
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1RhGearNotLockUp && !lgciu2RhGearNotLockUp) ||
       (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1RhGearNotLockUp) ||
       (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2RhGearNotLockUp);
 
     const lgciu1NoseGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(13, false);
     const lgciu2NoseGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(13, false);
     const noseGearLockUp =
-      (!lgciu1Or2DiscreteWord1Invalid && !lgciu1NoseGearNotLockUp && !lgciu2NoseGearNotLockUp) ||
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1NoseGearNotLockUp && !lgciu2NoseGearNotLockUp) ||
       (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1NoseGearNotLockUp) ||
       (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2NoseGearNotLockUp);
 
-    this.gearLockedUp.set(lhGearLockUp || rhGearLockUp || noseGearLockUp);
+    this.gearLockedUp.set(lhGearLockUp && rhGearLockUp && noseGearLockUp);
 
     this.gearNotUplocked.set(
       !this.twoHydraulicsOut.get() &&
