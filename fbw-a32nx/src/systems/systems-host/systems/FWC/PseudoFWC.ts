@@ -652,8 +652,16 @@ export class PseudoFWC {
   private readonly fcu2DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_2'));
   private readonly fcuSelectedAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_selected_altitude'));
 
+  private readonly fac12FaultWarning = Subject.create(false);
+
+  private readonly fac1FaultWarning = Subject.create(false);
+
+  private readonly fac2FaultWarning = Subject.create(false);
+
   private readonly fcu12Fault = Subject.create(false);
+
   private readonly fcu1Fault = Subject.create(false);
+
   private readonly fcu2Fault = Subject.create(false);
 
   /* 24 - ELECTRICAL */
@@ -1915,6 +1923,7 @@ export class PseudoFWC {
   private readonly avionicsVentExtractPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_EXTRACT_TOGGLE');
   private readonly avionicsVentBlowerPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_BLOWER_TOGGLE');
 
+  private readonly elecContactor8PHVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_8PH_IS_CLOSED');
   private readonly elecBusTiePbVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO');
   // TODO: Check actual parking brake position
   private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
@@ -1970,6 +1979,7 @@ export class PseudoFWC {
 
     this.sdac00200Word.set(0);
     this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00200Word.setBitValue(19, !this.elecContactor8PHVar.get());
     this.sdac00200Word.setBitValue(21, !this.elecBusTiePbVar.get());
     this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
     this.sdac00200Word.setBitValue(23, !this.antiSkidOnVar.get());
@@ -2801,6 +2811,21 @@ export class PseudoFWC {
     }
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     this.overspeedWarning.set(overspeedWarning);
+
+    this.fac12FaultWarning.set(
+      !(!this.dc2BusPowered.get() && this.sdac00200Word.bitValue(19)) &&
+        !this.fac1Healthy.get() &&
+        !this.fac2Healthy.get(),
+    );
+
+    this.fac1FaultWarning.set(
+      !(!this.acESSBusPowered.get() || !this.dcESSBusPowered.get() || this.sdac00200Word.bitValue(19)) &&
+        !this.fac1Healthy.get() &&
+        this.fac2Healthy.get(),
+    );
+    this.fac2FaultWarning.set(
+      !(!this.ac2BusPowered.get() || !this.dc2BusPowered.get()) && !this.fac2Healthy.get() && this.fac1Healthy.get(),
+    );
 
     // In reality FWC1 takes 1B, and FWC2 2B.
     const fcu1Healthy = this.fcu1DiscreteWord2.get().bitValueOr(24, false);
@@ -4684,6 +4709,48 @@ export class PseudoFWC {
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
       cancel: false,
+    },
+    2200205: {
+      // FAC 1+2 FAULT
+      flightPhaseInhib: [4, 5, 7, 8],
+      simVarIsActive: this.fac12FaultWarning,
+      whichCodeToReturn: () => [0, 1, 2, 3, 4, 5, 6], // TODO: Check BUSS for 7
+      codesToReturn: [
+        '220020501',
+        '220020502',
+        '220020503',
+        '220020504',
+        '220020505',
+        '220020506',
+        '220020507',
+        '220020508',
+      ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2200200: {
+      // FAC 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.fac1FaultWarning,
+      whichCodeToReturn: () => [0, 1, 2, 3],
+      codesToReturn: ['220020001', '220020002', '220020003', '220020004'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2200195: {
+      // FAC 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.fac2FaultWarning,
+      whichCodeToReturn: () => [0, 1, 2, 3],
+      codesToReturn: ['220019501', '220019502', '220019503', '220019504'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
     },
     2200202: {
       // FCU 1+2 FAULT
