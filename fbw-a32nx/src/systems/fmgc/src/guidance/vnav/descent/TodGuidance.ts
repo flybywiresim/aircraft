@@ -74,15 +74,6 @@ export class TodGuidance {
   }
 
   private setTodPauseOverlayState(state: TodPauseOverlayState) {
-    /*     if (
-      this.todPauseOverlayState.visible === state.visible &&
-      this.todPauseOverlayState.title === state.title &&
-      this.todPauseOverlayState.message === state.message
-    ) {
-      return;
-    }
-
-    this.todPauseOverlayState = state; */
     this.todPauseOverlayPublisher.pub('tod_pause_overlay', state, true, false);
   }
 

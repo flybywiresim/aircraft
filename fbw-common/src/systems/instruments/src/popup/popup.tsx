@@ -28,23 +28,11 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
     }
   };
 
-  private onSimDisabledChanged = (simDisabled: boolean): void => {
-    if (!simDisabled) {
-      this.props.bus.getPublisher<TodPauseOverlayControlEvents>().pub('tod_pause_overlay', {
-        visible: false,
-        title: '',
-        message: '',
-      });
-    }
-  };
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     // OR USE A:SIM DISABLED but that will not make the toolbar work
     // OR Use the regular K:PAUSE_SET event and only intercept the key
     this.listener = RegisterViewListener('JS_LISTENER_TOOLBAR_PANELS');
-
-    //  this.listener.triggerToAllSubscribers
 
     this.listener.on('SetActivePauseEnabled', (isPaused: boolean) => {
       console.log('LOL', isPaused);
@@ -81,8 +69,8 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
     return (
       <div id="resume" ref={this.panelRef} class="absolute inset-0 z-50 flex hidden items-center justify-center">
         <div class=" mx-6  w-full  rounded-xl bg-theme-body px-10 py-8 text-center">
-          <h1 class="text-4xl font-bold">{this.todPauseOverlayState.map((state) => state.title)}</h1>
-          <p class="mb-8 text-xl leading-relaxed text-theme-text">
+          <h1 class="p-2 text-4xl font-bold">{this.todPauseOverlayState.map((state) => state.title)}</h1>
+          <p class="p-8 text-xl leading-relaxed text-theme-text">
             {this.todPauseOverlayState.map((state) => state.message)}
           </p>
         </div>
