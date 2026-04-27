@@ -35,7 +35,6 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
     this.listener = RegisterViewListener('JS_LISTENER_TOOLBAR_PANELS');
 
     this.listener.on('SetActivePauseEnabled', (isPaused: boolean) => {
-      console.log('LOL', isPaused);
       if (!isPaused && this.todPauseOverlayState.get().visible) {
         this.props.bus
           .getPublisher<TodPauseOverlayControlEvents>()
