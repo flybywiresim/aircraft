@@ -2,7 +2,6 @@ import { ConsumerSubject, DisplayComponent, EventBus, VNode, FSComponent } from 
 import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
 
 import './style.scss';
-import './Theme.css';
 
 export interface PopupProps {
   bus: EventBus;
@@ -37,17 +36,8 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
         message: '',
       });
     }
-    /* else {
-      this.props.bus.getPublisher<TodPauseOverlayControlEvents>().pub('tod_pause_overlay', { visible: false, title: '', message: '' });
-    } */
   };
 
-  /*   private readonly simStateSub = this.props.bus
-    .getSubscriber<PopupSimvars>()
-    .on('simDisabled')
-    .atFrequency(1000)
-    .handle(this.onSimDisabledChanged.bind(this));
- */
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     // OR USE A:SIM DISABLED but that will not make the toolbar work
@@ -68,7 +58,6 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
     this.todPauseOverlayState.setConsumer(
       this.props.bus.getSubscriber<TodPauseOverlayControlEvents>().on('tod_pause_overlay'),
     );
-    //  this.simStateSub.pause();
     this.todPauseOverlayState.sub((state) => {
       console.log('TOD Pause Overlay State changed:', state);
       if (state.visible) {
@@ -76,17 +65,12 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
         this.panelRef.instance.classList.remove('hidden');
         Coherent.trigger('FOCUS_INPUT_FIELD', 1333, '', '', '', false);
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', true);
-        // this.simStateSub.resume();
-
-        // FSComponent.render(this.render(), this.panelRef.instance);
       } else {
         window.document.removeEventListener('keydown', this.handleKeyDown);
-        //  FSComponent.remove(this.panelRef.instance);
 
         Coherent.trigger('UNFOCUS_INPUT_FIELD', 1333);
 
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', false);
-        //   this.simStateSub.pause();
 
         this.panelRef.instance.classList.add('hidden');
       }
@@ -95,12 +79,7 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
 
   doRender(): VNode {
     return (
-      <div
-        id="resume"
-        ref={this.panelRef}
-        class="absolute inset-0 z-50 flex hidden items-center justify-center"
-        /*  style={{ backgroundColor: 'rgb(0, 0, 0)' }} */
-      >
+      <div id="resume" ref={this.panelRef} class="absolute inset-0 z-50 flex hidden items-center justify-center">
         <div class=" mx-6  w-full  rounded-xl bg-theme-body px-10 py-8 text-center">
           <h1 class="text-4xl font-bold">{this.todPauseOverlayState.map((state) => state.title)}</h1>
           <p class="mb-8 text-xl leading-relaxed text-theme-text">
