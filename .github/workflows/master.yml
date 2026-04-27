@@ -17,8 +17,8 @@ jobs:
       contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/master
-      PRE_RELEASE_ID: 66067756
+      PRE_RELEASE_TAG: assets/msfs2024/master
+      PRE_RELEASE_ID: 313832813
       STANDALONE_ZIP_NAME: A32NX-master.7z
       BUILD_DIR_NAME: master-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
@@ -149,8 +149,8 @@ jobs:
       contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/master
-      PRE_RELEASE_ID: 66067756
+      PRE_RELEASE_TAG: assets/msfs2024/master
+      PRE_RELEASE_ID: 313832813
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-8K.7z
@@ -291,8 +291,8 @@ jobs:
       contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/master
-      PRE_RELEASE_ID: 66067756
+      PRE_RELEASE_TAG: assets/msfs2024/master
+      PRE_RELEASE_ID: 313832813
       BUILD_DIR_NAME: master-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-master-4K.7z
