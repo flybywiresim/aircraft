@@ -59,7 +59,7 @@ export interface FpmConfig {
 }
 
 export class FpmConfigs {
-  static A380: FpmConfig = {
+  static readonly A380: FpmConfig = {
     TMPY_ON_DELETE_WAYPOINT: true,
     TMPY_ON_OVERFLY: true,
     TMPY_ON_CONSTRAINT_EDIT: true,
@@ -77,7 +77,7 @@ export class FpmConfigs {
     LOAD_EMPTY_HISTORY_WIND: true,
   };
 
-  static A320_HONEYWELL_H3: FpmConfig = {
+  static readonly A320_HONEYWELL_H3: FpmConfig = {
     TMPY_ON_DELETE_WAYPOINT: false,
     TMPY_ON_OVERFLY: false,
     TMPY_ON_CONSTRAINT_EDIT: false,

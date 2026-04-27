@@ -54,6 +54,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     FlightPlanIndex.Active,
   );
 
+  private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
+
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
@@ -71,12 +73,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fpIndex]) =>
-      (fp > FmgcFlightPhase.Preflight && this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
-      tmpy,
+    ([fp, tmpy, activeOrCopyOfActive]) => (fp > FmgcFlightPhase.Preflight && activeOrCopyOfActive) || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
-    this.loadedFlightPlanIndex,
+    this.fpIsActiveOrCopyOfActive,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
@@ -103,15 +103,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
   private readonly costIndexModeDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, fpIndex]) =>
-      !toIcao ||
-      !fromIcao ||
-      (flightPhase >= FmgcFlightPhase.Descent &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
+    ([toIcao, fromIcao, flightPhase, isActiveOrCopyOfActive]) =>
+      !toIcao || !fromIcao || (flightPhase >= FmgcFlightPhase.Descent && isActiveOrCopyOfActive),
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.fpIsActiveOrCopyOfActive,
   );
 
   private readonly costIndexDisabled = MappedSubject.create(
@@ -236,7 +233,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const fpIndex = this.loadedFlightPlanIndex.get();
     const fp = this.props.flightPlanInterface.has(fpIndex) ? this.props.flightPlanInterface.get(fpIndex) : undefined;
     const pd = fp?.performanceData;
-
+    this.fpIsActiveOrCopyOfActive.set(fp?.isActiveOrCopiedFromActive() ?? false);
     this.tropopause.set(pd?.tropopause.get() ?? null);
     this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
     this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
@@ -689,6 +686,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 flightPlanIndex={this.loadedFlightPlanIndex}
                 tmpyExists={this.tmpyExists}
                 uplinkAvailableForPlan={this.uplinkAvailableForPlan}
+                isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
               />
             </div>

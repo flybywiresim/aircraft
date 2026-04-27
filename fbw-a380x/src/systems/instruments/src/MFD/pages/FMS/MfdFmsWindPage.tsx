@@ -34,10 +34,11 @@ import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputFi
 import { WindAltitudeFormat, WindDirectionFormat, WindSpeedFormat } from '../common/DataEntryFormats';
 import { MathUtils } from '../../../../../../../../fbw-common/src/systems/shared/src/MathUtils';
 import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
-enum WindPageMenu {
+enum WindSubPageMenu {
   History,
   Climb,
   Cruise,
@@ -63,13 +64,24 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   // General Navigation
   private readonly pageTitles = Subject.create(MfdFmsWindPage.pageTitlesActiveFpln);
-  private selectedPageMenu = WindPageMenu.Climb;
+  private readonly selectedSubPage = Subject.create(WindSubPageMenu.Climb);
   /* Shifted by one when on secondary flight plan. */
   private readonly selectedTabIndex = Subject.create(0);
   private wasSecPreviouslyActive = false;
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
-  private readonly displayedWindHeader = Subject.create('CLB WIND');
+  private readonly displayedWindHeader = this.selectedSubPage.map((menu) => {
+    switch (menu) {
+      case WindSubPageMenu.Climb:
+        return 'CLB WIND';
+      case WindSubPageMenu.Cruise:
+        return 'CRZ WIND AT';
+      case WindSubPageMenu.Descent:
+        return 'DES WIND';
+      default:
+        return '';
+    }
+  });
   private readonly temporaryMessageAreaDisplay = this.tmpyExists.map((exists) => (exists ? 'block' : 'none'));
   private readonly tableHeaderDisplay = this.tmpyExists.map((exists) => (exists ? 'none' : 'flex'));
   private readonly uplinkAvailableForPlan = Subject.create(false);
@@ -115,36 +127,32 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   // Climb Wind
   private static readonly CLIMB_WIND_ENTRIES_ARRAY = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
+    { length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS },
     (_, i) => i,
   );
   private readonly climbWindsDisabled = Subject.create(false);
 
   private readonly climbWindsInactive = Subject.create(false);
 
-  private readonly displayedClimbWindAltitudes = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => Subject.create<number | null>(null),
+  private readonly displayedClimbWindAltitudes = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+    Subject.create<number | null>(null),
   );
 
-  private readonly displayedClimbWindDirections = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => Subject.create<number | null>(null),
+  private readonly displayedClimbWindDirections = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+    Subject.create<number | null>(null),
   );
 
-  private readonly displayedClimbWindSpeeds = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => Subject.create<number | null>(null),
+  private readonly displayedClimbWindSpeeds = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+    Subject.create<number | null>(null),
   );
 
   private readonly displayedClimbWindAltitudeIsEnteredByPilot = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
+    { length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS },
     () => Subject.create(true),
   );
 
-  private readonly climbWindRowsVisible = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
-    () => Subject.create(true),
+  private readonly climbWindRowsVisible = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+    Subject.create(true),
   );
 
   private readonly climbWindRowsVisibility = this.climbWindRowsVisible.map((sub) =>
@@ -153,7 +161,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   /** The entries used to feed the displayed data */
   private readonly climbWindDisplayEntries: WindDisplayEntry[] = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_CLIMB_WIND_LEVELS },
+    { length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS },
     () => ({ altitude: null, direction: null, speed: null, disabled: false, enteredByPilot: true }),
   );
 
@@ -175,6 +183,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     if (this.wasSecPreviouslyActive && loadedFlightPlanIndex < FlightPlanIndex.FirstSecondary) {
       this.pageTitles.set(MfdFmsWindPage.pageTitlesActiveFpln);
       this.selectedTabIndex.set(this.selectedTabIndex.get() + 1);
+      return;
     }
     const hasFP = this.props.fmcService.master.flightPlanInterface.has(loadedFlightPlanIndex);
     const fp = hasFP ? this.props.fmcService.master.flightPlanInterface.get(loadedFlightPlanIndex) : null;
@@ -182,7 +191,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
     this.uplinkAvailableForPlan.set(fp?.pendingWindUplink.isWindUplinkReadyToInsert() ?? false);
     // History wind methods
-    if (this.selectedPageMenu === WindPageMenu.History) {
+    const menu = this.selectedSubPage.get();
+    if (menu === WindSubPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
       const historyWinds = this.props.fmcService.master.getHistoryWinds(cruiseFlightLevel);
       let hasNonEmptyWind = false;
@@ -206,7 +216,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.historyWindButtonVisible.set(
         hasNonEmptyWind && this.props.fmcService.master.fmgc.data.flightPhase.get() === FmgcFlightPhase.Preflight,
       );
-    } else if (this.selectedPageMenu === WindPageMenu.Climb) {
+    } else if (menu === WindSubPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
       this.climbWindsDisabled.set(fp === undefined || this.tmpyExists.get());
@@ -261,11 +271,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.selectedTabIndex.sub((v) => {
         if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
           // History is not available on secondary so we need to skip it.
-          this.selectedPageMenu = Math.min(v + 1, WindPageMenu.Descent);
+          this.selectedSubPage.set(Math.min(v + 1, WindSubPageMenu.Descent));
         } else {
-          this.selectedPageMenu = v;
+          this.selectedSubPage.set(v);
         }
-        this.setWindHeaderBasedOnMenu();
         this.updatePage();
       }),
       ...this.historyWindFlightLevelLabel,
@@ -278,7 +287,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   private automaticallySelectTab() {
     const wptIdx = this.selectedWaypointLegIndex.get();
-    let page: WindPageMenu | null = null;
+    let page: WindSubPageMenu | null = null;
     if (this.loadedFlightPlan && wptIdx !== null) {
       const leg = this.props.fmcService.master.flightPlanInterface
         .get(this.loadedFlightPlanIndex.get())
@@ -286,13 +295,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       if (leg && isLeg(leg)) {
         switch (leg.segment.class) {
           case SegmentClass.Departure:
-            page = WindPageMenu.Climb;
+            page = WindSubPageMenu.Climb;
             break;
           case SegmentClass.Enroute:
-            page = WindPageMenu.Cruise;
+            page = WindSubPageMenu.Cruise;
             break;
           case SegmentClass.Arrival:
-            page = WindPageMenu.Descent;
+            page = WindSubPageMenu.Descent;
             break;
         }
       }
@@ -310,49 +319,33 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         case FmgcFlightPhase.Preflight:
         case FmgcFlightPhase.Done:
         case FmgcFlightPhase.Climb:
-          this.setSelectedPageIndex(WindPageMenu.Climb);
+          this.setSelectedPageIndex(WindSubPageMenu.Climb);
           break;
         case FmgcFlightPhase.Cruise:
-          this.setSelectedPageIndex(WindPageMenu.Cruise);
+          this.setSelectedPageIndex(WindSubPageMenu.Cruise);
           break;
         default:
-          this.setSelectedPageIndex(WindPageMenu.Descent);
+          this.setSelectedPageIndex(WindSubPageMenu.Descent);
           break;
       }
     } else {
-      this.setSelectedPageIndex(WindPageMenu.Climb); //TODO What should we select in this case?
+      this.setSelectedPageIndex(WindSubPageMenu.Climb); //TODO What should we select in this case?
     }
   }
 
-  private setSelectedPageIndex(menu: WindPageMenu) {
+  private setSelectedPageIndex(menu: WindSubPageMenu) {
     if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
       // History is not available on secondary so we need to skip it.
-      this.selectedTabIndex.set(Math.max(menu - 1, WindPageMenu.Climb));
+      this.selectedTabIndex.set(Math.max(menu - 1, WindSubPageMenu.Climb));
     } else {
       this.selectedTabIndex.set(menu);
-    }
-  }
-
-  private setWindHeaderBasedOnMenu() {
-    switch (this.selectedPageMenu) {
-      case WindPageMenu.Climb:
-        this.displayedWindHeader.set('CLB WIND');
-        break;
-      case WindPageMenu.Cruise:
-        this.displayedWindHeader.set('CRZ WIND AT');
-        break;
-      case WindPageMenu.Descent:
-        this.displayedWindHeader.set('DES WIND');
-        break;
-      default:
-        this.displayedWindHeader.set('');
     }
   }
 
   private insertHistoryWind() {
     const success = this.props.fmcService.master.insertHistoryWinds();
     if (success) {
-      this.setSelectedPageIndex(WindPageMenu.Climb);
+      this.setSelectedPageIndex(WindSubPageMenu.Climb);
     }
   }
 
@@ -653,6 +646,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               flightPlanIndex={this.loadedFlightPlanIndex}
               tmpyExists={this.tmpyExists}
               uplinkAvailableForPlan={this.uplinkAvailableForPlan}
+              isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
               buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
             />
           </div>

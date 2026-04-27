@@ -10,7 +10,6 @@ import {
   AtsuStatusCodes,
   DatalinkModeCode,
   DatalinkStatusCode,
-  WindRequestMessage,
   WindUplinkMessage,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
@@ -25,7 +24,7 @@ import {
   NXFictionalMessages,
   NXSystemMessages,
 } from '../shared/NXSystemMessages';
-import { AtsuToFmsEvents, FmsToAtsuEvents } from '../shared/FmcAtsuEvents';
+import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkRequest } from '../shared/FmcAtsuEvents';
 import { logTroubleshootingError } from '../shared/utils';
 
 export type AirportAtis = {
@@ -211,12 +210,16 @@ export class AtcDatalinkSystem implements Instrument {
       this.resetAtisAutoUpdate();
     });
 
+    this.fmsBusSub.on('wind_uplink_request').handle((request) => {
+      this.performrWindUplinkRequest(request);
+    });
+
     this.sub.on('aocWindsResponse').handle((response) => {
       this.windsResponseCallbacks.every((callback, index) => {
         if (callback(response.data, response.requestId)) {
           this.windsResponseCallbacks.splice(index, 1);
-          const flightPlanIndex = this.uplinkWindRequestFlightPlanMap.get(response.requestId) ?? -1;
-          if (flightPlanIndex === -1) {
+          const flightPlanIndex = this.uplinkWindRequestFlightPlanMap.get(response.requestId);
+          if (flightPlanIndex === undefined) {
             console.warn(
               `Received wind uplink response for request id ${response.requestId} but no matching flightplan.`,
             );
@@ -513,14 +516,11 @@ export class AtcDatalinkSystem implements Instrument {
     this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
   }
 
-  public receiveWindUplink(
-    request: WindRequestMessage,
-    flightPlan: number,
-  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+  private performrWindUplinkRequest(request: WindUplinkRequest): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
       const requestId = this.requestId++;
-      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
-      this.uplinkWindRequestFlightPlanMap.set(requestId, flightPlan);
+      this.publisher.pub('aocRequestWinds', { ...request.message, requestId }, true, false);
+      this.uplinkWindRequestFlightPlanMap.set(requestId, request.flightPlan);
 
       this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
         if (id === requestId) resolve(response);

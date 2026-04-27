@@ -12,6 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FmcInterface } from '../../FMC/FmcInterface';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 class CpnyWindRequestButtonLabel extends DisplayComponent<ComponentProps> {
   public render(): VNode {
@@ -34,13 +35,22 @@ export interface CpnyWindRequestButtonProps extends ComponentProps {
   tmpyExists: Subscribable<boolean>;
   uplinkAvailableForPlan: Subscribable<boolean>;
   buttonStyle?: string;
+  isActiveOrCopiedFromActive: Subscribable<boolean>;
 }
 
 export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButtonProps> {
+  private readonly disabledDueToFlightPhase = MappedSubject.create(
+    ([isActiveOrCopiedFromActive, flightPhase]) => isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Cruise,
+    this.props.isActiveOrCopiedFromActive,
+    this.props.fmc.fmgc.data.flightPhase,
+  );
+
+  /* Disabled when, temporary exists, uplink in progress or flightplan is active or copy of active and request not allowe due to flight phase*/
   private readonly disabled = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.props.fmc.fmgc.data.uplinkRequestInProgress,
     this.props.tmpyExists,
+    this.disabledDueToFlightPhase,
   );
 
   private readonly label = MappedSubject.create(
@@ -90,5 +100,13 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
         buttonStyle={this.props.buttonStyle}
       />
     );
+  }
+
+  public destroy(): void {
+    this.disabledDueToFlightPhase.destroy();
+    this.disabled.destroy();
+    this.label.destroy();
+    this.menuItems.destroy();
+    super.destroy();
   }
 }

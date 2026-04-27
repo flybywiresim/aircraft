@@ -78,9 +78,10 @@ import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { HistoryWind } from '@fmgc/wind/HistoryWind';
 import { FlightPlanWindEntry, FlightPlanWindEntryFlags, HistoryWindEntry } from '@fmgc/flightplanning/data/wind';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { AtsuStatusCodes, WindRequestMessage } from '@datalink/common';
+import { AtsuStatusCodes } from '@datalink/common';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '../shared/FmcAtsuEvents';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
+import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -307,9 +308,8 @@ export class FlightManagementComputer implements FmcInterface {
   private lastUpdateTime: number | null = 0;
 
   private readonly uplinkRecievedActive = Subject.create(false);
-  private readonly uplinkRecievedSec = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS },
-    () => Subject.create(false),
+  private readonly uplinkRecievedSec = Array.from({ length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS }, () =>
+    Subject.create(false),
   );
   private readonly isAnyWindUplinkRecieved = MappedSubject.create(
     SubscribableMapFunctions.or(),
@@ -326,7 +326,7 @@ export class FlightManagementComputer implements FmcInterface {
   );
 
   private readonly uplinkWaitingInsertionSec = Array.from(
-    { length: A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS },
+    { length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS },
     (_, i) =>
       MappedSubject.create(
         ([uplinkPendingDuetoTmpy, hasUplink]) => uplinkPendingDuetoTmpy && !hasUplink,
@@ -505,7 +505,7 @@ export class FlightManagementComputer implements FmcInterface {
       }),
       this.atsuBusSubscriber
         .on('wind_uplink_response')
-        .handle((response) => this.onCompanyWindUplinkReceived(response)),
+        .handle((response) => this.onCompanyWindUplinkResponseReceived(response)),
     );
 
     for (let i = 0; i < this.uplinkWaitingInsertionSec.length; i++) {
@@ -922,10 +922,17 @@ export class FlightManagementComputer implements FmcInterface {
       );
 
       fp.pendingWindUplink.onUplinkRequested();
-      const windReq: WindRequestMessage = null; // TODO
+      const windReq = formatWindRequest(
+        flightPlanIndex,
+        fp,
+        this.fmgc.data.flightPhase.get(),
+        this.guidanceController,
+        this.dataManager,
+        this.#flightPlanService,
+      );
       this.atsuBusPublisher.pub('wind_uplink_request', {
         flightPlan: flightPlanIndex,
-        request: windReq,
+        message: windReq,
       });
       this.fmgc.data.cpnyWindUplinkInProgress.set(true);
       this.pendingFlightPlanWindUplink.set(flightPlanIndex);
@@ -1977,7 +1984,7 @@ export class FlightManagementComputer implements FmcInterface {
    * Loads company wind uplink response into the flight plan associated with the uplink.
    * @param response the company wind uplink response
    */
-  private onCompanyWindUplinkReceived(response: WindUplinkResponse) {
+  private onCompanyWindUplinkResponseReceived(response: WindUplinkResponse) {
     const planIndex = response.flightPlan;
     const hasPln = this.flightPlanInterface.has(planIndex);
     if (!hasPln) {
@@ -1989,36 +1996,36 @@ export class FlightManagementComputer implements FmcInterface {
     } else {
       const status = response.status;
       const plan = this.flightPlanInterface.get(planIndex);
-      if (status === AtsuStatusCodes.Ok) {
-        const message = response.message;
-        if (message === null) {
-          console.warn('Received OK status for company wind uplink, but message was null');
-          this.logTroubleshootingError(
-            'Received OK status for company wind uplink, but message was null for plan ' + planIndex,
-          );
-          this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
-          plan.pendingWindUplink.onUplinkAborted();
-        } else {
-          try {
-            PendingWindUplinkParser.setFromUplink(
-              message,
-              plan,
-              this.flightPhaseManager.phase,
-              FpmConfigs.A320_HONEYWELL_H3,
+      // If we have initiated a request before cruise phase and we entered another phase while it was still pending, delete it.
+      if (plan.isActiveOrCopiedFromActive() && this.flightPhase.get() > FmgcFlightPhase.Cruise) {
+        plan.pendingWindUplink.onUplinkAborted();
+      } else {
+        if (status === AtsuStatusCodes.Ok) {
+          const message = response.message;
+          if (message === null) {
+            console.warn('Received OK status for company wind uplink, but message was null');
+            this.logTroubleshootingError(
+              'Received OK status for company wind uplink, but message was null for plan ' + planIndex,
             );
-          } catch (e) {
-            console.warn('Error processing company wind uplink for plan ' + planIndex, e);
-            this.logTroubleshootingError(e);
             this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
             plan.pendingWindUplink.onUplinkAborted();
+          } else {
+            try {
+              PendingWindUplinkParser.setFromUplink(message, plan, this.flightPhaseManager.phase, FpmConfigs.A380);
+            } catch (e) {
+              console.warn('Error processing company wind uplink for plan ' + planIndex, e);
+              this.logTroubleshootingError(e);
+              this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
+              plan.pendingWindUplink.onUplinkAborted();
+            }
           }
+        } else if (status === AtsuStatusCodes.RequestTimeout) {
+          plan.pendingWindUplink.onUplinkAborted();
+          this.addMessageToQueue(NXSystemMessages.noCompanyReply);
+        } else {
+          this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
+          plan.pendingWindUplink.onUplinkAborted();
         }
-      } else if (status === AtsuStatusCodes.RequestTimeout) {
-        plan.pendingWindUplink.onUplinkAborted();
-        this.addMessageToQueue(NXSystemMessages.noCompanyReply);
-      } else {
-        this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
-        plan.pendingWindUplink.onUplinkAborted();
       }
     }
     this.fmgc.data.cpnyWindUplinkInProgress.set(false);

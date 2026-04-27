@@ -8,7 +8,7 @@ export interface FmsToAtsuEvents {
 
 export interface WindUplinkRequest {
   flightPlan: number;
-  request: WindRequestMessage;
+  message: WindRequestMessage;
 }
 
 export interface WindUplinkResponse {
