@@ -6,12 +6,13 @@ import {
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  MappedSubscribable,
   Subscribable,
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FmcInterface } from '../../FMC/FmcInterface';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 class CpnyWindRequestButtonLabel extends DisplayComponent<ComponentProps> {
@@ -45,7 +46,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
     this.props.fmc.fmgc.data.flightPhase,
   );
 
-  /* Disabled when, temporary exists, uplink in progress or flightplan is active or copy of active and request not allowe due to flight phase*/
+  /* Disabled when, temporary exists, uplink in progress or flightplan is active or copy of active and request not allowe due to flight phase */
   private readonly disabled = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.props.fmc.fmgc.data.uplinkRequestInProgress,
@@ -64,10 +65,10 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
       }
     },
     this.props.uplinkAvailableForPlan,
-    this.props.fmc.fmgc.data.uplinkRequestInProgress,
+    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
   );
 
-  private readonly menuItems = MappedSubject.create(
+  private readonly menuItems: MappedSubscribable<ButtonMenuItem[]> = MappedSubject.create(
     ([avail, tmpy]) =>
       avail && !tmpy
         ? [
@@ -93,7 +94,9 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
         disabled={this.disabled}
         label={this.label}
         onClick={() => {
-          this.props.fmc.requestCpnyWind(this.props.flightPlanIndex.get());
+          if (!this.props.uplinkAvailableForPlan.get()) {
+            this.props.fmc.requestCpnyWind(this.props.flightPlanIndex.get());
+          }
         }}
         idPrefix="mfd-fms-wind-cpny-wind-request"
         menuItems={this.menuItems}

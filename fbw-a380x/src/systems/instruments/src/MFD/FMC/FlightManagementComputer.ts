@@ -307,31 +307,31 @@ export class FlightManagementComputer implements FmcInterface {
 
   private lastUpdateTime: number | null = 0;
 
-  private readonly uplinkRecievedActive = Subject.create(false);
-  private readonly uplinkRecievedSec = Array.from({ length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS }, () =>
+  private readonly windUplinkRecievedActive = Subject.create(false);
+  private readonly windUplinkRecievedSec = Array.from({ length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS }, () =>
     Subject.create(false),
   );
   private readonly isAnyWindUplinkRecieved = MappedSubject.create(
     SubscribableMapFunctions.or(),
-    this.uplinkRecievedActive,
-    ...this.uplinkRecievedSec,
+    this.windUplinkRecievedActive,
+    ...this.windUplinkRecievedSec,
   );
   private readonly windUplinkPulse = new NXLogicPulseNode();
   private readonly companyWindUplinkPending = Subject.create(false);
 
   private readonly uplinkWaitingInsertionActive = MappedSubject.create(
-    ([uplinkPendingDuetoTmpy, hasUplink]) => uplinkPendingDuetoTmpy && !hasUplink,
+    ([uplinkPendingDuetoTmpy, hasUplink]) => !uplinkPendingDuetoTmpy && hasUplink,
     this.companyWindUplinkPending,
-    this.uplinkRecievedActive,
+    this.windUplinkRecievedActive,
   );
 
   private readonly uplinkWaitingInsertionSec = Array.from(
     { length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS },
     (_, i) =>
       MappedSubject.create(
-        ([uplinkPendingDuetoTmpy, hasUplink]) => uplinkPendingDuetoTmpy && !hasUplink,
+        ([uplinkPendingDuetoTmpy, hasUplink]) => !uplinkPendingDuetoTmpy && hasUplink,
         this.companyWindUplinkPending,
-        this.uplinkRecievedSec[i],
+        this.windUplinkRecievedSec[i],
       ),
   );
 
@@ -540,15 +540,15 @@ export class FlightManagementComputer implements FmcInterface {
     this.subs.push(
       flightPlanSyncSub.on('flightPlanManager.deleteAll').handle(() => {
         for (let i = 0; i < this.uplinkWaitingInsertionSec.length; i++) {
-          this.uplinkRecievedSec[i].set(false);
+          this.windUplinkRecievedSec[i].set(false);
         }
-        this.uplinkRecievedActive.set(false);
+        this.windUplinkRecievedActive.set(false);
       }),
       flightPlanSyncSub.on('flightPlanManager.delete').handle((data) => {
         if (data.planIndex >= FlightPlanIndex.FirstSecondary) {
-          this.uplinkRecievedSec[data.planIndex - FlightPlanIndex.FirstSecondary].set(false);
+          this.windUplinkRecievedSec[data.planIndex - FlightPlanIndex.FirstSecondary].set(false);
         } else if (data.planIndex === FlightPlanIndex.Active) {
-          this.uplinkRecievedActive.set(false);
+          this.windUplinkRecievedActive.set(false);
         }
       }),
     );
@@ -960,9 +960,9 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.flightPlanInterface.insertWindUplink(flightPlanIndex);
     if (flightPlanIndex === FlightPlanIndex.Active) {
-      this.uplinkRecievedActive.set(false);
+      this.windUplinkRecievedActive.set(false);
     } else {
-      this.uplinkRecievedSec[flightPlanIndex - 3].set(false);
+      this.windUplinkRecievedSec[flightPlanIndex - 3].set(false);
     }
   }
 
@@ -974,9 +974,9 @@ export class FlightManagementComputer implements FmcInterface {
     const fp = this.flightPlanInterface.get(flightPlanIndex);
     fp.pendingWindUplink.delete();
     if (flightPlanIndex === FlightPlanIndex.Active) {
-      this.uplinkRecievedActive.set(false);
+      this.windUplinkRecievedActive.set(false);
     } else {
-      this.uplinkRecievedSec[flightPlanIndex - 3].set(false);
+      this.windUplinkRecievedSec[flightPlanIndex - 3].set(false);
     }
   }
 
@@ -1667,16 +1667,14 @@ export class FlightManagementComputer implements FmcInterface {
             this.checkDestData();
           }
         }
-        this.companyWindUplinkPending.set(
-          this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get(), throttledDt) &&
-            this.#flightPlanService.hasActive,
-        );
-        const windTimeOut = this.companyWindUplinkTimeout.write(
-          this.fmgc.data.cpnyWindUplinkInProgress.get(),
-          throttledDt,
-        );
-        this.noCompanyReply.set(windTimeOut);
       }
+      this.companyWindUplinkPending.set(
+        this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get(), throttledDt) &&
+          this.#flightPlanService.hasTemporary,
+      );
+      this.noCompanyReply.set(
+        this.companyWindUplinkTimeout.write(this.fmgc.data.cpnyWindUplinkInProgress.get(), throttledDt),
+      );
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
     }
@@ -2012,6 +2010,11 @@ export class FlightManagementComputer implements FmcInterface {
           } else {
             try {
               PendingWindUplinkParser.setFromUplink(message, plan, this.flightPhaseManager.phase, FpmConfigs.A380);
+              if (planIndex === FlightPlanIndex.Active) {
+                this.windUplinkRecievedActive.set(true);
+              } else if (planIndex >= FlightPlanIndex.FirstSecondary) {
+                this.windUplinkRecievedSec[planIndex - FlightPlanIndex.FirstSecondary].set(true);
+              }
             } catch (e) {
               console.warn('Error processing company wind uplink for plan ' + planIndex, e);
               this.logTroubleshootingError(e);
