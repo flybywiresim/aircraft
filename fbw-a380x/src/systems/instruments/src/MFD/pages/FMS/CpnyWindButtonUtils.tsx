@@ -7,39 +7,29 @@ import {
   FSComponent,
   MappedSubject,
   MappedSubscribable,
+  Subject,
   Subscribable,
   SubscribableMapFunctions,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FmcInterface } from '../../FMC/FmcInterface';
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
-class CpnyWindRequestButtonLabel extends DisplayComponent<ComponentProps> {
-  public render(): VNode {
-    return (
-      <div style="display: flex; flex-direction: row; justify-content: space-between;">
-        <span style="text-align: center; vertical-align: center; margin-right: 5px;">
-          CPNY WIND
-          <br />
-          REQUEST
-        </span>
-        <span style="display: flex; align-items: center; justify-content: center;">*</span>
-      </div>
-    );
-  }
-}
-
 export interface CpnyWindRequestButtonProps extends ComponentProps {
   fmc: FmcInterface;
   flightPlanIndex: Subscribable<number>;
   tmpyExists: Subscribable<boolean>;
-  uplinkAvailableForPlan: Subscribable<boolean>;
   buttonStyle?: string;
   isActiveOrCopiedFromActive: Subscribable<boolean>;
 }
 
 export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButtonProps> {
+  private readonly uplinkAvaialbleForPlan = Subject.create(false);
+
+  private readonly subs: Subscription[] = [];
+
   private readonly disabledDueToFlightPhase = MappedSubject.create(
     ([isActiveOrCopiedFromActive, flightPhase]) => isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Cruise,
     this.props.isActiveOrCopiedFromActive,
@@ -57,14 +47,37 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
   private readonly label = MappedSubject.create(
     ([avail, uplinkInProgress]) => {
       if (uplinkInProgress) {
-        return 'REQUEST\nPENDING...';
+        return (
+          <>
+            REQUEST
+            <br />
+            PENDING...
+          </>
+        );
       } else if (!avail) {
-        return <CpnyWindRequestButtonLabel />;
+        return (
+          <>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+              <span style="text-align: center; vertical-align: center; margin-right: 5px;">
+                CPNY WIND
+                <br />
+                REQUEST
+              </span>
+              <span style="display: flex; align-items: center; justify-content: center;">*</span>
+            </div>
+          </>
+        );
       } else {
-        return 'RECEIVED\nCPNY WIND';
+        return (
+          <>
+            RECEIVED
+            <br />
+            CPNY WIND
+          </>
+        );
       }
     },
-    this.props.uplinkAvailableForPlan,
+    this.uplinkAvaialbleForPlan,
     this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
   );
 
@@ -84,9 +97,17 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
             },
           ]
         : [],
-    this.props.uplinkAvailableForPlan,
+    this.uplinkAvaialbleForPlan,
     this.props.tmpyExists,
   );
+
+  onAfterRender(_node: VNode): void {
+    this.subs.push(
+      this.props.flightPlanIndex.sub((v) => {
+        this.subs.push(this.props.fmc.getWindUplinkAvailableForPlan(v).pipe(this.uplinkAvaialbleForPlan));
+      }, true),
+    );
+  }
 
   public render(): VNode {
     return (
@@ -94,13 +115,14 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
         disabled={this.disabled}
         label={this.label}
         onClick={() => {
-          if (!this.props.uplinkAvailableForPlan.get()) {
+          if (!this.uplinkAvaialbleForPlan.get()) {
             this.props.fmc.requestCpnyWind(this.props.flightPlanIndex.get());
           }
         }}
         idPrefix="mfd-fms-wind-cpny-wind-request"
         menuItems={this.menuItems}
         buttonStyle={this.props.buttonStyle}
+        showArrow={false}
       />
     );
   }
@@ -110,6 +132,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
     this.disabled.destroy();
     this.label.destroy();
     this.menuItems.destroy();
+    this.subs.forEach((s) => s.destroy());
     super.destroy();
   }
 }

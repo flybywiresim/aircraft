@@ -3,7 +3,7 @@ import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterfac
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
+import { ArraySubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
@@ -340,4 +340,6 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /** Sends a request to the AOC to reset the ATIS auto update airports */
   resetAtisAutoUpdate(): void;
+
+  getWindUplinkAvailableForPlan(planIndex: FlightPlanIndex): Subscribable<boolean>;
 }

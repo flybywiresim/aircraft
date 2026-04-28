@@ -42,8 +42,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars>();
 
-  private newDataIntervalId: ReturnType<typeof setTimeout> | undefined = undefined;
-
   protected readonly activePageTitle = Subject.create<string>('');
 
   public loadedFlightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | null = null;
@@ -52,7 +50,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
-  protected currentFlightPlanVersion: number = 0;
+  protected readonly currentFlightPlanVersion = Subject.create<number>(0);
 
   /** Indicates whether the temporary flight plan is the active */
   protected readonly tmpyActive = Subject.create<boolean>(false);
@@ -172,21 +170,15 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive);
         this.props.fmcService.master.fmgc.data.fuelPenaltyActive.pipe(this.penaltyActive);
       }, true),
+      this.currentFlightPlanVersion.sub(() => {
+        this.onNewDataChecks();
+        this.onNewData();
+      }),
     );
 
     this.onFlightPlanChanged(false);
     this.onNewDataChecks();
     this.onNewData();
-    this.newDataIntervalId = setInterval(() => this.checkIfNewData(), 500);
-  }
-
-  protected checkIfNewData() {
-    // Check for current flight plan, whether it has changed (TODO switch to Subscribable in the future)
-    if (this.loadedFlightPlan?.version !== this.currentFlightPlanVersion) {
-      this.onNewDataChecks();
-      this.onNewData();
-      this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
-    }
   }
 
   protected onFlightPlanChanged(dueToEvent = true) {
@@ -276,7 +268,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     }
     this.onNewDataChecks();
     this.onNewData();
-    this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
+    this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
   }
 
   protected abstract onNewData(): void;
@@ -315,9 +307,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     for (const s of this.subs) {
       s.destroy();
     }
-
-    clearInterval(this.newDataIntervalId);
-    this.newDataIntervalId = undefined;
 
     super.destroy();
   }

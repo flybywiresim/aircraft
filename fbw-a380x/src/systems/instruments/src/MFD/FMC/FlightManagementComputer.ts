@@ -1559,6 +1559,16 @@ export class FlightManagementComputer implements FmcInterface {
     this.atsuBusPublisher.pub('reset_auto_update', null, true, false);
   }
 
+  getWindUplinkAvailableForPlan(flightPlanIndex: FlightPlanIndex): Subscribable<boolean> {
+    if (flightPlanIndex === FlightPlanIndex.Active) {
+      return this.uplinkWaitingInsertionActive;
+    } else if (flightPlanIndex >= FlightPlanIndex.FirstSecondary) {
+      return this.uplinkWaitingInsertionSec[flightPlanIndex - 3];
+    } else {
+      return Subject.create(false);
+    }
+  }
+
   private checkDestData(): void {
     if (!this.destDataEntered.get()) {
       this.addMessageToQueue(NXSystemMessages.enterDestData);
