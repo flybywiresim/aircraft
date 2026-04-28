@@ -1189,9 +1189,9 @@ export class PseudoFWC {
 
   private readonly gearLockedUpFor5Seconds = new NXLogicConfirmNode(5, true);
 
-  private readonly gearNotUplockedMemoryNode = new NXLogicMemoryNode(false);
+  private readonly lgNotUplockedMemoryNode = new NXLogicMemoryNode(false);
 
-  private readonly gearNotUplocked = Subject.create(false);
+  private readonly lgNotUplocked = Subject.create(false);
 
   private readonly gearNotUplockedWarning = Subject.create(false);
 
@@ -1254,7 +1254,7 @@ export class PseudoFWC {
 
   private readonly adr3Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_3'));
 
-  private readonly adrCasAbove220Kts = Subject.create(false);
+  private readonly adr123CasAbove220Kts = Subject.create(false);
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
 
@@ -2123,7 +2123,6 @@ export class PseudoFWC {
     this.yellowSysAbnormalLowPressure.set(
       !yellowSysPressurised && this.engine2RunningOrNotFlightPhase12910For1Second.read(),
     );
-
     this.greenSysAbnormalLowPressure.set(
       !greenSysPressurised && this.engine1RunningOrNotFlightPhase12910For1Second.read(),
     );
@@ -2133,10 +2132,7 @@ export class PseudoFWC {
         this.greenSysAbnormalLowPressure.get(),
         this.yellowSysAbnormalLowPressure.get(),
         this.blueSysAbnormalLowPressure.get(),
-        this.blueSysAbnormalLowPressure.get() ||
-          this.yellowSysAbnormalLowPressure.get() ||
-          this.greenSysAbnormalLowPressure.get(),
-      ) > 2,
+      ) > 1,
     );
 
     /* ADIRS acquisition */
@@ -3528,15 +3524,15 @@ export class PseudoFWC {
 
     this.gearLockedUp.set(lhGearLockUp && rhGearLockUp && noseGearLockUp);
 
-    this.gearNotUplocked.set(
+    this.lgNotUplocked.set(
       !this.twoHydraulicsOut.get() &&
         (this.lgDownlocked.get() || this.lgNotLocked.get()) &&
         this.gearNotLockUpAndNotSelectDownFor30Seconds.read(),
     );
 
     this.gearNotUplockedWarning.set(
-      this.gearNotUplockedMemoryNode.write(
-        this.gearNotUplocked.get(),
+      this.lgNotUplockedMemoryNode.write(
+        this.lgNotUplocked.get(),
         this.gearLockedUpFor5Seconds.write(this.gearLockedUp.get(), deltaTime),
       ),
     );
@@ -3549,14 +3545,14 @@ export class PseudoFWC {
 
     this.gearNotUplockedRecycleMemoryNode.write(
       this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get(), deltaTime) &&
-        this.gearNotUplockedMemoryNode.read(), // TODO: Check SHOCK ABSORBER FAULT
+        this.lgNotUplockedMemoryNode.read(), // TODO: Check SHOCK ABSORBER FAULT
       this.fwcFlightPhase.get() === 8,
     );
 
     const adr1CS = this.adr1Cas.get();
     const adr2CS = this.adr2Cas.get();
     const adr3CS = this.adr3Cas.get();
-    this.adrCasAbove220Kts.set(
+    this.adr123CasAbove220Kts.set(
       (adr1CS.value > 220 && !(adr1CS.isInvalid() || adr1CS.isNoComputedData())) ||
         (adr2CS.value > 220 && !(adr2CS.isInvalid() || adr2CS.isNoComputedData())) ||
         (adr3CS.value > 220 && !(adr3CS.isInvalid() || adr3CS.isNoComputedData())),
@@ -6029,13 +6025,13 @@ export class PseudoFWC {
       whichCodeToReturn: () => [
         0,
         !this.lgDownlocked.get() ? 1 : null,
-        !this.gearNotUplockedRecycleMemoryNode.read() && !this.adrCasAbove220Kts.get() ? 2 : null,
+        !this.gearNotUplockedRecycleMemoryNode.read() && !this.adr123CasAbove220Kts.get() ? 2 : null,
         !this.gearNotUplockedRecycleMemoryNode.read() &&
-        !this.adrCasAbove220Kts.get() &&
+        !this.adr123CasAbove220Kts.get() &&
         !this.lgDownlockedFor10Seconds.read()
           ? 3
           : null,
-        !this.adrCasAbove220Kts.get() && !this.lgDownlockedFor10Seconds.read() ? 4 : null,
+        !this.adr123CasAbove220Kts.get() && !this.lgDownlockedFor10Seconds.read() ? 4 : null,
         this.lgDownlocked.get() ? 5 : null,
         !this.lgDownlocked.get() ? 6 : null, // TODO: !Check one door not closed
         !this.aircraftOnGround.get() ? 7 : null, // TODO: Check engines out
