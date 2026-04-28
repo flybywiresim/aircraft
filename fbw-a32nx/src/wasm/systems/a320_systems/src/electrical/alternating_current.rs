@@ -19,8 +19,6 @@ use systems::{
 };
 use uom::si::{f64::*, power::kilowatt};
 
-pub(super) const APU_GENERATOR_STABILIZATION_TIME: Duration = Duration::from_millis(150);
-
 pub(super) struct A320AlternatingCurrentElectrical {
     main_power_sources: A320MainPowerSources,
     ac_ess_feed_contactors: A320AcEssFeedContactors,
@@ -382,7 +380,6 @@ struct A320MainPowerSources {
     bus_tie_1_contactor: Contactor,
     bus_tie_2_contactor: Contactor,
     apu_gen_contactor: Contactor,
-    apu_gen_contactor_delay_logic_gate: DelayedTrueLogicGate,
     ext_pwr_contactor: Contactor,
 }
 impl A320MainPowerSources {
@@ -407,10 +404,6 @@ impl A320MainPowerSources {
             bus_tie_1_contactor: Contactor::new(context, "11XU1"),
             bus_tie_2_contactor: Contactor::new(context, "11XU2"),
             apu_gen_contactor: Contactor::new(context, "3XS"),
-            apu_gen_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
-                APU_GENERATOR_STABILIZATION_TIME,
-            )
-            .starting_as(true),
             ext_pwr_contactor: Contactor::new(context, "3XG"),
         }
     }
@@ -449,13 +442,9 @@ impl A320MainPowerSources {
         let ext_pwr_provides_power = overhead.external_power_is_on()
             && ext_pwr.output_within_normal_parameters()
             && !both_engine_gens_provide_power;
-        self.apu_gen_contactor_delay_logic_gate.update(
-            context,
-            overhead.apu_generator_is_on()
-                && apu.is_available()
-                && apu.generator(1).output_within_normal_parameters(),
-        );
-        let apu_gen_provides_power = self.apu_gen_contactor_delay_logic_gate.output()
+        let apu_gen_provides_power = overhead.apu_generator_is_on()
+            && apu.is_available()
+            && apu.generator(1).output_within_normal_parameters()
             && !ext_pwr_provides_power
             && !both_engine_gens_provide_power;
 

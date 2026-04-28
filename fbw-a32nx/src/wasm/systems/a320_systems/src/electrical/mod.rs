@@ -451,10 +451,7 @@ mod a320_electrical {
 
 #[cfg(test)]
 mod a320_electrical_circuit_tests {
-    use super::{
-        alternating_current::{A320AcEssFeedContactors, APU_GENERATOR_STABILIZATION_TIME},
-        *,
-    };
+    use super::{alternating_current::A320AcEssFeedContactors, *};
     use rstest::rstest;
     use std::{cell::Ref, time::Duration};
     use systems::{
@@ -1890,27 +1887,6 @@ mod a320_electrical_circuit_tests {
     }
 
     #[test]
-    fn when_apu_gen_push_button_turned_on_line_contactor_closes_after_stabilization_delay() {
-        let mut test_bed = test_bed_with().running_apu().and().apu_gen_off().run();
-
-        assert!(test_bed.apu_gen_contactor_is_open());
-        assert!(!test_bed.apu_gen_has_fault());
-
-        test_bed = test_bed
-            .then_continue_with()
-            .apu_gen_on()
-            .run_waiting_for(APU_GENERATOR_STABILIZATION_TIME - Duration::from_millis(1));
-
-        assert!(test_bed.apu_gen_contactor_is_open());
-        assert!(test_bed.apu_gen_has_fault());
-
-        test_bed = test_bed.run_waiting_for(Duration::from_millis(1));
-
-        assert!(!test_bed.apu_gen_contactor_is_open());
-        assert!(!test_bed.apu_gen_has_fault());
-    }
-
-    #[test]
     fn when_apu_generator_faulted_and_external_power_takes_over_apu_gen_push_button_does_not_have_fault(
     ) {
         let mut test_bed = test_bed_with()
@@ -2806,11 +2782,6 @@ mod a320_electrical_circuit_tests {
 
         fn apu_gen_off(mut self) -> Self {
             self.write_by_name("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
-            self
-        }
-
-        fn apu_gen_on(mut self) -> Self {
-            self.write_by_name("OVHD_ELEC_APU_GEN_PB_IS_ON", true);
             self
         }
 
