@@ -29,10 +29,10 @@ jobs:
     name: Build and publish A32NX
     # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
-    permissions:
-      contents: write
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
       STANDALONE_ZIP_NAME: A32NX-stable-rc.7z
