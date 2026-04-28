@@ -3007,13 +3007,8 @@ mod a320_electrical_circuit_tests {
         }
 
         fn both_engine_gen_contactors_are_closed(&mut self) -> bool {
-            ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
-                self,
-                "ELEC_CONTACTOR_9XU1_IS_CLOSED",
-            ) && ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
-                self,
-                "ELEC_CONTACTOR_9XU2_IS_CLOSED",
-            )
+            self.read_by_name("ELEC_CONTACTOR_9XU1_IS_CLOSED")
+                && self.read_by_name("ELEC_CONTACTOR_9XU2_IS_CLOSED")
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
