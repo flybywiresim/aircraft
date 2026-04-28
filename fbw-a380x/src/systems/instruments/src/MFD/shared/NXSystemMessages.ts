@@ -118,6 +118,7 @@ export const NXSystemMessages = {
   navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
   sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
   lrcInUse: new TypeIMessage('LRC MODE IN USE'),
+  lateralDiscontinuityAhead: new TypeIIMessage('LATERAL DISCONTINUITY AHEAD', true),
 };
 
 export const NXFictionalMessages = {
