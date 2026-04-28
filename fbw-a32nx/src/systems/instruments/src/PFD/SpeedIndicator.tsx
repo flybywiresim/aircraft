@@ -563,7 +563,7 @@ class SpeedTrendArrow extends DisplayComponent<{
 
   private vCTrendVisible = MappedSubject.create(
     ([vCTrendInvalid, vCTrendHysteresis]) => {
-      return !(vCTrendInvalid || !vCTrendHysteresis);
+      return !vCTrendInvalid && vCTrendHysteresis;
     },
     this.vCTrendInvalid,
     this.vCTrendHysteresis,
