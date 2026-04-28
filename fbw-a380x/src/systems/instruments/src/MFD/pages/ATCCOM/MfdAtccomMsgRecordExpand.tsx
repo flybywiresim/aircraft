@@ -42,7 +42,6 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
             <div>
               <Button
                 label="RETURN<br />TO LIST"
-                disabled={Subject.create(false)}
                 onClick={() => {
                   this.props.mfd.uiService.navigateTo('atccom/msg-record/all-msg');
                 }}
@@ -50,12 +49,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
               />
             </div>
             <div style="position:absolute; top: 0px; right:0px">
-              <Button
-                label="PRINT"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="PRINT" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
           </div>
         </div>

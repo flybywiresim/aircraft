@@ -111,7 +111,7 @@ export class CDULateralRevisionPage {
           if (!success) {
             scratchpadCallback();
           }
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     }
@@ -153,7 +153,7 @@ export class CDULateralRevisionPage {
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
         }
 
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 
@@ -166,7 +166,7 @@ export class CDULateralRevisionPage {
       mcdu.onRightInput[3] = async (value) => {
         await mcdu.flightPlanService.newDest(legIndexFP, value, forPlan, inAlternate);
 
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 

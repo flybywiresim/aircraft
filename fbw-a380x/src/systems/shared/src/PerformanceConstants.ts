@@ -39,3 +39,4 @@ export const maxRteRsvFuelPerc = 15; // %
 export const maxJtsnGw = maxGw; // kg
 export const maxAltnFuel = 289_982; // kg
 export const maxFinalFuel = 100_018; // kg
+export const maxMinDestFuel = 250_000; //kg
