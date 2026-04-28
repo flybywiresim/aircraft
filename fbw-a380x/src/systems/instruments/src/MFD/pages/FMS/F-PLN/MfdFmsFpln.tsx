@@ -849,10 +849,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private goToTimeConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
     if (
+      this.loadedFlightPlan &&
       isWaypoint(data) &&
       !data.isAltnWaypoint &&
       data.originalLegIndex !== null &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
       MfdFmsFplnVertRev.isEligibleForVerticalRevision(
         data.originalLegIndex,
         this.loadedFlightPlan.legElementAt(data.originalLegIndex),
@@ -876,7 +876,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
       if (
         fp &&
-        fp.legElementAt(data.originalLegIndex) &&
         MfdFmsFplnVertRev.isEligibleForVerticalRevision(
           data.originalLegIndex,
           fp.legElementAt(data.originalLegIndex),
@@ -901,7 +900,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
       if (
         fp &&
-        fp.legElementAt(data.originalLegIndex) &&
         MfdFmsFplnVertRev.isEligibleForVerticalRevision(
           data.originalLegIndex,
           fp.legElementAt(data.originalLegIndex),

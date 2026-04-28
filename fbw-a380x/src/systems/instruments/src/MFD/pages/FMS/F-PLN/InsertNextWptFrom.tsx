@@ -128,7 +128,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
             );
             const revisedLegPlan = isAltn ? fp?.alternateFlightPlan : fp;
 
-            if (revisedLegPlan?.elementAt(wptIdx)?.isDiscontinuity === false) {
+            if (revisedLegPlan?.elementAt(wptIdx).isDiscontinuity === false) {
               const wpt = revisedLegPlan.legElementAt(wptIdx);
               this.waypointIdent.set(wpt.ident);
               this.selectedWaypointIndex.set(null);

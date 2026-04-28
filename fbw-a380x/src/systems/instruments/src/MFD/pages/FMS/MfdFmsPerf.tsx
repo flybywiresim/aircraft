@@ -220,17 +220,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     this.isActiveOrCopyOfActive,
   );
   private readonly clbPageInactive = MappedSubject.create(
-    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase >= FmgcFlightPhase.Climb,
+    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase > FmgcFlightPhase.Climb,
     this.activeFlightPhase,
     this.isActiveOrCopyOfActive,
   );
   private readonly crzPageInactive = MappedSubject.create(
-    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase >= FmgcFlightPhase.Cruise,
+    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase > FmgcFlightPhase.Cruise,
     this.activeFlightPhase,
     this.isActiveOrCopyOfActive,
   );
   private readonly desPageInactive = MappedSubject.create(
-    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase >= FmgcFlightPhase.Descent,
+    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase > FmgcFlightPhase.Descent,
     this.activeFlightPhase,
     this.isActiveOrCopyOfActive,
   );

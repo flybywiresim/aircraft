@@ -29,7 +29,7 @@ import {
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
-import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
@@ -68,8 +68,9 @@ enum StepDisabledReason {
 
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
+  private availableWaypointsIdents: string[] = [];
   private readonly availableWaypoints = ArraySubject.create<string>([]);
-  private initialLoadReviseWaypointIndex = true;
+  private initialLoadRevisedWaypointIndex = true;
 
   private availableWaypointsToLegIndex: number[] = [];
   private readonly selectedLegIndex = Subject.create<number | null>(null);
@@ -172,15 +173,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   /** Paused when not in STEP ALts page */
   private stepsAltsClockSub?: Subscription;
 
-  private readonly stepPageDisabled = Subject.create<StepDisabledReason | null>(null);
-  private readonly stepPageDisabledMessageDisplay = this.stepPageDisabled.map((reason) =>
+  private readonly stepPageDisabledReason = Subject.create<StepDisabledReason | null>(null);
+  private readonly stepPageDisabledMessageDisplay = this.stepPageDisabledReason.map((reason) =>
     reason ? 'inherit' : 'none',
   );
-  private readonly stepAltsPageDisplay = this.stepPageDisabled.map((reason) => (reason ? 'none' : 'block'));
+  private readonly stepAltsPageDisplay = this.stepPageDisabledReason.map((reason) => (reason ? 'none' : 'block'));
   private readonly fillPageDisplay = MappedSubject.create(
     ([page, stepAltDisabled]) => (page === SelectedPage.STEP_ALTS && !stepAltDisabled ? 'inherit' : 'none'),
     this.selectedPageIndex,
-    this.stepPageDisabled,
+    this.stepPageDisabledReason,
   );
 
   private readonly crzFl = Subject.create<number | null>(null);
@@ -242,36 +243,27 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     const plan = this.selectedLegIsAlternate.get() ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
     const activeLegIndex = plan?.activeLegIndex;
     let indexToSelect: number | null = null;
-    if (activeLegIndex !== undefined) {
-      this.availableWaypointsToLegIndex = [];
-      const legs = plan?.allLegs;
-      const wpt = legs
-        ?.slice(activeLegIndex)
-        .map((el, idx) => {
-          if (el instanceof FlightPlanLeg && el.isXF()) {
-            this.availableWaypointsToLegIndex.push(idx + activeLegIndex);
-            if (indexToSelect === null) {
-              indexToSelect = idx + activeLegIndex;
-            }
-            return el.ident;
-          }
-          return null;
-        })
-        .filter((el) => el !== null) as string[] | undefined;
-      if (wpt) {
-        this.availableWaypoints.set(wpt);
+    this.availableWaypointsToLegIndex = [];
+    this.availableWaypointsIdents = [];
+    if (activeLegIndex !== undefined && plan !== null) {
+      for (let i = activeLegIndex; i < plan.legCount; i++) {
+        const leg = plan.maybeElementAt(i);
+        if (isLeg(leg) && leg.isXF()) {
+          this.availableWaypointsToLegIndex.push(i);
+          this.availableWaypointsIdents.push(leg.ident);
+        }
       }
-
-      if (this.initialLoadReviseWaypointIndex) {
-        this.selectedLegIndex.set(this.props.fmcService.master.revisedLegIndex.get() ?? indexToSelect);
-        this.initialLoadReviseWaypointIndex = false;
-      } else if (this.selectedLegIndex.get() === null) {
-        this.selectedLegIndex.set(indexToSelect);
-      }
+      indexToSelect = this.availableWaypointsToLegIndex[0] ?? null;
+    }
+    this.availableWaypoints.set(this.availableWaypointsIdents);
+    if (this.initialLoadRevisedWaypointIndex) {
+      this.selectedLegIndex.set(this.props.fmcService.master.revisedLegIndex.get() ?? indexToSelect);
+      this.initialLoadRevisedWaypointIndex = false;
+    } else {
+      this.selectedLegIndex.set(indexToSelect);
     }
 
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
-
     this.updateConstraints();
     this.updateCruiseSteps();
   }
@@ -490,7 +482,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       !this.selectedLegIsAlternate.get()
     ) {
       const stepDisabledReason = this.checkStepAltsAccessPrerequisites();
-      this.stepPageDisabled.set(stepDisabledReason ?? null);
+      this.stepPageDisabledReason.set(stepDisabledReason ?? null);
       if (stepDisabledReason === undefined) {
         const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
         const cruiseSteps = this.loadedFlightPlan.allLegs
@@ -930,12 +922,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     switch (this.props.mfd.uiService.activeUri.get().extra) {
       case 'rta':
-        this.initialLoadReviseWaypointIndex = false;
+        this.initialLoadRevisedWaypointIndex = false;
         this.selectedPageIndex.set(SelectedPage.RTA);
         break;
       case 'spd':
         this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
-        this.initialLoadReviseWaypointIndex = true;
+        this.initialLoadRevisedWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.SPD);
         break;
       case 'cms':
@@ -943,11 +935,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         break;
       case 'alt':
         this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
-        this.initialLoadReviseWaypointIndex = true;
+        this.initialLoadRevisedWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.ALT);
         break;
       case 'step-alts':
-        this.initialLoadReviseWaypointIndex = false;
+        this.initialLoadRevisedWaypointIndex = false;
         this.selectedPageIndex.set(SelectedPage.STEP_ALTS);
         break;
 
@@ -1285,7 +1277,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
               <TopTabNavigatorPage>
                 {/* STEP ALTs */}
                 <div class="mfd-page-container" style={{ display: this.stepPageDisabledMessageDisplay }}>
-                  <div class="mfd-amber-error-message">{this.stepPageDisabled}</div>
+                  <div class="mfd-amber-error-message">{this.stepPageDisabledReason}</div>
                 </div>
                 <div
                   style={{
