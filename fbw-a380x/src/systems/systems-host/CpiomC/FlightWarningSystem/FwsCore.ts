@@ -587,10 +587,12 @@ export class FwsCore {
 
   public readonly flowSelectorKnob = Subject.create(0);
 
-  public readonly xBleedSelectorKnob = RegisteredSimVar.create<number>(
+  public readonly xBleedSelectorKnobSimvar = RegisteredSimVar.create<number>(
     'L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position',
-    SimVarValueType.Number,
+    SimVarValueType.Enum,
   );
+
+  public readonly xBleedSelectorKnob = Subject.create(0);
 
   public readonly xBleedSelectorShut = Subject.create(false);
 
@@ -2012,10 +2014,12 @@ export class FwsCore {
 
   public readonly apuMasterSwitch = Subject.create(0);
 
-  public readonly apuStartSwitch = RegisteredSimVar.createBoolean(
+  public readonly apuStartSwitchSimvar = RegisteredSimVar.createBoolean(
     'L:A32NX_OVHD_APU_START_PB_IS_ON',
     SimVarValueType.Bool,
   );
+
+  public readonly apuStartSwitch = Subject.create(false);
 
   public readonly apuAvail = Subject.create(false);
 
@@ -2976,7 +2980,7 @@ export class FwsCore {
     this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
-    this.apuStartSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_ON', 'bool') > 0);
+    this.apuStartSwitch.set(this.apuStartSwitchSimvar.get());
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
@@ -4290,7 +4294,7 @@ export class FwsCore {
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
     // 0: Shut, 1: Auto, 2: Open
-    this.xBleedSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position', 'number'));
+    this.xBleedSelectorKnob.set(this.xBleedSelectorKnobSimvar.get());
 
     this.xBleedSelectorShut.set(this.xBleedSelectorKnob.get() === 0);
     this.xBleedSelectorAuto.set(this.xBleedSelectorKnob.get() === 1);
