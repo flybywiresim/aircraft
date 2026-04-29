@@ -237,8 +237,8 @@ export class InputField<
   private onKeyDownHandler = this.onKeyDown.bind(this);
 
   private handleBackspace() {
-    if (this.modifiedFieldValue.get() === null && this.canBeCleared.get()) {
-      this.modifiedFieldValue.set(''); // TODO should give "NOT ALLOWED" if we try to clear and it is empty.
+    if (this.modifiedFieldValue.get() === null) {
+      this.modifiedFieldValue.set('');
     } else if (this.modifiedFieldValue.get()?.length === 0) {
       // Do nothing
     } else {
@@ -384,12 +384,11 @@ export class InputField<
 
   private async validateAndUpdate(input: string) {
     this.isValidating.set(true);
-
     let newValue = null;
     let updateWasSuccessful = true;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
-      if (newValue === null && !this.canBeCleared.get() && this.readValue.get() !== null) {
+      if (newValue === null && !this.canBeCleared.get() && this.readValue.get() != null) {
         throw new FmsError(FmsErrorType.NotAllowed);
       }
     } catch (msg: unknown) {

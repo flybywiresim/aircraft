@@ -32,15 +32,15 @@ export class HistoryWind {
 
   private readonly historyWinds: (HistoryWindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
-  private readonly filterEmptyOnInterpolation: boolean;
-
   constructor(
     private readonly bus: EventBus,
-    private readonly loadDefaultsWhenEmpty: boolean,
+    private readonly filterEmptyOnInterpolation: boolean,
   ) {
-    this.filterEmptyOnInterpolation = loadDefaultsWhenEmpty;
     this.altitude.sub(this.handleAltitudeChange.bind(this));
     this.sub.on('fmgc_flight_phase').handle(this.handleFlightPhaseChange.bind(this));
+    for (let i = 0; i < this.defaultRecordedWind.length; i++) {
+      this.historyWinds[i] = this.defaultRecordedWind[i];
+    }
     this.syncFromLocalStorage();
   }
 
@@ -143,11 +143,6 @@ export class HistoryWind {
   private syncFromLocalStorage() {
     const historyWindsString = localStorage.getItem(HistoryWind.LOCALSTORAGE_KEY);
     if (historyWindsString === null) {
-      if (this.loadDefaultsWhenEmpty) {
-        for (let i = 0; i < this.defaultRecordedWind.length; i++) {
-          this.historyWinds[i] = this.defaultRecordedWind[i];
-        }
-      }
       return;
     }
 
@@ -156,7 +151,9 @@ export class HistoryWind {
 
       if (Array.isArray(deserialized) && deserialized.length === this.historyWinds.length) {
         for (let i = 0; i < deserialized.length; i++) {
-          this.historyWinds[i] = deserialized[i];
+          if (deserialized[i] !== null) {
+            this.historyWinds[i] = deserialized[i];
+          }
         }
       } else {
         console.log(`[FMS/History Winds] Deserialized history winds with invalid format: "${historyWindsString}"`);

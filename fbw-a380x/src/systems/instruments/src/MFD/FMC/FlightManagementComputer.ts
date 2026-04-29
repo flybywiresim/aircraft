@@ -939,9 +939,9 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  insertCpnyWind(flightPlanIndex: number): void {
+  async insertCpnyWind(flightPlanIndex: number): Promise<void> {
     const hasfp = this.flightPlanInterface.has(flightPlanIndex);
-    if (!hasfp) {
+    if (!hasfp || this.flightPlanInterface.hasTemporary) {
       return;
     }
 
@@ -958,7 +958,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.addMessageToQueue(NXSystemMessages.checkAltnWind);
     }
 
-    this.flightPlanInterface.insertWindUplink(flightPlanIndex);
+    await this.flightPlanInterface.insertWindUplink(flightPlanIndex);
     if (flightPlanIndex === FlightPlanIndex.Active) {
       this.windUplinkRecievedActive.set(false);
     } else {
@@ -968,7 +968,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   deleteCpnyWind(flightPlanIndex: number): void {
     const hasfp = this.flightPlanInterface.has(flightPlanIndex);
-    if (!hasfp) {
+    if (!hasfp || this.flightPlanInterface.hasTemporary) {
       return;
     }
     const fp = this.flightPlanInterface.get(flightPlanIndex);
@@ -1939,7 +1939,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   public insertHistoryWinds(): boolean {
     if (
-      this.flightPhase.get() !== FmgcFlightPhase.Preflight &&
+      this.flightPhase.get() === FmgcFlightPhase.Preflight &&
       !this.flightPlanInterface.hasTemporary &&
       this.flightPlanInterface.hasActive
     ) {

@@ -247,7 +247,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     if (hasWind) {
       this.tripWind.set(null);
     } else {
-      this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+      this.tripWind.set(pd?.pilotTripWind.get() ?? 0);
     }
     this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);

@@ -519,7 +519,7 @@ export class AtcDatalinkSystem implements Instrument {
   private performrWindUplinkRequest(request: WindUplinkRequest): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
       const requestId = this.requestId++;
-      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      this.publisher.pub('aocRequestWinds', { ...request.message, requestId }, true, false);
       this.uplinkWindRequestFlightPlanMap.set(requestId, request.flightPlan);
 
       this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {

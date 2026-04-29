@@ -44,41 +44,49 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
     this.disabledDueToFlightPhase,
   );
 
-  private readonly label = MappedSubject.create(
+  private readonly topLabel = MappedSubject.create(
     ([avail, uplinkInProgress]) => {
       if (uplinkInProgress) {
-        return (
-          <>
-            REQUEST
-            <br />
-            PENDING...
-          </>
-        );
-      } else if (!avail) {
-        return (
-          <>
-            <div style="display: flex; flex-direction: row; justify-content: space-between;">
-              <span style="text-align: center; vertical-align: center; margin-right: 5px;">
-                CPNY WIND
-                <br />
-                REQUEST
-              </span>
-              <span style="display: flex; align-items: center; justify-content: center;">*</span>
-            </div>
-          </>
-        );
-      } else {
-        return (
-          <>
-            RECEIVED
-            <br />
-            CPNY WIND
-          </>
-        );
+        return 'REQUEST';
       }
+
+      return avail ? 'RECEIVED' : 'CPNY WIND';
     },
     this.uplinkAvaialbleForPlan,
     this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+  );
+
+  private readonly bottomLabel = MappedSubject.create(
+    ([avail, uplinkInProgress]) => {
+      if (uplinkInProgress) {
+        return 'PENDING...';
+      }
+
+      return avail ? 'CPNY WIND' : 'REQUEST';
+    },
+    this.uplinkAvaialbleForPlan,
+    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+  );
+
+  private readonly showAsterisk = MappedSubject.create(
+    ([avail, uplinkInProgress]) => !avail && !uplinkInProgress,
+    this.uplinkAvaialbleForPlan,
+    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+  );
+
+  private readonly hideAsterisk = this.showAsterisk.map(SubscribableMapFunctions.not());
+
+  private readonly label = (
+    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+      <span style="text-align: center; vertical-align: center; margin-right: 5px;">
+        {this.topLabel}
+        <br />
+        {this.bottomLabel}
+      </span>
+      <span class={{ hidden: this.hideAsterisk }} style="display: flex; align-items: center; justify-content: center;">
+        *
+      </span>
+    </div>
   );
 
   private readonly menuItems: MappedSubscribable<ButtonMenuItem[]> = MappedSubject.create(
@@ -130,7 +138,10 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
   public destroy(): void {
     this.disabledDueToFlightPhase.destroy();
     this.disabled.destroy();
-    this.label.destroy();
+    this.topLabel.destroy();
+    this.bottomLabel.destroy();
+    this.showAsterisk.destroy();
+    this.hideAsterisk.destroy();
     this.menuItems.destroy();
     this.subs.forEach((s) => s.destroy());
     super.destroy();

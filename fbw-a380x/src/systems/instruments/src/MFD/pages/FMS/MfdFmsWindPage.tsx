@@ -591,7 +591,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={
-                            new WindAltitudeFormat(this.transitionAltitude, true, this.departureElevation)
+                            new WindAltitudeFormat(this.transitionAltitude, false, this.departureElevation)
                           }
                           value={this.displayedClimbWindAltitudes[value]}
                           canBeCleared={true}
