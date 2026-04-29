@@ -881,7 +881,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   hasWindEntries() {
     return (
-      this.performanceData.pilotTripWind.get() !== null ||
       this.performanceData.climbWindEntries.get().length > 0 ||
       this.performanceData.descentWindEntries.get().length > 0 ||
       this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)
