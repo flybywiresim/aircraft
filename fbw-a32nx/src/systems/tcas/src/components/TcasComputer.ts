@@ -1188,6 +1188,10 @@ export class TcasComputer {
             console.log('TCAS: CLEAR OF CONFLICT');
           }
           this.soundManager.tryPlaySound(TCAS.SOUNDS.clear_of_conflict, true);
+          this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+          this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+          this.rateToMaintain.setVar(0);
+          this.raType.setVar(RaType2.NONE);
           this.activeRa.info = null;
         }
         break;
