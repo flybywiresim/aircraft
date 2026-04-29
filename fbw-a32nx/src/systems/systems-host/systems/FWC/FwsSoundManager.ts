@@ -110,13 +110,6 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: true,
   },
-  stall: {
-    localVarName: 'A32NX_AUDIO_ROP_MAX_BRAKING',
-    length: 3.0,
-    priority: 5,
-    type: FwsAuralWarningType.SyntheticVoice,
-    continuous: true,
-  },
   cChordCont: {
     localVarName: 'A32NX_FWC_CCHORD',
     priority: 3,
@@ -124,18 +117,18 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   pitchPitch: {
-    wwiseEventName: 'aural_pitch',
+    localVarName: 'A32NX_FWS_AUDIO_PITCH',
     priority: 3,
     length: 0.48,
     type: FwsAuralWarningType.SyntheticVoice,
     repeatFor: 2,
   },
   speedSpeedSpeed: {
-    wwiseEventName: 'aural_speed',
+    localVarName: 'A32NX_FWS_AUDIO_SPEED',
     priority: 3,
-    length: 0.68,
-    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.56,
     repeatFor: 3,
+    type: FwsAuralWarningType.SyntheticVoice,
   },
   // Altitude callouts
   minimums: {
@@ -258,6 +251,11 @@ export class FwsSoundManager {
 
   private currentSoundPlaying: keyof typeof FwsAuralsList | null = null;
 
+  /** The sound to be repeated next cycle (only for non continuous sounds). Cannot be interrupted */
+  private repeatNextCycleSound: keyof typeof FwsAuralsList | null = null;
+  /* The number of times the sound shall be repeated after the initial play  */
+  private numberOfTimesToRepeatSound: number | null = null;
+
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
   /** in seconds */
@@ -354,13 +352,12 @@ export class FwsSoundManager {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
     this.currentSoundPlaying = soundKey;
-    if (sound.repeatFor) {
-      this.currentSoundPlayTimeRemaining = sound.length * sound.repeatFor;
-    } else {
-      this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
-    }
+    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
     this.soundToRepeat = sound.periodicWithPause ? soundKey : null;
     this.soundToRepeatDelay = sound.periodicWithPause ?? null;
+    if (this.numberOfTimesToRepeatSound === null && !sound.continuous) {
+      this.numberOfTimesToRepeatSound = sound.repeatFor ? sound.repeatFor - 1 : null; // Subtract one for subsequent plays
+    }
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
@@ -409,25 +406,35 @@ export class FwsSoundManager {
   }
 
   onUpdate(deltaTime: number) {
+    // Enforce one cycle delay before repeating
+    if (this.repeatNextCycleSound) {
+      const soundKey = this.repeatNextCycleSound;
+      this.repeatNextCycleSound = null;
+      this.playSound(soundKey);
+      return;
+    }
     // Either wait for the current sound to finish, or schedule the next sound
     if (this.currentSoundPlaying && this.currentSoundPlayTimeRemaining > 0) {
       if (this.currentSoundPlayTimeRemaining - deltaTime / 1_000 > 0) {
-        // Wait for sound to be finished, or retrigger if multiple emissions are needed
+        // Wait for sound to be finished
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
-
-        const sound = FwsAuralsList[this.currentSoundPlaying];
-        const shouldRetrigger = !!sound.repeatFor;
-        if (sound.wwiseEventName && shouldRetrigger) {
-          Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
-        }
       } else {
         // Sound finishes in this cycle
-        const sound = FwsAuralsList[this.currentSoundPlaying];
+        const playingSoundKey = this.currentSoundPlaying;
+        const sound = FwsAuralsList[playingSoundKey];
         if (sound.localVarName) {
           SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
+        // Enforce one cycle delay before repeating the sound if applicable, otherwise sim won't interrupt the sound.
+        if (!sound.continuous && this.numberOfTimesToRepeatSound !== null && this.numberOfTimesToRepeatSound > 0) {
+          this.numberOfTimesToRepeatSound--;
+          this.repeatNextCycleSound = playingSoundKey;
+          return;
+        } else {
+          this.numberOfTimesToRepeatSound = null;
+        }
       }
 
       // Interrupt if sound with higher category is present in queue and current sound is continuous
