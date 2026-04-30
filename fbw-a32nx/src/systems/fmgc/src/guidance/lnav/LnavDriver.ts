@@ -449,17 +449,17 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  private updateSecDistanceToDestination(trueTrack: number) {
-    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+  private updateSecDistanceToDestination(trueTrack: number, secIndex: number = 1): void {
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1);
 
     if (!secGeometry || secGeometry.legs.size <= 0) {
-      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary + secIndex - 1);
       return;
     }
 
     // Check if active legs are the same
     const activePlan = this.flightPlanService.active;
-    const secPlan = this.flightPlanService.secondary(1);
+    const secPlan = this.flightPlanService.secondary(secIndex);
 
     const secToLeg = secPlan.maybeElementAt(secPlan.activeLegIndex);
     const activeToLeg = activePlan.maybeElementAt(activePlan.activeLegIndex);
@@ -481,20 +481,15 @@ export class LnavDriver implements GuidanceComponent {
       ? secGeometry.computeAlongTrackDistanceToDestination(activePlan.activeLegIndex, this.ppos, trueTrack)
       : totalFlightPlanDistance;
 
-    this.guidanceController.setAlongTrackDistanceToDestination(distanceToDestination, FlightPlanIndex.FirstSecondary);
+    this.guidanceController.setAlongTrackDistanceToDestination(
+      distanceToDestination,
+      FlightPlanIndex.FirstSecondary + secIndex - 1,
+    );
   }
 
-  public legEta(gs: Knots, termination: Coordinates): number {
-    // FIXME use a more accurate estimate, calculate in predictions
-
-    const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-
+  public legSecondsToGo(gs: Knots, termination: Coordinates): number {
     const nauticalMilesToGo = distanceTo(this.ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
-
-    const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
-
-    return eta;
+    return (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
   }
 
   sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {

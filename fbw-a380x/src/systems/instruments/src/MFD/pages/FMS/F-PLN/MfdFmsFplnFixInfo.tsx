@@ -31,12 +31,12 @@ import { Footer } from '../../common/Footer';
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
     this.props.bus,
-    this.props.fmcService.master!.flightPlanService,
+    this.props.fmcService.master!.flightPlanInterface,
   );
 
   private flightPlan = new ObservableFlightPlan(
     this.props.bus,
-    this.props.fmcService.master!.flightPlanService,
+    this.props.fmcService.master!.flightPlanInterface,
     FlightPlanIndex.Active,
   );
 
@@ -72,7 +72,11 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                   readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.fix ?? null)}
                   onModified={async (text) => {
                     if (text === null) {
-                      void this.props.fmcService.master!.flightPlanService.setFixInfoEntry(value, null);
+                      void this.props.fmcService.master!.flightPlanInterface.setFixInfoEntry(
+                        value,
+                        null,
+                        this.loadedFlightPlanIndex.get(),
+                      );
                       return;
                     }
 
@@ -82,12 +86,13 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       throw new FmsError(FmsErrorType.NotInDatabase);
                     }
 
-                    void this.props.fmcService.master!.flightPlanService.setFixInfoEntry(
+                    void this.props.fmcService.master!.flightPlanInterface.setFixInfoEntry(
                       value,
                       new FixInfoEntry(fix, [], []),
+                      this.loadedFlightPlanIndex.get(),
                     );
                   }}
-                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                   dataEntryFormat={new FixFormat()}
                   tmpyActive={this.flightPlanManager.temporaryPlanExists}
                   hEventConsumer={this.props.mfd.hEventConsumer}
@@ -118,24 +123,28 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[0]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
-                          if (!fixInfo.radials) {
-                            fixInfo.radials = [];
-                          }
+                        this.props.flightPlanInterface.editFixInfoEntry(
+                          value,
+                          (fixInfo) => {
+                            if (!fixInfo.radials) {
+                              fixInfo.radials = [];
+                            }
 
-                          if (radial !== null) {
-                            fixInfo.radials[0] = {
-                              magneticBearing: radial,
-                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
-                            };
-                          } else {
-                            delete fixInfo.radials[0];
-                          }
+                            if (radial !== null) {
+                              fixInfo.radials[0] = {
+                                magneticBearing: radial,
+                                trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
+                              };
+                            } else {
+                              delete fixInfo.radials[0];
+                            }
 
-                          return fixInfo;
-                        });
+                            return fixInfo;
+                          },
+                          this.loadedFlightPlanIndex.get(),
+                        );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -152,24 +161,28 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[1]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
-                          if (!fixInfo.radials) {
-                            fixInfo.radials = [];
-                          }
+                        this.props.flightPlanInterface.editFixInfoEntry(
+                          value,
+                          (fixInfo) => {
+                            if (!fixInfo.radials) {
+                              fixInfo.radials = [];
+                            }
 
-                          if (radial !== null) {
-                            fixInfo.radials[1] = {
-                              magneticBearing: radial,
-                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
-                            };
-                          } else {
-                            delete fixInfo.radials[1];
-                          }
+                            if (radial !== null) {
+                              fixInfo.radials[1] = {
+                                magneticBearing: radial,
+                                trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
+                              };
+                            } else {
+                              delete fixInfo.radials[1];
+                            }
 
-                          return fixInfo;
-                        });
+                            return fixInfo;
+                          },
+                          this.loadedFlightPlanIndex.get(),
+                        );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -191,21 +204,25 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.radii?.[0]?.radius ?? null)}
                       onModified={(radius) => {
-                        this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
-                          if (!fixInfo.radii) {
-                            fixInfo.radii = [];
-                          }
+                        this.props.flightPlanInterface.editFixInfoEntry(
+                          value,
+                          (fixInfo) => {
+                            if (!fixInfo.radii) {
+                              fixInfo.radii = [];
+                            }
 
-                          if (radius !== null) {
-                            fixInfo.radii[0] = { radius };
-                          } else {
-                            delete fixInfo.radii[0];
-                          }
+                            if (radius !== null) {
+                              fixInfo.radii[0] = { radius };
+                            } else {
+                              delete fixInfo.radii[0];
+                            }
 
-                          return fixInfo;
-                        });
+                            return fixInfo;
+                          },
+                          this.loadedFlightPlanIndex.get(),
+                        );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadiusFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -233,7 +250,12 @@ export class MfdFmsFplnFixInfo extends FmsPage {
         <FlightPlanFooter bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
 
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
