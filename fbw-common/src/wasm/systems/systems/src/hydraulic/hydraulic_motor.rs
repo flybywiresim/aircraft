@@ -87,11 +87,6 @@ impl FlapSlatHydraulicMotor {
         )
     }
 
-    pub fn reset_accumulators(&mut self) {
-        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
-        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
-    }
-
     pub fn get_speed(&self) -> AngularVelocity {
         self.speed.output()
     }

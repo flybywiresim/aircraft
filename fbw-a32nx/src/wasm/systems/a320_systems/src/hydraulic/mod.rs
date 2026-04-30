@@ -832,23 +832,49 @@ impl A320RudderFactory {
 
 struct A320FlapsFactory {}
 impl A320FlapsFactory {
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
+    ];
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+
     fn a320_flaps_factory(
         context: &mut InitContext,
         side: SecondarySurfaceSide,
     ) -> SecondarySurface {
         // 1 is inboard. 2 is outboard.
-        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 2)
+        SecondarySurface::new(
+            context,
+            side,
+            SecondarySurfaceType::Flaps,
+            2,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
     }
 }
 
 struct A320SlatsFactory {}
 impl A320SlatsFactory {
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
+    ];
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
+
     fn a320_slats_factory(
         context: &mut InitContext,
         side: SecondarySurfaceSide,
     ) -> SecondarySurface {
         // 1 is most inboard. 5 is most outboard.
-        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 5)
+        SecondarySurface::new(
+            context,
+            side,
+            SecondarySurfaceType::Slats,
+            5,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
     }
 }
 
@@ -1569,18 +1595,6 @@ impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
     const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
 
-    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
-    ];
-    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
-
-    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
-    ];
-    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
-
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -1771,8 +1785,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Angle::new::<degree>(251.97),
                 Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
@@ -1785,8 +1798,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Angle::new::<degree>(334.16),
                 Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),

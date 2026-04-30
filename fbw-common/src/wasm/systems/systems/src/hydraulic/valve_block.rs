@@ -11,7 +11,7 @@ use uom::ConstZero;
 
 pub struct ValveBlock {
     current_max_speed: LowPassFilter<AngularVelocity>,
-    pub full_pressure_max_speed: AngularVelocity,
+    full_pressure_max_speed: AngularVelocity,
     circuit_target_pressure: Pressure,
 
     speed: AngularVelocity,
@@ -134,5 +134,10 @@ impl ValveBlock {
         } else {
             0.
         }
+    }
+
+    #[cfg(test)]
+    pub fn get_full_pressure_max_speed(&self) -> AngularVelocity {
+        self.full_pressure_max_speed
     }
 }
