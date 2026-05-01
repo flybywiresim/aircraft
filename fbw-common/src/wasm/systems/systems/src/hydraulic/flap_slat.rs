@@ -9,7 +9,6 @@ use crate::simulation::{
 
 use num_traits::Zero;
 use uom::si::angle::radian;
-use uom::si::angular_velocity::degree_per_second;
 use uom::si::{
     angle::degree,
     angular_velocity::radian_per_second,
@@ -203,6 +202,7 @@ impl SimulationElement for SecondarySurface {
 ///    |                            |
 ///  GRA (deg)                 Surface (deg)
 /// ```
+#[allow(unused)]
 pub struct FlapSlatAssembly {
     ippu_id: VariableIdentifier,
     fppu_id: VariableIdentifier,
@@ -211,12 +211,12 @@ pub struct FlapSlatAssembly {
 
     left_surfaces: SecondarySurface,
     right_surfaces: SecondarySurface,
-    surface_control_arm_position: Angle,
+    pcu_position: Angle,
 
     max_synchro_angle: Angle,
-    surface_control_arm_speed: AngularVelocity,
+    pcu_speed: AngularVelocity,
     differential_gear_ratio: Ratio,
-    surface_control_arm_to_synchro_gear_ratio: Ratio,
+    synchro_gear_ratio: Ratio,
     surface_gear_ratio: Ratio,
 
     left_motor: FlapSlatHydraulicMotor,
@@ -256,11 +256,11 @@ impl FlapSlatAssembly {
 
             left_surfaces,
             right_surfaces,
-            surface_control_arm_position: Angle::ZERO,
+            pcu_position: Angle::ZERO,
             max_synchro_angle,
-            surface_control_arm_speed: AngularVelocity::ZERO,
+            pcu_speed: AngularVelocity::ZERO,
             differential_gear_ratio,
-            surface_control_arm_to_synchro_gear_ratio: surface_gear_ratio / synchro_gear_ratio,
+            synchro_gear_ratio,
             surface_gear_ratio,
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
@@ -269,11 +269,8 @@ impl FlapSlatAssembly {
         }
     }
 
-    fn synchro_angle_to_surface_control_arm_angle(&self, synchro_angle: Angle) -> Angle {
-        synchro_angle
-            / self
-                .surface_control_arm_to_synchro_gear_ratio
-                .get::<ratio>()
+    fn synchro_angle_to_pcu_angle(&self, synchro_angle: Angle) -> Angle {
+        synchro_angle * self.synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn update(
@@ -287,6 +284,7 @@ impl FlapSlatAssembly {
         self.left_valve_block.update(context, sfcc_1, left_pressure);
         self.right_valve_block
             .update(context, sfcc_2, right_pressure);
+        self.pcu_speed = self.left_valve_block.get_speed() + self.right_valve_block.get_speed();
 
         self.update_motors_speed(
             context,
@@ -296,23 +294,16 @@ impl FlapSlatAssembly {
 
         self.update_motors_flow(context);
 
-        println!(
-            "valve speed {:.0}",
-            (self.left_valve_block.get_speed() + self.right_valve_block.get_speed())
-                .get::<degree_per_second>()
-        );
-        println!(
-            "shaft speed {:.0}",
-            ((self.left_motor.get_speed() + self.right_motor.get_speed())
-                / self.differential_gear_ratio.get::<ratio>()
-                / self.surface_gear_ratio.get::<ratio>())
-            .get::<degree_per_second>()
-        );
-        self.surface_control_arm_speed =
-            self.left_valve_block.get_speed() + self.right_valve_block.get_speed();
-        // self.speed = (self.left_motor.get_speed() + self.right_motor.get_speed())
-        //     / self.gearbox_ratio.get::<ratio>()
-        //     / self.surface_gear_ratio.get::<ratio>();
+        // println!(
+        //     "pcu speed {:.0}",
+        //     (self.left_valve_block.get_speed() + self.right_valve_block.get_speed())
+        //         .get::<revolution_per_minute>()
+        // );
+        // println!(
+        //     "motor speed {:.0}",
+        //     (self.left_motor.get_speed() + self.right_motor.get_speed())
+        //         .get::<revolution_per_minute>()
+        // );
         self.update_position(context);
 
         // TODO update when left and right are simulated separatly
@@ -322,32 +313,28 @@ impl FlapSlatAssembly {
 
     fn update_position(&mut self, context: &UpdateContext) {
         let time_delta = context.delta_as_secs_f64();
-        self.surface_control_arm_position += if !context.aircraft_preset_quick_mode() {
-            Angle::new::<radian>(
-                self.surface_control_arm_speed.get::<radian_per_second>() * time_delta,
-            )
+        self.pcu_position += if !context.aircraft_preset_quick_mode() {
+            Angle::new::<radian>(self.pcu_speed.get::<radian_per_second>() * time_delta)
         } else {
             // This is for the Aircraft Presets to expedite the setting of a preset.
-            Angle::new::<radian>(self.surface_control_arm_speed.get::<radian_per_second>() * 2.)
+            Angle::new::<radian>(self.pcu_speed.get::<radian_per_second>() * 2.)
         };
 
-        let max_surface_control_arm_angle =
-            self.synchro_angle_to_surface_control_arm_angle(self.max_synchro_angle);
-        self.surface_control_arm_position = self
-            .surface_control_arm_position
-            .clamp(Angle::ZERO, max_surface_control_arm_angle);
+        let max_pcu_angle = self.synchro_angle_to_pcu_angle(self.max_synchro_angle);
+        self.pcu_position = self.pcu_position.clamp(Angle::ZERO, max_pcu_angle);
     }
 
+    // The flap slat mechanism contains a simulation of the two valve blocks and the two hydraulic motors.
+    // Each valve block computes the maximum torque shaft speed, the sum of the two speeds is the PCU speed.
+    // The PCU speed is used to compute each motor shaft speed through the differential gearbox ratio,
+    // the hydraulic pressure in each valve block is used to split the PCU speed across
+    // the two hydraulic motor.
     fn update_motors_speed(
         &mut self,
         context: &UpdateContext,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
-        let total_surface_arm_speed =
-            self.left_valve_block.get_speed() + self.right_valve_block.get_speed();
-        let shaft_speed = total_surface_arm_speed * self.surface_gear_ratio.get::<ratio>();
-
         let left_torque =
             if left_pressure.get::<psi>() < Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
                 Torque::new::<pound_force_inch>(0.)
@@ -367,19 +354,19 @@ impl FlapSlatAssembly {
         let mut left_torque_ratio = Ratio::new::<ratio>(0.);
         let mut right_torque_ratio = Ratio::new::<ratio>(0.);
 
-        if !total_motor_torque.get::<pound_force_inch>().is_zero() {
+        if !total_motor_torque.is_zero() {
             left_torque_ratio = left_torque / total_motor_torque;
             right_torque_ratio = right_torque / total_motor_torque;
         }
 
-        let left_motor_speed = shaft_speed
+        let left_motor_speed = self.pcu_speed
             * left_torque_ratio.get::<ratio>()
-            * self.differential_gear_ratio.get::<ratio>();
+            * (self.differential_gear_ratio.get::<ratio>());
         self.left_motor.update_speed(context, left_motor_speed);
 
-        let right_motor_speed = shaft_speed
+        let right_motor_speed = self.pcu_speed
             * right_torque_ratio.get::<ratio>()
-            * self.differential_gear_ratio.get::<ratio>();
+            * (self.differential_gear_ratio.get::<ratio>());
         self.right_motor.update_speed(context, right_motor_speed);
     }
 
@@ -389,10 +376,7 @@ impl FlapSlatAssembly {
     }
 
     pub fn position_feedback(&self) -> Angle {
-        self.surface_control_arm_position
-            * self
-                .surface_control_arm_to_synchro_gear_ratio
-                .get::<ratio>()
+        self.pcu_position / self.synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn left_motor(&mut self) -> &mut impl Actuator {
@@ -412,7 +396,7 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        self.surface_control_arm_speed != AngularVelocity::ZERO
+        self.pcu_speed != AngularVelocity::ZERO
     }
 }
 impl SimulationElement for FlapSlatAssembly {
@@ -693,7 +677,7 @@ mod tests {
         }
 
         fn surface_arm_position(&self) -> Angle {
-            self.query(|a| a.flaps_slats.surface_control_arm_position)
+            self.query(|a| a.flaps_slats.pcu_position)
         }
 
         fn synchro_position(&self) -> Angle {
@@ -705,7 +689,7 @@ mod tests {
         }
 
         fn flap_slat_speed(&self) -> AngularVelocity {
-            self.query(|a| a.flaps_slats.surface_control_arm_speed)
+            self.query(|a| a.flaps_slats.pcu_speed)
         }
 
         fn set_angle_request(mut self, position: Option<Angle>) -> Self {
@@ -932,6 +916,11 @@ mod tests {
             .run_waiting_for(Duration::from_millis(2000));
 
         let current_speed = test_bed.flap_slat_speed();
+        println!(
+            "{:0} {:0}",
+            current_speed.get::<radian_per_second>(),
+            test_bed.get_max_speed().get::<radian_per_second>()
+        );
         assert!(
             (current_speed - test_bed.get_max_speed()).abs()
                 <= AngularVelocity::new::<radian_per_second>(0.01)
@@ -1280,7 +1269,7 @@ mod tests {
             left_flaps,
             right_flaps,
             Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.13),
+            AngularVelocity::new::<revolution_per_minute>(391.1),
             Ratio::new::<ratio>(140.),
             Ratio::new::<ratio>(16.632),
             Ratio::new::<ratio>(314.98),

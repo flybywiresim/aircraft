@@ -16,10 +16,9 @@ pub struct ValveBlock {
 
     speed: AngularVelocity,
 }
-
 impl ValveBlock {
-    const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
-        Duration::from_millis(300);
+    // NOTE: This time constant is random.
+    const LOW_PASS_FILTER_SPEED_TIME_CONSTANT: Duration = Duration::from_millis(100);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
 
     // Deceleration factor calculated to ensure accuracy of 0.18 deg(FPPU).
@@ -33,7 +32,7 @@ impl ValveBlock {
     ) -> Self {
         ValveBlock {
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
-                Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
+                Self::LOW_PASS_FILTER_SPEED_TIME_CONSTANT,
             ),
             full_pressure_max_speed,
             circuit_target_pressure,
