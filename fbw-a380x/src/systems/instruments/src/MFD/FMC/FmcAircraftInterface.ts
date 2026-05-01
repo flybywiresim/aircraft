@@ -22,6 +22,7 @@ import {
   NXLogicPulseNode,
   FmArinc429OutputWord,
   RaBusEvents,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -137,10 +138,13 @@ export class FmcAircraftInterface {
     FmgcFlightPhase.Preflight,
   );
 
-  public readonly fmaVerticalMode = ConsumerSubject.create(
+  private readonly fmaVerticalMode = ConsumerSubject.create(
     this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode'),
     0,
   );
+
+  private activeLateralMode = LateralMode.NONE;
+
   public readonly fmaLateralMode = ConsumerSubject.create(this.bus.getSubscriber<FGVars>().on('fg.fma.lateralMode'), 0);
   private activeVerticalMode = VerticalMode.NONE;
 
@@ -215,9 +219,6 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
       }
     });
-  private readonly latDiscontinuityAhead = Subject.create(false);
-
-  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Enum);
   /** The current flap lever position between 0 and 4 (full) */
   private flapLeverPosition = 0;
   private readonly sfccSlatFlapSystemStatusWord = Arinc429Register.empty();
@@ -239,6 +240,7 @@ export class FmcAircraftInterface {
   );
   private readonly speedsManagedAthr = Subject.create<number | null>(null);
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
+  private readonly latDiscontinuityAhead = Subject.create(false);
 
   constructor(
     private bus: EventBus,
@@ -1070,7 +1072,7 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Approach: {
           // the displayed target is Vapp (with GSmini)
-          const speed = this.fmgc.data.approachSpeed.get();
+          const speed = this.fmgc.data.approachVapp.get();
           vPfd = this.getVAppGsMini() ?? speed;
 
           this.managedSpeedTarget = Math.max(speed ?? 0, vPfd);
@@ -1233,7 +1235,7 @@ export class FmcAircraftInterface {
         break;
       case 3:
         limitingSpeed =
-          !approach || this.fmgc.data.approachFlapConfig.get() !== FlapConf.CONF_3
+          !approach || !this.flightPlanService.active.performanceData.approachFlapsThreeSelected.get()
             ? this.fmgc.data.flapRetractionSpeed.get()
             : null;
         break;
@@ -1878,11 +1880,11 @@ export class FmcAircraftInterface {
   }
 
   public isHdgOrTrackModeEngaged() {
-    return this.fmaLateralMode.get() === LateralMode.HDG || this.fmaLateralMode.get() === LateralMode.TRACK;
+    return this.activeLateralMode === LateralMode.HDG || this.activeLateralMode === LateralMode.TRACK;
   }
 
   private isLateralModeManaged() {
-    switch (this.fmaLateralMode.get()) {
+    switch (this.activeLateralMode) {
       case LateralMode.NAV:
       case LateralMode.LOC_CPT:
       case LateralMode.LOC_TRACK:
@@ -2230,6 +2232,7 @@ export class FmcAircraftInterface {
    */
   fgAquisition() {
     this.activeVerticalMode = this.fmaVerticalMode.get();
+    this.activeLateralMode = this.fmaLateralMode.get();
   }
 
   checkLateralDiscontinuityAhead() {
