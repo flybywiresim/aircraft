@@ -150,3 +150,29 @@ $wind-row-width: 465px;
   padding-left: 7px;
   padding-right: 127px;
 }
+
+.mfd-fms-wind-page-container.crz {
+  margin-top: 13px;
+}
+
+.mfd-fms-wind-page-crz-title-buttons-container {
+  display: flex;
+  flex-direction: row;
+  margin-left: $table-margin-no-history;
+   padding-bottom: 18px;
+}
+
+.mfd-fms-wind-page-crz-title-container {
+  padding-top: 15px;
+  margin-right: 22px
+}
+
+.mfd-fms-wind-page-crz-dropdown-container {
+
+}
+
+.mfd-fms-wind-page-buttons-container {
+  display: flex;
+  flex-direction: row;
+
+}

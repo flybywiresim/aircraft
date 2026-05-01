@@ -103,6 +103,7 @@ export const NXSystemMessages = {
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
   draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'), // TODO
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
+  EntryNotInList: new TypeIMessage('ENTRY NOT IN LIST'),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'), // TODO

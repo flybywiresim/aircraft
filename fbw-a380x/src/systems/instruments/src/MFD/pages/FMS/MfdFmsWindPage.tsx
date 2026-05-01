@@ -1,9 +1,11 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import {
+  ArraySubject,
   ComponentProps,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   Vec2Math,
@@ -28,14 +30,25 @@ import {
   FlightPlanWindEntryFlags,
   formatWindMagnitude,
   formatWindTrueDegrees,
+  PropagatedWindEntry,
+  PropagationType,
   WindEntry,
 } from '@fmgc/flightplanning/data/wind';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { WindAltitudeFormat, WindDirectionFormat, WindSpeedFormat } from '../common/DataEntryFormats';
+import {
+  FlightLevelFormat,
+  WindAltitudeFormat,
+  WindDirectionFormat,
+  WindSpeedFormat,
+} from '../common/DataEntryFormats';
 import { MathUtils } from '../../../../../../../../fbw-common/src/systems/shared/src/MathUtils';
 import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
@@ -50,6 +63,11 @@ enum WindEntryData {
   Altitude,
   Direction,
   Speed,
+}
+
+interface CruiseWindDisplayEntry extends WindDisplayEntry {
+  speedOrDirectionIsPropagated: boolean;
+  isPropagated: boolean;
 }
 
 interface WindDisplayEntry {
@@ -171,7 +189,93 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private readonly departureElevation = Subject.create<number | null>(null);
 
   // Cruise Wind
+  private readonly WindCache: PropagatedWindEntry[] = [];
   private readonly selectedWaypointLegIndex = Subject.create<number | null>(null);
+  private availableWaypointsToLegIndex: number[] = [];
+  private readonly availableWaypoints = ArraySubject.create<string>([]);
+  private readonly availableWaypointsSize = Subject.create(0);
+  private readonly dropdownMenuSelectedWaypointIndex = this.selectedWaypointLegIndex.map((si) => {
+    if (si === null) {
+      return null;
+    } else {
+      const idx = this.availableWaypointsToLegIndex.findIndex((i) => i === si);
+      return idx !== -1 ? idx : null;
+    }
+  });
+  private readonly cruiseWindsDisabled = Subject.create(false);
+  private readonly cruiseWindsInactive = Subject.create(false);
+
+  private readonly selectNextDisabled = MappedSubject.create(
+    ([selectedIndex, size]) => selectedIndex === null || selectedIndex >= size - 1,
+    this.dropdownMenuSelectedWaypointIndex,
+    this.availableWaypointsSize,
+  );
+  private readonly selectPreviousDisabled = this.dropdownMenuSelectedWaypointIndex.map((v) => v === null || v === 0);
+
+  private static readonly CRUISE_WIND_ENTRIES_ARRAY = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    (_, i) => i,
+  );
+
+  private readonly displayedCruiseWindFlightLevels = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => Subject.create<number | null>(null),
+  );
+
+  private readonly displayedCruiseWindFlightLevelsInactive = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => Subject.create(false),
+  );
+
+  private readonly displayedCruiseWindDirections = Array.from({ length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS }, () =>
+    Subject.create<number | null>(null),
+  );
+  private readonly displayedCruiseWindSpeeds = Array.from({ length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS }, () =>
+    Subject.create<number | null>(null),
+  );
+
+  private readonly displayedCruiseWindVectorIsEnteredByPilot = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => Subject.create(true),
+  );
+
+  private readonly cruiseWindRowsVisible = Array.from({ length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS }, () =>
+    Subject.create(true),
+  );
+  private readonly cruiseWindRowsVisibility = this.cruiseWindRowsVisible.map((sub) =>
+    sub.map((v) => (v ? 'visible' : 'hidden')),
+  );
+  /** The entries used to feed the displayed data */
+  private readonly cruiseWindDisplayEntries: CruiseWindDisplayEntry[] = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => ({
+      altitude: null,
+      direction: null,
+      speed: null,
+      speedOrDirectionIsPropagated: false,
+      isPropagated: false,
+    }),
+  );
+
+  private readonly cruiseWindRowFlightLevelIsPropagated = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => Subject.create(false),
+  );
+
+  private readonly cruiseWindRowFlightLevelIsEnteredByPilot = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    (_, i) => MappedSubject.create(([propagated]) => !propagated, this.cruiseWindRowFlightLevelIsPropagated[i]),
+  );
+
+  private readonly cruiseWindRowAltitudeIsInactive = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    (_, i) =>
+      MappedSubject.create(
+        ([isInactive, isPropagated]) => isInactive || isPropagated,
+        this.displayedCruiseWindFlightLevelsInactive[i],
+        this.cruiseWindRowFlightLevelIsPropagated[i],
+      ),
+  );
 
   // Descent Wind
   private static readonly DESCENT_WIND_ENTRIES_ARRAY = Array.from(
@@ -285,7 +389,31 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.updateClimbWindDisplayRows();
       this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
     } else if (subPage === WindSubPageMenu.Cruise) {
-      // TODO
+      this.findSuitableCruiseLeg();
+      this.cruiseWindsDisabled.set(fp === undefined || this.tmpyExists.get() || this.availableWaypoints.length === 0);
+      this.cruiseWindsInactive.set(
+        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() > FmgcFlightPhase.Cruise,
+      );
+      const legIndex = this.selectedWaypointLegIndex.get();
+      const winds =
+        legIndex !== null
+          ? this.props.flightPlanInterface.propagateWindsAt(legIndex, this.WindCache, loadedFlightPlanIndex)
+          : null;
+      this.clearAllCruiseDisplayWindEntries();
+      if (winds !== null) {
+        for (let i = 0; i < winds.length; i++) {
+          const wind = winds[i];
+          this.cruiseWindDisplayEntries[i].altitude = wind.altitude / 100;
+          this.cruiseWindDisplayEntries[i].direction =
+            wind.type !== PropagationType.Backward ? extractWindDirectionFromVector(wind.vector) : null;
+          this.cruiseWindDisplayEntries[i].speed =
+            wind.type !== PropagationType.Backward ? extractWindSpeedFromVector(wind.vector) : null;
+          this.cruiseWindDisplayEntries[i].speedOrDirectionIsPropagated = wind.type === PropagationType.Forward;
+          this.cruiseWindDisplayEntries[i].isPropagated = wind.type !== PropagationType.Entry;
+        }
+      }
+      this.updateCruiseWindDisplayRows();
+      this.updateWindDisplayedEntriesVisibility(this.cruiseWindRowsVisible, this.displayedCruiseWindFlightLevels);
     } else if (subPage === WindSubPageMenu.Descent) {
       this.transitionLevel.set(fp?.performanceData.transitionLevel.get() ?? null);
       this.arrivalElevation.set(fp?.destinationAirport?.location.alt ?? null);
@@ -367,6 +495,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.tableHeaderDisplay,
       this.alternateCruiseFlightLevelDisplay,
       this.alternateWindFlightLevelUnitVisibility,
+      ...this.cruiseWindRowAltitudeIsInactive,
+      ...this.cruiseWindRowFlightLevelIsEnteredByPilot,
+      this.selectNextDisabled,
     );
   }
 
@@ -376,8 +507,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     if (this.loadedFlightPlan && wptIdx !== null) {
       const leg = this.props.fmcService.master.flightPlanInterface
         .get(this.loadedFlightPlanIndex.get())
-        .elementAt(wptIdx);
-      if (leg && isLeg(leg)) {
+        .maybeElementAt(wptIdx);
+      if (isLeg(leg)) {
         switch (leg.segment.class) {
           case SegmentClass.Departure:
             page = WindSubPageMenu.Climb;
@@ -448,6 +579,21 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     }
   }
 
+  private clearCruiseDisplayWindEntry(index: number) {
+    const row = this.cruiseWindDisplayEntries[index];
+    row.altitude = null;
+    row.direction = null;
+    row.speed = null;
+    row.isPropagated = false;
+    row.speedOrDirectionIsPropagated = false;
+  }
+
+  private clearAllCruiseDisplayWindEntries() {
+    for (let i = 0; i < this.cruiseWindDisplayEntries.length; i++) {
+      this.clearCruiseDisplayWindEntry(i);
+    }
+  }
+
   private shiftUpDisplayedWindEntriesFromIndex(entries: WindDisplayEntry[], index: number) {
     for (let i = index; i < entries.length - 1; i++) {
       const next = entries[i + 1];
@@ -459,6 +605,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
     // Clear the last entry as all has been shifted up.
     this.clearDisplayWindEntry(entries, entries.length - 1);
+  }
+
+  private shiftUpDisplayedCruiseWindEntriesFromIndex(index: number) {
+    for (let i = index; i < this.cruiseWindDisplayEntries.length - 1; i++) {
+      const next = this.cruiseWindDisplayEntries[i + 1];
+      const current = this.cruiseWindDisplayEntries[i];
+      current.altitude = next.altitude;
+      current.direction = next.direction;
+      current.speed = next.speed;
+      current.isPropagated = next.isPropagated;
+      current.speedOrDirectionIsPropagated = next.speedOrDirectionIsPropagated;
+    }
+
+    this.clearCruiseDisplayWindEntry(this.cruiseWindDisplayEntries.length - 1);
   }
 
   /**
@@ -505,6 +665,17 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     }
   }
 
+  private updateCruiseWindDisplayRows() {
+    for (let i = 0; i < A380AircraftConfig.fpmConfig.NUM_CRUISE_WIND_LEVELS; i++) {
+      const entry = this.cruiseWindDisplayEntries[i];
+      this.displayedCruiseWindDirections[i].set(entry.direction);
+      this.displayedCruiseWindSpeeds[i].set(entry.speed);
+      this.displayedCruiseWindFlightLevels[i].set(entry.altitude);
+      this.cruiseWindRowFlightLevelIsPropagated[i].set(entry.isPropagated);
+      this.displayedCruiseWindVectorIsEnteredByPilot[i].set(!entry.speedOrDirectionIsPropagated);
+    }
+  }
+
   private sortDisplayWindEntriesByAltitude(entries: WindDisplayEntry[]) {
     entries.sort((a, b) => (b.altitude ?? 0) - (a.altitude ?? 0));
   }
@@ -534,15 +705,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
             this.loadedFlightPlanIndex.get(),
           );
         }
-        displayEntry.altitude = null;
-        displayEntry.speed = null;
-        displayEntry.direction = null;
-        displayEntry.enteredByPilot = false;
       } else {
-        displayEntry.altitude = null;
-        displayEntry.speed = null;
-        displayEntry.direction = null;
-        displayEntry.enteredByPilot = false;
         // Draft entry which was not in the flightplan.
         if (isDescentWind) {
           this.updateDescentWindDisplayRows();
@@ -607,6 +770,100 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     }
   }
 
+  private onCruiseWindEntryModified(index: number, value: number | null, dataType: WindEntryData) {
+    const displayEntries = this.cruiseWindDisplayEntries;
+    const rowsVisible = this.cruiseWindRowsVisible;
+    const displayedAltitudes = this.displayedCruiseWindFlightLevels;
+    const displayEntry = displayEntries[index];
+    const oldAltitude = displayEntry.altitude;
+    const selectedLegIndex = this.selectedWaypointLegIndex.get();
+
+    if (dataType === WindEntryData.Altitude && displayEntry.isPropagated) {
+      // We should never enter here.
+      console.log('Propagated cruise wind entry FL edit attempt.');
+      this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+      return;
+    }
+
+    // Altitude was cleared meaning we need to delete the entry and shift rows accordingly.
+    if (value === null && dataType === WindEntryData.Altitude) {
+      const existsInFlightPlan = oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
+      this.shiftUpDisplayedCruiseWindEntriesFromIndex(index);
+      if (existsInFlightPlan && selectedLegIndex !== null) {
+        this.props.fmcService.master.flightPlanInterface.deleteCruiseWindEntry(
+          selectedLegIndex,
+          oldAltitude * 100,
+          this.loadedFlightPlanIndex.get(),
+        );
+      } else {
+        // Draft entry which was not in the flightplan.
+        this.updateCruiseWindDisplayRows();
+        this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+      }
+    } else {
+      const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
+      const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
+      const currentSpeed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
+      if (displayEntry.speedOrDirectionIsPropagated && (currentDir === null || currentSpeed === null)) {
+        // Don't allow clearing of speed or direction if the entry is propagated
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        return;
+      }
+      displayEntry.altitude = currentAlt;
+      displayEntry.direction = currentDir;
+      displayEntry.speed = currentSpeed;
+
+      if (
+        (dataType === WindEntryData.Direction && currentAlt !== null) ||
+        (dataType === WindEntryData.Speed && currentSpeed !== null)
+      ) {
+        displayEntry.speedOrDirectionIsPropagated = false;
+      }
+
+      if (currentAlt !== null && currentDir != null && currentSpeed != null) {
+        const altitudeChanged = oldAltitude !== currentAlt;
+        if (altitudeChanged) {
+          this.sortDisplayWindEntriesByAltitude(displayEntries);
+        }
+        const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
+        entry.altitude *= 100;
+        const existedInFlightPlan =
+          oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
+
+        if (selectedLegIndex !== null) {
+          if (existedInFlightPlan) {
+            this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
+              selectedLegIndex,
+              oldAltitude * 100,
+              entry,
+              this.loadedFlightPlanIndex.get(),
+            );
+          } else {
+            this.props.fmcService.master.flightPlanInterface.addCruiseWindEntry(
+              selectedLegIndex,
+              entry,
+              this.loadedFlightPlanIndex.get(),
+            );
+          }
+        }
+        this.updateCruiseWindDisplayRows();
+        if (oldAltitude === null) {
+          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+        }
+      } else {
+        const altitudeChanged = oldAltitude !== currentAlt;
+        if (altitudeChanged) {
+          this.sortDisplayWindEntriesByAltitude(displayEntries);
+        }
+        this.updateCruiseWindDisplayRows();
+        // Change visibility if it is a new entry or if it was cleared.
+        if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
+          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+        }
+      }
+    }
+  }
+
   private onAlternateWindModified(value: number | null, dataType: WindEntryData) {
     const currentDir = dataType === WindEntryData.Direction ? value : this.alternateWindDirection.get();
     const currentSpeed = dataType === WindEntryData.Speed ? value : this.alternateWindSpeed.get();
@@ -640,6 +897,49 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       altitude: altitude,
       vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
     };
+  }
+
+  private findSuitableCruiseLeg() {
+    const loadedplanIndex = this.loadedFlightPlanIndex.get();
+    const fp = this.props.fmcService.master.flightPlanInterface.has(loadedplanIndex)
+      ? this.props.fmcService.master.flightPlanInterface.get(loadedplanIndex)
+      : null;
+    if (!fp) {
+      this.selectedWaypointLegIndex.set(null);
+      this.availableWaypoints.set([]);
+      this.availableWaypointsToLegIndex = [];
+      this.availableWaypointsSize.set(0);
+      return;
+    } else {
+      const legPredictions =
+        loadedplanIndex === FlightPlanIndex.Active
+          ? this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions
+          : null;
+      const waypoints: string[] = [];
+      const waypointsLegIndexes: number[] = [];
+      for (let i = fp.activeLegIndex; i < fp.firstMissedApproachLegIndex; i++) {
+        const leg = fp.maybeElementAt(i);
+        if (isLeg(leg) && leg.isXF()) {
+          const legPrediction = legPredictions?.get(i);
+          const isCruiseLeg =
+            legPrediction !== undefined
+              ? legPrediction.profilePhase === ProfilePhase.Cruise
+              : leg.segment.class === SegmentClass.Enroute;
+          if (isCruiseLeg) {
+            waypointsLegIndexes.push(i);
+            waypoints.push(leg.ident);
+          }
+        }
+      }
+      this.availableWaypoints.set(waypoints);
+      this.availableWaypointsToLegIndex = waypointsLegIndexes;
+      this.availableWaypointsSize.set(waypoints.length);
+      const selectedWaypoint = this.selectedWaypointLegIndex.get();
+      // Select first if selection is not valid anymore or nothing was selected.
+      if (selectedWaypoint === null || !waypointsLegIndexes.includes(selectedWaypoint)) {
+        this.selectedWaypointLegIndex.set(waypointsLegIndexes.length > 0 ? waypointsLegIndexes[0] : null);
+      }
+    }
   }
 
   public render(): VNode {
@@ -788,7 +1088,143 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                 ))}
               </div>
             </TopTabNavigatorPage>
-            <TopTabNavigatorPage>{/* CRUISE */}</TopTabNavigatorPage>
+            <TopTabNavigatorPage>
+              {/* CRUISE */}
+              <div class="mfd-fms-wind-page-container crz">
+                <div class="mfd-fms-wind-page-crz-title-buttons-container">
+                  <div class="mfd-fms-wind-page-crz-title-container">
+                    <span class="mfd-label bigger">{this.displayedWindHeader}</span>
+                  </div>
+                  <div class="mfd-fms-wind-page-crz-dropdown-container">
+                    <DropdownMenu
+                      disabled={this.cruiseWindsDisabled}
+                      values={this.availableWaypoints}
+                      selectedIndex={this.dropdownMenuSelectedWaypointIndex}
+                      onModified={(v, ident) => {
+                        if (v !== null && v >= 0) {
+                          this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[v]);
+                          this.updatePage();
+                        } else {
+                          const idx = this.availableWaypoints.getArray().findIndex((w) => w === ident);
+                          if (idx >= 0) {
+                            this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[idx]);
+                            this.updatePage();
+                          } else {
+                            this.props.fmcService.master.addMessageToQueue(
+                              NXSystemMessages.EntryNotInList,
+                              undefined,
+                              undefined,
+                            );
+                          }
+                        }
+                      }}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_CruiseWindWaypointDropdown`}
+                      freeTextAllowed={true}
+                      containerStyle="width: 192px; margin-right: 19px; "
+                      numberOfDigitsForInputField={7}
+                      alignLabels="center"
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                    />
+                  </div>
+                  <div class="mfd-fms-wind-page-buttons-container">
+                    <IconButton
+                      icon="double-down"
+                      disabled={this.selectNextDisabled}
+                      onClick={() => {
+                        const selectedIndex = this.dropdownMenuSelectedWaypointIndex.get();
+                        if (selectedIndex !== null) {
+                          const next = selectedIndex + 1;
+                          if (next < this.availableWaypointsToLegIndex.length) {
+                            this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[next]);
+                            this.updatePage();
+                          }
+                        }
+                      }}
+                      containerStyle="width: 66px; height: 62px; margin-right: 6px;"
+                    />
+                    <IconButton
+                      icon="double-up"
+                      disabled={this.selectPreviousDisabled}
+                      onClick={() => {
+                        const selectedIndex = this.dropdownMenuSelectedWaypointIndex.get();
+                        if (selectedIndex !== null) {
+                          const prev = selectedIndex - 1;
+                          if (prev >= 0 && prev < this.availableWaypointsToLegIndex.length) {
+                            this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[prev]);
+                            this.updatePage();
+                          }
+                        }
+                      }}
+                      containerStyle="width: 66px; height: 62px;"
+                    />
+                  </div>
+                </div>
+                <MfdFmsWindPageTableHeader
+                  headerDisplay={this.tableHeaderDisplay}
+                  messageAreaDisplay={this.temporaryMessageAreaDisplay}
+                />
+                {MfdFmsWindPage.CRUISE_WIND_ENTRIES_ARRAY.map((value) => (
+                  <div class={{ 'mfd-fms-wind-page-table-row': true, entry: true, first: value === 0 }}>
+                    <div
+                      style={{
+                        visibility: this.cruiseWindRowsVisibility[value],
+                      }}
+                      class="mfd-fms-wind-page-entry-row"
+                    >
+                      <div class="mfd-fms-wind-altitude-entry-container">
+                        <InputField
+                          containerStyle="width:157px; height:40px;"
+                          inactive={this.cruiseWindRowAltitudeIsInactive[value]}
+                          disabled={this.cruiseWindsDisabled}
+                          onModified={(v) => {
+                            this.onCruiseWindEntryModified(value, v, WindEntryData.Altitude);
+                          }}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                          hEventConsumer={this.props.mfd.hEventConsumer}
+                          interactionMode={this.props.mfd.interactionMode}
+                          dataEntryFormat={new FlightLevelFormat()}
+                          value={this.displayedCruiseWindFlightLevels[value]}
+                          canBeCleared={true}
+                        ></InputField>
+                      </div>
+                      <div class="mfd-fms-wind-direction-speed-entry-container">
+                        <InputField
+                          containerStyle="height:42px; width:98px; margin-right:6px;"
+                          inactive={this.cruiseWindsInactive}
+                          disabled={this.cruiseWindsDisabled}
+                          onModified={(v) => {
+                            this.onCruiseWindEntryModified(value, v, WindEntryData.Direction);
+                          }}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                          hEventConsumer={this.props.mfd.hEventConsumer}
+                          interactionMode={this.props.mfd.interactionMode}
+                          dataEntryFormat={new WindDirectionFormat()}
+                          value={this.displayedCruiseWindDirections[value]}
+                          canBeCleared={false}
+                          enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
+                        ></InputField>
+                        <InputField
+                          containerStyle="height: 42px; width:115px;"
+                          inactive={this.cruiseWindsInactive}
+                          disabled={this.cruiseWindsDisabled}
+                          onModified={(v) => {
+                            this.onCruiseWindEntryModified(value, v, WindEntryData.Speed);
+                          }}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                          hEventConsumer={this.props.mfd.hEventConsumer}
+                          interactionMode={this.props.mfd.interactionMode}
+                          dataEntryFormat={new WindSpeedFormat()}
+                          value={this.displayedCruiseWindSpeeds[value]}
+                          canBeCleared={false}
+                          enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
+                        ></InputField>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </TopTabNavigatorPage>
             <TopTabNavigatorPage>
               {/* DESCENT */}
               <div class="mfd-fms-wind-page-container">
