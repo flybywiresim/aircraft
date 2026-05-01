@@ -21,7 +21,6 @@ export interface CpnyWindRequestButtonProps extends ComponentProps {
   fmc: FmcInterface;
   flightPlanIndex: Subscribable<number>;
   tmpyExists: Subscribable<boolean>;
-  buttonStyle?: string;
   isActiveOrCopiedFromActive: Subscribable<boolean>;
 }
 
@@ -129,7 +128,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
         }}
         idPrefix="mfd-fms-wind-cpny-wind-request"
         menuItems={this.menuItems}
-        buttonStyle={this.props.buttonStyle}
+        buttonStyle="margin-right: 10px; justify-self: flex-end; width: 178px; height: 58px;"
         showArrow={false}
       />
     );

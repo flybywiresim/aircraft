@@ -421,7 +421,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private setSelectedPageIndex(menu: WindSubPageMenu) {
     if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
       // History is not available on secondary so we need to skip it.
-      this.selectedTabIndex.set(Math.max(menu - 1, WindSubPageMenu.Climb));
+      this.selectedTabIndex.set(Math.max(menu - 1, 0));
     } else {
       this.selectedTabIndex.set(menu);
     }
@@ -562,6 +562,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         displayEntry.enteredByPilot = true;
       }
       if (currentAlt !== null && currentDir != null && currentSpeed != null) {
+        const altitudeChanged = oldAltitude !== currentAlt;
+        if (altitudeChanged) {
+          this.sortDisplayWindEntriesByAltitude(displayEntries);
+        }
         const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
         if (isDescentWind) {
           this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
@@ -576,6 +580,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
             entry,
             this.loadedFlightPlanIndex.get(),
           );
+        }
+        if (isDescentWind) {
+          this.updateDescentWindDisplayRows();
+        } else {
+          this.updateClimbWindDisplayRows();
+        }
+        if (oldAltitude === null) {
+          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
         }
       } else {
         const altitudeChanged = oldAltitude !== currentAlt;
@@ -916,7 +928,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               flightPlanIndex={this.loadedFlightPlanIndex}
               tmpyExists={this.tmpyExists}
               isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
-              buttonStyle="margin-right: 10px; justify-self: flex-end; width: 178px; height: 58px;"
             />
           </div>
         </div>

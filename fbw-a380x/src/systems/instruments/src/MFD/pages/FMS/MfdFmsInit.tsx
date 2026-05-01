@@ -686,7 +686,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 flightPlanIndex={this.loadedFlightPlanIndex}
                 tmpyExists={this.tmpyExists}
                 isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
-                buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
               />
             </div>
             <div style={{ visibility: this.visibilityOnlyInActive }}>
