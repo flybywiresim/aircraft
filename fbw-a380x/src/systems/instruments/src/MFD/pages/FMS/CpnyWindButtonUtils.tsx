@@ -78,7 +78,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
 
   private readonly label = (
     <div style="display: flex; flex-direction: row; justify-content: space-between;">
-      <span style="text-align: center; vertical-align: center; margin-right: 5px;">
+      <span style="text-align: center; vertical-align: center; margin-right: 10px;">
         {this.topLabel}
         <br />
         {this.bottomLabel}

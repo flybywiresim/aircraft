@@ -62,3 +62,13 @@ export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
   MathUtils.isAboutEqual(one.altitude, two.altitude) && areWindVectorsTheSame(one.vector, two.vector);
 export const areWindVectorsTheSame = (one: WindVector, two: WindVector) =>
   MathUtils.isAboutEqual(one[0], two[0]) && MathUtils.isAboutEqual(one[1], two[1]);
+
+/**
+ * Creates a wind vector from a direction in degrees and a speed in knots.
+ * @param directionDegrees the direction in degrees.
+ * @param speed the speed in knots
+ * @returns the resulting wind vector.
+ */
+export function createWindVector(direction: number, speed: number): WindVector {
+  return Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+}
