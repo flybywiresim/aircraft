@@ -41,7 +41,7 @@ export class FwsMemos {
     },
     271000001: {
       // GND SPLRs ARMED
-      flightPhaseInhib: [9, 10],
+      flightPhaseInhib: [],
       simVarIsActive: this.fws.spoilersArmed,
       whichCodeToReturn: () => [0],
       codesToReturn: ['271000001'],
@@ -407,11 +407,11 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['333000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
     '335000001': {
       // SEAT BELTS
-      flightPhaseInhib: [9, 10],
+      flightPhaseInhib: [],
       simVarIsActive: this.fws.seatBelt.map((v) => !!v),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000001'],
@@ -466,7 +466,7 @@ export class FwsMemos {
         '340003007',
         '340003008',
       ],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
     '340003101': {
       // IR IN ALIGN
@@ -502,7 +502,7 @@ export class FwsMemos {
         '340003107',
         '340003108',
       ],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
     '340068001': {
       // ADIRS SWTG
@@ -523,7 +523,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsGpwsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
     '341000002': {
       // TAWS FLAP MODE OFF
@@ -531,7 +531,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsFlapModeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000002'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
     '341000003': {
       // TAWS G/S MODE OFF
@@ -539,7 +539,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsGsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000003'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => false,
     },
 
     '343000001': {

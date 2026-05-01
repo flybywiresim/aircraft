@@ -2280,6 +2280,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - State of igniter B on engine {index}
 
+- A32NX_ECU_{index}_STATUS_WORD_3
+    - Arinc429<Discrete>
+    - FADEC/ECU status word 3 for engine {index}
+      | Bit | Description |
+      |:---:|:------------|
+      | 22  | TOGA thrust limit active |
+      | 23  | FLEX thrust limit active |
+      | 24  | MCT thrust limit active |
+      | 25  | CLB thrust limit active |
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime
@@ -4163,6 +4173,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
+      | 29  | Control fault                                                                       |
 
 
 - A32NX_LGCIU_{number}_DISCRETE_WORD_3
@@ -4194,6 +4205,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 22  | LH flap attachment sensor valid     |
       | 25  | RH flap attachment failure detected |
       | 26  | RH flap attachment sensor valid     |
+      | 29  | SYS fault                           |
 
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)

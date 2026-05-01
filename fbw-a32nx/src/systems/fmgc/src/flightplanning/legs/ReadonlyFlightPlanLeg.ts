@@ -37,6 +37,16 @@ export interface ReadonlyFlightPlanLeg {
 
   readonly constraintType: WaypointConstraintType;
 
+  readonly altitudeConstraint: AltitudeConstraint | undefined;
+
+  readonly speedConstraint: SpeedConstraint | undefined;
+
+  isXF(): boolean;
+
+  isHX(): boolean;
+
+  isVectors(): boolean;
+
   readonly cruiseStep: CruiseStepEntry | undefined;
 
   readonly pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
@@ -46,6 +56,8 @@ export interface ReadonlyFlightPlanLeg {
   readonly calculated: LegCalculations | undefined;
 
   terminationWaypoint(): Fix | null;
+
+  isRunway(): boolean;
 }
 
 export interface ReadonlyDiscontinuity {
