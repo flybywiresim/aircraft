@@ -107,7 +107,7 @@ impl ValveBlock {
         };
 
         let theoretical_max_speed = AngularVelocity::new::<radian_per_second>(
-            0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
+            self.full_pressure_max_speed.get::<radian_per_second>()
                 * self.max_speed_factor_from_pressure(final_pressure),
         );
 
