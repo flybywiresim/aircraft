@@ -212,12 +212,17 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private readonly transitionLevel = Subject.create<number | null>(null);
   private readonly arrivalElevation = Subject.create<number | null>(null);
 
-  private readonly alternateCruiseFlightLevel = Subject.create<string>('\xa0\xa0\xa0');
+  private readonly alternateCruiseFlightLevel = Subject.create<number | null>(null);
+  private readonly alternateCruiseFlightLevelDisplay = this.alternateCruiseFlightLevel.map((fl) =>
+    fl !== null ? fl.toFixed(0) : '---',
+  );
   private readonly alternateWindDirection = Subject.create<number | null>(null);
   private readonly alternateWindSpeed = Subject.create<number | null>(null);
   private readonly alternateWindDisabled = Subject.create(false);
-  private readonly alternateWindVisibility = this.alternateWindDisabled.map((v) => (v ? 'hidden' : 'visible'));
   private readonly alternateWindIsPrimaryFlightPlan = Subject.create(false);
+  private readonly alternateWindFlightLevelUnitVisibility = this.alternateCruiseFlightLevel.map((fl) =>
+    fl === null ? 'hidden' : 'visible',
+  );
 
   protected onNewData(): void {
     this.updatePage();
@@ -289,22 +294,23 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Descent,
       );
       this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
+      const hasAlternate = fp?.alternateDestinationAirport !== undefined;
+      const alternateWind = fp?.performanceData.alternateWind.get() ?? null;
+      if (!hasAlternate) {
+        this.alternateWindDirection.set(null);
+        this.alternateWindSpeed.set(null);
+      }
+      this.alternateWindDisabled.set(!hasAlternate);
+      this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
         this.fillDisplayWindEntriesFromFlightPlan(
           fp.performanceData.descentWindEntries.get(),
           this.descentWindDisplayEntries,
         );
-        const hasAlternate = fp.alternateDestinationAirport !== undefined;
-        const alternateWind = fp.performanceData.alternateWind.get();
         if (hasAlternate && alternateWind !== null) {
           this.alternateWindDirection.set(extractWindDirectionFromVector(alternateWind));
           this.alternateWindSpeed.set(extractWindSpeedFromVector(alternateWind));
-        } else if (!hasAlternate) {
-          this.alternateWindDirection.set(null);
-          this.alternateWindSpeed.set(null);
         }
-        this.alternateWindDisabled.set(!hasAlternate);
-        this.alternateCruiseFlightLevel.set(fp.getAlternateCruiseLevel()?.toFixed(0) ?? '\xa0\xa0\xa0');
       } else {
         this.clearAllDisplayWindEntries(this.descentWindDisplayEntries);
       }
@@ -359,7 +365,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       ...this.historyWindEntryVisibility,
       this.temporaryMessageAreaDisplay,
       this.tableHeaderDisplay,
-      this.alternateWindVisibility,
+      this.alternateCruiseFlightLevelDisplay,
+      this.alternateWindFlightLevelUnitVisibility,
     );
   }
 
@@ -844,11 +851,16 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                     </div>
                   </div>
                 ))}
-                <div class="mfd-fms-wind-alternate-row" style={{ visibility: this.alternateWindVisibility }}>
+                <div class="mfd-fms-wind-alternate-row">
                   <span class="mfd-label bigger">ALTN TRIP WIND</span>
                   <div class="fr">
                     <div class="mfd-fms-wind-alternate-row-cruise-fl">
-                      <span class="mfd-label-unit bigger">FL</span>
+                      <span
+                        class="mfd-label-unit bigger"
+                        style={{ visibility: this.alternateWindFlightLevelUnitVisibility }}
+                      >
+                        FL
+                      </span>
                       <span
                         class={{
                           'mfd-label': true,
@@ -856,13 +868,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           biggest: true,
                         }}
                       >
-                        {this.alternateCruiseFlightLevel}
+                        {this.alternateCruiseFlightLevelDisplay}
                       </span>
                     </div>
                     <div class="mfd-fms-wind-direction-speed-entry-container no-margin">
                       <InputField
                         containerStyle="height:42px; width:98px; margin-right:6px;"
-                        inactive={this.descentWindsInactive}
                         onModified={(v) => {
                           this.onAlternateWindModified(v, WindEntryData.Direction);
                         }}
@@ -872,10 +883,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                         dataEntryFormat={new WindDirectionFormat()}
                         value={this.alternateWindDirection}
                         canBeCleared={true}
+                        disabled={this.alternateWindDisabled}
                       ></InputField>
                       <InputField
                         containerStyle="height: 42px; width:115px;"
-                        inactive={this.descentWindsInactive}
                         onModified={(v) => {
                           this.onAlternateWindModified(v, WindEntryData.Speed);
                         }}
@@ -884,6 +895,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                         interactionMode={this.props.mfd.interactionMode}
                         dataEntryFormat={new WindSpeedFormat()}
                         value={this.alternateWindSpeed}
+                        disabled={this.alternateWindDisabled}
                         canBeCleared={true}
                       ></InputField>
                     </div>
