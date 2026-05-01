@@ -264,8 +264,14 @@ impl FlapSlatAssembly {
             surface_gear_ratio,
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
-            left_valve_block: ValveBlock::new(full_pressure_max_speed, circuit_target_pressure),
-            right_valve_block: ValveBlock::new(full_pressure_max_speed, circuit_target_pressure),
+            left_valve_block: ValveBlock::new(
+                full_pressure_max_speed * 0.5,
+                circuit_target_pressure,
+            ),
+            right_valve_block: ValveBlock::new(
+                full_pressure_max_speed * 0.5,
+                circuit_target_pressure,
+            ),
         }
     }
 
@@ -620,10 +626,13 @@ mod tests {
             self
         }
 
-        fn get_max_speed(&self) -> AngularVelocity {
-            // TODO: at the moment left_valve_block and right_valve_block are identical.
-            // No asymmetries simulated.
-            self.query(|a| a.flaps_slats.left_valve_block.get_full_pressure_max_speed())
+        fn get_max_pcu_speed(&self) -> AngularVelocity {
+            self.query(|a| {
+                a.flaps_slats.left_valve_block.get_full_pressure_max_speed()
+                    + a.flaps_slats
+                        .right_valve_block
+                        .get_full_pressure_max_speed()
+            })
         }
 
         fn get_accuracy_tolerance(&self) -> Angle {
@@ -916,14 +925,10 @@ mod tests {
             .run_waiting_for(Duration::from_millis(2000));
 
         let current_speed = test_bed.flap_slat_speed();
-        println!(
-            "{:0} {:0}",
-            current_speed.get::<radian_per_second>(),
-            test_bed.get_max_speed().get::<radian_per_second>()
-        );
-        assert!(
-            (current_speed - test_bed.get_max_speed()).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+        assert_gt_lt!(
+            current_speed,
+            test_bed.get_max_pcu_speed(),
+            AngularVelocity::new::<radian_per_second>(0.01)
         );
 
         assert!(
@@ -999,9 +1004,10 @@ mod tests {
             .run_waiting_for(Duration::from_millis(1500));
 
         let current_speed = test_bed.flap_slat_speed();
-        assert!(
-            (current_speed - test_bed.get_max_speed() / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+        assert_gt_lt!(
+            current_speed,
+            test_bed.get_max_pcu_speed() / 2.0,
+            AngularVelocity::new::<radian_per_second>(0.01)
         );
 
         assert_eq!(test_bed.left_motor_speed(), AngularVelocity::ZERO);
@@ -1033,9 +1039,10 @@ mod tests {
             .run_waiting_for(Duration::from_millis(1500));
 
         let current_speed = test_bed.flap_slat_speed();
-        assert!(
-            (current_speed - test_bed.get_max_speed() / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+        assert_gt_lt!(
+            current_speed,
+            test_bed.get_max_pcu_speed() / 2.0,
+            AngularVelocity::new::<radian_per_second>(0.01)
         );
 
         assert_eq!(test_bed.right_motor_speed(), AngularVelocity::ZERO);
@@ -1135,9 +1142,10 @@ mod tests {
         test_bed = test_bed.run_waiting_for(Duration::from_millis(1000));
 
         let current_speed = test_bed.flap_slat_speed();
-        assert!(
-            (current_speed - test_bed.get_max_speed() / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+        assert_gt_lt!(
+            current_speed,
+            test_bed.get_max_pcu_speed() / 2.0,
+            AngularVelocity::new::<radian_per_second>(0.01)
         );
 
         test_bed = test_bed.run_waiting_for(Duration::from_millis(40000));
@@ -1161,9 +1169,10 @@ mod tests {
         test_bed = test_bed.run_waiting_for(Duration::from_millis(5000));
 
         let current_speed = test_bed.flap_slat_speed();
-        assert!(
-            (current_speed - test_bed.get_max_speed()).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+        assert_gt_lt!(
+            current_speed,
+            test_bed.get_max_pcu_speed(),
+            AngularVelocity::new::<radian_per_second>(0.01)
         );
 
         test_bed = test_bed.set_angle_request(None);
