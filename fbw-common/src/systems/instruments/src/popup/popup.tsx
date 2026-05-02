@@ -20,8 +20,7 @@ const DEFAULT_TOD_PAUSE_OVERLAY_STATE: TodPauseOverlayState = {
 export class PopupComponent extends DisplayComponent<PopupProps> {
   private readonly todPauseOverlayState = ConsumerSubject.create(null, DEFAULT_TOD_PAUSE_OVERLAY_STATE);
   private readonly panelRef = FSComponent.createRef<HTMLDivElement>();
-  private listener: ViewListener.ViewListener;
-
+  private readonly listener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_TOOLBAR_PANELS');
   private handleKeyDown = (e: KeyboardEvent): void => {
     if (e.keyCode === KeyCode.KEY_P && this.todPauseOverlayState.get().visible) {
       this.props.bus.getPublisher<TodPauseOverlayControlEvents>().pub('tod_pause_overlay', {
@@ -36,8 +35,6 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
     super.onAfterRender(node);
     // OR USE A:SIM DISABLED but that will not make the toolbar work
     // OR Use the regular K:PAUSE_SET event and only intercept the key
-    this.listener = RegisterViewListener('JS_LISTENER_TOOLBAR_PANELS');
-
     this.listener.on('SetActivePauseEnabled', (isPaused: boolean) => {
       if (!isPaused && this.todPauseOverlayState.get().visible) {
         this.props.bus

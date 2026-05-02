@@ -27,7 +27,7 @@ class PopupInstrument implements FsInstrument {
     this.backplane.init();
 
     // Remove "instrument didn't load" text
-    document.getElementById('popup_CONTENT').querySelector(':scope > h1').remove();
+    document.getElementById('popup_CONTENT')?.querySelector(':scope > h1')?.remove();
   }
 
   /**
