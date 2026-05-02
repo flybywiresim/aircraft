@@ -8,7 +8,7 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
+import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@flybywiresim/fbw-sdk';
 import { NXDataStore, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, EventBus, VNode, FSComponent } from '@microsoft/msfs-sdk';
-import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
+import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@flybywiresim/fbw-sdk';
 
 import './style.scss';
 

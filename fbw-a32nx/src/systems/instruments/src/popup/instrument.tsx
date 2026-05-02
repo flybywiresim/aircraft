@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, FsBaseInstrument, FSComponent, FsInstrument, InstrumentBackplane } from '@microsoft/msfs-sdk';
-import { PopupComponent, PopupSimvarPublisher } from '../../../../../../fbw-common/src/systems/instruments/src/popup';
+import { PopupComponent } from '../../../../../../fbw-common/src/systems/instruments/src/popup';
+import { PopupSimvarPublisher } from '@flybywiresim/fbw-sdk';
 
 class PopupInstrument implements FsInstrument {
   public readonly instrument!: BaseInstrument;
