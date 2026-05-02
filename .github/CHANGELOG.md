@@ -120,7 +120,7 @@
 1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add `THR LEVERS NOT SET` master caution - @FozzieHi (fozzie)
 1. [A380X/PFD] Add "APPR 1" on LS button press if no capability computed by systems - @BravoMike99 (bruno_pt99)
-1. [A380X/FLIGHT MODEL] Fight model update for MSFS 2020  - @donstim (donbikes)
+1. [A380X/FLIGHT MODEL] Fight model update  - @donstim (donbikes)
 
 ## 0.14.0
 
