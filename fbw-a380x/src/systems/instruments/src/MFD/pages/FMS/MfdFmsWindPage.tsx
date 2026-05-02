@@ -428,7 +428,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.alternateWindDirection.set(null);
         this.alternateWindSpeed.set(null);
       }
-      this.alternateWindDisabled.set(!hasAlternate);
+      this.alternateWindDisabled.set(!hasAlternate || this.tmpyExists.get());
       this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
         this.fillDisplayWindEntriesFromFlightPlan(
@@ -463,6 +463,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       const wptIdx = parseInt(extraParts[1]);
       if (!Number.isNaN(wptIdx)) {
         this.selectedWaypointLegIndex.set(wptIdx);
+        console.log('Selected waypoint index from URI: ' + wptIdx);
       }
     }
     const fpIndex = this.loadedFlightPlanIndex.get();
@@ -544,8 +545,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           this.setSelectedPageIndex(WindSubPageMenu.Descent);
           break;
       }
-    } else {
-      this.setSelectedPageIndex(WindSubPageMenu.Climb); //TODO What should we select in this case?
     }
   }
 
@@ -1034,9 +1033,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       }}
                       class="mfd-fms-wind-page-entry-row"
                     >
-                      <div class="mfd-fms-wind-altitude-entry-container">
+                      <div class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}>
                         <InputField
                           containerStyle="width:157px; height:40px;"
+                          alignText={'flex-start'}
                           inactive={this.climbWindsInactive}
                           disabled={this.climbWindsDisabled}
                           onModified={(v) => {
@@ -1053,7 +1053,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           enteredByPilot={this.displayedClimbWindAltitudeIsEnteredByPilot[value]}
                         ></InputField>
                       </div>
-                      <div class="mfd-fms-wind-direction-speed-entry-container">
+                      <div class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}>
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.climbWindsInactive}
@@ -1172,8 +1172,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       }}
                       class="mfd-fms-wind-page-entry-row"
                     >
-                      <div class="mfd-fms-wind-altitude-entry-container">
+                      <div class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}>
                         <InputField
+                          alignText={'flex-start'}
                           containerStyle="width:157px; height:40px;"
                           inactive={this.cruiseWindRowAltitudeIsInactive[value]}
                           disabled={this.cruiseWindsDisabled}
@@ -1188,7 +1189,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           canBeCleared={true}
                         ></InputField>
                       </div>
-                      <div class="mfd-fms-wind-direction-speed-entry-container">
+                      <div class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}>
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.cruiseWindsInactive}
@@ -1250,8 +1251,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       }}
                       class="mfd-fms-wind-page-entry-row"
                     >
-                      <div class="mfd-fms-wind-altitude-entry-container">
+                      <div
+                        class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0, des: value !== 0 }}
+                      >
                         <InputField
+                          alignText={'flex-start'}
                           containerStyle="width:157px; height:40px;"
                           inactive={this.descentWindsInactive}
                           disabled={this.descentWindsDisabled}
@@ -1266,7 +1270,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           canBeCleared={true}
                         ></InputField>
                       </div>
-                      <div class="mfd-fms-wind-direction-speed-entry-container">
+                      <div
+                        class={{
+                          'mfd-fms-wind-direction-speed-entry-container': true,
+                          des: value !== 0,
+                          first: value === 0,
+                        }}
+                      >
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.descentWindsInactive}

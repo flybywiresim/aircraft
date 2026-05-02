@@ -1,5 +1,6 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  ClockEvents,
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
@@ -109,12 +110,26 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     FmgcFlightPhase.Preflight,
   );
 
+  private readonly periodicNewDataCheck = this.props.bus
+    .getSubscriber<ClockEvents>()
+    .on('realTime')
+    .atFrequency(0.5)
+    .handle(() => {
+      this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
+    });
+
   // protected mfdInViewConsumer: Consumer<boolean>;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subs.push(this.penaltyUri, this.displayPenalty, this.shouldShowTemporaryPageUris, this.displayTmpy);
+    this.subs.push(
+      this.penaltyUri,
+      this.displayPenalty,
+      this.shouldShowTemporaryPageUris,
+      this.displayTmpy,
+      this.periodicNewDataCheck,
+    );
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 

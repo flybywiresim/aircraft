@@ -151,8 +151,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly flightNumber = Subject.create<string | null>(null);
 
-  private readonly uplinkAvailableForPlan = Subject.create(false);
-
   /** FIXME workaround as newCity pair deletes the flightplan and we don't want to show ---- on the FROM/TO pair */
   private creationInProgress = false;
 
@@ -244,16 +242,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       ? this.props.flightPlanInterface.get(fpIndex).hasWindEntries()
       : false;
     this.fpHasWindEntries.set(hasWind);
-    if (hasWind) {
+    if (this.tripWindDisabled.get() || !fp || !pd) {
       this.tripWind.set(null);
     } else {
-      this.tripWind.set(pd?.pilotTripWind.get() ?? 0);
+      this.tripWind.set(pd.pilotTripWind.get() ?? 0);
     }
     this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
     this.costIndex.set(pd?.costIndex.get() ?? null);
-    this.uplinkAvailableForPlan.set(fp?.pendingWindUplink.isWindUplinkReadyToInsert() ?? false);
   }
 
   protected onNewData() {
@@ -665,7 +662,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   disabled={this.tripWindDisabled}
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
-                  alignText="center"
+                  alignText="flex-start"
                   errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}

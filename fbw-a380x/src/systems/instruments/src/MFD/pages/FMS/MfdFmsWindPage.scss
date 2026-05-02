@@ -106,9 +106,17 @@ $wind-row-width: 465px;
   width: 231px;
   flex-direction: row;
   border: 1px solid #4f5467;
-  margin-top: 25px;
+  margin-top: 14px;
   padding: 5px;
   height: 55px;
+}
+
+.mfd-fms-wind-direction-speed-entry-container.first {
+  margin-top: 25px;
+}
+
+.mfd-fms-wind-direction-speed-entry-container.des {
+  margin-top: 12px;
 }
 
 
@@ -131,8 +139,16 @@ $wind-row-width: 465px;
 }
 
 .mfd-fms-wind-altitude-entry-container {
-  padding-top: 33px;
+  padding-top: 24px;
   width: 215px;
+}
+
+.mfd-fms-wind-altitude-entry-container.first {
+  padding-top: 33px;
+}
+
+.mfd-fms-wind-altitude-entry-container.des {
+  padding-top: 22px;
 }
 
 .mfd-fms-wind-alternate-row {
@@ -163,12 +179,12 @@ $wind-row-width: 465px;
 }
 
 .mfd-fms-wind-page-crz-title-container {
-  padding-top: 15px;
+  padding-top: 21px;
   margin-right: 22px
 }
 
 .mfd-fms-wind-page-crz-dropdown-container {
-
+  padding-top: 10px;
 }
 
 .mfd-fms-wind-page-buttons-container {

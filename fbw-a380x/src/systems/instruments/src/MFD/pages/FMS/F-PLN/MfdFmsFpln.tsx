@@ -920,7 +920,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private gotoWindPage(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
     if (isWaypoint(data) && !data.isAltnWaypoint && data.originalLegIndex !== null) {
-      const wpt = this.loadedFlightPlan?.legElementAt(data.originalLegIndex);
+      const wpt = this.loadedFlightPlan?.maybeElementAt(data.originalLegIndex);
       if (wpt) {
         this.props.mfd.uiService.navigateTo(
           `fms/${this.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}/${data.originalLegIndex}`,
@@ -1772,9 +1772,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)
       )
     ) {
-      directionStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
+      directionStr = '"';
     } else if (data.windPrediction !== null) {
-      directionStr = <span>{formatWindPredictionDirection(data.windPrediction)}</span>;
+      directionStr = formatWindPredictionDirection(data.windPrediction);
     }
 
     let speedStr = '--';
@@ -1785,17 +1785,15 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       data.windPrediction !== null &&
       formatWindPredictionMagnitude(previousRow.windPrediction) === formatWindPredictionMagnitude(data.windPrediction)
     ) {
-      speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
+      speedStr = '"';
     } else if (data.windPrediction !== null) {
-      speedStr = <span>{formatWindPredictionMagnitude(data.windPrediction)}</span>;
+      speedStr = formatWindPredictionMagnitude(data.windPrediction);
     }
 
     return (
-      <div style="display: flex; flex-direction: row; justify-self: flex-end">
-        <div style="width: 45px; text-align: center;">{directionStr}</div>
-        <span>/</span>
-        <div style="width: 45px; text-align: center;">{speedStr}</div>
-      </div>
+      <span style="font-family: HoneywellMCDU, monospace; justify-self: end;">
+        {directionStr}/{speedStr}
+      </span>
     );
   }
 

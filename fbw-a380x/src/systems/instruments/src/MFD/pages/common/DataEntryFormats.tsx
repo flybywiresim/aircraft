@@ -419,7 +419,7 @@ export class WindAltitudeFormat extends SubscriptionCollector implements DataEnt
         (!this.isTransAltFlightLevel.get() && value > this.transAlt) ||
         (this.isTransAltFlightLevel.get() && value >= this.transAlt)
       ) {
-        return [(value / 100).toFixed(0).toString().padStart(3, '0').padEnd(7, '\xa0'), 'FL', null] as FieldFormatTuple; // Add some whitespaces so it fits to input.
+        return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple; // Add some whitespaces so it fits to input.
       }
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;

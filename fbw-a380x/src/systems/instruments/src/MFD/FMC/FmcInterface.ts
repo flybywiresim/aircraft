@@ -341,5 +341,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** Sends a request to the AOC to reset the ATIS auto update airports */
   resetAtisAutoUpdate(): void;
 
-  getWindUplinkAvailableForPlan(planIndex: FlightPlanIndex): Subscribable<boolean>;
+  /**
+   * Get a subscribable which indicates whether the wind uplink is available to insert for a given flight plan.
+   * @param planIndex the flightplan to get the uplink status for. If undefined, will return whether the uplink is available for any flight plan.
+   */
+  getWindUplinkAvailableForPlan(planIndex?: FlightPlanIndex): Subscribable<boolean>;
 }
