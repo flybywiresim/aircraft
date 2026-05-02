@@ -253,7 +253,7 @@ export class EfisSymbols<T extends number> {
       const rBrng = (brng / 180) * Math.PI;
       const rLat1 = (Lat1 / 180) * Math.PI;
       const rLon1 = (Lon1 / 180) * Math.PI;
-      const R = 6371;
+      const R = 6371000; // metres
 
       const rLat2 = Math.asin(Math.sin(rLat1) * Math.cos(d / R) + Math.cos(rLat1) * Math.sin(d / R) * Math.cos(rBrng));
       const rLon2 =
