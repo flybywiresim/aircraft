@@ -38,6 +38,7 @@ import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   FlightLevelFormat,
+  TemperatureFormat,
   WindAltitudeFormat,
   WindDirectionFormat,
   WindSpeedFormat,
@@ -276,6 +277,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.cruiseWindRowFlightLevelIsPropagated[i],
       ),
   );
+
+  //TODO Dummies for now till implemented by systems
+  private readonly cruiseTemperatureFlightLevel = Subject.create<number | null>(null);
+  private readonly cruiseTemperature = Subject.create<number | null>(null);
 
   // Descent Wind
   private static readonly DESCENT_WIND_ENTRIES_ARRAY = Array.from(
@@ -1224,6 +1229,41 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div class="mfd-fms-wind-page-table-row temp">
+                <div class="mfd-fms-wind-crz-temp-alt-header-container">
+                  <span class="mfd-label bigger">ALT</span>
+                </div>
+                <div class="mfd-fms-wind-crz-temp-sat-header-container">
+                  <span class="mfd-label-bigger">SAT</span>
+                </div>
+
+                <div class="mfd-fms-wind-crz-temp-entry-container">
+                  <InputField
+                    alignText={'flex-start'}
+                    containerStyle="width:157px; height:40px;"
+                    inactive={false}
+                    disabled={true}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                    dataEntryFormat={new FlightLevelFormat()}
+                    canBeCleared={true}
+                    value={this.cruiseTemperatureFlightLevel}
+                  ></InputField>
+                  <InputField
+                    alignText={'flex-start'}
+                    containerStyle="height:40px;"
+                    inactive={false}
+                    disabled={true}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                    dataEntryFormat={new TemperatureFormat()}
+                    canBeCleared={true}
+                    value={this.cruiseTemperature}
+                  ></InputField>
+                </div>
               </div>
             </TopTabNavigatorPage>
             <TopTabNavigatorPage>

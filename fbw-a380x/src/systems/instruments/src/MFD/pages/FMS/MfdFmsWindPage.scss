@@ -192,3 +192,27 @@ $wind-row-width: 465px;
   flex-direction: row;
 
 }
+
+.mfd-fms-wind-page-table-row.temp {
+    height: 114px;
+    width: 367px;
+    padding-top: 15px;
+    margin-top: 50px;
+}
+
+.mfd-fms-wind-crz-temp-alt-header-container {
+    padding-left: 67px;
+}
+
+.mfd-fms-wind-crz-temp-sat-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+  padding-right: 37px;
+}
+
+.mfd-fms-wind-crz-temp-entry-container {
+  display: flex;
+  flex-direction: row;
+}
