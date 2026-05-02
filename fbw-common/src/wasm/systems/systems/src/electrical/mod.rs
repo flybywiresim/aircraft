@@ -395,6 +395,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -426,6 +430,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -452,6 +460,10 @@ impl Electricity {
     /// # struct SomeVariableRegistry {}
     /// # impl VariableRegistry for SomeVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
     /// # }

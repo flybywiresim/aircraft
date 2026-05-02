@@ -46,11 +46,11 @@ const flightModelParams: FlightModelParameters = {
   speedBrakeDrag: 0.01154,
   gearDrag: 0.019,
   dragPolarCoefficients: {
-    [FlapConf.CLEAN]: [0.0236, -0.0167, 0.0171, 0.0291],
-    [FlapConf.CONF_1]: [0.0305, -0.02, 0.0285, 0.0105],
-    [FlapConf.CONF_2]: [0.1222, -0.0017, -0.0073, 0.0169],
-    [FlapConf.CONF_3]: [0.1529, -0.0308, 0.0127, 0.0026],
-    [FlapConf.CONF_FULL]: [0.1628, -0.0193, 0.0013, 0.0048],
+    [FlapConf.CLEAN]: [0.0233632, -0.0138603, 0.0112647, 0.0315846],
+    [FlapConf.CONF_1]: [0.0316508, -0.0231003, 0.0253465, 0.0163923],
+    [FlapConf.CONF_2]: [0.1173016, -0.0017015, -0.0119025, 0.0200059],
+    [FlapConf.CONF_3]: [0.147937, -0.0288048, 0.0139508, 0.0020813],
+    [FlapConf.CONF_FULL]: [0.1613654, -0.0246356, 0.0090159, 0.0020712],
   },
 };
 

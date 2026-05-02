@@ -679,6 +679,10 @@ impl VariableRegistry for TestVariableRegistry {
             }
         }
     }
+
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier {
+        self.get(name)
+    }
 }
 
 #[cfg(test)]
