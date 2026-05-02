@@ -33,7 +33,6 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
-import { EventBus } from '@microsoft/msfs-sdk';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
