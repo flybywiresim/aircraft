@@ -233,6 +233,20 @@ export class FwsAutoCallouts {
   private readonly minimumDhMemoryNode = new NXLogicMemoryNode(false);
   public readonly minimumAudio = Subject.create(false);
 
+  /** Auto Flight Callouts */
+
+  // PITCH PITCH Auto Callout
+  public readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
+
+  public readonly pitchPitchActive = Subject.create(false);
+
+  // Low Energy Warning Auto Callout
+  private readonly lowEnergyMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  private readonly lowEnergyMtrig2 = new NXLogicTriggeredMonostableNode(6, true);
+
+  public readonly lowEnergyWarningActive = Subject.create(false);
+
   constructor(private readonly fws: PseudoFWC) {}
 
   public update(deltaTime: number) {
@@ -245,10 +259,10 @@ export class FwsAutoCallouts {
     const onGround = this.fws.aircraftOnGround.get();
     const engine1MasterOn = this.fws.engine1Master.get();
     const engine2MasterOn = this.fws.engine2Master.get();
-    const tla1 = this.fws.throttle1Position.get();
-    const tla2 = this.fws.throttle2Position.get();
-    const tla1Reverse = this.fws.eng1TLAReverse.get();
-    const tla2Reverse = this.fws.eng2TLAReverse.get();
+    const tla1 = this.fws.thr1TLA.get();
+    const tla2 = this.fws.thr2TLA.get();
+    const tla1Reverse = this.fws.thr1TLAReverse.get();
+    const tla2Reverse = this.fws.thr2TLAReverse.get();
     const engine1NotRunning = this.fws.engine1NotRunning.get();
     const engine2NotRunning = this.fws.engine2NotRunning.get();
     const atsDiscreteWord = this.fws.atsDiscreteWord;
@@ -276,6 +290,17 @@ export class FwsAutoCallouts {
       engine2MasterOn,
     );
 
+    this.computeAutoFlightCallouts(
+      deltaTime,
+      this.fws.fac1DiscreteWord3.get(),
+      this.fws.fac2DiscreteWord3.get(),
+      this.fws.radioHeight1,
+      this.fws.radioHeight2,
+      flightPhase,
+      this.fws.flightPhase67.get(),
+      this.fws.flightPhase567.get(),
+    );
+
     this.computeMinimumsCallouts(deltaTime, height);
 
     this.computeThresholds(height, deltaTime);
@@ -293,6 +318,41 @@ export class FwsAutoCallouts {
       engine2NotRunning,
       tla1Reverse,
       tla2Reverse,
+    );
+  }
+
+  private computeAutoFlightCallouts(
+    deltaTime: number,
+    fac1DiscreteWord3: Arinc429WordData,
+    fac2DiscreteWord3: Arinc429WordData,
+    radioHeight1: Arinc429Register,
+    radioHeight2: Arinc429Register,
+    flightPhase: number,
+    flightphase67: boolean,
+    flightPhase567: boolean,
+  ) {
+    // PITCH PITCH Auto Callout
+    const pitchPitchGenerated = this.fws.getPitchPitchGenerated();
+    const pitchPitchRequested = fac1DiscreteWord3.bitValueOr(15, false) || fac2DiscreteWord3.bitValueOr(15, false);
+    const pitchPitchInhibition = this.gpwsActive || this.tcasAudio;
+    const raBelow50 = radioHeight1.valueOr(100) < 50 || radioHeight2.valueOr(100) < 50;
+    const pitchPitchCondition = pitchPitchRequested && (flightPhase == 8 || (raBelow50 && flightphase67));
+    this.pitchPitchFlipFlop.write(pitchPitchGenerated, !pitchPitchRequested);
+
+    this.pitchPitchActive.set(!this.pitchPitchFlipFlop.read() && !pitchPitchInhibition && pitchPitchCondition);
+
+    // Low Energy Warning Auto Callout
+    const lowEnergyDetected = fac1DiscreteWord3.bitValueOr(11, false) || fac2DiscreteWord3.bitValueOr(11, false);
+    this.lowEnergyMtrig1.write(lowEnergyDetected, deltaTime);
+
+    const speedGenerated = this.fws.getSpeedSpeedGenerated();
+    this.lowEnergyMtrig2.write(speedGenerated, deltaTime);
+
+    this.lowEnergyWarningActive.set(
+      !this.gpwsActive &&
+        flightPhase567 &&
+        (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
+        !this.lowEnergyMtrig2.read(),
     );
   }
 

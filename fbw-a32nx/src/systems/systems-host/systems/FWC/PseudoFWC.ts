@@ -47,10 +47,10 @@ import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
-import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export const DEFAULT_MONITOR_TIME = 0.3;
 import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
+import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -400,11 +400,11 @@ export class PseudoFWC {
 
   /* 22 - AUTOFLIGHT */
 
-  private readonly fac1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+  public readonly fac1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fac_discrete_word_3_1'),
   );
 
-  private readonly fac2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+  public readonly fac2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fac_discrete_word_3_2'),
   );
 
@@ -616,18 +616,6 @@ export class PseudoFWC {
   public readonly capabilityChangeConfNode1 = new NXLogicConfirmNode(0.3, true);
 
   public readonly capabilityChange = Subject.create(false);
-
-  // PITCH PITCH Auto Callout
-  public readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
-
-  public readonly pitchPitchActive = Subject.create(false);
-
-  // Low Energy Warning Auto Callout
-  public readonly lowEnergyMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
-
-  public readonly lowEnergyMtrig2 = new NXLogicTriggeredMonostableNode(6, true);
-
-  public readonly lowEnergyWarningActive = Subject.create(false);
 
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
@@ -1009,9 +997,9 @@ export class PseudoFWC {
 
   private readonly flightPhase345 = Subject.create(false);
 
-  private readonly flightPhase567 = Subject.create(false);
+  public readonly flightPhase567 = Subject.create(false);
 
-  private readonly flightPhase67 = Subject.create(false);
+  public readonly flightPhase67 = Subject.create(false);
 
   private readonly flightPhase678 = Subject.create(false);
 
@@ -1390,9 +1378,9 @@ export class PseudoFWC {
 
   private readonly eng2AntiIce = Subject.create(false);
 
-  private readonly thr1TLA = Subject.create(0);
+  public readonly thr1TLA = Subject.create(0);
 
-  private readonly thr2TLA = Subject.create(0);
+  public readonly thr2TLA = Subject.create(0);
 
   private readonly thr1TLAMCT = Subject.create(false);
 
@@ -1406,13 +1394,13 @@ export class PseudoFWC {
 
   private readonly thr2TLABetweenCLAndMCT = Subject.create(false);
 
-  private readonly allThrTLAIdle = Subject.create(false);
+  public readonly allThrTLAIdle = Subject.create(false);
 
-  private readonly thr1TLAReverse = Subject.create(false);
+  public readonly thr1TLAReverse = Subject.create(false);
 
-  private readonly thr2TLAReverse = Subject.create(false);
+  public readonly thr2TLAReverse = Subject.create(false);
 
-  private readonly allThrTLAReverse = Subject.create(false);
+  public readonly allThrTLAReverse = Subject.create(false);
 
   private readonly engine1ValueSwitch = ConsumerValue.create(null, false);
 
@@ -1420,7 +1408,7 @@ export class PseudoFWC {
 
   private readonly autoThrustStatus = Subject.create(0);
 
-  private readonly atsDiscreteWord = Arinc429Register.empty();
+  public readonly atsDiscreteWord = Arinc429Register.empty();
 
   private readonly ecu1StatusWord3Var = RegisteredSimVar.create<number>(
     'L:A32NX_ECU_1_STATUS_WORD_3',
@@ -1699,9 +1687,12 @@ export class PseudoFWC {
 
     this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
 
-    this.pitchPitchActive.sub((active) => this.soundManager.handleSoundCondition('pitchPitch', active), true);
+    this.autoCallouts.pitchPitchActive.sub(
+      (active) => this.soundManager.handleSoundCondition('pitchPitch', active),
+      true,
+    );
 
-    this.lowEnergyWarningActive.sub(
+    this.autoCallouts.lowEnergyWarningActive.sub(
       (active) => this.soundManager.handleSoundCondition('speedSpeedSpeed', active),
       true,
     );
@@ -1858,6 +1849,14 @@ export class PseudoFWC {
 
   public getHundredAboveEmitted() {
     return this.soundManager.hundredAboveEmitted;
+  }
+
+  public getPitchPitchGenerated() {
+    return this.soundManager.pitchEmitted;
+  }
+
+  public getSpeedSpeedGenerated() {
+    return this.soundManager.speedEmitted;
   }
 
   private registerKeyEvents() {
@@ -2575,62 +2574,6 @@ export class PseudoFWC {
 
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
 
-    // PITCH PITCH Auto Callout
-    const pitchPitchGenerated = this.soundManager.getCurrentSoundPlaying() == 'pitchPitch';
-    const pitchPitchRequested =
-      this.fac1DiscreteWord3.get().bitValueOr(15, false) || this.fac2DiscreteWord3.get().bitValueOr(15, false);
-    const pitchPitchInhibition = false;
-    const raBelow50 = this.radioHeight1.valueOr(100) < 50 || this.radioHeight2.valueOr(100) < 50;
-    const pitchPitchCondition = pitchPitchRequested && (flightPhase == 8 || (raBelow50 && this.flightPhase67.get()));
-    this.pitchPitchFlipFlop.write(pitchPitchGenerated, !pitchPitchRequested);
-
-    this.pitchPitchActive.set(!this.pitchPitchFlipFlop.read() && !pitchPitchInhibition && pitchPitchCondition);
-
-    // Low Energy Warning Auto Callout
-    const lowEnergyDetected =
-      this.fac1DiscreteWord3.get().bitValueOr(11, false) || this.fac2DiscreteWord3.get().bitValueOr(11, false);
-    this.lowEnergyMtrig1.write(lowEnergyDetected, deltaTime);
-
-    const speedGenerated = this.soundManager.getCurrentSoundPlaying() == 'speedSpeedSpeed';
-    this.lowEnergyMtrig2.write(speedGenerated, deltaTime);
-
-    const lowEnergyInhibition = false;
-
-    this.lowEnergyWarningActive.set(
-      this.flightPhase567.get() &&
-        (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
-        !this.lowEnergyMtrig2.read() &&
-        !lowEnergyInhibition,
-    );
-
-    // PITCH PITCH Auto Callout
-    const pitchPitchGenerated = this.soundManager.getCurrentSoundPlaying() == 'pitchPitch';
-    const pitchPitchRequested =
-      this.fac1DiscreteWord3.get().bitValueOr(15, false) || this.fac2DiscreteWord3.get().bitValueOr(15, false);
-    const pitchPitchInhibition = false;
-    const raBelow50 = this.radioHeight1.valueOr(100) < 50 || this.radioHeight2.valueOr(100) < 50;
-    const pitchPitchCondition = pitchPitchRequested && (flightPhase == 8 || (raBelow50 && this.flightPhase67.get()));
-    this.pitchPitchFlipFlop.write(pitchPitchGenerated, !pitchPitchRequested);
-
-    this.pitchPitchActive.set(!this.pitchPitchFlipFlop.read() && !pitchPitchInhibition && pitchPitchCondition);
-
-    // Low Energy Warning Auto Callout
-    const lowEnergyDetected =
-      this.fac1DiscreteWord3.get().bitValueOr(11, false) || this.fac2DiscreteWord3.get().bitValueOr(11, false);
-    this.lowEnergyMtrig1.write(lowEnergyDetected, deltaTime);
-
-    const speedGenerated = this.soundManager.getCurrentSoundPlaying() == 'speedSpeedSpeed';
-    this.lowEnergyMtrig2.write(speedGenerated, deltaTime);
-
-    const lowEnergyInhibition = false;
-
-    this.lowEnergyWarningActive.set(
-      this.flightPhase567.get() &&
-        (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
-        !this.lowEnergyMtrig2.read() &&
-        !lowEnergyInhibition,
-    );
-
     // AUTO BRAKE OFF
     this.autobrakeDeactivatedPulseNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'));
 
@@ -2657,9 +2600,9 @@ export class PseudoFWC {
     }
 
     // Engine Logic
-    this.thr1TLAMCTAndEngRunConf.write(this.engine1N2Sup.get() && this.thr1TLAMCT.get(), deltaTime);
+    this.thr1TLAMCTAndEngRunConf.write(this.engine1CoreAtOrAboveMinIdle.get() && this.thr1TLAMCT.get(), deltaTime);
     this.thr1TLABetweenCLAndMCTAndEngRunConf.write(
-      this.engine1N2Sup.get() && this.thr1TLABetweenCLAndMCT.get(),
+      this.engine1CoreAtOrAboveMinIdle.get() && this.thr1TLABetweenCLAndMCT.get(),
       deltaTime,
     );
     this.eng1ThrLeversNotSetToga.set(
@@ -2671,9 +2614,9 @@ export class PseudoFWC {
     );
     this.eng1ThrLeversNotSet.set(this.eng1ThrLeversNotSetToga.get() || this.eng1ThrLeversNotSetFlex.get());
 
-    this.thr2TLAMCTAndEngRunConf.write(this.engine2N2Sup.get() && this.thr2TLAMCT.get(), deltaTime);
+    this.thr2TLAMCTAndEngRunConf.write(this.engine2CoreAtOrAboveMinIdle.get() && this.thr2TLAMCT.get(), deltaTime);
     this.thr2TLABetweenCLAndMCTAndEngRunConf.write(
-      this.engine2N2Sup.get() && this.thr2TLABetweenCLAndMCT.get(),
+      this.engine2CoreAtOrAboveMinIdle.get() && this.thr2TLABetweenCLAndMCT.get(),
       deltaTime,
     );
     this.eng2ThrLeversNotSetToga.set(

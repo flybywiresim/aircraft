@@ -6,6 +6,8 @@ import { EventBus, SimVarValueType, Subscribable } from '@microsoft/msfs-sdk';
 
 const MINIMUM_LOCAL_VAR = 'A32NX_FWS_AUDIO_MINIMUMS';
 const HUNDRED_ABOVE_LOCAL_VAR = 'A32NX_FWS_AUDIO_100_ABOVE';
+const PITCH_PITCH_LOCAL_VAR = 'A32NX_FWS_AUDIO_PITCH';
+const SPEED_SPEED_SPEED_LOCAL_VAR = 'A32NX_FWS_AUDIO_SPEED';
 
 export interface FwsSoundManagerControlEvents {
   enqueueSound: string;
@@ -80,7 +82,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   autoBrakeOff: {
     localVarName: 'A32NX_AUDIO_AUTOBRAKE_OFF',
     length: 1.5,
-    priority: 2,
+    priority: 19,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
@@ -94,21 +96,21 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   keepMaxReverse: {
     localVarName: 'A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
     length: 1.4,
-    priority: 4,
+    priority: 20,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
   setMaxReverse: {
     localVarName: 'A32NX_AUDIO_ROW_SET_MAX_REVERSE',
     length: 1.62,
-    priority: 4,
+    priority: 21,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
   brakeMaxBraking: {
     localVarName: 'A32NX_AUDIO_ROP_MAX_BRAKING',
     length: 3.1,
-    priority: 4,
+    priority: 22,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: true,
   },
@@ -119,15 +121,15 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   pitchPitch: {
-    localVarName: 'A32NX_FWS_AUDIO_PITCH',
-    priority: 3,
+    localVarName: PITCH_PITCH_LOCAL_VAR,
+    priority: 24,
     length: 0.48,
     type: FwsAuralWarningType.SyntheticVoice,
     repeatFor: 2,
   },
   speedSpeedSpeed: {
-    localVarName: 'A32NX_FWS_AUDIO_SPEED',
-    priority: 3,
+    localVarName: SPEED_SPEED_SPEED_LOCAL_VAR,
+    priority: 25,
     length: 0.56,
     repeatFor: 3,
     type: FwsAuralWarningType.SyntheticVoice,
@@ -136,25 +138,25 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   minimums: {
     localVarName: MINIMUM_LOCAL_VAR,
     length: 0.67,
-    priority: 2,
+    priority: 17,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   hundred_above: {
     localVarName: HUNDRED_ABOVE_LOCAL_VAR,
     length: 0.72,
-    priority: 2,
+    priority: 18,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard: {
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
     length: 1.1, // Add a bit of silence before new retard can play
-    priority: 2,
+    priority: 13,
     continuous: false,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard_continuous: {
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
-    priority: 2,
+    priority: 23,
     length: 0.72,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
@@ -163,7 +165,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   alt_2500: {
     localVarName: 'A32NX_FWS_AUDIO_2500',
     length: 1.1,
-    priority: 2,
+    priority: 1,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2500b: {
@@ -175,79 +177,79 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   alt_2000: {
     localVarName: 'A32NX_FWS_AUDIO_2000',
     length: 0.72,
-    priority: 2,
+    priority: 3,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_1000: {
     localVarName: 'A32NX_FWS_AUDIO_1000',
     length: 0.9,
-    priority: 2,
+    priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_500: {
     localVarName: 'A32NX_FWS_AUDIO_500',
     length: 0.6,
-    priority: 2,
+    priority: 5,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_400: {
     localVarName: 'A32NX_FWS_AUDIO_400',
     length: 0.6,
-    priority: 2,
+    priority: 6,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_300: {
     localVarName: 'A32NX_FWS_AUDIO_300',
     length: 0.6,
-    priority: 2,
+    priority: 7,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_200: {
     localVarName: 'A32NX_FWS_AUDIO_200',
     length: 0.6,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_100: {
     localVarName: 'A32NX_FWS_AUDIO_100',
     length: 0.6,
-    priority: 2,
+    priority: 9,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_50: {
     localVarName: 'A32NX_FWS_AUDIO_50',
     length: 0.4,
-    priority: 2,
+    priority: 10,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_40: {
     localVarName: 'A32NX_FWS_AUDIO_40',
     length: 0.4,
-    priority: 2,
+    priority: 11,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_30: {
     localVarName: 'A32NX_FWS_AUDIO_30',
     length: 0.4,
-    priority: 2,
+    priority: 12,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_20: {
     localVarName: 'A32NX_FWS_AUDIO_20',
     length: 0.4,
-    priority: 2,
+    priority: 14,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_10: {
     localVarName: 'A32NX_FWS_AUDIO_10',
     length: 0.3,
-    priority: 2,
+    priority: 15,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_5: {
     localVarName: 'A32NX_FWS_AUDIO_5',
     length: 0.3,
-    priority: 2,
+    priority: 16,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 };
@@ -274,6 +276,8 @@ export class FwsSoundManager {
 
   public hundredAboveEmitted = false;
   public minimumEmitted = false;
+  public pitchEmitted = false;
+  public speedEmitted = false;
 
   constructor(
     private bus: EventBus,
@@ -457,6 +461,7 @@ export class FwsSoundManager {
           return;
         } else {
           this.numberOfTimesToRepeatSound = null;
+          this.setFwsAudioOutputs(currentSound?.localVarName ?? '', false);
         }
       }
 
@@ -495,6 +500,10 @@ export class FwsSoundManager {
       this.hundredAboveEmitted = value;
     } else if (localVarName === MINIMUM_LOCAL_VAR) {
       this.minimumEmitted = value;
+    } else if (localVarName === PITCH_PITCH_LOCAL_VAR) {
+      this.pitchEmitted = value;
+    } else if (localVarName === SPEED_SPEED_SPEED_LOCAL_VAR) {
+      this.speedEmitted = value;
     }
   }
 }
