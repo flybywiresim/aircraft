@@ -10,6 +10,7 @@ import { WaypointArea } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 const TurnDirection = Object.freeze({
   Unknown: 'U',
@@ -317,24 +318,19 @@ export class CDUHoldAtPage {
 
     // erase/return
     mcdu.onLeftInput[5] = () => {
+      const element = targetPlan.maybeElementAt(originalFpIndex);
+      if (isDiscontinuity(element)) {
+        // Failsafe
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
+        return;
+      }
+
       if (tmpy) {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDULateralRevisionPage.ShowPage(
-            mcdu,
-            targetPlan.maybeElementAt(originalFpIndex),
-            originalFpIndex,
-            forPlan,
-            inAlternate,
-          );
+          CDULateralRevisionPage.ShowPage(mcdu, element, originalFpIndex, forPlan, inAlternate);
         });
       } else {
-        CDULateralRevisionPage.ShowPage(
-          mcdu,
-          targetPlan.maybeElementAt(originalFpIndex),
-          originalFpIndex,
-          forPlan,
-          inAlternate,
-        );
+        CDULateralRevisionPage.ShowPage(mcdu, element, originalFpIndex, forPlan, inAlternate);
       }
     };
 

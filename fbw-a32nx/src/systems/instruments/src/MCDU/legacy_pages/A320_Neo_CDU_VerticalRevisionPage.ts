@@ -31,7 +31,7 @@ export class CDUVerticalRevisionPage {
     mcdu: LegacyFmsPageInterface,
     waypoint: FlightPlanLeg,
     wpIndex: number,
-    verticalWaypoint: VerticalWaypointPrediction,
+    verticalWaypoint?: VerticalWaypointPrediction,
     confirmSpeed?: number,
     confirmAlt?: number,
     confirmCode?: AltitudeDescriptor,
