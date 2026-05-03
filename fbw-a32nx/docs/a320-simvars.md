@@ -2280,6 +2280,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - State of igniter B on engine {index}
 
+- A32NX_ECU_{index}_STATUS_WORD_3
+    - Arinc429<Discrete>
+    - FADEC/ECU status word 3 for engine {index}
+      | Bit | Description |
+      |:---:|:------------|
+      | 22  | TOGA thrust limit active |
+      | 23  | FLEX thrust limit active |
+      | 24  | MCT thrust limit active |
+      | 25  | CLB thrust limit active |
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime
