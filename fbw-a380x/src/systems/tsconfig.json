@@ -42,6 +42,7 @@
         "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
         "@tcas/*": ["./tcas/src/*"],
         "@typings/*": ["../typings"],
+        "@providers/*": ["./instruments/src/MsfsAvionicsCommon/providers/*"],
       }
     }
 }

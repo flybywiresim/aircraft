@@ -15,8 +15,8 @@ export class CpnyFplnButtonUtils {
               (enginesStarted ||
                 hasActiveFlightPlan ||
                 (forPlan !== null && forPlan >= FlightPlanIndex.FirstSecondary))),
-          fmc.fmgc.data.uplinkRequestInProgress,
-          fmc.fmgc.data.cpnyFplnRequestedForPlan,
+          fmc.getUplinkInProgress(),
+          fmc.getCpnyFplnRequestedForPlan(),
           fmc.enginesWereStarted,
           fmc.hasActiveFlightPlan,
         )
@@ -35,8 +35,8 @@ export class CpnyFplnButtonUtils {
               return 'RECEIVED\nCPNY F-PLN';
             }
           },
-          fmc.fmgc.data.cpnyFplnAvailable,
-          fmc.fmgc.data.cpnyFplnUplinkInProgress,
+          fmc.getCpnyFplnAvailable(),
+          fmc.getUplinkInProgress(),
         )
       : MappedSubject.create(() => <></>);
   }
@@ -54,14 +54,12 @@ export class CpnyFplnButtonUtils {
                   {
                     label: 'CLEAR*',
                     action: () => {
-                      fmc.flightPlanInterface.uplinkDelete();
-                      fmc.fmgc.data.cpnyFplnAvailable.set(false);
-                      fmc.fmgc.data.cpnyFplnRequestedForPlan.set(null);
+                      fmc.deleteCpnyFpln();
                     },
                   },
                 ]
               : [],
-          fmc.fmgc.data.cpnyFplnAvailable,
+          fmc.getCpnyFplnAvailable(),
         )
       : MappedSubject.create(() => []);
   }

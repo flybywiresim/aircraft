@@ -254,6 +254,26 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   insertCpnyFpln(intoPlan: FlightPlanIndex): void;
 
   /**
+   * Deletes the CPNY FPLN Uplink.
+   */
+  deleteCpnyFpln(): void;
+
+  /**
+   * Get a subscribable which indicates whether the CPNY FPLN is available for insertion for a given flight plan.
+   */
+  getCpnyFplnAvailable(): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates whether an uplink request is in progress.
+   */
+  getUplinkInProgress(): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates for which flight plan the CPNY FPLN has been requested, or null if no request has been made.
+   */
+  getCpnyFplnRequestedForPlan(): Subscribable<FlightPlanIndex | null>;
+
+  /**
    * Inserts the CPNY WIND into the flight plan where the request has been made from.
    * @param flightPlanIndex flight plan to insert
    */
@@ -346,4 +366,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    * @param planIndex the flightplan to get the uplink status for. If undefined, will return whether the uplink is available for any flight plan.
    */
   getWindUplinkAvailableForPlan(planIndex?: FlightPlanIndex): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates whether a wind uplink request is in progress.
+   */
+  getCpnyWindUplinkInProgress(): Subscribable<boolean>;
 }

@@ -106,6 +106,7 @@ export const NXSystemMessages = {
   EntryNotInList: new TypeIMessage('ENTRY NOT IN LIST'),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   formatError: new TypeIMessage('FORMAT ERROR'),
+  fmsDatalinkNotAvail: new TypeIIMessage('FMS DATALINK NOT AVAIL'), // TODO
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'), // TODO
   initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
   newAccAlt: new TypeIIMessage('NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
@@ -115,6 +116,7 @@ export const NXSystemMessages = {
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
+  notTransmittedToAcr: new TypeIIMessage('NOT TRANSMITTED TO ACR', false),
   receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
   receivedCpnyWindNotValid: new TypeIIMessage('RECEIVED COMPANY WIND NOT VALID', false),
   rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true), // TODO

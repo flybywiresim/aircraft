@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -49,10 +48,6 @@ import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
-import {
-  CpiomAvailableSimvarPublisher,
-  CpiomAvailableSimvars,
-} from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
@@ -62,17 +57,22 @@ import { EfisTawsBridge } from 'systems-host/Misc/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { CpiomData, CpiomDataPublisher } from '@providers/CpiomPublisher';
+import { AtcDatalink } from './CpiomD/AtcDatalink';
+import { Acr } from './CpiomD/Acr';
+import { SimVarHandling } from '@datalink/common';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
-  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes & ResetPanelSimvars & CpiomAvailableSimvars>();
+  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes & ResetPanelSimvars & CpiomData>();
 
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clock = new Clock(this.bus);
 
   private readonly hEventPublisher: HEventPublisher;
+  private readonly simVarHandling: SimVarHandling;
 
   private readonly failuresConsumer = new FailuresConsumer();
 
@@ -107,6 +107,8 @@ class SystemsHost extends BaseInstrument {
   // private readonly xpdr2 = new Transponder(2, 144, this.acBus2Powered, this.failuresConsumer);
 
   private readonly atsu = new AtsuSystem(this.bus);
+  private readonly atc = new AtcDatalink(this.bus);
+  private readonly acr = new Acr(this.bus);
 
   private readonly btv = new BrakeToVacate(this.bus, this);
 
@@ -132,7 +134,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
-  private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
+  private readonly cpiomDataPublisher = new CpiomDataPublisher(this.bus);
 
   private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
@@ -153,8 +155,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
-  private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiomC1Avail'), true);
-  private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiomC2Avail'), true);
+  private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), true);
+  private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiom_c_available_2'), true);
 
   private readonly fws1Failed = Subject.create(false);
   private readonly fws2Failed = Subject.create(false);
@@ -203,7 +205,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Amu2', this.amu2, true);
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
-    this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
     this.backplane.addInstrument('BtvDistanceUpdater', this.btv);
     this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
@@ -218,7 +219,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('Fcdc', this.fcdcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
-    this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
+    this.backplane.addPublisher('CpiomData', this.cpiomDataPublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
     this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
@@ -233,6 +234,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
+    this.simVarHandling = new SimVarHandling(this.bus);
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
@@ -247,7 +249,6 @@ class SystemsHost extends BaseInstrument {
       .handle((now) => {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
-
         this.soundManager?.update(dt);
         this.gpws?.update(dt);
         this.fwsCore?.update(dt);
@@ -306,6 +307,9 @@ class SystemsHost extends BaseInstrument {
     this.failuresConsumer.register(A380Failure.FwsEcp);
 
     this.backplane.init();
+    this.acr.init();
+    this.atc.init();
+    this.atsu.init();
   }
 
   public Update(): void {
@@ -319,8 +323,12 @@ class SystemsHost extends BaseInstrument {
       this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
     );
 
-    this.fws1Healthy.set(!this.fws1Failed.get() && this.fws1Powered.get() && this.fwsCore?.startupCompleted.get());
-    this.fws2Healthy.set(!this.fws2Failed.get() && this.fws2Powered.get() && this.fwsCore?.startupCompleted.get());
+    this.fws1Healthy.set(
+      (!this.fws1Failed.get() && this.fws1Powered.get() && this.fwsCore?.startupCompleted.get()) ?? false,
+    );
+    this.fws2Healthy.set(
+      (!this.fws2Failed.get() && this.fws2Powered.get() && this.fwsCore?.startupCompleted.get()) ?? false,
+    );
 
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
@@ -335,6 +343,8 @@ class SystemsHost extends BaseInstrument {
       const gamestate = this.getGameState();
       if (gamestate === 3) {
         this.hEventPublisher.startPublish();
+        this.simVarHandling.initialize();
+        this.simVarHandling.startPublish();
       }
       this.gameState = gamestate;
     }

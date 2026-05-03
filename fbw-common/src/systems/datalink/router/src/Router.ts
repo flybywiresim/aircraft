@@ -3,7 +3,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { isMsfs2024, NXDataStore } from '@flybywiresim/fbw-sdk';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { ClockEvents, EventBus } from '@microsoft/msfs-sdk';
 import {
   DatalinkModeCode,
   DatalinkStatusCode,
@@ -63,6 +63,12 @@ export class Router {
   private lastUpdateTime: number = -1;
 
   private vhfRadios: VhfRadioInterface;
+
+  private readonly clock = this.bus
+    .getSubscriber<ClockEvents>()
+    .on('realTime')
+    .atFrequency(1)
+    .handle((t) => this.update(t));
 
   private removeTransmissionTimeout(timeout: number): void {
     const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
@@ -164,9 +170,7 @@ export class Router {
     this.vdl.reinitialize();
   }
 
-  public update(): void {
-    const currentTimestamp = new Date().getTime();
-
+  public update(currentTimestamp: number): void {
     this.digitalInputs.setVhf3Datamode(this.vhfRadios.isDataModeActive());
 
     // update the communication interface states

@@ -13,7 +13,6 @@ import {
   MutableSubscribable,
   Subject,
   Subscribable,
-  SubscribableMapFunctions,
   SubscribableUtils,
   Subscription,
 } from '@microsoft/msfs-sdk';
@@ -74,20 +73,6 @@ export class FmgcData {
   }
 
   public readonly flightPhase = Subject.create(FmgcFlightPhase.Preflight);
-
-  public readonly cpnyFplnAvailable = Subject.create(false);
-
-  public readonly cpnyFplnRequestedForPlan = Subject.create<FlightPlanIndex | null>(null);
-
-  public readonly cpnyFplnUplinkInProgress = Subject.create(false);
-
-  public readonly cpnyWindUplinkInProgress = Subject.create(false);
-
-  public readonly uplinkRequestInProgress = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.cpnyFplnUplinkInProgress,
-    this.cpnyWindUplinkInProgress,
-  );
 
   public readonly atcCallsign = Subject.create<string | null>(null);
 

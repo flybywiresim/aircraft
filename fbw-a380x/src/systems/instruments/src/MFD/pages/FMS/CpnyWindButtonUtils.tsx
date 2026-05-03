@@ -39,6 +39,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
 
   /* Disabled when: Temporary exists, uplink in progress, pending insertion in another plan or flight phase does not allow it */
   private readonly disabled = MappedSubject.create(
+    // TODO Disable when connection to ATSU is lost.
     ([disabledDueToFlightPhase, tmpy, uplinkInProgress, uplinkAvailableForPlan, uplinkAvailableForAnyPlan]) => {
       return (
         disabledDueToFlightPhase || tmpy || uplinkInProgress || (!uplinkAvailableForPlan && uplinkAvailableForAnyPlan)
@@ -46,7 +47,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
     },
     this.disabledDueToFlightPhase,
     this.props.tmpyExists,
-    this.props.fmc.fmgc.data.uplinkRequestInProgress,
+    this.props.fmc.getUplinkInProgress(),
     this.uplinkAvailable,
     this.uplinkAvailableForAnyPlan,
   );
@@ -60,7 +61,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
       return avail ? 'RECEIVED' : 'CPNY WIND';
     },
     this.uplinkAvailable,
-    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+    this.props.fmc.getCpnyWindUplinkInProgress(),
   );
 
   private readonly bottomLabel = MappedSubject.create(
@@ -72,13 +73,13 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
       return avail ? 'CPNY WIND' : 'REQUEST';
     },
     this.uplinkAvailable,
-    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+    this.props.fmc.getCpnyWindUplinkInProgress(),
   );
 
   private readonly showAsterisk = MappedSubject.create(
     ([avail, uplinkInProgress]) => !avail && !uplinkInProgress,
     this.uplinkAvailable,
-    this.props.fmc.fmgc.data.cpnyWindUplinkInProgress,
+    this.props.fmc.getCpnyWindUplinkInProgress(),
   );
 
   private readonly hideAsterisk = this.showAsterisk.map(SubscribableMapFunctions.not());
