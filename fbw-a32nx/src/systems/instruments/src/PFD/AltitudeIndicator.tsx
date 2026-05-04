@@ -5,7 +5,6 @@
 
 import {
   ClockEvents,
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
