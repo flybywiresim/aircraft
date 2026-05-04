@@ -172,11 +172,18 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     () => Subject.create(true),
   );
 
-  private readonly climbWindRowsVisible = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+  private readonly climbWindAltitudesVisible = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
     Subject.create(true),
   );
 
-  private readonly climbWindRowsVisibility = this.climbWindRowsVisible.map((sub) =>
+  private readonly climbWindAltitudesVisibility = this.climbWindAltitudesVisible.map((sub) =>
+    sub.map((v) => (v ? 'visible' : 'hidden')),
+  );
+
+  private readonly climbWindsSpeedDirectionVisible = Array.from({ length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS }, () =>
+    Subject.create(true),
+  );
+  private readonly climbWindsSpeedDirectionVisibility = this.climbWindsSpeedDirectionVisible.map((sub) =>
     sub.map((v) => (v ? 'visible' : 'hidden')),
   );
 
@@ -240,10 +247,17 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     () => Subject.create(true),
   );
 
-  private readonly cruiseWindRowsVisible = Array.from({ length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS }, () =>
+  private readonly cruiseWindAltitudesVisible = Array.from({ length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS }, () =>
     Subject.create(true),
   );
-  private readonly cruiseWindRowsVisibility = this.cruiseWindRowsVisible.map((sub) =>
+  private readonly cruiseWindAltitudesVisibility = this.cruiseWindAltitudesVisible.map((sub) =>
+    sub.map((v) => (v ? 'visible' : 'hidden')),
+  );
+  private readonly cruiseWindSpeedDirectionVisible = Array.from(
+    { length: FpmConfigs.A380.NUM_CRUISE_WIND_LEVELS },
+    () => Subject.create(true),
+  );
+  private readonly cruiseWindSpeedDirectionVisibility = this.cruiseWindSpeedDirectionVisible.map((sub) =>
     sub.map((v) => (v ? 'visible' : 'hidden')),
   );
   /** The entries used to feed the displayed data */
@@ -304,11 +318,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     Subject.create<number | null>(null),
   );
 
-  private readonly descentWindRowsVisible = Array.from({ length: FpmConfigs.A380.NUM_DESCENT_WIND_LEVELS }, () =>
+  private readonly descentWindAltitudesVisible = Array.from({ length: FpmConfigs.A380.NUM_DESCENT_WIND_LEVELS }, () =>
     Subject.create(true),
   );
 
-  private readonly descentWindRowsVisibility = this.descentWindRowsVisible.map((sub) =>
+  private readonly descentWindAltitudesVisibility = this.descentWindAltitudesVisible.map((sub) =>
+    sub.map((v) => (v ? 'visible' : 'hidden')),
+  );
+
+  private readonly descentWindSpeedDirectionVisible = Array.from(
+    { length: FpmConfigs.A380.NUM_DESCENT_WIND_LEVELS },
+    () => Subject.create(true),
+  );
+
+  private readonly descentWindSpeedDirectionVisibility = this.descentWindSpeedDirectionVisible.map((sub) =>
     sub.map((v) => (v ? 'visible' : 'hidden')),
   );
 
@@ -392,7 +415,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.clearAllDisplayWindEntries(this.climbWindDisplayEntries);
       }
       this.updateClimbWindDisplayRows();
-      this.updateWindDisplayedEntriesVisibility(this.climbWindRowsVisible, this.displayedClimbWindAltitudes);
+      this.updateWindDisplayedEntriesVisibility(
+        this.climbWindAltitudesVisible,
+        this.climbWindsSpeedDirectionVisible,
+        this.displayedClimbWindAltitudes,
+      );
     } else if (subPage === WindSubPageMenu.Cruise) {
       this.findSuitableCruiseLeg();
       this.cruiseWindsDisabled.set(fp === undefined || this.tmpyExists.get() || this.availableWaypoints.length === 0);
@@ -418,7 +445,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         }
       }
       this.updateCruiseWindDisplayRows();
-      this.updateWindDisplayedEntriesVisibility(this.cruiseWindRowsVisible, this.displayedCruiseWindFlightLevels);
+      this.updateWindDisplayedEntriesVisibility(
+        this.cruiseWindAltitudesVisible,
+        this.cruiseWindSpeedDirectionVisible,
+        this.displayedCruiseWindFlightLevels,
+      );
     } else if (subPage === WindSubPageMenu.Descent) {
       this.transitionLevel.set(fp?.performanceData.transitionLevel.get() ?? null);
       this.arrivalElevation.set(fp?.destinationAirport?.location.alt ?? null);
@@ -448,7 +479,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.clearAllDisplayWindEntries(this.descentWindDisplayEntries);
       }
       this.updateDescentWindDisplayRows();
-      this.updateWindDisplayedEntriesVisibility(this.descentWindRowsVisible, this.displayedDescentWindAltitudes);
+      this.updateWindDisplayedEntriesVisibility(
+        this.descentWindAltitudesVisible,
+        this.descentWindSpeedDirectionVisible,
+        this.displayedDescentWindAltitudes,
+      );
     }
     this.wasSecPreviouslyActive =
       this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary ? true : this.wasSecPreviouslyActive;
@@ -497,6 +532,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       ...this.historyWindFlightLevelLabel,
       ...this.historyWindsUnitVisiblity,
       ...this.historyWindEntryVisibility,
+      ...this.climbWindAltitudesVisibility,
+      ...this.climbWindsSpeedDirectionVisibility,
+      ...this.cruiseWindAltitudesVisibility,
+      ...this.cruiseWindSpeedDirectionVisibility,
+      ...this.descentWindAltitudesVisibility,
+      ...this.descentWindSpeedDirectionVisibility,
       this.temporaryMessageAreaDisplay,
       this.tableHeaderDisplay,
       this.alternateCruiseFlightLevelDisplay,
@@ -686,7 +727,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   private onWindEntryModified(index: number, value: number | null, dataType: WindEntryData, isDescentWind = false) {
     const displayEntries = isDescentWind ? this.descentWindDisplayEntries : this.climbWindDisplayEntries;
-    const rowsVisible = isDescentWind ? this.descentWindRowsVisible : this.climbWindRowsVisible;
+    const altitudesVisible = isDescentWind ? this.descentWindAltitudesVisible : this.climbWindAltitudesVisible;
+    const speedDirectionVisible = isDescentWind
+      ? this.descentWindSpeedDirectionVisible
+      : this.climbWindsSpeedDirectionVisible;
     const displayedAltitudes = isDescentWind ? this.displayedDescentWindAltitudes : this.displayedClimbWindAltitudes;
     const displayEntry = displayEntries[index];
     const oldAltitude = displayEntry.altitude;
@@ -716,7 +760,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         } else {
           this.updateClimbWindDisplayRows();
         }
-        this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+        this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
       }
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
@@ -754,7 +798,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           this.updateClimbWindDisplayRows();
         }
         if (oldAltitude === null) {
-          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+          this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
         }
       } else {
         const altitudeChanged = oldAltitude !== currentAlt;
@@ -768,7 +812,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         }
         // Change visibility if it is a new entry or if it was cleared.
         if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
-          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+          this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
         }
       }
     }
@@ -776,8 +820,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   private onCruiseWindEntryModified(index: number, value: number | null, dataType: WindEntryData) {
     const displayEntries = this.cruiseWindDisplayEntries;
-    const rowsVisible = this.cruiseWindRowsVisible;
-    const displayedAltitudes = this.displayedCruiseWindFlightLevels;
     const displayEntry = displayEntries[index];
     const oldAltitude = displayEntry.altitude;
     const selectedLegIndex = this.selectedWaypointLegIndex.get();
@@ -802,7 +844,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       } else {
         // Draft entry which was not in the flightplan.
         this.updateCruiseWindDisplayRows();
-        this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+        this.updateWindDisplayedEntriesVisibility(
+          this.cruiseWindAltitudesVisible,
+          this.cruiseWindSpeedDirectionVisible,
+          this.displayedCruiseWindFlightLevels,
+        );
       }
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
@@ -852,7 +898,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         }
         this.updateCruiseWindDisplayRows();
         if (oldAltitude === null) {
-          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+          this.updateWindDisplayedEntriesVisibility(
+            this.cruiseWindAltitudesVisible,
+            this.cruiseWindSpeedDirectionVisible,
+            this.displayedCruiseWindFlightLevels,
+          );
         }
       } else {
         const altitudeChanged = oldAltitude !== currentAlt;
@@ -862,7 +912,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         this.updateCruiseWindDisplayRows();
         // Change visibility if it is a new entry or if it was cleared.
         if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
-          this.updateWindDisplayedEntriesVisibility(rowsVisible, displayedAltitudes);
+          this.updateWindDisplayedEntriesVisibility(
+            this.cruiseWindAltitudesVisible,
+            this.cruiseWindSpeedDirectionVisible,
+            this.displayedCruiseWindFlightLevels,
+          );
         }
       }
     }
@@ -890,9 +944,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
    * Updates displayed entry visibility based upon whether the previous entry has an altitude.
    * The first row is always displayed.
    */
-  private updateWindDisplayedEntriesVisibility(entryVisible: Subject<boolean>[], altitudes: Subject<number | null>[]) {
-    for (let i = 0; i < entryVisible.length; i++) {
-      entryVisible[i].set(i === 0 || altitudes[i - 1].get() !== null);
+  private updateWindDisplayedEntriesVisibility(
+    altitudeVisible: Subject<boolean>[],
+    speedDirectionVisible: Subject<boolean>[],
+    altitudes: Subject<number | null>[],
+  ) {
+    for (let i = 0; i < altitudeVisible.length; i++) {
+      altitudeVisible[i].set(i === 0 || altitudes[i - 1].get() !== null);
+      speedDirectionVisible[i].set(i === 0 || altitudes[i].get() !== null);
     }
   }
 
@@ -1032,13 +1091,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                 />
                 {MfdFmsWindPage.CLIMB_WIND_ENTRIES_ARRAY.map((value) => (
                   <div class={{ 'mfd-fms-wind-page-table-row': true, entry: true, first: value === 0 }}>
-                    <div
-                      style={{
-                        visibility: this.climbWindRowsVisibility[value],
-                      }}
-                      class="mfd-fms-wind-page-entry-row"
-                    >
-                      <div class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}>
+                    <div class="mfd-fms-wind-page-entry-row">
+                      <div
+                        class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}
+                        style={{
+                          visibility: this.climbWindAltitudesVisibility[value],
+                        }}
+                      >
                         <InputField
                           containerStyle="width:157px; height:40px;"
                           alignText={'flex-start'}
@@ -1058,7 +1117,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           enteredByPilot={this.displayedClimbWindAltitudeIsEnteredByPilot[value]}
                         ></InputField>
                       </div>
-                      <div class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}>
+                      <div
+                        class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}
+                        style={{ visibility: this.climbWindsSpeedDirectionVisibility[value] }}
+                      >
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.climbWindsInactive}
@@ -1171,13 +1233,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                 />
                 {MfdFmsWindPage.CRUISE_WIND_ENTRIES_ARRAY.map((value) => (
                   <div class={{ 'mfd-fms-wind-page-table-row': true, entry: true, first: value === 0 }}>
-                    <div
-                      style={{
-                        visibility: this.cruiseWindRowsVisibility[value],
-                      }}
-                      class="mfd-fms-wind-page-entry-row"
-                    >
-                      <div class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}>
+                    <div class="mfd-fms-wind-page-entry-row">
+                      <div
+                        class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0 }}
+                        style={{ visibility: this.cruiseWindAltitudesVisibility[value] }}
+                      >
                         <InputField
                           alignText={'flex-start'}
                           containerStyle="width:157px; height:40px;"
@@ -1194,7 +1254,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           canBeCleared={true}
                         ></InputField>
                       </div>
-                      <div class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}>
+                      <div
+                        class={{ 'mfd-fms-wind-direction-speed-entry-container': true, first: value === 0 }}
+                        style={{ visibility: this.cruiseWindSpeedDirectionVisibility[value] }}
+                      >
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
                           inactive={this.cruiseWindsInactive}
@@ -1287,14 +1350,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                       entry: value === 0,
                     }}
                   >
-                    <div
-                      style={{
-                        visibility: this.descentWindRowsVisibility[value],
-                      }}
-                      class="mfd-fms-wind-page-entry-row"
-                    >
+                    <div class="mfd-fms-wind-page-entry-row">
                       <div
                         class={{ 'mfd-fms-wind-altitude-entry-container': true, first: value === 0, des: value !== 0 }}
+                        style={{ visibility: this.descentWindAltitudesVisibility[value] }}
                       >
                         <InputField
                           alignText={'flex-start'}
@@ -1318,6 +1377,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           des: value !== 0,
                           first: value === 0,
                         }}
+                        style={{ visibility: this.descentWindSpeedDirectionVisibility[value] }}
                       >
                         <InputField
                           containerStyle="height:42px; width:98px; margin-right:6px;"
