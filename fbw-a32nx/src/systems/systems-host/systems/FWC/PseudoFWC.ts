@@ -1837,7 +1837,7 @@ export class PseudoFWC {
 
     this.autoCallouts.twentyRetardAudio.sub((v) => {
       if (v) {
-        this.soundManager.enqueueSound('alt_20'); //FIXME This should all be in a single audio sample.
+        this.soundManager.enqueueSound('alt_twenty_retard'); //FIXME This should all be in a single audio sample.
         this.soundManager.enqueueSound('retard');
       }
     });
@@ -1848,7 +1848,7 @@ export class PseudoFWC {
 
     this.autoCallouts.tenRetardAudio.sub((v) => {
       if (v) {
-        this.soundManager.enqueueSound('alt_10'); //FIXME This should all be in a single audio sample.
+        this.soundManager.enqueueSound('alt_ten_retard'); //FIXME This should all be in a single audio sample.
         this.soundManager.enqueueSound('retard');
       }
     });
