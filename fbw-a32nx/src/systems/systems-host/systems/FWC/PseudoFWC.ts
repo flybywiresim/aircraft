@@ -1734,15 +1734,9 @@ export class PseudoFWC {
       true,
     );
 
-    this.masterCaution.sub((caution) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
-    }, true);
+    this.masterCaution.sub(() => this.updateMasterWarningCautionLights(), true);
 
-    this.masterWarningOutput.sub((warning) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', this.startupCompleted.get() ? warning : false);
-    }, true);
+    this.masterWarningOutput.sub(() => this.updateMasterWarningCautionLights(), true);
 
     // L/G lever red arrow sinking outputs
     this.lgLeverRedArrow.sub((on) => {
@@ -1810,7 +1804,16 @@ export class PseudoFWC {
 
     this.startupCompleted.sub((started) => {
       this.debugLog(`startupCompleted=${started}`);
+      this.updateMasterWarningCautionLights();
     }, true);
+  }
+
+  private updateMasterWarningCautionLights() {
+    const startupCompleted = this.startupCompleted.get();
+
+    // Inhibit master warning/cautions until FWC startup has been completed.
+    SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', startupCompleted ? this.masterCaution.get() : false);
+    SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', startupCompleted ? this.masterWarningOutput.get() : false);
   }
 
   private registerKeyEvents() {

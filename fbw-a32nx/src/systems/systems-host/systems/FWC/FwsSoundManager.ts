@@ -316,15 +316,8 @@ export class FwsSoundManager {
   }
 
   private silenceForStartupShutdown() {
-    const currentSoundKey = this.currentSoundPlaying;
-    const currentSound = currentSoundKey ? FwsAuralsList[currentSoundKey] : undefined;
-
     this.silenceAllSoundLVars();
-
-    if (currentSoundKey && (currentSound?.continuous || currentSound?.periodicWithPause)) {
-      this.soundQueue.add(currentSoundKey);
-    }
-
+    this.soundQueue.clear();
     this.currentSoundPlaying = null;
     this.currentSoundPlayTimeRemaining = 0;
     this.singleChimesPending = 0;
