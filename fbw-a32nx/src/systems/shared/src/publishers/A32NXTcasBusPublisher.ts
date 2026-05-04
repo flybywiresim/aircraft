@@ -93,7 +93,33 @@ interface A32NXTcasBusBaseEvents {
    * |     | |TA/RA      | 1  1  0  0  |       |
    * |     | |Reserved   | 0  0  1  0  |       |
    */
-  a32nx_tcas_sensitivity_level_word: number;
+  a32nx_tcas_mode_word: number;
+  /**
+   * TCAS Computer fault summary word, label 350.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | TCAS Computer Unit Fault          |
+   * | 12  | Upper Antenna Fault               |
+   * | 13  | Lower Antenna Fault               |
+   * | 14  | Radio Alt 1 Input Bus Fault       |
+   * | 15  | Radio Alt 2 Input Bus Fault       |
+   * | 16  | ATC/Mode S XPDR 1 Fault/STBY      |
+   * | 17  | ATC/Mode S XPDR 2 Fault/STBY      |
+   * | 18  | ATT Input Bus Inactive            |
+   * | 19  | Mag Hdg Input Bus Inactive        |
+   * | 20  | TCAS System Fault                 |
+   * | 21  | Flight Perf. Input Bus Inactive   |
+   * | 22  | ADSB System Failure               |
+   * | 23  | TA 1 Display Failure              |
+   * | 24  | TA 2 Display Failure              |
+   * | 25  | RA 1 Display Failure              |
+   * | 26  | RA 2 Display Failure              |
+   * | 27  | CFDIU Input Bus Inactive          |
+   * | 28  | BITE Logic                        |
+   * | 29  | BITE Logic                        |
+   */
+  a32nx_tcas_fault_summary_word: number;
 }
 
 type IndexedTopics = null;
@@ -122,9 +148,10 @@ export class A32NXTcasBusPublisher extends SimVarPublisher<A32NXTcasBusPublisher
     const simvars = new Map<keyof A32NXTcasBusPublisherEvents, SimVarPublisherEntry<any>>([
       [
         'a32nx_tcas_vertical_resolution_advisory_word',
-        { name: 'L:A32NX_TCAS_VERTICAL_ADV_TEST', type: SimVarValueType.Enum },
+        { name: 'L:A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD', type: SimVarValueType.Enum },
       ],
-      ['a32nx_tcas_sensitivity_level_word', { name: 'L:A32NX_TCAS_VERTICAL_ADV_TEST', type: SimVarValueType.Enum }],
+      ['a32nx_tcas_mode_word', { name: 'L:A32NX_TCAS_MODE_WORD', type: SimVarValueType.Enum }],
+      ['a32nx_tcas_fault_summary_word', { name: 'L:A32NX_TCAS_FAULT_SUMMARY_WORD', type: SimVarValueType.Enum }],
     ]);
 
     super(simvars, bus, pacer);
