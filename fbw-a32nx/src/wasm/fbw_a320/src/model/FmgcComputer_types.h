@@ -81,6 +81,77 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+
+struct base_fmgc_b_bus
+{
+  base_arinc_429 fac_weight_lbs;
+  base_arinc_429 fm_weight_lbs;
+  base_arinc_429 fac_cg_percent;
+  base_arinc_429 fm_cg_percent;
+  base_arinc_429 fg_radio_height_ft;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 approach_spd_target_kn;
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_nose_wheel_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+  base_arinc_429 n1_left_percent;
+  base_arinc_429 n1_right_percent;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
+
+struct base_fmgc_discrete_inputs
+{
+  boolean_T is_unit_1;
+  boolean_T athr_opp_engaged;
+  boolean_T fcu_athr_button;
+  boolean_T athr_instinctive_disc;
+  boolean_T fd_opp_engaged;
+  boolean_T ap_opp_engaged;
+  boolean_T fcu_ap_button;
+  boolean_T ap_instinctive_disc;
+  boolean_T powersupply_split;
+  boolean_T fcu_opp_healthy;
+  boolean_T fcu_own_healthy;
+  boolean_T fac_opp_healthy;
+  boolean_T fac_own_healthy;
+  boolean_T fmgc_opp_healthy;
+  boolean_T mcdu_opp_fail;
+  boolean_T mcdu_own_fail;
+  boolean_T nav_control_opp;
+  boolean_T nav_control_own;
+  boolean_T fwc_opp_valid;
+  boolean_T fwc_own_valid;
+  boolean_T pfd_opp_valid;
+  boolean_T pfd_own_valid;
+  boolean_T adc_3_switch;
+  boolean_T att_3_switch;
+  boolean_T left_wheel_spd_abv_70_kts;
+  boolean_T right_wheel_spd_abv_70_kts;
+  boolean_T bscu_opp_valid;
+  boolean_T bscu_own_valid;
+  boolean_T nose_gear_pressed_opp;
+  boolean_T nose_gear_pressed_own;
+  boolean_T elac_opp_ap_disc;
+  boolean_T elac_own_ap_disc;
+  boolean_T eng_opp_stop;
+  boolean_T eng_own_stop;
+  boolean_T tcas_ta_display;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
 #define DEFINED_TYPEDEF_FOR_base_ils_bus_
 
@@ -133,77 +204,6 @@ struct base_fmgc_a_bus
   base_arinc_429 n1_command_percent;
   base_arinc_429 vertical_speed_ft_min;
   base_arinc_429 discrete_word_7;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
-
-struct base_fmgc_discrete_inputs
-{
-  boolean_T is_unit_1;
-  boolean_T athr_opp_engaged;
-  boolean_T fcu_athr_button;
-  boolean_T athr_instinctive_disc;
-  boolean_T fd_opp_engaged;
-  boolean_T ap_opp_engaged;
-  boolean_T fcu_ap_button;
-  boolean_T ap_instinctive_disc;
-  boolean_T powersupply_split;
-  boolean_T fcu_opp_healthy;
-  boolean_T fcu_own_healthy;
-  boolean_T fac_opp_healthy;
-  boolean_T fac_own_healthy;
-  boolean_T fmgc_opp_healthy;
-  boolean_T mcdu_opp_fail;
-  boolean_T mcdu_own_fail;
-  boolean_T nav_control_opp;
-  boolean_T nav_control_own;
-  boolean_T fwc_opp_valid;
-  boolean_T fwc_own_valid;
-  boolean_T pfd_opp_valid;
-  boolean_T pfd_own_valid;
-  boolean_T adc_3_switch;
-  boolean_T att_3_switch;
-  boolean_T left_wheel_spd_abv_70_kts;
-  boolean_T right_wheel_spd_abv_70_kts;
-  boolean_T bscu_opp_valid;
-  boolean_T bscu_own_valid;
-  boolean_T nose_gear_pressed_opp;
-  boolean_T nose_gear_pressed_own;
-  boolean_T elac_opp_ap_disc;
-  boolean_T elac_own_ap_disc;
-  boolean_T eng_opp_stop;
-  boolean_T eng_own_stop;
-  boolean_T tcas_ta_display;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
-
-struct base_fmgc_b_bus
-{
-  base_arinc_429 fac_weight_lbs;
-  base_arinc_429 fm_weight_lbs;
-  base_arinc_429 fac_cg_percent;
-  base_arinc_429 fm_cg_percent;
-  base_arinc_429 fg_radio_height_ft;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 approach_spd_target_kn;
-  base_arinc_429 delta_p_ail_cmd_deg;
-  base_arinc_429 delta_p_splr_cmd_deg;
-  base_arinc_429 delta_r_cmd_deg;
-  base_arinc_429 delta_nose_wheel_cmd_deg;
-  base_arinc_429 delta_q_cmd_deg;
-  base_arinc_429 n1_left_percent;
-  base_arinc_429 n1_right_percent;
 };
 
 #endif
@@ -688,6 +688,7 @@ struct base_fmgc_ap_fd_logic_outputs
   boolean_T land_2_capacity;
   boolean_T land_3_fail_passive_capacity;
   boolean_T land_3_fail_op_capacity;
+  boolean_T tla_to_ga_set;
 };
 
 #endif
