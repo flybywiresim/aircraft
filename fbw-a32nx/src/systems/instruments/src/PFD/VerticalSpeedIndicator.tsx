@@ -82,7 +82,28 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     this.sub.on('a32nx_tcas_vertical_resolution_advisory_word'),
   );
 
+  private tcasModeWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_mode_word'));
+
+  private tcasFaultSummaryWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_fault_summary_word'));
+
   private readonly vsFlagVisible = this.verticalSpeed.map((vs) => !vs.isNormalOperation());
+
+  private readonly tcasInvalid = MappedSubject.create(
+    ([verticalResolutionAdvisoryWord, tcasModeWord, tcasFaultSummaryWord]) => {
+      const tcasFailure =
+        verticalResolutionAdvisoryWord.isFailureWarning() ||
+        tcasFaultSummaryWord.isFailureWarning() ||
+        tcasFaultSummaryWord.bitValue(20);
+      const tcasStandby =
+        tcasModeWord.bitValue(25) &&
+        !(tcasModeWord.bitValue(23) || tcasModeWord.bitValue(24) || tcasModeWord.isFailureWarning());
+
+      return tcasFailure && !tcasStandby;
+    },
+    this.verticalResolutionAdvisoryWord,
+    this.tcasModeWord,
+    this.tcasFaultSummaryWord,
+  );
 
   private readonly needleYOffset = this.filteredVerticalSpeed.map((filteredVS) => {
     return yPosFromVs(filteredVS);
@@ -213,6 +234,21 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
           vsUpperLimit={this.upperVsLimit}
           vsLowerLimit={this.lowerVsLimit}
         />
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasInvalid}>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
+            T
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
+            C
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
+            A
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
+            S
+          </text>
+        </FlashOneHertz>
 
         <g
           id="VerticalSpeedGroup"
