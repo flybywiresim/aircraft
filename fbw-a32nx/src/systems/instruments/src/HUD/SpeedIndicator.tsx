@@ -18,7 +18,6 @@ import {
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
@@ -1439,7 +1438,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     super.onAfterRender(node);
     this.needsUpdate = true;
     const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus & HudElems
+      HUDSimvars & ClockEvents & Arinc429Values & FgBus & FcuBus & HudElems
     >();
 
     sub

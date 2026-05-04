@@ -140,6 +140,8 @@ export type HUDSimvars = AdirsSimVars &
     landingElevation2Raw: number;
     fac1Healthy: boolean;
     fac2Healthy: boolean;
+    fac1GammaTRaw: number;
+    fac2GammaTRaw: number;
     fac1VAlphaProtRaw: number;
     fac2VAlphaProtRaw: number;
     fac1VAlphaMaxRaw: number;
@@ -365,6 +367,8 @@ export enum HUDVars {
   landingElevation2Raw = 'L:A32NX_FM2_LANDING_ELEVATION',
   fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
   fac2Healthy = 'L:A32NX_FAC_2_HEALTHY',
+  fac1GammaTRaw = 'L:A32NX_FAC_1_GAMMA_T',
+  fac2GammaTRaw = 'L:A32NX_FAC_2_GAMMA_T',
   fac1VAlphaProtRaw = 'L:A32NX_FAC_1_V_ALPHA_PROT',
   fac2VAlphaProtRaw = 'L:A32NX_FAC_2_V_ALPHA_PROT',
   fac1VAlphaMaxRaw = 'L:A32NX_FAC_1_V_ALPHA_LIM',
@@ -593,6 +597,8 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['landingElevation2Raw', { name: HUDVars.landingElevation2Raw, type: SimVarValueType.Number }],
     ['fac1Healthy', { name: HUDVars.fac1Healthy, type: SimVarValueType.Bool }],
     ['fac2Healthy', { name: HUDVars.fac2Healthy, type: SimVarValueType.Bool }],
+    ['fac1GammaTRaw', { name: HUDVars.fac1GammaTRaw, type: SimVarValueType.Number }],
+    ['fac2GammaTRaw', { name: HUDVars.fac2GammaTRaw, type: SimVarValueType.Number }],
     ['fac1VAlphaProtRaw', { name: HUDVars.fac1VAlphaProtRaw, type: SimVarValueType.Number }],
     ['fac2VAlphaProtRaw', { name: HUDVars.fac2VAlphaProtRaw, type: SimVarValueType.Number }],
     ['fac1VAlphaMaxRaw', { name: HUDVars.fac1VAlphaMaxRaw, type: SimVarValueType.Number }],

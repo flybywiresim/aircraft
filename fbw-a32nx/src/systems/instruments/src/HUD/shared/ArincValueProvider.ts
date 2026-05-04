@@ -47,6 +47,8 @@ export interface Arinc429Values {
   fcdcCaptRollCommand: Arinc429Word;
   fcdcFoRollCommand: Arinc429Word;
   facToUse: number;
+  fac1GammaT: Arinc429Word;
+  fac2GammaT: Arinc429Word;
   vAlphaMax: Arinc429Word;
   vAlphaProt: Arinc429Word;
   vStallWarn: Arinc429Word;
@@ -139,6 +141,10 @@ export class ArincValueProvider implements Instrument {
   private fac2VAlphaMax = new Arinc429Word(0);
 
   private facToUse = 0;
+
+  private fac1GammaT = new Arinc429Word(0);
+
+  private fac2GammaT = new Arinc429Word(0);
 
   private readonly fm1Healthy = ConsumerSubject.create(null, 0);
 
@@ -364,6 +370,21 @@ export class ArincValueProvider implements Instrument {
         publisher.pub('vAlphaMax', this.fac1VAlphaMax);
       } else if (this.facToUse === 0) {
         publisher.pub('vAlphaMax', new Arinc429Word(0));
+      }
+    });
+
+    subscriber.on('fac1GammaTRaw').handle((word) => {
+      this.fac1GammaT = new Arinc429Word(word);
+      this.determineFacToUse(publisher);
+      if (this.facToUse === 1) {
+        publisher.pub('fac1GammaT', this.fac1GammaT);
+      }
+    });
+    subscriber.on('fac2GammaTRaw').handle((word) => {
+      this.fac2GammaT = new Arinc429Word(word);
+      this.determineFacToUse(publisher);
+      if (this.facToUse === 2) {
+        publisher.pub('fac2GammaT', this.fac2GammaT);
       }
     });
 

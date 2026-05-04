@@ -14,9 +14,14 @@ import {
   MappedSubject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429Register, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429Register,
+  Arinc429RegisterSubject,
+  Arinc429WordData,
+} from '@flybywiresim/fbw-sdk';
 
-import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems, FIVE_DEG } from './HUDUtils';
@@ -192,7 +197,7 @@ export class FlightPathVector extends DisplayComponent<{
           <g id="FlightPathVector">
             <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
           </g>
-          <SpeedChevrons bus={this.props.bus} />
+          <TotalFlightPathAngle bus={this.props.bus} />
 
           <DeltaSpeed bus={this.props.bus} />
           <RadioAltAndDH
@@ -208,7 +213,7 @@ export class FlightPathVector extends DisplayComponent<{
   }
 }
 
-export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
+export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
   private refElement = FSComponent.createRef<SVGGElement>();
@@ -219,27 +224,28 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   private merged = false;
   private onTakeoff = true;
 
-  private readonly spdChevrons = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
-  private readonly vCTrend = ConsumerSubject.create(this.sub.on('vCTrend'), new Arinc429Word(0));
+  private readonly flightPathVector = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
+  private readonly totalFpa = ConsumerSubject.create(this.sub.on('fac1GammaT'), new Arinc429Word(0));
+  private readonly fpa = ConsumerSubject.create(this.sub.on('fpa'), new Arinc429Word(0));
 
   private setPos() {
-    if (this.vCTrend.get().isNormalOperation()) {
+    if (this.totalFpa.get().isNormalOperation()) {
       this.refElement.instance.style.visibility = 'visible';
-      const offset = (-this.vCTrend.get().value * 28) / 5;
+      const offset = (this.fpa.get().value - this.totalFpa.get().value) * 28;
       let UsedOffset = offset;
       if (this.merged == false) {
         if (this.onTakeoff) {
           offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
-          UsedOffset = Math.max((-this.vCTrend.get().value * 28) / 5, -FIVE_DEG);
+          UsedOffset = Math.max(offset, -FIVE_DEG);
           if (UsedOffset === offset) {
-            UsedOffset = (-this.vCTrend.get().value * 28) / 5;
+            UsedOffset = offset;
             if (this.onGround == false) {
               this.merged = true;
               this.inRange = true;
             }
           }
         } else {
-          UsedOffset = (-this.vCTrend.get().value * 28) / 5;
+          UsedOffset = offset;
         }
       }
 
@@ -265,9 +271,9 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(this.spdChevrons, this.vCTrend);
+    this.subscriptions.push(this.flightPathVector, this.totalFpa, this.fpa);
     this.subscriptions.push(
-      this.vCTrend.sub(() => {
+      this.totalFpa.sub(() => {
         this.setPos();
       }),
     );
@@ -283,7 +289,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode | null {
     return (
-      <g id="SpeedChevrons" ref={this.refElement}>
+      <g id="TotalFlightPathAngle" ref={this.refElement}>
         <path ref={this.leftChevron} class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
         <path ref={this.rightChevron} class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
       </g>
@@ -292,16 +298,16 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 interface SpeedStateInfo {
-  pfdTargetSpeed: Arinc429RegisterSubject;
-  fcuSelectedSpeed: Arinc429RegisterSubject;
-  speed: Arinc429RegisterSubject;
-  fmgcDiscreteWord5: Arinc429RegisterSubject;
+  pfdTargetSpeed: Arinc429WordData;
+  fcuSelectedSpeed: Arinc429WordData;
+  speed: Arinc429WordData;
+  fmgcDiscreteWord5: Arinc429Word;
 }
 
 class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<
-    HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values
+    HUDSimvars & ClockEvents & Arinc429Values & FgBus & FcuBus
   >();
   private sVisibility = Subject.create<String>('');
   private outOfRange = Subject.create<String>('');
@@ -310,10 +316,10 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private needsUpdate = true;
 
   private speedState: SpeedStateInfo = {
-    speed: Arinc429RegisterSubject.createEmpty(),
-    pfdTargetSpeed: Arinc429RegisterSubject.createEmpty(),
-    fcuSelectedSpeed: Arinc429RegisterSubject.createEmpty(),
-    fmgcDiscreteWord5: Arinc429RegisterSubject.createEmpty(),
+    speed: new Arinc429Word(0),
+    pfdTargetSpeed: new Arinc429Word(0),
+    fcuSelectedSpeed: new Arinc429Word(0),
+    fmgcDiscreteWord5: new Arinc429Word(0),
   };
 
   onAfterRender(node: VNode): void {
@@ -335,10 +341,10 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
 
     this.subscriptions.push(
       this.sub
-        .on('pfdSelectedSpeed')
+        .on('fcuSelectedAirspeed')
         .withArinc429Precision(2)
         .handle((s) => {
-          this.speedState.pfdTargetSpeed.setWord(s);
+          this.speedState.pfdTargetSpeed = s;
           this.needsUpdate = true;
         }),
     );
@@ -348,7 +354,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
         .on('fmgcDiscreteWord5')
         .whenChanged()
         .handle((s) => {
-          this.speedState.fmgcDiscreteWord5.setWord(s);
+          this.speedState.fmgcDiscreteWord5 = s;
           this.needsUpdate = true;
         }),
     );
@@ -358,7 +364,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
         .on('fcuSelectedAirspeed')
         .withArinc429Precision(2)
         .handle((s) => {
-          this.speedState.fcuSelectedSpeed.setWord(s);
+          this.speedState.fcuSelectedSpeed = s;
           this.needsUpdate = true;
         }),
     );
@@ -368,7 +374,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
         .on('speedAr')
         .withArinc429Precision(2)
         .handle((s) => {
-          this.speedState.speed.setWord(s);
+          this.speedState.speed = s;
           this.needsUpdate = true;
         }),
     );
@@ -381,15 +387,14 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       this.needsUpdate = false;
 
       const fmgcPfdSelectedSpeedValid = !(
-        this.speedState.pfdTargetSpeed.get().isNoComputedData() ||
-        this.speedState.pfdTargetSpeed.get().isFailureWarning()
+        this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
       );
 
       const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
         ? this.speedState.pfdTargetSpeed
         : this.speedState.fcuSelectedSpeed;
 
-      const deltaSpeed = this.speedState.speed.get().value - chosenTargetSpeed.get().value;
+      const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed.value;
       const sign = Math.sign(deltaSpeed);
       this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 3.33} h 12 v ${deltaSpeed * 3.33}`);
 
