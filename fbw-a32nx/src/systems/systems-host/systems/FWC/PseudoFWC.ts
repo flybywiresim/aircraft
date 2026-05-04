@@ -2225,11 +2225,11 @@ export class PseudoFWC {
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
-    const masterWarningPbLeftPulse = this.masterWarningPbLeftPulseNode.write(masterWarningButtonLeft, deltaTime);
-    const masterWarningPbRightPulse = this.masterWarningPbRightPulseNode.write(masterWarningButtonRight, deltaTime);
+    const masterWarningPbLeftPulse = this.masterWarningPbLeftPulseNode.write(masterWarningButtonLeft);
+    const masterWarningPbRightPulse = this.masterWarningPbRightPulseNode.write(masterWarningButtonRight);
     this.masterWarningCancelPulseUp = masterWarningPbLeftPulse || masterWarningPbRightPulse;
-    const masterCautionPbLeftPulse = this.masterCautionPbLeftPulseNode.write(masterCautionButtonLeft, deltaTime);
-    const masterCautionPbRightPulse = this.masterCautionPbRightPulseNode.write(masterCautionButtonRight, deltaTime);
+    const masterCautionPbLeftPulse = this.masterCautionPbLeftPulseNode.write(masterCautionButtonLeft);
+    const masterCautionPbRightPulse = this.masterCautionPbRightPulseNode.write(masterCautionButtonRight);
     this.masterCautionCancelPulseUp = masterCautionPbLeftPulse || masterCautionPbRightPulse;
 
     /* HYDRAULICS acquisition */
@@ -3794,7 +3794,7 @@ export class PseudoFWC {
         ),
       ),
     );
-    this.apuGenPbNotOffPulseNode.write(!this.sdac05201Word.bitValue(14), deltaTime);
+    this.apuGenPbNotOffPulseNode.write(!this.sdac05201Word.bitValue(14));
     this.apuGenCycleMemoryNode.write(
       this.apuGenFaultMemory.read() && this.apuGenPbNotOffPulseNode.read(),
       !this.apuGenFaultMemory.read() || this.flightPhase110.get(),
