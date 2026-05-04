@@ -875,6 +875,9 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async cpnyFplnRequest(intoPlan: FlightPlanIndex) {
+    if (this.uplinkRequestInProgress.get() || this.cpnyFplnRequestedForPlan.get() !== null) {
+      return;
+    }
     const navigraphUsername = NXDataStore.getLegacy('NAVIGRAPH_USERNAME');
     const overrideSimBriefUserID = NXDataStore.getLegacy('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 

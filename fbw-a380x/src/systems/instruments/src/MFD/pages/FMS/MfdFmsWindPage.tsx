@@ -1230,12 +1230,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                   </div>
                 ))}
               </div>
-              <div class="mfd-fms-wind-page-table-row temp">
-                <div class="mfd-fms-wind-crz-temp-alt-header-container">
-                  <span class="mfd-label bigger">ALT</span>
-                </div>
-                <div class="mfd-fms-wind-crz-temp-sat-header-container">
-                  <span class="mfd-label-bigger">SAT</span>
+              <div class="mfd-fms-wind-page-crz-temp-table">
+                <div class="fr">
+                  <div class="mfd-fms-wind-crz-temp-alt-header-container">
+                    <span class="mfd-label bigger">ALT</span>
+                  </div>
+                  <div class="mfd-fms-wind-crz-temp-sat-header-container">
+                    <span class="mfd-label bigger">SAT</span>
+                  </div>
                 </div>
 
                 <div class="mfd-fms-wind-crz-temp-entry-container">
@@ -1253,7 +1255,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                   ></InputField>
                   <InputField
                     alignText={'flex-start'}
-                    containerStyle="height:40px;"
+                    containerStyle="height:43px; width:113px;margin-left: 76px;"
                     inactive={false}
                     disabled={true}
                     errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}

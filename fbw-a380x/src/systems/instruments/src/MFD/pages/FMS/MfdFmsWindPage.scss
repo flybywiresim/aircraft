@@ -193,11 +193,13 @@ $wind-row-width: 465px;
 
 }
 
-.mfd-fms-wind-page-table-row.temp {
+.mfd-fms-wind-page-crz-temp-table {
+    margin-left: $table-margin-no-history;
     height: 114px;
     width: 367px;
     padding-top: 15px;
     margin-top: 50px;
+    border: 1px solid $display-grey;
 }
 
 .mfd-fms-wind-crz-temp-alt-header-container {
@@ -215,4 +217,7 @@ $wind-row-width: 465px;
 .mfd-fms-wind-crz-temp-entry-container {
   display: flex;
   flex-direction: row;
+  padding-top: 19px;
+  padding-left: 10px;
+  padding-right: 10px;
 }

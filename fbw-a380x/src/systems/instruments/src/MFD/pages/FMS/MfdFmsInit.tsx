@@ -415,11 +415,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <Button
                 label={this.cpnyFplnButtonLabel}
                 disabled={this.cpnyFplnButtonDisabled}
-                onClick={() =>
-                  this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get()
-                    ? {}
-                    : this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())
-                }
+                onClick={() => this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())}
                 buttonStyle="width: 175px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
                 menuItems={this.cpnyFplnButtonMenuItems}

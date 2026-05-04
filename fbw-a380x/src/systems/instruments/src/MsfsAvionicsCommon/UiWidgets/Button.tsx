@@ -68,7 +68,7 @@ export class Button extends DisplayComponent<ButtonProps> {
   private readonly visible = SubscribableUtils.toSubscribable(this.props.visible ?? Subject.create(true), true);
 
   private onClick() {
-    if (!this.disabled.get()) {
+    if (!this.disabled.get() && this.props.menuItems?.get()?.length === 0) {
       this.props.onClick();
     }
   }
