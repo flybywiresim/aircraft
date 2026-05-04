@@ -255,7 +255,6 @@ export class FwsAutoCallouts {
       ? this.fws.radioHeight2.valueOr(null)
       : this.fws.radioHeight1.value;
     const stallWarning = this.fws.stallWarning.get();
-    const speedWarning = false; // TODO
     const onGround = this.fws.aircraftOnGround.get();
     const engine1MasterOn = this.fws.engine1Master.get();
     const engine2MasterOn = this.fws.engine2Master.get();
@@ -279,16 +278,8 @@ export class FwsAutoCallouts {
       this.dmcDhToUse = this.dmcLDh;
     }
 
-    this.computeInhbits(
-      deltaTime,
-      height,
-      flightPhase,
-      stallWarning,
-      speedWarning,
-      onGround,
-      engine1MasterOn,
-      engine2MasterOn,
-    );
+    // Needed for pitch, speed and ras.. Compute it first.
+    this.computeGpwsAndTcasInhibits(deltaTime);
 
     this.computeAutoFlightCallouts(
       deltaTime,
@@ -299,6 +290,18 @@ export class FwsAutoCallouts {
       flightPhase,
       this.fws.flightPhase67.get(),
       this.fws.flightPhase567.get(),
+    );
+
+    const speedWarning = this.lowEnergyWarningActive.get(); // Speed warning is computed above.
+
+    this.computeRaAndMinimumsInhibits(
+      height,
+      flightPhase,
+      stallWarning,
+      speedWarning,
+      onGround,
+      engine1MasterOn,
+      engine2MasterOn,
     );
 
     this.computeMinimumsCallouts(deltaTime, height);
@@ -438,8 +441,15 @@ export class FwsAutoCallouts {
     this.previousHeight = filteredHeight;
   }
 
-  private computeInhbits(
-    deltaTime: number,
+  private computeGpwsAndTcasInhibits(deltaTime: number) {
+    const gpwsWarning = this.gpwsWarningLightOn.get();
+    const gpwsAlert = this.gpwsAlertLightOn.get();
+    const gpwsMtrig = this.gpwsMtrig.write(gpwsWarning || gpwsAlert, deltaTime);
+    this.gpwsActive = gpwsWarning || gpwsAlert || gpwsMtrig;
+    this.tcasAudio = this.tcasAudioMrtrigNode.write(false, deltaTime); // TODO
+  }
+
+  private computeRaAndMinimumsInhibits(
     height: number | null,
     flightPhase: number,
     stallWarning: boolean,
@@ -448,16 +458,12 @@ export class FwsAutoCallouts {
     engine1MasterOn: boolean,
     engine2MasterOn: boolean,
   ) {
-    const gpwsWarning = this.gpwsWarningLightOn.get();
-    const gpwsAlert = this.gpwsAlertLightOn.get();
-    const gpwsMtrig = this.gpwsMtrig.write(gpwsWarning || gpwsAlert, deltaTime);
-    this.gpwsActive = gpwsWarning || gpwsAlert || gpwsMtrig;
     const raInvalidOrLowSpeedWarningOrFlex = height === null || stallWarning || speedWarning; // TODO some missing
     this.autoCalloutInhibit = raInvalidOrLowSpeedWarningOrFlex || (onGround && engine1MasterOn && engine2MasterOn);
     const onGroundAndNotPhase8 = onGround && flightPhase !== 8;
     this.generalRetardInhibit =
       raInvalidOrLowSpeedWarningOrFlex || (onGroundAndNotPhase8 && engine1MasterOn && engine2MasterOn);
-    this.tcasAudio = this.tcasAudioMrtrigNode.write(false, deltaTime); // TODO
+
     this.mdaInhibit = speedWarning || stallWarning || this.gpwsActive || this.tcasAudio;
     this.dhInhibit = height === null || this.autoCalloutInhibit || this.dmcDhToUse.valueOr(0) <= 3;
   }

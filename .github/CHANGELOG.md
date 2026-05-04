@@ -123,13 +123,10 @@
 1. [A380X/FLIGHT MODEL] Fight model update  - @donstim (donbikes)
 1. [A32NX/FMS] Update layout of DIR TO page to reflect HW H4 - @BlueberryKing (BlueberryKing)
 1. [A32NX/FE] Add pitch and low energy warnings, improve VCTrend computation - @lukecologne (luke)
-<<<<<<< HEAD
-1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99), @lukecologne (luke)
-1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
-=======
 1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and APU GEN fault light - @FozzieHi (fozzie)
 1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
->>>>>>> upstream/master
+1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99), @lukecologne (luke)
+1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
