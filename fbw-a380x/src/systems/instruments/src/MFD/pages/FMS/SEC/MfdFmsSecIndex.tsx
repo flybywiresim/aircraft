@@ -461,11 +461,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             <Button
               label={this.cpnyFplnButtonLabel}
               disabled={this.cpnyFplnButtonDisabled}
-              onClick={() =>
-                this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get()
-                  ? {}
-                  : this.props.fmcService.master.cpnyFplnRequest(this.props.flightPlanIndex)
-              }
+              onClick={() => this.props.fmcService.master.cpnyFplnRequest(this.props.flightPlanIndex)}
               buttonStyle="width: 175px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq_sec${this.props.flightPlanIndex}`}
               menuItems={this.cpnyFplnButtonMenuItems}

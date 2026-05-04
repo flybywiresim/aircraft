@@ -41,11 +41,15 @@ export class AtsuFmsClient {
               `Received wind uplink response for request id ${response.requestId} but no matching flightplan was found.`,
             );
           } else {
-            this.pub.pub('wind_uplink_response', {
-              status: response.data[0],
-              message: response.data[1],
-              flightPlan: flightPlanIndex,
-            });
+            this.pub.pub(
+              'wind_uplink_response',
+              {
+                status: response.data[0],
+                message: response.data[1],
+                flightPlan: flightPlanIndex,
+              },
+              true,
+            );
           }
           this.uplinkWindRequestFlightPlanMap.delete(response.requestId);
           return false;

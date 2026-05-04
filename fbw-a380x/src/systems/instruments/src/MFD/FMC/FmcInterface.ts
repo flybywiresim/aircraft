@@ -248,6 +248,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   requestCpnyWind(forPlan: FlightPlanIndex): void;
 
   /**
+   * Get a subscribable which indicates whether a CPNY FPLN uplink request is in progress.
+   */
+  getCpnyFplnUplinkInProgress(): Subscribable<boolean>;
+
+  /**
    * Insert CPNY FPLN into flight plan where request has been made from
    * @param intoPlan Flight plan to insert CPNY FPLN into
    */

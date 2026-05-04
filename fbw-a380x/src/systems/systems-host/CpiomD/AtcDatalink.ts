@@ -19,7 +19,7 @@ export class AtcDatalink {
       } else {
         this.atc.powerDown();
       }
-    });
+    }, true);
   }
 
   public init(): void {

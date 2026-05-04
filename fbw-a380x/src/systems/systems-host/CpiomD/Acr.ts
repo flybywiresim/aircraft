@@ -31,7 +31,7 @@ export class Acr {
       } else {
         this.router.powerDown();
       }
-    });
+    }, true);
   }
 
   init(): void {

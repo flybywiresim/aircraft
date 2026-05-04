@@ -908,6 +908,10 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
+  getCpnyFplnUplinkInProgress(): Subscribable<boolean> {
+    return this.cpnyFplnUplinkInProgress;
+  }
+
   requestCpnyWind(flightPlanIndex: FlightPlanIndex) {
     if (!this.uplinkRequestInProgress.get()) {
       const hasfp = this.flightPlanInterface.has(flightPlanIndex);
@@ -927,10 +931,14 @@ export class FlightManagementComputer implements FmcInterface {
         this.dataManager,
         this.#flightPlanService,
       );
-      this.atsuBusPublisher.pub('wind_uplink_request', {
-        flightPlan: flightPlanIndex,
-        message: windReq,
-      });
+      this.atsuBusPublisher.pub(
+        'wind_uplink_request',
+        {
+          flightPlan: flightPlanIndex,
+          message: windReq,
+        },
+        true,
+      );
       this.cpnyWindUplinkInProgress.set(true);
       this.pendingFlightPlanWindUplink.set(flightPlanIndex);
     }
@@ -1569,7 +1577,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   resetAtisAutoUpdate() {
-    this.datalinkBusPublisher.pub('reset_auto_update', null, true, false);
+    this.datalinkBusPublisher.pub('reset_auto_update', null);
   }
 
   getWindUplinkAvailableForPlan(flightPlanIndex?: FlightPlanIndex): Subscribable<boolean> {
