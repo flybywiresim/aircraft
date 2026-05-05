@@ -58,7 +58,7 @@ const EwdGroups: Record<string, string> = {
 };
 /* eslint-enable prettier/prettier */
 
-// Titles without underscores
+// Titles without underlines
 const getGroupTitleText = (group: string): string => EwdGroups[group].split('\x1b4m').join('');
 
 // Generate our own codes for the group titles (displayed on the right side of the EWD if the left side is overflowing)
