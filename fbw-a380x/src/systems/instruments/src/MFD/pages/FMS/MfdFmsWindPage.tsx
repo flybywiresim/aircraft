@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 FlyByWire Simulations
+// Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import {
   ArraySubject,
@@ -197,6 +197,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private readonly departureElevation = Subject.create<number | null>(null);
 
   // Cruise Wind
+  private navigationWaypointLegIndex: number | null = null;
   private readonly WindCache: PropagatedWindEntry[] = [];
   private readonly selectedWaypointLegIndex = Subject.create<number | null>(null);
   private availableWaypointsToLegIndex: number[] = [];
@@ -486,7 +487,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       );
     }
     this.wasSecPreviouslyActive =
-      this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary ? true : this.wasSecPreviouslyActive;
+      loadedFlightPlanIndex >= FlightPlanIndex.FirstSecondary ? true : this.wasSecPreviouslyActive;
   }
 
   destroy() {
@@ -502,8 +503,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     if (extraParts && extraParts.length == 2) {
       const wptIdx = parseInt(extraParts[1]);
       if (!Number.isNaN(wptIdx)) {
-        this.selectedWaypointLegIndex.set(wptIdx);
-        console.log('Selected waypoint index from URI: ' + wptIdx);
+        this.navigationWaypointLegIndex = wptIdx;
       }
     }
     const fpIndex = this.loadedFlightPlanIndex.get();
@@ -515,7 +515,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         ? this.props.fmcService.master.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()
         : false,
     );
-    this.automaticallySelectTab();
     this.subs.push(
       this.props.fmcService.master.fmgc.data.flightPhase.sub((phase) => {
         this.automaticallySelectTabByFlightPhase(phase);
@@ -523,7 +522,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.selectedTabIndex.sub((v) => {
         if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
           // History is not available on secondary so we need to skip it.
-          this.selectedSubPage.set(Math.min(v + 1, WindSubPageMenu.Descent));
+          this.selectedSubPage.set(Math.max(v + 1, WindSubPageMenu.Descent));
         } else {
           this.selectedSubPage.set(v);
         }
@@ -546,10 +545,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       ...this.cruiseWindRowFlightLevelIsEnteredByPilot,
       this.selectNextDisabled,
     );
+    this.automaticallySelectTab();
   }
 
   private automaticallySelectTab() {
-    const wptIdx = this.selectedWaypointLegIndex.get();
+    const wptIdx = this.navigationWaypointLegIndex;
     let page: WindSubPageMenu | null = null;
     if (this.loadedFlightPlan && wptIdx !== null) {
       const leg = this.props.fmcService.master.flightPlanInterface
@@ -969,11 +969,13 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       : null;
     if (!fp) {
       this.selectedWaypointLegIndex.set(null);
+      this.navigationWaypointLegIndex = null;
       this.availableWaypoints.set([]);
       this.availableWaypointsToLegIndex = [];
       this.availableWaypointsSize.set(0);
       return;
     } else {
+      console.log('Flight plan loaded, looking for cruise legs');
       const legPredictions =
         loadedplanIndex === FlightPlanIndex.Active
           ? this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions
@@ -997,11 +999,21 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.availableWaypoints.set(waypoints);
       this.availableWaypointsToLegIndex = waypointsLegIndexes;
       this.availableWaypointsSize.set(waypoints.length);
-      const selectedWaypoint = this.selectedWaypointLegIndex.get();
-      // Select first if selection is not valid anymore or nothing was selected.
-      if (selectedWaypoint === null || !waypointsLegIndexes.includes(selectedWaypoint)) {
-        this.selectedWaypointLegIndex.set(waypointsLegIndexes.length > 0 ? waypointsLegIndexes[0] : null);
+
+      // If a waypoint has been specified due to page navigation before, try to select it if it's still valid.
+      if (this.navigationWaypointLegIndex !== null) {
+        const isNavWaypointLegIndexValid = waypointsLegIndexes.includes(this.navigationWaypointLegIndex);
+        if (isNavWaypointLegIndexValid) {
+          this.selectedWaypointLegIndex.set(this.navigationWaypointLegIndex);
+        }
+      } else {
+        const selectedWaypoint = this.selectedWaypointLegIndex.get();
+        // Select first if selection is not valid anymore or nothing was selected.
+        if (selectedWaypoint === null || !waypointsLegIndexes.includes(selectedWaypoint)) {
+          this.selectedWaypointLegIndex.set(waypointsLegIndexes.length > 0 ? waypointsLegIndexes[0] : null);
+        }
       }
+      this.navigationWaypointLegIndex = null;
     }
   }
 

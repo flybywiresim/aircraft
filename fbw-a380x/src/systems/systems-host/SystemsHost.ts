@@ -72,7 +72,6 @@ class SystemsHost extends BaseInstrument {
   private readonly clock = new Clock(this.bus);
 
   private readonly hEventPublisher: HEventPublisher;
-  private readonly simVarHandling: SimVarHandling;
 
   private readonly failuresConsumer = new FailuresConsumer();
 
@@ -106,6 +105,7 @@ class SystemsHost extends BaseInstrument {
   // MSFS only supports 1
   // private readonly xpdr2 = new Transponder(2, 144, this.acBus2Powered, this.failuresConsumer);
 
+  private readonly simVarHandling = new SimVarHandling(this.bus);
   private readonly atsu = new AtsuSystem(this.bus);
   private readonly atc = new AtcDatalink(this.bus);
   private readonly acr = new Acr(this.bus);
@@ -234,7 +234,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
-    this.simVarHandling = new SimVarHandling(this.bus);
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
@@ -253,6 +252,8 @@ class SystemsHost extends BaseInstrument {
         this.gpws?.update(dt);
         this.fwsCore?.update(dt);
         this.autoThsTrimmer.autoTrim();
+        this.powerPublisher.onUpdate();
+        this.simVarHandling.onUpdate();
       });
 
     this.allFwsFailed.sub((a) => {
@@ -310,6 +311,7 @@ class SystemsHost extends BaseInstrument {
     this.acr.init();
     this.atc.init();
     this.atsu.init();
+    this.simVarHandling.initialize();
   }
 
   public Update(): void {
@@ -343,7 +345,7 @@ class SystemsHost extends BaseInstrument {
       const gamestate = this.getGameState();
       if (gamestate === 3) {
         this.hEventPublisher.startPublish();
-        this.simVarHandling.initialize();
+        this.powerPublisher.startPublish();
         this.simVarHandling.startPublish();
       }
       this.gameState = gamestate;

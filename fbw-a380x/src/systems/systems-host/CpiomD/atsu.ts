@@ -25,7 +25,7 @@ export class AtsuSystem {
       } else {
         this.aoc.powerDown();
       }
-    }, true);
+    });
   }
 
   public init(): void {
