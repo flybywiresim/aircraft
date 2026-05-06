@@ -4758,17 +4758,8 @@ export class PseudoFWC {
       // FAC 1+2 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.fac12FaultWarning,
-      whichCodeToReturn: () => [0, 1, 2, 3, 4, 5, 6], // TODO: Check BUSS for 7
-      codesToReturn: [
-        '220020501',
-        '220020502',
-        '220020503',
-        '220020504',
-        '220020505',
-        '220020506',
-        '220020507',
-        '220020508',
-      ],
+      whichCodeToReturn: () => [0, 1, 2, 3, 4, 5, 6],
+      codesToReturn: ['220020501', '220020502', '220020503', '220020504', '220020505', '220020506', '220020507'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.NONE,

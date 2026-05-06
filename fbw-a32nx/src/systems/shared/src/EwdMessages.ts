@@ -316,7 +316,6 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['220020505', { text: '\x1b<7m   .IF UNSUCCESSFUL :' }],
   ['220020506', { text: '\x1b<5m -FAC 1..............OFF' }],
   ['220020507', { text: '\x1b<5m -FAC 2..............OFF' }],
-  ['220020508', { text: '\x1b<5m SPD BRK......DO NOT USE' }],
   ['220020001', { group: 'AUTO FLT$3', text: ' FAC 1 FAULT' }],
   ['220020002', { text: '\x1b<5m -FAC 1......OFF THEN ON' }],
   ['220020003', { text: '\x1b<7m   .IF UNSUCCESSFUL :' }],
