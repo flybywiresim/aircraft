@@ -173,7 +173,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     const targetLeg = this.legElementAt(targetLegIndex);
     const targetLegFix = targetLeg.terminationWaypoint();
-    if (!targetLeg.isXF() || !targetLegFix) {
+    if ((!targetLeg.isXF() && !targetLeg.isHX()) || !targetLegFix) {
       throw new Error('[FPM] Cannot direct to a non-XF leg');
     }
 
