@@ -47,6 +47,7 @@ import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPub
 import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
+import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -133,6 +134,7 @@ export class PseudoFWC {
       A32NXEcpBusEvents &
       A32NXElectricalSystemEvents &
       A32NXFcuBusEvents &
+      A32NXFacBusEvents &
       KeyEvents &
       PseudoFwcSimvars &
       StallWarningEvents
@@ -216,6 +218,18 @@ export class PseudoFWC {
 
   private readonly masterCaution = Subject.create(false);
 
+  private readonly masterWarningPbLeftPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterWarningPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbLeftPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private masterWarningCancelPulseUp = false;
+
+  private masterCautionCancelPulseUp = false;
+
   private readonly fireActive = Subject.create(false);
 
   private nonCancellableWarningCount = 0;
@@ -260,17 +274,24 @@ export class PseudoFWC {
 
   /* SDAC */
   private readonly sdac00100Word = Arinc429Register.empty();
+
   private readonly sdac00200Word = Arinc429Register.empty();
+
   private readonly sdac00201Word = Arinc429Register.empty();
   private readonly sdac00210Word = Arinc429Register.empty();
+
   private readonly sdac00401Word = Arinc429Register.empty();
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
 
   private readonly sdac00511Word = Arinc429Register.empty();
 
+  private readonly sdac03701Word = Arinc429Register.empty();
+
   private readonly sdac05001Word = Arinc429Register.empty();
   private readonly sdac05010Word = Arinc429Register.empty();
+
+  private readonly sdac05201Word = Arinc429Register.empty();
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -396,6 +417,14 @@ export class PseudoFWC {
   private readonly cabinDeltaPressure = Subject.create(0);
 
   /* 22 - AUTOFLIGHT */
+
+  private readonly fac1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fac_discrete_word_3_1'),
+  );
+
+  private readonly fac2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fac_discrete_word_3_2'),
+  );
 
   private readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
 
@@ -606,6 +635,18 @@ export class PseudoFWC {
 
   public readonly capabilityChange = Subject.create(false);
 
+  // PITCH PITCH Auto Callout
+  public readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
+
+  public readonly pitchPitchActive = Subject.create(false);
+
+  // Low Energy Warning Auto Callout
+  public readonly lowEnergyMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly lowEnergyMtrig2 = new NXLogicTriggeredMonostableNode(6, true);
+
+  public readonly lowEnergyWarningActive = Subject.create(false);
+
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
 
@@ -677,6 +718,20 @@ export class PseudoFWC {
   private readonly gen2PbOffOut = Subject.create(false);
 
   private readonly gen2OffOut = Subject.create(false);
+
+  private readonly genApuInop = Subject.create(false);
+
+  private readonly apuGenFaultMemory = new NXLogicMemoryNode(false);
+
+  private readonly apuGenFaultConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly apuGenFaultResetConfirmNode = new NXLogicConfirmNode(2, true);
+
+  private readonly apuGenFaultWarning = Subject.create(false);
+
+  private readonly apuGenCycleMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly apuGenPbNotOffPulseNode = new NXLogicPulseNode(true);
 
   private readonly engine1RunningAndNotPhase6 = new NXLogicConfirmNode(60, true);
 
@@ -1652,6 +1707,13 @@ export class PseudoFWC {
 
     this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
 
+    this.pitchPitchActive.sub((active) => this.soundManager.handleSoundCondition('pitchPitch', active), true);
+
+    this.lowEnergyWarningActive.sub(
+      (active) => this.soundManager.handleSoundCondition('speedSpeedSpeed', active),
+      true,
+    );
+
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
       SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
@@ -1845,10 +1907,17 @@ export class PseudoFWC {
     SimVarValueType.Number,
   );
 
+  // TODO: Get from EGIU
+  private readonly apuAvailVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE');
+
   private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
   private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
   private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
   private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
+
+  // TODO: Get from EGIU
+  private readonly apuGenFaultVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_APU_GEN_PB_HAS_FAULT');
+  private readonly apuGenSwitchVar = RegisteredSimVar.createBoolean('A:APU GENERATOR SWITCH:1');
 
   private acquireSdac(): void {
     const xpdr1Status = this.xpdr1StatusVar.get();
@@ -1900,6 +1969,10 @@ export class PseudoFWC {
     this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00511Word.setBitValue(22, this.brakeAccuPressVar.get() < 1650);
 
+    this.sdac03701Word.set(0);
+    this.sdac03701Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac03701Word.setBitValue(19, this.apuAvailVar.get());
+
     this.sdac05001Word.set(0);
     this.sdac05001Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05001Word.setBitValue(13, !this.idg1ConnectedVar.get());
@@ -1908,6 +1981,11 @@ export class PseudoFWC {
     this.sdac05010Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05010Word.setBitValue(13, !this.idg2ConnectedVar.get());
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
+
+    this.sdac05201Word.set(0);
+    this.sdac05201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
+    this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
   }
 
   /**
@@ -2046,6 +2124,12 @@ export class PseudoFWC {
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+    const masterWarningPbLeftPulse = this.masterWarningPbLeftPulseNode.write(masterWarningButtonLeft, deltaTime);
+    const masterWarningPbRightPulse = this.masterWarningPbRightPulseNode.write(masterWarningButtonRight, deltaTime);
+    this.masterWarningCancelPulseUp = masterWarningPbLeftPulse || masterWarningPbRightPulse;
+    const masterCautionPbLeftPulse = this.masterCautionPbLeftPulseNode.write(masterCautionButtonLeft, deltaTime);
+    const masterCautionPbRightPulse = this.masterCautionPbRightPulseNode.write(masterCautionButtonRight, deltaTime);
+    this.masterCautionCancelPulseUp = masterCautionPbLeftPulse || masterCautionPbRightPulse;
 
     /* HYDRAULICS acquisition */
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
@@ -2449,6 +2533,34 @@ export class PseudoFWC {
     this.autoThrustLimitedDelayNode = this.autoThrustLimitedMtrigNode.read();
 
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
+
+    // PITCH PITCH Auto Callout
+    const pitchPitchGenerated = this.soundManager.getCurrentSoundPlaying() == 'pitchPitch';
+    const pitchPitchRequested =
+      this.fac1DiscreteWord3.get().bitValueOr(15, false) || this.fac2DiscreteWord3.get().bitValueOr(15, false);
+    const pitchPitchInhibition = false;
+    const raBelow50 = this.radioHeight1.valueOr(100) < 50 || this.radioHeight2.valueOr(100) < 50;
+    const pitchPitchCondition = pitchPitchRequested && (flightPhase == 8 || (raBelow50 && this.flightPhase67.get()));
+    this.pitchPitchFlipFlop.write(pitchPitchGenerated, !pitchPitchRequested);
+
+    this.pitchPitchActive.set(!this.pitchPitchFlipFlop.read() && !pitchPitchInhibition && pitchPitchCondition);
+
+    // Low Energy Warning Auto Callout
+    const lowEnergyDetected =
+      this.fac1DiscreteWord3.get().bitValueOr(11, false) || this.fac2DiscreteWord3.get().bitValueOr(11, false);
+    this.lowEnergyMtrig1.write(lowEnergyDetected, deltaTime);
+
+    const speedGenerated = this.soundManager.getCurrentSoundPlaying() == 'speedSpeedSpeed';
+    this.lowEnergyMtrig2.write(speedGenerated, deltaTime);
+
+    const lowEnergyInhibition = false;
+
+    this.lowEnergyWarningActive.set(
+      this.flightPhase567.get() &&
+        (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
+        !this.lowEnergyMtrig2.read() &&
+        !lowEnergyInhibition,
+    );
 
     // AUTO BRAKE OFF
     this.autobrakeDeactivatedPulseNode.write(
@@ -3621,6 +3733,23 @@ export class PseudoFWC {
       !this.gen2FaultMemory.read() || this.flightPhase110.get(),
     );
 
+    this.genApuInop.set(this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19));
+    this.apuGenFaultWarning.set(
+      this.apuGenFaultMemory.write(
+        this.apuGenFaultConfirmNode.write(!this.sdac05201Word.bitValue(14) && this.genApuInop.get(), deltaTime),
+        this.apuGenFaultResetConfirmNode.write(
+          (!this.sdac05201Word.bitValue(14) && !this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19)) ||
+            this.fwcFlightPhase.get() === 1,
+          deltaTime,
+        ),
+      ),
+    );
+    this.apuGenPbNotOffPulseNode.write(!this.sdac05201Word.bitValue(14), deltaTime);
+    this.apuGenCycleMemoryNode.write(
+      this.apuGenFaultMemory.read() && this.apuGenPbNotOffPulseNode.read(),
+      !this.apuGenFaultMemory.read() || this.flightPhase110.get(),
+    );
+
     // Use fresh genNotOperating values for this cycle
     const gen1OffPart2 = phase6WithOtherGenOff(gen1OffConfirmOrPhase6, gen2OffPart1, gen2NotOperating);
     const gen2OffPart2 = phase6WithOtherGenOff(gen2OffConfirmOrPhase6, gen1OffPart1, gen1NotOperating);
@@ -3869,15 +3998,15 @@ export class PseudoFWC {
     }
 
     /* MASTER CAUT/WARN BUTTONS */
-    if (masterCautionButtonLeft || masterCautionButtonRight) {
+    if (this.masterCautionCancelPulseUp) {
       this.auralSingleChimePending = false;
       this.requestMasterCautionFromFaults = false;
       this.requestMasterCautionFromABrkOff = false;
     }
-    if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
-      this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
-      this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
-      this.cChordActive.set(this.nonCancellableWarningCount > 0);
+    if (this.masterWarningCancelPulseUp && this.nonCancellableWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
+      this.auralCrcActive.set(false);
+      this.cChordActive.set(false);
     }
 
     /* T.O. CONFIG CHECK */
@@ -4012,20 +4141,23 @@ export class PseudoFWC {
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
     let tempFailureArrayLeft: string[] = [];
-    let failureKeysLeft: string[] = this.failuresLeft;
-    let recallFailureKeys: string[] = this.recallFailures;
+    let failureKeysLeft: string[] = [...this.failuresLeft];
+    let recallFailureKeys: string[] = [...this.recallFailures];
     let tempFailureArrayRight: string[] = [];
-    const failureKeysRight: string[] = this.failuresRight;
+    let failureKeysRight: string[] = [...this.failuresRight];
     const failureSysPageItems: { order: number; sysPage: EcamSysPage }[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
+    let activeMasterWarningFailureCount = 0;
+    let activeMasterCautionFailureCount = 0;
 
-    // Update failuresLeft list in case failure has been resolved
+    // Update failure lists in case failures have been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
       if (!value.simVarIsActive.get()) {
         failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
+        failureKeysRight = failureKeysRight.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
     }
@@ -4050,6 +4182,13 @@ export class PseudoFWC {
         // consider monitor input confirm time (0.3 sec by default)
         this.ewdFailureTiming.get(key)?.displayEligible
       ) {
+        if (value.failure === 3) {
+          activeMasterWarningFailureCount++;
+        }
+        if (value.failure === 2) {
+          activeMasterCautionFailureCount++;
+        }
+
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
@@ -4220,13 +4359,13 @@ export class PseudoFWC {
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    }
 
-      if (orderedFailureArrayRight.length === 0) {
-        this.requestMasterCautionFromFaults = false;
-        if (this.nonCancellableWarningCount === 0) {
-          this.requestMasterWarningFromFaults = false;
-        }
-      }
+    if (activeMasterCautionFailureCount === 0) {
+      this.requestMasterCautionFromFaults = false;
+    }
+    if (activeMasterWarningFailureCount === 0 && this.nonCancellableWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
     }
 
     this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
@@ -4373,8 +4512,6 @@ export class PseudoFWC {
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      // This should only emit the cavalry charge, but not activate the master warn.
-      // So, list it as failure level 0 (I don't think this has any other effect).
       failure: 0,
       sysPage: EcamSysPage.NONE,
       side: 'RIGHT',
@@ -4607,6 +4744,22 @@ export class PseudoFWC {
         !this.sdac05010Word.bitValue(19) ? 3 : null,
       ],
       codesToReturn: ['240000201', '240000202', '240000203', '240000204'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.ELEC,
+      side: 'LEFT',
+    },
+    2400004: {
+      // APU GEN FAULT
+      flightPhaseInhib: [4, 5, 7, 8],
+      simVarIsActive: this.apuGenFaultWarning,
+      whichCodeToReturn: () => [
+        0,
+        !this.apuGenCycleMemoryNode.read() ? 1 : null,
+        !this.sdac05201Word.bitValue(14) ? 2 : null,
+        !this.sdac05201Word.bitValue(14) ? 3 : null,
+      ],
+      codesToReturn: ['240000401', '240000402', '240000403', '240000404'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.ELEC,
@@ -6061,7 +6214,7 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031001'],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0,
       sysPage: EcamSysPage.HYD,
       side: 'RIGHT',
     },
@@ -6081,7 +6234,7 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031201'],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0,
       sysPage: EcamSysPage.HYD,
       side: 'RIGHT',
     },
