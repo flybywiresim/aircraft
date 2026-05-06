@@ -78,13 +78,15 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   private readonly ra = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private verticalResolutionAdvisoryWord = Arinc429LocalVarConsumerSubject.create(
+  private readonly verticalResolutionAdvisoryWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_tcas_vertical_resolution_advisory_word'),
   );
 
-  private tcasModeWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_mode_word'));
+  private readonly tcasModeWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_mode_word'));
 
-  private tcasFaultSummaryWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_fault_summary_word'));
+  private readonly tcasFaultSummaryWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_tcas_fault_summary_word'),
+  );
 
   private readonly vsFlagVisible = this.verticalSpeed.map((vs) => !vs.isNormalOperation());
 

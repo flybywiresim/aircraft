@@ -1332,9 +1332,9 @@ export class TcasComputer {
       (uintRateToMaintain << 10) |
         (this.rateToMaintain.getVar() < 0 ? 1 << 16 : 0) |
         (combinedControl << 17) |
-        (((this.raType.getVar() as number) & 0b00000111) << 20) |
-        (((this.upAdvisoryStatus.getVar() as number) & 0b00000111) << 23) |
-        (((this.downAdvisoryStatus.getVar() as number) & 0b00000111) << 26),
+        ((this.raType.getVar() & 0b00000111) << 20) |
+        ((this.upAdvisoryStatus.getVar() & 0b00000111) << 23) |
+        ((this.downAdvisoryStatus.getVar() & 0b00000111) << 26),
     );
     this.tcasBusResolutionAdvisoryWord.writeToSimVar('L:A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD');
 
