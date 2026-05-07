@@ -10,6 +10,7 @@ import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
   static async ShowPage(
@@ -44,7 +45,14 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     let rowBottomLine = ['<RETURN'];
     mcdu.onLeftInput[5] = () => {
       mcdu.eraseTemporaryFlightPlan(() => {
-        CDULateralRevisionPage.ShowPage(mcdu, targetPlan.elementAt(reviseIndex), reviseIndex, forPlan, inAlternate);
+        const leg = targetPlan.elementAt(reviseIndex);
+        if (isDiscontinuity(leg)) {
+          // Failsafe
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
+          return;
+        }
+
+        CDULateralRevisionPage.ShowPage(mcdu, leg, reviseIndex, forPlan, inAlternate);
       });
     };
 

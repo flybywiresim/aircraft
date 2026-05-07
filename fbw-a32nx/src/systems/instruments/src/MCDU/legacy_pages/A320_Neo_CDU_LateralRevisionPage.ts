@@ -14,20 +14,17 @@ import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { isAirport, isRunway } from '@flybywiresim/fbw-sdk';
 
 export class CDULateralRevisionPage {
   /**
-   *
-   * @param mcdu
-   * @param leg {FlightPlanLeg}
-   * @param legIndexFP
    * @constructor
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    leg,
-    legIndexFP: number,
+    leg: FlightPlanLeg | undefined,
+    legIndexFP: number | undefined,
     forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
