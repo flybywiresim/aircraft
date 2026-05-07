@@ -236,24 +236,24 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   );
 
   private readonly notYetInClimb = MappedSubject.create(
-    ([flightPhase, flightPlan]) => flightPlan !== FlightPlanIndex.Active || flightPhase < FmgcFlightPhase.Climb,
+    ([flightPhase, isActiveOrCopyOfActive]) => !isActiveOrCopyOfActive || flightPhase < FmgcFlightPhase.Climb,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.isActiveOrCopyOfActive,
   );
   private readonly notYetInCruise = MappedSubject.create(
-    ([flightPhase, flightPlan]) => flightPlan !== FlightPlanIndex.Active || flightPhase < FmgcFlightPhase.Cruise,
+    ([flightPhase, isActiveOrCopyOfActive]) => !isActiveOrCopyOfActive || flightPhase < FmgcFlightPhase.Cruise,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.isActiveOrCopyOfActive,
   );
   private readonly notYetInDescent = MappedSubject.create(
-    ([flightPhase, flightPlan]) => flightPlan !== FlightPlanIndex.Active || flightPhase < FmgcFlightPhase.Descent,
+    ([flightPhase, isActiveOrCopyOfActive]) => !isActiveOrCopyOfActive || flightPhase < FmgcFlightPhase.Descent,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.isActiveOrCopyOfActive,
   );
   private readonly notInDescent = MappedSubject.create(
-    ([flightPhase, flightPlan]) => flightPlan !== FlightPlanIndex.Active || flightPhase !== FmgcFlightPhase.Descent,
+    ([flightPhase, isActiveOrCopyOfActive]) => !isActiveOrCopyOfActive || flightPhase !== FmgcFlightPhase.Descent,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.isActiveOrCopyOfActive,
   );
 
   // TO page subjects, refs and methods
