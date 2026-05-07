@@ -787,7 +787,9 @@ export class FwsCore {
 
   public readonly allBatteriesOff = Subject.create(false);
 
-  public readonly elecGalleyAndPaxSys = Subject.create(false);
+  public readonly elecGalleyOff = Subject.create(false);
+
+  public readonly elecPaxSysOff = Subject.create(false);
   /* 26 - FIRE */
 
   public readonly fduDiscreteWord = Arinc429Register.empty();
@@ -2023,6 +2025,8 @@ export class FwsCore {
 
   public readonly apuAvail = Subject.create(false);
 
+  public readonly apuAvailAndApuBleedOn = Subject.create(false);
+
   public readonly radioHeight1 = Arinc429Register.empty();
 
   public readonly radioHeight2 = Arinc429Register.empty();
@@ -2064,6 +2068,10 @@ export class FwsCore {
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
+
+  public readonly athrOff = Subject.create(false);
+
+  public readonly athrOn = Subject.create(false);
 
   public readonly autoThrustMode = Subject.create(0);
 
@@ -2902,7 +2910,8 @@ export class FwsCore {
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
     this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
     this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
-    this.elecGalleyAndPaxSys.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool'));
+    this.elecGalleyOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool')); // FIXME elecGalleyOff and elecPaxSysOff currently use same simvar as buttons are linked
+    this.elecPaxSysOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool'));
     this.elecEmerConfig.set(
       !this.ac1BusPowered.get() && !this.ac2BusPowered.get() && !this.ac3BusPowered.get() && !this.ac4BusPowered.get(),
     );
@@ -2985,6 +2994,8 @@ export class FwsCore {
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
+    this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
+
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
@@ -3025,6 +3036,8 @@ export class FwsCore {
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
     this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
+    this.athrOff.set(this.autoThrustStatus.get() === 0);
+    this.athrOn.set(this.autoThrustStatus.get() === 1);
     this.autoThrustMode.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
@@ -4293,9 +4306,9 @@ export class FwsCore {
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
-    // 0: Shut, 1: Auto, 2: Open
     this.xBleedSelectorKnob.set(this.xBleedSelectorKnobSimvar.get());
 
+    // 0: Shut, 1: Auto, 2: Open
     this.xBleedSelectorShut.set(this.xBleedSelectorKnob.get() === 0);
     this.xBleedSelectorAuto.set(this.xBleedSelectorKnob.get() === 1);
     this.xBleedSelectorOpen.set(this.xBleedSelectorKnob.get() === 2);
