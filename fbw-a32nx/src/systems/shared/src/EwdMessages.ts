@@ -503,8 +503,6 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['220001501', { text: '\x1b<2mAP OFF' }],
   ['220002101', { text: '\x1b<4mA/THR OFF' }],
   ['320000001', { text: '\x1b<4mAUTO BRK OFF' }],
-  ['290031001', { text: '\x1b<4m*HYD' }],
-  ['290031201', { text: '\x1b<4m*HYD' }],
   ['000006001', { text: '\x1b<3mSPEED BRK' }],
   ['000006002', { text: '\x1b<4mSPEED BRK' }],
   ['000020001', { text: '\x1b<3mPARK BRK' }],
