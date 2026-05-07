@@ -121,7 +121,7 @@ interface A32NXTcasBusBaseEvents {
   a32nx_tcas_fault_summary_word: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXTcasBusIndexedEvents = {
   [P in keyof Pick<A32NXTcasBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A32NXTcasBusBaseEvents[P];
