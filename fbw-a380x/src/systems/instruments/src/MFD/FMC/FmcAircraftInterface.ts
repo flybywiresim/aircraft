@@ -11,6 +11,8 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import {
+  AltitudeConstraint,
+  AltitudeDescriptor,
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429SignStatusMatrix,
@@ -1719,6 +1721,7 @@ export class FmcAircraftInterface {
         undefined,
       );
       this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
+      this.deleteConstraintsAboveCruiseLevel();
       SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
     }
   }
@@ -1744,6 +1747,63 @@ export class FmcAircraftInterface {
         element.cruiseStep = undefined; // TODO call a method on FPS so that we sync this (fms-v2)
         this.fmc.removeMessageFromQueue(NXSystemMessages.stepAhead.text);
       }
+    }
+  }
+
+  /**
+   * Per A380 FCOM (DSC-22-FMS-10-40-60), the FMS automatically deletes altitude constraints whose
+   * value is equal to or greater than the CRZ FL, and altitude constraint windows whose upper bound
+   * is equal to or greater than the CRZ FL. Triggered by SID/STAR insertion, a new CRZ FL, or step
+   * climb insertion. The deleted constraints are no longer used for climb/descent profile computation.
+   *
+   * @param planIndex Plan to operate on. Defaults to the active plan. The check is skipped for alternate plans.
+   */
+  public deleteConstraintsAboveCruiseLevel(planIndex: FlightPlanIndex = FlightPlanIndex.Active) {
+    if (!this.flightPlanService.has(planIndex)) {
+      return;
+    }
+    const plan = this.flightPlanService.get(planIndex);
+    const cruiseFl = plan.performanceData.cruiseFlightLevel.get();
+    if (!cruiseFl) {
+      return;
+    }
+
+    const cruiseAltFt = cruiseFl * 100;
+    let deletedAny = false;
+
+    for (let i = 0; i < plan.legCount; i++) {
+      const element = plan.elementAt(i);
+      if (!element || element.isDiscontinuity === true) {
+        continue;
+      }
+
+      const constraint = element.altitudeConstraint;
+      if (constraint && FmcAircraftInterface.isConstraintAboveOrAtCruise(constraint, cruiseAltFt)) {
+        element.clearAltitudeConstraints(); // TODO call a method on FPS so that we sync this (fms-v2)
+        deletedAny = true;
+      }
+    }
+
+    if (deletedAny) {
+      this.fmc.addMessageToQueue(NXSystemMessages.cstrDelAboveCrzFl, undefined, undefined);
+    }
+  }
+
+  /**
+   * Returns true if the constraint should be deleted under the "constraints above CRZ FL" rule.
+   * Per FCOM, this covers AT, AT OR ABOVE, AT OR BELOW with values >= CRZ FL, and WINDOW
+   * constraints whose upper bound (altitude1) is >= CRZ FL. Glide-slope/angle variants are not listed
+   * in the FCOM rule and are therefore left untouched.
+   */
+  private static isConstraintAboveOrAtCruise(constraint: AltitudeConstraint, cruiseAltFt: number): boolean {
+    switch (constraint.altitudeDescriptor) {
+      case AltitudeDescriptor.AtAlt1:
+      case AltitudeDescriptor.AtOrAboveAlt1:
+      case AltitudeDescriptor.AtOrBelowAlt1:
+      case AltitudeDescriptor.BetweenAlt1Alt2:
+        return constraint.altitude1 !== undefined && constraint.altitude1 >= cruiseAltFt;
+      default:
+        return false;
     }
   }
 
@@ -1795,6 +1855,7 @@ export class FmcAircraftInterface {
               undefined,
             );
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
+            this.deleteConstraintsAboveCruiseLevel();
             // used by FlightPhaseManager
             SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
           }
@@ -1871,6 +1932,7 @@ export class FmcAircraftInterface {
    */
   onUpdateCruiseLevel(newCruiseLevel: number) {
     SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
+    this.deleteConstraintsAboveCruiseLevel();
     this.updateConstraints();
 
     this.fmc.handleNewCruiseAltitudeEntered(newCruiseLevel);

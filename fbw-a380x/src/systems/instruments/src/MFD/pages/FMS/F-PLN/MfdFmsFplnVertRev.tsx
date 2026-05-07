@@ -762,6 +762,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       if (isValid) {
         this.props.flightPlanInterface.addOrUpdateCruiseStep(legIndex, altitude, this.loadedFlightPlanIndex.get());
+        this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(this.loadedFlightPlanIndex.get());
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);

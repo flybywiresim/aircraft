@@ -87,6 +87,7 @@ export const NXSystemMessages = {
   checkZfw: new TypeIIMessage('CHECK ZFW', true),
   comFplnReceivedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
+  cstrDelAboveCrzFl: new TypeIIMessage('CONSTRAINTS ABOVE CRZ FL : DELETED', false),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),

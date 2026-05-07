@@ -13,6 +13,7 @@
 ## 2024.2.0
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
+1. [A380X/FMS] Automatically delete altitude constraints at or above CRZ FL - @Popespice (Connor)
 
 ## 2024.1.0
 

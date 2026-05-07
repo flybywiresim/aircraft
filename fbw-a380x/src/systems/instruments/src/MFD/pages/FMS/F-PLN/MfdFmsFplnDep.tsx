@@ -86,6 +86,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
               },
             },
           ];
@@ -104,6 +109,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
               },
             });
           });
@@ -196,6 +206,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
             );
+            if (!isAltn) {
+              this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                this.loadedFlightPlanIndex.get(),
+              );
+            }
           },
         };
       });
