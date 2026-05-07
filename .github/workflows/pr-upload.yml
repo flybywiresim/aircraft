@@ -1,7 +1,7 @@
 name: Upload PR for Installer QA
 on:
   workflow_run:
-    workflows: ['PR Tests & Build']
+    workflows: ['PR Tests & Build', 'PR Tests & Build (FS2020)']
     types:
       - completed
 
