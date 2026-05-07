@@ -200,6 +200,18 @@ impl A320Electrical {
         self.alternating_current.gen_contactor_open(number)
     }
 
+    fn apu_gen_contactor_open(&self) -> bool {
+        self.alternating_current.apu_gen_contactor_open()
+    }
+
+    fn ext_pwr_contactor_closed(&self) -> bool {
+        self.alternating_current.ext_pwr_contactor_closed()
+    }
+
+    fn both_engine_gen_contactors_closed(&self) -> bool {
+        self.alternating_current.both_engine_gen_contactors_closed()
+    }
+
     pub fn in_emergency_elec(&self) -> bool {
         self.emergency_elec.is_active()
     }
@@ -279,6 +291,7 @@ impl A320ElectricalOverheadPanel {
         &mut self,
         electrical: &A320Electrical,
         electricity: &Electricity,
+        apu: &impl AuxiliaryPowerUnitElectrical,
     ) {
         self.ac_ess_feed
             .set_fault(!electrical.ac_ess_bus_is_powered(electricity));
@@ -289,6 +302,14 @@ impl A320ElectricalOverheadPanel {
             .for_each(|(index, gen)| {
                 gen.set_fault(electrical.gen_contactor_open(index + 1) && gen.is_on());
             });
+
+        self.apu_gen.set_fault(
+            self.apu_gen.is_on()
+                && apu.is_available() // TODO: Check from GCU
+                && electrical.apu_gen_contactor_open()
+                && !electrical.ext_pwr_contactor_closed()
+                && !electrical.both_engine_gen_contactors_closed(),
+        );
     }
 
     fn generator_is_on(&self, number: usize) -> bool {
@@ -1836,6 +1857,69 @@ mod a320_electrical_circuit_tests {
         assert!(!test_bed.gen_has_fault(gen_number));
     }
 
+    #[test]
+    fn when_apu_generator_faulted_apu_gen_line_contactor_opens_and_push_button_has_fault() {
+        let mut test_bed = test_bed_with().running_apu().and().failed_apu_gen().run();
+
+        assert!(test_bed.apu_gen_contactor_is_open());
+        assert!(test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_not_yet_available_apu_gen_push_button_does_not_have_fault() {
+        let mut test_bed = test_bed_with().run();
+
+        assert!(test_bed.apu_gen_contactor_is_open());
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_generator_faulted_and_apu_gen_push_button_off_does_not_have_fault() {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .and()
+            .failed_apu_gen()
+            .and()
+            .apu_gen_off()
+            .run();
+
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_generator_faulted_and_external_power_takes_over_apu_gen_push_button_does_not_have_fault(
+    ) {
+        let mut test_bed = test_bed_with()
+            .connected_external_power()
+            .and()
+            .ext_pwr_on()
+            .and()
+            .running_apu()
+            .and()
+            .failed_apu_gen()
+            .run();
+
+        assert!(test_bed.apu_gen_contactor_is_open());
+        assert!(test_bed.ext_pwr_contactor_is_closed());
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_generator_faulted_and_both_engine_generators_take_over_apu_gen_push_button_does_not_have_fault(
+    ) {
+        let mut test_bed = test_bed_with()
+            .running_engines()
+            .and()
+            .running_apu()
+            .and()
+            .failed_apu_gen()
+            .run();
+
+        assert!(test_bed.apu_gen_contactor_is_open());
+        assert!(test_bed.both_engine_gen_contactors_are_closed());
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
     #[rstest]
     #[case(1)]
     #[case(2)]
@@ -2086,6 +2170,10 @@ mod a320_electrical_circuit_tests {
             self.is_available = available;
         }
 
+        fn fail_generator(&mut self) {
+            self.gen.set_fault(true);
+        }
+
         fn command_closing_of_start_contactors(&mut self) {
             self.should_close_start_contactor = true;
         }
@@ -2130,29 +2218,35 @@ mod a320_electrical_circuit_tests {
     struct TestApuGenerator {
         identifier: ElectricalElementIdentifier,
         is_available: bool,
+        has_fault: bool,
     }
     impl TestApuGenerator {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 identifier: context.next_electrical_identifier(),
                 is_available: false,
+                has_fault: false,
             }
         }
 
         fn set_available(&mut self, available: bool) {
             self.is_available = available;
         }
+
+        fn set_fault(&mut self, has_fault: bool) {
+            self.has_fault = has_fault;
+        }
     }
     impl ApuGenerator for TestApuGenerator {
         fn update(&mut self, _n: Ratio, _is_emergency_shutdown: bool) {}
 
         fn output_within_normal_parameters(&self) -> bool {
-            self.is_available
+            self.is_available && !self.has_fault
         }
     }
     impl ProvidePotential for TestApuGenerator {
         fn potential(&self) -> ElectricPotential {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 ElectricPotential::new::<volt>(115.)
             } else {
                 ElectricPotential::default()
@@ -2160,12 +2254,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn potential_normal(&self) -> bool {
-            self.is_available
+            self.output_within_normal_parameters()
         }
     }
     impl ProvideFrequency for TestApuGenerator {
         fn frequency(&self) -> Frequency {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 Frequency::new::<hertz>(400.)
             } else {
                 Frequency::default()
@@ -2173,12 +2267,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn frequency_normal(&self) -> bool {
-            self.is_available
+            self.output_within_normal_parameters()
         }
     }
     impl ElectricitySource for TestApuGenerator {
         fn output_potential(&self) -> Potential {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 Potential::new(
                     PotentialOrigin::ApuGenerator(1),
                     ElectricPotential::new::<volt>(115.),
@@ -2468,6 +2562,10 @@ mod a320_electrical_circuit_tests {
             self.apu.set_available(true);
         }
 
+        fn failed_apu_gen(&mut self) {
+            self.apu.fail_generator();
+        }
+
         fn set_apu_master_sw_pb_on(&mut self) {
             self.apu_overhead.set_apu_master_sw_pb_on();
         }
@@ -2552,7 +2650,7 @@ mod a320_electrical_circuit_tests {
                 &TestAdirs::new(context.indicated_airspeed()),
             );
             self.overhead
-                .update_after_electrical(&self.elec, electricity);
+                .update_after_electrical(&self.elec, electricity, &self.apu);
             self.emergency_overhead
                 .update_after_electrical(context, &self.elec);
         }
@@ -2654,6 +2752,11 @@ mod a320_electrical_circuit_tests {
 
         fn failed_tr_2(mut self) -> Self {
             self.test_bed.fail(FailureType::TransformerRectifier(2));
+            self
+        }
+
+        fn failed_apu_gen(mut self) -> Self {
+            self.command(|a| a.failed_apu_gen());
             self
         }
 
@@ -2857,6 +2960,26 @@ mod a320_electrical_circuit_tests {
 
         fn gen_has_fault(&mut self, number: usize) -> bool {
             self.read_by_name(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
+        }
+
+        fn apu_gen_has_fault(&mut self) -> bool {
+            self.read_by_name("OVHD_ELEC_APU_GEN_PB_HAS_FAULT")
+        }
+
+        fn apu_gen_contactor_is_open(&mut self) -> bool {
+            !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_3XS_IS_CLOSED",
+            )
+        }
+
+        fn ext_pwr_contactor_is_closed(&mut self) -> bool {
+            self.read_by_name("ELEC_CONTACTOR_3XG_IS_CLOSED")
+        }
+
+        fn both_engine_gen_contactors_are_closed(&mut self) -> bool {
+            self.read_by_name("ELEC_CONTACTOR_9XU1_IS_CLOSED")
+                && self.read_by_name("ELEC_CONTACTOR_9XU2_IS_CLOSED")
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
