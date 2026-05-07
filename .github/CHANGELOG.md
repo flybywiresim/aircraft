@@ -125,6 +125,8 @@
 1. [A32NX/FE] Add pitch and low energy warnings, improve VCTrend computation - @lukecologne (luke)
 1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and APU GEN fault light - @FozzieHi (fozzie)
 1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where waypoints around lateral discontinuities and at enroute/procedure boundaries were sometimes not sent to the ND - @tracernz (Mike)
+1. [FMS] Fixed an issue where the WPT overlay on the ND showed terminal waypoints in enroute range - @tracernz (Mike)
 
 ## 0.14.0
 
