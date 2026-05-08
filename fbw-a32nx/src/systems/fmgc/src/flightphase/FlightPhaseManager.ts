@@ -25,14 +25,14 @@ export interface FlightPhaseManagerEvents {
   fmgc_flight_phase: FmgcFlightPhase;
 }
 
-function canInitiateDes(distanceToDestination: number): boolean {
+function canInitiateDes(distanceToDestination: number, hasStepDescent: boolean): boolean {
   const fl = Math.round(Simplane.getAltitude() / 100);
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
   const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
   // Can initiate descent? OR Can initiate early descent?
   return (
-    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
+    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl && !hasStepDescent) ||
     (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200)
   );
 }
@@ -109,14 +109,14 @@ export class FlightPhaseManager {
     this.phaseChangeListeners.push(cb);
   }
 
-  handleFcuAltKnobPushPull(distanceToDestination: number): void {
+  handleFcuAltKnobPushPull(distanceToDestination: number, hasStepDescent: boolean): void {
     switch (this.phase) {
       case FmgcFlightPhase.Takeoff:
         this.changePhase(FmgcFlightPhase.Climb);
         break;
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
-        if (canInitiateDes(distanceToDestination)) {
+        if (canInitiateDes(distanceToDestination, hasStepDescent)) {
           this.changePhase(FmgcFlightPhase.Descent);
         }
         break;
@@ -124,7 +124,7 @@ export class FlightPhaseManager {
     }
   }
 
-  handleFcuAltKnobTurn(distanceToDestination: number): void {
+  handleFcuAltKnobTurn(distanceToDestination: number, hasStepDescent: boolean): void {
     if (this.phase === FmgcFlightPhase.Cruise) {
       const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
       const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
@@ -134,14 +134,14 @@ export class FlightPhaseManager {
           (activeVerticalMode === VerticalMode.VS && VS < 0) ||
           (activeVerticalMode === VerticalMode.FPA && FPA < 0) ||
           activeVerticalMode === VerticalMode.DES) &&
-        canInitiateDes(distanceToDestination)
+        canInitiateDes(distanceToDestination, hasStepDescent)
       ) {
         this.changePhase(FmgcFlightPhase.Descent);
       }
     }
   }
 
-  handleFcuVSKnob(distanceToDestination: number, onStepClimbDescent: () => void): void {
+  handleFcuVSKnob(distanceToDestination: number, hasStepDescent: boolean, onStepClimbDescent: () => void): void {
     if (this.phase === FmgcFlightPhase.Climb || this.phase === FmgcFlightPhase.Cruise) {
       /** a timeout of 100ms is required in order to receive the updated autopilot vertical mode */
       setTimeout(() => {
@@ -152,7 +152,7 @@ export class FlightPhaseManager {
           (activeVerticalMode === VerticalMode.VS && VS < 0) ||
           (activeVerticalMode === VerticalMode.FPA && FPA < 0)
         ) {
-          if (canInitiateDes(distanceToDestination)) {
+          if (canInitiateDes(distanceToDestination, hasStepDescent)) {
             this.changePhase(FmgcFlightPhase.Descent);
           } else {
             onStepClimbDescent();

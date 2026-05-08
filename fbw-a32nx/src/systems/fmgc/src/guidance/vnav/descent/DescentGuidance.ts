@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -218,12 +218,19 @@ export class DescentGuidance {
     const isSpeedAuto = Simplane.getAutoPilotAirspeedManaged();
     const isApproachPhaseActive = this.observer.get().flightPhase === FmgcFlightPhase.Approach;
     const isHoldActive = this.guidanceController.isManualHoldActive();
+    const isCruisePhase = this.observer.get().flightPhase === FmgcFlightPhase.Cruise;
     const targetVerticalSpeed = this.aircraftToDescentProfileRelation.currentTargetVerticalSpeed();
 
     this.targetAltitudeGuidance = this.atmosphericConditions.currentPressureAltitude - linearDeviation;
 
     this.updatePathCaptureState(linearDeviation, targetVerticalSpeed);
     const shouldGoOffPath = this.pathCaptureState === PathCaptureState.OffPath;
+
+    if (isCruisePhase) {
+      this.requestedVerticalMode = RequestedVerticalMode.VsSpeed;
+      this.targetVerticalSpeed = -1000;
+      return;
+    }
 
     if ((!isHoldActive && shouldGoOffPath && linearDeviation > 0) || this.isInOverspeedCondition) {
       // above path
