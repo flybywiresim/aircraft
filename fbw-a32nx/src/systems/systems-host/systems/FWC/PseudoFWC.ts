@@ -2876,7 +2876,7 @@ export class PseudoFWC {
         !this.rtp['07E'],
     );
     this.fac2FaultWarning.set(
-      !(this.sdac00210Word.bitValue(20) || this.sdac00410Word.bitValue(29)) && this.rtp['07E'] && this.ltp['07C'],
+      !(this.sdac00210Word.bitValue(20) || this.sdac00410Word.bitValue(29)) && this.rtp['07E'] && !this.ltp['07C'],
     );
 
     // In reality FWC1 takes 1B, and FWC2 2B.
