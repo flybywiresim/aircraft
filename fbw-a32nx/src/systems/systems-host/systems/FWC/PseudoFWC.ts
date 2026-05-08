@@ -3107,6 +3107,28 @@ export class PseudoFWC {
       ),
     );
 
+    /* ELEC STUFF USED BY A LOT OF LOGIC */
+
+    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
+    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
+    const gen1LineContactorOff = this.sdac00201Word.bitValue(14);
+    const gen2LineContactorOff = this.sdac00210Word.bitValue(14);
+
+    this.engine1OnFor15s.write(this.engine1N2Sup.get() && this.engine1Master.get(), deltaTime);
+    this.engine2OnFor15s.write(this.engine2N2Sup.get() && this.engine2Master.get(), deltaTime);
+
+    this.gen1Inop.set(this.engine1OnFor15s.read() && gen1LineContactorOff);
+    this.gen2Inop.set(this.engine2OnFor15s.read() && gen2LineContactorOff);
+    this.genApuInop.set(this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19));
+
+    this.elecEmergency.set(
+      (!this.sdac00211Word.bitValue(15) &&
+        (this.sdac05001Word.bitValue(19) || this.gen1Inop.get()) &&
+        (this.sdac05010Word.bitValue(19) || this.gen2Inop.get()) &&
+        (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
+        (this.sdac00201Word.bitValue(20) && this.sdac00210Word.bitValue(20)),
+    );
+
     /* OTHER STUFF */
 
     this.airKnob.set(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum'));
@@ -3764,8 +3786,6 @@ export class PseudoFWC {
       !this.emerGen1LinePbOn.get() && (this.fwcFlightPhase.get() === 2 || this.flightPhase6For60Seconds.read()),
     );
 
-    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
-    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
     const idg1Disconnected = this.sdac05001Word.bitValue(13);
@@ -3780,15 +3800,6 @@ export class PseudoFWC {
 
     const gen1PbOff = this.sdac05001Word.bitValue(19);
     const gen2PbOff = this.sdac05010Word.bitValue(19);
-
-    this.engine1OnFor15s.write(this.engine1N2Sup.get() && this.engine1Master.get(), deltaTime);
-    this.engine2OnFor15s.write(this.engine2N2Sup.get() && this.engine2Master.get(), deltaTime);
-
-    const gen1LineContactorOff = this.sdac00201Word.bitValue(14);
-    const gen2LineContactorOff = this.sdac00210Word.bitValue(14);
-
-    this.gen1Inop.set(this.engine1OnFor15s.read() && gen1LineContactorOff);
-    this.gen2Inop.set(this.engine2OnFor15s.read() && gen2LineContactorOff);
 
     this.gen1FaultMemory.write(
       this.gen1FaultSetConfirmNode.write(!(idg1Disconnected || gen1PbOff) && this.gen1Inop.get(), deltaTime),
@@ -3864,7 +3875,6 @@ export class PseudoFWC {
       !this.gen2FaultMemory.read() || this.flightPhase110.get(),
     );
 
-    this.genApuInop.set(this.sdac05201Word.bitValue(12) && this.sdac03701Word.bitValue(19));
     this.apuGenFaultWarning.set(
       this.apuGenFaultMemory.write(
         this.apuGenFaultConfirmNode.write(!this.sdac05201Word.bitValue(14) && this.genApuInop.get(), deltaTime),
@@ -3904,13 +3914,6 @@ export class PseudoFWC {
     this.idg1DisconnectedWarning.set(this.idg1DisconnectWarn.get() && !idg1DisconnectedWarningPart2);
     this.idg2DisconnectedWarning.set(this.idg2DisconnectWarn.get() && !idg2DisconnectedWarningPart2);
 
-    this.elecEmergency.set(
-      (!this.sdac00211Word.bitValue(15) &&
-        (this.sdac05001Word.bitValue(19) || this.gen1Inop.get()) &&
-        (this.sdac05010Word.bitValue(19) || this.gen2Inop.get()) &&
-        (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
-        (this.sdac00201Word.bitValue(20) && this.sdac00210Word.bitValue(20)),
-    );
     // TODO: Check SMOKE
     this.elecEmerConfigWarning.set(this.elecEmergency.get() && !this.engDualFault.get());
 
