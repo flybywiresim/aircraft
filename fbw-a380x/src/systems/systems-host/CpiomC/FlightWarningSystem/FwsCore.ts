@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -350,11 +350,18 @@ export class FwsCore {
 
   public readonly highLandingFieldElevation = Subject.create(false);
 
-  public readonly noMobileSwitchPosition = Subject.create(0);
+  private readonly noMobileSwitchRegisteredSimvar = RegisteredSimVar.create(
+    'L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position',
+    SimVarValueType.Number,
+  );
+
+  public readonly noMobileSwitchOn = Subject.create(false);
 
   public readonly predWSOn = Subject.create(false);
 
-  public readonly seatBelt = Subject.create(0);
+  private readonly seatBeltSignRegisteredSimvar = RegisteredSimVar.createBoolean('A:CABIN SEATBELTS ALERT SWITCH');
+
+  public readonly seatBeltSwitchOn = Subject.create(false);
 
   public readonly strobeLightsOn = Subject.create(0);
 
@@ -932,7 +939,26 @@ export class FwsCore {
   public readonly fcdc12FaultCondition = Subject.create(false);
   public readonly fcdc2FaultCondition = Subject.create(false);
 
-  public readonly flapsHandle = Subject.create(0);
+  public readonly flapLeverZero = Subject.create(false);
+  public readonly flapLever1 = Subject.create(false);
+  public readonly flapLever2 = Subject.create(false);
+  public readonly flapLever3 = Subject.create(false);
+  public readonly flapLeverFull = Subject.create(false);
+  public readonly flapLeverLessThan2 = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.flapLever1,
+    this.flapLeverZero,
+  );
+
+  public readonly flapLeverLessThan3 = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.flapLever3,
+    this.flapLeverFull,
+  );
+
+  private readonly landingConfig3Selected = RegisteredSimVar.createBoolean('L:A32NX_SPEEDS_LANDING_CONF3');
+
+  public readonly flapsLeverInLandingConfiguration = Subject.create(false);
 
   public readonly lrElevFaultCondition = Subject.create(false);
 
@@ -2009,6 +2035,12 @@ export class FwsCore {
 
   public readonly ldgMemo = Subject.create(0);
 
+  public readonly toOrLdgMemoActive = MappedSubject.create(
+    ([toMemo, ldgMemo]) => toMemo > 0 || ldgMemo > 0,
+    this.toMemo,
+    this.ldgMemo,
+  );
+
   public readonly autoBrake = Subject.create(0);
 
   public readonly engSelectorPosition = Subject.create(0);
@@ -2289,7 +2321,7 @@ export class FwsCore {
         if (v) {
           this.init();
 
-          this.normalChecklists.reset(null);
+          this.normalChecklists.reset();
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
           this.abnormalSensed.reset();
@@ -2309,7 +2341,7 @@ export class FwsCore {
       this.shutDownFor50MinutesCheckListReset.sub((v) => {
         if (v) {
           if (!this.manualCheckListReset.get()) {
-            this.normalChecklists.reset(null);
+            this.normalChecklists.reset();
           }
           this.abnormalNonSensed.reset();
           this.abnormalSensed.reset();
@@ -2908,11 +2940,24 @@ export class FwsCore {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
-    this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatFlapsSystem1StatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
     this.slatFlapsSystem2StatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
     this.slatFlapsSystem1ActualPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
     this.slatFlapsSystem2ActualPositionWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+
+    const sfccSystemStatusWordToUse = this.slatFlapsSystem1StatusWord.isInvalid()
+      ? this.slatFlapsSystem2StatusWord
+      : this.slatFlapsSystem1StatusWord;
+
+    this.flapLeverZero.set(sfccSystemStatusWordToUse.bitValueOr(17, false));
+    this.flapLever1.set(sfccSystemStatusWordToUse.bitValueOr(18, false));
+    this.flapLever2.set(sfccSystemStatusWordToUse.bitValueOr(19, false));
+    this.flapLever3.set(sfccSystemStatusWordToUse.bitValueOr(20, false));
+    this.flapLeverFull.set(sfccSystemStatusWordToUse.bitValueOr(21, false));
+    const flap3Requested = this.landingConfig3Selected.get();
+    this.flapsLeverInLandingConfiguration.set(
+      (flap3Requested && this.flapLever3.get()) || (!flap3Requested && this.flapLeverFull.get()),
+    );
 
     this.flapSys1Fault.set(this.slatFlapsSystem1StatusWord.bitValueOr(12, false));
     this.flapSys2Fault.set(this.slatFlapsSystem2StatusWord.bitValueOr(12, false));
@@ -4299,9 +4344,9 @@ export class FwsCore {
     this.ir3UsedRight.set(attKnob === 2);
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
+    this.seatBeltSwitchOn.set(this.seatBeltSignRegisteredSimvar.get());
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
-    this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
+    this.noMobileSwitchOn.set(this.noMobileSwitchRegisteredSimvar.get() === 0);
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
@@ -4311,13 +4356,13 @@ export class FwsCore {
     this.feedTank1Low.set(this.feedTank1LowConfirm.write(feedTank1Low, deltaTime));
 
     const feedTank2Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:5', 'kilogram') < 1375;
-    this.feedTank2Low.set(this.feedTank1LowConfirm.write(feedTank2Low, deltaTime));
+    this.feedTank2Low.set(this.feedTank2LowConfirm.write(feedTank2Low, deltaTime));
 
     const feedTank3Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:6', 'kilogram') < 1375;
-    this.feedTank3Low.set(this.feedTank1LowConfirm.write(feedTank3Low, deltaTime));
+    this.feedTank3Low.set(this.feedTank3LowConfirm.write(feedTank3Low, deltaTime));
 
     const feedTank4Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:9', 'kilogram') < 1375;
-    this.feedTank4Low.set(this.feedTank1LowConfirm.write(feedTank4Low, deltaTime));
+    this.feedTank4Low.set(this.feedTank4LowConfirm.write(feedTank4Low, deltaTime));
 
     this.crossFeed1ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:46', 'kilogram') > 0.1);
     this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:47', 'kilogram') > 0.1);
@@ -4533,10 +4578,10 @@ export class FwsCore {
 
     // flap/slat MCDU disagree
     // FIXME should come from SDAC via ARINC429
-    this.slatFlapSelectionS0F0 = this.flapsHandle.get() === 0;
-    this.slatFlapSelectionS18F10 = this.flapsHandle.get() === 1; // FIXME assuming 1+F and not considering 1
-    this.slatFlapSelectionS22F15 = this.flapsHandle.get() === 2;
-    this.slatFlapSelectionS22F20 = this.flapsHandle.get() === 3;
+    this.slatFlapSelectionS0F0 = this.flapLeverZero.get();
+    this.slatFlapSelectionS18F10 = this.flapLever1.get(); // FIXME assuming 1+F and not considering 1
+    this.slatFlapSelectionS22F15 = this.flapLever2.get();
+    this.slatFlapSelectionS22F20 = this.flapLever3.get();
 
     const flapsMcduPos1Disagree = xor(this.slatFlapSelectionS18F10, mcduToFlapPos1);
     const flapsMcduPos2Disagree = xor(this.slatFlapSelectionS22F15, mcduToFlapPos2);
@@ -5899,7 +5944,7 @@ export class FwsCore {
       Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD',
       deltaTime,
     );
-    this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0, deltaTime);
+    this.approachAutoDisplaySlatsExtendedPulseNode.write(!this.flapLeverZero.get(), deltaTime);
 
     const chimeRequested =
       (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();

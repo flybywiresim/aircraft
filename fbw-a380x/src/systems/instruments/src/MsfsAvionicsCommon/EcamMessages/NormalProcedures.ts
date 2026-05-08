@@ -1,9 +1,13 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 export const deferredProcedureIds = [1000007, 1000008, 1000009, 1000011];
+export const DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID = 1000006;
+export const DEPATURE_CHANGE_NORMAL_CHECKLIST_ID_TEXT = '1000006';
+export const CHECKLIST_OVERVIEW_ID = 0;
+export const CHECKLIST_OVERVIEW_ID_TEXT = '0';
 
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */
@@ -152,7 +156,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   },
   1000006: {
     title: '<<DEPARTURE CHANGE>>',
-    onlyActivatedByRequest: true,
     items: [
       {
         name: 'RWY & SID',

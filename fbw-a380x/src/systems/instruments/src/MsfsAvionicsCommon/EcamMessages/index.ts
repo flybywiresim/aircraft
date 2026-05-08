@@ -733,8 +733,6 @@ export interface NormalProcedure {
     | TimedChecklistAction
     | TimedChecklistCondition
   )[];
-  /** Checklist is only activated by request, deactivated per default */
-  onlyActivatedByRequest?: boolean;
 }
 
 export enum DeferredProcedureType {

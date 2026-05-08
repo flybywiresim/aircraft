@@ -153,7 +153,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
-  write(set, reset) {
+  write(set: boolean, reset: boolean) {
     if (set && reset) {
       this.value = this.setStar;
     } else if (set && !this.value) {

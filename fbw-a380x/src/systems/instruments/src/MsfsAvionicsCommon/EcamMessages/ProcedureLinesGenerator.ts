@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
@@ -24,7 +24,11 @@ import {
   WdSpecialLine,
   WD_LINE_CHARACTERS,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
+import {
+  DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID,
+  DEPATURE_CHANGE_NORMAL_CHECKLIST_ID_TEXT,
+  EcamNormalProcedures,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 export enum ProcedureType {
@@ -530,7 +534,10 @@ export class ProcedureLinesGenerator {
           activeProcedure: this.procedureIsActive.get(),
           sensed: false,
           checked: this.checklistState.procedureCompleted ?? false,
-          text: `${'\xa0'.repeat(27)}C/L COMPLETE`,
+          text: `C/L COMPLETE${this.procedureId === DEPATURE_CHANGE_NORMAL_CHECKLIST_ID_TEXT ? ' AND RESET' : ''}`.padStart(
+            39,
+            '\xa0',
+          ),
           style: ChecklistLineStyle.ChecklistItem,
           firstLine: false,
           lastLine: false,
