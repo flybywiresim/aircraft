@@ -688,11 +688,7 @@ export class PseudoFWC {
 
   /* 24 - ELECTRICAL */
 
-  private readonly acESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_ess_bus_is_powered'), false);
-
-  private readonly dcESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
-
-  private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_2_bus_is_powered'), false);
+  private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_ess_bus_is_powered'), false);
 
   private readonly ratOutMemo = Subject.create(false);
 
@@ -1212,6 +1208,8 @@ export class PseudoFWC {
   private readonly lgciu1FaultWarning = Subject.create(false);
 
   private readonly lgciu2FaultWarning = Subject.create(false);
+
+  private readonly lgciu12FaultWarning = Subject.create(false);
 
   private readonly lgciu1DiscreteWord1 = Arinc429Register.empty();
 
@@ -1816,7 +1814,7 @@ export class PseudoFWC {
       PseudoFWC.AURAL_SC_INHIBIT_TIME,
     );
 
-    this.acESSBusPowered.sub((v) => {
+    this.acEssBusPowered.sub((v) => {
       if (v) {
         this.startupTimer.schedule(() => {
           this.startupCompleted.set(true);
@@ -1944,30 +1942,37 @@ export class PseudoFWC {
     SimVarValueType.PercentOver100,
   );
 
-  private readonly bat1PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO');
-  private readonly bat2PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO');
-  private readonly ac1BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_1_BUS_IS_POWERED');
-  private readonly ac2BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_2_BUS_IS_POWERED');
-  private readonly elecContactor9XU1Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED');
-  private readonly elecContactor9XU2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED');
-  private readonly elecContactor3XGVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED');
-
-  private readonly avionicsVentExtractPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_EXTRACT_TOGGLE');
-  private readonly avionicsVentBlowerPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_BLOWER_TOGGLE');
-
+  private readonly acEssBusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED');
   private readonly elecContactor8PHVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_8PH_IS_CLOSED');
   private readonly elecBusTiePbVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO');
   // TODO: Check actual parking brake position
   private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
   private readonly antiSkidOnVar = RegisteredSimVar.createBoolean('A:ANTISKID BRAKES ACTIVE');
 
+  private readonly elecContactor9XU1Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED');
+  private readonly ac1BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_1_BUS_IS_POWERED');
+  private readonly bat1PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO');
+
+  private readonly elecContactor9XU2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED');
+  private readonly ac2BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_2_BUS_IS_POWERED');
+  private readonly bat2PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO');
+
+  private readonly elecContactor3XGVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED');
+
+  private readonly avionicsVentExtractPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_EXTRACT_TOGGLE');
+  private readonly avionicsVentBlowerPbVar = RegisteredSimVar.createBoolean('L:A32NX_VENTILATION_BLOWER_TOGGLE');
+
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
+  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
+
   private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
   private readonly elecContactor2XEVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED');
-  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
-  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
+  private readonly dc2BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_DC_2_BUS_IS_POWERED');
+
+  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
+  private readonly dcEssBusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED');
 
   private readonly brakeAccuPressVar = RegisteredSimVar.create(
     'L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS',
@@ -2011,6 +2016,7 @@ export class PseudoFWC {
 
     this.sdac00200Word.set(0);
     this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00200Word.setBitValue(18, !this.acEssBusPoweredVar.get());
     this.sdac00200Word.setBitValue(19, !this.elecContactor8PHVar.get());
     this.sdac00200Word.setBitValue(21, !this.elecBusTiePbVar.get());
     this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
@@ -2044,10 +2050,12 @@ export class PseudoFWC {
     this.sdac00410Word.setBitValue(26, this.ir2AlignDiscreteVar.get());
     this.sdac00410Word.setBitValue(27, this.elecContactor2XEVar.get());
     this.sdac00410Word.setBitValue(28, this.ir2FaultDiscreteVar.get());
+    this.sdac00410Word.setBitValue(29, !this.dc2BusPoweredVar.get());
     this.sdac00411Word.set(0);
     this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
     this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
+    this.sdac00411Word.setBitValue(29, !this.dcEssBusPoweredVar.get());
 
     this.sdac00511Word.set(0);
     this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -2293,11 +2301,11 @@ export class PseudoFWC {
     this.yellowAccuLoPrWarning.set(
       this.yellowAccuLoPr.get() &&
         !(this.sdac00200Word.bitValue(22) && !yellowSysPressurised) &&
-        this.dcESSBusPowered.get() &&
+        !this.sdac00411Word.bitValue(29) &&
         !this.flightPhase9PulseNode.read(),
     );
     this.parkBrakeLowPrWarning.set(
-      this.dcESSBusPowered.get() &&
+      !this.sdac00411Word.bitValue(29) &&
         !yellowSysPressurised &&
         this.sdac00511Word.bitValue(22) &&
         this.sdac00200Word.bitValue(22) &&
@@ -2305,9 +2313,9 @@ export class PseudoFWC {
     );
 
     const leftCompressedHardwireLgciu1 =
-      this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
+      !this.sdac00411Word.bitValue(29) && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
-      this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
+      !this.sdac00410Word.bitValue(29) && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
 
     const lgciu1DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid();
     const lgciu2DiscreteWord1Invalid = this.lgciu2DiscreteWord1.isInvalid();
@@ -2859,25 +2867,27 @@ export class PseudoFWC {
     this.overspeedWarning.set(overspeedWarning);
 
     this.fac12FaultWarning.set(
-      !(!this.dc2BusPowered.get() && this.sdac00200Word.bitValue(19)) && this.ltp['07C'] && this.rtp['07E'],
+      !(this.sdac00410Word.bitValue(29) && this.sdac00200Word.bitValue(19)) && this.ltp['07C'] && this.rtp['07E'],
     );
 
     this.fac1FaultWarning.set(
-      !(!this.acESSBusPowered.get() || !this.dcESSBusPowered.get() || this.sdac00200Word.bitValue(19)) &&
+      !(this.sdac00200Word.bitValue(18) || this.sdac00411Word.bitValue(29) || this.sdac00200Word.bitValue(19)) &&
         this.ltp['07C'] &&
         !this.rtp['07E'],
     );
     this.fac2FaultWarning.set(
-      !(this.sdac00210Word.bitValue(20) || !this.dc2BusPowered.get()) && this.rtp['07E'] && this.ltp['07C'],
+      !(this.sdac00210Word.bitValue(20) || this.sdac00410Word.bitValue(29)) && this.rtp['07E'] && this.ltp['07C'],
     );
 
     // In reality FWC1 takes 1B, and FWC2 2B.
     const fcu1Healthy = this.fcu1DiscreteWord2.get().bitValueOr(24, false);
     const fcu2Healthy = this.fcu1DiscreteWord2.get().bitValueOr(25, false);
 
-    this.fcu12Fault.set(!fcu1Healthy && !fcu2Healthy && this.dcESSBusPowered.get() && this.dc2BusPowered.get());
-    this.fcu1Fault.set(!fcu1Healthy && fcu2Healthy && this.dcESSBusPowered.get());
-    this.fcu2Fault.set(fcu1Healthy && !fcu2Healthy && this.dc2BusPowered.get());
+    this.fcu12Fault.set(
+      !fcu1Healthy && !fcu2Healthy && !this.sdac00411Word.bitValue(29) && !this.sdac00410Word.bitValue(29),
+    );
+    this.fcu1Fault.set(!fcu1Healthy && fcu2Healthy && !this.sdac00411Word.bitValue(29));
+    this.fcu2Fault.set(fcu1Healthy && !fcu2Healthy && !this.sdac00410Word.bitValue(29));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
@@ -3159,7 +3169,7 @@ export class PseudoFWC {
         [1, 10].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false))
       ) &&
-      this.dcESSBusPowered.get() &&
+      !this.sdac00411Word.bitValue(29) &&
       (fcdc1DiscreteWord1.bitValueOr(23, false) ||
         fcdc2DiscreteWord1.bitValueOr(23, false) ||
         (!this.elac1HydConfirmNodeOutput.get() && se1f));
@@ -3181,7 +3191,7 @@ export class PseudoFWC {
         [1, 10].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false))
       ) &&
-      this.dc2BusPowered.get() &&
+      !this.sdac00410Word.bitValue(29) &&
       (fcdc1DiscreteWord1.bitValueOr(24, false) ||
         fcdc2DiscreteWord1.bitValueOr(24, false) ||
         (!this.elac2HydConfirmNodeOutput.get() && se2f));
@@ -3201,7 +3211,7 @@ export class PseudoFWC {
         [1, 10].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.bitValueOr(27, false) || fcdc2DiscreteWord3.bitValueOr(27, false))
       ) &&
-        this.dcESSBusPowered.get() &&
+        !this.sdac00411Word.bitValue(29) &&
         ss1f,
     );
     this.sec1FaultLine123Display.set(
@@ -3215,7 +3225,7 @@ export class PseudoFWC {
         [1, 10].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.bitValueOr(28, false) || fcdc2DiscreteWord3.bitValueOr(28, false))
       ) &&
-        this.dc2BusPowered.get() &&
+        !this.sdac00410Word.bitValue(29) &&
         ss2f,
     );
     this.sec2FaultLine123Display.set(
@@ -3229,7 +3239,7 @@ export class PseudoFWC {
         [1, 10].includes(this.fwcFlightPhase.get()) &&
         (fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false))
       ) &&
-        this.dc2BusPowered.get() &&
+        !this.sdac00410Word.bitValue(29) &&
         ss3f,
     );
     this.sec3FaultLine123Display.set(
@@ -3246,9 +3256,9 @@ export class PseudoFWC {
       fcdc2DiscreteWord2.isFailureWarning() &&
       fcdc2DiscreteWord3.isFailureWarning();
     const SFCDC12FT = SFCDC1FT && SFCDC2FT;
-    this.fcdc12FaultCondition.set(SFCDC12FT && this.dc2BusPowered.get());
+    this.fcdc12FaultCondition.set(SFCDC12FT && !this.sdac00410Word.bitValue(29));
     this.fcdc1FaultCondition.set(SFCDC1FT && !SFCDC12FT);
-    this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || !this.dc2BusPowered.get()));
+    this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || this.sdac00410Word.bitValue(29)));
 
     // ALTN LAW 2 computation
     const SPA2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
@@ -3555,8 +3565,11 @@ export class PseudoFWC {
     );
     this.lgciu12Fault.set(this.lgciu1Fault.get() && this.lgciu2Fault.get());
 
-    this.lgciu1FaultWarning.set(!this.lgciu12Fault.get() && this.dcESSBusPowered.get() && this.lgciu1Fault.get());
-    this.lgciu2FaultWarning.set(!this.lgciu12Fault.get() && this.dc2BusPowered.get() && this.lgciu2Fault.get());
+    this.lgciu1FaultWarning.set(!this.lgciu12Fault.get() && !this.sdac00411Word.bitValue(29) && this.lgciu1Fault.get());
+    this.lgciu2FaultWarning.set(!this.lgciu12Fault.get() && !this.sdac00410Word.bitValue(29) && this.lgciu2Fault.get());
+    this.lgciu12FaultWarning.set(
+      this.lgciu12Fault.get() && !this.sdac00410Word.bitValue(29) && !this.sdac00411Word.bitValue(29),
+    );
 
     // l/g gear not downlocked
     const lgciu1LhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValueOr(14, false);
@@ -6269,12 +6282,7 @@ export class PseudoFWC {
     3200195: {
       // LGCIU 1+2 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
-      simVarIsActive: MappedSubject.create(
-        ([lgciu12Fault, dc2BusPowered, dcESSBusPowered]) => lgciu12Fault && dc2BusPowered && dcESSBusPowered,
-        this.lgciu12Fault,
-        this.dc2BusPowered,
-        this.dcESSBusPowered,
-      ),
+      simVarIsActive: this.lgciu12FaultWarning,
       whichCodeToReturn: () => [0, 1, 2],
       codesToReturn: ['320019501', '320019502', '320019503'],
       memoInhibit: () => false,
