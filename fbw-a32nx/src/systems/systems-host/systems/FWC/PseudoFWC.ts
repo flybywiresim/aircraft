@@ -127,6 +127,11 @@ enum EngineState {
   Shutting = 4,
 }
 
+type PlugRow = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12' | '13' | '14' | '15';
+type PlugColumn = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K';
+type PlugPin = `${PlugRow}${PlugColumn}`;
+type Plug<TPin extends PlugPin> = Partial<Record<TPin, boolean>>;
+
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<
     A32NXAdrBusEvents &
@@ -297,6 +302,11 @@ export class PseudoFWC {
   private readonly sdac05010Word = Arinc429Register.empty();
 
   private readonly sdac05201Word = Arinc429Register.empty();
+
+  /* Plugs */
+  private readonly ltp: Plug<'07C'> = {};
+
+  private readonly rtp: Plug<'07E'> = {};
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -849,10 +859,6 @@ export class PseudoFWC {
   private readonly flapsHandle = Subject.create(0);
 
   private readonly lrElevFaultCondition = Subject.create(false);
-
-  private readonly fac1Healthy = RegisteredSimVar.createBoolean('L:A32NX_FAC_1_HEALTHY');
-
-  private readonly fac2Healthy = RegisteredSimVar.createBoolean('L:A32NX_FAC_2_HEALTHY');
 
   private readonly sec1FaultCondition = Subject.create(false);
 
@@ -1922,6 +1928,14 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
+  private readonly fac1HealthyVar = RegisteredSimVar.createBoolean('L:A32NX_FAC_1_HEALTHY');
+  private readonly fac2HealthyVar = RegisteredSimVar.createBoolean('L:A32NX_FAC_2_HEALTHY');
+
+  private acquirePlugs(): void {
+    this.ltp['07C'] = !this.fac1HealthyVar.get();
+    this.rtp['07E'] = !this.fac2HealthyVar.get();
+  }
+
   private readonly xpdr1StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
   private readonly xpdr2StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
 
@@ -2117,6 +2131,9 @@ export class PseudoFWC {
 
     /** SDAC acquisition */
     this.acquireSdac();
+
+    /** FWC hardwired input plug acquisition */
+    this.acquirePlugs();
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
@@ -2835,18 +2852,16 @@ export class PseudoFWC {
     this.overspeedWarning.set(overspeedWarning);
 
     this.fac12FaultWarning.set(
-      !(!this.dc2BusPowered.get() && this.sdac00200Word.bitValue(19)) &&
-        !this.fac1Healthy.get() &&
-        !this.fac2Healthy.get(),
+      !(!this.dc2BusPowered.get() && this.sdac00200Word.bitValue(19)) && this.ltp['07C'] && this.rtp['07E'],
     );
 
     this.fac1FaultWarning.set(
       !(!this.acESSBusPowered.get() || !this.dcESSBusPowered.get() || this.sdac00200Word.bitValue(19)) &&
-        !this.fac1Healthy.get() &&
-        this.fac2Healthy.get(),
+        this.ltp['07C'] &&
+        !this.rtp['07E'],
     );
     this.fac2FaultWarning.set(
-      !(!this.ac2BusPowered.get() || !this.dc2BusPowered.get()) && !this.fac2Healthy.get() && this.fac1Healthy.get(),
+      !(!this.ac2BusPowered.get() || !this.dc2BusPowered.get()) && this.rtp['07E'] && this.ltp['07C'],
     );
 
     // In reality FWC1 takes 1B, and FWC2 2B.
@@ -3433,8 +3448,8 @@ export class PseudoFWC {
     const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
 
     const rudderTrimConfig =
-      (this.fac1Healthy.get() && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
-      (this.fac2Healthy.get() && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+      (!this.ltp['07C'] && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
+      (!this.rtp['07E'] && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase129.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
@@ -4870,7 +4885,7 @@ export class PseudoFWC {
         8,
         !this.aircraftOnGround.get() ? 9 : null,
         !this.aircraftOnGround.get() ? 10 : null,
-        !this.fac1Healthy.get() && !this.aircraftOnGround.get() ? 11 : null,
+        this.ltp['07C'] && !this.aircraftOnGround.get() ? 11 : null,
         this.sdac00200Word.bitValue(21) ? 12 : null,
         !this.aircraftOnGround.get() ? 13 : null,
         !(this.sdac00300Word.bitValue(14) && this.sdac00300Word.bitValue(19)) && !this.aircraftOnGround.get()
