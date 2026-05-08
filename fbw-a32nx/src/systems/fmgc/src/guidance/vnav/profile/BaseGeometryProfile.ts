@@ -1,10 +1,9 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { Common } from '@fmgc/guidance/vnav/common';
-import { PseudoWaypointFlightPlanInfo } from '@fmgc/guidance/PseudoWaypoint';
 import {
   GeographicCruiseStep,
   DescentAltitudeConstraint,
@@ -12,9 +11,12 @@ import {
   MaxSpeedConstraint,
   VerticalCheckpoint,
   VerticalCheckpointReason,
+  ProfilePhase,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { WindInterface } from '../wind/WindProfile';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 export interface PerfToAltPrediction {
   altitude: Feet;
@@ -29,6 +31,7 @@ export interface PerfCrzToPrediction {
 }
 
 export abstract class BaseGeometryProfile {
+  constructor(protected config: AircraftConfig) {}
   public isReadyToDisplay: boolean = false;
 
   public checkpoints: VerticalCheckpoint[] = [];
@@ -45,6 +48,8 @@ export abstract class BaseGeometryProfile {
 
   abstract get distanceToPresentPosition(): NauticalMiles;
 
+  abstract readonly winds: WindInterface;
+
   get lastCheckpoint(): VerticalCheckpoint | null {
     if (this.checkpoints.length < 1) {
       return null;
@@ -55,18 +60,6 @@ export abstract class BaseGeometryProfile {
 
   addCheckpointFromLast(checkpointBuilder: (lastCheckpoint: VerticalCheckpoint) => Partial<VerticalCheckpoint>) {
     this.checkpoints.push({ ...this.lastCheckpoint, ...checkpointBuilder(this.lastCheckpoint) });
-  }
-
-  predictAtTime(secondsFromPresent: Seconds): PseudoWaypointFlightPlanInfo {
-    const distanceFromStart = this.interpolateDistanceAtTime(secondsFromPresent);
-    const { altitude, speed } = this.interpolateEverythingFromStart(distanceFromStart);
-
-    return {
-      distanceFromStart,
-      altitude,
-      speed,
-      secondsFromPresent,
-    };
   }
 
   private interpolateFromCheckpoints<T extends number, U extends number>(
@@ -189,6 +182,7 @@ export abstract class BaseGeometryProfile {
         remainingFuelOnBoard: this.checkpoints[0].remainingFuelOnBoard,
         speed: this.checkpoints[0].speed,
         mach: this.checkpoints[0].mach,
+        profilePhase: this.checkpoints[0].profilePhase,
       };
     }
 
@@ -215,12 +209,15 @@ export abstract class BaseGeometryProfile {
                 this.checkpoints[i + 1].altitude,
               )
             : this.checkpoints[i].altitude,
-          remainingFuelOnBoard: Common.interpolate(
-            distanceFromStart,
-            this.checkpoints[i].distanceFromStart,
-            this.checkpoints[i + 1].distanceFromStart,
-            this.checkpoints[i].remainingFuelOnBoard,
-            this.checkpoints[i + 1].remainingFuelOnBoard,
+          remainingFuelOnBoard: Math.max(
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
+            Common.interpolate(
+              distanceFromStart,
+              this.checkpoints[i].distanceFromStart,
+              this.checkpoints[i + 1].distanceFromStart,
+              this.checkpoints[i].remainingFuelOnBoard,
+              this.checkpoints[i + 1].remainingFuelOnBoard,
+            ),
           ),
           speed: Common.interpolate(
             distanceFromStart,
@@ -236,6 +233,7 @@ export abstract class BaseGeometryProfile {
             this.checkpoints[i].mach,
             this.checkpoints[i + 1].mach,
           ),
+          profilePhase: this.chooseProfilePhase(this.checkpoints[i].profilePhase, this.checkpoints[i + 1].profilePhase),
         };
       }
     }
@@ -247,6 +245,7 @@ export abstract class BaseGeometryProfile {
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard,
       speed: this.lastCheckpoint.speed,
       mach: this.lastCheckpoint.mach,
+      profilePhase: this.lastCheckpoint.profilePhase,
     };
   }
 
@@ -338,6 +337,7 @@ export abstract class BaseGeometryProfile {
         remainingFuelOnBoard: this.checkpoints[0].remainingFuelOnBoard,
         speed: this.checkpoints[0].speed,
         mach: this.checkpoints[0].mach,
+        profilePhase: this.checkpoints[0].profilePhase,
         ...additionalProperties,
       });
 
@@ -365,13 +365,17 @@ export abstract class BaseGeometryProfile {
             this.checkpoints[i].altitude,
             this.checkpoints[i + 1].altitude,
           ),
-          remainingFuelOnBoard: Common.interpolate(
-            distanceFromStart,
-            this.checkpoints[i].distanceFromStart,
-            this.checkpoints[i + 1].distanceFromStart,
-            this.checkpoints[i].remainingFuelOnBoard,
-            this.checkpoints[i + 1].remainingFuelOnBoard,
+          remainingFuelOnBoard: Math.max(
+            Common.interpolate(
+              distanceFromStart,
+              this.checkpoints[i].distanceFromStart,
+              this.checkpoints[i + 1].distanceFromStart,
+              this.checkpoints[i].remainingFuelOnBoard,
+              this.checkpoints[i + 1].remainingFuelOnBoard,
+            ),
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
           ),
+
           speed: Common.interpolate(
             distanceFromStart,
             this.checkpoints[i].distanceFromStart,
@@ -386,6 +390,7 @@ export abstract class BaseGeometryProfile {
             this.checkpoints[i].mach,
             this.checkpoints[i + 1].mach,
           ),
+          profilePhase: this.chooseProfilePhase(this.checkpoints[i].profilePhase, this.checkpoints[i + 1].profilePhase),
           ...additionalProperties,
         });
 
@@ -400,6 +405,7 @@ export abstract class BaseGeometryProfile {
       remainingFuelOnBoard: this.lastCheckpoint.remainingFuelOnBoard,
       speed: this.lastCheckpoint.speed,
       mach: this.lastCheckpoint.mach,
+      profilePhase: this.lastCheckpoint.profilePhase,
       ...additionalProperties,
     });
 
@@ -503,7 +509,13 @@ export abstract class BaseGeometryProfile {
     };
   }
 
-  addPresentPositionCheckpoint(presentPosition: LatLongAlt, remainingFuelOnBoard: number, mach: Mach, vman: Knots) {
+  addPresentPositionCheckpoint(
+    presentPosition: LatLongAlt,
+    remainingFuelOnBoard: number,
+    mach: Mach,
+    vman: Knots,
+    profilePhase: ProfilePhase,
+  ) {
     this.checkpoints.push({
       reason: VerticalCheckpointReason.PresentPosition,
       distanceFromStart: this.distanceToPresentPosition,
@@ -517,6 +529,8 @@ export abstract class BaseGeometryProfile {
       // Note that the `mach` field here is usually not the Mach number that the aircraft is predicted to travel, but rather the Mach number
       // at which the speed target would change to be a Mach number.
       mach,
+      // todo
+      profilePhase,
     });
   }
 
@@ -546,6 +560,14 @@ export abstract class BaseGeometryProfile {
     }
 
     return this.lastCheckpoint.secondsFromPresent;
+  }
+
+  private chooseProfilePhase(phase1: ProfilePhase, phase2: ProfilePhase): ProfilePhase {
+    if (phase1 !== ProfilePhase.Descent && phase2 === ProfilePhase.Descent) {
+      return ProfilePhase.Cruise;
+    }
+
+    return phase2;
   }
 }
 

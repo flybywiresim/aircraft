@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
-import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbNormalSensedSubMenuVector } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EwdAbnormalDict } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
 
 export class FwsAbnormalNonSensed {
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
 
   private readonly subscriptions: Subscription[] = [];
 
@@ -186,8 +186,7 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Fctl,
-      limitationsApprLdg: () => ['320400004', '700400001', '800400002'],
-      inopSysApprLdg: () => ['320300007'],
+      limitationsApprLdg: () => ['320400004', '700400001'],
       info: () => ['220200013', '220200012', '320200004'],
     },
     270900002: {
@@ -242,9 +241,8 @@ export class FwsAbnormalNonSensed {
       limitationsAllPhases: () => ['800400001'],
       limitationsApprLdg: () => [
         this.fws.flapsHandle.get() === 3 ? '270400001' : '',
-        ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004', '800400003'] : ''),
+        ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004'] : ''),
       ],
-      inopSysApprLdg: () => ['320300007'],
       info: () => ['220200011'],
     },
     270900005: {
@@ -273,8 +271,7 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
       limitationsAllPhases: () => [],
-      limitationsApprLdg: (checked) => (checked[2] ? ['270400004', '220400001', '800400004', '800400003'] : []),
-      inopSysApprLdg: () => ['320300007'],
+      limitationsApprLdg: (checked) => (checked[2] ? ['270400004', '220400001', '800400004'] : []),
     },
     320900006: {
       // WHEEL TIRE DAMAGE SUSPECTED
@@ -286,8 +283,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      limitationsApprLdg: () => ['800400002'],
-      inopSysApprLdg: () => ['320300007'],
       info: () => ['800200003'],
     },
     990900005: {
@@ -389,7 +384,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsApprLdg: () => ['800400002'],
     },
   };
 }

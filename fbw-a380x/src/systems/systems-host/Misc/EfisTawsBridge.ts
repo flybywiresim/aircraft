@@ -565,6 +565,7 @@ export class EfisTawsBridge implements Instrument {
         !this.ac4Powered.get() ||
         extremeLatitude,
     );
+    // FIXME add GPWS failure conditions for: FLAPS pos not avail
     this.gpws1Failed.set(
       this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
     );

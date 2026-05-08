@@ -56,6 +56,10 @@ export interface NavigationEvents {
   fms_nav_pressure_altitude: number | null;
   /** Whether GPS primary is in use. */
   fms_nav_gps_primary: boolean;
+  /** The selected wind direction in [0, 359.9], or null if invaliid/NCD */
+  fms_nav_wind_direction: number | null;
+  /** The selected wind speed in knots, or null if invalid/NCD */
+  fms_nav_wind_speed: number | null;
 }
 
 export class Navigation implements NavigationProvider {
@@ -126,6 +130,17 @@ export class Navigation implements NavigationProvider {
   private isGpirsAvailable = false;
   private readonly gpsPrimary = Subject.create(false);
 
+  private windDirection = Subject.create<number | null>(null);
+
+  private static readonly windDirectionVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_IR_${i + 1}_WIND_DIRECTION`,
+  );
+
+  private windSpeed = Subject.create<number | null>(null);
+
+  private static readonly windSpeedVars = Array.from({ length: 3 }, (_, i) => `L:A32NX_ADIRS_IR_${i + 1}_WIND_SPEED`);
+
   private readonly navaidSelectionManager: NavaidSelectionManager;
 
   private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
@@ -161,6 +176,8 @@ export class Navigation implements NavigationProvider {
       SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', v);
     }, true);
     this.gpsPrimary.sub((v) => this.publisher.pub('fms_nav_gps_primary', v, false, true), true);
+    this.windDirection.sub((v) => this.publisher.pub('fms_nav_wind_direction', v, false, true), true);
+    this.windSpeed.sub((v) => this.publisher.pub('fms_nav_wind_speed', v, false, true), true);
 
     this.nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
       NearbyFacilityType.Airport,
@@ -177,6 +194,7 @@ export class Navigation implements NavigationProvider {
     this.updatePosition();
     this.updateRadioHeight();
     this.updateAirData();
+    this.updateInertialReference();
 
     this.navaidSelectionManager.update(deltaTime);
     this.landingSystemSelectionManager.update(deltaTime);
@@ -257,6 +275,11 @@ export class Navigation implements NavigationProvider {
     }
   }
 
+  private updateInertialReference(): void {
+    this.windDirection.set(this.getAdiruValue(Navigation.windDirectionVars));
+    this.windSpeed.set(this.getAdiruValue(Navigation.windSpeedVars));
+  }
+
   private updatePosition(): void {
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -265,12 +288,32 @@ export class Navigation implements NavigationProvider {
     this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
   }
 
+  public setPilotRnp(rnp: number | null) {
+    if (rnp) {
+      this.requiredPerformance.setPilotRnp(rnp);
+    } else {
+      this.requiredPerformance.clearPilotRnp();
+    }
+  }
+
+  public isPilotRnp(): boolean {
+    return this.requiredPerformance.manualRnp;
+  }
+
+  public isAccuracyHigh(): boolean {
+    return this._accuracyHigh.get();
+  }
+
   public getBaroCorrectedAltitude(): number | null {
     return this.baroAltitude;
   }
 
   public getEpe(): number {
     return this.currentPerformance ?? Infinity;
+  }
+
+  public getActiveRnp(): number {
+    return this.requiredPerformance.activeRnp;
   }
 
   public getPpos(): Coordinates | null {
@@ -304,6 +347,18 @@ export class Navigation implements NavigationProvider {
 
   public getNavaidTuner(): NavaidTuner {
     return this.navaidTuner;
+  }
+
+  public getRequiredPerformance(): RequiredPerformance {
+    return this.requiredPerformance;
+  }
+
+  public getWindDirection(): number | null {
+    return this.windDirection.get();
+  }
+
+  public getWindSpeed(): number | null {
+    return this.windSpeed.get();
   }
 
   private resetSelectedNavaid(i: number): void {

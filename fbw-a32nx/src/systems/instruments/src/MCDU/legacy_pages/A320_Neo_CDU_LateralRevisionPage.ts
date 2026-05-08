@@ -14,42 +14,40 @@ import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class CDULateralRevisionPage {
   /**
-   *
-   * @param mcdu
-   * @param leg {FlightPlanLeg}
-   * @param legIndexFP
    * @constructor
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    leg,
-    legIndexFP,
+    leg: FlightPlanLeg | undefined,
+    legIndexFP: number | undefined,
     forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.LateralRevisionPage;
 
-    let coordinates = '';
-    if (leg && leg.definition && leg.definition.waypoint && leg.definition.waypoint.location) {
-      const lat = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['lat'], false);
-      const long = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['long'], true);
-      coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
-    }
-    /** @type {BaseFlightPlan} */
-    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+    const plan = mcdu.getFlightPlan(forPlan);
+    const targetPlan = inAlternate ? plan.alternateFlightPlan : plan;
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
 
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
-    const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === FlightPlanIndex.Active && !inAlternate;
+    const isFrom = legIndexFP === targetPlan.fromLegIndex && isActivePlan && !inAlternate;
     const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
     const isManual = leg && leg.isVectors();
 
     let waypointIdent = isPpos ? 'PPOS' : '---';
+    let coordinates = '';
+    if (leg && leg.definition && leg.definition.waypoint && leg.definition.waypoint.location) {
+      const lat = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['lat'], false);
+      const long = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['long'], true);
+      coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}${isActivePlan ? '[color]green' : ''}`;
+    }
 
     if (leg) {
       if (isDestination && targetPlan.destinationRunway) {
@@ -79,7 +77,7 @@ export class CDULateralRevisionPage {
       mcdu.onRightInput[0] = () => {
         CDUAvailableArrivalsPage.ShowPage(mcdu, targetPlan.destinationAirport, 0, false, forPlan, inAlternate);
       };
-    } else if (isDeparture || isPpos || isFrom) {
+    } else if (isActivePlan && (isDeparture || isPpos || isFrom)) {
       arrivalFixInfoCell = 'FIX INFO>';
       mcdu.onRightInput[0] = () => {
         CDUFixInfoPage.ShowPage(mcdu);
@@ -110,7 +108,7 @@ export class CDULateralRevisionPage {
           if (!success) {
             scratchpadCallback();
           }
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     }
@@ -134,7 +132,7 @@ export class CDULateralRevisionPage {
 
     let enableAltnLabel = '';
     let enableAltnCell = '';
-    if (targetPlan['alternateDestinationAirport'] && !isDeparture && !inAlternate) {
+    if (!isDeparture && !inAlternate && plan.alternateDestinationAirport) {
       enableAltnLabel = '{sp}ENABLE[color]cyan';
       enableAltnCell = '{ALTN[color]cyan';
 
@@ -142,28 +140,17 @@ export class CDULateralRevisionPage {
         return mcdu.getDelaySwitchPage();
       };
       mcdu.onLeftInput[3] = async () => {
-        // TODO fm position
-        const ppos = {
-          lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
-          long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
-        };
+        const cruiseLevel = mcdu.computeAlternateCruiseLevel(forPlan);
 
-        const flightPlan = mcdu.getFlightPlan(forPlan);
-        const alternateAirport = flightPlan.alternateDestinationAirport;
-        if (alternateAirport) {
-          const distance = Avionics.Utils.computeGreatCircleDistance(ppos, alternateAirport.location);
-          const cruiseLevel = CDULateralRevisionPage.determineAlternateFlightLevel(distance);
-
-          try {
-            await mcdu.flightPlanService.enableAltn(legIndexFP, cruiseLevel, forPlan);
-          } catch (e) {
-            console.error(e);
-            mcdu.logTroubleshootingError(e);
-            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-          }
-
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        try {
+          await mcdu.flightPlanService.enableAltn(legIndexFP, cruiseLevel, forPlan);
+        } catch (e) {
+          console.error(e);
+          mcdu.logTroubleshootingError(e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
         }
+
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 
@@ -176,7 +163,7 @@ export class CDULateralRevisionPage {
       mcdu.onRightInput[3] = async (value) => {
         await mcdu.flightPlanService.newDest(legIndexFP, value, forPlan, inAlternate);
 
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 
@@ -196,9 +183,14 @@ export class CDULateralRevisionPage {
       altnCell = '<ALTN[color]inop';
     }
 
+    const titleCell =
+      forPlan >= FlightPlanIndex.FirstSecondary
+        ? `SEC LAT REV{small} FROM {end}${waypointIdent.padEnd(7, '\xa0')}`
+        : `LAT REV{small} FROM {end}{green}${waypointIdent}{end}`;
+
     mcdu.setTemplate([
-      [`LAT REV{small} FROM {end}{green}${waypointIdent}{end}`],
-      ['', '', coordinates + '[color]green'],
+      [titleCell],
+      ['', '', coordinates],
       [departureCell, arrivalFixInfoCell],
       ['', crossingLabel],
       [offsetCell, crossingCell],
@@ -217,15 +209,5 @@ export class CDULateralRevisionPage {
     mcdu.onLeftInput[5] = () => {
       mcdu.returnPageCallback();
     };
-  }
-
-  static determineAlternateFlightLevel(distance) {
-    if (distance > 200) {
-      return 310;
-    } else if (distance > 100) {
-      return 220;
-    } else {
-      return 100;
-    }
   }
 }

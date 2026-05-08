@@ -12,7 +12,7 @@ export class RmpUtils {
     if (!RmpUtils.activeFrequencyCache.has(vhfIndex)) {
       RmpUtils.activeFrequencyCache.set(
         vhfIndex,
-        RegisteredSimVar.create<number>(`L:FBW_RMP_FREQUENCY_ACTIVE_${vhfIndex}`, 'frequency bcd32'),
+        RegisteredSimVar.create(`L:FBW_RMP_FREQUENCY_ACTIVE_${vhfIndex}`, 'frequency bcd32'),
       );
     }
     return RmpUtils.activeFrequencyCache.get(vhfIndex)!;
@@ -22,7 +22,7 @@ export class RmpUtils {
     if (!RmpUtils.standbyFrequencyCache.has(vhfIndex)) {
       RmpUtils.standbyFrequencyCache.set(
         vhfIndex,
-        RegisteredSimVar.create<number>(`L:FBW_RMP_FREQUENCY_STANDBY_${vhfIndex}`, 'frequency bcd32'),
+        RegisteredSimVar.create(`L:FBW_RMP_FREQUENCY_STANDBY_${vhfIndex}`, 'frequency bcd32'),
       );
     }
     return RmpUtils.standbyFrequencyCache.get(vhfIndex)!;
@@ -32,7 +32,7 @@ export class RmpUtils {
     if (!RmpUtils.activeModeCache.has(vhfIndex)) {
       RmpUtils.activeModeCache.set(
         vhfIndex,
-        RegisteredSimVar.create<number>(`L:FBW_RMP_MODE_ACTIVE_${vhfIndex}`, SimVarValueType.Enum),
+        RegisteredSimVar.create(`L:FBW_RMP_MODE_ACTIVE_${vhfIndex}`, SimVarValueType.Enum),
       );
     }
     return RmpUtils.activeModeCache.get(vhfIndex)!;
@@ -42,7 +42,7 @@ export class RmpUtils {
     if (!RmpUtils.standbyModeCache.has(vhfIndex)) {
       RmpUtils.standbyModeCache.set(
         vhfIndex,
-        RegisteredSimVar.create<number>(`L:FBW_RMP_MODE_STANDBY_${vhfIndex}`, SimVarValueType.Enum),
+        RegisteredSimVar.create(`L:FBW_RMP_MODE_STANDBY_${vhfIndex}`, SimVarValueType.Enum),
       );
     }
     return RmpUtils.standbyModeCache.get(vhfIndex)!;
