@@ -356,7 +356,11 @@ export class Geometry {
     const element = plan.legElementAt(index);
 
     // Only copy predictions from geometry to calculated if the leg is not using copied predictions (copied from primary to SEC)
-    if (element.calculated && !BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+    if (!BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+      if (!element.calculated) {
+        this.initializeCalculatedData(element, leg);
+      }
+
       element.calculated.path.length = 0;
 
       if (inboundTransition) {
@@ -548,6 +552,7 @@ export class Geometry {
   updateCalculatedData(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
     let cumulativeDistance = 0;
     let cumulativeDistanceWithTransitions = 0;
+    let lastCoordinates: Coordinates | undefined = undefined;
 
     const flightPlanLegs = plan.allLegs;
 
@@ -556,8 +561,12 @@ export class Geometry {
       const flightPlanLeg = flightPlanLegs[i];
       const geometryLeg = this.legs.get(i);
 
-      if (i === fromIndex || i === plan.firstMissedApproachLegIndex) {
+      if (i === fromIndex) {
         this.initializeCalculatedData(flightPlanLeg, geometryLeg);
+
+        if (geometryLeg?.terminationCoordinates) {
+          lastCoordinates = geometryLeg.terminationCoordinates;
+        }
       } else if (flightPlanLeg.isDiscontinuity === true) {
         const directDistance = this.computeDistanceInDiscontinuity(i);
 
@@ -592,6 +601,14 @@ export class Geometry {
         flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
         flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
         flightPlanLeg.calculated.outboundTrack = geometryLeg.outboundCourse;
+
+        if (geometryLeg.terminationCoordinates) {
+          if (lastCoordinates) {
+            flightPlanLeg.calculated.trueTrack = bearingTo(lastCoordinates, geometryLeg.terminationCoordinates);
+          }
+
+          lastCoordinates = geometryLeg.terminationCoordinates;
+        }
 
         geometryLeg.calculated = flightPlanLeg.calculated;
       }

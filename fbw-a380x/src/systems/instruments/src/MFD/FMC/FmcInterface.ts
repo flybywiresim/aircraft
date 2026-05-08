@@ -167,10 +167,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /**
    * Calculates the recommended maximum flight level.
+   * @param forplan The flightplan index to get the recommended max flight level for. Defaults to active flight plan.
    * @param grossWeight The gross weight in kilograms. Defaults to current gross weight (if undefined).
-   * @returns The recommended maxium flight level (in hundreds of feet) if gross weight is valid, else null.
+   * @returns The recommended maxium flight level (in hundreds of feet). If grossweight is not available or if the flightplan is not active, null is returned.
    */
-  getRecMaxFlightLevel(grossWeight?: number): number | null;
+  getRecMaxFlightLevel(forplan?: FlightPlanIndex, grossWeight?: number): number | null;
+
+  /** as altitude */
+  getRecMaxAltitude(forPlan?: FlightPlanIndex, grossWeight?: number): number | null;
 
   /** as flight level */
   getOptFlightLevel(): number | null;
@@ -274,8 +278,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
+   * @param details aditional text information to be appended to the message
    */
-  showFmsErrorMessage(errorType: FmsErrorType): void;
+  showFmsErrorMessage(errorType: FmsErrorType, details?: string): void;
 
   /**
    * Used to update the ND display

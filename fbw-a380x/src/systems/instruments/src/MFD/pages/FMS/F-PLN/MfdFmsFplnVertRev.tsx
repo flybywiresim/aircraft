@@ -1,3 +1,6 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import {
@@ -7,6 +10,7 @@ import {
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
+  Subscription,
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -20,12 +24,11 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AltitudeOrFlightLevelFormat,
-  FlightLevelFormat,
   SpeedKnotsFormat,
   TimeHHMMSSFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { maxCertifiedAlt, Vmo } from '@shared/PerformanceConstants';
+import { Vmo } from '@shared/PerformanceConstants';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
@@ -46,8 +49,16 @@ enum SpeedLimitType {
   DES,
 }
 
+enum SelectedPage {
+  RTA = 0,
+  SPD = 1,
+  CMS = 2,
+  ALT = 3,
+  STEP_ALTS = 4,
+}
+
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
-  private readonly selectedPageIndex = Subject.create(0);
+  private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
 
   private readonly availableWaypoints = ArraySubject.create<string>([]);
 
@@ -111,6 +122,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly speedLimitTransition = Subject.create<number | null>(null);
 
+  private readonly isSpeedLimitTransitionFL = Subject.create(false);
+
   private readonly speedLimitText = this.speedLimitType.map(
     (v) => `${v === SpeedLimitType.CLB ? 'CLB' : 'DES'} SPD LIMIT`,
   );
@@ -135,6 +148,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly altitudeClbDesConstraintVisibility = Subject.create('hidden');
 
+  private readonly altConstraintTransitionAltitude = Subject.create<number | null>(null);
+
+  private readonly altConstraintTransitionIsFlightLevel = Subject.create<boolean>(false);
+
   /** 0: CLB, 1: DES */
   private readonly selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
@@ -153,6 +170,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly altWindowUnitTrailing = Subject.create<string>('');
 
   // STEP ALTs page
+  /** Paused when not in STEP ALts page */
+  private stepsAltsClockSub?: Subscription;
   private readonly crzFl = Subject.create<number | null>(null);
   private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
 
@@ -164,8 +183,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private forceRebuildList = false;
 
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
+  private readonly stepLinesPredictionsVisibility = Array.from(Array(5), () =>
+    Subject.create<'visible' | 'hidden'>('hidden'),
+  );
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
-  private readonly stepAltsFlightLevel = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsAltitude = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistancesFormatted = Array.from(Array(5), (_, x) =>
     FmgcData.fmcFormatValue(this.stepAltsDistances[x]),
@@ -197,19 +219,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   protected onNewData(): void {
     const pd = this.loadedFlightPlan?.performanceData;
 
-    const ta = pd?.transitionAltitude.get();
-    if (ta) {
-      this.transitionAltitude.set(ta);
-    } else {
-      this.transitionAltitude.set(null);
-    }
-
-    const tl = pd?.transitionLevel.get();
-    if (tl) {
-      this.transitionLevel.set(tl * 100);
-    } else {
-      this.transitionLevel.set(null);
-    }
+    this.transitionAltitude.set(pd?.transitionAltitude.get() ?? null);
+    this.transitionLevel.set(pd?.transitionLevel.get() ?? null);
 
     const activeLegIndex = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).activeLegIndex;
     if (activeLegIndex) {
@@ -275,127 +286,152 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.altConstraintDisabled.set(false);
 
     // Load speed constraints
-
-    this.speedLimitType.set(
-      leg.constraintType === WaypointConstraintType.DES ||
+    const selectedIndex = this.selectedPageIndex.get();
+    if (selectedIndex === SelectedPage.SPD) {
+      const speedLimitType =
+        leg.constraintType === WaypointConstraintType.DES ||
         (this.activeFlightPhase.get() > FmgcFlightPhase.Cruise &&
           this.activeFlightPhase.get() < FmgcFlightPhase.GoAround)
-        ? SpeedLimitType.DES
-        : SpeedLimitType.CLB,
-    );
+          ? SpeedLimitType.DES
+          : SpeedLimitType.CLB;
+      this.speedLimitType.set(speedLimitType);
 
-    // TODO handle alternate?
-    const climbSpeedLimit = this.speedLimitType.get() === SpeedLimitType.CLB;
-
-    const speedLimitSpeed = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
-
-    const speedLimitAltitude = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
-
-    this.speedLimitSpeed.set(speedLimitSpeed);
-    this.speedLimitAltitude.set(speedLimitAltitude);
-    this.speedLimitPilotEntered.set(
-      climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
-        : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
-    );
-    this.speedLimitTransition.set(
-      climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.transitionAltitude.get()
-        : this.loadedFlightPlan.performanceData.transitionLevel.get(),
-    );
-
-    this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
-    this.constraintType.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 'CLB'
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 'DES'
-          : '',
-    );
-    this.spdConstraintTypeRadioSelected.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 0
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 1
-          : null,
-    );
-    this.altConstraintTypeRadioSelected.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 0
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 1
-          : null,
-    );
-    this.altitudeClbDesConstraintVisibility.set(
-      leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
-    );
-
-    this.cannotDeleteAltConstraint.set(
-      !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
-    );
-    this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
-
-    // Load altitude constraints
-    // FIXME missing a lot of cases here
-    switch (leg.altitudeConstraint?.altitudeDescriptor) {
-      case AltitudeDescriptor.AtAlt1:
-        this.selectedAltitudeConstraintOption.set(0);
-        break;
-      case AltitudeDescriptor.AtOrAboveAlt1:
-        this.selectedAltitudeConstraintOption.set(1);
-        break;
-      case AltitudeDescriptor.AtOrBelowAlt1:
-        this.selectedAltitudeConstraintOption.set(2);
-        break;
-      default:
-        this.selectedAltitudeConstraintOption.set(null);
-        break;
-    }
-    this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
-
-    const ac = leg.altitudeConstraint;
-    if (
-      ac &&
-      ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
-      ac.altitude1 !== undefined &&
-      ac.altitude2 !== undefined
-    ) {
-      // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
-      const transAlt =
-        leg.constraintType === WaypointConstraintType.DES ? this.transitionLevel.get() : this.transitionAltitude.get();
-
-      // FIXME check format when only the higher altitude is above TA/TL
-      const alt1IsFl = transAlt !== null && ac.altitude1 > transAlt;
-      const alt2IsFl = transAlt !== null && ac.altitude2 > transAlt;
-      this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
-      this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
-      this.altWindowUnitValue.set(
-        `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+      this.isSpeedLimitTransitionFL.set(speedLimitType === SpeedLimitType.DES);
+      this.speedLimitTransition.set(
+        speedLimitType === SpeedLimitType.CLB ? this.transitionAltitude.get() : this.transitionLevel.get(),
       );
 
-      this.altWindowLabelRef.instance.style.visibility = 'visible';
-      this.altWindowValueRef.instance.style.visibility = 'visible';
-    } else {
-      if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
-        console.error(
-          'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
-          leg.ident,
-          leg.definition.procedureIdent,
-          ac?.altitude1,
-          ac?.altitude2,
-        );
+      // TODO handle alternate?
+      const climbSpeedLimit = speedLimitType === SpeedLimitType.CLB;
+
+      const speedLimitSpeed = climbSpeedLimit
+        ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
+        : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
+
+      const speedLimitAltitude = climbSpeedLimit
+        ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
+        : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
+
+      this.speedLimitSpeed.set(speedLimitSpeed);
+      this.speedLimitAltitude.set(speedLimitAltitude);
+      this.speedLimitPilotEntered.set(
+        climbSpeedLimit
+          ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
+          : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
+      );
+
+      this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
+      this.constraintType.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 'CLB'
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 'DES'
+            : '',
+      );
+      this.spdConstraintTypeRadioSelected.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 0
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 1
+            : null,
+      );
+    } else if (selectedIndex === SelectedPage.ALT) {
+      this.altConstraintTypeRadioSelected.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 0
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 1
+            : null,
+      );
+      this.altitudeClbDesConstraintVisibility.set(
+        leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
+      );
+
+      this.cannotDeleteAltConstraint.set(
+        !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
+      );
+      this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
+
+      // Load altitude constraints
+      // FIXME missing a lot of cases here
+      switch (leg.altitudeConstraint?.altitudeDescriptor) {
+        case AltitudeDescriptor.AtAlt1:
+          this.selectedAltitudeConstraintOption.set(0);
+          break;
+        case AltitudeDescriptor.AtOrAboveAlt1:
+          this.selectedAltitudeConstraintOption.set(1);
+          break;
+        case AltitudeDescriptor.AtOrBelowAlt1:
+          this.selectedAltitudeConstraintOption.set(2);
+          break;
+        default:
+          this.selectedAltitudeConstraintOption.set(null);
+          break;
       }
-      this.altWindowLabelRef.instance.style.visibility = 'hidden';
-      this.altWindowValueRef.instance.style.visibility = 'hidden';
+      this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
+
+      const ac = leg.altitudeConstraint;
+      if (ac) {
+        const transAltIsFlightLevel = leg.constraintType === WaypointConstraintType.DES;
+        const transAlt = transAltIsFlightLevel ? this.transitionLevel.get() : this.transitionAltitude.get();
+        this.altConstraintTransitionAltitude.set(transAlt);
+
+        this.altConstraintTransitionIsFlightLevel.set(transAltIsFlightLevel);
+        if (
+          ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
+          ac.altitude1 !== undefined &&
+          ac.altitude2 !== undefined
+        ) {
+          // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
+          const transAltFeet = transAlt !== null ? (transAltIsFlightLevel ? transAlt * 100 : transAlt) : null;
+
+          // FIXME check format when only the higher altitude is above TA/TL
+          const alt1IsFl = this.isAltitudeConstraintFlightLevel(ac.altitude1, transAltFeet, leg);
+          const alt2IsFl = this.isAltitudeConstraintFlightLevel(ac.altitude2, transAltFeet, leg);
+          this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
+          this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
+          this.altWindowUnitValue.set(
+            `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+          );
+
+          this.altWindowLabelRef.instance.style.visibility = 'visible';
+          this.altWindowValueRef.instance.style.visibility = 'visible';
+        } else {
+          if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
+            console.error(
+              'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
+              leg.ident,
+              leg.definition.procedureIdent,
+              ac?.altitude1,
+              ac?.altitude2,
+            );
+          }
+          this.altWindowLabelRef.instance.style.visibility = 'hidden';
+          this.altWindowValueRef.instance.style.visibility = 'hidden';
+        }
+      }
     }
   }
 
+  private isAltitudeConstraintFlightLevel(
+    altitude: number,
+    transitionAltitude: number | null,
+    leg: ReadonlyFlightPlanLeg,
+  ): boolean {
+    if (transitionAltitude === null) {
+      return false;
+    }
+    if (leg.constraintType === WaypointConstraintType.DES) {
+      return altitude >= transitionAltitude;
+    }
+    if (leg.constraintType === WaypointConstraintType.CLB) {
+      return altitude > transitionAltitude;
+    }
+    return false;
+  }
+
   private updateCruiseSteps() {
-    if (this.loadedFlightPlan) {
+    if (this.loadedFlightPlan && this.selectedPageIndex.get() === SelectedPage.STEP_ALTS) {
       const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
       const cruiseSteps = this.loadedFlightPlan.allLegs
         .map((l, index) =>
@@ -408,6 +444,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       for (let i = 0; i < 5; i++) {
         this.stepAltsLineVisibility[i].set('hidden');
+        this.stepLinesPredictionsVisibility[i].set('hidden');
       }
 
       if (this.stepAltsNumberOfCruiseSteps.get() !== cruiseSteps.length) {
@@ -425,10 +462,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           if (this.forceRebuildList) {
             this.stepAltsWptIndices[line].set(null);
             this.stepAltsWptIndices[line].notify();
-            this.stepAltsFlightLevel[line].set(null);
+            this.stepAltsAltitude[line].set(null);
             this.forceRebuildList = false;
           }
-
+          this.stepLinesPredictionsVisibility[line].set('hidden');
           this.stepAltsLineVisibility[line].set('visible');
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
@@ -449,24 +486,31 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
         );
         const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
+        const step = cruiseSteps[i];
 
         this.stepAltsLineVisibility[line].set('visible');
         this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-        this.stepAltsFlightLevel[line].set(cruiseSteps[i].toAltitude / 100);
+        this.stepAltsAltitude[line].set(step.toAltitude);
+        this.stepLinesPredictionsVisibility[line].set(
+          wptIndex !== -1 && step.toAltitude !== null ? 'visible' : 'hidden',
+        );
 
         if (pred) {
-          this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
+          this.stepAltsDistances[line].set(pred.distanceFromAircraft - step.distanceBeforeTermination);
           this.stepAltsTimes[line].set(wptEta);
         } else {
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
         }
-        this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+        this.stepAltsIgnored[line].set(step.isIgnored);
 
         const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
-          cruiseSteps[i].toAltitude / 100 >
-            (this.props.fmcService.master.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100),
+          estGrossWeight !== null
+            ? step.toAltitude >
+                (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ??
+                  Infinity)
+            : false,
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -697,35 +741,31 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     return true;
   }
 
-  private tryAddCruiseStep(dropdownIndex: number | null, flightLevel: number | null) {
+  private tryAddCruiseStep(dropdownIndex: number | null, altitude: number | null) {
     const crzFl = this.crzFl.get();
     if (
       crzFl &&
       dropdownIndex !== null &&
       dropdownIndex in this.availableWaypointsToLegIndex &&
-      flightLevel !== null &&
+      altitude !== null &&
       this.loadedFlightPlan !== null
     ) {
       const legIndex = this.availableWaypointsToLegIndex[dropdownIndex];
       const cruiseSteps = this.loadedFlightPlan.allLegs
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
-      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, flightLevel * 100);
-
+      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
       const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
       if (
-        flightLevel >
-        (this.props.fmcService.master.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100)
+        estGrossWeight !== null &&
+        altitude >
+          (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ?? Infinity)
       ) {
-        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
+        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
       if (isValid) {
-        this.props.flightPlanInterface.addOrUpdateCruiseStep(
-          legIndex,
-          flightLevel * 100,
-          this.loadedFlightPlanIndex.get(),
-        );
+        this.props.flightPlanInterface.addOrUpdateCruiseStep(legIndex, altitude, this.loadedFlightPlanIndex.get());
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
@@ -739,45 +779,45 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
     this.props.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
     this.stepAltsWptIndices[lineIndex].set(null);
-    this.stepAltsFlightLevel[lineIndex].set(null);
+    this.stepAltsAltitude[lineIndex].set(null);
     this.forceRebuildList = true;
   }
 
   private handleCruiseStepWaypointModified(newWptIndex: number | null, lineIndex: number) {
     const oldWptIndex = this.stepAltsWptIndices[lineIndex].get();
-    const flightLevel = this.stepAltsFlightLevel[lineIndex].get();
+    const altitude = this.stepAltsAltitude[lineIndex].get();
 
     if (newWptIndex === null && oldWptIndex !== null) {
       // Remove step
       this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
-    } else if (oldWptIndex === null && newWptIndex !== null && flightLevel !== null) {
+    } else if (oldWptIndex === null && newWptIndex !== null && altitude !== null) {
       // Add new step
-      this.tryAddCruiseStep(newWptIndex, flightLevel);
-    } else if (oldWptIndex !== null && newWptIndex !== null && flightLevel !== null) {
+      this.tryAddCruiseStep(newWptIndex, altitude);
+    } else if (oldWptIndex !== null && newWptIndex !== null && altitude !== null) {
       // Change step's waypoint
       this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
-      this.tryAddCruiseStep(newWptIndex, flightLevel);
+      this.tryAddCruiseStep(newWptIndex, altitude);
     }
     this.stepAltsWptIndices[lineIndex].set(newWptIndex);
     this.updateCruiseSteps();
   }
 
-  private handleCruiseStepFlightLevelModified(newFlightLevel: number | null, lineIndex: number) {
+  private handleCruiseStepAltitudeModified(newAltitude: number | null, lineIndex: number) {
     const wptIndex = this.stepAltsWptIndices[lineIndex].get();
-    const oldFlightLevel = this.stepAltsFlightLevel[lineIndex].get();
+    const oldAltitude = this.stepAltsAltitude[lineIndex].get();
 
-    if (newFlightLevel === null && wptIndex !== null) {
+    if (newAltitude === null && wptIndex !== null) {
       // Remove step
       this.tryDeleteCruiseStep(lineIndex, wptIndex);
-    } else if (oldFlightLevel === null && newFlightLevel !== null && wptIndex !== null) {
+    } else if (oldAltitude === null && newAltitude !== null && wptIndex !== null) {
       // Add new step
-      this.tryAddCruiseStep(wptIndex, newFlightLevel);
-    } else if (oldFlightLevel !== null && newFlightLevel !== null && wptIndex !== null) {
+      this.tryAddCruiseStep(wptIndex, newAltitude);
+    } else if (oldAltitude !== null && newAltitude !== null && wptIndex !== null) {
       // Change step's flight level
       this.tryDeleteCruiseStep(lineIndex, wptIndex);
-      this.tryAddCruiseStep(wptIndex, newFlightLevel);
+      this.tryAddCruiseStep(wptIndex, newAltitude);
     }
-    this.stepAltsFlightLevel[lineIndex].set(newFlightLevel);
+    this.stepAltsAltitude[lineIndex].set(newAltitude);
     this.updateCruiseSteps();
   }
 
@@ -788,7 +828,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex)
         : undefined;
     return pred !== undefined && zfw !== null
-      ? zfw + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
+      ? zfw * 1000 + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
       : null;
   }
 
@@ -798,19 +838,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     switch (this.props.mfd.uiService.activeUri.get().extra) {
       case 'rta':
-        this.selectedPageIndex.set(0);
+        this.selectedPageIndex.set(SelectedPage.RTA);
         break;
       case 'spd':
-        this.selectedPageIndex.set(1);
+        this.selectedPageIndex.set(SelectedPage.SPD);
         break;
       case 'cms':
-        this.selectedPageIndex.set(2);
+        this.selectedPageIndex.set(SelectedPage.CMS);
         break;
       case 'alt':
-        this.selectedPageIndex.set(3);
+        this.selectedPageIndex.set(SelectedPage.ALT);
         break;
       case 'step-alts':
-        this.selectedPageIndex.set(4);
+        this.selectedPageIndex.set(SelectedPage.STEP_ALTS);
         break;
 
       default:
@@ -843,13 +883,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }),
     );
 
-    this.subs.push(
-      this.props.bus
-        .getSubscriber<ClockEvents>()
-        .on('realTime')
-        .atFrequency(0.5)
-        .handle(() => this.updateCruiseSteps()),
-    );
+    this.stepsAltsClockSub = this.props.bus
+      .getSubscriber<ClockEvents>()
+      .on('realTime')
+      .atFrequency(0.5)
+      .handle(() => this.updateCruiseSteps());
 
     this.subs.push(
       this.tmpyColor,
@@ -864,6 +902,22 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.spdConstraintTypeRadioSelected.sub(() => this.tryUpdateSpeedConstraint()),
       this.altConstraintTypeRadioSelected.sub(() => this.tryUpdateAltitudeConstraint()),
     );
+
+    this.subs.push(
+      this.selectedPageIndex.sub((val) => {
+        if (val === SelectedPage.STEP_ALTS) {
+          this.stepsAltsClockSub?.resume();
+        } else {
+          this.stepsAltsClockSub?.pause();
+        }
+        this.onNewData();
+      }, true),
+    );
+  }
+
+  public destroy(): void {
+    super.destroy();
+    this.stepsAltsClockSub?.destroy();
   }
 
   render(): VNode {
@@ -877,7 +931,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             <TopTabNavigator
               pageTitles={Subject.create(['RTA', 'SPD', 'CMS', 'ALT', 'STEP ALTs'])}
               selectedPageIndex={this.selectedPageIndex}
-              pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+              pageChangeCallback={(val) => {
+                this.selectedPageIndex.set(val);
+              }}
               selectedTabTextColor="white"
             >
               <TopTabNavigatorPage>
@@ -893,7 +949,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         alignText="center"
                         containerStyle="width: 175px;"
                         tmpyActive={this.tmpyActive}
-                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -933,7 +989,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       value={this.speedConstraintInput}
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -946,7 +1002,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       />
                     </div>
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between;">
                           <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                             DELETE
@@ -954,8 +1010,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             SPD CSTR
                           </span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => {
                         this.tryUpdateSpeedConstraint(undefined);
                       }}
@@ -975,26 +1031,28 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
                       enteredByPilot={this.speedLimitPilotEntered}
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
                     <span class="mfd-label bigger">AT OR BELOW</span>
                     <InputField<number>
-                      dataEntryFormat={new AltitudeOrFlightLevelFormat(this.speedLimitTransition)}
+                      dataEntryFormat={
+                        new AltitudeOrFlightLevelFormat(this.speedLimitTransition, this.isSpeedLimitTransitionFL)
+                      }
                       dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
                       mandatory={Subject.create(false)}
                       value={this.speedLimitAltitude}
                       enteredByPilot={this.speedLimitPilotEntered}
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
 
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between;">
                           <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                             DELETE
@@ -1002,8 +1060,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             SPD LIMIT
                           </span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => {
                         this.deleteSpeedLimit();
                       }}
@@ -1062,14 +1120,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     <div class="mfd-vert-rev-alt-cstr-sel">
                       <div class={{ invisible: this.selectedAltitudeConstraintInvisible }}>
                         <InputField<number>
-                          dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                          dataEntryFormat={
+                            new AltitudeOrFlightLevelFormat(
+                              this.altConstraintTransitionAltitude,
+                              this.altConstraintTransitionIsFlightLevel,
+                            )
+                          }
                           dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
                           mandatory={Subject.create(false)}
                           disabled={this.altConstraintDisabled}
                           value={this.altitudeConstraintInput}
                           alignText="flex-end"
                           tmpyActive={this.tmpyActive}
-                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -1082,7 +1145,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     </div>
                     <div class="mfd-vert-rev-alt-right-container">
                       <Button
-                        label={Subject.create(
+                        label={
                           <div class="fr" style="justify-content: space-between;">
                             <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                               DELETE
@@ -1090,8 +1153,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                               ALT CSTR
                             </span>
                             <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
+                          </div>
+                        }
                         onClick={() => {
                           this.deleteAltitudeConstraint();
                         }}
@@ -1116,9 +1179,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                   <div class="mfd-fms-fpln-labeled-box-container" style="width: 100%;">
                     <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
-                      <span class="mfd-label mfd-spacing-right">STEP ALTS FROM CRZ</span>
+                      <span class="mfd-label mfd-spacing-right">STEP ALTs FROM CRZ</span>
                       <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzFlFormatted}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}>
+                        {this.crzFlFormatted}
+                      </span>
                     </div>
                     <div style="width: 100%">
                       <div style="display: grid; grid-template-columns: 35% 25% 20% 20%; grid-auto-rows: 60px;">
@@ -1169,13 +1234,14 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             <div class="fc aic jcc" style="border-right: 1px solid #777777;">
                               <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
                                 <InputField<number>
-                                  dataEntryFormat={new FlightLevelFormat()}
-                                  value={this.stepAltsFlightLevel[li]}
+                                  dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                                  value={this.stepAltsAltitude[li]}
                                   containerStyle="width: 150px;"
                                   alignText="center"
                                   tmpyActive={this.tmpyActive}
-                                  onModified={(newFlightLevel) =>
-                                    this.handleCruiseStepFlightLevelModified(newFlightLevel, li)
+                                  onModified={(newAltitude) => this.handleCruiseStepAltitudeModified(newAltitude, li)}
+                                  errorHandler={(e) =>
+                                    this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)
                                   }
                                   hEventConsumer={this.props.mfd.hEventConsumer}
                                   interactionMode={this.props.mfd.interactionMode}
@@ -1198,8 +1264,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 'justify-content': 'flex-end',
                               }}
                             >
-                              <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
-                                <span class={{ 'mfd-value': true, sec: this.secActive }}>
+                              <div style={{ visibility: this.stepLinesPredictionsVisibility[li] }}>
+                                <span class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}>
                                   {this.stepAltsDistancesFormatted[li]}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">NM</span>
@@ -1207,8 +1273,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             </div>
                             <div class="fr aic jcc" style={{ display: this.stepAltsNoMessageDisplay[li] }}>
                               <span
-                                class={{ 'mfd-value': true, sec: this.secActive }}
-                                style={{ visibility: this.stepAltsLineVisibility[li] }}
+                                class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}
+                                style={{ visibility: this.stepLinesPredictionsVisibility[li] }}
                               >
                                 {this.stepAltsTimes[li]}
                               </span>
@@ -1217,7 +1283,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         ))}
                       </div>
                       <div style="flex-grow: 1" />
-                      <div clasS="fr jcc" style="flex: 1;">
+                      <div class="fr jcc" style="flex: 1;">
                         <span class="mfd-label biggest amber" style={{ visibility: this.stepNotAllowedAtVisibility }}>
                           {this.stepNotAllowedAt}
                         </span>
