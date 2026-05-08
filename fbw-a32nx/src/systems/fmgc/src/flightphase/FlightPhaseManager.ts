@@ -30,7 +30,11 @@ function canInitiateDes(distanceToDestination: number): boolean {
   const fl = Math.round(Simplane.getAltitude() / 100);
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
   const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
-  const stepDescentActive = VerticalCheckpointReason.StepDescent;
+  let i = 1;
+  i < this.profileManager.ndProfile.checkpoints.length;
+  i++;
+  const checkpoint = this.profileManager.ndProfile?.checkpoints[i];
+  const stepDescentActive = checkpoint?.reason === VerticalCheckpointReason.StepDescent;
 
   // Can initiate descent? OR Can initiate early descent?
   return (
