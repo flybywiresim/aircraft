@@ -1,6 +1,18 @@
 @import "../../style";
 @import "../../Common/definitions";
 
+@mixin GenericPulsingFill($name, $color) {
+    @keyframes #{$name} {
+        0%, 100% {
+            fill: $color;
+        }
+        50% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+    }
+    animation: #{$name} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 #crz-page {
 
     text {
@@ -44,9 +56,33 @@
             fill: $display-amber;
         }
 
+        &.Red {
+            fill: $display-red;
+        }
+
         &.Center {
             text-anchor: middle !important;
         }
+
+        &.GreenTextPulse {
+            @include GenericPulsingFill(green-pulse, $display-green);
+        }
+
+        &.AmberTextPulse {
+            @include GenericPulsingFill(amber-pulse, $display-amber);
+        }
+
+        &.RedTextPulse {
+            @include GenericPulsingFill(red-pulse, $display-red);
+        }
+    }
+
+    .Red {
+        stroke: $display-red !important;
+    }
+
+    .Amber {
+        stroke: $display-amber !important;
     }
 
     .Show {

@@ -1,11 +1,11 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { useSimVar, usePersistentProperty, useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { NXLogicMemoryNode, useUpdate, useSimVar, usePersistentProperty, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -193,6 +193,17 @@ export const PressureComponent = () => {
 
   const deltaPress = splitDecimals(deltaPsi);
 
+  const [vsShouldFlashElement, setVsShouldFlashElement] = useState(false);
+  const [vsShouldFlash] = useState(new NXLogicMemoryNode());
+
+  const [cabAltShouldFlashElement, setCabAltShouldFlashElement] = useState(false);
+  const [cabAltShouldFlash] = useState(new NXLogicMemoryNode());
+
+  useUpdate((_deltaTime) => {
+    setVsShouldFlashElement(vsShouldFlash.write(cabinVs > 1750 || cabinVs < -1750, cabinVs < 1650 || cabinVs > -1650));
+    setCabAltShouldFlashElement(cabAltShouldFlash.write(cabinAlt > 8800, cabinAlt < 8600));
+  });
+
   useEffect(() => {
     setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
     const nearestfifty = Math.round(landingElevation / 50) * 50;
@@ -309,10 +320,21 @@ export const PressureComponent = () => {
       <text className="Standard" x="218" y="370">
         @P
       </text>
-      <text id="Large Green" className="Large Green" x="290" y="370" textAnchor="end">
+      <text
+        id="Large Green"
+        className={`Large ${deltaPsi >= 8.5 || deltaPsi <= -0.4 ? (deltaPsi > 1.5 ? 'AmberTextPulse' : 'Amber') : deltaPsi > 1.5 ? 'GreenTextPulse' : 'Green'}`}
+        x="290"
+        y="370"
+        textAnchor="end"
+      >
         {deltaPress[0]}.
       </text>
-      <text id="standard green" className="Standard Green" x="290" y="370">
+      <text
+        id="standard green"
+        className={`Standard ${deltaPsi >= 8.5 || deltaPsi <= -0.4 ? (deltaPsi > 1.5 ? 'AmberTextPulse' : 'Amber') : deltaPsi > 1.5 ? 'GreenTextPulse' : 'Green'}`}
+        x="290"
+        y="370"
+      >
         {deltaPress[1]}
       </text>
       <text className="Standard Cyan" x="320" y="370">
@@ -322,7 +344,13 @@ export const PressureComponent = () => {
       <text className="Standard" x="480" y="380">
         CAB V/S
       </text>
-      <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">
+      <text
+        id="CabinVerticalSpeed"
+        className={`Large ${vsShouldFlashElement ? 'GreenTextPulse' : 'Green'}`}
+        x="515"
+        y="405"
+        textAnchor="end"
+      >
         {!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}
       </text>
       <text className="Medium Cyan" x="525" y="405">
@@ -332,7 +360,13 @@ export const PressureComponent = () => {
       <text className="Standard" x="480" y="450">
         CAB ALT
       </text>
-      <text id="CabinAltitude" className="Large Green" x="515" y="475" textAnchor="end">
+      <text
+        id="CabinAltitude"
+        className={`Large ${cabinAlt >= 9550 ? 'RedTextPulse' : cabAltShouldFlashElement ? 'GreenTextPulse' : 'Green'}`}
+        x="515"
+        y="475"
+        textAnchor="end"
+      >
         {Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}
       </text>
       <text className="Medium Cyan" x="525" y="475">
