@@ -124,12 +124,11 @@
 1. [A32NX/FMS] Update layout of DIR TO page to reflect HW H4 - @BlueberryKing (BlueberryKing)
 1. [A32NX/FE] Add pitch and low energy warnings, improve VCTrend computation - @lukecologne (luke)
 1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and APU GEN fault light - @FozzieHi (fozzie)
-<<<<<<< elec-emer-config
+1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where waypoints around lateral discontinuities and at enroute/procedure boundaries were sometimes not sent to the ND - @tracernz (Mike)
+1. [FMS] Fixed an issue where the WPT overlay on the ND showed terminal waypoints in enroute range - @tracernz (Mike)
 1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` master caution and `EMER GEN` memo - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
-=======
-1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
->>>>>>> master
 
 ## 0.14.0
 
