@@ -390,18 +390,88 @@ export class FwsAbnormalNonSensed {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => Array(47).fill(true),
-      whichItemsChecked: () => Array(47).fill(false),
+      whichItemsToShow: () => {
+        const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+
+        const beforeThrRed = this.fws.flightPhase.get() <= 7;
+        const afterThrRed = !beforeThrRed;
+
+        const blw = alt / 100 < 250;
+        const abv = !blw;
+        return [
+          true,
+          true,
+          true,
+          true, // 0-3: SAFE CONDUCT, AP, A/THR, FD
+          beforeThrRed,
+          beforeThrRed, // 4-5: TOGA, PITCH (BEFORE THR REDUCTION)
+          afterThrRed,
+          afterThrRed, // 6-7: CLB, PITCH (AFTER THR REDUCTION)
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw,
+          blw, // 8-22: BELOW FL 250 block
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv,
+          abv, // 23-43: ABOVE FL 250 block
+        ];
+      },
+      whichItemsChecked: () => {
+        const apOff = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool') === 0;
+        const athrOff = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'number') === 0;
+        const fdOff =
+          SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'Bool') === 0 &&
+          SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'Bool') === 0;
+        const spdBrkRetracted = SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') === 0;
+        const items = Array(44).fill(false);
+        items[1] = apOff;
+        items[2] = athrOff;
+        items[3] = fdOff;
+        items[10] = spdBrkRetracted;
+        items[25] = apOff;
+        items[26] = athrOff;
+        items[27] = fdOff;
+        return items;
+      },
       whichDynamicText: () => {
-        const texts = Array(47).fill('');
+        const texts = Array(44).fill('');
 
-        const alt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
 
-        // Dynamic pitch for Before thrust reduction (index 6)
-        texts[6] = alt < 10000 ? '12.5' : '10';
+        // Dynamic pitch for Before thrust reduction (index 5)
+        texts[5] = alt < 10000 ? '12.5' : '10';
 
-        // Dynamic pitch for After thrust reduction (index 9)
-        texts[9] = alt < 10000 ? '12.5' : alt < 25000 ? '10' : '5';
+        // Dynamic pitch for After thrust reduction (index 7)
+        texts[7] = alt < 10000 ? '12.5' : alt < 25000 ? '10' : '5';
 
         // Dynamic N1 thrust based on weight and altitude (interpolated)
         const gw = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kg');
@@ -422,7 +492,7 @@ export class FwsAbnormalNonSensed {
           else targetN1 = 99.1; // Default upper bound
         }
 
-        texts[32] = targetN1.toFixed(1);
+        texts[29] = targetN1.toFixed(1);
 
         return texts;
       },
