@@ -16,6 +16,7 @@ import {
   CHECKLIST_OVERVIEW_ID,
   deferredProcedureIds,
   DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID,
+  DEPATURE_CHANGE_NORMAL_CHECKLIST_ID_TEXT,
   EcamNormalProcedures,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import {
@@ -41,8 +42,6 @@ export interface FwsNormalChecklistsDict {
   [key: keyof typeof EcamNormalProcedures]: NormalEclSensedItems;
 }
 export class FwsNormalChecklists {
-  private static readonly DEPARTURE_CHANGE_ID_STRING = DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID.toString();
-
   public readonly sensedItems: FwsNormalChecklistsDict = {
     1000001: {
       whichItemsChecked: () => [null, null, this.fws.seatBeltSwitchOn.get(), null],
@@ -645,9 +644,7 @@ export class FwsNormalChecklists {
   setDepartureChangeHidden(value: boolean) {
     const overviewState = this.checklistState.getValue(CHECKLIST_OVERVIEW_ID);
     if (overviewState) {
-      const departureChangeIdx = Object.keys(EcamNormalProcedures).indexOf(
-        FwsNormalChecklists.DEPARTURE_CHANGE_ID_STRING,
-      );
+      const departureChangeIdx = Object.keys(EcamNormalProcedures).indexOf(DEPATURE_CHANGE_NORMAL_CHECKLIST_ID_TEXT);
       if (departureChangeIdx !== -1) {
         overviewState.itemsToShow[departureChangeIdx] = !value;
         this.checklistState.setValue(CHECKLIST_OVERVIEW_ID, overviewState);
