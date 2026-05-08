@@ -93,7 +93,7 @@ import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputat
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
 import { isLeg, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { ProfilePhase, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
@@ -1832,21 +1832,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
       this._onModeManagedHeading();
     }
+
+    const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
+    const hasStepDescent =
+      this.guidanceController?.vnavDriver.mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.StepDescent) !==
+      undefined;
+
     if (_event === 'MODE_SELECTED_ALTITUDE') {
-      const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-      this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
+      this.flightPhaseManager.handleFcuAltKnobPushPull(dist, hasStepDescent);
       this._onModeSelectedAltitude();
       this._onStepClimbDescent();
     }
     if (_event === 'MODE_MANAGED_ALTITUDE') {
-      const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-      this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
+      this.flightPhaseManager.handleFcuAltKnobPushPull(dist, hasStepDescent);
       this._onModeManagedAltitude();
       this._onStepClimbDescent();
     }
     if (_event === 'AP_DEC_ALT' || _event === 'AP_INC_ALT') {
-      const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-      this.flightPhaseManager.handleFcuAltKnobTurn(dist);
+      this.flightPhaseManager.handleFcuAltKnobTurn(dist, hasStepDescent);
       this._onTrySetCruiseFlightLevel();
     }
     if (_event === 'AP_DEC_HEADING' || _event === 'AP_INC_HEADING') {
@@ -1857,8 +1860,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', 1);
     }
     if (_event === 'VS') {
-      const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-      this.flightPhaseManager.handleFcuVSKnob(dist, this._onStepClimbDescent.bind(this));
+      this.flightPhaseManager.handleFcuVSKnob(dist, hasStepDescent, this._onStepClimbDescent.bind(this));
     }
   }
 

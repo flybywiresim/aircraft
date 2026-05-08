@@ -7,7 +7,7 @@ import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmg
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { NavGeometryProfile, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -394,7 +394,6 @@ export class DescentGuidance {
   private updateSpeedMarginState() {
     const { flightPhase } = this.observer.get();
     const isHoldActive = this.guidanceController.isManualHoldActive();
-    const isStepDescentActive = VerticalCheckpointReason.StepDescent;
 
     if (flightPhase !== FmgcFlightPhase.Descent) {
       this.changeSpeedState(DescentSpeedGuidanceState.NotInDescentPhase);
@@ -403,7 +402,6 @@ export class DescentGuidance {
 
     const shouldShowMargins =
       !isHoldActive &&
-      !isStepDescentActive &&
       this.verticalState === DescentVerticalGuidanceState.ProvidingGuidance &&
       Simplane.getAutoPilotAirspeedManaged();
     this.changeSpeedState(
