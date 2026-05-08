@@ -688,10 +688,6 @@ export class PseudoFWC {
 
   /* 24 - ELECTRICAL */
 
-  private readonly ac1BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_1_bus_is_powered'), false);
-
-  private readonly ac2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_2_bus_is_powered'), false);
-
   private readonly acESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_ess_bus_is_powered'), false);
 
   private readonly dcESSBusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
@@ -1635,6 +1631,10 @@ export class PseudoFWC {
 
   private readonly strobeLightsOn = Subject.create(0);
 
+  private readonly ra1Fault = Subject.create(false);
+
+  private readonly ra2Fault = Subject.create(false);
+
   private readonly tcasFault = Subject.create(false);
 
   private readonly tcasSensitivity = Subject.create(0);
@@ -1946,6 +1946,8 @@ export class PseudoFWC {
 
   private readonly bat1PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO');
   private readonly bat2PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO');
+  private readonly ac1BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_1_BUS_IS_POWERED');
+  private readonly ac2BusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_2_BUS_IS_POWERED');
   private readonly elecContactor9XU1Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED');
   private readonly elecContactor9XU2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED');
   private readonly elecContactor3XGVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED');
@@ -2017,10 +2019,12 @@ export class PseudoFWC {
     this.sdac00201Word.set(0);
     this.sdac00201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00201Word.setBitValue(14, !this.elecContactor9XU1Var.get());
+    this.sdac00201Word.setBitValue(20, !this.ac1BusPoweredVar.get());
     this.sdac00201Word.setBitValue(24, !this.bat1PbAutoVar.get());
     this.sdac00210Word.set(0);
     this.sdac00210Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00210Word.setBitValue(14, !this.elecContactor9XU2Var.get());
+    this.sdac00210Word.setBitValue(20, !this.ac2BusPoweredVar.get());
     this.sdac00210Word.setBitValue(24, !this.bat2PbAutoVar.get());
     this.sdac00211Word.set(0);
     this.sdac00211Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -2132,7 +2136,7 @@ export class PseudoFWC {
     /** SDAC acquisition */
     this.acquireSdac();
 
-    /** FWC hardwired input plug acquisition */
+    /** Plug acquisition */
     this.acquirePlugs();
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
@@ -2270,10 +2274,13 @@ export class PseudoFWC {
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
     // TODO: Check !NORM+ALTN BRK FAULT when implemented
-    const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
     const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
-    this.antiSkidOffWarning.set(this.sdac00200Word.bitValue(23) && !acBusOff && !phase2For60SecondsPulse);
+    this.antiSkidOffWarning.set(
+      this.sdac00200Word.bitValue(23) &&
+        !(this.sdac00201Word.bitValue(20) || this.sdac00210Word.bitValue(20)) &&
+        !phase2For60SecondsPulse,
+    );
 
     this.parkBrakeMemo.set(this.sdac00200Word.bitValue(22) && this.flightPhase12910.get());
 
@@ -2861,7 +2868,7 @@ export class PseudoFWC {
         !this.rtp['07E'],
     );
     this.fac2FaultWarning.set(
-      !(!this.ac2BusPowered.get() || !this.dc2BusPowered.get()) && this.rtp['07E'] && this.ltp['07C'],
+      !(this.sdac00210Word.bitValue(20) || !this.dc2BusPowered.get()) && this.rtp['07E'] && this.ltp['07C'],
     );
 
     // In reality FWC1 takes 1B, and FWC2 2B.
@@ -3110,6 +3117,8 @@ export class PseudoFWC {
       toConfigTest && this.fwcFlightPhase.get() === 2,
       this.fwcFlightPhase.get() !== 2,
     );
+    this.ra1Fault.set(this.height1Failed.get() && !this.sdac00201Word.bitValue(20));
+    this.ra2Fault.set(this.height2Failed.get() && !this.sdac00210Word.bitValue(20));
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.tcasControlPanelPosition.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number'));
@@ -3887,7 +3896,7 @@ export class PseudoFWC {
         (this.sdac05001Word.bitValue(19) || this.gen1Inop.get()) &&
         (this.sdac05010Word.bitValue(19) || this.gen2Inop.get()) &&
         (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
-        (!this.ac1BusPowered.get() && !this.ac2BusPowered.get()),
+        (this.sdac00201Word.bitValue(20) && this.sdac00210Word.bitValue(20)),
     );
     // TODO: Check SMOKE
     this.elecEmerConfigWarning.set(this.elecEmergency.get() && !this.engDualFault.get());
@@ -6291,11 +6300,7 @@ export class PseudoFWC {
     3400140: {
       // RA 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: MappedSubject.create(
-        ([height1Failed, ac1BusPowered]) => height1Failed && ac1BusPowered,
-        this.height1Failed,
-        this.ac1BusPowered,
-      ),
+      simVarIsActive: this.ra1Fault,
       whichCodeToReturn: () => [0],
       codesToReturn: ['340014001'],
       memoInhibit: () => false,
@@ -6306,11 +6311,7 @@ export class PseudoFWC {
     3400150: {
       // RA 2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: MappedSubject.create(
-        ([height2Failed, ac2BusPowered]) => height2Failed && ac2BusPowered,
-        this.height2Failed,
-        this.ac2BusPowered,
-      ),
+      simVarIsActive: this.ra2Fault,
       whichCodeToReturn: () => [0],
       codesToReturn: ['340015001'],
       memoInhibit: () => false,
