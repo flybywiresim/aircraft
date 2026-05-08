@@ -61,20 +61,10 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
           </div>
           <div class="mfd-atccom-msg-record-footer">
             <div>
-              <Button
-                label="ERASE ALL"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="ERASE ALL" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
             <div style="position:absolute; top: 0px; right:0px">
-              <Button
-                label="PRINT"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="PRINT" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
           </div>
         </div>
