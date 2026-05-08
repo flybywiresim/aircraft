@@ -34,6 +34,8 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
   whichItemsActive?: () => boolean[];
   whichItemsTimer?: () => (number | null | undefined)[];
+  /** Returns a string vector (same length as number of items). Optional. Used to replace `{DYNAMIC}` placeholders in item names/labels. */
+  whichDynamicText?: () => (string | undefined)[];
   /** 3 = master warning, 2 = master caution */
   failure: number;
   /** Index of ECAM page to be displayed on SD */
@@ -141,6 +143,7 @@ export class FwsAbnormalSensed {
               itemsActive: val.itemsActive,
               itemsToShow: val.itemsToShow,
               itemsTimeStamp: val.itemsTimeStamp,
+              dynamicText: val.dynamicText,
             }),
           );
           // Sort by decreasing importance

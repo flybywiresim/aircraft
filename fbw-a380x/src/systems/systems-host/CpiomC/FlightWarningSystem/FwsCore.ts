@@ -5397,6 +5397,7 @@ export class FwsCore {
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
+        const dynamicText = value.whichDynamicText ? value.whichDynamicText() : undefined;
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
 
         if (newWarning) {
@@ -5444,6 +5445,7 @@ export class FwsCore {
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
             itemsTimeStamp: itemsTimer,
+            dynamicText: dynamicText,
           });
 
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
@@ -5487,7 +5489,8 @@ export class FwsCore {
               (isTimedItem(item) !== undefined &&
                 itemsTimer !== undefined &&
                 previousPresentedState.itemsTimeStamp !== undefined &&
-                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx])
+                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx]) ||
+              (dynamicText !== undefined && previousPresentedState.dynamicText?.[idx] !== dynamicText[idx])
             ) {
               this.abnormalUpdatedItems.get(key)?.push(idx);
             }
@@ -5506,6 +5509,7 @@ export class FwsCore {
                     itemsTimer ? itemsTimer[index] : undefined,
                   )
                 : undefined,
+              dynamicText: dynamicText ? [...dynamicText] : undefined,
             });
           }
         }

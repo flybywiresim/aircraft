@@ -612,21 +612,38 @@ export class ProcedureLinesGenerator {
     let text = item.level ? '\xa0'.repeat(item.level) : '';
     text += '-';
     text += item.name;
-    if (itemComplete && item.labelCompleted) {
-      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-    } else if (itemComplete && item.labelNotCompleted) {
-      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-    } else if (!itemComplete && item.labelNotCompleted) {
+
+    let labelCompleted = item.labelCompleted;
+    let labelNotCompleted = item.labelNotCompleted;
+
+    const dynamicString = checklistState.dynamicText?.[itemIndex];
+    if (dynamicString !== undefined) {
+      if (labelCompleted && labelCompleted.includes('{DYNAMIC}')) {
+        labelCompleted = labelCompleted.replace('{DYNAMIC}', dynamicString);
+      }
+      if (labelNotCompleted && labelNotCompleted.includes('{DYNAMIC}')) {
+        labelNotCompleted = labelNotCompleted.replace('{DYNAMIC}', dynamicString);
+      }
+      if (text.includes('{DYNAMIC}')) {
+        text = text.replace('{DYNAMIC}', dynamicString);
+      }
+    }
+
+    if (itemComplete && labelCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${labelCompleted}`;
+    } else if (itemComplete && labelNotCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${labelNotCompleted}`;
+    } else if (!itemComplete && labelNotCompleted) {
       if (isTimedCheckListAction(item)) {
         text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
       }
       // Pad to 40 characters max
       const paddingNeeded = Math.max(
         0,
-        WD_LINE_CHARACTERS - 1 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
+        WD_LINE_CHARACTERS - 1 - (labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
       );
 
-      text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
+      text += ` ${'.'.repeat(paddingNeeded)}${labelNotCompleted}`;
     }
     return text;
   }

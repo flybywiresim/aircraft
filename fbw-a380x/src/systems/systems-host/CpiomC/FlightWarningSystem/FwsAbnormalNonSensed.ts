@@ -385,5 +385,52 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    340900003: {
+      // NAV UNRELIABLE AIR SPEED INDICATION
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => Array(47).fill(true),
+      whichItemsChecked: () => Array(47).fill(false),
+      whichDynamicText: () => {
+        const texts = Array(47).fill('');
+
+        const alt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+
+        // Dynamic pitch for Before thrust reduction (index 6)
+        texts[6] = alt < 10000 ? '12.5' : '10';
+
+        // Dynamic pitch for After thrust reduction (index 9)
+        texts[9] = alt < 10000 ? '12.5' : alt < 25000 ? '10' : '5';
+
+        // Dynamic N1 thrust based on weight and altitude (interpolated)
+        const gw = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kg');
+
+        let targetN1 = 0;
+
+        if (gw <= 350000) {
+          if (alt <= 25000) targetN1 = 80.5;
+          else if (alt <= 35000) targetN1 = 82.5;
+          else targetN1 = 86.8;
+        } else if (gw <= 450000) {
+          if (alt <= 25000) targetN1 = 86.6;
+          else if (alt <= 35000) targetN1 = 92.2;
+          else targetN1 = 95.8;
+        } else {
+          if (alt <= 25000) targetN1 = 92.1;
+          else if (alt <= 35000) targetN1 = 98.4;
+          else targetN1 = 99.1; // Default upper bound
+        }
+
+        texts[32] = targetN1.toFixed(1);
+
+        return texts;
+      },
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+      limitationsAllPhases: () => ['340400001'],
+      inopSysAllPhases: () => ['290100014'],
+    },
   };
 }

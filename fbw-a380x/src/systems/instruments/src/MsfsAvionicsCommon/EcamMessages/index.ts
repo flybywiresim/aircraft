@@ -20,7 +20,10 @@ import {
   EcamAbnormalSensedAta313233,
   EcamDeferredProcAta313233,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
-import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
+import {
+  EcamAbnormalSensedAta34,
+  EcamDeferredProcAta34,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
 import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
@@ -257,6 +260,7 @@ export const EcamLimitations: { [n: string]: string } = {
   320400002: '\x1b<5mL/G GRVTY EXTN ONLY',
   320400003: '\x1b<5mSTEER ENDUR LIMITED',
   320400004: '\x1b<5mAUTO BRK:DO NOT USE',
+  340400001: '\x1b<5mALL SPEED : MAX 330 / M .82',
   700400001: '\x1b<5mREV : SYM USE ONLY',
   800400001: '\x1b<5mFUEL CONSUMPT INCRSD',
   800400002: '\x1b<5mLDG DIST AFFECTED',
@@ -500,6 +504,7 @@ export const EcamInopSys: { [n: string]: string } = {
   290100011: '\x1b<4mMOST SPLRs',
   290100012: '\x1b<4mFLAPS',
   290100013: '\x1b<4mSLATS',
+  290100014: '\x1b<4mF/CTL ALTN LAW',
   290300001: '\x1b<4mG ELEC PMP A',
   290300002: '\x1b<4mG ELEC PMP B',
   290300003: '\x1b<4mY ELEC PMP A',
@@ -794,6 +799,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
   ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
+  ...EcamDeferredProcAta34,
 };
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
