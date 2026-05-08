@@ -224,6 +224,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     this.activeFlightPhase,
     this.isActiveOrCopyOfActive,
   );
+
+  private readonly atOrAfterClimbPhase = MappedSubject.create(
+    ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase >= FmgcFlightPhase.Climb,
+    this.activeFlightPhase,
+    this.isActiveOrCopyOfActive,
+  );
+
   private readonly crzPageInactive = MappedSubject.create(
     ([flightPhase, isActiveOrCopyOfActive]) => isActiveOrCopyOfActive && flightPhase > FmgcFlightPhase.Cruise,
     this.activeFlightPhase,
@@ -1001,7 +1008,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.destEfobAmber,
       this.flightPhasesSelectedPageIndex.sub((val) => this.drawPage(val)),
       this.costIndexDisabled,
-      this.costIndexDisabled,
+      this.costIndexModeDisabled,
+      this.atOrAfterClimbPhase,
     );
   }
 
@@ -2166,7 +2174,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                          inactive={this.clbPageInactive}
+                          inactive={this.atOrAfterClimbPhase}
                           value={this.climbPreselectedSpeed}
                           dataHandlerDuringValidation={(v) =>
                             this.props.flightPlanInterface.setPerformanceData(
@@ -2248,7 +2256,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div style="margin-bottom: 15px;">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                      inactive={this.clbPageInactive}
+                      inactive={this.atOrAfterClimbPhase}
                       enteredByPilot={this.thrRedAltIsPilotEntered}
                       value={this.thrRedAlt}
                       dataHandlerDuringValidation={async (v) =>
@@ -2290,7 +2298,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        inactive={this.clbPageInactive}
+                        inactive={this.atOrAfterClimbPhase}
                         readonlyValue={this.noiseN1}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
@@ -2336,7 +2344,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div style="margin-bottom: 15px;">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                      inactive={this.clbPageInactive}
+                      inactive={this.atOrAfterClimbPhase}
                       enteredByPilot={this.accelAltIsPilotEntered}
                       value={this.accelAlt}
                       dataHandlerDuringValidation={async (v) =>
@@ -2378,7 +2386,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        inactive={this.clbPageInactive}
+                        inactive={this.atOrAfterClimbPhase}
                         readonlyValue={this.noiseSpeed}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
@@ -2424,7 +2432,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        inactive={this.clbPageInactive}
+                        inactive={this.atOrAfterClimbPhase}
                         readonlyValue={this.noiseEndAltitude}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
@@ -2609,7 +2617,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number, number, false>
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                          inactive={this.crzPageInactive}
                           onModified={async (v) => {
                             this.props.flightPlanInterface.setPerformanceData(
                               'preselectedCruiseSpeed',
@@ -2637,7 +2644,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number, number, false>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                          inactive={this.crzPageInactive}
                           onModified={async (v) => {
                             this.props.flightPlanInterface.setPerformanceData(
                               'preselectedCruiseSpeed',
@@ -2898,7 +2904,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
                     <ConditionalComponent
-                      condition={this.desPageInactive}
+                      condition={this.notYetInDescent}
                       componentIfFalse={
                         <InputField<number>
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
@@ -2909,7 +2915,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          inactive={this.desPageInactive}
                           value={this.desManagedMachTarget}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
@@ -2937,7 +2942,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          inactive={this.desPageInactive}
                           value={this.desManagedSpdTarget}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
