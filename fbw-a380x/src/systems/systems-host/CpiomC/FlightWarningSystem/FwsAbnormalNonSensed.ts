@@ -358,7 +358,7 @@ export class FwsAbnormalNonSensed {
         this.fws.engineStartSelIgnition.get(),
         false,
         false,
-        this.fws.xBleedSelectorAuto.get(),
+        this.fws.xBleedSelectorOpen.get(),
         !this.fws.wingAntiIce.get(),
         false,
         false,

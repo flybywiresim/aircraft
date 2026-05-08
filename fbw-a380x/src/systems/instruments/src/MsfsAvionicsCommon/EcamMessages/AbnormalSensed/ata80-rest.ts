@@ -45,7 +45,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
       { name: 'FLAPS', sensed: true, labelNotCompleted: 'AT LEAST CONF 1', level: 2 },
       { name: 'L/G LEVER', sensed: true, labelNotCompleted: 'DOWN', level: 2 },
       { name: 'FUEL CONSUMPT INCRSD', sensed: false, level: 1 },
-      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM, level: 1 },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM, level: 1 }, // FIXME: doesn't seem to appear on ECAM
       { name: 'DURING FURTHER DESCENT : MAINTAIN MAX DIFF PRESS 1 PSI', sensed: false, level: 1 }, // TODO: needs to be split across two lines
       { name: 'EVAC', sensed: false, labelNotCompleted: 'PREPARE', level: 1 },
     ],
