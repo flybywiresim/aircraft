@@ -374,7 +374,9 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      info: () => ['800200003'], // needs to be done
+      limitationsApprLdg: (checked) => (checked[2] ? ['320400005'] : ['800400002']),
+      limitationsPfd: (checked) => (checked[2] ? ['320400005'] : []),
+      inopSysApprLdg: () => ['320300007'],
     },
     320900002: {
       // LDG WITH 2 ABNORM L/Gs ON SAME SIDE
@@ -436,7 +438,7 @@ export class FwsAbnormalNonSensed {
         false,
         this.fws.jettisonArm.get(),
         this.fws.jettisonActive.get(),
-        this.fws.crewOxygenSupply.get(),
+        !this.fws.crewOxygenSupply.get(),
         false,
         !!this.fws.seatBelt.get(),
         false,
@@ -480,7 +482,9 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      info: () => ['800200003'], // needs to be done
+      limitationsApprLdg: (checked) => (checked[2] ? ['320400005'] : ['800400002']),
+      limitationsPfd: (checked) => (checked[2] ? ['320400005'] : []),
+      inopSysApprLdg: () => ['320300007'],
     },
     320900003: {
       // LDG WITH 1 ABNORM WING OR BODY L/G
@@ -512,7 +516,9 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      info: () => ['800200003'], // needs to be done
+      limitationsApprLdg: (checked) => (checked[0] ? ['320400005'] : ['320400004', '800400002']),
+      limitationsPfd: (checked) => (checked[0] ? ['320400005'] : []),
+      inopSysApprLdg: () => ['320300007'],
     },
     320900004: {
       // LDG WITH 2 ABNORM BODY L/Gs
@@ -556,7 +562,9 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      info: () => ['800200003'], // needs to be done
+      limitationsApprLdg: (checked) => (checked[2] ? ['320400005'] : ['800400002']),
+      limitationsPfd: (checked) => (checked[2] ? ['320400005'] : []),
+      inopSysApprLdg: () => ['320300007'],
     },
     320900005: {
       // LDG WITH 2 ABNORM WING L/Gs
@@ -592,7 +600,10 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Wheel,
-      info: () => ['800200003'], // needs to be done
+      limitationsApprLdg: (checked) => (checked[2] ? ['320400005'] : ['800400002']),
+      limitationsPfd: (checked) => (checked[2] ? ['320400005'] : []),
+      inopSysApprLdg: () => ['320300007'],
+      info: () => ['320300005'],
     },
     320900006: {
       // WHEEL TIRE DAMAGE SUSPECTED
@@ -618,7 +629,7 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.None,
     },
     340900002: {
-      // IR ALIGNMENT IN ATT MODE
+      // FLUCTUATING AIRSPEED INDICATION
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900002)),
       notActiveWhenItemActive: [],
@@ -657,8 +668,8 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsAllPhases: (checked) => (checked[4] ? ['210400002'] : []),
-      limitationsPfd: (checked) => (checked[4] ? ['210400002'] : []),
+      limitationsAllPhases: (checked) => (checked[3] ? ['210400002'] : []),
+      limitationsPfd: (checked) => (checked[3] ? ['210400002'] : []),
       inopSysAllPhases: () => [
         this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300300001' : '',
         ...(this.fws.aicuResetSwitch1.get() ? ['300300002', '300300003', '300300004'] : ''),
