@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ComponentProps,
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  MathUtils,
   Subject,
   Subscribable,
   VNode,
@@ -63,18 +65,13 @@ interface VerticalSpeedIndicatorProps {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<A32NXTcasBusEvents & Arinc429Values>();
+  private readonly sub = this.props.bus.getArincSubscriber<A32NXTcasBusEvents & Arinc429Values & ClockEvents>();
 
-  private readonly verticalSpeed = ConsumerSubject.create(
-    this.sub.on('vs').withArinc429Precision(3),
-    Arinc429Word.empty(),
-  );
+  private readonly verticalSpeed = ConsumerSubject.create(this.sub.on('vs'), Arinc429Word.empty());
 
   private readonly lagFilter = new LagFilter(2);
 
-  private readonly filteredVerticalSpeed = this.verticalSpeed.map((vs) =>
-    this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000),
-  );
+  private readonly filteredVerticalSpeed = Subject.create(0);
 
   private readonly ra = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
@@ -210,6 +207,15 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     this.filteredVerticalSpeed,
     this.excessiveVs,
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.sub.on('simTime').handle(() => {
+      const filtered = this.lagFilter.step(this.verticalSpeed.get().value, this.props.instrument.deltaTime / 1000);
+      this.filteredVerticalSpeed.set(MathUtils.round(filtered, 0.1));
+    });
+  }
 
   render(): VNode {
     return (
