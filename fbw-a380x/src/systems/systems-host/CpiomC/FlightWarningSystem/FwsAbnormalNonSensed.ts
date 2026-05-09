@@ -390,110 +390,144 @@ export class FwsAbnormalNonSensed {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => {
-        const alt = this.fws.adrPressureAltitude.get() ?? 0;
-
-        const beforeThrRed = this.fws.flightPhase.get() <= 7;
-        const afterThrRed = !beforeThrRed;
-
-        const blw = alt / 100 < 250;
-        const abv = !blw;
-        return [
-          true,
-          true,
-          true,
-          true, // 0-3: SAFE CONDUCT, AP, A/THR, FD
-          beforeThrRed,
-          beforeThrRed, // 4-5: TOGA, PITCH (BEFORE THR REDUCTION)
-          afterThrRed,
-          afterThrRed, // 6-7: CLB, PITCH (AFTER THR REDUCTION)
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw,
-          blw, // 8-22: BELOW FL 250 block
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv,
-          abv, // 23-43: ABOVE FL 250 block
-        ];
-      },
-      whichItemsChecked: () => {
-        const apOff = !this.fws.apEngaged.get();
-        const athrOff = !this.fws.autoThrustEngaged.get();
-        const fdOff = !this.fws.fd1Active.get() && !this.fws.fd2Active.get();
-        const spdBrkRetracted = !this.fws.speedBrakeCommand.get();
-        const items = Array(44).fill(false);
-        items[1] = apOff;
-        items[2] = athrOff;
-        items[3] = fdOff;
-        items[10] = spdBrkRetracted;
-        items[25] = apOff;
-        items[26] = athrOff;
-        items[27] = fdOff;
-        return items;
-      },
-      whichDynamicText: () => {
-        const texts = Array(44).fill('');
-
-        const alt = this.fws.adrPressureAltitude.get() ?? 0;
-
-        // Dynamic pitch for Before thrust reduction (index 5)
-        texts[5] = alt < 10000 ? '12.5' : '10';
-
-        // Dynamic pitch for After thrust reduction (index 7)
-        texts[7] = alt < 10000 ? '12.5' : alt < 25000 ? '10' : '5';
-
-        // Dynamic N1 thrust based on weight and altitude (interpolated)
-        const gw = this.fws.grossWeight.get();
-
-        let targetN1 = 0;
-
-        if (gw <= 350000) {
-          if (alt <= 25000) targetN1 = 80.5;
-          else if (alt <= 35000) targetN1 = 82.5;
-          else targetN1 = 86.8;
-        } else if (gw <= 450000) {
-          if (alt <= 25000) targetN1 = 86.6;
-          else if (alt <= 35000) targetN1 = 92.2;
-          else targetN1 = 95.8;
-        } else {
-          if (alt <= 25000) targetN1 = 92.1;
-          else if (alt <= 35000) targetN1 = 98.4;
-          else targetN1 = 99.1; // Default upper bound
-        }
-
-        texts[29] = targetN1.toFixed(1);
-
-        return texts;
-      },
+      whichItemsToShow: () => [
+        true, // 0
+        true, // 1
+        true, // 2
+        true, // 3
+        this.fws.flightPhase.get() <= 7, // 4
+        this.fws.flightPhase.get() <= 7, // 5
+        this.fws.flightPhase.get() > 7, // 6
+        this.fws.flightPhase.get() > 7, // 7
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 8
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 9
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 10
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 11
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 12
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 13
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 14
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 15
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 16
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 17
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 18
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 19
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 20
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 21
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 22
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 23
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 24
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 25
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 26
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 27
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 28
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 29
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 30
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 31
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 32
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 33
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 34
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 35
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 36
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 37
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 38
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 39
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 40
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 41
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 42
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 43
+      ],
+      whichItemsChecked: () => [
+        false, // 0
+        !this.fws.apEngaged.get(), // 1
+        !this.fws.autoThrustEngaged.get(), // 2
+        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(), // 3
+        false, // 4
+        false, // 5
+        false, // 6
+        false, // 7
+        false, // 8
+        false, // 9
+        !this.fws.speedBrakeCommand.get(), // 10
+        false, // 11
+        false, // 12
+        false, // 13
+        false, // 14
+        false, // 15
+        false, // 16
+        false, // 17
+        false, // 18
+        false, // 19
+        false, // 20
+        false, // 21
+        false, // 22
+        false, // 23
+        false, // 24
+        !this.fws.apEngaged.get(), // 25
+        !this.fws.autoThrustEngaged.get(), // 26
+        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(), // 27
+        false, // 28
+        false, // 29
+        false, // 30
+        false, // 31
+        false, // 32
+        false, // 33
+        false, // 34
+        false, // 35
+        false, // 36
+        false, // 37
+        false, // 38
+        false, // 39
+        false, // 40
+        false, // 41
+        false, // 42
+        false, // 43
+      ],
+      whichDynamicText: () => [
+        '', // 0
+        '', // 1
+        '', // 2
+        '', // 3
+        '', // 4
+        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : '10', // 5
+        '', // 6
+        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : (this.fws.adrPressureAltitude.get() ?? 0) < 25000 ? '10' : '5', // 7
+        '', // 8
+        '', // 9
+        '', // 10
+        '', // 11
+        '', // 12
+        '', // 13
+        '', // 14
+        '', // 15
+        '', // 16
+        '', // 17
+        '', // 18
+        '', // 19
+        '', // 20
+        '', // 21
+        '', // 22
+        '', // 23
+        '', // 24
+        '', // 25
+        '', // 26
+        '', // 27
+        '', // 28
+        this.getNavUnreliableTargetN1(this.fws.adrPressureAltitude.get() ?? 0, this.fws.grossWeight.get()), // 29
+        '', // 30
+        '', // 31
+        '', // 32
+        '', // 33
+        '', // 34
+        '', // 35
+        '', // 36
+        '', // 37
+        '', // 38
+        '', // 39
+        '', // 40
+        '', // 41
+        '', // 42
+        '', // 43
+      ],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
@@ -501,4 +535,24 @@ export class FwsAbnormalNonSensed {
       inopSysAllPhases: () => ['290100014'],
     },
   };
+
+  private getNavUnreliableTargetN1(alt: number, gw: number): string {
+    let targetN1 = 0;
+
+    if (gw <= 350000) {
+      if (alt <= 25000) targetN1 = 80.5;
+      else if (alt <= 35000) targetN1 = 82.5;
+      else targetN1 = 86.8;
+    } else if (gw <= 450000) {
+      if (alt <= 25000) targetN1 = 86.6;
+      else if (alt <= 35000) targetN1 = 92.2;
+      else targetN1 = 95.8;
+    } else {
+      if (alt <= 25000) targetN1 = 92.1;
+      else if (alt <= 35000) targetN1 = 98.4;
+      else targetN1 = 99.1; // Default upper bound
+    }
+
+    return targetN1.toFixed(1);
+  }
 }
