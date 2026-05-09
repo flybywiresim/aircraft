@@ -441,9 +441,9 @@ export class FwsAbnormalNonSensed {
         !this.fws.apEngaged.get(),
         !this.fws.autoThrustEngaged.get(),
         !this.fws.fd1Active.get() && !this.fws.fd2Active.get(),
-        this.allThrToga,
+        this.fws.allThrottleToga.get(),
         false,
-        this.allThrClb,
+        this.fws.allThrottleClb.get(),
         false,
         false,
         false,
@@ -535,28 +535,6 @@ export class FwsAbnormalNonSensed {
       inopSysAllPhases: () => ['290100014'],
     },
   };
-
-  private get allThrToga(): boolean {
-    return (
-      this.fws.throttle1Position.get() >= 44 &&
-      this.fws.throttle2Position.get() >= 44 &&
-      this.fws.throttle3Position.get() >= 44 &&
-      this.fws.throttle4Position.get() >= 44
-    );
-  }
-
-  private get allThrClb(): boolean {
-    return (
-      this.fws.throttle1Position.get() >= 24 &&
-      this.fws.throttle1Position.get() <= 26 &&
-      this.fws.throttle2Position.get() >= 24 &&
-      this.fws.throttle2Position.get() <= 26 &&
-      this.fws.throttle3Position.get() >= 24 &&
-      this.fws.throttle3Position.get() <= 26 &&
-      this.fws.throttle4Position.get() >= 24 &&
-      this.fws.throttle4Position.get() <= 26
-    );
-  }
 
   private getNavUnreliableTargetN1(alt: number, gw: number): string {
     let targetN1 = 0;

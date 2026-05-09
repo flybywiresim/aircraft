@@ -2037,6 +2037,10 @@ export class FwsCore {
 
   public readonly allThrottleIdle = Subject.create(false);
 
+  public readonly allThrottleClb = Subject.create(false);
+
+  public readonly allThrottleToga = Subject.create(false);
+
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
@@ -3007,6 +3011,18 @@ export class FwsCore {
         this.throttle2Position.get() < 1 &&
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
+    );
+    this.allThrottleClb.set(
+      this.throttle1Position.get() >= 24 && this.throttle1Position.get() <= 26 &&
+      this.throttle2Position.get() >= 24 && this.throttle2Position.get() <= 26 &&
+      this.throttle3Position.get() >= 24 && this.throttle3Position.get() <= 26 &&
+      this.throttle4Position.get() >= 24 && this.throttle4Position.get() <= 26,
+    );
+    this.allThrottleToga.set(
+      this.throttle1Position.get() >= 44 &&
+      this.throttle2Position.get() >= 44 &&
+      this.throttle3Position.get() >= 44 &&
+      this.throttle4Position.get() >= 44,
     );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
