@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { useSimVar, useArinc429Var, usePersistentSetting, NXLogicMemoryNode, useUpdate } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -193,16 +193,16 @@ export const PressureComponent = () => {
 
   const deltaPress = splitDecimals(deltaPsi);
 
-const [vsShouldFlash, setVsShouldFlash] = useState(false);
-const [cabAltShouldFlash, setCabAltShouldFlash] = useState(false);
+  const [vsShouldFlash, setVsShouldFlash] = useState(false);
+  const [cabAltShouldFlash, setCabAltShouldFlash] = useState(false);
 
-useEffect(() => {
-  setVsShouldFlash((prev) =>Math.abs(cabinVs) > (prev ? 1650 : 1750));
-}, [cabinVs]);
+  useEffect(() => {
+    setVsShouldFlash((prev) => Math.abs(cabinVs) > (prev ? 1650 : 1750));
+  }, [cabinVs]);
 
-useEffect(() => {
-  setCabAltShouldFlash((prev) => cabinAlt > (prev ? 8600 : 8800));
-}, [cabinAlt]);
+  useEffect(() => {
+    setCabAltShouldFlash((prev) => cabinAlt > (prev ? 8600 : 8800));
+  }, [cabinAlt]);
 
   useEffect(() => {
     setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
@@ -346,7 +346,7 @@ useEffect(() => {
       </text>
       <text
         id="CabinVerticalSpeed"
-        className={`Large ${vsShouldFlashElement ? 'GreenTextPulse' : 'Green'}`}
+        className={`Large ${vsShouldFlash ? 'GreenTextPulse' : 'Green'}`}
         x="515"
         y="405"
         textAnchor="end"
@@ -362,7 +362,7 @@ useEffect(() => {
       </text>
       <text
         id="CabinAltitude"
-        className={`Large ${cabinAlt >= 9550 ? 'RedTextPulse' : cabAltShouldFlashElement ? 'GreenTextPulse' : 'Green'}`}
+        className={`Large ${cabinAlt >= 9550 ? 'RedTextPulse' : cabAltShouldFlash ? 'GreenTextPulse' : 'Green'}`}
         x="515"
         y="475"
         textAnchor="end"
