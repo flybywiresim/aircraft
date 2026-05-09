@@ -114,8 +114,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           error = true;
         }
       }
-      if (this.props.onModified !== undefined) {
-        this.props.onModified(-1, text); // selected index of -1 marks free text entry
+      if (!error) {
+        if (this.props.onModified !== undefined) {
+          this.props.onModified(-1, text); // selected index of -1 marks free text entry
+        }
       }
 
       this.dropdownMenuRef.instance.style.display = 'none';
