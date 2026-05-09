@@ -19,7 +19,7 @@ import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 import { HudElems } from './HUDUtils';
@@ -132,6 +132,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private autobrakeMode = Subject.create(0);
 
+  private readonly autobrakeActive = Subject.create(false);
+
   private preselActive = MappedSubject.create(
     ([machPresel, spdPresel]) => machPresel.isNormalOperation() || spdPresel.isNormalOperation(),
     this.machPreselVal,
@@ -161,13 +163,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
 
   private A3Message = MappedSubject.create(
-    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message]) =>
-      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message),
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, autobrakeActive]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, autobrakeActive),
     this.fcuAtsFmaDiscreteWord,
     this.ecu1MaintenanceWord6,
     this.ecu2MaintenanceWord6,
     this.autobrakeMode,
-    this.preselActive,
+    this.autobrakeActive,
   );
 
   private A3MessageActive = MappedSubject.create(([A3Message]) => A3Message[0] !== null, this.A3Message);
@@ -409,9 +411,17 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscr
 }
 
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
-  private sub = this.props.bus.getSubscriber<HUDSimvars & FcuBus & HudElems>();
-
   private text = Subject.create('');
+
+  private autobrakeActive = false;
+
+  private autobrakeMode = 0;
+
+  private decMode = 0;
+
+  private AThrMode = 0;
+
+  private isVisible = Subject.create('');
 
   private className = Subject.create('FontMediumSmaller Smaller MiddleAlign Green');
 
@@ -421,64 +431,135 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private fcuAtsDiscreteWord = new Arinc429Word(0);
 
-  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive').whenChanged(), false);
-  private readonly AThrMode = ConsumerSubject.create(this.sub.on('AThrMode').whenChanged(), 0);
-
-  private readonly autobrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
-  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
-
-  private readonly isVisible = MappedSubject.create(
-    ([AThrMode, decMode, autobrakeMode, autoBrakeActive]) => {
-      // ATHR mode overrides BRK LO and MED memo
-      if (
-        (AThrMode > 0 && AThrMode <= 6) ||
-        decMode === 2 ||
-        (autobrakeMode !== 1 && autobrakeMode !== 2) ||
-        autoBrakeActive === true
-      ) {
-        return 'none';
-      } else {
-        return 'block';
-      }
-    },
-    this.AThrMode,
-    this.decMode,
-    this.autobrakeMode,
-    this.autoBrakeActive,
-  );
-
-  private readonly autobrakeModeTxt = MappedSubject.create(
-    ([autobrakeMode, decMode]) => {
-      switch (autobrakeMode) {
-        case 0:
-          this.text.set('');
-          return '';
-        case 1:
-          decMode === 2 ? this.text.set('') : this.text.set('BRK LO ');
-          return 'BRK LO ';
-        case 2:
-          decMode === 2 ? this.text.set('') : this.text.set('BRK MED ');
-          return 'BRK MED ';
-        case 3:
-          // MAX will be shown in 3rd row
-          this.text.set('');
-          return '';
-        default:
-          this.text.set('');
-          return '';
-      }
-    },
-    this.autobrakeMode,
-    this.decMode,
-  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & FcuBus & HudElems>();
+
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+    sub
+      .on('AThrMode')
+      .whenChanged()
+      .handle((v) => {
+        this.AThrMode = v;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+    sub
+      .on('autoBrakeMode')
+      .whenChanged()
+      .handle((am) => {
+        this.autobrakeMode = am;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+
+    sub
+      .on('autoBrakeActive')
+      .whenChanged()
+      .handle((am) => {
+        this.autobrakeActive = am;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+
+    sub
+      .on('fcuAtsDiscreteWord')
+      .whenChanged()
+      .handle((word) => {
+        this.fcuAtsDiscreteWord = word;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+
+    sub
+      .on('fcuAtsFmaDiscreteWord')
+      .whenChanged()
+      .handle((word) => {
+        this.fcuAtsFmaDiscreteWord = word;
+        this.handleMessage();
+        this.setIsVisible();
+      });
+  }
+
+  setIsVisible() {
+    // ATHR mode overrides BRK LO and MED memo
+    console.log(
+      this.AThrMode +
+        ' ' +
+        this.decMode +
+        ' ' +
+        this.autobrakeMode +
+        ' ' +
+        this.autobrakeActive +
+        ' ' +
+        this.text.get(),
+    );
+    if (this.text.get() == '') {
+      this.isVisible.set('hidden');
+      return;
+    }
+    if (
+      (this.AThrMode > 0 && this.AThrMode <= 6) ||
+      this.decMode === 2 ||
+      (this.autobrakeMode !== 1 && this.autobrakeMode !== 2) ||
+      this.autobrakeActive === true
+    ) {
+      this.isVisible.set('hidden');
+      return;
+    } else {
+      this.isVisible.set('visible');
+      return;
+    }
+  }
+
+  handleMessage(): void {
+    const [_isShown, isTwoLine, _text, _amberFlashingBox] = getA1A2CellText(
+      this.fcuAtsDiscreteWord,
+      this.fcuAtsFmaDiscreteWord,
+      0,
+      this.autobrakeMode,
+      this.autobrakeActive,
+    );
+
+    if (this.autobrakeActive || isTwoLine) {
+      this.text.set('');
+      this.isVisible.set('hidden');
+      return;
+    }
+
+    switch (this.autobrakeMode) {
+      case 0:
+        this.text.set('');
+        break;
+      case 1:
+        this.decMode === 2 ? this.text.set('') : this.text.set('BRK LO ');
+        this.setIsVisible();
+        break;
+      case 2:
+        this.decMode === 2 ? this.text.set('') : this.text.set('BRK MED ');
+        this.setIsVisible();
+        break;
+      case 3:
+        // MAX will be shown in 3rd row
+        this.text.set('');
+        break;
+      default:
+        break;
+    }
   }
 
   render(): VNode {
     return (
       <g id="A2Cell">
-        <path id="dash" display={this.isVisible} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
+        <path id="dash" visibility={this.isVisible} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
         <text ref={this.autoBrkRef} class={this.className} x="83.9" y="68.75" style="white-space: pre">
           {this.text}
         </text>
@@ -654,6 +735,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   private autoBrakeMode = 0;
 
   private decMode = 0;
+  private prevDecMode = 0;
 
   constructor(props) {
     super(props, 9);
@@ -669,17 +751,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     );
     this.isShown = isShown;
 
-    const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML;
+    const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML && this.prevDecMode === this.decMode;
     if (hasChanged) {
       this.displayModeChangedPath();
-      if (this.decMode === 2) {
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
-      }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
-      if (this.decMode === 2) {
-        this.handleDeclutterMode(true, this.decMode, this.cellRef);
-      }
+
+      this.prevDecMode = this.decMode;
     }
 
     this.cellRef.instance.innerHTML = text;
@@ -767,7 +845,7 @@ const getA3Message = (
   ecu1MaintenanceWord6: Arinc429Register,
   ecu2MaintenanceWord6: Arinc429Register,
   autobrakeMode: number,
-  AB3Message: boolean,
+  autobrakeActive: boolean,
 ) => {
   const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
   const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
@@ -796,7 +874,7 @@ const getA3Message = (
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
-  } else if (autobrakeMode === 3 && !AB3Message) {
+  } else if (autobrakeMode === 3 && !autobrakeActive) {
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
@@ -1226,6 +1304,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 class B2Cell extends ShowForSecondsComponent<CellProps> {
   private fmaVerticalArmed = Subject.create('');
 
+  private isArmed = Subject.create('');
+
   private text1Sub = Subject.create('');
 
   private text2Sub = Subject.create('');
@@ -1243,6 +1323,13 @@ class B2Cell extends ShowForSecondsComponent<CellProps> {
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   private cellTextRef2 = FSComponent.createRef<SVGTextElement>();
+
+  private altArmed = 0;
+  private altCstArmed = 0;
+  private clbArmed = 0;
+  private desArmed = 0;
+  private gsArmed = 0;
+  private finalArmed = 0;
 
   private handleMessage(): void {
     const altAcqArmed = this.fmgcDiscreteWord3.bitValueOr(12, false);
@@ -1290,17 +1377,29 @@ class B2Cell extends ShowForSecondsComponent<CellProps> {
       .handle((v) => {
         this.handleMessage();
         this.decMode = v;
-        if (this.decMode !== 2) {
-          console.log('dec : ' + this.text1Sub.get());
-          this.text2Sub.get() === ''
-            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-            : this.modeArmed.instance.setAttribute('visibility', 'visible');
-          this.cellTextRef.instance.setAttribute('visibility', 'visible');
-          this.cellTextRef2.instance.setAttribute('visibility', 'visible');
+        // if (this.decMode !== 2) {
+        //   console.log('dec : ' + this.text1Sub.get());
+        //   this.text1Sub.get() === '' && this.text2Sub.get() === ''
+        //     ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+        //     : this.modeArmed.instance.setAttribute('visibility', 'visible');
+        //   this.cellTextRef.instance.setAttribute('visibility', 'visible');
+        //   this.cellTextRef2.instance.setAttribute('visibility', 'visible');
+        // } else {
+        //   this.modeArmed.instance.setAttribute('visibility', 'hidden');
+        //   this.cellTextRef.instance.setAttribute('visibility', 'hidden');
+        //   this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
+        // }
+        if (this.decMode === 2) {
+          this.cellTextRef.instance.style.visibility = 'hidden';
+          this.cellTextRef2.instance.style.visibility = 'hidden';
+          this.isArmed.set('none');
         } else {
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
-          this.cellTextRef.instance.setAttribute('visibility', 'hidden');
-          this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
+          this.cellTextRef.instance.style.visibility = 'visible';
+          this.cellTextRef2.instance.style.visibility = 'visible';
+          (this.altArmed || this.altCstArmed || this.clbArmed || this.desArmed || this.gsArmed || this.finalArmed) &&
+          this.decMode < 2
+            ? this.isArmed.set('block')
+            : this.isArmed.set('none');
         }
       });
     sub
@@ -1322,28 +1421,33 @@ class B2Cell extends ShowForSecondsComponent<CellProps> {
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((fmv) => {
-        const altArmed = (fmv >> 0) & 1;
-        const altCstArmed = (fmv >> 1) & 1;
-        const clbArmed = (fmv >> 2) & 1;
-        const desArmed = (fmv >> 3) & 1;
-        const gsArmed = (fmv >> 4) & 1;
-        const finalArmed = (fmv >> 5) & 1;
+        this.altArmed = (fmv >> 0) & 1;
+        this.altCstArmed = (fmv >> 1) & 1;
+        this.clbArmed = (fmv >> 2) & 1;
+        this.desArmed = (fmv >> 3) & 1;
+        this.gsArmed = (fmv >> 4) & 1;
+        this.finalArmed = (fmv >> 5) & 1;
 
-        if (altArmed || altCstArmed || clbArmed || desArmed || gsArmed || finalArmed) {
-          if (this.decMode !== 2) {
-            this.text2Sub.get() === ''
-              ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-              : this.modeArmed.instance.setAttribute('visibility', 'visible');
-            this.cellTextRef.instance.setAttribute('visibility', 'visible');
-            this.cellTextRef2.instance.setAttribute('visibility', 'visible');
-          }
-        } else {
-          this.text2Sub.get() === ''
-            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-            : this.modeArmed.instance.setAttribute('visibility', 'visible');
-          this.cellTextRef.instance.setAttribute('visibility', 'hidden');
-          this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
-        }
+        (this.altArmed || this.altCstArmed || this.clbArmed || this.desArmed || this.gsArmed || this.finalArmed) &&
+        this.decMode < 2
+          ? this.isArmed.set('block')
+          : this.isArmed.set('none');
+
+        // if (altArmed || altCstArmed || clbArmed || desArmed || gsArmed || finalArmed) {
+        //   if (this.decMode !== 2) {
+        //     this.text1Sub.get() === '' && this.text2Sub.get() === ''
+        //       ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+        //       : this.modeArmed.instance.setAttribute('visibility', 'visible');
+        //     this.cellTextRef.instance.setAttribute('visibility', 'visible');
+        //     this.cellTextRef2.instance.setAttribute('visibility', 'visible');
+        //   }
+        // } else {
+        //   this.text1Sub.get() === '' && this.text2Sub.get() === ''
+        //     ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+        //     : this.modeArmed.instance.setAttribute('visibility', 'visible');
+        //   this.cellTextRef.instance.setAttribute('visibility', 'hidden');
+        //   this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
+        // }
       });
   }
 
@@ -1352,8 +1456,8 @@ class B2Cell extends ShowForSecondsComponent<CellProps> {
       <g id="B2Cell">
         <path
           id="dash"
+          display={this.isArmed}
           ref={this.modeArmed}
-          visibility="hidden"
           class="NormalStroke Green"
           d="m178.5 40h150"
           stroke-dasharray="5 10"
