@@ -47,7 +47,7 @@
 1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
 1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
-1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
+1. [A32NX/OVHD] Update battery OFF light to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
 1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
@@ -119,6 +119,14 @@
 1. [A32NX/FWS] Add message grouping and order messages based on priority - @FozzieHi (fozzie)
 1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add `THR LEVERS NOT SET` master caution - @FozzieHi (fozzie)
+1. [A380X/PFD] Add "APPR 1" on LS button press if no capability computed by systems - @BravoMike99 (bruno_pt99)
+1. [A380X/FLIGHT MODEL] Fight model update  - @donstim (donbikes)
+1. [A32NX/FMS] Update layout of DIR TO page to reflect HW H4 - @BlueberryKing (BlueberryKing)
+1. [A32NX/FE] Add pitch and low energy warnings, improve VCTrend computation - @lukecologne (luke)
+1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and APU GEN fault light - @FozzieHi (fozzie)
+1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where waypoints around lateral discontinuities and at enroute/procedure boundaries were sometimes not sent to the ND - @tracernz (Mike)
+1. [FMS] Fixed an issue where the WPT overlay on the ND showed terminal waypoints in enroute range - @tracernz (Mike)
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
