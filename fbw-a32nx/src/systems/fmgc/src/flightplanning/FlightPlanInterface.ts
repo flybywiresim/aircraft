@@ -14,7 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { WindEntry, PropagatedWindEntry, WindVector } from './data/wind';
+import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -524,4 +524,31 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param planIndex which flight plan index to insert the wind uplink into
    */
   insertWindUplink(planIndex: number): Promise<void>;
+
+  /**
+   * Get the climb wind entries for a flight plan. If it is the active and draft entries exist, draft entries will be returned.
+   * @param planIndex plan index to get the climb wind entries for
+   */
+  getClimbWindEntries(planIndex: number): FlightPlanWindEntry[];
+
+  /**
+   * Get the descent wind entries for a flight plan. If it is the active and draft entries exist, draft entries will be returned.
+   * @param planIndex plan index to get the descent wind entries for
+   */
+  getDescentWindEntries(planIndex: number): FlightPlanWindEntry[];
+
+  /**
+   * Indicates whether there are draft wind entries that have not yet been inserted into the active flight plan.
+   */
+  hasDraftWinds(): boolean;
+
+  /**
+   * Inserts the draft wind entries into the active flightplan.
+   */
+  insertDraftWindEntries(): void;
+
+  /**
+   * Deletes the pending draft wind entries.
+   */
+  deleteDraftWindEntries(): void;
 }

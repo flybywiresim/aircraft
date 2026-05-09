@@ -408,7 +408,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       );
       if (fp) {
         this.fillDisplayWindEntriesFromFlightPlan(
-          fp.performanceData.climbWindEntries.get(),
+          this.props.flightPlanInterface.getClimbWindEntries(loadedFlightPlanIndex),
           this.climbWindDisplayEntries,
         );
       } else {
@@ -468,7 +468,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
         this.fillDisplayWindEntriesFromFlightPlan(
-          fp.performanceData.descentWindEntries.get(),
+          this.props.flightPlanInterface.getDescentWindEntries(loadedFlightPlanIndex),
           this.descentWindDisplayEntries,
         );
         if (hasAlternate && alternateWind !== null) {

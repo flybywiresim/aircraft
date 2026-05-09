@@ -82,6 +82,7 @@ import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '@providers
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 import { FmsToDatalinkSubsystemEvents } from '../shared/FmsDatalinkEvents';
+import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -349,6 +350,7 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly datalinkBusPublisher = this.bus.getPublisher<FmsToDatalinkSubsystemEvents>();
   private readonly atsuBusSubscriber = this.bus.getSubscriber<AtsuToFmsEvents>();
   private readonly pendingFlightPlanWindUplink = Subject.create<number | null>(null);
+  private readonly draftWindsExist = Subject.create(false);
 
   constructor(
     private instance: FmcIndex,
@@ -500,6 +502,18 @@ export class FlightManagementComputer implements FmcInterface {
       this.atsuBusSubscriber
         .on('wind_uplink_response')
         .handle((response) => this.onCompanyWindUplinkResponseReceived(response)),
+
+      this.bus
+        .getSubscriber<FlightPlanOperationEvents>()
+        .on('fms_draft_winds_inserted')
+        .handle(() => {
+          this.addMessageToQueue(NXSystemMessages.draftWindsInserted, undefined, undefined);
+        }),
+      this.draftWindsExist.sub((v) => {
+        if (!v) {
+          this.removeMessageFromQueue(NXSystemMessages.draftWindsInserted.text);
+        }
+      }),
     );
 
     for (let i = 0; i < this.uplinkWaitingInsertionSec.length; i++) {
@@ -1708,6 +1722,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get(), throttledDt) &&
           this.#flightPlanService.hasTemporary,
       );
+      this.draftWindsExist.set(this.flightPlanInterface.hasDraftWinds());
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
     }
@@ -1978,7 +1993,7 @@ export class FlightManagementComputer implements FmcInterface {
             flags: FlightPlanWindEntryFlags.InsertedFromHistory,
           };
         });
-        fp.performanceData.climbWindEntries.set(entries);
+        fp.setPerformanceData('climbWindEntries', entries);
         return true;
       }
     }

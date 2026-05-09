@@ -101,7 +101,7 @@ export const NXSystemMessages = {
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'), // TODO
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
-  draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'), // TODO
+  draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   EntryNotInList: new TypeIMessage('ENTRY NOT IN LIST'),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),

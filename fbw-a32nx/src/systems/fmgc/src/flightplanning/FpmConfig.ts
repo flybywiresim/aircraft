@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -48,6 +48,9 @@ export interface FpmConfig {
   /** Whether to load default wind entries when the wind history is empty */
   LOAD_EMPTY_HISTORY_WIND: boolean;
 
+  /** Whether to create draft wind entries upon editing a wind entry */
+  DRAFT_ON_WIND_EDIT: boolean;
+
   /** The number of different flight levels for which cruise wind entries may be made */
   NUM_CRUISE_WIND_LEVELS: number;
 
@@ -75,6 +78,7 @@ export class FpmConfigs {
     NUM_CLIMB_WIND_LEVELS: 5,
     NUM_DESCENT_WIND_LEVELS: 5,
     LOAD_EMPTY_HISTORY_WIND: true,
+    DRAFT_ON_WIND_EDIT: true,
   };
 
   static readonly A320_HONEYWELL_H3: FpmConfig = {
@@ -94,5 +98,6 @@ export class FpmConfigs {
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
     LOAD_EMPTY_HISTORY_WIND: false,
+    DRAFT_ON_WIND_EDIT: false,
   };
 }

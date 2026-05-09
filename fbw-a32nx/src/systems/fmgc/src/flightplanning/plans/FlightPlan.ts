@@ -745,11 +745,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
+   * @param draftClimbWindEntries if provided, the wind entries will be set in this array instead of the main performance data
    */
   async setClimbWindEntry(
     altitude: number,
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
+    draftClimbWindEntries?: FlightPlanWindEntry[],
   ): Promise<void> {
     const originElevation = this.originAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
@@ -758,12 +760,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       entry.altitude = originElevation;
     }
 
-    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'climbWindEntries',
-      this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
+    this.setClbDesWindEntry(
+      draftClimbWindEntries ?? this.performanceData.climbWindEntries.get(),
+      altitudeOrGround,
+      entry,
+      maxNumberEntries,
     );
+    if (draftClimbWindEntries === undefined) {
+      // Do this so the RPC event is sent
+      this.setPerformanceData(
+        'climbWindEntries',
+        this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
+      );
+    }
   }
 
   /**
@@ -773,6 +782,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
    * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
+   * @param draftDescentWindEntries if provded, the wind entries will be set in this array instead of the
    * the destination altitude
    */
   async setDescentWindEntry(
@@ -780,6 +790,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
     shouldUpdateTwrWind: boolean = true,
+    draftDescentWindEntries?: FlightPlanWindEntry[],
   ): Promise<void> {
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
@@ -787,7 +798,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (entry !== null && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
 
-      if (shouldUpdateTwrWind) {
+      if (shouldUpdateTwrWind && draftDescentWindEntries === undefined) {
         // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
         // TODO should we only do this if no pilot entry has been made?
         const destinationMagVar = this.destinationAirport
@@ -803,12 +814,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
     }
 
-    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'descentWindEntries',
-      this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
+    this.setClbDesWindEntry(
+      draftDescentWindEntries ?? this.performanceData.descentWindEntries.get(),
+      altitudeOrGround,
+      entry,
+      maxNumberEntries,
     );
+    // Do this so the RPC event is sent
+    if (draftDescentWindEntries === undefined) {
+      this.setPerformanceData(
+        'descentWindEntries',
+        this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
+      );
+    }
   }
 
   private setClbDesWindEntry(
