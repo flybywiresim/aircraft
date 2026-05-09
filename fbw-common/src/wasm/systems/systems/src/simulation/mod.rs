@@ -36,6 +36,7 @@ pub trait SimulatorReaderWriter {
 
 pub trait VariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier;
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier;
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
@@ -61,13 +62,14 @@ impl VariableIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
 pub enum StartState {
     Hangar,
     Apron,
     Taxi,
     Runway,
     Climb,
+    #[default]
     Cruise,
     Approach,
     Final,
@@ -105,12 +107,6 @@ impl From<StartState> for f64 {
     }
 }
 
-impl Default for StartState {
-    fn default() -> Self {
-        Self::Cruise
-    }
-}
-
 pub struct InitContext<'a> {
     start_state: StartState,
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
@@ -132,6 +128,10 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn get_unprefixed_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get_unprefixed(name)
     }
 
     pub fn start_state(&self) -> StartState {
@@ -419,6 +419,10 @@ impl<T: Aircraft> Simulation<T> {
     /// # impl VariableRegistry for MyVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         Default::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
     /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();

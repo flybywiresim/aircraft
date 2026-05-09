@@ -1,7 +1,8 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
+import { DateTimeFormatter } from '@microsoft/msfs-sdk';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -14,19 +15,6 @@ export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromP
   const secondsEta = fromPresent ? seconds : seconds + SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
   const eta = new Date(secondsEta * 1000);
   return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
-}
-
-export function secondsToHHmmString(seconds: number) {
-  const minutesTotal = seconds / 60;
-  const hours = Math.abs(Math.floor(minutesTotal / 60))
-    .toFixed(0)
-    .toString()
-    .padStart(2, '0');
-  const minutes = Math.abs(minutesTotal % 60)
-    .toFixed(0)
-    .toString()
-    .padStart(2, '0');
-  return `${hours}:${minutes}`;
 }
 
 const approachTypeNames: Record<ApproachType, string> = {
@@ -83,3 +71,5 @@ export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
 export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;
 export const fixInfoUri = 'fms/active/f-pln-fix-info';
 export const dirToUri = 'fms/active/f-pln-direct-to';
+
+export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });

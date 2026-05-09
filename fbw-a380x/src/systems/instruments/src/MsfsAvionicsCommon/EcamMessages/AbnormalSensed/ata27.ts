@@ -496,36 +496,43 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       {
         name: 'VMO/MMO',
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '340/.89',
       },
       {
         name: 'VLE/MLE',
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '250/.55',
       },
       {
         name: 'VFE', // CONF 1
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '263',
       },
       {
         name: 'VFE', // CONF 1+F
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '222',
       },
       {
         name: 'VFE', // CONF 2
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '220',
       },
       {
         name: 'VFE', // CONF 3
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '196',
       },
       {
         name: 'VFE', // CONF FULL
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '182',
       },
     ],

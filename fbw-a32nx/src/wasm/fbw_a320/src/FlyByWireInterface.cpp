@@ -106,10 +106,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   for (int i = 0; i < 2; i++) {
-    result &= updateFadec(i);
-  }
-
-  for (int i = 0; i < 2; i++) {
     result &= updateIls(i);
   }
 
@@ -405,6 +401,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
   idFmRnavAppSelected = std::make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+  idFmNavCaptureCondition = std::make_unique<LocalVariable>("A32NX_FM1_NAV_CAPTURE_CONDITION");
 
   idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
   idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
@@ -882,6 +879,7 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
 
+    idEcuStatusWord3[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_STATUS_WORD_3");
     idEcuMaintenanceWord6[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_MAINTENANCE_WORD_6");
   }
 }
@@ -1265,22 +1263,6 @@ bool FlyByWireInterface::updateSfcc(int sfccIndex) {
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);
-  }
-
-  return true;
-}
-
-bool FlyByWireInterface::updateFadec(int fadecIndex) {
-  fadecBusOutputs[fadecIndex].selected_tla_deg.SSM = Arinc429SignStatus::NormalOperation;
-  fadecBusOutputs[fadecIndex].selected_tla_deg.Data = fadecIndex == 0 ? thrustLeverAngle_1->get() : thrustLeverAngle_2->get();
-
-  double flexTemp = idFmgcFlexTemperature->get();
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.SSM =
-      flexTemp > 0 ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.Data = flexTemp;
-
-  if (clientDataEnabled) {
-    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
   }
 
   return true;
@@ -1844,7 +1826,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = std::abs(idFmCrossTrackError->get()) < 1;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = idFmNavCaptureCondition->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFmPhiCommand->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFmCrossTrackError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFmTrackAngleError->get();
@@ -2732,7 +2714,12 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
     fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
 
+  idEcuStatusWord3[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_status_word_3));
   idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
+
+  if (fmgcDisabled != -1) {
+    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
+  }
 
   // write output to sim (only after both FADECs have been updated) -------------------------------------------------
   if (fadecIndex == 1) {

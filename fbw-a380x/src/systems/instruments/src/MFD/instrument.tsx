@@ -20,6 +20,8 @@ import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { dataStatusUri } from './shared/utils';
 
 class MfdInstrument implements FsInstrument {
@@ -41,11 +43,15 @@ class MfdInstrument implements FsInstrument {
 
   private readonly radioAltimeterPublisher = new RaBusPublisher(this.bus);
 
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
   private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
 
   private readonly fmcService: FmcServiceInterface;
+
+  private readonly atcService = new AtcDatalinkSystem(this.bus);
 
   private readonly fmcAFailed = Subject.create(false);
   private readonly fmcBFailed = Subject.create(false);
@@ -61,6 +67,7 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
+    this.backplane.addPublisher('fqms', this.fqmsPublisher);
 
     this.fmcService = new FmcService(
       this.bus,
@@ -92,11 +99,23 @@ class MfdInstrument implements FsInstrument {
       document.getElementById('MFD_CONTENT'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="CAPT" ref={this.mfdCaptRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="CAPT"
+        ref={this.mfdCaptRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_LEFT_PARENT_DIV'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="FO" ref={this.mfdFoRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="FO"
+        ref={this.mfdFoRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_RIGHT_PARENT_DIV'),
     );
 

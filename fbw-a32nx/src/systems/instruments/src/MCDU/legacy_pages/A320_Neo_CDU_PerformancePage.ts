@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,10 +9,10 @@ import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanManager';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
+import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 
 export class CDUPerformancePage {
   private static _timer: number | undefined = undefined;
@@ -20,11 +20,15 @@ export class CDUPerformancePage {
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, _phase = undefined) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
     mcdu.activeSystem = 'FMGC';
@@ -499,6 +503,8 @@ export class CDUPerformancePage {
 
     if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+        mcdu,
+        forPlan,
         vnavDriver.ndProfile,
         altitudeToPredict,
         true,
@@ -507,6 +513,8 @@ export class CDUPerformancePage {
     if (shouldShowExpedite && vnavDriver) {
       [expeditePredToDistanceCell, expeditePredToTimeCell] =
         CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+          mcdu,
+          forPlan,
           vnavDriver.expediteProfile,
           altitudeToPredict,
           true,
@@ -719,8 +727,6 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel = isFlying && targetPlan.isActiveOrCopiedFromActive() ? '\xa0UTC' : 'TIME';
-
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
     const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
@@ -812,7 +818,7 @@ export class CDUPerformancePage {
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
+      ['ACT MODE', 'DEST EFOB', mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
       ['CI', stepWaypoint],
       [costIndexCell, toReasonCell],
@@ -881,6 +887,8 @@ export class CDUPerformancePage {
 
     if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+        mcdu,
+        forPlan,
         vnavDriver.ndProfile,
         altitudeToPredict,
         false,
@@ -921,7 +929,7 @@ export class CDUPerformancePage {
       isPhaseActive,
       isSelected,
     );
-    const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+    const timeLabel = mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0');
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
@@ -1453,9 +1461,11 @@ export class CDUPerformancePage {
   }
 
   static getTimeAndDistancePredictionsFromGeometryProfile(
-    geometryProfile,
-    altitudeToPredict,
-    isClimbVsDescent,
+    mcdu: LegacyFmsPageInterface,
+    forPlan: FlightPlanIndex,
+    geometryProfile: BaseGeometryProfile,
+    altitudeToPredict: number,
+    isClimbVsDescent: boolean,
     printSmall = false,
   ) {
     let predToDistanceCell = '---';
@@ -1479,8 +1489,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(predictions.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        const predToTimeCellText = FmsFormatters.secondsToUTC(utcTime + predictions.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(predictions.secondsFromPresent, forPlan);
 
         if (printSmall) {
           predToTimeCell = '{small}' + predToTimeCellText + '{end}[color]green';
@@ -1508,11 +1517,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(destinationPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-        const predToTimeCellText = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
-          : FmsFormatters.secondsTohhmm(destinationPrediction.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(destinationPrediction.secondsFromPresent, forPlan);
 
         destTimeCell = predToTimeCellText + '[color]green';
       }
@@ -1549,8 +1554,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(toPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        toTimeCell = FmsFormatters.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
+        toTimeCell = mcdu.getTimePrediction(toPrediction.secondsFromPresent, forPlan) + '[color]green';
       }
 
       // Check if we have a downstream cruise step

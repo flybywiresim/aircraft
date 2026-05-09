@@ -9,6 +9,7 @@ import {
   EventBus,
   HEventPublisher,
   InstrumentBackplane,
+  MathUtils,
   StallWarningPublisher,
 } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
@@ -24,6 +25,7 @@ import { Ecp } from './systems/ECP/Ecp';
 import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 import { FakeDmc } from './systems/ECP/FakeDmc';
+import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -48,6 +50,7 @@ class SystemsHost extends BaseInstrument {
   private readonly dmcBusPublisher = new A32NXDisplayManagementPublisher(this.bus);
   private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly facBusPublisher = new A32NXFacBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
@@ -73,6 +76,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
     this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('FacBus', this.facBusPublisher);
 
     this.pseudoFwc.init();
     let lastUpdateTime: number;
@@ -81,7 +85,7 @@ class SystemsHost extends BaseInstrument {
       .on('simTimeHiFreq')
       .atFrequency(50)
       .handle((now) => {
-        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        const dt = lastUpdateTime === undefined ? 0 : MathUtils.clamp(now - lastUpdateTime, 0, 1000);
         lastUpdateTime = now;
 
         this.pseudoFwc.update(dt);

@@ -395,6 +395,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -426,6 +430,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -452,6 +460,10 @@ impl Electricity {
     /// # struct SomeVariableRegistry {}
     /// # impl VariableRegistry for SomeVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
     /// # }
@@ -493,13 +505,13 @@ impl Electricity {
         }
     }
 
-    pub fn output_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    pub fn output_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.potential
             .get(element.output_identifier())
             .unwrap_or_else(|| self.none_potential.borrow())
     }
 
-    pub fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    pub fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.potential
             .get(element.input_identifier())
             .unwrap_or_else(|| self.none_potential.borrow())
@@ -551,7 +563,7 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 impl ElectricalBuses for Electricity {
-    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential> {
+    fn potential_of(&'_ self, bus_type: ElectricalBusType) -> Ref<'_, Potential> {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential
                 .get(*identifier)
@@ -572,7 +584,7 @@ impl ElectricalBuses for Electricity {
     }
 }
 impl ConsumePower for Electricity {
-    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.input_of(element)
     }
 
@@ -890,7 +902,7 @@ impl PotentialCollection {
         }
     }
 
-    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<Ref<Potential>> {
+    fn get(&'_ self, identifier: ElectricalElementIdentifier) -> Option<Ref<'_, Potential>> {
         self.items
             .get(&identifier)
             .map(|potential| potential.as_ref().borrow())

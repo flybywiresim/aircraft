@@ -92,6 +92,7 @@ base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   false,
   false,
   false,
+  false,
   false
 } ;
 
@@ -769,6 +770,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   true,
   false,
+  true,
   true,
   true,
   true,
@@ -2829,6 +2831,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
       false,
       false,
       false,
+      false,
       false
     },
 
@@ -3909,6 +3912,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     0.0,
     false,
     tcas_submode::VS,
+    false,
     false,
     false,
     false,

@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -38,6 +37,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     if (databaseId === undefined) {
       this.approach = undefined;
+
+      this.flightPlan.availableApproachVias.length = 0;
 
       if (!skipUpdateLegs) {
         await this.flightPlan.approachViaSegment.setProcedure(undefined);
@@ -123,11 +124,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
 
-    if (
-      approachLegs.length === 0 &&
-      this.flightPlan.destinationAirport &&
-      this.flightPlan.destinationSegment.destinationRunway
-    ) {
+    if (airport && runway && approachLegs.length === 0) {
       const cf = FlightPlanLeg.destinationExtendedCenterline(this, runway);
 
       legs.push(cf);
@@ -136,7 +133,12 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
       const firstApproachLeg = approachLegs[0];
 
       // Add an IF at the start if first leg of the approach is an FX
-      if (firstApproachLeg && firstApproachLeg.isDiscontinuity === false && firstApproachLeg.isFX()) {
+      if (
+        firstApproachLeg &&
+        firstApproachLeg.isDiscontinuity === false &&
+        firstApproachLeg.isFX() &&
+        firstApproachLeg.definition.waypoint
+      ) {
         const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachLeg.definition.waypoint, undefined, LegType.IF);
 
         legs.push(newLeg);
@@ -146,7 +148,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
       const lastLegIsRunway =
         lastLeg && lastLeg.isDiscontinuity === false && areDatabaseItemsEqual(lastLeg.terminationWaypoint(), runway);
 
-      if (lastLegIsRunway) {
+      if (airport && lastLegIsRunway) {
         legs.push(...approachLegs.slice(0, approachLegs.length - 1));
 
         const runway = this.findRunwayFromRunwayLeg(lastLeg);

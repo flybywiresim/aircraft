@@ -10,10 +10,10 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export enum FmcOperatingModes {
   Master,
@@ -53,7 +53,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /**
    * FlightPlanService interface
    */
-  get flightPlanService(): FlightPlanService;
+  get flightPlanInterface(): FlightPlanInterface;
 
   /**
    * FMGC data class, handles most data which didn't make it into the flight plan performance data so far
@@ -104,9 +104,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   get revisedLegIsAltn(): Subject<boolean | null>;
 
   /**
-   * Returns, whether number 2&3 engines were started
+   * Returns whether number 2&3 engines were started
    */
   get enginesWereStarted(): Subject<boolean>;
+
+  /**
+   * Returns whether active flight plan exists
+   */
+  get hasActiveFlightPlan(): Subject<boolean>;
 
   /**
    * Returns currently revised waypoint as Fix
@@ -146,29 +151,62 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   swapNavDatabase(): Promise<void>;
 
   /** in kilograms */
-  getLandingWeight(): number | null;
+  getLandingWeight(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getTakeoffWeight(): number | null;
+  getTakeoffWeight(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getTripFuel(): number | null;
+  getTripFuel(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getExtraFuel(): number | null;
+  getExtraFuel(forPlan: FlightPlanIndex): number | null;
+
+  /** in kilograms */
+  getRouteReserveFuel(forPlan: FlightPlanIndex, tripFuel?: number | null): number | null;
 
   /**
    * Calculates the recommended maximum flight level.
+   * @param forplan The flightplan index to get the recommended max flight level for. Defaults to active flight plan.
    * @param grossWeight The gross weight in kilograms. Defaults to current gross weight (if undefined).
-   * @returns The recommended maxium flight level (in hundreds of feet) if gross weight is valid, else null.
+   * @returns The recommended maxium flight level (in hundreds of feet). If grossweight is not available or if the flightplan is not active, null is returned.
    */
-  getRecMaxFlightLevel(grossWeight?: number): number | null;
+  getRecMaxFlightLevel(forplan?: FlightPlanIndex, grossWeight?: number): number | null;
+
+  /** as altitude */
+  getRecMaxAltitude(forPlan?: FlightPlanIndex, grossWeight?: number): number | null;
 
   /** as flight level */
   getOptFlightLevel(): number | null;
 
   /** as flight level */
   getEoMaxFlightLevel(): number | null;
+
+  /** in knots */
+  getSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getGreenDotSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachGreenDotSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+  /** in knots */
+  getApproachVls(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachVapp(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachVref(forPlan: FlightPlanIndex): number | null;
 
   /**
    * Add message to fmgc message queue
@@ -197,13 +235,52 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   clearLatestFmsErrorMessage(): void;
 
   /**
+   * Request CPNY FPLN from SimBrief
+   * @param forPlan Flight plan to request CPNY FPLN for
+   */
+  cpnyFplnRequest(forPlan: FlightPlanIndex): void;
+
+  /**
+   * Insert CPNY FPLN into flight plan where request has been made from
+   * @param intoPlan Flight plan to insert CPNY FPLN into
+   */
+  insertCpnyFpln(intoPlan: FlightPlanIndex): void;
+
+  /**
+   * Whether the secondary flight plan can be activated or swapped with the active flight plan
+   * @param secIndex Index of secondary flight plan
+   */
+  canActivateOrSwapSecondary(secIndex: number): boolean;
+
+  /**
+   * Swap active flight plan with secondary flight plan at given index
+   * @param secIndex Index of secondary flight plan
+   */
+  swapActiveAndSecondaryPlan(secIndex: number): Promise<void>;
+
+  /**
+   *
+   * @param flightNumber Flight number to set
+   * @param forPlan which flight plan to make the change on
+   * @param callback function to call with result of the operation. Function is called with true if the flight number was successfully updated, false otherwise (e.g. format errors)
+   */
+  updateFlightNumber(flightNumber: string, forPlan: FlightPlanIndex, callback: (arg0: boolean) => void): Promise<void>;
+
+  /**
+   * Compute flight level to be used for alternate flight plan
+   * @param forPlan which flight plan to make the change on
+   */
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+
+  /**
    * Calling this function with a message should display the message in the FMS' message area,
    * such as the scratchpad or a dedicated error line. The FMS error type given should be translated
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
+   * @param details aditional text information to be appended to the message
    */
-  showFmsErrorMessage(errorType: FmsErrorType): void;
+  showFmsErrorMessage(errorType: FmsErrorType, details?: string): void;
 
   /**
    * Used to update the ND display

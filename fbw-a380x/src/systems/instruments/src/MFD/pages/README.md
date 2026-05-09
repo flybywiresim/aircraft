@@ -75,8 +75,8 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | 2️⃣ | atccom/msg-record/all-msg | 6 |
 | 2️⃣ | atccom/msg-record/monitored-msg | 6 |
 | 2️⃣ | atccom/msg-record/all-msg-expand | 6 |
-| 2️⃣ | atccom/d-atis/list | 6 |
-| 2️⃣ | atccom/d-atis/received | 6 |
+| ✅ | atccom/d-atis/list | 6 |
+| ✅ | atccom/d-atis/received | 6 |
 | 🟥 | atccom/emer | 6 |
 
 ### SURV
