@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { NXLogicMemoryNode, usePersistentSetting, useUpdate, useSimVar, useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, usePersistentSetting, NXLogicMemoryNode, useUpdate } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
