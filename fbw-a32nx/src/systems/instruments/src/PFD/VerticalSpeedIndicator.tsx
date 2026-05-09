@@ -88,7 +88,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     this.sub.on('a32nx_tcas_fault_summary_word'),
   );
 
-  private readonly vsFlagVisible = this.verticalSpeed.map((vs) => !vs.isNormalOperation());
+  private readonly vsFlagVisible = this.verticalSpeed.map((vs) => vs.isFailureWarning());
 
   private readonly tcasInvalid = MappedSubject.create(
     ([verticalResolutionAdvisoryWord, tcasModeWord, tcasFaultSummaryWord]) => {
