@@ -193,16 +193,16 @@ export const PressureComponent = () => {
 
   const deltaPress = splitDecimals(deltaPsi);
 
-  const [vsShouldFlashElement, setVsShouldFlashElement] = useState(false);
-  const [vsShouldFlash] = useState(new NXLogicMemoryNode());
+const [vsShouldFlash, setVsShouldFlash] = useState(false);
+const [cabAltShouldFlash, setCabAltShouldFlash] = useState(false);
 
-  const [cabAltShouldFlashElement, setCabAltShouldFlashElement] = useState(false);
-  const [cabAltShouldFlash] = useState(new NXLogicMemoryNode());
+useEffect(() => {
+  setVsShouldFlash((prev) =>Math.abs(cabinVs) > (prev ? 1650 : 1750));
+}, [cabinVs]);
 
-  useUpdate((_deltaTime) => {
-    setVsShouldFlashElement(vsShouldFlash.write(cabinVs > 1750 || cabinVs < -1750, cabinVs < 1650 || cabinVs > -1650));
-    setCabAltShouldFlashElement(cabAltShouldFlash.write(cabinAlt > 8800, cabinAlt < 8600));
-  });
+useEffect(() => {
+  setCabAltShouldFlash((prev) => cabinAlt > (prev ? 8600 : 8800));
+}, [cabinAlt]);
 
   useEffect(() => {
     setLdgElevMode(landingElevationIsMan ? 'MAN' : 'AUTO');
