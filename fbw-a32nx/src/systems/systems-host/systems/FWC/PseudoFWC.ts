@@ -128,6 +128,8 @@ enum EngineState {
 }
 
 export class PseudoFWC {
+  private static readonly DEBUG_LOGGING = true;
+
   private readonly sub = this.bus.getSubscriber<
     A32NXAdrBusEvents &
       A32NXDisplayManagementEvents &
@@ -249,9 +251,9 @@ export class PseudoFWC {
     this.fireActive,
   );
 
-  private readonly cavalryChargeActive = Subject.create(true);
+  private readonly cavalryChargeActive = Subject.create(false);
 
-  private readonly cChordActive = Subject.create(true);
+  private readonly cChordActive = Subject.create(false);
 
   private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
@@ -1673,6 +1675,16 @@ export class PseudoFWC {
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
   }
 
+  private debugLog(message: string) {
+    if (!PseudoFWC.DEBUG_LOGGING) {
+      return;
+    }
+
+    const simTimeSeconds = SimVar.GetSimVarValue('E:SIMULATION TIME', SimVarValueType.Seconds);
+    const simTime = Number.isFinite(simTimeSeconds) ? simTimeSeconds.toFixed(3) : 'n/a';
+    console.log(`[PseudoFWC ${new Date().toISOString()} sim=${simTime}] ${message}`);
+  }
+
   init(): void {
     Promise.all([
       KeyEventManager.getManager(this.bus),
@@ -1698,14 +1710,22 @@ export class PseudoFWC {
     this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
-    this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
+    this.auralCrcOutput.sub((crc) => {
+      this.debugLog(
+        `auralCrcOutput=${crc} keys=${this.auralCrcKeys.join(',') || 'none'} fire=${this.fireActive.get()}`,
+      );
+      this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc);
+    }, true);
 
-    this.cavalryChargeActive.sub(
-      (cavcharge) => this.soundManager.handleSoundCondition('cavalryCharge', cavcharge),
-      true,
-    );
+    this.cavalryChargeActive.sub((cavcharge) => {
+      this.debugLog(`cavalryChargeActive=${cavcharge}`);
+      this.soundManager.handleSoundCondition('cavalryCharge', cavcharge);
+    }, true);
 
-    this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
+    this.cChordActive.sub((cChord) => {
+      this.debugLog(`cChordActive=${cChord}`);
+      this.soundManager.handleSoundCondition('cChordCont', cChord);
+    }, true);
 
     this.pitchPitchActive.sub((active) => this.soundManager.handleSoundCondition('pitchPitch', active), true);
 
@@ -1714,15 +1734,9 @@ export class PseudoFWC {
       true,
     );
 
-    this.masterCaution.sub((caution) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
-    }, true);
+    this.masterCaution.sub(() => this.updateMasterWarningCautionLights(), true);
 
-    this.masterWarningOutput.sub((warning) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', this.startupCompleted.get() ? warning : false);
-    }, true);
+    this.masterWarningOutput.sub(() => this.updateMasterWarningCautionLights(), true);
 
     // L/G lever red arrow sinking outputs
     this.lgLeverRedArrow.sub((on) => {
@@ -1774,17 +1788,32 @@ export class PseudoFWC {
     );
 
     this.acESSBusPowered.sub((v) => {
+      this.debugLog(`acESSBusPowered=${v}`);
       if (v) {
+        this.debugLog(`scheduling startup timer for ${PseudoFWC.FWC_STARTUP_TIME}ms`);
         this.startupTimer.schedule(() => {
           this.startupCompleted.set(true);
-          console.log('PseudoFWC startup completed.');
+          this.debugLog('startup timer fired');
         }, PseudoFWC.FWC_STARTUP_TIME);
       } else {
         this.startupTimer.clear();
         this.startupCompleted.set(false);
-        console.log('PseudoFWC shut down.');
+        this.debugLog('startup timer cleared, FWC shut down');
       }
     });
+
+    this.startupCompleted.sub((started) => {
+      this.debugLog(`startupCompleted=${started}`);
+      this.updateMasterWarningCautionLights();
+    }, true);
+  }
+
+  private updateMasterWarningCautionLights() {
+    const startupCompleted = this.startupCompleted.get();
+
+    // Inhibit master warning/cautions until FWC startup has been completed.
+    SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', startupCompleted ? this.masterCaution.get() : false);
+    SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', startupCompleted ? this.masterWarningOutput.get() : false);
   }
 
   private registerKeyEvents() {
@@ -4214,6 +4243,7 @@ export class PseudoFWC {
         // if the warning is the same as the aural
         if (value.auralWarning === undefined && value.failure === 3) {
           if (newWarning) {
+            this.debugLog(`auralCrcActive=true source=${key} default level 3 warning`);
             this.auralCrcActive.set(true);
           }
           auralCrcKeys.push(key);
@@ -4255,6 +4285,7 @@ export class PseudoFWC {
 
       if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
+          this.debugLog(`auralCrcActive=true source=${key} explicit CRC`);
           this.auralCrcActive.set(true);
         }
         auralCrcKeys.push(key);
@@ -4285,6 +4316,9 @@ export class PseudoFWC {
     this.auralScKeys = auralScKeys;
 
     if (this.auralCrcKeys.length === 0) {
+      if (this.auralCrcActive.get()) {
+        this.debugLog('auralCrcActive=false no active CRC keys');
+      }
       this.auralCrcActive.set(false);
     }
 
