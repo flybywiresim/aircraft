@@ -693,6 +693,12 @@ export class FwsCore {
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
   public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
 
+  public readonly planeAltitude = Subject.create(0);
+  public readonly grossWeight = Subject.create(0);
+  public readonly apEngaged = Subject.create(false);
+  public readonly fd1Active = Subject.create(false);
+  public readonly fd2Active = Subject.create(false);
+
   public readonly autoThrustEngaged = Subject.create(false);
 
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
@@ -3464,6 +3470,12 @@ export class FwsCore {
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
+    this.apEngaged.set(apEngaged);
+    this.planeAltitude.set(SimVar.GetSimVarValue('PLANE ALTITUDE', SimVarValueType.Feet));
+    this.grossWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', SimVarValueType.Kg));
+    this.fd1Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', SimVarValueType.Bool) > 0);
+    this.fd2Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', SimVarValueType.Bool) > 0);
+
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();

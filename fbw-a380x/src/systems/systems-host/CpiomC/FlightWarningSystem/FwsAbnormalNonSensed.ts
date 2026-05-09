@@ -391,7 +391,7 @@ export class FwsAbnormalNonSensed {
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => {
-        const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+        const alt = this.fws.planeAltitude.get();
 
         const beforeThrRed = this.fws.flightPhase.get() <= 7;
         const afterThrRed = !beforeThrRed;
@@ -446,12 +446,10 @@ export class FwsAbnormalNonSensed {
         ];
       },
       whichItemsChecked: () => {
-        const apOff = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool') === 0;
-        const athrOff = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'number') === 0;
-        const fdOff =
-          SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'Bool') === 0 &&
-          SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'Bool') === 0;
-        const spdBrkRetracted = SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') === 0;
+        const apOff = !this.fws.apEngaged.get();
+        const athrOff = !this.fws.autoThrustEngaged.get();
+        const fdOff = !this.fws.fd1Active.get() && !this.fws.fd2Active.get();
+        const spdBrkRetracted = !this.fws.speedBrakeCommand.get();
         const items = Array(44).fill(false);
         items[1] = apOff;
         items[2] = athrOff;
@@ -465,7 +463,7 @@ export class FwsAbnormalNonSensed {
       whichDynamicText: () => {
         const texts = Array(44).fill('');
 
-        const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+        const alt = this.fws.planeAltitude.get();
 
         // Dynamic pitch for Before thrust reduction (index 5)
         texts[5] = alt < 10000 ? '12.5' : '10';
@@ -474,7 +472,7 @@ export class FwsAbnormalNonSensed {
         texts[7] = alt < 10000 ? '12.5' : alt < 25000 ? '10' : '5';
 
         // Dynamic N1 thrust based on weight and altitude (interpolated)
-        const gw = SimVar.GetSimVarValue('TOTAL WEIGHT', 'kg');
+        const gw = this.fws.grossWeight.get();
 
         let targetN1 = 0;
 
