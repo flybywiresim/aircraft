@@ -36,7 +36,7 @@ export class CpnyFplnButtonUtils {
             }
           },
           fmc.getCpnyFplnAvailable(),
-          fmc.getUplinkInProgress(),
+          fmc.getCpnyFplnUplinkInProgress(),
         )
       : MappedSubject.create(() => <></>);
   }

@@ -376,4 +376,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    * Get a subscribable which indicates whether a wind uplink request is in progress.
    */
   getCpnyWindUplinkInProgress(): Subscribable<boolean>;
+
+  /**
+   * Gets a subscribable which indicates whether draft winds exist for the active flight plan.
+   */
+  getDraftWindsExist(): Subscribable<boolean>;
 }

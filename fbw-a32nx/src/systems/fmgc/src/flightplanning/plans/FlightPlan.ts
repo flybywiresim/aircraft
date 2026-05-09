@@ -795,24 +795,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
-    if (entry !== null && entry.altitude <= destinationElevation + 400) {
-      entry.altitude = destinationElevation;
-
-      if (shouldUpdateTwrWind && draftDescentWindEntries === undefined) {
-        // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
-        // TODO should we only do this if no pilot entry has been made?
-        const destinationMagVar = this.destinationAirport
-          ? Facilities.getMagVar(this.destinationAirport.location.lat, this.destinationAirport.location.long)
-          : 0;
-
-        this.setPerformanceData(
-          'approachWindDirection',
-          MagVar.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
-        );
-        this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
-        this.setPerformanceData('isApproachWindPilotEntered', false);
-      }
-    }
+    this.parseGroundWindEntryAndSetTwrWind(
+      entry,
+      shouldUpdateTwrWind && !draftDescentWindEntries,
+      destinationElevation,
+    );
 
     this.setClbDesWindEntry(
       draftDescentWindEntries ?? this.performanceData.descentWindEntries.get(),
@@ -826,6 +813,30 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         'descentWindEntries',
         this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
       );
+    }
+  }
+
+  public parseGroundWindEntryAndSetTwrWind(
+    entry: FlightPlanWindEntry | null,
+    shouldUpdateTwrWind: boolean,
+    destinationElevation: number,
+  ): void {
+    if (entry !== null && entry.altitude <= destinationElevation + 400) {
+      entry.altitude = destinationElevation;
+      if (shouldUpdateTwrWind) {
+        // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
+        // TODO should we only do this if no pilot entry has been made?
+        const destinationMagVar = this.destinationAirport
+          ? Facilities.getMagVar(this.destinationAirport.location.lat, this.destinationAirport.location.long)
+          : 0;
+
+        this.setPerformanceData(
+          'approachWindDirection',
+          MagVar.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+        );
+        this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
+        this.setPerformanceData('isApproachWindPilotEntered', false);
+      }
     }
   }
 

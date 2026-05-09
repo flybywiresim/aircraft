@@ -36,7 +36,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   public batchStack: FlightPlanBatch[] = [];
 
   private readonly draftClimbWindEntries: FlightPlanWindEntry[] | undefined;
-  private readonly draftCruiseWindEntries: Map<number, FlightPlanWindEntry[]> | undefined;
+  private readonly draftCruiseWindEntries: Map<number, WindEntry[]> | undefined;
   private readonly draftDescentWindEntries: FlightPlanWindEntry[] | undefined;
   private readonly alternateDraftWind: WindVector | undefined;
   private draftClimbWindExists = false;
@@ -59,7 +59,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     );
     if (config.DRAFT_ON_WIND_EDIT) {
       this.draftClimbWindEntries = [];
-      this.draftCruiseWindEntries = new Map<number, FlightPlanWindEntry[]>();
+      this.draftCruiseWindEntries = new Map<number, WindEntry[]>();
       this.draftDescentWindEntries = [];
       this.alternateDraftWind = Vec2Math.create();
       this.bus
@@ -1006,6 +1006,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async deleteAllClimbWindEntries() {
     this.deleteClimbWindEntries(FlightPlanIndex.Active);
 
+    this.draftClimbWindExists = false;
+    this.draftClimbWindEntries.length = 0;
+
     for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const sec = this.secondary(i);
 
@@ -1017,12 +1020,20 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   deleteClimbWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
+    if (planIndex === FlightPlanIndex.Active && this.config.DRAFT_ON_WIND_EDIT) {
+      this.draftClimbWindExists = false;
+      this.draftClimbWindEntries.length = 0;
+    }
 
     return plan.deleteClimbWindEntries();
   }
 
   deleteDescentWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
+    if (planIndex === FlightPlanIndex.Active && this.config.DRAFT_ON_WIND_EDIT) {
+      this.draftDescentWindExists = false;
+      this.draftDescentWindEntries.length = 0;
+    }
 
     return plan.deleteDescentWindEntries();
   }
@@ -1106,8 +1117,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
             const cruiseWindEntry = cruiseWindEntries[j];
             legWindEntries.push(FlightPlanService.cloneWindEntry(cruiseWindEntry));
           }
+          this.draftCruiseWindEntries.set(i, legWindEntries);
         }
       }
+      this.draftCruiseWindExists = true;
     }
   }
 
@@ -1144,7 +1157,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     };
   }
 
-  public insertDraftWindEntries(addedDueToModification?: boolean) {
+  /**
+   * Inserts the draft wind entries into the active flight plan if they exist, then, clear the draft entries
+   * @param addedDueToTmpy if true, an event will be published to the event bus notfiying the automatic insertion of the winds.
+   */
+  public insertDraftWindEntries(addedDueToTmpy?: boolean) {
     if (
       !this.config.DRAFT_ON_WIND_EDIT ||
       (!this.draftClimbWindExists && !this.draftCruiseWindExists && !this.draftDescentWindExists)
@@ -1152,9 +1169,54 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       return;
     }
 
-    if (addedDueToModification) {
-      this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
+    const plan = this.flightPlanManager.has(FlightPlanIndex.Active)
+      ? this.flightPlanManager.get(FlightPlanIndex.Active)
+      : undefined;
+
+    if (plan) {
+      if (this.draftClimbWindExists) {
+        plan.setPerformanceData(
+          'climbWindEntries',
+          this.draftClimbWindEntries.sort((a, b) => b.altitude - a.altitude),
+        );
+      }
+
+      if (this.draftCruiseWindExists) {
+        for (let i = plan.activeLegIndex; i < plan.firstMissedApproachLegIndex; i++) {
+          const leg = plan.maybeElementAt(i);
+          if (isLeg(leg) && this.draftCruiseWindEntries.has(i)) {
+            const draftEntries = this.draftCruiseWindEntries.get(i);
+            if (draftEntries) {
+              leg.cruiseWindEntries = draftEntries.map((entry) => FlightPlanService.cloneWindEntry(entry));
+            }
+            plan.syncCruiseWindChange(i);
+          }
+        }
+      }
+
+      if (this.draftDescentWindExists) {
+        for (let i = 0; i < this.draftDescentWindEntries.length; i++) {
+          plan.parseGroundWindEntryAndSetTwrWind(
+            this.draftDescentWindEntries[i],
+            true,
+            plan.destinationAirport?.location.alt ?? 0,
+          );
+        }
+        plan.setPerformanceData(
+          'descentWindEntries',
+          this.draftDescentWindEntries.sort((a, b) => b.altitude - a.altitude),
+        );
+      }
+
+      if (this.alternateDraftWindExists) {
+        plan.setAlternateWind(this.alternateDraftWind);
+      }
+
+      if (addedDueToTmpy) {
+        this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
+      }
     }
+    this.deleteDraftWindEntries();
   }
 
   /**

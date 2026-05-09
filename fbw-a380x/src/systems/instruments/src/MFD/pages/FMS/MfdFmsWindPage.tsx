@@ -541,6 +541,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       ...this.cruiseWindRowAltitudeIsInactive,
       ...this.cruiseWindRowFlightLevelIsEnteredByPilot,
       this.selectNextDisabled,
+      this.props.fmcService.master.getDraftWindsExist().sub(() => {
+        this.updatePage();
+      }),
     );
     this.automaticallySelectTab();
   }

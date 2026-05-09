@@ -1609,6 +1609,10 @@ export class FlightManagementComputer implements FmcInterface {
     return this.cpnyWindUplinkInProgress;
   }
 
+  getDraftWindsExist(): Subscribable<boolean> {
+    return this.draftWindsExist;
+  }
+
   private checkDestData(): void {
     if (!this.destDataEntered.get()) {
       this.addMessageToQueue(NXSystemMessages.enterDestData);
