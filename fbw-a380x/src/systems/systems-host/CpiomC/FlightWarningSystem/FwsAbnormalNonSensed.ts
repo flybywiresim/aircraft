@@ -391,142 +391,142 @@ export class FwsAbnormalNonSensed {
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        true, // 0
-        true, // 1
-        true, // 2
-        true, // 3
-        this.fws.flightPhase.get() <= 7, // 4
-        this.fws.flightPhase.get() <= 7, // 5
-        this.fws.flightPhase.get() > 7, // 6
-        this.fws.flightPhase.get() > 7, // 7
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 8
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 9
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 10
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 11
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 12
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 13
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 14
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 15
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 16
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 17
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 18
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 19
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 20
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 21
-        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250, // 22
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 23
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 24
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 25
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 26
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 27
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 28
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 29
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 30
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 31
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 32
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 33
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 34
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 35
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 36
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 37
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 38
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 39
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 40
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 41
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 42
-        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250), // 43
+        true,
+        true,
+        true,
+        true,
+        this.fws.flightPhase.get() <= 7,
+        this.fws.flightPhase.get() <= 7,
+        this.fws.flightPhase.get() > 7,
+        this.fws.flightPhase.get() > 7,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        (this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250,
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
+        !((this.fws.adrPressureAltitude.get() ?? 0) / 100 < 250),
       ],
       whichItemsChecked: () => [
-        false, // 0
-        !this.fws.apEngaged.get(), // 1
-        !this.fws.autoThrustEngaged.get(), // 2
-        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(), // 3
-        false, // 4
-        false, // 5
-        false, // 6
-        false, // 7
-        false, // 8
-        false, // 9
-        !this.fws.speedBrakeCommand.get(), // 10
-        false, // 11
-        false, // 12
-        false, // 13
-        false, // 14
-        false, // 15
-        false, // 16
-        false, // 17
-        false, // 18
-        false, // 19
-        false, // 20
-        false, // 21
-        false, // 22
-        false, // 23
-        false, // 24
-        !this.fws.apEngaged.get(), // 25
-        !this.fws.autoThrustEngaged.get(), // 26
-        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(), // 27
-        false, // 28
-        false, // 29
-        false, // 30
-        false, // 31
-        false, // 32
-        false, // 33
-        false, // 34
-        false, // 35
-        false, // 36
-        false, // 37
-        false, // 38
-        false, // 39
-        false, // 40
-        false, // 41
-        false, // 42
-        false, // 43
+        false,
+        !this.fws.apEngaged.get(),
+        !this.fws.autoThrustEngaged.get(),
+        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        !this.fws.speedBrakeCommand.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        !this.fws.apEngaged.get(),
+        !this.fws.autoThrustEngaged.get(),
+        !this.fws.fd1Active.get() && !this.fws.fd2Active.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
       ],
       whichDynamicText: () => [
-        '', // 0
-        '', // 1
-        '', // 2
-        '', // 3
-        '', // 4
-        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : '10', // 5
-        '', // 6
-        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : (this.fws.adrPressureAltitude.get() ?? 0) < 25000 ? '10' : '5', // 7
-        '', // 8
-        '', // 9
-        '', // 10
-        '', // 11
-        '', // 12
-        '', // 13
-        '', // 14
-        '', // 15
-        '', // 16
-        '', // 17
-        '', // 18
-        '', // 19
-        '', // 20
-        '', // 21
-        '', // 22
-        '', // 23
-        '', // 24
-        '', // 25
-        '', // 26
-        '', // 27
-        '', // 28
-        this.getNavUnreliableTargetN1(this.fws.adrPressureAltitude.get() ?? 0, this.fws.grossWeight.get()), // 29
-        '', // 30
-        '', // 31
-        '', // 32
-        '', // 33
-        '', // 34
-        '', // 35
-        '', // 36
-        '', // 37
-        '', // 38
-        '', // 39
-        '', // 40
-        '', // 41
-        '', // 42
-        '', // 43
+        '',
+        '',
+        '',
+        '',
+        '',
+        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : '10',
+        '',
+        (this.fws.adrPressureAltitude.get() ?? 0) < 10000 ? '12.5' : (this.fws.adrPressureAltitude.get() ?? 0) < 25000 ? '10' : '5',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        this.getNavUnreliableTargetN1(this.fws.adrPressureAltitude.get() ?? 0, this.fws.grossWeight.get()),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
       ],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
