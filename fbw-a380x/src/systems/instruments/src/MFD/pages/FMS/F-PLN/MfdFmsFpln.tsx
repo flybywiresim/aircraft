@@ -1791,7 +1791,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     return (
-      <div style="display: flex; flex-direction: row; justify-self: flex-end">
+      <div style="display: flex; flex-direction: row; justify-self: flex-end; font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">
         <span style="width: 45px; text-align: center;">{directionStr}</span>
         <span>/</span>
         <span style="width: 45px; text-align: center;">{speedStr}</span>
@@ -1800,7 +1800,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private formatAltitude(data: FplnLineWaypointDisplayData): VNode {
-    let altStr: VNode = <span>---</span>;
+    let altStr: VNode = <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">---</span>;
     const previousRow = this.props.previousRow.get();
     if (data.altitudePrediction) {
       const isBelowTransAlt =
@@ -1816,16 +1816,18 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)
         )
       ) {
-        altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
+        altStr = <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">"</span>;
       } else if (!isBelowTransAlt) {
         altStr = (
-          <span>{`FL${Math.round(data.altitudePrediction / 100)
+          <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">{`FL${Math.round(
+            data.altitudePrediction / 100,
+          )
             .toString()
             .padStart(3, '0')}`}</span>
         );
       } else {
         const roundedAltitude = MathUtils.round(data.altitudePrediction, 10).toFixed(0);
-        altStr = <span>{roundedAltitude}</span>;
+        altStr = <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">{roundedAltitude}</span>;
       }
     }
     if (data.hasAltitudeConstraint && data.altitudePrediction) {
@@ -1876,11 +1878,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         </span>
       );
     }
-    return <span style="margin-left: 20px;">{altStr}</span>;
+    return <span style="margin-left: 20px; font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">{altStr}</span>;
   }
 
   private formatSpeed(data: FplnLineWaypointDisplayData): VNode {
-    let speedStr: VNode = <span>---</span>;
+    let speedStr: VNode = <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">---</span>;
     const previousRow = this.props.previousRow.get();
     if (
       previousRow &&
@@ -1895,10 +1897,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)
       )
     ) {
-      speedStr = <span style="font-family: HoneywellMCDU, monospace; padding-left: 3px; padding-right: 3px;">"</span>;
+      speedStr = (
+        <span style="padding-left: 3px; padding-right: 3px; font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">
+          "
+        </span>
+      );
     } else if (data.speedPrediction && Number.isFinite(data.speedPrediction) && data.speedPrediction > 0) {
       speedStr = (
-        <span>
+        <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">
           {data.speedPrediction > 2
             ? data.speedPrediction.toFixed(0)
             : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}
@@ -1931,20 +1937,24 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         </span>
       );
     }
-    return <span style="margin-left: 20px;">{speedStr}</span>;
+    return <span style="margin-left: 20px; font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">{speedStr}</span>;
   }
 
   private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
     if (this.props.displayEfobAndWind.get()) {
       return !Number.isNaN(data.efobPrediction) && this.props.globalLineColor.get() === FplnLineColor.Active ? (
-        <span>
+        <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">
           {(this.props.weightUnit.get().convertFrom(data.efobPrediction, UnitType.KILOGRAM) / 1000).toFixed(1)}
         </span>
       ) : (
-        <span>--.-</span>
+        <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">--.-</span>
       );
     }
-    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatSpeed(data) : <span>---</span>;
+    return this.props.globalLineColor.get() === FplnLineColor.Active ? (
+      this.formatSpeed(data)
+    ) : (
+      <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">---</span>
+    );
   }
 
   private windOrAlt(data: FplnLineWaypointDisplayData): VNode {
@@ -1953,13 +1963,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       return line === FplnLineColor.Active || line === FplnLineColor.Secondary ? (
         this.formatWind(data)
       ) : (
-        <span>---°/---</span>
+        <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">---°/---</span>
       );
     }
     return line === FplnLineColor.Active || line === FplnLineColor.Secondary ? (
       this.formatAltitude(data)
     ) : (
-      <span>---</span>
+      <span style="font-family: FBW-Display-EIS-A380-SlashedZero, monospace;">---</span>
     );
   }
 
