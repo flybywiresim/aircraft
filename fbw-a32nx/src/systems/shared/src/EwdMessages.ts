@@ -210,6 +210,7 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['290012702', { text: '\x1b<5m -PTU................OFF' }],
   ['290012703', { text: '\x1b<5m -YELLOW ENG 2 PUMP..OFF' }],
   ['290012704', { text: '\x1b<5m -YELLOW ELEC PUMP...OFF' }],
+  ['290014301', { group: 'HYD$2', text: ' RAT FAULT' }],
   ['240040001', { group: 'ELEC$3', text: ' IDG 1 DISCONNECTED' }],
   ['240040501', { group: 'ELEC$3', text: ' IDG 2 DISCONNECTED' }],
   ['240000101', { group: 'ELEC$3', text: ' GEN 1 FAULT' }],

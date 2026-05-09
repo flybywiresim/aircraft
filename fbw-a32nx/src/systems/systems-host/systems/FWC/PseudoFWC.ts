@@ -694,6 +694,8 @@ export class PseudoFWC {
 
   private readonly emerGenMemo = Subject.create(false);
 
+  private readonly ratFaultWarning = Subject.create(false);
+
   private readonly elecEmergency = Subject.create(false);
 
   private readonly elecEmerConfigWarning = Subject.create(false);
@@ -1059,6 +1061,8 @@ export class PseudoFWC {
   /* 31 - FWS */
 
   private readonly fwcFlightPhase = Subject.create(-1);
+
+  private readonly flightPhase12310 = Subject.create(false);
 
   private readonly flightPhase126 = Subject.create(false);
 
@@ -2108,6 +2112,7 @@ export class PseudoFWC {
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
 
     // flight phase convenience vars
+    this.flightPhase12310.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 3 || flightPhase === 10);
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
     this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
     this.flightPhase110.set(flightPhase === 1 || flightPhase === 10);
@@ -2141,11 +2146,11 @@ export class PseudoFWC {
       this.ldgInhibitTimer.write(this.flightPhase78.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
     );
 
-    /** SDAC acquisition */
-    this.acquireSdac();
-
     /** Plug acquisition */
     this.acquirePlugs();
+
+    /** SDAC acquisition */
+    this.acquireSdac();
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
@@ -3772,6 +3777,13 @@ export class PseudoFWC {
     this.ratOutMemo.set(this.sdac00101Word.bitValue(28));
     this.emerGenMemo.set(
       this.sdac00410Word.bitValue(27) && this.sdac00101Word.bitValue(28) && !this.aircraftOnGround.get(),
+    );
+
+    // TODO: Check pressure in RAT actuator or change over valve voltage
+    this.ratFaultWarning.set(
+      this.flightPhase12310.get() &&
+        this.sdac00101Word.bitValue(28) &&
+        !(this.elecEmergency.get() || this.fwcFlightPhase.get() === 10),
     );
 
     this.bat1Off.set(
@@ -6438,6 +6450,17 @@ export class PseudoFWC {
       simVarIsActive: this.greenRvrOvht,
       whichCodeToReturn: () => [0, this.ptuAuto.get() ? 1 : null, this.eng1pumpPBisAuto.get() ? 2 : null],
       codesToReturn: ['290012801', '290012802', '290012803'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.HYD,
+      side: 'LEFT',
+    },
+    2900143: {
+      // RAT FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9],
+      simVarIsActive: this.ratFaultWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['290014301'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.HYD,
