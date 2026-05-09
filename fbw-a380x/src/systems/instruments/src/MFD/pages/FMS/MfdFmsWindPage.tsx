@@ -41,6 +41,7 @@ import {
   TemperatureFormat,
   WindAltitudeFormat,
   WindDirectionFormat,
+  WindFlightLevelFormat,
   WindSpeedFormat,
 } from '../common/DataEntryFormats';
 import { MathUtils } from '../../../../../../../../fbw-common/src/systems/shared/src/MathUtils';
@@ -1239,7 +1240,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
-                          dataEntryFormat={new FlightLevelFormat()}
+                          dataEntryFormat={new WindFlightLevelFormat()}
                           value={this.displayedCruiseWindFlightLevels[value]}
                           canBeCleared={true}
                         ></InputField>
