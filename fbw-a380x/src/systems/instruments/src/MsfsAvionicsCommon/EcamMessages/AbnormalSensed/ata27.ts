@@ -459,12 +459,18 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800064: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs POSITION/LVR DISAGREE',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES POS/LEVER DISAGREE',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'SPEED BRAKES LEVER',
+        sensed: true,
+        labelNotCompleted: 'RETRACT',
+      },
+    ],
   },
   271800065: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs STILL EXTENDED',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES STILL EXTENDED',
     sensed: true,
     items: [],
   },
@@ -490,39 +496,51 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       {
         name: 'VMO/MMO',
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '340/.89',
       },
       {
         name: 'VLE/MLE',
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '250/.55',
       },
       {
         name: 'VFE', // CONF 1
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '263',
       },
       {
         name: 'VFE', // CONF 1+F
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '222',
       },
       {
         name: 'VFE', // CONF 2
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '220',
       },
       {
         name: 'VFE', // CONF 3
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '196',
       },
       {
         name: 'VFE', // CONF FULL
         sensed: true,
+        style: ChecklistLineStyle.Red,
         labelNotCompleted: '182',
       },
     ],
+  },
+  271800070: {
+    title: '\x1b<4m\x1b4mOVERSPEED\x1bm LOAD ANALYSIS REQUIRED',
+    sensed: true,
+    items: [],
   },
   // ATA 27: FLAPS/SLATS
   272800001: {

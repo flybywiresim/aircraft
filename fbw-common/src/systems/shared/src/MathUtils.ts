@@ -555,7 +555,7 @@ export class MathUtils {
     return Math.round(value / quantum) * quantum;
   }
 
-  static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
+  public static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
@@ -654,5 +654,12 @@ export class MathUtils {
 
   public static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
     return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
   }
 }

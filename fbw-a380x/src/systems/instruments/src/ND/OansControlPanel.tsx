@@ -4,31 +4,20 @@
 import './oans-style.scss';
 import './OansControlPanel.scss';
 
-import {
-  ArraySubject,
-  ClockEvents,
-  ComponentProps,
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MapSubject,
-  MappedSubject,
-  SimVarValueType,
-  Subject,
-  Subscribable,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
-import {
-  ControlPanelAirportSearchMode,
-  ControlPanelMapDataSearchMode,
-  ControlPanelStore,
-  ControlPanelUtils,
-  NavigraphAmdbClient,
-  OansBrakeToVacateSelection,
-  OansControlEvents,
-} from '@flybywiresim/oanc';
+import { Feature, Geometry, LineString, Point, Position } from 'geojson';
+import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import {
   AmdbAirportSearchResult,
   AmdbProperties,
@@ -39,30 +28,43 @@ import {
   FeatureType,
   FeatureTypeString,
   FmsOansData,
-  MathUtils,
+  LgciuBusEvents,
   NXDataStore,
   NXLogicConfirmNode,
+  OansControlEvents,
   OansFmsDataStore,
-  OansMapProjection,
-  Runway,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
-
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
-import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { Feature, Geometry, LineString, Point, Position } from 'geojson';
+import {
+  ControlPanelAirportSearchMode,
+  ControlPanelMapDataSearchMode,
+  ControlPanelStore,
+  ControlPanelUtils,
+  NavigraphAmdbClient,
+} from '@flybywiresim/oanc';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import {
+  ArraySubject,
+  ClockEvents,
+  ComponentProps,
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  MapSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
+
+import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -77,7 +79,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
-    ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents & ResetPanelSimvars
+    AdirsSimVars &
+      BtvData &
+      ClockEvents &
+      FmsOansData &
+      LgciuBusEvents &
+      NDSimvars &
+      OansControlEvents &
+      ResetPanelSimvars
   >();
 
   /** If navigraph not available, this class will compute BTV features */
@@ -96,7 +105,20 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.oansResetPulled,
   );
 
+  private readonly oansFailed = MappedSubject.create(([reset]) => reset, this.oansResetPulled);
+
   private amdbClient = new NavigraphAmdbClient();
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
+
+  private readonly lengthUnitText = this.lengthUnit.map((v) => (v === UnitType.FOOT ? 'FT' : 'M'));
+
+  private readonly lengthFormatter = NumberFormatter.create({
+    nanString: '',
+    precision: 1,
+  });
 
   private readonly oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -161,6 +183,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   );
 
   private manualAirportSelection = false;
+  private manualAirportSelectionTime: number = 0;
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
@@ -186,15 +209,29 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly fmsDataStore = new OansFmsDataStore(this.props.bus);
 
-  private readonly runwayTora = Subject.create<string | null>(null);
+  private readonly runwayTora = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
 
-  private readonly runwayLda = Subject.create<string | null>(null);
+  private readonly runwayLda = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
+
+  private readonly runwayLdaText = MappedSubject.create(
+    ([lda, unit]) => this.lengthFormatter(lda.asUnit(unit)),
+    this.runwayLda,
+    this.lengthUnit,
+  );
+
+  private readonly runwayToraText = MappedSubject.create(
+    ([tora, unit]) => this.lengthFormatter(tora.asUnit(unit)),
+    this.runwayTora,
+    this.lengthUnit,
+  );
 
   private readonly standCoordinateString = Subject.create<string>('');
 
   private readonly oansRequestedStoppingDistance = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('oansRequestedStoppingDistance'),
   );
+
+  private readonly simTimeVar = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   // Need to add touchdown zone distance to displayed value. BTV computes from TDZ internally,
   // but users enter LDA from threshold
@@ -211,13 +248,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     !notSelected ? 'inherit' : 'hidden',
   );
 
-  private arpCoordinates: Coordinates | undefined;
-
-  private localPpos: Position = [];
-
-  private landingRunwayNavdata: Runway | undefined;
-
-  private btvUtils = new OansBrakeToVacateSelection(this.props.bus);
+  private readonly ropsDetectedAirport = ConsumerSubject.create(this.sub.on('ropsDetectedAirport'), null);
+  private readonly ropsDetectedRunway = ConsumerSubject.create(this.sub.on('ropsDetectedRunway'), null);
+  private readonly ropsDetectedRunwayLda = ConsumerSubject.create(this.sub.on('ropsDetectedRunwayLda'), null);
+  private readonly oansSelectedLandingRunway = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
   private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
@@ -301,6 +335,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
       }, true),
+      this.oansFailed.sub((v) => {
+        SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
+      }, true),
     );
 
     this.subs.push(
@@ -318,16 +355,20 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     );
 
     this.subs.push(
-      this.fmsDataStore.landingRunway.sub(async (it) => {
-        // Set control panel display
-        if (it) {
-          // Load runway data
-          const destination = this.fmsDataStore.destination.get();
-          if (destination && this.oansAvailable.get() === false) {
-            this.setBtvRunwayFromFmsRunway();
+      MappedSubject.create(
+        async ([arpt, ropsRwy, lda, oansRwy]) => {
+          if (oansRwy || (arpt && ropsRwy)) {
+            this.runwayLda.set(lda ?? NaN);
+            this.runwayTora.set(lda ?? NaN);
+          } else {
+            this.clearRunwayInfo();
           }
-        }
-      }),
+        },
+        this.ropsDetectedAirport,
+        this.ropsDetectedRunway,
+        this.ropsDetectedRunwayLda,
+        this.oansSelectedLandingRunway,
+      ),
     );
 
     this.subs.push(
@@ -364,18 +405,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }),
     );
 
-    this.subs.push(
-      this.sub
-        .on('realTime')
-        .atFrequency(5)
-        .handle((_) => {
-          if (this.arpCoordinates && !this.oansAvailable.get()) {
-            OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
-            this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
-          }
-        }),
-    );
-
     this.subs.push(this.sub.on('oans_display_airport').handle((arpt) => this.handleSelectAirport(arpt)));
 
     this.subs.push(
@@ -407,13 +436,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           }
 
           if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
-            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
-            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
+            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda ?? NaN);
+            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora ?? NaN);
           }
         } else if (this.oansAvailable.get()) {
           this.selectedEntityString.set('');
-          this.runwayLda.set('');
-          this.runwayTora.set('');
+          this.runwayLda.set(NaN);
+          this.runwayTora.set(NaN);
         }
       }, true),
     );
@@ -429,6 +458,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     );
 
     this.subs.push(
+      this.lengthUnit,
+      this.lengthUnitText,
+      this.runwayLdaText,
+      this.runwayToraText,
       this.setPlanModeConsumer,
       this.setPlanModeDisplay,
       this.oansResetPulled,
@@ -572,6 +605,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
 
     this.manualAirportSelection = true;
+    this.manualAirportSelectionTime = this.simTimeVar.get();
     this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', selectedArpt.idarpt, true);
     this.store.loadedAirport.set(selectedArpt);
     this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
@@ -619,12 +653,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private autoLoadAirport() {
     // If we don't have ppos or airport unloaded due to performance reasons, do not try to auto load
-    // If airport has been manually selected, do not auto load.
+    // If airport has been manually selected within the last 10 minutes, do not auto load.
     // FIXME reset manualAirportSelection after a while, to enable auto-load for destination even if departure was selected manually
     if (
       this.presentPosNotAvailable.get() ||
       this.oansPerformanceModeAndMovedOutOfZoomRange.read() ||
-      this.manualAirportSelection === true ||
+      (this.manualAirportSelection === true && this.simTimeVar.get() - this.manualAirportSelectionTime < 600) ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
       this.oansResetPulled.get()
@@ -666,34 +700,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
-  private async setBtvRunwayFromFmsRunway() {
-    const destination = this.fmsDataStore.destination.get();
-    const rwyIdent = this.fmsDataStore.landingRunway.get();
-
-    if (destination && rwyIdent) {
-      [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(
-        destination,
-        rwyIdent,
-      );
-      this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
-      this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-    }
-  }
-
-  private async btvFallbackSetDistance(distance: number | null) {
-    if (!this.oansAvailable.get()) {
-      if (distance && distance > BTV_MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
-        const exitLocation = placeBearingDistance(
-          this.landingRunwayNavdata.thresholdLocation,
-          this.landingRunwayNavdata.bearing,
-          distance / MathUtils.METRES_TO_NAUTICAL_MILES,
-        );
-        const localExitPos: Position = [0, 0];
-        OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
-
-        this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
-      }
-    }
+  private clearRunwayInfo() {
+    this.selectedEntityIndex.set(null);
+    this.selectedEntityString.set(null);
+    this.runwayLda.set(NaN);
+    this.runwayTora.set(NaN);
   }
 
   destroy(): void {
@@ -774,6 +785,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             mandatory={Subject.create(false)}
                             hEventConsumer={this.hEventConsumer}
                             interactionMode={this.interactionMode}
+                            errorHandler={() => {}}
                           />
                           <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">
                             END SHIFT
@@ -784,6 +796,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             mandatory={Subject.create(false)}
                             hEventConsumer={this.hEventConsumer}
                             interactionMode={this.interactionMode}
+                            errorHandler={() => {}}
                           />
                         </div>
                         <div class="oans-cp-map-data-ldg-shift-return-button">
@@ -799,13 +812,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div ref={this.mapDataMainRef} class="oans-cp-map-data-main">
                     <div class="oans-cp-map-data-main-2">
                       <Button
-                        label={this.crossExistsForEntity.map((e) => (e ? <>DEL CROSS</> : <>ADD CROSS</>))}
+                        label={this.crossExistsForEntity.map((e) => (e ? 'DEL CROSS' : 'ADD CROSS'))}
                         onClick={() => this.handleCrossButton()}
                         buttonStyle="flex: 1"
                         disabled={this.entityIsNotSelected}
                       />
                       <Button
-                        label={this.flagExistsForEntity.map((e) => (e ? <>DEL FLAG</> : <>ADD FLAG</>))}
+                        label={this.flagExistsForEntity.map((e) => (e ? 'DEL FLAG' : 'ADD FLAG'))}
                         onClick={() => this.handleFlagButton()}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
                         disabled={this.entityIsNotSelected}
@@ -819,9 +832,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div class="oans-cp-map-data-main-center">
                       <Button
-                        label={this.selectedEntityString.map((s) => (
-                          <>`CENTER MAP ON ${s}`</>
-                        ))}
+                        label={this.selectedEntityString.map((s) => `CENTER MAP ON ${s}`)}
                         onClick={() => {
                           if (this.selectedEntityPosition) {
                             this.props.bus
@@ -835,10 +846,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <OansRunwayInfoBox
                       rwyOrStand={this.selectedEntityType}
                       selectedEntity={this.selectedEntityString}
-                      tora={this.runwayTora}
-                      lda={this.runwayLda}
+                      tora={this.runwayToraText}
+                      lda={this.runwayLdaText}
                       ldaIsReduced={Subject.create(false)}
                       coordinate={Subject.create('----')}
+                      lengthUnit={this.lengthUnitText}
                     />
                   </div>
                   <div ref={this.mapDataBtvFallback} class="oans-cp-map-data-btv-fallback">
@@ -855,8 +867,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         RUNWAY LENGTH
                       </div>
                       <span class="mfd-value smaller">
-                        {this.runwayLda}
-                        <span style="color: rgb(33, 33, 255)">M</span>
+                        {this.runwayLdaText}
+                        <span style="color: rgb(33, 33, 255)">{this.lengthUnitText}</span>
                       </span>
                     </div>
                     <div
@@ -868,13 +880,18 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       </div>
                       <div>
                         <InputField<number, number, false>
-                          dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
-                          dataHandlerDuringValidation={async (val) => this.btvFallbackSetDistance(val)}
+                          dataEntryFormat={
+                            new LengthFormat(Subject.create(0), Subject.create(4000), this.lengthUnit, 5)
+                          }
+                          dataHandlerDuringValidation={async (val) =>
+                            this.props.bus.getPublisher<FmsOansData>().pub('oansManualStoppingDistance', val, true)
+                          }
                           readonlyValue={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
                           inactive={this.fmsLandingRunwayNotSelectedInFallback}
                           hEventConsumer={this.hEventConsumer}
                           interactionMode={this.interactionMode}
+                          errorHandler={() => {}}
                         />
                       </div>
                     </div>
@@ -977,7 +994,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   </div>
                   <div class="oans-cp-arpt-sel-fms">
                     <Button
-                      label={this.fmsDataStore.origin.map((it) => (it ? <>{it}</> : <>ORIGIN</>))}
+                      label={this.fmsDataStore.origin.map((it) => it ?? 'ORIGIN')}
                       onClick={() => {
                         const airport = this.fmsDataStore.origin.get();
                         if (airport) {
@@ -988,7 +1005,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.destination.map((it) => (it ? <>{it}</> : <>DEST</>))}
+                      label={this.fmsDataStore.destination.map((it) => it ?? 'DEST')}
                       onClick={() => {
                         const airport = this.fmsDataStore.destination.get();
                         if (airport) {
@@ -999,7 +1016,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.alternate.map((it) => (it ? <>{it}</> : <>ALTN</>))}
+                      label={this.fmsDataStore.alternate.map((it) => it ?? 'ALTN')}
                       onClick={() => {
                         const airport = this.fmsDataStore.alternate.get();
                         if (airport) {

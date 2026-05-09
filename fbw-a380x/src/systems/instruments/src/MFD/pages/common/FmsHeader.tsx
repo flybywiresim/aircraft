@@ -1,6 +1,7 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
 import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
+import { activeFlightPlanPageUri, activeFlightPlanFuelAndLoadUri, dataStatusUri } from '../../shared/utils';
 
 /*
  * Complete header for the FMS system
@@ -45,9 +46,9 @@ export class FmsHeader extends AbstractHeader {
             isActive={this.activeIsSelected}
             label="ACTIVE"
             menuItems={[
-              { label: 'F-PLN', action: () => this.props.uiService.navigateTo('fms/active/f-pln') },
+              { label: 'F-PLN', action: () => this.props.uiService.navigateTo(activeFlightPlanPageUri) },
               { label: 'PERF', action: () => this.props.uiService.navigateTo('fms/active/perf') },
-              { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo('fms/active/fuel-load') },
+              { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo(activeFlightPlanFuelAndLoadUri) },
               { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind'), disabled: true },
               { label: 'INIT', action: () => this.props.uiService.navigateTo('fms/active/init') },
             ]}
@@ -75,18 +76,18 @@ export class FmsHeader extends AbstractHeader {
             isActive={this.secIndexIsSelected}
             label="SEC INDEX"
             menuItems={[
-              { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec1/init'), disabled: true },
-              { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec2/init'), disabled: true },
-              { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec3/init'), disabled: true },
+              { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec/index/1') },
+              { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec/index/2') },
+              { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec/index/3') },
             ]}
-            idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorSsecIndex`}
+            idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorSecIndex`}
             containerStyle="flex: 1"
           />
           <PageSelectorDropdownMenu
             isActive={this.dataIsSelected}
             label="DATA"
             menuItems={[
-              { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
+              { label: 'STATUS', action: () => this.props.uiService.navigateTo(dataStatusUri) },
               { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
               { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
               { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },

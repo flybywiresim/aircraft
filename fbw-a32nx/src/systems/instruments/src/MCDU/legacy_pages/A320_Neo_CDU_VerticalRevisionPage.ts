@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,6 +13,10 @@ import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sd
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { ProfilePhase, VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
+import { CduRtaPage } from './CDU_RTA_Page';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -25,12 +29,12 @@ export class CDUVerticalRevisionPage {
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    waypoint,
-    wpIndex,
-    verticalWaypoint,
-    confirmSpeed = undefined,
-    confirmAlt = undefined,
-    confirmCode = undefined,
+    waypoint: FlightPlanLeg,
+    wpIndex: number,
+    verticalWaypoint?: VerticalWaypointPrediction,
+    confirmSpeed?: number,
+    confirmAlt?: number,
+    confirmCode?: AltitudeDescriptor,
     forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
@@ -46,8 +50,6 @@ export class CDUVerticalRevisionPage {
     const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, wpIndex, forPlan, inAlternate);
     const isOrigin = wpIndex === 0;
     const isDestination = wpIndex === targetPlan.destinationLegIndex;
-    const allowWindsOnSecondary = false; // TODO
-    const shouldEnableWindOption = allowWindsOnSecondary || forPlan !== FlightPlanIndex.FirstSecondary;
 
     let waypointIdent = '---';
     if (waypoint) {
@@ -196,18 +198,22 @@ export class CDUVerticalRevisionPage {
       }
     }
 
+    // Disable RTA if ETT insertion not possible as nothing else is simulated for the time being
+    const allowRta =
+      !mainTargetPlan.isActiveOrCopiedFromActive() || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
+
     mcdu.setTemplate([
       ['VERT REV {small}AT{end}{green} ' + waypointIdent + '{end}'],
       [],
       [''],
       [speedLimitTitle, ''],
-      [speedLimitCell, 'RTA>[color]inop'],
+      [speedLimitCell, `${allowRta ? '' : '{inop}'}RTA>`],
       [l3Title, r3Title],
       [l3Cell, r3Cell],
       [l4Title, r4Title],
       [l4Cell, r4Cell],
       [''],
-      [shouldEnableWindOption ? '<WIND/TEMP' : '', r5Cell],
+      ['<WIND/TEMP', r5Cell],
       [''],
       [
         confirmConstraint ? '{amber}*CLB{end}' : '<RETURN',
@@ -322,7 +328,11 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
     }; // SPD LIM
-    mcdu.onRightInput[1] = () => {}; // RTA
+    mcdu.onRightInput[1] = () => {
+      if (allowRta) {
+        CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan);
+      }
+    }; // RTA
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {
         await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(
@@ -464,25 +474,31 @@ export class CDUVerticalRevisionPage {
       }; // ALT CSTR
     }
 
-    if (shouldEnableWindOption) {
-      mcdu.onLeftInput[4] = () => {
-        //TODO: show appropriate wind page based on waypoint
-        CDUWindPage.Return = () => {
-          CDUVerticalRevisionPage.ShowPage(
-            mcdu,
-            waypoint,
-            wpIndex,
-            verticalWaypoint,
-            undefined,
-            undefined,
-            undefined,
-            forPlan,
-            inAlternate,
-          );
-        };
-        CDUWindPage.ShowPage(mcdu);
-      }; // WIND
-    }
+    mcdu.onLeftInput[4] = () => {
+      CDUWindPage.Return = () => {
+        CDUVerticalRevisionPage.ShowPage(
+          mcdu,
+          waypoint,
+          wpIndex,
+          verticalWaypoint,
+          undefined,
+          undefined,
+          undefined,
+          forPlan,
+          inAlternate,
+        );
+      };
+
+      const phase = this.getProfilePhase(waypoint, verticalWaypoint);
+      if (phase === ProfilePhase.Cruise) {
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, wpIndex);
+      } else if (phase === ProfilePhase.Descent) {
+        CDUWindPage.ShowDESPage(mcdu, forPlan);
+      } else {
+        CDUWindPage.ShowPage(mcdu, forPlan);
+      }
+    }; // WIND
+
     mcdu.onRightInput[4] = () => {
       if (!performanceData.cruiseFlightLevel.get()) {
         return;
@@ -614,6 +630,25 @@ export class CDUVerticalRevisionPage {
     }
   }
 
+  private static getProfilePhase(
+    leg: FlightPlanLeg,
+    verticalWaypoint: VerticalWaypointPrediction | null,
+  ): ProfilePhase {
+    if (verticalWaypoint) {
+      return verticalWaypoint.profilePhase;
+    }
+
+    switch (leg.segment.class) {
+      case SegmentClass.Departure:
+        return ProfilePhase.Climb;
+      case SegmentClass.Enroute:
+        return ProfilePhase.Cruise;
+      case SegmentClass.Arrival:
+      default:
+        return ProfilePhase.Descent;
+    }
+  }
+
   static formatFl(constraint, transAlt) {
     if (transAlt >= 100 && constraint > transAlt) {
       return 'FL' + Math.round(constraint / 100);
@@ -714,7 +749,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
       return;
     }
 
@@ -732,7 +767,12 @@ export class CDUVerticalRevisionPage {
       speed = parseInt(matchResult[2]);
     }
 
-    const code = matchResult[4] === undefined ? '@' : matchResult[4] === '-' ? '-' : '+';
+    const code =
+      matchResult[4] === undefined
+        ? AltitudeDescriptor.AtAlt1
+        : matchResult[4] === '-'
+          ? AltitudeDescriptor.AtOrAboveAlt1
+          : AltitudeDescriptor.AtOrBelowAlt1;
 
     if (matchResult[8] !== undefined) {
       alt = parseInt(matchResult[8]) * 100;
@@ -764,7 +804,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
 
     if (alt !== undefined) {
@@ -781,7 +821,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
   }
 

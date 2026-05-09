@@ -1,8 +1,8 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -12,6 +12,9 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { WindEntry, PropagatedWindEntry, WindVector } from './data/wind';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -24,20 +27,21 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
  * - {@link FlightPlanService} - a local implementation for use where the FMS software is located
  * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
  */
-export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
+  extends FlightPlanContext {
   get(index: number): FlightPlan<P>;
 
   has(index: number): boolean;
 
-  get active(): ReadonlyFlightPlan;
+  get active(): ReadonlyFlightPlan<P>;
 
-  get temporary(): ReadonlyFlightPlan;
+  get temporary(): ReadonlyFlightPlan<P>;
 
-  get activeOrTemporary(): ReadonlyFlightPlan;
+  get activeOrTemporary(): ReadonlyFlightPlan<P>;
 
-  get uplink(): ReadonlyFlightPlan;
+  get uplink(): ReadonlyFlightPlan<P>;
 
-  secondary(index: number): ReadonlyFlightPlan;
+  secondary(index: number): ReadonlyFlightPlan<P>;
 
   get hasActive(): boolean;
 
@@ -55,6 +59,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param index the 1-indexed index of the secondary flight plan
    */
   secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean): Promise<void>;
+
+  /**
+   * Copies the secondary flight plan into another secondary flight plan
+   *
+   * @param from the 1-indexed index of the source secondary flight plan
+   * @param to the 1-indexed index of the destination secondary flight plan
+   */
+  secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean): Promise<void>;
 
   secondaryDelete(index: number): Promise<void>;
 
@@ -74,6 +86,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   reset(): Promise<void>;
 
+  deleteAll(): Promise<void>;
+
   /**
    * Resets the flight plan with a new FROM/TO/ALTN city pair
    *
@@ -87,10 +101,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   /**
    * Sets the alternate destination in the flight plan.
    *
-   * @param altnIcao  ICAo of the ALTN airport
+   * @param altnIcao  Icao of the ALTN airport. If undefined, alternate is deleted.
    * @param planIndex which flight plan (excluding temporary) to make the change on
    */
-  setAlternate(altnIcao: string, planIndex: number): Promise<void>;
+  setAlternate(altnIcao: string | undefined, planIndex: number): Promise<void>;
 
   /**
    * Sets the origin runway in the flight plan. Creates a temporary flight plan if target is active.
@@ -172,7 +186,6 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param insertDiscontinuity whether to insert a discontinuity at the deleted element's position
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
-   *
    * @returns `true` if the element could be removed, `false` if removal is not allowed
    */
   deleteElementAt(
@@ -226,8 +239,34 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param atIndex the index of the leg to start the pending airway entry at
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
+   *
+   * @returns the index of the flight plan where the airway entry was started
    */
-  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
+  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<number>;
+
+  /**
+   * Continues an existing AIRWAYS revision, starting a VIA entry.
+   * @param airway the airway to insert
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean>;
+
+  /**
+   * Continues an existing AIRWAYS revision, inserting a fix.
+   * @param fix the fix to insert
+   * @param isDct whether the fix is a DCT
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryToFix(fix: Fix, isDct: boolean, planIndex: number, alternate?: boolean): Promise<boolean>;
+
+  /**
+   * Finalises an existing AIRWAYS revision.
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void>;
 
   directToLeg(
     ppos: Coordinates,
@@ -259,7 +298,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   addOrEditManualHold(
     atIndex: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
     planIndex: number,
     alternate?: boolean,
@@ -302,6 +341,25 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex?: number,
     alternate?: boolean,
   ): Promise<void>;
+
+  /**
+   * Sets whether a fix at an index should be overflown or not.
+   *
+   * @param atIndex the index of the leg to start the pending airway entry at
+   * @param overfly Whether fix should be overflown or not.
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  setOverfly(atIndex: number, overfly: boolean, planIndex: number, alternate: boolean): Promise<void>;
+
+  /**
+   * Toggle whether a fix at an index should be overflown or not.
+   *
+   * @param atIndex the index of the leg to start the pending airway entry at
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  toggleOverfly(atIndex: number, planIndex: number, alternate: boolean): Promise<void>;
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
 
@@ -371,4 +429,99 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   setPerformanceData<T extends keyof P & string>(key: T, value: any, planIndex: number): Promise<void>;
 
   stringMissedApproach(onConstraintsDeleted?: (map: FlightPlanLeg) => void, planIndex?: number): Promise<void>;
+
+  openBatch(name: string): Promise<FlightPlanBatch>;
+
+  closeBatch(uuid: string): Promise<FlightPlanBatch>;
+  /**
+   * Propagates the cruise wind entries forwards and backwards to the specified leg. The resulting array is sorted by
+   * altitude in descending order.
+   * @param atIndex the index of the leg ot propagate winds to
+   * @param result the array to write the propagated winds to
+   * @param planIndex which flight plan index to do the propagation on
+   */
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): PropagatedWindEntry[];
+
+  /**
+   * Adds a cruise wind entry at the specified leg.
+   * @param atIndex the index of the leg to add the entry at
+   * @param entry the entry to add
+   * @param planIndex which flight plan index to add the entry to
+   */
+  addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void>;
+
+  /**
+   * Deletes a cruise wind entry at the specified leg. The entry to delete is determined by the altitude rounded to the
+   * nearest 100 feet.
+   * Writes an error the console and does nothing if no entry with the specified altitude exists.
+   * @param atIndex the index of the leg to delete the entry at
+   * @param altitude the altitude of the entry to delete
+   * @param planIndex which flight plan index to delete the entry from
+   */
+  deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void>;
+
+  /**
+   * Edits an existing cruise wind entry at the specified leg. The entry to edit is determined by the altitude rounded to
+   * the nearest 100 feet.
+   * Writes an error the console and does nothing if no entry with the specified altitude exists.
+   * @param atIndex the index of the leg to edit the entry at
+   * @param altitude the altitude of the entry to edit
+   * @param newEntry the new entry to set
+   * @param planIndex which flight plan index to edit the entry in
+   */
+  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void>;
+
+  /**
+   * Sets the climb wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   */
+  setClimbWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void>;
+
+  /**
+   * Sets the descent wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   * @param shouldUpdateTwrWind whether to copy the wind to the perf approach page if the altitude is the destination altitude
+   */
+  setDescentWindEntry(
+    altitude: number,
+    entry: WindEntry | null,
+    planIndex: number,
+    shouldUpdateTwrWind: boolean,
+  ): Promise<void>;
+
+  /**
+   * Deletes all climb wind entries on the active flight plan and all secondary flight plans copied from the active plan
+   */
+  deleteAllClimbWindEntries(): Promise<void>;
+
+  /**
+   * Deletes all climb wind entries
+   * @param planIndex which flight plan index to delete the entries from
+   */
+  deleteClimbWindEntries(planIndex: number): Promise<void>;
+
+  /**
+   * Deletes all descent wind entries
+   * @param planIndex which flight plan index to delete the entries from
+   */
+  deleteDescentWindEntries(planIndex: number): Promise<void>;
+
+  /**
+   * Sets the average wind vector to the alternate destination. If the provided vector is null, the entry is deleted.
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   */
+  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void>;
+
+  /**
+   * Inserts a wind uplink entry into the flight plan
+   * @param planIndex which flight plan index to insert the wind uplink into
+   */
+  insertWindUplink(planIndex: number): Promise<void>;
 }

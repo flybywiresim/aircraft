@@ -11,16 +11,26 @@ type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
+  ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
+
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
+
+  CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
+
+  CONFIG_USING_METRIC_UNIT: boolean;
 }
 
-export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
+export type LegacyDataStoreSettingKey<k extends string = string> = k &
+  (k extends keyof NXDataStoreSettings ? never : k);
 
 /**
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
+    ACARS_PROVIDER: 'NONE',
+    CONFIG_AUTO_SIM_ROUTE_LOAD: false,
+    CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',
   };
 
@@ -99,9 +109,9 @@ export class NXDataStore {
     try {
       parsed = JSON.parse(rawValue);
     } catch (e) {
-      let newValue: string;
+      let newValue: any;
 
-      if (rawValue === '') {
+      if (rawValue === '' || typeof NXDataStore.settingsDefaultValues[key] !== 'string') {
         // Non-existent settings return an empty string
         newValue = NXDataStore.settingsDefaultValues[key];
       } else {
@@ -111,6 +121,10 @@ export class NXDataStore {
 
       NXDataStore.setTypedSettingValue(key, newValue as NXDataStoreSettings[k]);
       parsed = newValue;
+    }
+
+    if (typeof NXDataStore.settingsDefaultValues[key] === 'boolean') {
+      return Boolean(parsed) as NXDataStoreSettings[k];
     }
 
     return parsed as NXDataStoreSettings[k];
@@ -125,6 +139,7 @@ export class NXDataStore {
     const rawValue = JSON.stringify(value);
 
     NXDataStore.setRaw(key, rawValue);
+    this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, rawValue);
   }
 
   /**
