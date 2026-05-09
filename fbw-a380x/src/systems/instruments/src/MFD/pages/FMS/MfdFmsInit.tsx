@@ -395,13 +395,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new LongAlphanumericFormat()}
                 disabled={this.noFlightPlan}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).getFlightNumber().set(v);
+                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).setFlightNumber(v!);
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 readonlyValue={this.flightNumber}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
