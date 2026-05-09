@@ -391,7 +391,7 @@ export class FwsAbnormalNonSensed {
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => {
-        const alt = this.fws.planeAltitude.get();
+        const alt = this.fws.adrPressureAltitude.get() ?? 0;
 
         const beforeThrRed = this.fws.flightPhase.get() <= 7;
         const afterThrRed = !beforeThrRed;
@@ -463,7 +463,7 @@ export class FwsAbnormalNonSensed {
       whichDynamicText: () => {
         const texts = Array(44).fill('');
 
-        const alt = this.fws.planeAltitude.get();
+        const alt = this.fws.adrPressureAltitude.get() ?? 0;
 
         // Dynamic pitch for Before thrust reduction (index 5)
         texts[5] = alt < 10000 ? '12.5' : '10';
