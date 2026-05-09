@@ -340,6 +340,10 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
+  public readonly attHdgCaptOn3 = this.attKnob.map((it) => it === 0);
+
+  public readonly attHdgFoOn3 = this.attKnob.map((it) => it === 0);
+
   public readonly compMesgCount = Subject.create(0);
 
   public readonly landAsap = Subject.create(false);
@@ -369,6 +373,10 @@ export class FwsCore {
   public readonly voiceVhf3 = Subject.create(false);
 
   public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
+
+  public readonly emerExitLightsOn = Subject.create(false);
+
+  public readonly commercial = Subject.create(false);
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -908,6 +916,8 @@ export class FwsCore {
   public readonly fireButtonAPU = Subject.create(false);
 
   public readonly allFireButtons = Subject.create(false);
+
+  public readonly allFireAgents = Subject.create(false);
 
   public readonly fireTestPb = Subject.create(false);
 
@@ -1823,6 +1833,8 @@ export class FwsCore {
 
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
+
+  public readonly crewOxygenSupply = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -4316,6 +4328,10 @@ export class FwsCore {
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
+    const emerExitLights = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION', 'enum');
+    this.emerExitLightsOn.set(emerExitLights === 0);
+    this.commercial.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COMMERCIAL_PB_IS_ON', 'bool'));
+
     /* FUEL */
     const feedTank1Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:2', 'kilogram') < 1375;
     this.feedTank1Low.set(this.feedTank1LowConfirm.write(feedTank1Low, deltaTime));
@@ -4969,6 +4985,17 @@ export class FwsCore {
     this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool'));
     this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
     this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
+    this.allFireAgents.set(
+      this.apuAgentDischarged.get() &&
+        this.eng1Agent1Discharged.get() &&
+        this.eng1Agent2Discharged.get() &&
+        this.eng2Agent1Discharged.get() &&
+        this.eng2Agent2Discharged.get() &&
+        this.eng3Agent1Discharged.get() &&
+        this.eng3Agent2Discharged.get() &&
+        this.eng4Agent1Discharged.get() &&
+        this.eng4Agent2Discharged.get(),
+    );
 
     this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
     this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
@@ -5084,6 +5111,7 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+    this.crewOxygenSupply.set(SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'Bool'));
 
     /* DOOR */
     this.cockpitWindowOpen.set(

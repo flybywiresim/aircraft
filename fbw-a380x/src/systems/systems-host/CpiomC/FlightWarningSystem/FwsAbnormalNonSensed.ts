@@ -346,9 +346,9 @@ export class FwsAbnormalNonSensed {
         false,
         !this.fws.jettisonActive.get(),
         !this.fws.jettisonArm.get(),
-        this.fws.trimTkIsol.get(), // needs to be added
-        this.fws.emerExitLights.get(), // needs to be added
-        !this.fws.commercial.get(), // needs to be added
+        false, // FIXME when trim tk added, should be sensed
+        this.fws.emerExitLightsOn.get(),
+        !this.fws.commercial.get(),
         false,
         this.fws.flapsIndex.get() > 2, // placeholder, needs to actually detect ldg flap
         this.fws.spoilersArmed.get(),
@@ -363,7 +363,7 @@ export class FwsAbnormalNonSensed {
         false,
         this.fws.parkBrakeSet.get(),
         this.fws.allFireButtons.get(),
-        this.fws.allFireAgents.get(), // needs to be added
+        this.fws.allFireAgents.get(),
         false,
         false,
         this.fws.evacCommand.get(),
@@ -436,7 +436,7 @@ export class FwsAbnormalNonSensed {
         false,
         this.fws.jettisonArm.get(),
         this.fws.jettisonActive.get(),
-        this.fws.crewOxygenSupply.get(), // needs to be added
+        this.fws.crewOxygenSupply.get(),
         false,
         !!this.fws.seatBelt.get(),
         false,
@@ -451,10 +451,10 @@ export class FwsAbnormalNonSensed {
         false,
         !this.fws.jettisonActive.get(),
         !this.fws.jettisonArm.get(),
-        this.fws.trimTkIsol.get(), // needs to be added
+        false, // FIXME when trim tk added, should be sensed
         false,
-        this.fws.emerExitLights.get(), // needs to be added
-        !this.fws.commercial.get(), // needs to be added
+        this.fws.emerExitLightsOn.get(),
+        !this.fws.commercial.get(),
         false,
         false,
         this.fws.spoilersArmed.get(),
@@ -471,7 +471,7 @@ export class FwsAbnormalNonSensed {
         false,
         this.fws.parkBrakeSet.get(),
         this.fws.allFireButtons.get(),
-        this.fws.allFireAgents.get(), // needs to be added
+        this.fws.allFireAgents.get(),
         false,
         false,
         this.fws.evacCommand.get(),
@@ -544,8 +544,8 @@ export class FwsAbnormalNonSensed {
         this.fws.jettisonArm.get(),
         this.fws.jettisonActive.get(),
         false,
-        this.fws.trimTkFwdXfr.get(), // needs to be added
-        this.fws.outerTkXfr.get(), // needs to be added
+        false, // FIXME when trim tk controls added
+        false,
         false,
         false,
         false,
@@ -617,6 +617,24 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    340900002: {
+      // IR ALIGNMENT IN ATT MODE
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900002)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true, true],
+      whichItemsChecked: () => [
+        false,
+        this.fws.airDataCaptOn3.get(),
+        this.fws.attHdgCaptOn3.get(),
+        false,
+        this.fws.airDataFoOn3.get(),
+        this.fws.attHdgFoOn3.get(),
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+    },
     990900002: {
       // CKPT WINDOW CRACKED
       flightPhaseInhib: [],
@@ -679,7 +697,7 @@ export class FwsAbnormalNonSensed {
         this.fws.tawsGpwsOff.get(),
         this.fws.tawsTerrOff.get(),
         !!this.fws.seatBelt.get(),
-        this.fws.emerExitLights.get(),
+        this.fws.emerExitLightsOn.get(),
         !this.fws.commercial.get(),
         false,
       ],
@@ -772,7 +790,7 @@ export class FwsAbnormalNonSensed {
         this.fws.tawsGpwsOff.get(),
         this.fws.tawsTerrOff.get(),
         !!this.fws.seatBelt.get(),
-        this.fws.emerExitLights.get(),
+        this.fws.emerExitLightsOn.get(),
         !this.fws.commercial.get(),
         false,
       ],

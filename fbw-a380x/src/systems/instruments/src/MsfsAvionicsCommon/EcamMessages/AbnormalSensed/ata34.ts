@@ -988,7 +988,14 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340900002: {
     title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
     sensed: false,
-    items: [],
+    items: [
+      { name: 'CAPT PFD AFFECTED', condition: true, sensed: false },
+      { name: 'AIR DATA SWTG', labelNotCompleted: 'CAPT ON 3', sensed: true, level: 1 },
+      { name: 'ATT HDG SWTG', labelNotCompleted: 'CAPT ON 3', sensed: true, level: 1 },
+      { name: 'F/O PFD AFFECTED', condition: true, sensed: false },
+      { name: 'AIR DATA SWTG', labelNotCompleted: 'F/O ON 3', sensed: true, level: 1 },
+      { name: 'ATT HDG SWTG', labelNotCompleted: 'F/O ON 3', sensed: true, level: 1 },
+    ],
   },
   340900003: {
     title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',

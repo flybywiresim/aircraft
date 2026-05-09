@@ -1324,7 +1324,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       { name: 'L/G LEVER', labelNotCompleted: 'CHECK DOWN', sensed: false },
       { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true },
       { name: 'JETTISON ARM', labelNotCompleted: 'OFF', sensed: true },
-      { name: 'TRIM TK FEED', labelNotCompleted: 'ISOL', sensed: true },
+      { name: 'TRIM TK FEED', labelNotCompleted: 'ISOL', sensed: false }, //FIXME when trim tk added, should be sensed: true
       { name: 'CABIN REPORT', labelNotCompleted: 'OBTAIN', sensed: false },
       { name: 'EMER EXIT LT', labelNotCompleted: 'ON', sensed: true },
       { name: 'COMMERCIAL 1+2', labelNotCompleted: 'OFF', sensed: true },
@@ -1377,7 +1377,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       { name: 'JETTISON ARM', labelNotCompleted: 'ON', sensed: true, level: 1 },
       { name: 'JETTISON ACTIVE', labelNotCompleted: 'ON', sensed: true, level: 1 },
       { name: 'CG > 37.5%', condition: true, sensed: false },
-      { name: 'TRIM TK XFR', labelNotCompleted: 'FWD', sensed: true, level: 1 },
+      { name: 'TRIM TK XFR', labelNotCompleted: 'FWD', sensed: false, level: 1 }, //FIXME should be sensed: true when trim tk controls added
       { name: 'OUTER TK XFR', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 },
       { name: 'CG AFT SHIFT (50 PAX = 2% CG)', labelNotCompleted: 'CONSIDER', sensed: false, level: 1 },
       { name: 'LDG DIST AFFECTED', sensed: false },
