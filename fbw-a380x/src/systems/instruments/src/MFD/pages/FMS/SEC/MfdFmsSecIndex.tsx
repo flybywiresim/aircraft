@@ -555,7 +555,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 <Button
                   label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                      <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                      <span style="text-align: center; vertical-align: center; margin-right: 10px; color: #e68000;">
                         SWAP
                         <br />
                         ACTIVE
@@ -564,7 +564,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                     </div>
                   }
                   onClick={() => this.props.fmcService.master.swapActiveAndSecondaryPlan(this.secIndex)}
-                  buttonStyle="color: #e68000; padding-right: 2px; width: 160px; height: 60px;"
+                  buttonStyle="padding-right: 2px; width: 160px; height: 60px;"
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_swap-active`}
                 />
               </div>

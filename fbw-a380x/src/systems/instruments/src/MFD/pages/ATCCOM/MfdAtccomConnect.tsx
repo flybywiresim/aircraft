@@ -46,7 +46,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_notifyToAtcDropdown`}
                 selectedIndex={this.selectedAtcCenterIndex}
                 values={this.availableAtcCenters}
-                freeTextAllowed={false}
+                keyboardEntryAllowed={true}
                 containerStyle="width: 150px;"
                 alignLabels="center"
                 numberOfDigitsForInputField={4}

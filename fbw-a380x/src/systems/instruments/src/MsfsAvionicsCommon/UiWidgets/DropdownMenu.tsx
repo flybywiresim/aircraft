@@ -22,7 +22,7 @@ import { EfisSide } from '@flybywiresim/fbw-sdk';
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
   selectedIndex: Subscribable<number | null> | MutableSubscribable<number | null>;
-  freeTextAllowed: boolean;
+  freeTextAllowed?: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
   onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
@@ -37,6 +37,14 @@ interface DropdownMenuProps extends ComponentProps {
   hEventConsumer: Consumer<[EfisSide, string]>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
+
+  /**
+   * Indicates whether the user is allowed to type a dropdown value rather than selecting from the list.
+   */
+  keyboardEntryAllowed?: boolean;
+
+  /** Callback invoked when a text entry is not in the list of values. */
+  errorOnNotInList?: () => void;
 }
 
 /*
@@ -93,19 +101,30 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (this.props.onModified && !this.props.inactive?.get() && !this.props.disabled?.get()) {
-      // selected index of -1 marks free text entry
-      if (this.props.freeTextAllowed) {
-        this.props.onModified(-1, text);
+    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
+      let error = false;
+
+      if (this.props.keyboardEntryAllowed || this.props.freeTextAllowed) {
+        if (
+          text.length > 0 &&
+          this.props.errorOnNotInList !== undefined &&
+          !this.props.values.getArray().includes(text)
+        ) {
+          this.props.errorOnNotInList();
+          error = true;
+        }
+      }
+      if (this.props.onModified !== undefined) {
+        this.props.onModified(-1, text); // selected index of -1 marks free text entry
       }
 
       this.dropdownMenuRef.instance.style.display = 'none';
       this.freeTextEntered = true;
-      this.inputFieldValue.set(text);
+      this.inputFieldValue.set(error ? this.props.values.get(this.props.selectedIndex.get() ?? 0) : text);
       this.dropdownIsOpened.set(false);
       this.freeTextEntered = false;
+      this.filterList('');
     }
-    this.filterList('');
   }
 
   private filterList(text: string) {
@@ -314,6 +333,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
               errorHandler={() => {}}
+              fixedValuesDropDown={!this.props.keyboardEntryAllowed && !this.props.freeTextAllowed}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">

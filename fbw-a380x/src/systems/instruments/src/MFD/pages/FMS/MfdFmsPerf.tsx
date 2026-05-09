@@ -1414,7 +1414,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
             </div>
             <TopTabNavigator
-              pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])}
+              pageTitles={['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA']}
               selectedPageIndex={this.flightPhasesSelectedPageIndex}
               pageChangeCallback={(val) => {
                 this.flightPhasesSelectedPageIndex.set(val);

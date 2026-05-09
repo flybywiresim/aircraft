@@ -36,7 +36,7 @@ import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconBut
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
+import { getEtaFromUtcOrPresent, onEntryNotInList } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -970,7 +970,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_clbConstraintWptDropdown`}
                       selectedIndex={this.dropdownMenuSelectedWaypointIndex}
                       values={this.availableWaypoints}
-                      freeTextAllowed={false}
+                      keyboardEntryAllowed={true}
+                      errorOnNotInList={() => {
+                        onEntryNotInList(this.props.fmcService);
+                      }}
                       containerStyle="width: 175px;"
                       alignLabels="flex-start"
                       onModified={(i) => this.onWptDropdownModified(i)}
@@ -1090,7 +1093,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altConstraintWptDropdown`}
                       selectedIndex={this.dropdownMenuSelectedWaypointIndex}
                       values={this.availableWaypoints}
-                      freeTextAllowed={false}
+                      keyboardEntryAllowed={true}
+                      errorOnNotInList={() => {
+                        onEntryNotInList(this.props.fmcService);
+                      }}
                       containerStyle="width: 175px;"
                       alignLabels="flex-start"
                       onModified={(i) => this.onWptDropdownModified(i)}
@@ -1220,7 +1226,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_stepAltWpt${li}`}
                                   selectedIndex={this.stepAltsWptIndices[li]}
                                   values={this.availableWaypoints}
-                                  freeTextAllowed={false}
+                                  keyboardEntryAllowed={true}
+                                  errorOnNotInList={() => {
+                                    onEntryNotInList(this.props.fmcService);
+                                  }}
                                   containerStyle="width: 175px;"
                                   alignLabels="flex-start"
                                   numberOfDigitsForInputField={7}

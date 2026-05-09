@@ -3,6 +3,8 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+import { FmcServiceInterface } from '../FMC/FmcServiceInterface';
+import { NXSystemMessages } from './NXSystemMessages';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -74,3 +76,8 @@ export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadP
 export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
 export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
 export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
+
+/** Adds ENTRY NOT IN LIST scratchpad message. */
+export function onEntryNotInList(fmc: FmcServiceInterface): void {
+  fmc.master.addMessageToQueue(NXSystemMessages.EntryNotInList, undefined, undefined);
+}

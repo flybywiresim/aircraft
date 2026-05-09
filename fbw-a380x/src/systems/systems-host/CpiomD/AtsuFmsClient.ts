@@ -49,6 +49,7 @@ export class AtsuFmsClient {
                 flightPlan: flightPlanIndex,
               },
               true,
+              false,
             );
           }
           this.uplinkWindRequestFlightPlanMap.delete(response.requestId);

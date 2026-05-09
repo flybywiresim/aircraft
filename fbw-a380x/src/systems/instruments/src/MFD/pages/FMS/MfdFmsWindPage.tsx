@@ -16,7 +16,7 @@ import { FmsPage } from '../common/FmsPage';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Footer } from '../common/Footer';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { showReturnButtonUriExtra } from '../../shared/utils';
+import { onEntryNotInList, showReturnButtonUriExtra } from '../../shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
@@ -81,13 +81,11 @@ interface WindDisplayEntry {
 
 export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private static readonly pageTitlesActiveFpln = ['HISTORY', 'CLB', 'CRZ', 'DES'];
-  private static readonly pageTitlesSecondaryFpln = ['CLB', 'CRZ', 'DES'];
+  private static readonly pageTitlesSecondaryFpln = ['', 'CLB', 'CRZ', 'DES']; // Use an empty page title to skip the history page in SEC.
 
   // General Navigation
   private readonly pageTitles = Subject.create(MfdFmsWindPage.pageTitlesActiveFpln);
   private readonly selectedSubPage = Subject.create(WindSubPageMenu.Climb);
-  /* Shifted by one when on secondary flight plan. */
-  private readonly selectedTabIndex = Subject.create(0);
   private wasSecPreviouslyActive = false;
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
@@ -363,12 +361,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   private updatePage() {
     const loadedFlightPlanIndex = this.loadedFlightPlanIndex.get();
-    // If we switched from a SEC to active, recompute navigation and enable history again;
+    // If we switched from a SEC to active, enable history again;
     if (this.wasSecPreviouslyActive && loadedFlightPlanIndex < FlightPlanIndex.FirstSecondary) {
       this.pageTitles.set(MfdFmsWindPage.pageTitlesActiveFpln);
-      this.selectedTabIndex.set(this.selectedTabIndex.get() + 1);
       return;
     }
+
     const hasFP = this.props.fmcService.master.flightPlanInterface.has(loadedFlightPlanIndex);
     const fp = hasFP ? this.props.fmcService.master.flightPlanInterface.get(loadedFlightPlanIndex) : null;
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
@@ -519,12 +517,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.props.fmcService.master.fmgc.data.flightPhase.sub((phase) => {
         this.automaticallySelectTabByFlightPhase(phase);
       }),
-      this.selectedTabIndex.sub((v) => {
+      this.selectedSubPage.sub((v) => {
         if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
           // History is not available on secondary so we need to skip it.
-          this.selectedSubPage.set(Math.max(v + 1, WindSubPageMenu.Descent));
-        } else {
-          this.selectedSubPage.set(v);
+          this.selectedSubPage.set(Math.max(WindSubPageMenu.Climb, v));
         }
         this.updatePage();
       }),
@@ -572,7 +568,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     if (page === null) {
       this.automaticallySelectTabByFlightPhase(this.props.fmcService.master.fmgc.getFlightPhase());
     } else {
-      this.setSelectedPageIndex(page);
+      this.selectedSubPage.set(page);
     }
   }
 
@@ -582,31 +578,22 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         case FmgcFlightPhase.Preflight:
         case FmgcFlightPhase.Done:
         case FmgcFlightPhase.Climb:
-          this.setSelectedPageIndex(WindSubPageMenu.Climb);
+          this.selectedSubPage.set(WindSubPageMenu.Climb);
           break;
         case FmgcFlightPhase.Cruise:
-          this.setSelectedPageIndex(WindSubPageMenu.Cruise);
+          this.selectedSubPage.set(WindSubPageMenu.Cruise);
           break;
         default:
-          this.setSelectedPageIndex(WindSubPageMenu.Descent);
+          this.selectedSubPage.set(WindSubPageMenu.Descent);
           break;
       }
-    }
-  }
-
-  private setSelectedPageIndex(menu: WindSubPageMenu) {
-    if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
-      // History is not available on secondary so we need to skip it.
-      this.selectedTabIndex.set(Math.max(menu - 1, 0));
-    } else {
-      this.selectedTabIndex.set(menu);
     }
   }
 
   private insertHistoryWind() {
     const success = this.props.fmcService.master.insertHistoryWinds();
     if (success) {
-      this.setSelectedPageIndex(WindSubPageMenu.Climb);
+      this.selectedSubPage.set(WindSubPageMenu.Climb);
     }
   }
 
@@ -975,7 +962,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       this.availableWaypointsSize.set(0);
       return;
     } else {
-      console.log('Flight plan loaded, looking for cruise legs');
       const legPredictions =
         loadedplanIndex === FlightPlanIndex.Active
           ? this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions
@@ -1024,7 +1010,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="height: 11px;" />
-          <TopTabNavigator pageTitles={this.pageTitles} selectedPageIndex={this.selectedTabIndex}>
+          <TopTabNavigator pageTitles={this.pageTitles} selectedPageIndex={this.selectedSubPage}>
             <TopTabNavigatorPage containerStyle="padding-bottom:3px;">
               {/* HISTORY */}
               <div class="mfd-fms-wind-page-container">
@@ -1177,28 +1163,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                   <div class="mfd-fms-wind-page-crz-dropdown-container">
                     <DropdownMenu
                       disabled={this.cruiseWindsDisabled}
+                      inactive={this.cruiseWindsInactive}
                       values={this.availableWaypoints}
                       selectedIndex={this.dropdownMenuSelectedWaypointIndex}
-                      onModified={(v, ident) => {
+                      errorOnNotInList={() => {
+                        onEntryNotInList(this.props.fmcService);
+                      }}
+                      onModified={(v) => {
                         if (v !== null && v >= 0) {
                           this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[v]);
                           this.updatePage();
-                        } else {
-                          const idx = this.availableWaypoints.getArray().findIndex((w) => w === ident);
-                          if (idx >= 0) {
-                            this.selectedWaypointLegIndex.set(this.availableWaypointsToLegIndex[idx]);
-                            this.updatePage();
-                          } else {
-                            this.props.fmcService.master.addMessageToQueue(
-                              NXSystemMessages.EntryNotInList,
-                              undefined,
-                              undefined,
-                            );
-                          }
                         }
                       }}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_CruiseWindWaypointDropdown`}
-                      freeTextAllowed={true}
+                      keyboardEntryAllowed={true}
                       containerStyle="width: 192px; margin-right: 19px; "
                       numberOfDigitsForInputField={7}
                       alignLabels="center"

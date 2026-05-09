@@ -1791,9 +1791,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     return (
-      <span style="font-family: HoneywellMCDU, monospace; justify-self: end;">
-        {directionStr}/{speedStr}
-      </span>
+      <div style="display: flex; flex-direction: row; justify-self: flex-end">
+        <span style="width: 45px; text-align: center;">{directionStr}</span>
+        <span>/</span>
+        <span style="width: 45px; text-align: center;">{speedStr}</span>
+      </div>
     );
   }
 
@@ -1946,10 +1948,19 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private windOrAlt(data: FplnLineWaypointDisplayData): VNode {
+    const line = this.props.globalLineColor.get();
     if (this.props.displayEfobAndWind.get()) {
-      return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatWind(data) : <span>---°/---</span>;
+      return line === FplnLineColor.Active || line === FplnLineColor.Secondary ? (
+        this.formatWind(data)
+      ) : (
+        <span>---°/---</span>
+      );
     }
-    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>---</span>;
+    return line === FplnLineColor.Active || line === FplnLineColor.Secondary ? (
+      this.formatAltitude(data)
+    ) : (
+      <span>---</span>
+    );
   }
 
   private lineConnector(data: FplnLineWaypointDisplayData): VNode {

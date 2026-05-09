@@ -68,6 +68,9 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
 
   /* Whether to display the unit in a larger font size */
   bigUnit?: boolean;
+
+  /** Indicates whether the input field is part of a fixed values dropdown. If so, all keyboard inputs are ignored.*/
+  fixedValuesDropDown?: boolean;
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -231,7 +234,7 @@ export class InputField<
   }
 
   private onKeyDown(ev: KeyboardEvent) {
-    if (!this.isFocused.get()) {
+    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -240,7 +243,7 @@ export class InputField<
     }
   }
 
-  private onKeyDownHandler = this.onKeyDown.bind(this);
+  private readonly onKeyDownHandler = this.onKeyDown.bind(this);
 
   private handleBackspace() {
     if (this.modifiedFieldValue.get() === null) {
@@ -255,7 +258,7 @@ export class InputField<
   }
 
   private onKeyPress = (ev: KeyboardEvent) => {
-    if (!this.isFocused.get()) {
+    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -278,7 +281,7 @@ export class InputField<
     }
   };
 
-  private onKeyPressHandler = this.onKeyPress.bind(this);
+  private readonly onKeyPressHandler = this.onKeyPress.bind(this);
 
   private handleKeyInput = (key: string) => {
     if (this.modifiedFieldValue.get() === null) {
@@ -584,7 +587,7 @@ export class InputField<
     }
 
     this.props.hEventConsumer.handle((key) => {
-      if (!this.isFocused.get()) {
+      if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
         return;
       }
 
