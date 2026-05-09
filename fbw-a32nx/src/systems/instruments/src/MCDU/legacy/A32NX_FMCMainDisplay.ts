@@ -1835,7 +1835,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
     const hasStepDescent =
-      this.guidanceController?.vnavDriver.mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.StepDescent) !==
+      this.guidanceController?.vnavDriver.mcduProfile?.findVerticalCheckpoint(VerticalCheckpointReason.StepDescent) !==
       undefined;
 
     if (_event === 'MODE_SELECTED_ALTITUDE') {

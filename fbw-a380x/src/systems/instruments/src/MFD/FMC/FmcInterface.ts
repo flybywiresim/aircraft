@@ -22,11 +22,11 @@ export enum FmcOperatingModes {
 }
 
 export interface FlightPhaseManagerProxyInterface {
-  handleFcuAltKnobPushPull(distanceToDestination: number): void;
+  handleFcuAltKnobPushPull(distanceToDestination: number, hasStepDescent: boolean): void;
 
-  handleFcuAltKnobTurn(distanceToDestination: number): void;
+  handleFcuAltKnobTurn(distanceToDestination: number, hasStepDescent: boolean): void;
 
-  handleFcuVSKnob(distanceToDestination: number, onStepClimbDescent: () => void): void;
+  handleFcuVSKnob(distanceToDestination: number, hasStepDescent: boolean, onStepClimbDescent: () => void): void;
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void;
 

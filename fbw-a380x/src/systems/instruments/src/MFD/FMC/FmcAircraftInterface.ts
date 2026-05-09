@@ -38,7 +38,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { VerticalCheckpointReason, VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FlightManagementComputer, FMS_CYCLE_TIME } from './FlightManagementComputer';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
@@ -1527,18 +1527,22 @@ export class FmcAircraftInterface {
 
       this.onModeManagedHeading();
     }
+    const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
+    const hasStepDescent =
+      this.fmgc.guidanceController?.vnavDriver.mcduProfile?.findVerticalCheckpoint(
+        VerticalCheckpointReason.StepDescent,
+      ) !== undefined;
+
     if (event === 'MODE_SELECTED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_SELECTED_ALTITUDE') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
       if (dist) {
-        this.fmc.handleFcuAltKnobPushPull(dist);
+        this.fmc.handleFcuAltKnobPushPull(dist, hasStepDescent);
       }
       this.onModeSelectedAltitude();
       this.onStepClimbDescent();
     }
     if (event === 'MODE_MANAGED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_MANAGED_ALTITUDE') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
       if (dist) {
-        this.fmc.handleFcuAltKnobPushPull(dist);
+        this.fmc.handleFcuAltKnobPushPull(dist, hasStepDescent);
       }
       this.onModeManagedAltitude();
       this.onStepClimbDescent();
@@ -1549,9 +1553,8 @@ export class FmcAircraftInterface {
       event === 'A320_Neo_CDU_AP_DEC_ALT' ||
       event === 'A320_Neo_CDU_AP_INC_ALT'
     ) {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
       if (dist) {
-        this.fmc.handleFcuAltKnobTurn(dist);
+        this.fmc.handleFcuAltKnobTurn(dist, hasStepDescent);
       }
       this.onTrySetCruiseFlightLevel();
     }
@@ -1568,9 +1571,8 @@ export class FmcAircraftInterface {
       SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', 1);
     }
     if (event === 'VS' || event === 'A320_Neo_CDU_VS') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
       if (dist) {
-        this.fmc.handleFcuVSKnob(dist, this.onStepClimbDescent.bind(this));
+        this.fmc.handleFcuVSKnob(dist, hasStepDescent, this.onStepClimbDescent.bind(this));
       }
     }
   }
