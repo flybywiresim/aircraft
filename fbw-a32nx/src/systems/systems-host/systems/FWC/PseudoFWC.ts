@@ -277,6 +277,11 @@ export class PseudoFWC {
   private oneIrsInAlign = false;
   private navMode = false;
 
+  /* Plugs */
+  private readonly ltp: Plug<'07C'> = {};
+
+  private readonly rtp: Plug<'07E'> = {};
+
   /* SDAC */
   private readonly sdac00100Word = Arinc429Register.empty();
 
@@ -302,11 +307,6 @@ export class PseudoFWC {
   private readonly sdac05010Word = Arinc429Register.empty();
 
   private readonly sdac05201Word = Arinc429Register.empty();
-
-  /* Plugs */
-  private readonly ltp: Plug<'07C'> = {};
-
-  private readonly rtp: Plug<'07E'> = {};
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -1935,6 +1935,7 @@ export class PseudoFWC {
 
   private acquirePlugs(): void {
     this.ltp['07C'] = !this.fac1HealthyVar.get();
+
     this.rtp['07E'] = !this.fac2HealthyVar.get();
   }
 
