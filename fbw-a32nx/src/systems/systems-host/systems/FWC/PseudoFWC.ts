@@ -6269,50 +6269,6 @@ export class PseudoFWC {
       sysPage: EcamSysPage.HYD,
       side: 'LEFT',
     },
-    2900310: {
-      // *HYD  - Blue
-      flightPhaseInhib: [1, 4, 5, 10],
-      simVarIsActive: MappedSubject.create(
-        ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) =>
-          !(blueRvrOvht || blueRvrLow || !blueElecPumpPBAuto) &&
-          (!dcESSBusPowered || !ac1BusPowered) &&
-          blueLP &&
-          !emergencyGeneratorOn,
-        this.blueRvrOvht,
-        this.blueRvrLow,
-        this.blueElecPumpPBAuto,
-        this.dcESSBusPowered,
-        this.ac1BusPowered,
-        this.blueLP,
-        this.emergencyGeneratorOn,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: EcamSysPage.HYD,
-      side: 'RIGHT',
-    },
-    2900312: {
-      // *HYD  - Green Engine 1 //
-      flightPhaseInhib: [1, 2, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) =>
-          greenLP &&
-          // && ENG 1 OUT - not implemented
-          eng1pumpPBisAuto &&
-          !emergencyGeneratorOn,
-        this.greenLP,
-        this.eng1pumpPBisAuto,
-        this.emergencyGeneratorOn,
-      ),
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['290031201'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: EcamSysPage.HYD,
-      side: 'RIGHT',
-    },
     2800145: {
       // L+R WING TK LO LVL
       flightPhaseInhib: [3, 4, 5, 7, 8, 9],
