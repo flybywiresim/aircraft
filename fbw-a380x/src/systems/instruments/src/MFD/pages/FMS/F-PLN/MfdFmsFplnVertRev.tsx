@@ -260,7 +260,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.selectedLegIndex.set(this.props.fmcService.master.revisedLegIndex.get() ?? indexToSelect);
       this.initialLoadRevisedWaypointIndex = false;
     } else {
-      this.selectedLegIndex.set(indexToSelect);
+      const currentSelection = this.selectedLegIndex.get();
+      this.selectedLegIndex.set(
+        currentSelection !== null && this.availableWaypointsToLegIndex.includes(currentSelection)
+          ? currentSelection
+          : indexToSelect,
+      );
     }
 
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
