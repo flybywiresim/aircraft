@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, FSComponent, FsInstrument, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { EventBus, FSComponent, FsInstrument } from '@microsoft/msfs-sdk';
 import { PopupComponent } from './popup';
 
 export class PopupInstrument implements FsInstrument {

@@ -5,6 +5,8 @@
 import { FsBaseInstrument } from '@microsoft/msfs-sdk';
 import { PopupInstrument } from '@flybywiresim/fbw-sdk';
 
+import '../../../../../../fbw-common/src/systems/instruments/src/popup/style.scss';
+
 class A380X_POPUP extends FsBaseInstrument<PopupInstrument> {
   constructInstrument(): PopupInstrument {
     return new PopupInstrument();
