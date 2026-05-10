@@ -102,8 +102,8 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
           </h1>
         </div>
       </Link>
-      <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">
-        <ScrollableContainer height={53} innerClassName="h-full pr-6">
+      <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2 pr-4">
+        <ScrollableContainer height={52} innerClassName="h-full pr-6">
           <div className="h-full divide-y-2 divide-theme-accent">{children}</div>
         </ScrollableContainer>
       </div>
