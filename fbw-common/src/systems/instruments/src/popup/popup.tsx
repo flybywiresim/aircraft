@@ -68,7 +68,7 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
   doRender(): VNode {
     return (
       <div id="resume" ref={this.panelRef} class="fbw-hidden absolute inset-0 z-50 flex items-center justify-center">
-        <div class=" mx-6  w-full  rounded-xl bg-theme-body px-10 py-8 text-center">
+        <div class=" mx-6 w-full rounded-xl bg-theme-body px-10 py-8 text-center">
           <h1 class="p-2 text-4xl font-bold">{this.todPauseOverlayState.map((state) => state.title)}</h1>
           <p class="p-8 text-xl leading-relaxed text-theme-text">
             {this.todPauseOverlayState.map((state) => state.message)}
