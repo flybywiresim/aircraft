@@ -985,54 +985,67 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [], // TODO
   },
   340900003: {
-    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIR SPEED INDICATION',
+    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
     sensed: false,
     items: [
-      { name: 'SAFE CONDUCT OF FLIGHT IMPACTED :', condition: true, sensed: false },
-      { name: 'AP', labelNotCompleted: 'DISCONNECT', sensed: true, level: 1 },
-      { name: 'A/THR', labelNotCompleted: 'DISCONNECT', sensed: true, level: 1 },
-      { name: 'FD', labelNotCompleted: 'OFF', sensed: true, level: 1 },
-      { name: 'ALL THR LEVERS', labelNotCompleted: 'TOGA', sensed: true, level: 1 },
-      { name: 'PITCH ATT TRGT', labelNotCompleted: '{DYNAMIC}°', sensed: false, level: 1 },
-      { name: 'ALL THR LEVERS', labelNotCompleted: 'CLB', sensed: true, level: 1 },
-      { name: 'PITCH ATT TRGT', labelNotCompleted: '{DYNAMIC}°', sensed: false, level: 1 },
-      { name: 'BELOW FL 250 :', condition: true, sensed: false },
-      { name: 'FLAPS & L/G : MAINTAIN CURRENT CONF', sensed: false, level: 1 },
-      { name: 'SPEED BRAKES', labelNotCompleted: 'CHECK RETRACTED', sensed: true, level: 1 },
-      { name: 'FMS POSITION / GPS PAGE', labelNotCompleted: 'SELECT', sensed: false, level: 1 },
-      { name: 'AIR DATA (ADRs/STBY INSTR)', labelNotCompleted: 'XCHECK', sensed: false, level: 1 },
-      { name: 'AT LEAST ONE AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
-      { name: 'RELIABLE AIR DATA', labelNotCompleted: 'USE', sensed: false, level: 2 },
-      { name: 'AT LEAST ONE ADR : KEEP ON', sensed: false, level: 2 },
-      { name: 'UNRELIABLE ADRs', labelNotCompleted: 'OFF', sensed: false, level: 2 },
-      { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
-      { name: 'ADR 1+2+3 P/Bs', labelNotCompleted: 'OFF', sensed: true, level: 2 },
-      { name: 'SPEED', labelNotCompleted: 'FLY THE GREEN', sensed: false, level: 2 },
-      { name: 'SPD BRK : DO NOT USE', sensed: false, level: 2 },
-      { name: 'AT LEAST TWO MFP HEATING ARE FAILED:', condition: true, sensed: false, level: 2 },
-      { name: 'AVOID ICING CONDs', sensed: false, level: 3 },
-
-      { name: 'ABOVE FL 250 :', condition: true, sensed: false },
-      { name: 'FOR LEVEL OFF & TROUBLESHOOTING :', condition: true, sensed: false, level: 1 },
-      { name: 'AP', labelNotCompleted: 'OFF', sensed: true, level: 2 },
-      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true, level: 2 },
-      { name: 'FD', labelNotCompleted: 'OFF', sensed: true, level: 2 },
-      { name: 'PITCH ATT TRGT', labelNotCompleted: '2°', sensed: false, level: 2 },
-      { name: 'ALL ENG THR', labelNotCompleted: '{DYNAMIC} %', sensed: false, level: 2 },
-      { name: 'AIR DATA (ADRs/STBY INSTR)', labelNotCompleted: 'XCHECK', sensed: false, level: 1 },
-      { name: 'AT LEAST ONE AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
-      { name: 'RELIABLE AIR DATA', labelNotCompleted: 'USE', sensed: false, level: 2 },
-      { name: 'AT LEAST ONE ADR : KEEP ON', sensed: false, level: 2 },
-      { name: 'UNRELIABLE ADRs', labelNotCompleted: 'OFF', sensed: false, level: 2 },
-      { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
-      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 2 },
-      { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 2 },
-      { name: 'WHEN BELOW FL 250 :', condition: true, sensed: false, level: 2 },
-      { name: 'ADR 1+2+3 P/Bs', labelNotCompleted: 'OFF', sensed: true, level: 3 },
-      { name: 'SPEED', labelNotCompleted: 'FLY THE GREEN', sensed: false, level: 3 },
-      { name: 'SPD BRK : DO NOT USE', sensed: false, level: 3 },
-      { name: 'AT LEAST TWO MFP HEATING ARE FAILED:', condition: true, sensed: false, level: 3 },
-      { name: 'AVOID ICING CONDs', sensed: false, level: 4 },
+      { name: 'SAFE CONDUCT OF FLIGHT IMPACTED :', condition: true, sensed: false }, // [1]
+      { name: 'AP', labelNotCompleted: 'OFF', sensed: true }, // [2]
+      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true }, // [3]
+      { name: 'FD', labelNotCompleted: 'OFF', sensed: true }, // [4]
+      { name: 'ALL THR LEVERS', labelNotCompleted: 'TOGA', sensed: false, level: 1 }, // [5]
+      { name: 'PITCH TRGT', labelNotCompleted: '12.5°', sensed: false, level: 1 }, // [6]
+      { name: 'PITCH TRGT', labelNotCompleted: '10°', sensed: false, level: 1 }, // [7]
+      { name: 'ALL THR LEVERS', labelNotCompleted: 'CLB', sensed: false, level: 1 }, // [8]
+      { name: 'PITCH TRGT', labelNotCompleted: '12.5°', sensed: false, level: 1 }, // [9]
+      { name: 'PITCH TRGT', labelNotCompleted: '10°', sensed: false, level: 1 }, // [10]
+      { name: 'PITCH TRGT', labelNotCompleted: '5°', sensed: false, level: 1 }, // [11]
+      { name: '|PITCH TRGT', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [12]
+      { name: 'BELOW FL 100|12.5°', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [13]
+      { name: 'BETWEEN FL 100 & FL 250|10°', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [14]
+      { name: 'ABOVE FL 250|5°', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [15]
+      { name: 'IN CLIMB: ADJUST PITCH TRGT', sensed: false, level: 1 }, // [16]
+      { name: 'FLAPS', labelNotCompleted: 'SELECT CONF 3', sensed: false, level: 2 }, // [17]
+      { name: 'FLAPS & L/G : MAINTAIN CURRENT CONF', sensed: false, level: 1 }, // [18]
+      { name: 'SPEED BRAKES', labelNotCompleted: 'CHECK RETRACTED', sensed: false, level: 1 }, // [19]
+      { name: 'RISK OF UNDUE OVERSPEED WARNING', sensed: false, style: ChecklistLineStyle.Green }, // [20]
+      { name: 'FMS POSITION / GPS PAGE', labelNotCompleted: 'SELECT', sensed: false }, // [21]
+      { name: 'AIR DATA (ADRs/STBY INSTR)', labelNotCompleted: 'XCHECK', sensed: false, level: 1 }, // [22]
+      { name: 'AT LEAST ONE AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 }, // [23]
+      { name: 'RELIABLE AIR DATA', labelNotCompleted: 'USE', sensed: false, level: 2 }, // [24]
+      { name: 'AT LEAST ONE ADR : KEEP ON', sensed: false, level: 2 }, // [25]
+      { name: 'UNRELIABLE ADRs', labelNotCompleted: 'OFF', sensed: false, level: 2 }, // [26]
+      { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 }, // [27]
+      { name: 'ADR 1+2+3 P/Bs', labelNotCompleted: 'OFF', sensed: true, level: 2 }, // [28]
+      { name: 'SPEED', labelNotCompleted: 'FLY THE GREEN', sensed: false, level: 2 }, // [29]
+      { name: 'FPV / VV AVAIL', sensed: false, style: ChecklistLineStyle.Green, level: 2 }, // [30]
+      { name: 'SPD BRK : DO NOT USE', sensed: false, level: 2 }, // [31]
+      { name: 'AVOID ICING CONDs', sensed: false, level: 2 }, // [32]
+      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 }, // [33]
+      { name: 'ACFT CRZ FL|CABIN ALT TRGT', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [34]
+      { name: '250|2900', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [35]
+      { name: '200|2150', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [36]
+      { name: '150|1500', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [37]
+      { name: '100|900', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [38]
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 }, // [39]
+      { name: 'GA THR : TOGA ONLY', sensed: false, style: ChecklistLineStyle.Cyan, level: 2 }, // [40]
+      { name: 'FOR LEVEL FLT :', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline }, // [41]
+      { name: 'AP', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [42]
+      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [43]
+      { name: 'FD', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [44]
+      { name: 'PITCH TRGT', labelNotCompleted: '2.5°', sensed: false, level: 1 }, // [45]
+      { name: 'ALL ENG THR', labelNotCompleted: '98 %', sensed: false, level: 1 }, // [46] // TODO: include thrust table
+      { name: 'ADJUST THRUST FOR LEVEL FLT :', sensed: false }, // [47]
+      { name: 'IF ALT INCREASES : DECREASE THR', sensed: false, style: ChecklistLineStyle.Green, level: 1 }, // [48]
+      { name: 'IF ALT DECREASES : INCREASE THR', sensed: false, style: ChecklistLineStyle.Green, level: 1 }, // [49]
+      { name: 'AIR DATA (ADRs/STBY INSTR)', labelNotCompleted: 'XCHECK', sensed: false }, // [50]
+      { name: 'AT LEAST ONE AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 }, // [51]
+      { name: 'RELIABLE AIR DATA', labelNotCompleted: 'USE', sensed: false, level: 2 }, // [52]
+      { name: 'AT LEAST ONE ADR : KEEP ON', sensed: false, level: 2 }, // [53]
+      { name: 'UNRELIABLE ADRs', labelNotCompleted: 'OFF', sensed: false, level: 2 }, // [54]
+      { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 }, // [55]
+      { name: 'ONE ADR : KEEP ON', sensed: false, level: 2 }, // [56]
+      { name: 'TWO ADR P/Bs', labelNotCompleted: 'OFF', sensed: false, level: 2 }, // [57]
+      { name: 'GA THR : TOGA ONLY', sensed: false, style: ChecklistLineStyle.Cyan, level: 2 }, // [58]
     ],
   },
 };
@@ -1046,29 +1059,15 @@ export const EcamDeferredProcAta34: { [n: number]: DeferredProcedure } = {
   },
   340900003: {
     fromAbnormalProcs: ['340900003'],
-    title: '\x1b<4mNAV\x1bm UNRELIABLE AIR SPEED INDICATION',
+    title: 'AT TOP OF DESCENT:',
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [
-      { name: 'FOR DESCENT', condition: true, sensed: false },
-      { name: 'PITCH ATT TRGT', labelNotCompleted: '2°', sensed: false, level: 1 },
-      { name: 'ALL ENG THR', labelNotCompleted: 'IDLE', sensed: false, level: 1 },
-      { name: 'ABOVE FL 250, AND NO AIR DATA RELIABLE :', condition: true, sensed: false },
-      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: false, level: 1 },
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'LDG ELEVN', sensed: false },
+      { name: 'REMAINING AIR DATA RELIABLE :', condition: true, sensed: false },
+      { name: 'RELIABLE DATA', labelNotCompleted: 'USE', sensed: false, level: 1 },
+      { name: 'IF NI AIR DATA RELIABLE :', condition: true, sensed: false },
+      { name: 'CABIN ALT MODE ', labelNotCompleted: 'MAN', sensed: true },
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'LDG ELEVN', sensed: false, level: 1 },
-      { name: 'WHEN BELOW FL 250 :', condition: true, sensed: false, level: 1 },
-      { name: 'ADR 1+2+3 P/Bs', labelNotCompleted: 'OFF', sensed: false, level: 2 },
-      { name: 'SPEED', labelNotCompleted: 'FLY THE GREEN', sensed: false, level: 2 },
-      { name: 'SPD BRK : DO NOT USE', sensed: false, level: 2 },
-      { name: 'AVOID ICING CONDs', sensed: false, level: 3 },
-
-      { name: 'FOR APPR', condition: true, sensed: false },
-      { name: 'FLAPS 3', labelNotCompleted: 'SELECT', sensed: false, level: 1 },
-      { name: 'APPR SPEED', labelNotCompleted: 'VLS + 10', sensed: false, level: 1 },
-      { name: 'L/G', labelNotCompleted: 'DOWN', sensed: false, level: 1 },
-      { name: 'IF NO AIR DATA RELIABLE :', condition: true, sensed: false },
-      { name: 'FLAPS FULL : DO NOT USE', sensed: false, level: 1 },
-      { name: 'FOR LANDING', condition: true, sensed: false },
-      { name: 'GPWS FLAP 3 MODE', labelNotCompleted: 'ON', sensed: false, level: 1 },
     ],
   },
 };

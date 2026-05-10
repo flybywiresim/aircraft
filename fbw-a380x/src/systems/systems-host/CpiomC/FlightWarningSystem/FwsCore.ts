@@ -693,7 +693,6 @@ export class FwsCore {
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
   public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
 
-
   public readonly grossWeight = Subject.create(0);
   public readonly apEngaged = Subject.create(false);
   public readonly fd1Active = Subject.create(false);
@@ -3015,16 +3014,20 @@ export class FwsCore {
         this.throttle4Position.get() < 1,
     );
     this.allThrottleClb.set(
-      this.throttle1Position.get() >= 24 && this.throttle1Position.get() <= 26 &&
-      this.throttle2Position.get() >= 24 && this.throttle2Position.get() <= 26 &&
-      this.throttle3Position.get() >= 24 && this.throttle3Position.get() <= 26 &&
-      this.throttle4Position.get() >= 24 && this.throttle4Position.get() <= 26,
+      this.throttle1Position.get() >= 24 &&
+        this.throttle1Position.get() <= 26 &&
+        this.throttle2Position.get() >= 24 &&
+        this.throttle2Position.get() <= 26 &&
+        this.throttle3Position.get() >= 24 &&
+        this.throttle3Position.get() <= 26 &&
+        this.throttle4Position.get() >= 24 &&
+        this.throttle4Position.get() <= 26,
     );
     this.allThrottleToga.set(
       this.throttle1Position.get() >= 44 &&
-      this.throttle2Position.get() >= 44 &&
-      this.throttle3Position.get() >= 44 &&
-      this.throttle4Position.get() >= 44,
+        this.throttle2Position.get() >= 44 &&
+        this.throttle3Position.get() >= 44 &&
+        this.throttle4Position.get() >= 44,
     );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
@@ -3322,8 +3325,8 @@ export class FwsCore {
 
     this.allAdrPbsOff.set(
       !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
-      !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
-      !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
     );
 
     // TODO use GPS alt if ADRs not available

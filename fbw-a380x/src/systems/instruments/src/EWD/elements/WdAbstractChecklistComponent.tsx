@@ -160,7 +160,10 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               ].includes(d.style),
             ),
             Underline: this.props.data.map(
-              (d) => d.style === ChecklistLineStyle.CenteredSubHeadline || d.style === ChecklistLineStyle.SubHeadline,
+              (d) =>
+                d.style === ChecklistLineStyle.CenteredSubHeadline ||
+                d.style === ChecklistLineStyle.SubHeadline ||
+                (d.style === ChecklistLineStyle.GreenTable && d.activeProcedure),
             ),
             Centered: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
             Checked: this.props.data.map((d) => d.checked),
@@ -170,7 +173,11 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               (d) => d.style === ChecklistLineStyle.CompletedDeferredProcedure,
             ),
             ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
-            Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
+            Green: this.props.data.map(
+              (d) =>
+                d.style === ChecklistLineStyle.Green ||
+                (d.style === ChecklistLineStyle.GreenTable && d.activeProcedure),
+            ),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
             White: this.props.data.map((d) => d.style === ChecklistLineStyle.White),
@@ -193,6 +200,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               HiddenElement: this.props.data.map(
                 (d) =>
                   d.style === ChecklistLineStyle.Headline ||
+                  d.style === ChecklistLineStyle.GreenTable ||
                   d.style === ChecklistLineStyle.OmissionDots ||
                   d.style === ChecklistLineStyle.LandAnsa ||
                   d.style === ChecklistLineStyle.LandAsap,
@@ -208,11 +216,38 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             class="EclLineText"
             style={{
               display: this.props.data.map((d) =>
-                d.abnormalProcedure === true && d.style === ChecklistLineStyle.Headline ? 'none' : 'block',
+                (d.abnormalProcedure === true && d.style === ChecklistLineStyle.Headline) ||
+                d.style === ChecklistLineStyle.GreenTable
+                  ? 'none'
+                  : 'block',
               ),
             }}
           >
             {this.props.data.map((d) => d.text.substring(0, 39))}
+          </span>
+          <span
+            class="EclTableRow EclLineText"
+            style={{
+              display: this.props.data.map((d) => (d.style === ChecklistLineStyle.GreenTable ? 'flex' : 'none')),
+            }}
+          >
+            <span class="EclTableLeft">
+              {this.props.data.map((d) => {
+                const idx = d.text.indexOf('|');
+                return idx >= 0 ? d.text.substring(0, idx) : d.text;
+              })}
+            </span>
+            <span
+              class={{
+                EclTableRight: this.props.data.map((d) => !d.text.startsWith('|')),
+                EclTableRightHeader: this.props.data.map((d) => d.text.startsWith('|')),
+              }}
+            >
+              {this.props.data.map((d) => {
+                const idx = d.text.indexOf('|');
+                return idx >= 0 ? d.text.substring(idx + 1) : '';
+              })}
+            </span>
           </span>
           <svg
             version="1.1"

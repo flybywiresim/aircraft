@@ -613,6 +613,7 @@ export enum ChecklistLineStyle {
   Standard = 'Standard',
   Cyan = 'Cyan',
   Green = 'Green',
+  GreenTable = 'GreenTable',
   Amber = 'Amber',
   White = 'White',
   Red = 'Red',
