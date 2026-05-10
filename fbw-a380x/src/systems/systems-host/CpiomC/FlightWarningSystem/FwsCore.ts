@@ -689,6 +689,11 @@ export class FwsCore {
 
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
+  public readonly grossWeight = Subject.create(0);
+  public readonly apEngaged = Subject.create(false);
+  public readonly fd1Active = Subject.create(false);
+  public readonly fd2Active = Subject.create(false);
+
   public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
   public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
@@ -1605,6 +1610,8 @@ export class FwsCore {
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
+
+  public readonly allAdrPbsOff = Subject.create(false);
 
   public readonly ir1Align = Subject.create(false);
   public readonly adiru1ModeSelector = Subject.create(0);
@@ -3296,6 +3303,12 @@ export class FwsCore {
     // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
+    this.allAdrPbsOff.set(
+      !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
+    );
+
     // TODO use GPS alt if ADRs not available
     this.adrPressureAltitude.set(
       !adr1PressureAltitude.isInvalid()
@@ -3464,6 +3477,11 @@ export class FwsCore {
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
+    this.apEngaged.set(apEngaged);
+    this.grossWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', SimVarValueType.Kg));
+    this.fd1Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', SimVarValueType.Bool) > 0);
+    this.fd2Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', SimVarValueType.Bool) > 0);
+
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
