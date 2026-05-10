@@ -368,7 +368,7 @@ class VSpeedText extends DisplayComponent<{
       if (absVSpeed < 200) {
         this.visibilitySub.set('hidden');
       } else {
-        this.visibilitySub.set('visible');
+        this.visibilitySub.set('inherit');
       }
 
       const sign = Math.sign(vs);
@@ -543,22 +543,22 @@ class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
       <>
         <g
           id="VerticalSpeedTCASGroup"
-          visibility={this.tcasIndicationsVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
+          visibility={this.tcasIndicationsVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
         >
           <rect class="TapeBackground" height="101.8" width="4.1301" y="29.92" x="151.84" />
           <path
             d={this.downResolutionAdvisoryZonePath}
-            visibility={this.downResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
+            visibility={this.downResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
             class="Fill Red"
           />
           <path
             d={this.upResolutionAdvisoryZonePath}
-            visibility={this.upResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
+            visibility={this.upResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
             class="Fill Red"
           />
           <path
             d={this.flyToZonePath}
-            visibility={this.flyToZoneVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
+            visibility={this.flyToZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
             class="Fill Green"
           />
         </g>
