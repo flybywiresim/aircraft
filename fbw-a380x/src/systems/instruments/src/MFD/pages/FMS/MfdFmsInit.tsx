@@ -130,6 +130,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.fpHasWindEntries,
   );
 
+  private readonly tripWindTextAlign = this.tripWindDisabled.map((it) => (it ? 'flex-start' : 'center'));
+
   private readonly cpnyRteMandatory = MappedSubject.create(
     ([toIcao, fromIcao, mandatoryAndActive]) => (!toIcao || !fromIcao) && mandatoryAndActive,
     this.fromIcao,
@@ -206,6 +208,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.cpnyRteMandatory,
       this.departureButtonDisabled,
       this.costIndexModeDisabled,
+      this.tripWindTextAlign,
     );
   }
   private invalidateDataFields() {
@@ -658,7 +661,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   disabled={this.tripWindDisabled}
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
-                  alignText="flex-start"
+                  alignText={this.tripWindTextAlign}
                   errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}

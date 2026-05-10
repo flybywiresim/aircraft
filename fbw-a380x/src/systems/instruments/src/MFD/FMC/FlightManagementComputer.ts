@@ -1591,7 +1591,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   resetAtisAutoUpdate() {
-    this.datalinkBusPublisher.pub('reset_auto_update', null);
+    this.datalinkBusPublisher.pub('reset_auto_update', null, false, false);
   }
 
   getWindUplinkAvailableForPlan(flightPlanIndex?: FlightPlanIndex): Subscribable<boolean> {
