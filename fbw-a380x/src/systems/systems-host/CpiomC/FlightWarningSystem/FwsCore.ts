@@ -693,11 +693,6 @@ export class FwsCore {
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
   public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
 
-  public readonly grossWeight = Subject.create(0);
-  public readonly apEngaged = Subject.create(false);
-  public readonly fd1Active = Subject.create(false);
-  public readonly fd2Active = Subject.create(false);
-
   public readonly autoThrustEngaged = Subject.create(false);
 
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
@@ -1611,8 +1606,6 @@ export class FwsCore {
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
 
-  public readonly allAdrPbsOff = Subject.create(false);
-
   public readonly ir1Align = Subject.create(false);
   public readonly adiru1ModeSelector = Subject.create(0);
 
@@ -2037,10 +2030,6 @@ export class FwsCore {
   public readonly throttle4Position = Subject.create(0);
 
   public readonly allThrottleIdle = Subject.create(false);
-
-  public readonly allThrottleClb = Subject.create(false);
-
-  public readonly allThrottleToga = Subject.create(false);
 
   public readonly allEngineSwitchOff = Subject.create(false);
 
@@ -3013,22 +3002,6 @@ export class FwsCore {
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
     );
-    this.allThrottleClb.set(
-      this.throttle1Position.get() >= 24 &&
-        this.throttle1Position.get() <= 26 &&
-        this.throttle2Position.get() >= 24 &&
-        this.throttle2Position.get() <= 26 &&
-        this.throttle3Position.get() >= 24 &&
-        this.throttle3Position.get() <= 26 &&
-        this.throttle4Position.get() >= 24 &&
-        this.throttle4Position.get() <= 26,
-    );
-    this.allThrottleToga.set(
-      this.throttle1Position.get() >= 44 &&
-        this.throttle2Position.get() >= 44 &&
-        this.throttle3Position.get() >= 44 &&
-        this.throttle4Position.get() >= 44,
-    );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -3323,12 +3296,6 @@ export class FwsCore {
     // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-    this.allAdrPbsOff.set(
-      !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
-    );
-
     // TODO use GPS alt if ADRs not available
     this.adrPressureAltitude.set(
       !adr1PressureAltitude.isInvalid()
@@ -3497,11 +3464,6 @@ export class FwsCore {
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
-    this.apEngaged.set(apEngaged);
-    this.grossWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', SimVarValueType.Kg));
-    this.fd1Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', SimVarValueType.Bool) > 0);
-    this.fd2Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', SimVarValueType.Bool) > 0);
-
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
@@ -5435,7 +5397,6 @@ export class FwsCore {
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
-        const dynamicText = value.whichDynamicText ? value.whichDynamicText() : undefined;
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
 
         if (newWarning) {
@@ -5483,7 +5444,6 @@ export class FwsCore {
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
             itemsTimeStamp: itemsTimer,
-            dynamicText: dynamicText,
           });
 
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
@@ -5527,8 +5487,7 @@ export class FwsCore {
               (isTimedItem(item) !== undefined &&
                 itemsTimer !== undefined &&
                 previousPresentedState.itemsTimeStamp !== undefined &&
-                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx]) ||
-              (dynamicText !== undefined && previousPresentedState.dynamicText?.[idx] !== dynamicText[idx])
+                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx])
             ) {
               this.abnormalUpdatedItems.get(key)?.push(idx);
             }
@@ -5547,7 +5506,6 @@ export class FwsCore {
                     itemsTimer ? itemsTimer[index] : undefined,
                   )
                 : undefined,
-              dynamicText: dynamicText ? [...dynamicText] : undefined,
             });
           }
         }
