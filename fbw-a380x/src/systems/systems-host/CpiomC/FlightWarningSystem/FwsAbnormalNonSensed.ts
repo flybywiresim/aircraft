@@ -457,7 +457,7 @@ export class FwsAbnormalNonSensed {
         !this.fws.apEngaged.get(), // [2]
         !this.fws.autoThrustEngaged.get(), // [3]
         !this.fws.fd1Active.get() && !this.fws.fd2Active.get(), // [4]
-        this.fws.allThrottleToga.get(), // [5]
+        false, // [5]
         false, // [6]
         false, // [7]
         false, // [8]
