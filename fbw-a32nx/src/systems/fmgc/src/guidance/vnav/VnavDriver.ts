@@ -29,10 +29,12 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { HMLeg } from '../lnav/legs/HX';
+import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -608,15 +610,19 @@ export class VnavDriver implements GuidanceComponent {
     if (this.computationParametersObserver.get().fcuLateralMode !== LateralMode.NAV) {
       return false;
     }
-    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
-    if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
-      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
-      if (vnavPrediction) {
-        return vnavPrediction.secondsFromPresent < 30;
-      } else {
-        // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
-        if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
-          return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+    const activeLeg = this.flightPlanService.active?.activeLeg;
+    if (isLeg(activeLeg) && !activeLeg.isVectors() && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
+      // If we are on a vectors leg or hold without exit toggled, we don't want to trigger the message.
+      const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
+      if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
+        const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
+        if (vnavPrediction) {
+          return vnavPrediction.secondsFromPresent < 30;
+        } else {
+          // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+          if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
+            return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+          }
         }
       }
     }
