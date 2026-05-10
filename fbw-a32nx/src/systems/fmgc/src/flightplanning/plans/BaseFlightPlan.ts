@@ -3070,8 +3070,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   getLastLegIndexBeforeDiscontinuity(): number | null {
     for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
-      // Handle case of end of flightplan or discontinuity outside of a manual leg.
-      if (isLeg(this.activeLeg) && !this.activeLeg.isVectors() && (!nextLeg || nextLeg.isDiscontinuity)) {
+      // Handle case of end of flightplan or discontinuity outside of a manual leg or hold without exit active.
+      if (
+        isLeg(this.activeLeg) &&
+        !this.activeLeg.isVectors() &&
+        (this.activeLeg.type !== LegType.HM || this.activeLeg.holdImmExit) &&
+        (!nextLeg || nextLeg.isDiscontinuity)
+      ) {
         return i;
       }
     }
