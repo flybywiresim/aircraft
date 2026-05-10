@@ -33,7 +33,6 @@ import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { HMLeg } from '../lnav/legs/HX';
 import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 export class VnavDriver implements GuidanceComponent {
@@ -614,7 +613,7 @@ export class VnavDriver implements GuidanceComponent {
     if (isLeg(activeLeg) && !activeLeg.isVectors() && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
       // If we are on a vectors leg or hold without exit toggled, we don't want to trigger the message.
       const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
-      if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
+      if (lastLegIndexBeforeDiscontinuity !== null) {
         const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
         if (vnavPrediction) {
           return vnavPrediction.secondsFromPresent < 30;
