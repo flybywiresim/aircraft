@@ -7,4 +7,3 @@ export * from './NXUnits';
 export * from './RateMultiplierKnob';
 export * from './RMP';
 export * from './Filters';
-export * from './popup';
