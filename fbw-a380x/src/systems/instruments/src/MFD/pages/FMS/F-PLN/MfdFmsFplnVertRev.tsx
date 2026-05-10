@@ -381,11 +381,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.spdConstraintTypeRadioSelected.set(
         constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
       );
+      this.cannotDeleteSpeedConstraint.set(!leg?.speedConstraint || !leg?.speedConstraint?.speed);
     } else if (selectedIndex === SelectedPage.ALT) {
       const constraintType =
         plan && selectedLegIdx !== null && leg?.constraintType === WaypointConstraintType.Unknown
           ? plan.autoConstraintTypeForLegIndex(selectedLegIdx)
           : leg?.constraintType ?? WaypointConstraintType.Unknown;
+      this.constraintType.set(
+        constraintType === WaypointConstraintType.CLB
+          ? 'CLB'
+          : constraintType === WaypointConstraintType.DES
+            ? 'DES'
+            : '',
+      );
       this.altConstraintTypeRadioSelected.set(
         constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
       );
@@ -396,7 +404,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.cannotDeleteAltConstraint.set(
         !leg?.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
       );
-      this.cannotDeleteSpeedConstraint.set(!leg?.speedConstraint || !leg?.speedConstraint?.speed);
 
       // Load altitude constraints
       switch (leg?.altitudeConstraint?.altitudeDescriptor) {
