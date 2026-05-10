@@ -2994,9 +2994,8 @@ export class FwsCore {
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
-    this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
-
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
       (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
