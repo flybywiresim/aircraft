@@ -48,7 +48,7 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
       console.log('TOD Pause Overlay State changed:', state);
       if (state.visible) {
         window.document.addEventListener('keydown', this.handleKeyDown);
-        this.panelRef.instance.classList.remove('hidden');
+        this.panelRef.instance.classList.remove('fbw-hidden');
         Coherent.trigger('FOCUS_INPUT_FIELD', 1333, '', '', '', false);
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', true);
       } else {
@@ -58,7 +58,7 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
 
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', false);
 
-        this.panelRef.instance.classList.add('hidden');
+        this.panelRef.instance.classList.add('fbw-hidden');
       }
     });
   }
