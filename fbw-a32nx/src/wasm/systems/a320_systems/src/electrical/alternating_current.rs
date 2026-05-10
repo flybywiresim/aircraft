@@ -297,6 +297,18 @@ impl A320AlternatingCurrentElectrical {
         self.main_power_sources.gen_contactor_open(number)
     }
 
+    pub fn apu_gen_contactor_open(&self) -> bool {
+        self.main_power_sources.apu_gen_contactor_open()
+    }
+
+    pub fn ext_pwr_contactor_closed(&self) -> bool {
+        self.main_power_sources.ext_pwr_contactor_closed()
+    }
+
+    pub fn both_engine_gen_contactors_closed(&self) -> bool {
+        self.main_power_sources.both_engine_gen_contactors_closed()
+    }
+
     pub fn emergency_generator_contactor_is_closed(&self) -> bool {
         self.emergency_gen_contactor.is_closed()
     }
@@ -431,6 +443,7 @@ impl A320MainPowerSources {
             && ext_pwr.output_within_normal_parameters()
             && !both_engine_gens_provide_power;
         let apu_gen_provides_power = overhead.apu_generator_is_on()
+            && apu.is_available()
             && apu.generator(1).output_within_normal_parameters()
             && !ext_pwr_provides_power
             && !both_engine_gens_provide_power;
@@ -494,6 +507,20 @@ impl A320MainPowerSources {
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
         self.engine_generator_contactors[number - 1].is_open()
+    }
+
+    pub fn apu_gen_contactor_open(&self) -> bool {
+        self.apu_gen_contactor.is_open()
+    }
+
+    pub fn ext_pwr_contactor_closed(&self) -> bool {
+        self.ext_pwr_contactor.is_closed()
+    }
+
+    pub fn both_engine_gen_contactors_closed(&self) -> bool {
+        self.engine_generator_contactors
+            .iter()
+            .all(Contactor::is_closed)
     }
 }
 impl SimulationElement for A320MainPowerSources {
