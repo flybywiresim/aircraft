@@ -210,11 +210,11 @@ export class TcasComputer {
 
   private downAdvisoryStatus: LocalSimVar<UpDownAdvisoryStatus>; // Down adivsory status (descend, don't climb, don't climb >500 etc.)
 
-  private tcasBusResolutionAdvisoryWord: Arinc429Register;
+  private tcasBusResolutionAdvisoryWord?: Arinc429Register;
 
-  private tcasBusTcasModeWord: Arinc429Register;
+  private tcasBusTcasModeWord?: Arinc429Register;
 
-  private tcasBusTcasFaultSummaryWord: Arinc429Register;
+  private tcasBusTcasFaultSummaryWord?: Arinc429Register;
 
   private isSlewActive: boolean; // Slew Mode on?
 
