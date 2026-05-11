@@ -689,10 +689,11 @@ export class FwsCore {
 
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
-  public readonly grossWeight = Subject.create(0);
   public readonly apEngaged = Subject.create(false);
+  public readonly apOff = Subject.create(false);
   public readonly fd1Active = Subject.create(false);
   public readonly fd2Active = Subject.create(false);
+  public readonly fdOff = Subject.create(false);
 
   public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
@@ -2038,6 +2039,12 @@ export class FwsCore {
 
   public readonly allThrottleIdle = Subject.create(false);
 
+  public readonly allThrottleToga = Subject.create(false);
+
+  public readonly allThrottleMct = Subject.create(false);
+
+  public readonly allThrottleClb = Subject.create(false);
+
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
@@ -3009,6 +3016,32 @@ export class FwsCore {
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
     );
+    this.allThrottleToga.set(
+      this.throttle1Position.get() >= 45 &&
+        this.throttle2Position.get() >= 45 &&
+        this.throttle3Position.get() >= 45 &&
+        this.throttle4Position.get() >= 45,
+    );
+    this.allThrottleMct.set(
+      this.throttle1Position.get() >= 35 &&
+        this.throttle1Position.get() < 45 &&
+        this.throttle2Position.get() >= 35 &&
+        this.throttle2Position.get() < 45 &&
+        this.throttle3Position.get() >= 35 &&
+        this.throttle3Position.get() < 45 &&
+        this.throttle4Position.get() >= 35 &&
+        this.throttle4Position.get() < 45,
+    );
+    this.allThrottleClb.set(
+      this.throttle1Position.get() >= 25 &&
+        this.throttle1Position.get() < 35 &&
+        this.throttle2Position.get() >= 25 &&
+        this.throttle2Position.get() < 35 &&
+        this.throttle3Position.get() >= 25 &&
+        this.throttle3Position.get() < 35 &&
+        this.throttle4Position.get() >= 25 &&
+        this.throttle4Position.get() < 35,
+    );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -3478,9 +3511,10 @@ export class FwsCore {
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
     this.apEngaged.set(apEngaged);
-    this.grossWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', SimVarValueType.Kg));
+    this.apOff.set(!apEngaged);
     this.fd1Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', SimVarValueType.Bool) > 0);
     this.fd2Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', SimVarValueType.Bool) > 0);
+    this.fdOff.set(!this.fd1Active.get() && !this.fd2Active.get());
 
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
