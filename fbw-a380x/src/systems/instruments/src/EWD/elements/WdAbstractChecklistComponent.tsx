@@ -163,7 +163,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               (d) =>
                 d.style === ChecklistLineStyle.CenteredSubHeadline ||
                 d.style === ChecklistLineStyle.SubHeadline ||
-                (d.style === ChecklistLineStyle.GreenTable && d.activeProcedure),
+                d.style === ChecklistLineStyle.GreenTable,
             ),
             Centered: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
             Checked: this.props.data.map((d) => d.checked),
@@ -176,7 +176,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             Green: this.props.data.map(
               (d) =>
                 d.style === ChecklistLineStyle.Green ||
-                (d.style === ChecklistLineStyle.GreenTable && d.activeProcedure),
+                (d.style === ChecklistLineStyle.GreenTable && d.activeProcedure && !d.inactive),
             ),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),

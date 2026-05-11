@@ -455,16 +455,16 @@ text, tspan, span {
   color: $display-green;
 }
 
-.EclLine.Green.Underline {
+.EclLine.Underline {
   text-decoration: none;
-  border-bottom: 2px solid $display-green;
+  border-bottom: 2px solid currentColor;
 }
 
 .EclTableRow {
   flex: 1;
 
   .EclTableLeft {
-    flex: 1;
+    flex: 1.3;
     text-align: left;
     border-right: 2px solid currentColor;
     padding-right: 6px;
