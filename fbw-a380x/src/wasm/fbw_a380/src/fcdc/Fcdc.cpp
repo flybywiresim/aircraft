@@ -335,20 +335,20 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   if (!btvArmed && lastBtvArmed) {
     // If the downgrade happens below 200 feet, we don't want to play it yet.
     if (radioAlt < 200) {
-      btvDowngradeBelow200FeetFlipFlop.write(true, false);
+      btvDowngradeBelow200FeetFlipFlop.update(true, false);
     } else if (radioAlt < 700) {
       btvTripleClickMtrig.write(true, deltaTime);
     }
   }
 
   // Play the latched triple click as we touch down and autobrake becomes active in BRK HI.
-  if (btvDowngradeBelow200FeetFlipFlop.read() &&
+  if (btvDowngradeBelow200FeetFlipFlop.getOutput() &&
       autoBrakeActiveAndGroundPulseNode.update(autoBrakeActive &&
                                                onGround)) {  // FIXME: This should be a discrete/bit from the brake computer?
     btvTripleClickMtrig.write(true, deltaTime);
-    btvDowngradeBelow200FeetFlipFlop.write(false, false);
+    btvDowngradeBelow200FeetFlipFlop.update(false, false);
   } else if (discreteInputs.autoBrakeMode == 0) {  // Reset the flip flop when AB is lost.
-    btvDowngradeBelow200FeetFlipFlop.write(false, false);
+    btvDowngradeBelow200FeetFlipFlop.update(false, false);
   }
 
   lastBtvActive = btvActive;
