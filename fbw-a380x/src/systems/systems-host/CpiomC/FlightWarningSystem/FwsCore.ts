@@ -1585,10 +1585,8 @@ export class FwsCore {
     this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
-  public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
+  private readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
   public readonly oansFailed = Subject.create(false);
-  public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
-  public readonly oansPposLost = Subject.create(false);
   public readonly arptNavFault = MappedSubject.create(
     ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
     this.oansFailed,
@@ -4901,7 +4899,6 @@ export class FwsCore {
 
     // OANS
     this.oansFailed.set(this.oansFailedSimvar.get());
-    this.oansPposLost.set(this.oansPposLostSimVar.get());
 
     /* 26 - FIRE */
 
