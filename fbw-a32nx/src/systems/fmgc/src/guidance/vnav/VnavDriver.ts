@@ -30,9 +30,9 @@ import {
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
 import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
-import { EventBus } from '@microsoft/msfs-sdk';
 import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 export class VnavDriver implements GuidanceComponent {
@@ -88,6 +88,7 @@ export class VnavDriver implements GuidanceComponent {
     this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
       ? new LatchedDescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -95,6 +96,7 @@ export class VnavDriver implements GuidanceComponent {
         )
       : new DescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
