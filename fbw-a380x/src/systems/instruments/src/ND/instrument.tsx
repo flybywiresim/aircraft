@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -60,6 +60,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { PowerSupplySimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PowerSupplyPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -212,6 +213,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);
     this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
+    this.backplane.addPublisher('power', new PowerSupplySimvarPublisher(this.bus));
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);

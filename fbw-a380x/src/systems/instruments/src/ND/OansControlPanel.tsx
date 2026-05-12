@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import './oans-style.scss';
@@ -17,6 +17,7 @@ import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/R
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { Coordinates, distanceTo } from 'msfs-geo';
+import { PowerSupplySimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PowerSupplyPublisher';
 
 import {
   AmdbAirportSearchResult,
@@ -86,12 +87,21 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       LgciuBusEvents &
       NDSimvars &
       OansControlEvents &
-      ResetPanelSimvars
+      ResetPanelSimvars &
+      PowerSupplySimvars
   >();
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
   private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
+  private readonly ac4BusPowered = ConsumerSubject.create(this.sub.on('ac_bus_powered_4'), false);
+  private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dc_bus_powered_1'), false);
+  private readonly oancDisabled = MappedSubject.create(
+    ([ac4, dc1, reset]) => !reset && ac4 && dc1,
+    this.ac4BusPowered,
+    this.dc1BusPowered,
+    this.oansResetPulled,
+  );
 
   private oansPerformanceModeSettingSub = () => {};
   private readonly oansPerformanceMode = Subject.create(false);
@@ -100,12 +110,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly oansPerformanceModeAndMovedOutOfZoomRange = new NXLogicConfirmNode(60, true);
 
   private readonly oansAvailable = MappedSubject.create(
-    ([ng, reset]) => ng && !reset,
+    ([ng, disabled]) => ng && !disabled,
     this.navigraphAvailable,
-    this.oansResetPulled,
+    this.oancDisabled,
   );
-
-  private readonly oansFailed = MappedSubject.create(([reset]) => reset, this.oansResetPulled);
 
   private amdbClient = new NavigraphAmdbClient();
 
@@ -335,7 +343,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
       }, true),
-      this.oansFailed.sub((v) => {
+      this.oancDisabled.sub((v) => {
         SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
       }, true),
     );
@@ -478,6 +486,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.reqStoppingDistance,
       this.fmsLandingRunwayVisibility,
       this.airportDatabase,
+      this.ac4BusPowered,
+      this.dc1BusPowered,
+      this.oancDisabled,
     );
   }
 

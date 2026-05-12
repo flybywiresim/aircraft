@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -687,11 +687,10 @@ export class FwsCore {
 
   public readonly rollOutFault = Subject.create(false);
 
-  public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
+  private readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
+  private readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
 
-  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
-  public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
-  public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
+  private readonly tripleClickAudio = Subject.create(false);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -1590,14 +1589,9 @@ export class FwsCore {
   public readonly oansFailed = Subject.create(false);
   public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
   public readonly oansPposLost = Subject.create(false);
-  public readonly arptNavInop = MappedSubject.create(
-    ([oansFailed, pposLost]) => oansFailed || pposLost,
-    this.oansFailed,
-    this.oansPposLost,
-  );
   public readonly arptNavFault = MappedSubject.create(
     ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
-    this.arptNavInop,
+    this.oansFailed,
     this.ac4BusPowered,
     this.dc1BusPowered,
   );
@@ -2396,6 +2390,12 @@ export class FwsCore {
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
+      this.tripleClickAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('pause0p8s');
+          this.soundManager.enqueueSound('tripleClick');
+        }
+      }, true),
     );
   }
 
@@ -3552,10 +3552,7 @@ export class FwsCore {
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
-    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read());
-    if (this.checkFmaTripleClickPulse.read()) {
-      this.soundManager.enqueueSound('tripleClick');
-    }
+    this.tripleClickAudio.set(this.checkFmaTripleClickDebounce.read());
 
     // ROLLOUT FAULT
     this.rollOutFault.set(
