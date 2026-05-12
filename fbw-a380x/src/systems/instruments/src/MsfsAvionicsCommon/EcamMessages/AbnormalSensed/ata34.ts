@@ -1027,7 +1027,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       { name: '200|2150', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [37]
       { name: '150|1500', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [38]
       { name: '100|900', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [39]
-      { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 }, // [40]
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 2 }, // [40]
       { name: 'GA THR : TOGA ONLY', sensed: false, level: 2 }, // [41]
       { name: 'FOR LEVEL FLT :', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline }, // [42]
       { name: 'AP', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [43]

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -495,7 +496,7 @@ export class FwsAbnormalNonSensed {
         false, // [39]
         false, // [40]
         false, // [41]
-        false, // [42]
+        true, // [42]
         this.fws.apOff.get(), // [43]
         !this.fws.autoThrustEngaged.get(), // [44]
         this.fws.fdOff.get(), // [45]
@@ -519,6 +520,22 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.None,
       limitationsAllPhases: () => [],
       inopSysAllPhases: () => [],
+      info: () => [
+        '220200015',
+        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000 ? '340200007' : '',
+        this.fws.allAdrPbsOff.get() ? '340200006' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200010' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200011' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200012' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200009' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200013' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200014' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200015' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200016' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '340200017' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '220200014' : '',
+        (this.fws.adrPressureAltitude.get() ?? 0) <= 25_000 ? '220200011' : '',
+      ],
     },
   };
 }
