@@ -93,11 +93,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
+  //FIXME: We should have an OANC in systems host handling system state?
   private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
   private readonly ac4BusPowered = ConsumerSubject.create(this.sub.on('ac_bus_powered_4'), false);
   private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dc_bus_powered_1'), false);
   private readonly oancDisabled = MappedSubject.create(
-    ([ac4, dc1, reset]) => !reset && ac4 && dc1,
+    ([ac4, dc1, reset]) => reset || !ac4 || !dc1,
     this.ac4BusPowered,
     this.dc1BusPowered,
     this.oansResetPulled,
@@ -344,15 +345,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
       }, true),
       this.oancDisabled.sub((v) => {
-        SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
-      }, true),
-    );
-
-    this.subs.push(
-      this.oansResetPulled.sub((v) => {
         if (v) {
           this.unloadCurrentAirport();
         }
+        SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
       }, true),
     );
 
