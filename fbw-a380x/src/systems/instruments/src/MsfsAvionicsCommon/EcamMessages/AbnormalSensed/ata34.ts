@@ -1058,17 +1058,29 @@ export const EcamDeferredProcAta34: { [n: number]: DeferredProcedure } = {
     type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [],
   },
-  340900003: {
+  340700003: {
     fromAbnormalProcs: ['340900003'],
     title: 'AT TOP OF DESCENT:',
-    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
+    type: DeferredProcedureType.ALL_PHASES,
     items: [
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'LDG ELEVN', sensed: false },
-      { name: 'REMAINING AIR DATA RELIABLE :', condition: true, sensed: false },
+      { name: 'REMAINING AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
       { name: 'RELIABLE DATA', labelNotCompleted: 'USE', sensed: false, level: 1 },
-      { name: 'IF NO AIR DATA RELIABLE :', condition: true, sensed: false },
-      { name: 'CABIN ALT MODE ', labelNotCompleted: 'MAN', sensed: true },
+      { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 },
+      { name: 'CABIN ALT MODE ', labelNotCompleted: 'MAN', sensed: true, level: 1 },
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'LDG ELEVN', sensed: false, level: 1 },
+    ],
+  },
+  340700002: {
+    fromAbnormalProcs: ['340900003'],
+    title: 'WHEN BELOW FL 250 :',
+    type: DeferredProcedureType.ALL_PHASES,
+    items: [
+      { name: 'ADR 1+2+3 P/Bs', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'SPEED', labelNotCompleted: 'FLY THE GREEN', sensed: false },
+      { name: 'FPV / VV AVAIL', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'SPD BRK : DO NOT USE', sensed: false },
+      { name: 'AVOID ICING CONDs', sensed: false, level: 1 },
     ],
   },
 };

@@ -538,4 +538,37 @@ export class FwsAbnormalNonSensed {
       ],
     },
   };
+  public ewdDeferredProcs: EwdAbnormalDict = {
+    340700003: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000,
+        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
+        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
+        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
+        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
+        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
+      ],
+      whichItemsChecked: () => [false, false, false, false, this.fws.manCabinAltMode.get(), false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    340700002: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        false, //TODO check if at least two MFP heating failed
+      ],
+      whichItemsChecked: () => [this.fws.allAdrPbsOff.get(), false, false, false, false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+  };
 }

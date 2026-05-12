@@ -2258,6 +2258,7 @@ export class FwsCore {
   public readonly limitations = new FwsLimitations(this);
   public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
   public ewdAbnormal: EwdAbnormalDict;
+  public allEwdDeferredProcs: EwdAbnormalDict;
   public allSuppressableItems: FwsSuppressableItemDict;
   private readonly failureActivationTime = new Map<keyof FwsSuppressableItemDict, number>();
 
@@ -2272,6 +2273,11 @@ export class FwsCore {
       {},
       this.abnormalSensed.ewdAbnormalSensed,
       this.abnormalNonSensed.ewdAbnormalNonSensed,
+    );
+    this.allEwdDeferredProcs = Object.assign(
+      {},
+      this.abnormalSensed.ewdDeferredProcs,
+      this.abnormalNonSensed.ewdDeferredProcs,
     );
     this.allSuppressableItems = Object.assign(
       {},
@@ -5427,7 +5433,10 @@ export class FwsCore {
 
     // Abnormal sensed procedures
     const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.ewdAbnormal);
-    const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
+    const ewdDeferredEntries = [
+      ...Object.entries(this.abnormalSensed.ewdDeferredProcs),
+      ...Object.entries(this.abnormalNonSensed.ewdDeferredProcs),
+    ];
     this.abnormalUpdatedItems.clear();
     this.deferredUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
@@ -5497,12 +5506,8 @@ export class FwsCore {
             itemsToShow: itemsToShow,
             itemsTimeStamp: itemsTimer,
           });
-
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
-            if (
-              EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
-              this.abnormalSensed.ewdDeferredProcs[deferredKey]
-            ) {
+            if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
               const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
@@ -5636,13 +5641,13 @@ export class FwsCore {
     // Update deferred procedures
     this.activeDeferredProceduresList.get().forEach((value, key) => {
       const proc = EcamDeferredProcedures[key];
-      const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
+      const itemsChecked = this.allEwdDeferredProcs[key]
         .whichItemsChecked()
         .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow();
-      const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
+      const itemsToShow = this.allEwdDeferredProcs[key].whichItemsToShow();
+      const itemsActive = this.allEwdDeferredProcs[key].whichItemsActive
         ? value.procedureActivated
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
+          ? this.allEwdDeferredProcs[key].whichItemsActive!()
           : Array(itemsChecked.length).fill(false)
         : Array(itemsChecked.length).fill(value.procedureActivated);
 
