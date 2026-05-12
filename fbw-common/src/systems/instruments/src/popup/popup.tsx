@@ -45,7 +45,6 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
       this.props.bus.getSubscriber<TodPauseOverlayControlEvents>().on('tod_pause_overlay'),
     );
     this.todPauseOverlayState.sub((state) => {
-      console.log('TOD Pause Overlay State changed:', state);
       if (state.visible) {
         window.document.addEventListener('keydown', this.handleKeyDown);
         this.panelRef.instance.classList.remove('fbw-hidden');
