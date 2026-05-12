@@ -250,7 +250,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     } else {
       this.tripWind.set(pd.pilotTripWind.get() ?? 0);
     }
-    this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
+
+    // Cruise temp is shown as -- once in the cruise phase.
+    const cruiseTemp =
+      !fp?.isActiveOrCopiedFromActive() || this.activeFlightPhase.get() < FmgcFlightPhase.Cruise
+        ? pd?.cruiseTemperature.get()
+        : null;
+    this.cruiseTemperature.set(cruiseTemp ?? null);
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
     this.costIndex.set(pd?.costIndex.get() ?? null);
@@ -281,12 +287,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const fpIndex = this.loadedFlightPlanIndex.get();
     this.crzFlIsMandatory.set(
       this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent &&
-        (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary),
+        this.fpIsActiveOrCopyOfActive.get(),
     );
     const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
     const cruiseTemp = this.loadedFlightPlan.performanceData.cruiseTemperature.get();
 
-    if (cruiseLevel && (!cruiseTemp || cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5)) {
+    if (
+      cruiseLevel &&
+      (!cruiseTemp ||
+        (!this.loadedFlightPlan.performanceData.isCruiseTemperaturePilotEntered.get() &&
+          cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5))
+    ) {
       this.props.flightPlanInterface.setPerformanceData(
         'cruiseTemperatureIsaTemp',
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
