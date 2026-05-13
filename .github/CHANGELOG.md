@@ -130,6 +130,7 @@
 1. [A32NX/SD] Add abnormal pressurisation indications to CRZ SD page - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99), @lukecologne (luke)
 1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
+1. [A380X/ECAM] Add RELIGHT IN FLIGHT, TAILPIPE FIRE, VOLCANIC ASH ENCOUNTER, BOMB ON BOARD and SEVERE TURBULENCE abnormal non-sensed checklists  - @Jonny23787 (Jonathan)
 
 ## 0.14.0
 

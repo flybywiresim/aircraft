@@ -587,6 +587,19 @@ export class FwsCore {
 
   public readonly flowSelectorKnob = Subject.create(0);
 
+  public readonly xBleedSelectorKnobSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position',
+    SimVarValueType.Enum,
+  );
+
+  public readonly xBleedSelectorKnob = Subject.create(0);
+
+  public readonly xBleedSelectorShut = Subject.create(false);
+
+  public readonly xBleedSelectorAuto = Subject.create(false);
+
+  public readonly xBleedSelectorOpen = Subject.create(false);
+
   public readonly manCabinAltMode = Subject.create(false);
 
   private readonly cabinAltitude = Arinc429Register.empty();
@@ -773,6 +786,10 @@ export class FwsCore {
   public readonly engine4Running = Subject.create(false);
 
   public readonly allBatteriesOff = Subject.create(false);
+
+  public readonly elecGalleyOff = Subject.create(false);
+
+  public readonly elecPaxSysOff = Subject.create(false);
   /* 26 - FIRE */
 
   public readonly fduDiscreteWord = Arinc429Register.empty();
@@ -1789,6 +1806,8 @@ export class FwsCore {
 
   public readonly tcasTaOnly = Subject.create(false);
 
+  public readonly tcasTaRa = Subject.create(false);
+
   public readonly terrSys1FaultCond = Subject.create(false);
 
   public readonly terrSys2FaultCond = Subject.create(false);
@@ -1997,7 +2016,16 @@ export class FwsCore {
 
   public readonly apuMasterSwitch = Subject.create(0);
 
+  public readonly apuStartSwitchSimvar = RegisteredSimVar.createBoolean(
+    'L:A32NX_OVHD_APU_START_PB_IS_ON',
+    SimVarValueType.Bool,
+  );
+
+  public readonly apuStartSwitch = Subject.create(false);
+
   public readonly apuAvail = Subject.create(false);
+
+  public readonly apuAvailAndApuBleedOn = Subject.create(false);
 
   public readonly radioHeight1 = Arinc429Register.empty();
 
@@ -2012,6 +2040,12 @@ export class FwsCore {
   public readonly autoBrake = Subject.create(0);
 
   public readonly engSelectorPosition = Subject.create(0);
+
+  public readonly engineStartSelCrank = Subject.create(false);
+
+  public readonly engineStartSelNorm = Subject.create(false);
+
+  public readonly engineStartSelIgnition = Subject.create(false);
 
   public readonly eng1AntiIce = Subject.create(false);
 
@@ -2034,6 +2068,10 @@ export class FwsCore {
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
+
+  public readonly athrOff = Subject.create(false);
+
+  public readonly athrOn = Subject.create(false);
 
   public readonly autoThrustMode = Subject.create(0);
 
@@ -2872,6 +2910,8 @@ export class FwsCore {
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
     this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
     this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
+    this.elecGalleyOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool')); // FIXME elecGalleyOff and elecPaxSysOff currently use same simvar as buttons are linked
+    this.elecPaxSysOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool'));
     this.elecEmerConfig.set(
       !this.ac1BusPowered.get() && !this.ac2BusPowered.get() && !this.ac3BusPowered.get() && !this.ac4BusPowered.get(),
     );
@@ -2949,11 +2989,13 @@ export class FwsCore {
     this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
+    this.apuStartSwitch.set(this.apuStartSwitchSimvar.get());
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
       (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
@@ -2993,6 +3035,8 @@ export class FwsCore {
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
     this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
+    this.athrOff.set(this.autoThrustStatus.get() === 0);
+    this.athrOn.set(this.autoThrustStatus.get() === 1);
     this.autoThrustMode.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'enum'));
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
@@ -3002,6 +3046,10 @@ export class FwsCore {
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
     );
+
+    this.engineStartSelCrank.set(this.engSelectorPosition.get() === 0);
+    this.engineStartSelNorm.set(this.engSelectorPosition.get() === 1);
+    this.engineStartSelIgnition.set(this.engSelectorPosition.get() === 2);
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -4256,6 +4304,13 @@ export class FwsCore {
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
+    this.xBleedSelectorKnob.set(this.xBleedSelectorKnobSimvar.get());
+
+    // 0: Shut, 1: Auto, 2: Open
+    this.xBleedSelectorShut.set(this.xBleedSelectorKnob.get() === 0);
+    this.xBleedSelectorAuto.set(this.xBleedSelectorKnob.get() === 1);
+    this.xBleedSelectorOpen.set(this.xBleedSelectorKnob.get() === 2);
+
     /* 23 - COMMUNICATION */
     const rmp1State = SimVar.GetSimVarValue('L:A380X_RMP_1_STATE', 'number');
     this.rmp1Fault.set(rmp1State === RmpState.OffFailed || rmp1State === RmpState.OnFailed);
@@ -4824,6 +4879,7 @@ export class FwsCore {
     const tcasMode = SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
 
     this.tcasTaOnly.set(tcasMode === 1);
+    this.tcasTaRa.set(tcasMode === 2);
     const tcasStandby = tcasMode === 0;
 
     // FIX ME Verify no XPDR fault once implemented
