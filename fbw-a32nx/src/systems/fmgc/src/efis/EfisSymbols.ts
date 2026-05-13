@@ -895,7 +895,7 @@ export class EfisSymbols<T extends number> {
 
       ret.push({
         databaseId,
-        ident: leg.type === LegType.FM ? leg.terminationWaypoint().ident : leg.ident,
+        ident: leg.type === LegType.FM ? leg.terminationWaypoint()?.ident ?? leg.ident : leg.ident,
         location,
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
@@ -1117,7 +1117,7 @@ export class EfisSymbols<T extends number> {
     const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
     const matchingGeometryLeg = geometry?.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
-    return matchingGeometryLeg.displayCoordinates ?? null;
+    return matchingGeometryLeg?.displayCoordinates ?? null;
   }
 
   private transmitNdSymbols(symbols: InternalFmsSymbol[]) {
