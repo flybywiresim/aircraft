@@ -29,7 +29,7 @@ export function procedureLegIdentAndAnnotation(
     case LegType.TF:
       return [procedureLeg.waypoint.ident, procedureIdent ?? null];
     case LegType.RF:
-      return [procedureLeg.waypoint.ident, `${Math.round(procedureLeg.length).toString().padStart(2, ' ')} ARC`];
+      return [procedureLeg.waypoint.ident, `${Math.round(procedureLeg.arcRadius).toString().padStart(2, ' ')} ARC`];
     case LegType.CA:
     case LegType.FA:
     case LegType.VA:
@@ -76,11 +76,15 @@ export function procedureLegIdentAndAnnotation(
     case LegType.PI:
       return ['INTCPT', `PROC ${procedureLeg.turnDirection === TurnDirection.Left ? 'L' : 'R'}`];
     case LegType.FM:
+      return [
+        'MANUAL',
+        `${procedureLeg.waypoint.ident.substring(0, 3)}${Math.round(procedureLeg.course).toString().padStart(3, '0')}`,
+      ];
     case LegType.VM:
       return [
         'MANUAL',
-        `${legType === LegType.FM ? 'C' : 'H'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
-      ]; // TODO fix for VM
+        `H${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
+      ];
     default:
       break;
   }

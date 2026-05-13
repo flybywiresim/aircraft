@@ -441,15 +441,17 @@ export class CDUFlightPlanPage {
 
         // Distance
         let distance = '';
-        // Active waypoint is live distance, others are distances in the flight plan
-        if (isActive) {
-          if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
-            distance = Math.round(
-              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
-            ).toFixed(0);
+        if (!wp.isVectors()) {
+          // Active waypoint is live distance, others are distances in the flight plan
+          if (isActive) {
+            if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
+              distance = Math.round(
+                Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
+              ).toFixed(0);
+            }
+          } else if (distanceFromLastLine !== undefined) {
+            distance = Math.round(Math.max(0, Math.min(9999, distanceFromLastLine))).toFixed(0);
           }
-        } else if (distanceFromLastLine !== undefined) {
-          distance = Math.round(Math.max(0, Math.min(9999, distanceFromLastLine))).toFixed(0);
         }
 
         let fpa = '';
@@ -832,7 +834,7 @@ export class CDUFlightPlanPage {
             const { altitudeConstraint: pAlt, timeCell: pTime, speedConstraint: pSpd } = pRow;
 
             firstWp = Math.min(firstWp, rowI);
-            if (rowI === firstWp) {
+            if (rowI === firstWp && row.distance !== '') {
               showNm = true;
             }
 
