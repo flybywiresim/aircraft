@@ -11,6 +11,7 @@ import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionics
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { DirectToBuilder } from '@fmgc/flightplanning/types/DirectTo';
 
 interface MfdFmsFplnDirectToProps extends AbstractMfdPageProps {}
 
@@ -116,7 +117,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         await this.props.flightPlanInterface.directTo(
           ppos,
           trueTrack.value,
-          { flightPlanLegIndex: legIndex },
+          DirectToBuilder.toFlightPlanFix(legIndex).get(),
           FlightPlanIndex.Active,
         );
       }
@@ -127,7 +128,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         await this.props.flightPlanInterface.directTo(
           ppos,
           trueTrack.value,
-          { nonFlightPlanFix: wpt },
+          DirectToBuilder.toNonFlightPlanFix(wpt).get(),
           FlightPlanIndex.Active,
         );
       }

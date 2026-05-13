@@ -9,6 +9,7 @@ import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { lateralRevisionHoldPage } from '../../../shared/utils';
+import { DirectToType } from '@fmgc/flightplanning/types/DirectTo';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -59,6 +60,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             ppos,
             SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
             {
+              type: DirectToType.Normal,
+              isToFlightPlanFix: true,
               flightPlanLegIndex: legIndex,
             },
             planIndex,

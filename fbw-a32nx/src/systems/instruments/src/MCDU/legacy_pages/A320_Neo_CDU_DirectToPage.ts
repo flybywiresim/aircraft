@@ -6,22 +6,17 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import {
-  DirectTo,
-  isDirectWithAbeam,
-  isDirectWithCourseIn,
-  isDirectWithCourseOut,
-} from '@fmgc/flightplanning/types/DirectTo';
+import { DirectTo, DirectToBuilder, DirectToType } from '@fmgc/flightplanning/types/DirectTo';
 import { isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { MagVar, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { Wait } from '@microsoft/msfs-sdk';
 import { Column, FormatLine, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 
 export class CDUDirectToPage {
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    directToObject?: DirectTo,
+    directToObject?: A32NXDirectToBuilder,
     wptsListIndex = 0,
     isRadialInPilotEntered = false,
   ) {
@@ -30,21 +25,21 @@ export class CDUDirectToPage {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DirectToPage;
     mcdu.returnPageCallback = () => {
-      CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex);
+      CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex, isRadialInPilotEntered);
     };
 
     mcdu.activeSystem = 'FMGC';
 
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.DirectToPage) {
-        CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex);
+        CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex, isRadialInPilotEntered);
       }
     }, mcdu.PageTimeout.Medium);
 
     const title = [new Column(17, plan.flightNumber.get() ?? '', Column.small, Column.right)];
 
-    const defaultRadialIn = this.computeDefaultRadialIn(plan, directToObject);
-    const header = this.renderHeader(plan, directToObject, defaultRadialIn, isRadialInPilotEntered);
+    const defaultRadialIn = this.computeDefaultRadialIn(plan, directToObject?.get());
+    const header = this.renderHeader(plan, directToObject?.get(), defaultRadialIn, isRadialInPilotEntered);
 
     const numRows = directToObject === undefined ? 5 : 4;
     const firstRowIndex = directToObject === undefined ? 1 : 2;
@@ -68,255 +63,11 @@ export class CDUDirectToPage {
     );
     const scrollText = CDUFlightPlanPage.createScrollText(scrollWindow, false);
 
-    mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (value === '') {
-        if (directToObject !== undefined) {
-          // Insert TMPY
-          mcdu.insertTemporaryFlightPlan(async () => {
-            CDUFlightPlanPage.ShowPage(mcdu);
-            SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-          });
-        } else {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-          scratchpadCallback();
-          return;
-        }
-      } else if (value === Keypad.clrValue) {
-        if (directToObject !== undefined) {
-          mcdu.eraseTemporaryFlightPlan(() => {
-            CDUDirectToPage.ShowPage(mcdu, undefined, wptsListIndex - 1);
-          });
-        }
-      } else {
-        // Non FP direct to
-        WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false)
-          .then((w) => {
-            if (w) {
-              mcdu.eraseTemporaryFlightPlan(() => {
-                directToObject = {
-                  nonFlightPlanFix: w,
-                };
+    mcdu.onLeftInput[0] = this.handleDirToLsk.bind(this, mcdu, directToObject, wptsListIndex);
+    mcdu.onLeftInput[1] = this.handleAbeamPtsLsk.bind(this, mcdu, directToObject);
 
-                mcdu
-                  .directTo(directToObject)
-                  .then(() => {
-                    CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex);
-                  })
-                  .catch((err) => {
-                    mcdu.logTroubleshootingError(err);
-                    mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                    console.error(err);
-                  });
-              });
-            } else {
-              mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-            }
-          })
-          .catch((err: any) => {
-            // Rethrow if error is not an FMS message to display
-            if (err.type === undefined) {
-              throw err;
-            }
-
-            mcdu.showFmsErrorMessage(err.type);
-          });
-      }
-    };
-
-    if (directToObject !== undefined) {
-      // ABEAMS
-      mcdu.onLeftInput[1] = (_, scratchpadCallback) => {
-        mcdu.eraseTemporaryFlightPlan(() => {
-          directToObject = {
-            flightPlanLegIndex: directToObject?.flightPlanLegIndex,
-            nonFlightPlanFix: directToObject?.nonFlightPlanFix,
-            withAbeam: true,
-          };
-
-          mcdu
-            .directTo(directToObject)
-            .then(() => {
-              mcdu.insertTemporaryFlightPlan(async () => {
-                CDUFlightPlanPage.ShowPage(mcdu);
-                SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-              });
-            })
-            .catch((err) => {
-              mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-              scratchpadCallback();
-              console.error(err);
-            });
-        });
-      };
-
-      // RADIAL IN
-      mcdu.onRightInput[0] = (s, scratchpadCallback) => {
-        let course: number | undefined = undefined;
-        let isPilotEntered = false;
-
-        if (s === Keypad.clrValue) {
-          if (isDirectWithCourseIn(directToObject) && defaultRadialIn !== undefined) {
-            mcdu.eraseTemporaryFlightPlan(() => {
-              if (!isDirectWithCourseIn(directToObject)) {
-                return;
-              }
-
-              directToObject.courseIn = defaultRadialIn;
-
-              mcdu
-                .directTo(directToObject)
-                .then(() => {
-                  CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex);
-                })
-                .catch((err) => {
-                  mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                  scratchpadCallback();
-                  console.error(err);
-                });
-            });
-            return;
-          } else {
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
-            return;
-          }
-        } else if (s === '') {
-          // Insert
-          if (isDirectWithCourseIn(directToObject)) {
-            mcdu.insertTemporaryFlightPlan(async () => {
-              CDUFlightPlanPage.ShowPage(mcdu);
-
-              const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
-              if (oldValidity) {
-                // Disengage NAV
-                SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
-                await Wait.awaitDelay(300);
-                SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
-              }
-
-              SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-            });
-          } else if (defaultRadialIn !== undefined) {
-            mcdu.eraseTemporaryFlightPlan(() => {
-              directToObject = {
-                flightPlanLegIndex: directToObject?.flightPlanLegIndex,
-                nonFlightPlanFix: directToObject?.nonFlightPlanFix,
-                courseIn: MathUtils.normalise360(defaultRadialIn),
-              };
-
-              mcdu
-                .directTo(directToObject)
-                .then(() => {
-                  mcdu.insertTemporaryFlightPlan(async () => {
-                    CDUFlightPlanPage.ShowPage(mcdu);
-
-                    const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
-                    if (
-                      oldValidity &&
-                      (isDirectWithCourseIn(directToObject) || isDirectWithCourseOut(directToObject))
-                    ) {
-                      // Disengage NAV
-                      SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
-                      await Wait.awaitDelay(300);
-                      SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
-                    }
-
-                    SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-                  });
-                })
-                .catch((err) => {
-                  mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                  console.error(err);
-                });
-            });
-          }
-          return;
-        } else if (/^\d{1,3}/.test(s)) {
-          course = parseInt(s);
-          if (course > 360) {
-            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-            scratchpadCallback();
-            return;
-          }
-
-          isPilotEntered = true;
-        } else {
-          // TODO this should allow a true course
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-          scratchpadCallback();
-          return;
-        }
-
-        mcdu.eraseTemporaryFlightPlan(() => {
-          directToObject = {
-            flightPlanLegIndex: directToObject?.flightPlanLegIndex,
-            nonFlightPlanFix: directToObject?.nonFlightPlanFix,
-            courseIn: MathUtils.normalise360(course),
-          };
-
-          mcdu
-            .directTo(directToObject)
-            .then(() => {
-              CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex, isPilotEntered);
-            })
-            .catch((err) => {
-              mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-              console.error(err);
-            });
-        });
-      };
-
-      // RADIAL OUT
-      mcdu.onRightInput[1] = (s, scratchpadCallback) => {
-        // TODO this should allow a true course
-        if (isDirectWithCourseOut(directToObject)) {
-          // Insert
-          mcdu.insertTemporaryFlightPlan(async () => {
-            CDUFlightPlanPage.ShowPage(mcdu);
-
-            const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
-            if (oldValidity) {
-              // Disengage NAV
-              SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
-              await Wait.awaitDelay(300);
-              SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
-            }
-
-            SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-          });
-          return;
-        } else if (!/^\d{1,3}/.test(s)) {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-          scratchpadCallback();
-          return;
-        }
-
-        const course = parseInt(s);
-        if (course > 360) {
-          mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-          scratchpadCallback();
-          return;
-        }
-
-        mcdu.eraseTemporaryFlightPlan(() => {
-          directToObject = {
-            flightPlanLegIndex: directToObject?.flightPlanLegIndex,
-            nonFlightPlanFix: directToObject?.nonFlightPlanFix,
-            courseOut: MathUtils.normalise360(course),
-          };
-
-          mcdu
-            .directTo(directToObject)
-            .then(() => {
-              CDUDirectToPage.ShowPage(mcdu, directToObject, wptsListIndex);
-            })
-            .catch((err) => {
-              mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-              console.error(err);
-            });
-        });
-      };
-    }
+    mcdu.onRightInput[0] = this.handleRadialInLsk.bind(this, mcdu, directToObject, wptsListIndex, defaultRadialIn);
+    mcdu.onRightInput[1] = this.handleRadialOutLsk.bind(this, mcdu, directToObject, wptsListIndex);
 
     for (let i = 0; i < scrollWindow.length; i++) {
       const line = scrollWindow[i];
@@ -336,22 +87,8 @@ export class CDUDirectToPage {
 
             const newWptsListIndex = directToObject === undefined ? wptsListIndex + 1 : wptsListIndex;
 
-            mcdu.eraseTemporaryFlightPlan(() => {
-              directToObject = {
-                flightPlanLegIndex: fpIndex,
-              };
+            A32NXDirectToBuilder.toFlightPlanFix(fpIndex).plan(mcdu, newWptsListIndex);
 
-              mcdu
-                .directTo(directToObject)
-                .then(() => {
-                  CDUDirectToPage.ShowPage(mcdu, directToObject, newWptsListIndex);
-                })
-                .catch((err) => {
-                  mcdu.logTroubleshootingError(err);
-                  mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-                  console.error(err);
-                });
-            });
             break;
           }
           default:
@@ -390,77 +127,75 @@ export class CDUDirectToPage {
 
   private static renderHeader(
     plan: FlightPlan,
-    directToObject: DirectTo | undefined,
+    pendingDirTo: DirectTo | undefined,
     defaultRadialIn: number | undefined,
     isRadialInPilotEntered: boolean,
   ): string[][] {
-    let directWaypointCell = '';
-    if (directToObject !== undefined) {
-      if (directToObject.flightPlanLegIndex !== undefined) {
-        // Don't just fetch the leg at the index, since the plan might've sequenced after this page was called up
-        const directToLeg = plan.maybeElementAt(directToObject.flightPlanLegIndex);
-
-        if (directToLeg && !isDiscontinuity(directToLeg)) {
-          directWaypointCell = directToLeg.ident;
-        }
-      } else if (directToObject.nonFlightPlanFix !== undefined) {
-        directWaypointCell = directToObject.nonFlightPlanFix.ident;
-      }
-    }
-
-    if (directWaypointCell === '') {
+    if (pendingDirTo === undefined) {
       return FormatTemplate([
         [new Column(1, 'DIR TO', Column.small)],
         [new Column(1, '[\xa0\xa0\xa0\xa0\xa0]', Column.cyan)],
       ]);
     }
 
-    const isWithAbeamSelected = directToObject && isDirectWithAbeam(directToObject);
-    const canSelectWithAbeams = directToObject?.flightPlanLegIndex && !isWithAbeamSelected;
+    let directWaypointIdent = '';
+    if (pendingDirTo.isToFlightPlanFix === true) {
+      // Don't just fetch the leg at the index, since the plan might've sequenced after this page was called up
+      const directToLeg = plan.maybeElementAt(pendingDirTo.flightPlanLegIndex);
 
-    const isRadialInSelected = directToObject && isDirectWithCourseIn(directToObject);
-    const canSelectRadialIn = directToObject && !isRadialInSelected;
+      if (directToLeg && !isDiscontinuity(directToLeg)) {
+        directWaypointIdent = directToLeg.ident;
+      }
+    } else {
+      directWaypointIdent = pendingDirTo.nonFlightPlanFix.ident;
+    }
+
+    if (directWaypointIdent === '') {
+      return FormatTemplate([
+        [new Column(1, 'DIR TO', Column.small)],
+        [new Column(1, '[\xa0\xa0\xa0\xa0\xa0]', Column.cyan)],
+      ]);
+    }
 
     let radialInText = '[ ]°';
-    if (isRadialInSelected && isDirectWithCourseIn(directToObject)) {
-      radialInText = `${directToObject.courseIn.toFixed(0).padStart(3, '0')}°`;
+    if (pendingDirTo.type === DirectToType.RadialIn) {
+      radialInText = `${pendingDirTo.courseIn.toFixed(0).padStart(3, '0')}°`;
     } else if (defaultRadialIn !== undefined) {
       radialInText = `${defaultRadialIn.toFixed(0).padStart(3, '0')}°`;
     }
 
-    const isRadialOutSelected = directToObject && isDirectWithCourseOut(directToObject);
-    const canSelectRadialOut = directToObject && !isRadialOutSelected;
     const radialOutText =
-      isRadialOutSelected && isDirectWithCourseOut(directToObject)
-        ? `${directToObject.courseOut.toFixed(0).padStart(3, '0')}°`
-        : '[ ]°';
-
-    const canSelectDirectTo = directToObject !== undefined;
+      pendingDirTo.type === DirectToType.RadialOut ? `${pendingDirTo.courseOut.toFixed(0).padStart(3, '0')}°` : '[ ]°';
 
     return FormatTemplate([
       [new Column(1, 'DIR TO', Column.small), new Column(13, 'RADIAL IN', Column.small)],
       [
-        new Column(0, `${canSelectDirectTo ? '*' : '\xa0'}${directWaypointCell}`, Column.cyan),
-        new Column(21, radialInText, Column.right, Column.cyan, isRadialInPilotEntered ? Column.big : Column.small),
-        new Column(23, canSelectRadialIn ? '*' : '\xa0', Column.right, Column.cyan),
+        new Column(0, `*${directWaypointIdent}`, Column.cyan),
+        new Column(
+          21,
+          radialInText,
+          Column.right,
+          Column.cyan,
+          !isRadialInPilotEntered && defaultRadialIn !== undefined ? Column.small : Column.big,
+        ),
+        new Column(
+          23,
+          pendingDirTo.type === DirectToType.RadialIn || defaultRadialIn !== undefined ? '*' : '',
+          Column.right,
+          Column.cyan,
+        ),
       ],
       [new Column(1, 'WITH', Column.small), new Column(13, 'RADIAL OUT', Column.small)],
       [
-        new Column(0, `${canSelectWithAbeams ? '*' : '\xa0'}ABEAM PTS`, Column.cyan),
+        new Column(0, `*ABEAM PTS`, Column.cyan),
         new Column(21, radialOutText, Column.right, Column.cyan, Column.big),
-        new Column(23, canSelectRadialOut ? '*' : '\xa0', Column.right, Column.cyan),
+        new Column(23, pendingDirTo.type === DirectToType.RadialOut ? '*' : '\xa0', Column.right, Column.cyan),
       ],
     ]);
   }
 
-  /**
-   *
-   * @param plan
-   * @param directToObject
-   * @returns {number | undefined}
-   */
   static computeDefaultRadialIn(plan: FlightPlan, directToObject?: DirectTo): number | undefined {
-    if (!directToObject || directToObject.flightPlanLegIndex === undefined) {
+    if (!directToObject?.isToFlightPlanFix) {
       return undefined;
     }
 
@@ -499,5 +234,231 @@ export class CDUDirectToPage {
     }
 
     return undefined;
+  }
+
+  private static async handleDirToLsk(
+    mcdu: LegacyFmsPageInterface,
+    dirTo: A32NXDirectToBuilder | undefined,
+    wptsListIndex: number,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
+    try {
+      if (dirTo === undefined) {
+        // Non FP direct to
+        const w = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, input, false);
+        if (w === undefined) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+          scratchpadCallback();
+          return;
+        }
+
+        A32NXDirectToBuilder.toNonFlightPlanFix(w).plan(mcdu, wptsListIndex);
+      } else {
+        if (input === Keypad.clrValue) {
+          await dirTo.erase(mcdu);
+          CDUDirectToPage.ShowPage(mcdu, undefined, wptsListIndex - 1);
+
+          return;
+        }
+
+        await dirTo.insert(mcdu);
+      }
+    } catch (err: any) {
+      if (err.type === undefined) {
+        mcdu.logTroubleshootingError(err);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        scratchpadCallback();
+        console.error(err);
+        return;
+      }
+
+      mcdu.showFmsErrorMessage(err.type);
+    }
+  }
+
+  private static handleAbeamPtsLsk(
+    mcdu: LegacyFmsPageInterface,
+    dirTo: A32NXDirectToBuilder | undefined,
+    _: string,
+    scratchpadCallback: () => void,
+  ) {
+    if (dirTo === undefined) return;
+
+    try {
+      dirTo.withAbeams().planAndInsert(mcdu);
+    } catch (err: any) {
+      if (err.type === undefined) {
+        mcdu.logTroubleshootingError(err);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        scratchpadCallback();
+        console.error(err);
+        return;
+      }
+
+      mcdu.showFmsErrorMessage(err.type);
+    }
+  }
+
+  private static async handleRadialInLsk(
+    mcdu: LegacyFmsPageInterface,
+    dirTo: A32NXDirectToBuilder | undefined,
+    wptsListIndex: number,
+    defaultRadialIn: number | undefined,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
+    if (dirTo === undefined) return;
+
+    try {
+      if (input === Keypad.clrValue) {
+        if (dirTo.type === DirectToType.RadialIn && defaultRadialIn !== undefined) {
+          await dirTo.radialIn(defaultRadialIn, false).plan(mcdu, wptsListIndex);
+        } else {
+          mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+          scratchpadCallback();
+        }
+      } else if (input === '') {
+        // Insert
+        if (dirTo.type === DirectToType.RadialIn) {
+          await dirTo.insert(mcdu);
+        } else if (defaultRadialIn !== undefined) {
+          dirTo.radialIn(defaultRadialIn, false).planAndInsert(mcdu);
+        }
+        return;
+      } else if (/^\d{1,3}/.test(input)) {
+        const course = parseInt(input);
+        if (course > 360) {
+          mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          scratchpadCallback();
+          return;
+        }
+
+        dirTo.radialIn(course, true).plan(mcdu, wptsListIndex);
+      } else {
+        // TODO this should allow a true course
+        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+        scratchpadCallback();
+        return;
+      }
+    } catch (err: any) {
+      if (err.type === undefined) {
+        mcdu.logTroubleshootingError(err);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        scratchpadCallback();
+        console.error(err);
+        return;
+      }
+
+      mcdu.showFmsErrorMessage(err.type);
+    }
+  }
+
+  private static async handleRadialOutLsk(
+    mcdu: LegacyFmsPageInterface,
+    dirTo: A32NXDirectToBuilder | undefined,
+    wptsListIndex: number,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
+    if (dirTo === undefined) return;
+
+    try {
+      if (input === Keypad.clrValue) {
+        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+        scratchpadCallback();
+      } else if (input === '' && dirTo.type === DirectToType.RadialOut) {
+        await dirTo.insert(mcdu);
+      } else if (/^\d{1,3}/.test(input)) {
+        // TODO this should allow a true course
+        const course = parseInt(input);
+        if (course > 360) {
+          mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          scratchpadCallback();
+          return;
+        }
+
+        dirTo.radialOut(course).plan(mcdu, wptsListIndex);
+      } else {
+        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+        scratchpadCallback();
+        return;
+      }
+    } catch (err: any) {
+      if (err.type === undefined) {
+        mcdu.logTroubleshootingError(err);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        scratchpadCallback();
+        console.error(err);
+        return;
+      }
+
+      mcdu.showFmsErrorMessage(err.type);
+    }
+  }
+}
+
+class A32NXDirectToBuilder extends DirectToBuilder {
+  public static toFlightPlanFix(atIndex: number) {
+    return new this({
+      type: DirectToType.Normal,
+      isToFlightPlanFix: true,
+      flightPlanLegIndex: atIndex,
+    });
+  }
+
+  public static toNonFlightPlanFix(fix: Fix) {
+    return new this({
+      type: DirectToType.Normal,
+      isToFlightPlanFix: false,
+      nonFlightPlanFix: fix,
+    });
+  }
+
+  public erase(mcdu: LegacyFmsPageInterface): Promise<void> {
+    return new Promise((res, _) => {
+      mcdu.eraseTemporaryFlightPlan(() => {
+        res();
+      });
+    });
+  }
+
+  public async plan(mcdu: LegacyFmsPageInterface, wptsListIndex: number): Promise<void> {
+    await this.erase(mcdu);
+    await mcdu.directTo(this.directToObject);
+
+    CDUDirectToPage.ShowPage(
+      mcdu,
+      this,
+      wptsListIndex,
+      this.directToObject.type === DirectToType.RadialIn && this.directToObject.isPilotEntered,
+    );
+  }
+
+  public async planAndInsert(mcdu: LegacyFmsPageInterface): Promise<void> {
+    await this.erase(mcdu);
+    await mcdu.directTo(this.directToObject);
+    await this.insert(mcdu);
+  }
+
+  public async insert(mcdu: LegacyFmsPageInterface): Promise<void> {
+    return new Promise((res, rej) => {
+      mcdu
+        .insertTemporaryFlightPlan(async () => {
+          CDUFlightPlanPage.ShowPage(mcdu);
+
+          const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
+          if (oldValidity && (this.type === DirectToType.RadialIn || this.type === DirectToType.RadialOut)) {
+            // Disengage NAV
+            SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
+            await Wait.awaitDelay(300);
+            SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
+          }
+
+          SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
+          res();
+        })
+        .catch((err) => rej(err));
+    });
   }
 }

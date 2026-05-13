@@ -22,7 +22,7 @@ import { BaseFlightPlan, FlightPlanContext, SerializedFlightPlan } from './BaseF
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
-import { DirectTo, isDirectWithAbeam, isDirectWithCourseIn, isDirectWithCourseOut } from '../types/DirectTo';
+import { DirectTo, DirectToType } from '../types/DirectTo';
 import { InboundPointIdent, OutboundPointIdent } from '../legs/FlightPlanLegNaming';
 import { debugFormatWindEntry, FlightPlanWindEntry, WindVector } from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
@@ -174,7 +174,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     let targetLeg: FlightPlanLeg | undefined = undefined;
     let targetLegFix: Fix | undefined = undefined;
 
-    if (directTo.flightPlanLegIndex !== undefined) {
+    if (directTo.isToFlightPlanFix === true) {
       if (directTo.flightPlanLegIndex >= this.firstMissedApproachLegIndex) {
         throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
       }
@@ -206,7 +206,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     let turningPoint: FlightPlanLeg | undefined = undefined;
     let turnEnd: FlightPlanLeg | undefined = undefined;
 
-    if (isDirectWithCourseIn(directTo)) {
+    if (directTo.type === DirectToType.RadialIn) {
       const magneticInboundCourse = MathUtils.normalise360(directTo.courseIn + 180);
 
       turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, InboundPointIdent, ppos);
@@ -219,10 +219,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
         turnEnd.ident = targetLeg.ident;
       }
-    } else if (isDirectWithCourseOut(directTo)) {
+    } else if (directTo.type === DirectToType.RadialOut) {
       const magneticOutboundCourse = MathUtils.normalise360(directTo.courseOut);
 
-      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, OutboundPointIdent, targetLegFix.location);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, OutboundPointIdent, ppos);
       turningPoint.flags |= FlightPlanLegFlags.DirectToOutBound;
 
       turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, targetLegFix, magneticOutboundCourse, fixMagVar);
@@ -252,7 +252,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.redistributeLegsAt(0);
 
     let indexInEnrouteSegment = 0;
-    if (targetLeg !== undefined) {
+    if (directTo.isToFlightPlanFix) {
       this.redistributeLegsAt(directTo.flightPlanLegIndex!);
       indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
     } else if (this.activeLegIndex >= 1) {
@@ -270,7 +270,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     // In case of radial out, insert a discontinuity after the turn end
     // In case of direct to random waypoint, insert a discontinuity after the turn end
-    const shouldInsertDiscontinuityAfterTurnEnd = isDirectWithCourseOut(directTo) || targetLeg == undefined;
+    const shouldInsertDiscontinuityAfterTurnEnd = directTo.type === DirectToType.RadialOut || targetLeg == undefined;
 
     const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
     if (
@@ -290,7 +290,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
     }
 
-    if (isDirectWithAbeam(directTo)) {
+    if (directTo.type === DirectToType.Abeams) {
       this.abeamPointRequests.push(
         ...removedLegs
           .slice(1, -1)
@@ -298,7 +298,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
           .filter((leg) => leg.isXF())
           .map((leg) => ({
             referenceFix: leg.abeamReference()!,
-            endLeg: turnEndLegIndexInPlan + 1,
+            endLegIndex: turnEndLegIndexInPlan + 1,
           })),
       );
     }
