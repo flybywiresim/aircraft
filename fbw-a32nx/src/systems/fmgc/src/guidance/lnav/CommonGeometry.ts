@@ -368,6 +368,23 @@ function coordinatesToXyz(coordinates: Coordinates, radius: number): [number, nu
   return [radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi), radius * Math.cos(theta)];
 }
 
+function xyzToCoordinates(x: number, y: number, z: number): Coordinates {
+  const theta = Math.atan2(Math.sqrt(x ** 2 + y ** 2), z);
+
+  // From: https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+  let phi = NaN;
+  if (x > 0) phi = Math.atan(y / x);
+  else if (x < 0 && y >= 0) phi = Math.atan(y / x) + Math.PI;
+  else if (x < 0 && y < 0) phi = Math.atan(y / x) - Math.PI;
+  else if (x === 0 && y > 0) phi = Math.PI;
+  else if (x === 0 && y < 0) phi = -Math.PI;
+
+  return {
+    lat: thetaToLat(theta),
+    long: phiToLong(phi),
+  };
+}
+
 function crossProduct(
   x1: number,
   y1: number,
@@ -387,21 +404,9 @@ export function abeam(from: Coordinates, to: Coordinates, ref: Coordinates) {
   const n = crossProduct(rFrom[0], rFrom[1], rFrom[2], rTo[0], rTo[1], rTo[2]);
   const m = crossProduct(n[0], n[1], n[2], rRef[0], rRef[1], rRef[2]);
 
-  const one = m[0] * n[2] - m[2] * n[0];
-  const two = m[2] * n[1] - m[1] * n[2];
+  const rAbeam = crossProduct(n[0], n[1], n[2], m[0], m[1], m[2]);
 
-  let phiV = Math.atan2(one, two);
-  let thetaV = Math.atan2(-n[2], Math.cos(phiV) * n[0] + Math.sin(phiV) * n[1]);
-
-  if (thetaV < 0) {
-    thetaV = -thetaV;
-    phiV = MathUtils.normalise2Pi(phiV + Math.PI);
-  }
-
-  return [
-    { lat: thetaToLat(thetaV), long: phiToLong(phiV) },
-    { lat: thetaToLat(Math.PI - thetaV), long: phiToLong(MathUtils.normalise2Pi(phiV + Math.PI)) },
-  ];
+  return [xyzToCoordinates(rAbeam[0], rAbeam[1], rAbeam[2]), xyzToCoordinates(-rAbeam[0], -rAbeam[1], -rAbeam[2])];
 }
 
 export function abeamBetween(from: Coordinates, to: Coordinates, ref: Coordinates) {
