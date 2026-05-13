@@ -2,7 +2,7 @@ name: InGamePanels Checklist Fix
 on:
   push:
     branches:
-      - master
+      - fs2020-master
     paths:
       - 'fbw-ingamepanels-checklist-fix/**'
       - 'scripts/build_ingamepanels_checklist_fix.js'
