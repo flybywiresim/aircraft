@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -340,7 +340,7 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
-  public readonly compMesgCount = Subject.create(0);
+  public readonly companyMessageMemo = Subject.create(false); // Disabled until we handle it on the OIT.
 
   public readonly landAsap = Subject.create(false);
 
@@ -687,11 +687,10 @@ export class FwsCore {
 
   public readonly rollOutFault = Subject.create(false);
 
-  public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
+  private readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
+  private readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
 
-  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
-  public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
-  public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
+  private readonly tripleClickAudio = Subject.create(false);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -1586,18 +1585,11 @@ export class FwsCore {
     this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
-  public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
+  private readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
   public readonly oansFailed = Subject.create(false);
-  public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
-  public readonly oansPposLost = Subject.create(false);
-  public readonly arptNavInop = MappedSubject.create(
-    ([oansFailed, pposLost]) => oansFailed || pposLost,
-    this.oansFailed,
-    this.oansPposLost,
-  );
   public readonly arptNavFault = MappedSubject.create(
     ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
-    this.arptNavInop,
+    this.oansFailed,
     this.ac4BusPowered,
     this.dc1BusPowered,
   );
@@ -2396,6 +2388,12 @@ export class FwsCore {
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
+      this.tripleClickAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('pause0p8s');
+          this.soundManager.enqueueSound('tripleClick');
+        }
+      }, true),
     );
   }
 
@@ -3552,10 +3550,7 @@ export class FwsCore {
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
-    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read());
-    if (this.checkFmaTripleClickPulse.read()) {
-      this.soundManager.enqueueSound('tripleClick');
-    }
+    this.tripleClickAudio.set(this.checkFmaTripleClickDebounce.read());
 
     // ROLLOUT FAULT
     this.rollOutFault.set(
@@ -4296,7 +4291,6 @@ export class FwsCore {
     this.attKnob.set(attKnob);
     this.ir3UsedLeft.set(attKnob === 0);
     this.ir3UsedRight.set(attKnob === 2);
-    this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
@@ -4904,7 +4898,6 @@ export class FwsCore {
 
     // OANS
     this.oansFailed.set(this.oansFailedSimvar.get());
-    this.oansPposLost.set(this.oansPposLostSimVar.get());
 
     /* 26 - FIRE */
 

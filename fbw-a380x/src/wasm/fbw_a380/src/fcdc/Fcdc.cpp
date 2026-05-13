@@ -323,19 +323,34 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
 
   // BTV reversion triple click
-  // On ground, if BTV is active and then deactivates --> triple click
   // In flight below 700ft RA, if BTV was armed and then was disarmed --> triple click
+  // In flight below 200ft RA, if BTV was armed and then was disarmed --> latch triple click, play it as we touch down and autobrake becomes
+  // active.
   Arinc429DiscreteWord* lgciu1DiscreteWord2 = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.lgciuBusOutputs[0].discrete_word_2);
   Arinc429DiscreteWord* lgciu2DiscreteWord2 = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.lgciuBusOutputs[1].discrete_word_2);
+  bool autoBrakeActive = discreteInputs.autoBrakeActive;
   bool onGround = lgciu1DiscreteWord2->bitFromValueOr(11, false) || lgciu2DiscreteWord2->bitFromValueOr(11, false);
-  bool btvActive =
-      discreteInputs.autoBrakeActive && (discreteInputs.btvState == 2 || discreteInputs.btvState == 3 || discreteInputs.btvState == 4);
-  bool btvArmed = !discreteInputs.autoBrakeActive && discreteInputs.btvState == 1;
-  if (onGround && !btvActive && lastBtvActive) {
-    btvTripleClickMtrig.write(true, deltaTime);
-  } else if (!onGround && radioAlt < 700 && !btvArmed && lastBtvArmed) {
-    btvTripleClickMtrig.write(true, deltaTime);
+  bool btvActive = autoBrakeActive && (discreteInputs.btvState == 2 || discreteInputs.btvState == 3 || discreteInputs.btvState == 4);
+  bool btvArmed = !autoBrakeActive && discreteInputs.btvState == 1;
+  if (!btvArmed && lastBtvArmed) {
+    // If the downgrade happens below 200 feet, we don't want to play it yet.
+    if (radioAlt < 200) {
+      btvDowngradeBelow200FeetFlipFlop.update(true, false);
+    } else if (radioAlt < 700) {
+      btvTripleClickMtrig.write(true, deltaTime);
+    }
   }
+
+  // Play the latched triple click as we touch down and autobrake becomes active in BRK HI.
+  if (btvDowngradeBelow200FeetFlipFlop.getOutput() &&
+      autoBrakeActiveAndGroundPulseNode.update(autoBrakeActive &&
+                                               onGround)) {  // FIXME: This should be a discrete/bit from the brake computer?
+    btvTripleClickMtrig.write(true, deltaTime);
+    btvDowngradeBelow200FeetFlipFlop.update(false, false);
+  } else if (discreteInputs.autoBrakeMode == 0) {  // Reset the flip flop when AB is lost.
+    btvDowngradeBelow200FeetFlipFlop.update(false, false);
+  }
+
   lastBtvActive = btvActive;
   lastBtvArmed = btvArmed;
 
