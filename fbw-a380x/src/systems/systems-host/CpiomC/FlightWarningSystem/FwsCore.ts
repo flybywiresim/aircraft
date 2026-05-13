@@ -340,7 +340,7 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
-  public readonly compMesgCount = Subject.create(0);
+  public readonly companyMessageMemo = Subject.create(false); // Disabled until we handle it on the OIT.
 
   public readonly landAsap = Subject.create(false);
 
@@ -4291,7 +4291,6 @@ export class FwsCore {
     this.attKnob.set(attKnob);
     this.ir3UsedLeft.set(attKnob === 0);
     this.ir3UsedRight.set(attKnob === 2);
-    this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
