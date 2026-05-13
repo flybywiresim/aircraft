@@ -99,6 +99,7 @@ jobs:
         run: |
           ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x-4k $CDN_BUCKET_DESTINATION
       - name: Lock QA config
+        if: steps.artifacts.outputs.found == 'true'
         run: ./scripts/acquire_lock.sh installer/qa-config/.lock
       - name: Add QA config entry
         if: steps.artifacts.outputs.found == 'true'
