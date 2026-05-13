@@ -697,10 +697,7 @@ export class EfisSymbols<T extends number> {
       }
 
       // no symbols for manual legs, except FM leg with no leg before it
-      if (
-        leg.definition.type === LegType.VM ||
-        (leg.definition.type === LegType.FM && !flightPlan.maybeElementAt(i - 1)?.isDiscontinuity)
-      ) {
+      if (leg.definition.type === LegType.VM) {
         continue;
       }
 
@@ -719,17 +716,17 @@ export class EfisSymbols<T extends number> {
       const geometryLeg = geometry.legs.get(i);
 
       if (geometryLeg) {
-        const terminationWaypoint = geometryLeg.terminationWaypoint;
+        const displayWaypoint = geometryLeg.displayWaypoint;
 
-        if (terminationWaypoint) {
-          if ('lat' in terminationWaypoint) {
-            location = terminationWaypoint;
+        if (displayWaypoint) {
+          if ('lat' in displayWaypoint) {
+            location = displayWaypoint;
             databaseId = `X${Math.round(Math.random() * 1_000)
               .toString()
               .padStart(6, '0')}${leg.ident.substring(0, 5)}`;
           } else {
-            location = terminationWaypoint.location;
-            databaseId = terminationWaypoint.databaseId;
+            location = displayWaypoint.location;
+            databaseId = displayWaypoint.databaseId;
           }
         }
       }
@@ -857,7 +854,7 @@ export class EfisSymbols<T extends number> {
 
       ret.push({
         databaseId,
-        ident: leg.ident,
+        ident: leg.type === LegType.FM ? leg.terminationWaypoint().ident : leg.ident,
         location,
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
@@ -1079,15 +1076,7 @@ export class EfisSymbols<T extends number> {
     const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
     const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
-    if (!matchingGeometryLeg?.terminationWaypoint) {
-      return null;
-    }
-
-    if ('lat' in matchingGeometryLeg.terminationWaypoint) {
-      return matchingGeometryLeg.terminationWaypoint;
-    }
-
-    return matchingGeometryLeg.terminationWaypoint.location;
+    return matchingGeometryLeg.displayCoordinates ?? null;
   }
 
   private transmitNdSymbols(symbols: InternalFmsSymbol[]) {

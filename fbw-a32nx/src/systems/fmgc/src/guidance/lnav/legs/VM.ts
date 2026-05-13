@@ -35,8 +35,6 @@ export class VMLeg extends Leg {
     return undefined;
   }
 
-  displayedOnMap = false;
-
   getPathStartPoint(): Coordinates | undefined {
     return this.inboundGuidable?.getPathEndPoint();
   }

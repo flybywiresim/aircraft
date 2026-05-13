@@ -10,9 +10,10 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 import { fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
+import { Transition } from '../Transition';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
@@ -39,14 +40,20 @@ export class FMLeg extends Leg {
     this.segment = segment;
   }
 
-  get terminationWaypoint(): Waypoint {
+  get terminationWaypoint() {
     return undefined;
   }
 
-  displayedOnMap = false;
+  get displayWaypoint() {
+    return this.fix;
+  }
 
   getPathStartPoint(): Coordinates | undefined {
-    return this.inboundGuidable?.getPathEndPoint() ?? this.fix.location;
+    if (this.inboundGuidable instanceof Transition && this.inboundGuidable.isComputed) {
+      return this.inboundGuidable.getPathEndPoint();
+    }
+
+    return this.fix.location;
   }
 
   getPathEndPoint(): Coordinates | undefined {
