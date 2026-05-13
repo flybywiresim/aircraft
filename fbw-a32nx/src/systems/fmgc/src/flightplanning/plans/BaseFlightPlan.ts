@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -3061,6 +3061,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     LnavConfig.VERBOSE_FPM_LOG && console.groupEnd();
+  }
+
+  /**
+   * Gets the index of the last leg located before a discontinuity
+   * @returns null if no discontinuity exists, the leg index before the discontinuity otherwise
+   */
+  getLastLegIndexBeforeDiscontinuity(): number | null {
+    for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
+      const nextLeg = this.maybeElementAt(i + 1);
+      if (!nextLeg || nextLeg.isDiscontinuity) {
+        return i;
+      }
+    }
+    return null;
   }
 }
 

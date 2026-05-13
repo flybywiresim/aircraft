@@ -213,6 +213,7 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
       }
     });
+  private readonly latDiscontinuityAhead = Subject.create(false);
 
   constructor(
     private bus: EventBus,
@@ -291,6 +292,13 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+      this.latDiscontinuityAhead.sub((v) => {
+        if (v) {
+          this.fmc.addMessageToQueue(NXSystemMessages.lateralDiscontinuityAhead, undefined, undefined);
+        } else {
+          this.fmc.removeMessageFromQueue(NXSystemMessages.lateralDiscontinuityAhead.text);
+        }
+      }),
     );
 
     const pub = this.bus.getPublisher<FmsData>();
@@ -2113,8 +2121,8 @@ export class FmcAircraftInterface {
     );
   }
 
-  checkEngineOut(deltaTime: number) {
-    this.engineFailurePulseNode.write(this.fmgc.isFlying() && !this.fmgc.isAllEngineOn(), deltaTime);
+  checkEngineOut() {
+    this.engineFailurePulseNode.write(this.fmgc.isFlying() && !this.fmgc.isAllEngineOn());
     if (!this.fmgc.data.engineOut.get() && this.engineFailurePulseNode.read()) {
       this.fmgc.data.engineOut.set(true);
     }
@@ -2122,6 +2130,10 @@ export class FmcAircraftInterface {
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
     }
+  }
+
+  checkLateralDiscontinuityAhead() {
+    this.latDiscontinuityAhead.set(this.fmc.guidanceController?.vnavDriver.shouldShowLatDiscontinuityAhead());
   }
 
   calculateFinalAndAlternateFuel(fpIndex = FlightPlanIndex.Active) {
