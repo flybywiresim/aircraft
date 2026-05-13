@@ -1029,12 +1029,12 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       { name: '100|900', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [39]
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 2 }, // [40]
       { name: 'GA THR : TOGA ONLY', sensed: false, level: 2 }, // [41]
-      { name: 'FOR LEVEL FLT :', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline }, // [42]
+      { name: 'FOR LEVEL FLT :', sensed: true, style: ChecklistLineStyle.CenteredSubHeadline }, // [42]
       { name: 'AP', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [43]
       { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [44]
       { name: 'FD', labelNotCompleted: 'OFF', sensed: true, level: 1 }, // [45]
       { name: 'PITCH TRGT', labelNotCompleted: '2.5°', sensed: false, level: 1 }, // [46]
-      { name: 'ALL ENG THR', labelNotCompleted: '98 %', sensed: false, level: 1 }, // [47] // TODO: include thrust table
+      { name: 'ALL ENG THR', labelNotCompleted: 'SEE FCOM', sensed: false, level: 1 }, // [47] // TODO: include thrust table
       { name: 'ADJUST THRUST FOR LEVEL FLT :', sensed: false }, // [48]
       { name: 'IF ALT INCREASES : DECREASE THR', sensed: false, style: ChecklistLineStyle.Green, level: 1 }, // [49]
       { name: 'IF ALT DECREASES : INCREASE THR', sensed: false, style: ChecklistLineStyle.Green, level: 1 }, // [50]
