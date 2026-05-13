@@ -1022,7 +1022,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       { name: 'SPD BRK : DO NOT USE', sensed: false, level: 2 }, // [32]
       { name: 'AVOID ICING CONDs', sensed: false, level: 2 }, // [33]
       { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 }, // [34]
-      { name: 'ACFT CRZ FL|CABIN ALT TRGT', sensed: true, style: ChecklistLineStyle.GreenTable, level: 1 }, // [35]
+      { name: 'ACFT CRZ FL|CABIN ALT TRGT', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [35]
       { name: '250|2900', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [36]
       { name: '200|2150', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [37]
       { name: '150|1500', sensed: true, style: ChecklistLineStyle.GreenTable, level: 2 }, // [38]
