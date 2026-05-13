@@ -10,6 +10,7 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SpeedMargin } from './SpeedMargin';
@@ -105,6 +106,7 @@ export class DescentGuidance {
 
   constructor(
     config: AircraftConfig,
+    bus: EventBus,
     private guidanceController: GuidanceController,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
@@ -112,6 +114,7 @@ export class DescentGuidance {
   ) {
     this.speedMargin = new SpeedMargin(config, this.observer);
     this.todGuidance = new TodGuidance(
+      bus,
       this.aircraftToDescentProfileRelation,
       this.observer,
       this.atmosphericConditions,

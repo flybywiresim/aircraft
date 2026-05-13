@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -81,6 +80,10 @@ export class PseudoDmc implements Instrument {
   /** SDI 11 */
   private readonly dmcPitchAngleWord324Backup = Arinc429RegisterSubject.createEmpty();
 
+  private readonly fmMda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'), 0);
+  private readonly dmcDiscreteWord270 = Arinc429RegisterSubject.createEmpty();
+  private readonly fmDh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'), 0);
+  private readonly dmcDhMinimum = Arinc429RegisterSubject.createEmpty();
   private readonly outputWords = [
     this.dmcDiscreteWord271,
     this.dmcDiscreteWord313Backup,
@@ -89,6 +92,8 @@ export class PseudoDmc implements Instrument {
     this.dmcAltitude,
     this.dmcPitchAngleWord324Onside,
     this.dmcPitchAngleWord324Backup,
+    this.dmcDiscreteWord270,
+    this.dmcDhMinimum,
   ];
 
   /** Not valid until init is called! */
@@ -147,6 +152,27 @@ export class PseudoDmc implements Instrument {
             this.dmcDiscreteWord272.setBitValue(14, knobPosition === 0);
           }
           this.dmcDiscreteWord272.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+        },
+        true,
+        true,
+      ),
+      MappedSubject.create(
+        ([fmMda, altitude]) => {
+          const mdaInvalid = fmMda.isInvalid();
+          const altInvalid = altitude.isInvalid();
+          this.dmcDiscreteWord270.setBitValue(
+            20,
+            mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100, //FIXME Confirm if it should it latch or be set directly?
+          );
+          this.dmcDiscreteWord270.setBitValue(21, altInvalid || mdaInvalid ? false : altitude.value < fmMda.value);
+          this.dmcDiscreteWord270.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+        },
+        this.fmMda,
+        this.altitude,
+      ),
+      this.fmDh.sub(
+        (v) => {
+          this.dmcDhMinimum.setWord(v.rawWord);
         },
         true,
         true,
@@ -215,6 +241,16 @@ export class PseudoDmc implements Instrument {
         ),
       true,
     );
+
+    this.dmcDiscreteWord270.sub((word) => {
+      word.writeToSimVar(
+        this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_270_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_270_LEFT',
+      );
+    });
+
+    this.dmcDhMinimum.sub((word) => {
+      word.writeToSimVar(this.isRightSide ? 'L:A32NX_DMC_DH_RIGHT' : 'L:A32NX_DMC_DH_LEFT');
+    });
 
     this.mainElecSupply.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_2_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),

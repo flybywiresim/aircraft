@@ -10,6 +10,7 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>#ID# (&gt;K:APU_GENERATOR_SWITCH_TOGGLE)</LEFT_SINGLE_CODE>
 
+            <SEQ1_CODE>(L:A32NX_OVHD_ELEC_APU_GEN_PB_HAS_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:APU GENERATOR SWITCH:#ID#, Bool) !</SEQ2_CODE>
 
             <DOWN_CODE>(A:APU GENERATOR SWITCH:#ID#, Bool)</DOWN_CODE>

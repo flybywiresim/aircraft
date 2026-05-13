@@ -868,7 +868,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',
-                        v,
+                        v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                         this.loadedFlightPlanIndex.get(),
                       )
                     }

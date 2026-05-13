@@ -4,7 +4,7 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
-import { pathify, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
+import { pathify, SettingGroup, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '../../../../shared/src/AutoCallOuts';
 
 export const AutomaticCallOutsPage: React.FC = () => {
@@ -81,23 +81,21 @@ export const AutomaticCallOutsPage: React.FC = () => {
               onToggle={() => toggleRadioAcoFlag(A32NXRadioAutoCallOutFlags.OneThousand)}
             />
           </SettingItem>
-          {/* TODO enable this when the new rust FWC is merged with the 500 hundred GS inhibit logic */}
-          {/* <SettingGroup> */}
-          {/* groupType="parent" */}
-          <SettingItem name="Five Hundred">
-            <Toggle
-              value={(autoCallOuts & A32NXRadioAutoCallOutFlags.FiveHundred) > 0}
-              onToggle={() => toggleRadioAcoFlag(A32NXRadioAutoCallOutFlags.FiveHundred)}
-            />
-          </SettingItem>
-          {/* <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundredGlide')} groupType="sub">
-                            <Toggle
-                                value={(autoCallOuts & RadioAutoCallOutFlags.FiveHundredGlide) > 0}
-                                disabled={(autoCallOuts & RadioAutoCallOutFlags.FiveHundred) === 0}
-                                onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FiveHundredGlide)}
-                            />
-                        </SettingItem> */}
-          {/* </SettingGroup> */}
+          <SettingGroup>
+            <SettingItem name="Five Hundred" groupType="parent">
+              <Toggle
+                value={(autoCallOuts & A32NXRadioAutoCallOutFlags.FiveHundred) > 0}
+                onToggle={() => toggleRadioAcoFlag(A32NXRadioAutoCallOutFlags.FiveHundred)}
+              />
+            </SettingItem>
+            <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundredGlide')} groupType="sub">
+              <Toggle
+                value={(autoCallOuts & A32NXRadioAutoCallOutFlags.FiveHundredGlide) > 0}
+                disabled={(autoCallOuts & A32NXRadioAutoCallOutFlags.FiveHundred) === 0}
+                onToggle={() => toggleRadioAcoFlag(A32NXRadioAutoCallOutFlags.FiveHundredGlide)}
+              />
+            </SettingItem>
+          </SettingGroup>
           <SettingItem name="Four Hundred">
             <Toggle
               value={(autoCallOuts & A32NXRadioAutoCallOutFlags.FourHundred) > 0}

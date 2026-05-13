@@ -4045,6 +4045,28 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
   - Right DMC copy of IR3 pitch angle.
   - Arinc429Word<Degrees>
 
+- `L:A32NX_DMC_DH_LEFT`
+  - Left DMC copy of the FM radio minimum
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_DH_RIGHT`
+  - Right DMC copy of the FM radio minimum
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_DISCRETE_WORD_270_LEFT`
+  - The Left DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 20  | Altitude less than hundred feet above baro minimum |
+     | 21  | Altitude below baro minimum |
+
+- `L:A32NX_DMC_DISCRETE_WORD_270_RIGHT`
+  - The Right DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 20  | Altitude less than hundred feet above baro minimum |
+     | 21  | Altitude below baro minimum |
+
 
 ### ECP
 
@@ -4471,14 +4493,6 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 - A32NX_GPWS_FLAPS3
     - Boolean
     - Indicates whether the GPWS LDG FLAP 3 pushbutton is ON
-
-- A32NX_GPWS_GROUND_STATE
-    - Boolean
-    - Indicates whether the GPWS is in ground vs airborne mode
-
-- A32NX_GPWS_APPROACH_STATE
-    - Boolean
-    - Indicates whether the GPWS is in Approach vs Takeoff mode
 
 ## ROW / ROP / OANS (ATA 34)
 

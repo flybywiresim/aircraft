@@ -132,8 +132,9 @@ maintainers to push to pull request branches even when they reside in another us
 
 Branches to be retained on the main repository are:
 
-- `master` - The source of truth and main development branch,
-- release branches (e.g. `v0.12`),
+- `master` - The source of truth and main development branch for aircraft for MSFS2024,
+- `fs2020-master` - The source of truth and main development branch for aircraft for MSFS2020.
+- release branches (e.g. `v2024.1` or `v2020.15`),
 - in special cases some long-running branches requiring collaboration (make a proposal in the #development channel on Discord).
 
 ## HTML Instruments

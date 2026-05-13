@@ -5141,10 +5141,10 @@
                 <NODE_ID>A32NX_PUSH_WARN_R</NODE_ID>
                 <PART_ID>A32NX_PUSH_WARN_R</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_LEAVE_CODE>
                 <!-- 202XP-A via CB 27LP -->
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ1_POWERED>
@@ -5164,10 +5164,10 @@
                 <NODE_ID>A32NX_PUSH_CAUTION_R</NODE_ID>
                 <PART_ID>A32NX_PUSH_CAUTION_R</PART_ID>
                 <LEFT_SINGLE_CODE>
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_LEAVE_CODE>
                 <!-- 202XP-A via CB 27LP -->
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ1_POWERED>

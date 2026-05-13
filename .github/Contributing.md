@@ -74,13 +74,15 @@ If you wish to add a new feature or you spot a bug that you wish to fix, **pleas
 
 The work-flow for submitting a new pull request is designed to be simple, but also to ensure consistency from **all** contributors:
 * Fork the project into your personal space on GitHub.com.
-* Create a new branch (with a clear name of what is being changed).
+* Create a new branch based either on `master` if your changes are for the Microsoft Flight Simulator 2024 version of our aircraft
+or based on `fs2020-master` if your changes are for the Microsoft Flight Simulator 2020 version of our aircraft
+(with a clear name of what is being changed).
 * Add changes to CHANGELOG.md with credits to yourself.
 * Commit your changes.
-* When writing commit messages make sure they are clear about what has been changed.
+* When writing commit messages make sure they are clear about what has been changed, please follow [semantic commit names](https://www.conventionalcommits.org/en/v1.0.0/).
 * Push the commit(s) to your fork.
-* Submit a pull request (PR) to the master branch.
-* The PR title should describe the change that has been made.
+* Submit a pull request (PR) to the `master` branch (for MSFS2024) or to the `fs2020-master` branch (for MSFS2020).
+* The PR title should describe the change that has been made and has to follow [semantic commit names](https://www.conventionalcommits.org/en/v1.0.0/).
 * Follow the PR template and write as much detail as necessary for your changes and include documents/screenshots if needed.
 * Be prepared to answer any questions about your PR when it is reviewed for acceptance.
 
