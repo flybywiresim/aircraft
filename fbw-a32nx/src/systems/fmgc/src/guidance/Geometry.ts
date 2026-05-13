@@ -183,7 +183,7 @@ export class Geometry {
       // When we activate a SEC plan, it's possible that we're putting a FROM leg into the active plan that we've never
       // actually flown. This breaks the geometry if the active leg depends on the FROm leg having been computed before
       const leg = this.legs.get(i);
-      if (i === fromLegIndex && (plan.index === FlightPlanIndex.Active || leg.isComputed)) {
+      if (i === fromLegIndex && (plan.index !== FlightPlanIndex.FirstSecondary || leg.isComputed)) {
         continue;
       }
 
