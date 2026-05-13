@@ -4,7 +4,6 @@ import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_Refuel } from './A32NX_Refuel';
 import { A32NX_Speeds } from './A32NX_Speeds';
 import { A32NX_FADEC } from './A32NX_FADEC';
-import { A32NX_FWC } from './A32NX_FWC';
 import { A32NX_GPWS } from './A32NX_GPWS';
 import { A32NX_SoundManager } from './A32NX_SoundManager';
 import { A32NX_LocalVarUpdater } from './A32NX_LocalVarUpdater';
@@ -34,11 +33,6 @@ export class A32NX_Core {
       name: 'FADEC #2',
       module: new A32NX_FADEC(2),
       updateInterval: 100,
-    },
-    {
-      name: 'FWC',
-      module: new A32NX_FWC(),
-      updateInterval: 50,
     },
     {
       name: 'GPWS',
