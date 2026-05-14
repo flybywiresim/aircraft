@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbstractSubscribable, Consumer, ConsumerSubject, Subscription } from '@microsoft/msfs-sdk';
+import { AbstractSubscribable, Consumer, ConsumerSubject, ReadonlyLifecycle, Subscription } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 export const Arinc429EqualityFunc = (a: Arinc429WordData, b: Arinc429WordData) =>
@@ -151,5 +151,11 @@ export class Arinc429LocalVarConsumerSubject extends AbstractSubscribable<Arinc4
   public destroy(): void {
     this._isAlive = false;
     this.consumerSub?.destroy();
+  }
+
+  /** @inheritdoc */
+  public withLifecycle(lifecycle: ReadonlyLifecycle): this {
+    lifecycle.register(this);
+    return this;
   }
 }
