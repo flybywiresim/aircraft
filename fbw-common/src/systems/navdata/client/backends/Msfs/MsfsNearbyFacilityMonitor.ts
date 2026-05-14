@@ -15,7 +15,6 @@ import {
   JSAirportRequestFlags,
   MsfsFacilityType,
   MsfsIntersectionType,
-  MsfsNearestSearchLegacyResult,
   MsfsNearestSearchStructResult,
   RunwaySurface,
   VorClass,
@@ -270,36 +269,6 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
       // free some refs for gc collection
       this.currentFacilities.length = 0;
       this.facilityCache.destroy();
-    }
-  }
-}
-
-export class Msfs2020NearbyFacilityMonitor extends MsfsNearbyFacilityMonitor {
-  protected override startSession(): Promise<number> {
-    return Coherent.call('START_NEAREST_SEARCH_SESSION', MsfsNearbyFacilityMonitor.mapFacilityType(this.facilityType));
-  }
-
-  protected override hookEventListener(): { clear: typeof EmptyCallback.Void } {
-    return Coherent.on('NearestSearchCompleted', this.onLegacySearchCompleted.bind(this));
-  }
-
-  private onLegacySearchCompleted(result: MsfsNearestSearchLegacyResult): void {
-    if (result.sessionId !== this.sessionId) {
-      return;
-    }
-
-    for (const removed of result.removed) {
-      this.onFacilityRemoved(removed);
-    }
-
-    for (const added of result.added) {
-      this.facilityCache.get(added).then((fac) => {
-        if (fac !== null) {
-          this.onFacilityAdded(fac);
-        } else {
-          console.warn(`MsfsNearbyFacilityMonitor: Could not fetch facility with id '${added}'`);
-        }
-      });
     }
   }
 }

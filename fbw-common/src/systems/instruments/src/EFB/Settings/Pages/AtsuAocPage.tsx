@@ -9,7 +9,6 @@ import {
   usePersistentProperty,
   SENTRY_CONSENT_KEY,
   SentryConsentState,
-  isMsfs2024,
   usePersistentSetting,
   NXDataStoreSettings,
   useSimVar,
@@ -27,7 +26,7 @@ import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src'
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
   const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-  const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+  const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'MSFS');
   const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
@@ -103,13 +102,10 @@ export const AtsuAocPage = () => {
     { name: 'VATSIM', setting: 'VATSIM' },
   ];
 
-  let tafSourceButtons: ButtonType[] = [
+  const tafSourceButtons: ButtonType[] = [
     { name: 'MSFS', setting: 'MSFS' },
     { name: 'NOAA', setting: 'NOAA' },
   ];
-  if (!isMsfs2024()) {
-    tafSourceButtons = tafSourceButtons.slice(1);
-  }
 
   const acarsProviderButtons = [
     { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
