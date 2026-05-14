@@ -111,35 +111,6 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     super(SimVarHandling.simvars, eventBus);
   }
 
-  private connectedCallback(): void {
-    super.subscribe('msfsUtcYear');
-    super.subscribe('msfsUtcMonth');
-    super.subscribe('msfsUtcDayOfMonth');
-    super.subscribe('msfsUtcSeconds');
-    super.subscribe('msfsPresentPositionLatitude');
-    super.subscribe('msfsPresentPositionLongitude');
-    super.subscribe('msfsPresentAltitude');
-    super.subscribe('msfsPresentHeading');
-    super.subscribe('msfsPresentTrack');
-    super.subscribe('msfsComputedAirspeed');
-    super.subscribe('msfsPresentMach');
-    super.subscribe('msfsGroundSpeed');
-    super.subscribe('msfsVerticalSpeed');
-    super.subscribe('msfsAutopilotActive');
-    super.subscribe('msfsAutothrustMode');
-    super.subscribe('msfsAutothrustSelectedMach');
-    super.subscribe('msfsAutothrustSelectedKnots');
-    super.subscribe('msfsWindDirection');
-    super.subscribe('msfsWindSpeed');
-    super.subscribe('msfsStaticAirTemperature');
-    super.subscribe('msfsFlightPhase');
-    super.subscribe('msfsVhf3Powered');
-    super.subscribe('msfsTransponderCode');
-    super.subscribe('msfsCompanyMessageCount');
-    super.subscribe('msfsAtcMessageButtonActive');
-    super.subscribe('msfsAtcMessageButtonPressed');
-  }
-
   public initialize(): void {
     this.datalinkPublisher = this.eventBus.getPublisher<
       AtcMessageButtonBusMessages & ClockDataBusTypes & FmgcDataBusTypes & RmpDataBusTypes & FwcDataBusTypes
@@ -239,8 +210,6 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     this.subscriber
       .on('msfsAtcMessageButtonPressed')
       .handle((pressed: number) => this.datalinkPublisher.pub('atcMessageButtonPressed', pressed !== 0, false, false));
-
-    this.connectedCallback();
   }
 
   public startPublish(): void {
