@@ -38,6 +38,7 @@ module.exports = {
     msfsAvionicsInstrument('OANC'),
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('HUD'),
+    msfsAvionicsInstrument('popup'),
 
     reactInstrument('SD'),
     reactInstrument('DCDU'),
