@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -24,19 +29,79 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     items: [], // TODO
   },
   990900002: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'EXTERNAL LAYER CRACKED', condition: true, sensed: false },
+      { name: 'STRUCTURE NOT AFFECTED', sensed: false, style: ChecklistLineStyle.Green, level: 1 },
+      { name: 'NO LIMITATION', sensed: false, style: ChecklistLineStyle.Green, level: 1 },
+      { name: 'INTERNAL LAYER CRACKED', condition: true, sensed: false },
+      { name: 'MAX FL : 230/MEA-MORA', sensed: false, level: 1 },
+      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 },
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 },
+      { ...CABIN_ALT_TARGET_TABLE_WINDOW_CRACKED },
+      { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
+      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 2 },
+      { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
+      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true, level: 2 },
+    ],
   },
   990900003: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
+      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 1 },
+      { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
+      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true, level: 1 },
+    ],
   },
   990900004: {
-    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING (WIP)',
+    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'ATC', labelNotCompleted: 'NOTIFY', labelCompleted: 'NOTIFIED', sensed: false },
+      { name: 'ATC SQUAWK 7700', labelNotCompleted: 'CONSIDER', sensed: false },
+      { name: 'ATC COM EMER MSG', labelNotCompleted: 'CONSIDER', sensed: false },
+      { name: 'CABIN & CKPT', labelNotCompleted: 'PREPARE', sensed: false },
+      { name: 'JETTISON ARM', labelNotCompleted: 'ON', sensed: true },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'ON', sensed: true },
+      { name: '[MFD SURV] GPWS', labelNotCompleted: 'OFF', sensed: true },
+      { name: '[MFD SURV] TERR SYS', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'SIGNS', labelNotCompleted: 'ON', sensed: true },
+      { name: 'EMER EXIT LT', labelNotCompleted: 'ON', sensed: true },
+      { name: 'COMMERCIAL 1+2', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'DISREGARD NORM C/Ls', sensed: false },
+      { name: 'AT TOP OF DESCENT', condition: true, sensed: false },
+      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 },
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'ZERO', sensed: false, level: 1 },
+      { name: 'FOR APPROACH & LANDING', condition: true, sensed: false },
+      { name: 'FOR DITCHING : KEEP L/G UP', sensed: false, level: 1 },
+      { name: 'BARO REF (IF AVAIL)', labelNotCompleted: 'SET', sensed: false, level: 1 },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'TRIM TK FEED', labelNotCompleted: 'ISOL', sensed: true, level: 1 },
+      { name: 'SLATS / FLAPS', labelNotCompleted: 'MAX AVAIL', sensed: false, level: 1 },
+      { name: 'TRGT SPEED : VLS UNTIL FLARE', sensed: false, level: 1 },
+      { name: 'FOR FLARE : OPT PITCH ATT 8° & MIN V/S', sensed: false, level: 1 },
+      { name: 'ELT', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'AT 2000 FT AGL', condition: true, sensed: false },
+      { name: 'ALL BLEEDS (ENG & APU)', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'CABIN CREW', labelNotCompleted: 'ALERT FOR DITCHING', sensed: false, level: 1 },
+      { name: 'DITCHING P/B', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'AT 500 FT AGL', condition: true, sensed: false },
+      { name: 'BRACE FOR IMPACT', labelNotCompleted: 'ORDER', sensed: false, level: 1 },
+      { name: 'START FLARE AT 50FT', sensed: false, level: 1 },
+      { name: 'JUST BEFORE DITCHING', condition: true, sensed: false },
+      { name: 'ALL ENGINE MASTERS', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'APU MASTER SW', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'AFTER DITCHING', condition: true, sensed: false },
+      { name: 'ALL FIRE P/Bs (ENG & APU)', labelNotCompleted: 'PUSH', sensed: true, level: 1 },
+      { name: 'ALL AGENTS (ENG & APU)', labelNotCompleted: 'DISCH', sensed: true, level: 1 },
+      { name: 'ATC', labelNotCompleted: 'NOTIFY', labelCompleted: 'NOTIFIED', sensed: false },
+      { name: 'EVAC (PA)', labelNotCompleted: 'ANNOUNCE', labelCompleted: 'ANNOUNCED', sensed: true, level: 1 },
+      { name: 'EVAC COMMAND', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'ALL 4 BATs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+    ],
   },
   990900005: {
     title: '\x1b<2m\x1b4mMISC\x1bm EMER DESCENT',
@@ -89,14 +154,67 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
   990900007: {
-    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING (WIP)',
+    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'ATC', labelNotCompleted: 'NOTIFY', labelCompleted: 'NOTIFIED', sensed: false },
+      { name: 'ATC SQUAWK 7700', labelNotCompleted: 'CONSIDER', sensed: false },
+      { name: 'ATC COM EMER MSG', labelNotCompleted: 'CONSIDER', sensed: false },
+      { name: 'CABIN & CKPT', labelNotCompleted: 'PREPARE', sensed: false },
+      { name: 'JETTISON ARM', labelNotCompleted: 'ON', sensed: true },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'ON', sensed: true },
+      { name: '[MFD SURV] GPWS SYS', labelNotCompleted: 'OFF', sensed: true },
+      { name: '[MFD SURV] TERR SYS', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'SIGNS', labelNotCompleted: 'ON', sensed: true },
+      { name: 'EMER EXIT LT', labelNotCompleted: 'ON', sensed: true },
+      { name: 'COMMERCIAL 1+2', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'DISREGARD NORM C/Ls', sensed: false },
+      { name: 'AT TOP OF DESCENT', condition: true, sensed: false },
+      { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 },
+      { name: 'CABIN ALT TRGT', labelNotCompleted: 'LDG ELEVN', sensed: false, level: 1 },
+      { name: 'FOR APPROACH & LANDING', condition: true, sensed: false },
+      { name: 'BARO REF (IF AVAIL)', labelNotCompleted: 'SET', sensed: false, level: 1 },
+      { name: 'RAM AIR', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'TRIM TK FEED', labelNotCompleted: 'ISOL', sensed: true, level: 1 },
+      { name: 'L/G LEVER', labelNotCompleted: 'DOWN', sensed: true, level: 1 },
+      { name: 'SLATS / FLAPS', labelNotCompleted: 'MAX AVAIL', sensed: false, level: 1 },
+      { name: 'A/THR', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 },
+      { name: 'GND SPLRs', labelNotCompleted: 'ARM', sensed: true, level: 1 },
+      { name: 'ELT', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'AT 2000 FT AGL', condition: true, sensed: false },
+      { name: 'CABIN CREW', labelNotCompleted: 'ADVISE FOR LANDING', sensed: false, level: 1 },
+      { name: 'AT 500 FT AGL', condition: true, sensed: false },
+      { name: 'BRACE FOR IMPACT', labelNotCompleted: 'ORDER', sensed: false, level: 1 },
+      { name: 'AT TOUCHDOWN', condition: true, sensed: false },
+      { name: 'ALL ENGINE MASTERS', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'APU MASTER SW', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'WHEN ACFT STOPPED', condition: true, sensed: false },
+      { name: 'PARK BRK', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'ALL FIRE P/Bs (ENG & APU)', labelNotCompleted: 'PUSH', sensed: true, level: 1 },
+      { name: 'ALL AGENTS (ENG & APU)', labelNotCompleted: 'DISCH', sensed: true, level: 1 },
+      { name: 'EVAC RQRD', condition: true, sensed: false }, // should it be level 2?
+      { name: 'EVAC (PA)', labelNotCompleted: 'ANNOUNCE', labelCompleted: 'ANNOUNCED', sensed: true, level: 1 },
+      { name: 'EVAC COMMAND', labelNotCompleted: 'ON', sensed: true, level: 1 },
+      { name: 'ALL 4 BATs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+    ],
   },
   990900008: {
-    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'AFFECTED SIDE LAPTOP', labelNotCompleted: 'UNSTOW & VERIFY', sensed: false },
+      { name: 'LAPTOP NOT AFFECTED', condition: true, sensed: false },
+      { name: 'OIT (AFFECTED)', labelNotCompleted: 'OFF 5 S THEN ON', sensed: false, level: 1 },
+      { name: 'NOT SUCCESSFUL AFTER 4 MIN', condition: true, sensed: false, level: 1 },
+      { name: 'USE LAPTOP AS RQRD', sensed: false, level: 2 },
+      { name: 'LAPTOP AFFECTED', condition: true, sensed: false },
+      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'OFF', sensed: false, level: 1 },
+      { name: 'AFTER 30 S', condition: true, sensed: false, level: 1 },
+      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'ON', sensed: false, level: 2 },
+      { name: 'NOT SUCCESSFUL AFTER 5 MIN', condition: true, sensed: false, level: 2 },
+      { name: 'USE BACKUP AS RQRD', sensed: false, level: 3 },
+    ],
   },
   990900009: {
     title: '\x1b<4m\x1b4mMISC\x1bm OVERWEIGHT LDG',
@@ -104,19 +222,11 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'JETTISON PROC', labelNotCompleted: 'CONSIDER', sensed: false },
       { name: 'LDG DIST AFFECTED', sensed: false },
-      {
-        name: 'FOR APPROACH :',
-        style: ChecklistLineStyle.CenteredSubHeadline,
-        sensed: true,
-      },
+      { name: 'FOR APPROACH :', style: ChecklistLineStyle.CenteredSubHeadline, sensed: true },
       { name: 'PACK 1+2', labelNotCompleted: 'OFF OR ON APU BLEED', sensed: true },
       { name: 'IF LDG CONF 3:USE CONF 1 FOR GO AROUND', sensed: false },
       { name: 'SPEED AT RUNWAY THRESHOLD : VLS', sensed: false },
-      {
-        name: 'FOR LANDING :',
-        style: ChecklistLineStyle.CenteredSubHeadline,
-        sensed: true,
-      },
+      { name: 'FOR LANDING :', style: ChecklistLineStyle.CenteredSubHeadline, sensed: true },
       { name: 'USE MAX REVERSE ASAP', sensed: false },
       { name: 'APPLY BRAKES AS NECESSARY', sensed: false },
     ],
@@ -130,5 +240,19 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mMISC\x1bm VOLCANIC ASH ENCOUNTER (WIP)',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta80: { [n: number]: DeferredProcedure } = {
+  800700001: {
+    fromAbnormalProcs: ['990900002'],
+    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        labelNotCompleted: 'AUTO',
+        sensed: true,
+      },
+    ],
   },
 };
