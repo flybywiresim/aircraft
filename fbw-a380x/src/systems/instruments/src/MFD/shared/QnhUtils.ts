@@ -3,10 +3,8 @@
 
 import { Units } from '@flybywiresim/fbw-sdk';
 
-const MIN_QNH_HPA = 745;
-
 export function isQnhInHg(qnh: number): boolean {
-  return qnh < MIN_QNH_HPA;
+  return qnh < 100;
 }
 
 export function qnhToMillibar(qnh: number): number {
