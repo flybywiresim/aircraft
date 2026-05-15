@@ -90,6 +90,11 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private wasSecPreviouslyActive = false;
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
+  private readonly draftWinds = MappedSubject.create(
+    ([draftExists, loadedFpIndex]) => draftExists && loadedFpIndex === FlightPlanIndex.Active,
+    this.props.fmcService.master.getDraftWindsExist(),
+    this.loadedFlightPlanIndex,
+  );
   private readonly displayedWindHeader = this.selectedSubPage.map((menu) => {
     switch (menu) {
       case WindSubPageMenu.Climb:
@@ -372,8 +377,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     const fp = hasFP ? this.props.fmcService.master.flightPlanInterface.get(loadedFlightPlanIndex) : null;
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
-    this.uplinkAvailableForPlan.set(fp?.pendingWindUplink.isWindUplinkReadyToInsert() ?? false);
-
     const subPage = this.selectedSubPage.get();
     if (subPage === WindSubPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
@@ -459,7 +462,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       );
       this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
       const hasAlternate = fp?.alternateDestinationAirport !== undefined;
-      const alternateWind = fp?.performanceData.alternateWind.get() ?? null;
+      const alternateWind = this.props.flightPlanInterface.getAlternateWind(loadedFlightPlanIndex);
       if (!hasAlternate) {
         this.alternateWindDirection.set(null);
         this.alternateWindSpeed.set(null);
@@ -541,8 +544,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       ...this.cruiseWindRowAltitudeIsInactive,
       ...this.cruiseWindRowFlightLevelIsEnteredByPilot,
       this.selectNextDisabled,
-      this.props.fmcService.master.getDraftWindsExist().sub(() => {
-        this.updatePage();
+      this.draftWinds.sub((v) => {
+        if (v) {
+          this.updatePage();
+        }
       }),
     );
     this.automaticallySelectTab();

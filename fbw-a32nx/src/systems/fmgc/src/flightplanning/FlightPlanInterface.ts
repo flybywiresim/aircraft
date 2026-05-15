@@ -538,6 +538,12 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   getDescentWindEntries(planIndex: number): FlightPlanWindEntry[];
 
   /**
+   * Get the alternate wind for a flight plan. If it is the active and a draft entry exists, the draft entry will be returned.
+   * @param planIndex plan index to get the alternate wind for
+   */
+  getAlternateWind(planIndex: number): WindVector | null;
+
+  /**
    * Indicates whether there are draft wind entries that have not yet been inserted into the active flight plan.
    */
   hasDraftWinds(): boolean;

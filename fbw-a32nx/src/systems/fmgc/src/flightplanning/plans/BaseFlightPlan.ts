@@ -1511,7 +1511,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   async addOrEditManualHold(
     atIndex: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
   ): Promise<number> {
     const targetLeg = this.elementAt(atIndex);

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -653,7 +652,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     constraint?: AltitudeConstraint,
-    planIndex?: FlightPlanIndex,
+    planIndex = FlightPlanIndex.Active,
     alternate?: boolean,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
@@ -669,8 +668,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     speed?: number,
-    planIndex?: FlightPlanIndex,
-    alternate?: boolean,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
@@ -1006,8 +1005,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async deleteAllClimbWindEntries() {
     this.deleteClimbWindEntries(FlightPlanIndex.Active);
 
-    this.draftClimbWindExists = false;
-    this.draftClimbWindEntries.length = 0;
+    if (this.config.DRAFT_ON_WIND_EDIT) {
+      this.draftClimbWindExists = false;
+      this.draftClimbWindEntries!.length = 0;
+    }
 
     for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const sec = this.secondary(i);
@@ -1022,7 +1023,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
     if (planIndex === FlightPlanIndex.Active && this.config.DRAFT_ON_WIND_EDIT) {
       this.draftClimbWindExists = false;
-      this.draftClimbWindEntries.length = 0;
+      this.draftClimbWindEntries!.length = 0;
     }
 
     return plan.deleteClimbWindEntries();
@@ -1032,7 +1033,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
     if (planIndex === FlightPlanIndex.Active && this.config.DRAFT_ON_WIND_EDIT) {
       this.draftDescentWindExists = false;
-      this.draftDescentWindEntries.length = 0;
+      this.draftDescentWindEntries!.length = 0;
     }
 
     return plan.deleteDescentWindEntries();
@@ -1043,7 +1044,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     if (this.config.DRAFT_ON_WIND_EDIT && planIndex === FlightPlanIndex.Active) {
       this.alternateDraftWindExists = true;
-      Vec2Math.copy(entry, this.alternateDraftWind);
+      if (entry !== null) {
+        Vec2Math.copy(entry, this.alternateDraftWind!);
+      } else {
+        this.alternateDraftWindExists = false;
+      }
+      return Promise.resolve();
     } else {
       return plan.setAlternateWind(entry);
     }
@@ -1071,6 +1077,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const draftEntries =
       planIndex === FlightPlanIndex.Active && this.draftDescentWindExists ? this.draftDescentWindEntries : undefined;
     return draftEntries ?? plan.performanceData.descentWindEntries.get();
+  }
+
+  getAlternateWind(planIndex: number): WindVector | null {
+    const plan = this.flightPlanManager.get(planIndex);
+    const draft =
+      planIndex === FlightPlanIndex.Active && this.alternateDraftWindExists ? this.alternateDraftWind : undefined;
+    return draft ?? plan.performanceData.alternateWind.get();
   }
 
   hasDraftWinds(): boolean {
@@ -1177,15 +1190,15 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       if (this.draftClimbWindExists) {
         plan.setPerformanceData(
           'climbWindEntries',
-          this.draftClimbWindEntries.sort((a, b) => b.altitude - a.altitude),
+          this.draftClimbWindEntries!.sort((a, b) => b.altitude - a.altitude),
         );
       }
 
       if (this.draftCruiseWindExists) {
         for (let i = plan.activeLegIndex; i < plan.firstMissedApproachLegIndex; i++) {
           const leg = plan.maybeElementAt(i);
-          if (isLeg(leg) && this.draftCruiseWindEntries.has(i)) {
-            const draftEntries = this.draftCruiseWindEntries.get(i);
+          if (isLeg(leg) && this.draftCruiseWindEntries!.has(i)) {
+            const draftEntries = this.draftCruiseWindEntries!.get(i);
             if (draftEntries) {
               leg.cruiseWindEntries = draftEntries.map((entry) => FlightPlanService.cloneWindEntry(entry));
             }
@@ -1195,21 +1208,21 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       }
 
       if (this.draftDescentWindExists) {
-        for (let i = 0; i < this.draftDescentWindEntries.length; i++) {
+        for (let i = 0; i < this.draftDescentWindEntries!.length; i++) {
           plan.parseGroundWindEntryAndSetTwrWind(
-            this.draftDescentWindEntries[i],
+            this.draftDescentWindEntries![i],
             true,
             plan.destinationAirport?.location.alt ?? 0,
           );
         }
         plan.setPerformanceData(
           'descentWindEntries',
-          this.draftDescentWindEntries.sort((a, b) => b.altitude - a.altitude),
+          this.draftDescentWindEntries!.sort((a, b) => b.altitude - a.altitude),
         );
       }
 
       if (this.alternateDraftWindExists) {
-        plan.setAlternateWind(this.alternateDraftWind);
+        plan.setAlternateWind(this.alternateDraftWind!);
       }
 
       if (addedDueToTmpy) {
