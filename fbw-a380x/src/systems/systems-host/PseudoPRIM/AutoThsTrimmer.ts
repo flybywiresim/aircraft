@@ -100,16 +100,15 @@ export class AutoThsTrimmer implements Instrument {
 
     this.oneEngineStartedAndHydPressPulse.write(
       this.engineState.some((es) => es.get() === 1) && (this.greenPressurized.get() || this.yellowPressurized.get()),
-      this.instrument.deltaTime,
     );
 
     const groundSpoilersArmed =
       this.fcdcDiscreteWord4[0].get().bitValueOr(27, false) || this.fcdcDiscreteWord4[1].get().bitValueOr(27, false);
-    this.groundSpoilersArmedPulse.write(groundSpoilersArmed, this.instrument.deltaTime);
+    this.groundSpoilersArmedPulse.write(groundSpoilersArmed);
 
-    this.flapsSlatsMovedPulse.write(this.previousFlapsLeverPos !== this.flapsLever.get(), this.instrument.deltaTime);
+    this.flapsSlatsMovedPulse.write(this.previousFlapsLeverPos !== this.flapsLever.get());
     this.previousFlapsLeverPos = this.flapsLever.get();
-    this.groundSpoilersDisarmedPulse.write(groundSpoilersArmed, this.instrument.deltaTime);
+    this.groundSpoilersDisarmedPulse.write(groundSpoilersArmed);
     const atLeastThreeThrustLeversOutOfIdle = this.thrustLever.filter((tl) => tl.get() > 5).length > 2;
 
     const startupCondition =

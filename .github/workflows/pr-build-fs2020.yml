@@ -1,4 +1,4 @@
-name: PR Tests & Build
+name: PR Tests & Build (FS2020)
 on:
   pull_request:
     types:
@@ -133,6 +133,7 @@ jobs:
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
       - name: Build Fragmenter modules
+        if: github.event.pull_request.auto_merge == false
         run: |
           df -h
           node ./scripts/fragment_a32nx.js

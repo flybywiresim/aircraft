@@ -173,7 +173,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     const targetLeg = this.legElementAt(targetLegIndex);
     const targetLegFix = targetLeg.terminationWaypoint();
-    if (!targetLeg.isXF() || !targetLegFix) {
+    if ((!targetLeg.isXF() && !targetLeg.isHX()) || !targetLegFix) {
       throw new Error('[FPM] Cannot direct to a non-XF leg');
     }
 
@@ -912,7 +912,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   hasWindEntries() {
     return (
-      this.performanceData.pilotTripWind.get() !== null ||
       this.performanceData.climbWindEntries.get().length > 0 ||
       this.performanceData.descentWindEntries.get().length > 0 ||
       this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)

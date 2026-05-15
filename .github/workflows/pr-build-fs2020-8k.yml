@@ -1,4 +1,4 @@
-name: PR Tests & Build (8K)
+name: PR Tests & Build (FS2020 | 8K)
 on:
   pull_request:
     types:

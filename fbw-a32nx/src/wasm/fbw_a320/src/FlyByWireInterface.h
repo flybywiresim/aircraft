@@ -662,6 +662,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFcuHealthy;
 
+  std::unique_ptr<LocalVariable> idEcuStatusWord3[2];
   std::unique_ptr<LocalVariable> idEcuMaintenanceWord6[2];
 
   void loadConfiguration();

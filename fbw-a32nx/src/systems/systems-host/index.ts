@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,11 +9,11 @@ import {
   EventBus,
   HEventPublisher,
   InstrumentBackplane,
+  MathUtils,
   StallWarningPublisher,
 } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
-import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
@@ -24,6 +24,8 @@ import { Ecp } from './systems/ECP/Ecp';
 import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 import { FakeDmc } from './systems/ECP/FakeDmc';
+import { FwsManager } from './systems/FWC/FwsManager';
+import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -48,10 +50,11 @@ class SystemsHost extends BaseInstrument {
   private readonly dmcBusPublisher = new A32NXDisplayManagementPublisher(this.bus);
   private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly facBusPublisher = new A32NXFacBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly pseudoFwc = new PseudoFWC(this.bus, this);
+  private readonly fwc = new FwsManager(this.bus);
 
   constructor() {
     super();
@@ -73,18 +76,19 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
     this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('FacBus', this.facBusPublisher);
 
-    this.pseudoFwc.init();
+    this.fwc.init();
     let lastUpdateTime: number;
     this.bus
       .getSubscriber<ClockEvents>()
       .on('simTimeHiFreq')
       .atFrequency(50)
       .handle((now) => {
-        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        const dt = lastUpdateTime === undefined ? 0 : MathUtils.clamp(now - lastUpdateTime, 0, 1000);
         lastUpdateTime = now;
 
-        this.pseudoFwc.update(dt);
+        this.fwc.update(dt);
       });
   }
 
