@@ -10,7 +10,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
-## 0.15.0
+## 2024.1.0
 
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
 1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
@@ -125,6 +125,12 @@
 1. [A32NX/FE] Add pitch and low energy warnings, improve VCTrend computation - @lukecologne (luke)
 1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and APU GEN fault light - @FozzieHi (fozzie)
 1. [A32NX/FWS] Fix master warning / caution lights sometimes not extinguishing properly - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where waypoints around lateral discontinuities and at enroute/procedure boundaries were sometimes not sent to the ND - @tracernz (Mike)
+1. [FMS] Fixed an issue where the WPT overlay on the ND showed terminal waypoints in enroute range - @tracernz (Mike)
+1. [A32NX/SD] Add abnormal pressurisation indications to CRZ SD page - @Jonny23787 (Jonathan)
+1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99), @lukecologne (luke)
+1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
+1. [A32NX] Split navigation lights into two separate systems - @tracernz (Mike)
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
