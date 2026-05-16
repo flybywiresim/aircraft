@@ -1,4 +1,4 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useState } from 'react';
@@ -11,6 +11,7 @@ import {
   parseMetar,
   ConfigWeatherMap,
   MathUtils,
+  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { CloudArrowDown } from 'react-bootstrap-icons';
@@ -68,7 +69,7 @@ export const TemperatureCorrectionWidget = () => {
   };
 
   const syncValuesWithApiMetar = async (): Promise<void> => {
-    if (!isValidIcao(icao)) {
+    if (!icao || !isValidIcao(icao)) {
       return;
     }
 
@@ -83,7 +84,7 @@ export const TemperatureCorrectionWidget = () => {
           throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(metar.metarString);
-      } catch (err) {
+      } catch (err: any) {
         toast.error(err.message);
       }
     } else {
@@ -93,7 +94,7 @@ export const TemperatureCorrectionWidget = () => {
           throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(response.metar);
-      } catch (err) {
+      } catch (err: any) {
         toast.error(err.message);
       }
     }
@@ -163,7 +164,7 @@ export const TemperatureCorrectionWidget = () => {
 
   const isAutoFillIcaoValid = () => {
     if (autoFillSource === 'METAR') {
-      return isValidIcao(icao);
+      return icao && isValidIcao(icao);
     }
     return isValidIcao(ofpArrivingAirport);
   };
@@ -252,7 +253,7 @@ export const TemperatureCorrectionWidget = () => {
                       { value: 'OFP', displayValue: 'OFP' },
                       { value: 'METAR', displayValue: 'METAR' },
                     ]}
-                    onChange={(value: 'METAR' | 'OFP') => setAutoFillSource(value)}
+                    onChange={(value) => setAutoFillSource(value as 'METAR' | 'OFP')}
                   />
                 </div>
               </div>
@@ -304,7 +305,7 @@ export const TemperatureCorrectionWidget = () => {
                         { value: 'C', displayValue: 'C' },
                         { value: 'F', displayValue: 'F' },
                       ]}
-                      onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
+                      onChange={(newValue) => setTemperatureUnit(newValue as 'C' | 'F')}
                     />
                   </div>
                 </Label>
