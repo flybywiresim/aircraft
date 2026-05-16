@@ -1467,7 +1467,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
             <Button
               label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
-              buttonStyle="margin-right: 5px; width:150px;"
+              buttonStyle="margin-right: 61px; width:125px;"
               visible={this.returnButtonVisible}
             />
             <CpnyWindRequestButton

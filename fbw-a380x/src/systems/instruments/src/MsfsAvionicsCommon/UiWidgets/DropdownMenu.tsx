@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   MutableSubscribable,
   Subject,
   Subscribable,
@@ -58,21 +59,29 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
-
-  private readonly dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
-
   private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly dropdownIsOpened = Subject.create(false);
+
+  private readonly dropdownMenuDisplay = this.dropdownIsOpened.map((opened) => (opened ? 'block' : 'none'));
 
   private readonly inputFieldRef = FSComponent.createRef<InputField<string>>();
 
   private readonly inputFieldValue = Subject.create<string | null>('');
 
-  private readonly dropdownArrowFill = (this.props.disabled ?? Subject.create(false)).map((isDisabled) =>
-    isDisabled ? 'gray' : 'white',
+  private readonly inactive = SubscribableUtils.toSubscribable(this.props.inactive ?? Subject.create(false), true);
+
+  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(false), true);
+
+  private readonly tmpyActive = SubscribableUtils.toSubscribable(this.props.tmpyActive ?? Subject.create(false), true);
+
+  private readonly disabledWhenActive = MappedSubject.create(
+    ([inactive, disabled]) => !inactive && disabled,
+    this.inactive,
+    this.disabled,
   );
+
+  private readonly dropdownArrowFill = this.disabled.map((isDisabled) => (isDisabled ? 'gray' : 'white'));
 
   private freeTextEntered = false;
 
@@ -82,13 +91,13 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private onDropdownOpenedCallback: (() => void | undefined) | undefined = undefined;
 
-  private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(
+  private readonly alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(
     this.props.alignLabels ?? 'center',
     true,
   );
 
   private onClick(i: number) {
-    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
+    if (!this.inactive.get() && !this.disabled.get()) {
       this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
@@ -101,7 +110,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
+    if (!this.inactive.get() && !this.disabled.get()) {
       let error = false;
 
       if (this.props.keyboardEntryAllowed || this.props.freeTextAllowed) {
@@ -120,7 +129,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }
       }
 
-      this.dropdownMenuRef.instance.style.display = 'none';
       this.freeTextEntered = true;
       this.inputFieldValue.set(error ? this.props.values.get(this.props.selectedIndex.get() ?? 0) : text);
       this.dropdownIsOpened.set(false);
@@ -148,16 +156,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    if (this.props.inactive === undefined) {
-      this.props.inactive = Subject.create(false);
-    }
-    if (this.props.tmpyActive === undefined) {
-      this.props.tmpyActive = Subject.create(false);
-    }
-    if (this.props.disabled === undefined) {
-      this.props.disabled = Subject.create(false);
-    }
 
     this.subs.push(
       this.renderedDropdownOptions.sub((_, __, ___, array) => {
@@ -220,8 +218,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     this.subs.push(
       this.dropdownIsOpened.sub((opened) => {
-        this.dropdownMenuRef.instance.style.display = opened ? 'block' : 'none';
-
         this.onDropdownOpenedCallback?.();
         this.onDropdownOpenedCallback = undefined;
 
@@ -237,34 +233,12 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       }),
     );
 
-    this.subs.push(
-      this.props.inactive.sub((val) => {
-        if (val) {
-          this.dropdownSelectorRef.getOrDefault()?.classList.add('inactive');
-          this.dropdownArrowRef.getOrDefault()?.classList.add('inactive');
-        } else {
-          this.dropdownSelectorRef.getOrDefault()?.classList.remove('inactive');
-          this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
-        }
-      }, true),
-      this.dropdownArrowFill,
-      this.props.disabled.sub((val) => {
-        if (!this.props.inactive?.get()) {
-          if (val) {
-            this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
-            this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
-          } else {
-            this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
-            this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
-          }
-        }
-      }, true),
-    );
+    this.subs.push(this.dropdownArrowFill, this.disabledWhenActive);
     // TODO add KCCU events
   }
 
   private onOpenCloseClick() {
-    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
+    if (!this.inactive.get() && !this.disabled.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
   }
@@ -313,10 +287,20 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   render(): VNode {
     return (
       <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
-        <div ref={this.dropdownSelectorRef} class="mfd-dropdown-outer">
+        <div
+          ref={this.dropdownSelectorRef}
+          class={{
+            'mfd-dropdown-outer': true,
+            inactive: this.inactive,
+            disabled: this.disabledWhenActive,
+          }}
+        >
           <div
-            ref={this.dropdownInnerRef}
-            class="mfd-dropdown-inner"
+            class={{
+              'mfd-dropdown-inner': true,
+              inactive: this.inactive,
+              disabled: this.disabledWhenActive,
+            }}
             style={`justify-content: ${this.props.alignLabels};`}
           >
             <InputField<string>
@@ -328,27 +312,29 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               freeText={this.props.freeTextAllowed}
               onModified={(text) => this.onFieldSubmit(text ?? '')}
               onInput={(text) => this.onFieldChanged(text)}
-              inactive={this.props.inactive}
-              disabled={this.props.disabled}
+              inactive={this.inactive}
+              disabled={this.disabled}
               handleFocusBlurExternally
-              tmpyActive={this.props.tmpyActive}
+              tmpyActive={this.tmpyActive}
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
               errorHandler={() => {}}
               fixedValuesDropDown={!this.props.keyboardEntryAllowed && !this.props.freeTextAllowed}
             />
           </div>
-          <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">
+          <div
+            class={{
+              'mfd-dropdown-arrow': true,
+              inactive: this.inactive,
+              disabled: this.disabledWhenActive,
+            }}
+          >
             <svg height="15" width="15">
               <polygon points="0,0 15,0 7.5,15" style={{ fill: this.dropdownArrowFill }} />
             </svg>
           </div>
         </div>
-        <div
-          ref={this.dropdownMenuRef}
-          class="mfd-dropdown-menu"
-          style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}
-        />
+        <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={{ display: this.dropdownMenuDisplay }} />
       </div>
     );
   }
