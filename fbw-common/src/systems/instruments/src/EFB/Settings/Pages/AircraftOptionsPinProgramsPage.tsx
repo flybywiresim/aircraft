@@ -37,7 +37,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
   const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
   const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
-  const [airbusTestMode, setAirbusTestMode] = usePersistentSetting('CONFIG_A32NX_AIRBUS_TEST_MODE');
+  const [airbusTestMode, setAirbusTestMode] = usePersistentSetting('CONFIG_AIRBUS_TEST_MODE');
 
   const handleSetThrustReductionAlt = (value: string) => {
     setThrustReductionHeightSetting(value);

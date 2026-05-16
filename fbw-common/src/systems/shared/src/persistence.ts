@@ -17,7 +17,7 @@ export interface NXDataStoreSettings {
 
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
 
-  CONFIG_A32NX_AIRBUS_TEST_MODE: boolean;
+  CONFIG_AIRBUS_TEST_MODE: boolean;
 
   CONFIG_USING_METRIC_UNIT: boolean;
 }
@@ -31,7 +31,7 @@ export type LegacyDataStoreSettingKey<k extends string = string> = k &
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
-    CONFIG_A32NX_AIRBUS_TEST_MODE: false,
+    CONFIG_AIRBUS_TEST_MODE: false,
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',

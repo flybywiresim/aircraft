@@ -1780,7 +1780,7 @@ export class PseudoFWC {
     this.fwcOut125.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
-    NXDataStore.getSetting('CONFIG_A32NX_AIRBUS_TEST_MODE').sub(
+    NXDataStore.getSetting('CONFIG_AIRBUS_TEST_MODE').sub(
       (airbusTestMode) => this.airbusTestMode.set(airbusTestMode),
       true,
     );

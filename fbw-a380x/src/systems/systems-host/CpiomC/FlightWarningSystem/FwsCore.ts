@@ -324,8 +324,13 @@ export class FwsCore {
 
   public readonly ecamEwdShowFailurePendingIndication = Subject.create(false);
 
+  public readonly fwc1Out125 = Arinc429RegisterSubject.createEmpty();
+  public readonly fwc2Out125 = Arinc429RegisterSubject.createEmpty();
+
   public readonly fwc1Out126 = Arinc429RegisterSubject.createEmpty();
   public readonly fwc2Out126 = Arinc429RegisterSubject.createEmpty();
+
+  private readonly airbusTestMode = Subject.create(false);
 
   public readonly approachAutoDisplayQnhSetPulseNode = new NXLogicPulseNode(true);
   public readonly approachAutoDisplaySlatsExtendedPulseNode = new NXLogicPulseNode(true);
@@ -2441,6 +2446,13 @@ export class FwsCore {
     );
 
     this.subs.push(
+      NXDataStore.getSetting('CONFIG_AIRBUS_TEST_MODE').sub(
+        (airbusTestMode) => this.airbusTestMode.set(airbusTestMode),
+        true,
+      ),
+    );
+
+    this.subs.push(
       this.limitationsAllPhasesKeys.sub((v) => this.publisher.pub('fws_limitations_all_phases', v, true)),
       this.limitationsApprLdgKeys.sub((v) => this.publisher.pub('fws_limitations_appr_ldg', v, true)),
       this.informationKeys.sub((v) => this.publisher.pub('fws_information', v, true)),
@@ -2488,6 +2500,10 @@ export class FwsCore {
     );
 
     this.subs.push(
+      this.airbusTestMode.sub((v) => {
+        this.fwc1Out125.setBitValue(11, v);
+        this.fwc2Out125.setBitValue(11, v);
+      }, true),
       this.stallWarning.sub((v) => {
         this.fwc1Out126.setBitValue(17, v);
         this.fwc2Out126.setBitValue(17, v);
@@ -2504,27 +2520,23 @@ export class FwsCore {
         ([fws1Failed, startupCompleted]) => !fws1Failed && startupCompleted,
         this.fws1Failed,
         this.startupCompleted,
-      ).sub(
-        (v) =>
-          this.fwc1Out126.setSsm(
-            v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
-          ),
-        true,
-      ),
+      ).sub((v) => {
+        this.fwc1Out125.setSsm(v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning);
+        this.fwc1Out126.setSsm(v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning);
+      }, true),
       MappedSubject.create(
         ([fws2Failed, startupCompleted]) => !fws2Failed && startupCompleted,
         this.fws2Failed,
         this.startupCompleted,
-      ).sub(
-        (v) =>
-          this.fwc2Out126.setSsm(
-            v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
-          ),
-        true,
-      ),
+      ).sub((v) => {
+        this.fwc2Out125.setSsm(v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning);
+        this.fwc2Out126.setSsm(v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning);
+      }, true),
     );
 
     this.subs.push(
+      this.fwc1Out125.sub((v) => v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_125'), true),
+      this.fwc2Out125.sub((v) => v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_125'), true),
       this.fwc1Out126.sub((v) => v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126'), true),
       this.fwc2Out126.sub((v) => v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126'), true),
     );
@@ -6077,6 +6089,8 @@ export class FwsCore {
     SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, false);
     const ar = Arinc429Register.empty();
     ar.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    ar.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_125');
+    ar.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_125');
     ar.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
     ar.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126');
 
