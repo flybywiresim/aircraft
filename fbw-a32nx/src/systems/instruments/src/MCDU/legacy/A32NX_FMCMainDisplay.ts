@@ -5658,7 +5658,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
         );
 
-        const shouldInsertDirectly = !this.isAnEngineOn() && !plan.hasWindEntries();
+        const isTripWindPilotEntered = plan.performanceData.pilotTripWind.get() !== null;
+        const shouldInsertDirectly = !this.isAnEngineOn() && !plan.hasWindEntries() && !isTripWindPilotEntered;
         if (!shouldInsertDirectly) {
           if (this.flightPlanService.hasTemporary) {
             this.addMessageToQueue(NXSystemMessages.windTempUplkPending);

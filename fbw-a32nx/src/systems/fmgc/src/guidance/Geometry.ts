@@ -356,7 +356,11 @@ export class Geometry {
     const element = plan.legElementAt(index);
 
     // Only copy predictions from geometry to calculated if the leg is not using copied predictions (copied from primary to SEC)
-    if (element.calculated && !BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+    if (!BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+      if (!element.calculated) {
+        this.initializeCalculatedData(element, leg);
+      }
+
       element.calculated.path.length = 0;
 
       if (inboundTransition) {
