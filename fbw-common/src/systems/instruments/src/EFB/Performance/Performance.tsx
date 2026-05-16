@@ -11,7 +11,7 @@ import { LandingWidget } from './Widgets/LandingWidget';
 import { TakeoffWidget } from './Widgets/TakeoffWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 import { AircraftContext } from '../AircraftContext';
-import { TemperatureCorrectionWidget } from 'instruments/src/EFB/Performance/Widgets/TemperatureCorrectionWidget';
+import { TemperatureCorrectionWidget } from './Widgets/TemperatureCorrectionWidget';
 
 export const Performance = () => {
   const calculators = useContext(AircraftContext).performanceCalculators;
