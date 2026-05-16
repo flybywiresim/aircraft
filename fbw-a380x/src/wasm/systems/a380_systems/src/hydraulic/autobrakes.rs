@@ -635,13 +635,14 @@ struct AutobrakeRunwayOverrunProtection {
     is_actively_braking: bool,
 
     is_any_autobrake_active: bool,
-
+    is_rev_thrust_selected: bool,
     status_word: Arinc429Word<u32>,
 
     row_rop_lost: bool,
 }
 impl AutobrakeRunwayOverrunProtection {
     const MIN_ARMING_SPEED_MS2: f64 = 10.28;
+    const MAX_REVERSE_REQUEST_SPEED_KTS: f64 = 80.0;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -665,6 +666,7 @@ impl AutobrakeRunwayOverrunProtection {
             is_actively_braking: false,
 
             is_any_autobrake_active: false,
+            is_rev_thrust_selected: false,
 
             status_word: Arinc429Word::new(0, SignStatus::NormalOperation),
 
@@ -694,53 +696,71 @@ impl AutobrakeRunwayOverrunProtection {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        self.is_any_autobrake_active = is_any_autobrake_active;
+        if (self.is_row_rop_operative(context)) {
+            self.status_word.set_ssm(SignStatus::NormalOperation);
 
-        let is_on_ground = lgciu1.left_and_right_gear_compressed(false)
-            || lgciu2.left_and_right_gear_compressed(false);
+            self.is_any_autobrake_active = is_any_autobrake_active;
+            self.is_full_rev_selected =
+                self.throttle_percents[1] <= -20.0 && self.throttle_percents[2] <= -20.0;
 
-        let max_braking_prediction = braking_distances.max_braking();
+            let is_on_ground = lgciu1.left_and_right_gear_compressed(false)
+                || lgciu2.left_and_right_gear_compressed(false);
 
-        // Can engage only above min speed
-        if self.is_row_rop_operative(context) && self.is_any_autobrake_active {
-            if max_braking_prediction >= self.distance_to_runway_end.value() {
-                self.is_actively_braking = true;
+            let max_braking_prediction = braking_distances.max_braking();
+
+            // Can engage only above min speed
+            if self.is_row_rop_operative(context) && self.is_any_autobrake_active {
+                if max_braking_prediction >= self.distance_to_runway_end.value() {
+                    self.is_actively_braking = true;
+                }
+            } else {
+                // Can only disengage if autobrake or distance lost (not from speed)
+                // TODO ROP can revert if braking force is sufficient
+                if !self.distance_to_runway_end.is_normal_operation()
+                    || !self.is_any_autobrake_active
+                {
+                    self.is_actively_braking = false;
+                }
             }
+
+            let overrun_detected =
+                is_on_ground && max_braking_prediction >= self.distance_to_runway_end.value();
+
+            // BRAKE MAX BRAKING Requested
+            self.status_word.set_bit(
+                11,
+                self.should_show_manual_braking_warning(context, overrun_detected),
+            );
+
+            // SET MAX REVERSE Requested
+            self.status_word.set_bit(
+                12,
+                self.should_request_max_reverse(context, overrun_detected),
+            );
+
+            // KEEP MAX REVERSE Requested
+            self.status_word.set_bit(
+                13,
+                self.should_request_keep_max_reverse(context, overrun_detected),
+            );
+
+            let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
+            // Too short if wet
+            self.status_word.set_bit(
+                14,
+                should_show_in_flight_row
+                    && braking_distances.wet_landing() >= self.distance_to_runway_end.value(),
+            );
+
+            // Too short for dry
+            self.status_word.set_bit(
+                15,
+                should_show_in_flight_row
+                    && braking_distances.dry_landing() >= self.distance_to_runway_end.value(),
+            );
         } else {
-            // Can only disengage if autobrake or distance lost (not from speed)
-            // TODO ROP can revert if braking force is sufficient
-            if !self.distance_to_runway_end.is_normal_operation() || !self.is_any_autobrake_active {
-                self.is_actively_braking = false;
-            }
+            self.status_word.set_ssm(SignStatus::FailureWarning);
         }
-
-        // IS operative
-        self.status_word
-            .set_bit(11, self.is_row_rop_operative(context));
-
-        // Is active under autobrake
-        self.status_word.set_bit(12, self.is_actively_braking);
-
-        // Is active under manual braking
-        self.status_word.set_bit(
-            13,
-            self.should_show_manual_braking_warning(context, max_braking_prediction, is_on_ground),
-        );
-
-        let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
-        // Too short if wet
-        self.status_word.set_bit(
-            14,
-            should_show_in_flight_row
-                && braking_distances.wet_landing() >= self.distance_to_runway_end.value(),
-        );
-
-        // Too short for dry
-        self.status_word.set_bit(
-            15,
-            should_show_in_flight_row
-                && braking_distances.dry_landing() >= self.distance_to_runway_end.value(),
-        );
     }
 
     fn rop_max_braking_requested(&self) -> bool {
@@ -750,20 +770,31 @@ impl AutobrakeRunwayOverrunProtection {
     fn should_show_manual_braking_warning(
         &self,
         context: &UpdateContext,
-        dry_stopping_prediction: Length,
-        is_on_ground: bool,
+        overrun_detected: bool,
     ) -> bool {
         let any_engine_not_idle_or_reverse = self.throttle_percents.iter().any(|&x| x > 2.);
 
-        if is_on_ground
-            && !any_engine_not_idle_or_reverse
-            && !self.is_any_autobrake_active
-            && self.is_row_rop_operative(context)
-        {
-            dry_stopping_prediction >= self.distance_to_runway_end.value()
+        if !any_engine_not_idle_or_reverse && !self.is_any_autobrake_active {
+            overrun_detected
         } else {
             false
         }
+    }
+
+    fn should_request_max_reverse(&self, context: &UpdateContext, overrun_detected: bool) -> bool {
+        !self.is_rev_thrust_selected
+            && overrun_detected
+            && context.ground_speed().get::<knot>() >= Self::MAX_REVERSE_REQUEST_SPEED_KTS
+    }
+
+    fn should_request_keep_max_reverse(
+        &self,
+        context: &UpdateContext,
+        overrun_detected: bool,
+    ) -> bool {
+        overrun_detected
+            && self.is_rev_thrust_selected
+            && context.ground_speed().get::<knot>() <= Self::MAX_REVERSE_REQUEST_SPEED_KTS
     }
 }
 impl SimulationElement for AutobrakeRunwayOverrunProtection {
@@ -785,7 +816,6 @@ impl SimulationElement for AutobrakeRunwayOverrunProtection {
         let tla3: f64 = reader.read(&self.thrust_en3_id);
         let tla4: f64 = reader.read(&self.thrust_en4_id);
         self.throttle_percents = [tla1, tla2, tla3, tla4];
-
         self.row_rop_lost = reader.read(&self.row_rop_lost_id);
     }
 }

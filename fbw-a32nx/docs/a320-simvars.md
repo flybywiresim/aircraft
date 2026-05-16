@@ -4513,9 +4513,9 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
     - Arinc429<Discrete>
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
-      | 11  | ROW/ROP operative                 |
-      | 12  | ROP: Active with autobrake        |
-      | 13  | ROP: Active with manual braking   |
+      | 11  | BRAKE MAX BRAKING Requested       |
+      | 12  | SET MAX REVERSE Requested         |
+      | 13  | KEEP MAX REVERSE Requested        |
       | 14  | ROW Wet: Runway too short         |
       | 15  | ROW Dry: Runway too short         |
 

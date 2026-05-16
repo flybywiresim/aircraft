@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -1564,8 +1564,6 @@ export class FwsCore {
   private autoBrakeOffAuralTriggered = false;
 
   private autoBrakeOffMemoInhibited = false;
-
-  public readonly rowRopStatusWord = Arinc429Register.empty();
 
   public readonly rowLost = MappedSubject.create(
     ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(11, false) || w2.bitValueOr(11, false)),
@@ -5976,38 +5974,6 @@ export class FwsCore {
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
-  }
-
-  updateRowRopWarnings() {
-    this.rowRopStatusWord.setFromSimVar('L:A32NX_ROW_ROP_WORD_1');
-
-    // ROW
-    this.soundManager.handleSoundCondition('runwayTooShort', this.rowRopStatusWord.bitValueOr(15, false));
-
-    // ROP
-    // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
-    const maxBrakingSet =
-      SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
-      SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
-    const maxBraking = this.rowRopStatusWord.bitValueOr(13, false) && !maxBrakingSet;
-    this.soundManager.handleSoundCondition('brakeMaxBraking', maxBraking);
-
-    // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
-    const maxReverseSet =
-      SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
-      SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
-    const maxReverse =
-      (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)) && !maxReverseSet;
-    this.soundManager.handleSoundCondition('setMaxReverse', !maxBraking && maxReverse);
-
-    // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
-    const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
-    this.soundManager.handleSoundCondition(
-      'keepMaxReverse',
-      ias <= 80 &&
-        ias > 4 &&
-        (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)),
-    );
   }
 
   autoThrottleInstinctiveDisconnect() {
