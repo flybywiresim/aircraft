@@ -133,6 +133,7 @@
 1. [A32NX] Split navigation lights into two separate systems - @tracernz (Mike)
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
 1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
+1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 
 ## 0.14.0
 
