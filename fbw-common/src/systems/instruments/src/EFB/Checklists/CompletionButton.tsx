@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
-import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { ChecklistJsonDefinition, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect } from 'react';
 
 import {
@@ -33,6 +33,14 @@ export const CompletionButton = () => {
     return !item.completed;
   });
 
+  const getNextChecklistIndex = (currentIndex: number, aircraftChecklists: ChecklistJsonDefinition[]) => {
+    let nextIndex = currentIndex + 1;
+    while (nextIndex < aircraftChecklists.length && aircraftChecklists[nextIndex].name === '<< DEPARTURE CHANGE >>') {
+      nextIndex++;
+    }
+    return nextIndex;
+  };
+
   // allows the completion button to be used via LVar - if the LVar is set to true, the button will be clicked,
   // and the LVar will be reset to false. This can be used, for example, to trigger completion from a hardware button.
   const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
@@ -43,7 +51,7 @@ export const CompletionButton = () => {
     if (completeItemVar) {
       setCompleteItemVar(false);
       if (checklists[selectedChecklistIndex].markedCompleted && selectedChecklistIndex < checklists.length - 1) {
-        dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
+        dispatch(setSelectedChecklistIndex(getNextChecklistIndex(selectedChecklistIndex, aircraftChecklists)));
       } else if (firstIncompleteIdx !== -1) {
         dispatch(
           setChecklistItemCompletion({
@@ -68,7 +76,7 @@ export const CompletionButton = () => {
                                bg-theme-body py-2 text-center font-bold text-theme-highlight transition duration-100
                                hover:bg-theme-highlight hover:text-theme-body"
           onClick={() => {
-            dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
+            dispatch(setSelectedChecklistIndex(getNextChecklistIndex(selectedChecklistIndex, aircraftChecklists)));
           }}
         >
           {t('Checklists.ProceedToNextChecklist')}
