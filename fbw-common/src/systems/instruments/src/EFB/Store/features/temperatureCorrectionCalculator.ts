@@ -7,7 +7,7 @@ interface TemperatureCorrectionCalculatorState {
   icao?: string;
   temperature?: number;
   fieldElevation?: number;
-  publishedAltitudes: (number | undefined)[];
+  publishedAltitudes: number[];
 }
 
 const initialState: TemperatureCorrectionCalculatorState = {

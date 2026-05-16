@@ -14,7 +14,7 @@ import {
   usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { CloudArrowDown } from 'react-bootstrap-icons';
+import { CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { getAirport } from '../Data/Runways';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -27,13 +27,14 @@ import {
   setPublishedAltitudes,
   setIcao,
 } from '../../Store/features/temperatureCorrectionCalculator';
+import Card from '../../UtilComponents/Card/Card';
 
 interface LabelProps {
   className?: string;
   text: string;
 }
 
-const NUMBER_OF_ALTITUDES = 9;
+const NUMBER_OF_ALTITUDES = 10;
 
 const Label: FC<LabelProps> = ({ text, className, children }) => (
   <div className="flex flex-row items-center justify-between">
@@ -57,13 +58,19 @@ export const TemperatureCorrectionWidget = () => {
     (state) => state.simbrief.data,
   );
 
+  const publishAltitudeInputs =
+    publishedAltitudes.length < NUMBER_OF_ALTITUDES ? [...publishedAltitudes, undefined] : publishedAltitudes;
+
+  // The displayed results have no duplicates and are in sorted order
+  const displayedAltitudes = Array.from(new Set(publishedAltitudes)).sort((a, b) => a - b);
+
   const isValidIcao = (icao: string): boolean => icao?.length === 4;
 
   const handleICAOChange = (icao: string) => {
     dispatch(setIcao(icao));
     if (isValidIcao(icao)) {
       getAirport(icao)
-        .then((airport) => dispatch(setFieldElevation(airport.altitude)))
+        .then((airport) => dispatch(setFieldElevation(Math.round(airport.altitude / 0.3048))))
         .catch(() => dispatch(setFieldElevation(undefined)));
     }
   };
@@ -127,15 +134,23 @@ export const TemperatureCorrectionWidget = () => {
   };
 
   const handlePublishedAltitude = (index: number, input: string): void => {
-    let altitude: number | undefined = parseInt(input);
+    const altitude: number = parseInt(input);
 
     if (Number.isNaN(altitude)) {
-      altitude = undefined;
+      return;
     }
 
     const altitudes = [...publishedAltitudes.slice(0, index), altitude, ...publishedAltitudes.slice(index + 1)];
 
     dispatch(setPublishedAltitudes(altitudes));
+  };
+
+  const handleClearPublishedAltitudes = (): void => {
+    dispatch(setPublishedAltitudes([]));
+  };
+
+  const deletePublishedAltitudeRow = (idx: number): void => {
+    dispatch(setPublishedAltitudes(publishedAltitudes.filter((_, i) => i !== idx)));
   };
 
   const syncValuesWithOfp = async () => {
@@ -230,36 +245,32 @@ export const TemperatureCorrectionWidget = () => {
 
   return (
     <div className="flex h-content-section-reduced flex-row justify-between space-x-10 overflow-hidden">
-      <div className="w-full">
-        <div className="flex w-full flex-col justify-between">
-          <div className="mb-4">
-            <div className="mb-8 mt-4">
-              <div className="mt-4 flex flex-row justify-end">
-                <div className="flex flex-row">
-                  <TooltipWrapper text={fillDataTooltip()}>
-                    <button
-                      onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                      className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:bg-theme-body hover:text-theme-highlight'}`}
-                      type="button"
-                    >
-                      <CloudArrowDown size={26} />
-                      <p className="text-current">{t('Performance.Landing.FillDataFrom')}</p>
-                    </button>
-                  </TooltipWrapper>
-                  <SelectInput
-                    value={autoFillSource}
-                    className="w-36 rounded-l-none"
-                    options={[
-                      { value: 'OFP', displayValue: 'OFP' },
-                      { value: 'METAR', displayValue: 'METAR' },
-                    ]}
-                    onChange={(value) => setAutoFillSource(value as 'METAR' | 'OFP')}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-row justify-between">
-              <div className="flex flex-col space-y-4">
+      <div className="flex w-full flex-1 flex-col">
+        <div className="mt-4 flex w-full flex-row justify-end px-8">
+          <TooltipWrapper text={fillDataTooltip()}>
+            <button
+              onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
+              className={`flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:bg-theme-body hover:text-theme-highlight'}`}
+              type="button"
+            >
+              <CloudArrowDown size={26} />
+              <p className="text-current">{t('Performance.Landing.FillDataFrom')}</p>
+            </button>
+          </TooltipWrapper>
+          <SelectInput
+            value={autoFillSource}
+            className="w-36 rounded-l-none"
+            options={[
+              { value: 'OFP', displayValue: 'OFP' },
+              { value: 'METAR', displayValue: 'METAR' },
+            ]}
+            onChange={(value) => setAutoFillSource(value as 'METAR' | 'OFP')}
+          />
+        </div>
+        <div className="mb-8 grid min-h-0 flex-1 grid-cols-2 grid-rows-[auto_1fr]">
+          <Card className="col-span-2 mx-8 mb-8" title={t('Performance.TemperatureCorrection.AirfieldData')}>
+            <div className="grid grid-cols-2">
+              <div className="mb-4 ml-4 mr-8">
                 <Label text={t('Performance.Takeoff.Airport')}>
                   <SimpleInput
                     className="w-48 uppercase"
@@ -269,12 +280,13 @@ export const TemperatureCorrectionWidget = () => {
                     maxLength={4}
                   />
                 </Label>
-                <div />
+              </div>
+              <div className="mb-4 ml-8 mr-4">
                 <Label text={t('Performance.TemperatureCorrection.FieldElevation')}>
                   <SimpleInput
-                    className="w-48 uppercase"
+                    className="w-48"
                     value={fieldElevation}
-                    placeholder="feet"
+                    placeholder={t('Performance.Takeoff.RunwayElevationUnit')}
                     onChange={handleFieldElevation}
                     maxLength={5}
                     decimalPrecision={0}
@@ -282,7 +294,7 @@ export const TemperatureCorrectionWidget = () => {
                   />
                 </Label>
               </div>
-              <div className="flex flex-col space-y-4">
+              <div className="ml-4 mr-8">
                 <Label text={t('Performance.Takeoff.Temperature')}>
                   <div className="flex w-60 flex-row">
                     <SimpleInput
@@ -311,26 +323,68 @@ export const TemperatureCorrectionWidget = () => {
                 </Label>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="mt-8 grid grid-cols-2 p-4">
-          <div>{t('Performance.TemperatureCorrection.PublishedAltitudes')}</div>
-          <div>{t('Performance.TemperatureCorrection.CorrectedAltitudes')}</div>
-          {Array.from({ length: NUMBER_OF_ALTITUDES }).map((_, idx) => (
-            <>
-              <SimpleInput
-                className="w-48"
-                value={publishedAltitudes[idx]}
-                placeholder={t('Performance.Takeoff.RunwayElevationUnit')}
-                min={0}
-                max={20000}
-                decimalPrecision={0}
-                onChange={(v) => handlePublishedAltitude(idx, v)}
-                number
-              />
-              <div>{calculateCorrectedAltitude(publishedAltitudes[idx])}</div>
-            </>
-          ))}
+          </Card>
+          <Card
+            className="mx-8 flex min-h-0 flex-1 flex-col"
+            childrenContainerClassName="flex flex-col justify-between min-h-0 flex-1"
+            title={t('Performance.TemperatureCorrection.PublishedAltitudes')}
+          >
+            <div className="grid grid-cols-2">
+              {publishAltitudeInputs.map((alt, idx) => (
+                <div className="flex justify-center" key={idx}>
+                  <SimpleInput
+                    className="m-2 w-full"
+                    value={alt}
+                    placeholder={t('Performance.Takeoff.RunwayElevationUnit')}
+                    min={0}
+                    max={20000}
+                    decimalPrecision={0}
+                    onChange={(v) => handlePublishedAltitude(idx, v)}
+                    onBlur={(v) => !v && deletePublishedAltitudeRow(idx)}
+                    number
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleClearPublishedAltitudes}
+              disabled={displayedAltitudes.length === 0}
+              className={`col-span-2 mx-2 mt-4 flex flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red
+                                bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red ${displayedAltitudes.length === 0 && 'pointer-events-none cursor-not-allowed opacity-50'}`}
+              type="button"
+            >
+              <Trash size={26} />
+              <p className="font-bold text-current">{t('Performance.Landing.Clear')}</p>
+            </button>
+          </Card>
+          <Card
+            className={`mx-8 flex min-h-0 flex-1 flex-col${displayedAltitudes.length > 0 ? '' : ' hidden'}`}
+            childrenContainerClassName="overflow-hidden !p-0"
+            title={t('Performance.TemperatureCorrection.Results')}
+          >
+            <table className="w-full table-auto border-collapse border border-theme-accent">
+              <thead className="bg-theme-accent">
+                <tr>
+                  <th className="border border-theme-accent px-4 py-2 text-left">
+                    {t('Performance.TemperatureCorrection.Published')}
+                  </th>
+                  <th className="border border-theme-accent px-4 py-2 text-left">
+                    {t('Performance.TemperatureCorrection.Corrected')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedAltitudes.map((uncorrectedAlt, idx) => (
+                  <tr key={idx}>
+                    <td className="border border-theme-accent px-4 py-2">{uncorrectedAlt}</td>
+                    <td className="border border-theme-accent px-4 py-2">
+                      {calculateCorrectedAltitude(uncorrectedAlt) ?? ''}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
         </div>
       </div>
     </div>
