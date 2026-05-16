@@ -315,7 +315,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
               <text x={386} y={121} class="White F26 Center">
                 THR
               </text>
-              <text x={386} y={142} class="Cyan F20 Center">
+              <text x={379} y={142} class="Cyan F20 Center">
                 %
               </text>
 
@@ -324,7 +324,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
               <text x={386} y={220} class="White F26 Center">
                 N1
               </text>
-              <text x={386} y={243} class="Cyan F20 Center">
+              <text x={379} y={243} class="Cyan F20 Center">
                 %
               </text>
 
