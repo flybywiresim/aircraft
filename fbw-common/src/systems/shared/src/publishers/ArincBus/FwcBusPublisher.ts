@@ -16,6 +16,13 @@ interface FwcBusBaseEvents {
    * Discrete word with FWC outputs. Raw ARINC word.
    * * Bit | Meaning
    *   --- | ---
+   *    11 | Development Mode
+   */
+  a32nx_fwc_discrete_word_125: number;
+  /**
+   * Discrete word with FWC outputs. Raw ARINC word.
+   * * Bit | Meaning
+   *   --- | ---
    *    17 | Stall Warning
    *    28 | On Ground
    */
@@ -52,6 +59,14 @@ export class FwcBusPublisher extends SimVarPublisher<FwcBusPublisherEvents> {
         'a32nx_fwc_discrete_word_124',
         {
           name: 'L:A32NX_FWC_#index#_DISCRETE_WORD_124',
+          type: SimVarValueType.Enum,
+          indexed: true,
+        },
+      ],
+      [
+        'a32nx_fwc_discrete_word_125',
+        {
+          name: 'L:A32NX_FWC_#index#_DISCRETE_WORD_125',
           type: SimVarValueType.Enum,
           indexed: true,
         },

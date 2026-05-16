@@ -37,7 +37,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
   const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
   const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
-  const [developmentMode, setDevelopmentMode] = usePersistentNumberProperty('CONFIG_A32NX_DEVELOPMENT_MODE', 0);
+  const [developmentMode, setDevelopmentMode] = usePersistentSetting('CONFIG_A32NX_DEVELOPMENT_MODE');
 
   const handleSetThrustReductionAlt = (value: string) => {
     setThrustReductionHeightSetting(value);
@@ -210,7 +210,7 @@ export const AircraftOptionsPinProgramsPage = () => {
 
           {aircraftContext.settingsPages.pinProgram.developmentMode && (
             <SettingItem name={t('Settings.AircraftOptionsPinPrograms.DevelopmentMode')}>
-              <Toggle value={!!developmentMode} onToggle={(value) => setDevelopmentMode(value ? 1 : 0)} />
+              <Toggle value={developmentMode} onToggle={(value) => setDevelopmentMode(value)} />
             </SettingItem>
           )}
         </SettingsPage>
