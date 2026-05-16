@@ -1,5 +1,6 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  ClockEvents,
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
@@ -16,33 +17,31 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { MfdSystem } from './MfdUiService';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import {
-  dataStatusUri,
-  fuelAndLoadPage,
-  flightPlanUriPage,
-  lateralRevisionHoldPage,
   performancePage,
-  secIndexPageUri,
+  fuelAndLoadPage,
   initPage,
-  dirToUri,
+  flightPlanUriPage,
   airwaysPage,
   departurePage,
   arrivalPage,
   lateralRevisionPage,
+  lateralRevisionHoldPage,
   verticalRevisionPage,
   fixInfoUri,
+  secIndexPageUri,
+  dirToUri,
+  dataStatusUri,
 } from '../../shared/utils';
-import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars>();
-
-  private newDataIntervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
   protected readonly activePageTitle = Subject.create<string>('');
 
@@ -52,9 +51,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
-  protected currentFlightPlanVersion: number = 0;
+  protected readonly currentFlightPlanVersion = Subject.create<number>(0);
 
+  /** Indicates whether the temporary flight plan is the active */
   protected readonly tmpyActive = Subject.create<boolean>(false);
+
+  protected readonly tmpyExists = Subject.create<boolean>(false);
 
   /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
   private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
@@ -108,12 +110,26 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     FmgcFlightPhase.Preflight,
   );
 
+  private readonly periodicNewDataCheck = this.props.bus
+    .getSubscriber<ClockEvents>()
+    .on('realTime')
+    .atFrequency(0.5)
+    .handle(() => {
+      this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
+    });
+
   // protected mfdInViewConsumer: Consumer<boolean>;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subs.push(this.penaltyUri, this.displayPenalty, this.shouldShowTemporaryPageUris, this.displayTmpy);
+    this.subs.push(
+      this.penaltyUri,
+      this.displayPenalty,
+      this.shouldShowTemporaryPageUris,
+      this.displayTmpy,
+      this.periodicNewDataCheck,
+    );
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
@@ -127,6 +143,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     const flightPlanSyncSub = this.props.bus.getSubscriber<FlightPlanEvents>();
 
     this.subs.push(
+      //FIXME. Should the pages listen to the events directly or get them from the FMC?
       flightPlanSyncSub.on('flightPlanManager.create').handle(() => {
         this.onFlightPlanChanged();
       }),
@@ -168,26 +185,21 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive);
         this.props.fmcService.master.fmgc.data.fuelPenaltyActive.pipe(this.penaltyActive);
       }, true),
+      this.currentFlightPlanVersion.sub(() => {
+        this.onNewDataChecks();
+        this.onNewData();
+      }),
     );
 
     this.onFlightPlanChanged(false);
     this.onNewDataChecks();
     this.onNewData();
-    this.newDataIntervalId = setInterval(() => this.checkIfNewData(), 500);
-  }
-
-  protected checkIfNewData() {
-    // Check for current flight plan, whether it has changed (TODO switch to Subscribable in the future)
-    if (this.loadedFlightPlan?.version !== this.currentFlightPlanVersion) {
-      this.onNewDataChecks();
-      this.onNewData();
-      this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
-    }
   }
 
   protected onFlightPlanChanged(dueToEvent = true) {
     const activeUri = this.props.mfd.uiService.activeUri.get();
     const hasTmpy = this.props.flightPlanInterface.hasTemporary;
+    this.tmpyExists.set(hasTmpy);
     switch (activeUri.category) {
       case 'active':
         if (this.props.flightPlanInterface.hasActive || hasTmpy) {
@@ -271,7 +283,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     }
     this.onNewDataChecks();
     this.onNewData();
-    this.currentFlightPlanVersion = this.loadedFlightPlan?.version ?? 0;
+    this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
   }
 
   protected abstract onNewData(): void;
@@ -310,9 +322,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     for (const s of this.subs) {
       s.destroy();
     }
-
-    clearInterval(this.newDataIntervalId);
-    this.newDataIntervalId = undefined;
 
     super.destroy();
   }

@@ -3,7 +3,7 @@ import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterfac
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
+import { ArraySubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
@@ -14,6 +14,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+import { HistoryWindEntry } from '@fmgc/flightplanning/data/wind';
 
 export enum FmcOperatingModes {
   Master,
@@ -241,10 +242,53 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   cpnyFplnRequest(forPlan: FlightPlanIndex): void;
 
   /**
+   * Request CPNY WIND from ACARS
+   * @param forPlan flight plan to request CPNY WIND for
+   */
+  requestCpnyWind(forPlan: FlightPlanIndex): void;
+
+  /**
+   * Get a subscribable which indicates whether a CPNY FPLN uplink request is in progress.
+   */
+  getCpnyFplnUplinkInProgress(): Subscribable<boolean>;
+
+  /**
    * Insert CPNY FPLN into flight plan where request has been made from
    * @param intoPlan Flight plan to insert CPNY FPLN into
    */
   insertCpnyFpln(intoPlan: FlightPlanIndex): void;
+
+  /**
+   * Deletes the CPNY FPLN Uplink.
+   */
+  deleteCpnyFpln(): void;
+
+  /**
+   * Get a subscribable which indicates whether the CPNY FPLN is available for insertion for a given flight plan.
+   */
+  getCpnyFplnAvailable(): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates whether an uplink request is in progress.
+   */
+  getUplinkInProgress(): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates for which flight plan the CPNY FPLN has been requested, or null if no request has been made.
+   */
+  getCpnyFplnRequestedForPlan(): Subscribable<FlightPlanIndex | null>;
+
+  /**
+   * Inserts the CPNY WIND into the flight plan where the request has been made from.
+   * @param flightPlanIndex flight plan to insert
+   */
+  insertCpnyWind(flightPlanIndex: number): void;
+
+  /**
+   * Deletes the CPNY WIND Uplink from the flight plan where the request has been made from.
+   * @param flightPlanIndex flight plan to delete CPNY WIND Uplink from
+   */
+  deleteCpnyWind(flightPlanIndex: number): void;
 
   /**
    * Whether the secondary flight plan can be activated or swapped with the active flight plan
@@ -301,8 +345,40 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   clearCheckSpeedModeMessage(): void;
 
+  /**
+   * Gets the history winds stored in the FMC.
+   * @param cruiseFlightLevel The cruise flight level to interpolate the winds against, if any.
+   * @returns An array of wind entries.
+   */
+  getHistoryWinds(cruiseFlightLevel: number | null): Readonly<HistoryWindEntry>[];
+
+  /**
+   * Inserts the history winds into the flight plan cruise winds.
+   * @returns true if the insertion was succesful. False if it failed due to TMPY or wrong flight phase.
+   */
+  insertHistoryWinds(): boolean;
+
   reset(): void;
 
   /** Clean up all subscriptions */
   destroy(): void;
+
+  /** Sends a request to the AOC to reset the ATIS auto update airports */
+  resetAtisAutoUpdate(): void;
+
+  /**
+   * Get a subscribable which indicates whether the wind uplink is available to insert for a given flight plan.
+   * @param planIndex the flightplan to get the uplink status for. If undefined, will return whether the uplink is available for any flight plan.
+   */
+  getWindUplinkAvailableForPlan(planIndex?: FlightPlanIndex): Subscribable<boolean>;
+
+  /**
+   * Get a subscribable which indicates whether a wind uplink request is in progress.
+   */
+  getCpnyWindUplinkInProgress(): Subscribable<boolean>;
+
+  /**
+   * Gets a subscribable which indicates whether draft winds exist for the active flight plan.
+   */
+  getDraftWindsExist(): Subscribable<boolean>;
 }

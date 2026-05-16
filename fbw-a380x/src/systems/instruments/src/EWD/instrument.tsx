@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,9 +9,10 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 import '../index.scss';
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
-import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
+import { AdrBusPublisher, ArincEventBus, IrBusPublisher } from '@flybywiresim/fbw-sdk';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { CpiomDataPublisher } from '@providers/CpiomPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();

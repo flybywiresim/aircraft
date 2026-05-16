@@ -497,6 +497,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         flightNumber,
       });
     }
+
+    this.incrementVersion();
   }
 
   /**
@@ -743,11 +745,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
+   * @param draftClimbWindEntries if provided, the wind entries will be set in this array instead of the main performance data
    */
   async setClimbWindEntry(
     altitude: number,
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
+    draftClimbWindEntries?: FlightPlanWindEntry[],
   ): Promise<void> {
     const originElevation = this.originAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
@@ -756,12 +760,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       entry.altitude = originElevation;
     }
 
-    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'climbWindEntries',
-      this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
+    this.setClbDesWindEntry(
+      draftClimbWindEntries ?? this.performanceData.climbWindEntries.get(),
+      altitudeOrGround,
+      entry,
+      maxNumberEntries,
     );
+    if (draftClimbWindEntries === undefined) {
+      // Do this so the RPC event is sent
+      this.setPerformanceData(
+        'climbWindEntries',
+        this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
+      );
+    }
   }
 
   /**
@@ -771,6 +782,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
    * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
+   * @param draftDescentWindEntries if provded, the wind entries will be set in this array instead of the
    * the destination altitude
    */
   async setDescentWindEntry(
@@ -778,13 +790,39 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
     shouldUpdateTwrWind: boolean = true,
+    draftDescentWindEntries?: FlightPlanWindEntry[],
   ): Promise<void> {
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
+    this.parseGroundWindEntryAndSetTwrWind(
+      entry,
+      shouldUpdateTwrWind && !draftDescentWindEntries,
+      destinationElevation,
+    );
+
+    this.setClbDesWindEntry(
+      draftDescentWindEntries ?? this.performanceData.descentWindEntries.get(),
+      altitudeOrGround,
+      entry,
+      maxNumberEntries,
+    );
+    // Do this so the RPC event is sent
+    if (draftDescentWindEntries === undefined) {
+      this.setPerformanceData(
+        'descentWindEntries',
+        this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
+      );
+    }
+  }
+
+  public parseGroundWindEntryAndSetTwrWind(
+    entry: FlightPlanWindEntry | null,
+    shouldUpdateTwrWind: boolean,
+    destinationElevation: number,
+  ): void {
     if (entry !== null && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
-
       if (shouldUpdateTwrWind) {
         // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
         // TODO should we only do this if no pilot entry has been made?
@@ -800,13 +838,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.setPerformanceData('isApproachWindPilotEntered', false);
       }
     }
-
-    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'descentWindEntries',
-      this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
-    );
   }
 
   private setClbDesWindEntry(
@@ -936,5 +967,29 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     this.pendingWindUplink.onUplinkInserted();
+  }
+
+  /**
+   * Get the computed cruise level for the alternate.
+   * @returns the cruise level in hundreds of feet, or undefined, if no alternate or destination exist.
+   */
+  public getAlternateCruiseLevel(): number | undefined {
+    if (!this.destinationAirport || !this.alternateDestinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      this.destinationAirport.location,
+      this.alternateDestinationAirport.location,
+    );
+
+    if (distance > 200) {
+      return 310;
+    } else if (distance > 100) {
+      return 220;
+    }
+
+    return 100;
   }
 }

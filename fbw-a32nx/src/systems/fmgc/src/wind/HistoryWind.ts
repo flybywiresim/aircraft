@@ -1,13 +1,16 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { WindEntry } from '../flightplanning/data/wind';
+import { HistoryWindEntry } from '../flightplanning/data/wind';
 import { FlightPhaseManagerEvents } from '../flightphase';
 import { FmgcFlightPhase } from '../../../shared/src/flightphase';
 import { WindUtils } from '../guidance/vnav/wind/WindUtils';
 
 export class HistoryWind {
-  private static readonly LOCALSTORAGE_KEY: string = 'FBW.HistoryWinds';
+  private static readonly LOCALSTORAGE_KEY: string =
+    (process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK') + '.HistoryWinds';
 
   private readonly sub = this.bus.getSubscriber<NavigationEvents & FlightPhaseManagerEvents>();
 
@@ -19,21 +22,26 @@ export class HistoryWind {
 
   private flightPhase = FmgcFlightPhase.Preflight;
 
-  private readonly defaultRecordedWind: WindEntry[] = [
-    { altitude: 5_000, vector: Vec2Math.create() },
-    { altitude: 15_000, vector: Vec2Math.create() },
-    { altitude: 25_000, vector: Vec2Math.create() },
+  private readonly defaultRecordedWind: HistoryWindEntry[] = [
+    { altitude: 5_000, vector: Vec2Math.create(), isEmpty: true },
+    { altitude: 15_000, vector: Vec2Math.create(), isEmpty: true },
+    { altitude: 25_000, vector: Vec2Math.create(), isEmpty: true },
   ];
-  private readonly recordedCruiseWind = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly recordedCruiseWind: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
 
-  private readonly interpolationCache = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly interpolationCache: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
 
-  private readonly historyWinds: (WindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
+  private readonly historyWinds: (HistoryWindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
-  constructor(private readonly bus: EventBus) {
+  constructor(
+    private readonly bus: EventBus,
+    private readonly filterEmptyOnInterpolation: boolean,
+  ) {
     this.altitude.sub(this.handleAltitudeChange.bind(this));
     this.sub.on('fmgc_flight_phase').handle(this.handleFlightPhaseChange.bind(this));
-
+    for (let i = 0; i < this.defaultRecordedWind.length; i++) {
+      this.historyWinds[i] = this.defaultRecordedWind[i];
+    }
     this.syncFromLocalStorage();
   }
 
@@ -49,7 +57,7 @@ export class HistoryWind {
 
         if (currentAltitude <= recordedAlt && this.previousAltitude > recordedAlt) {
           Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, windEntry.vector);
-
+          windEntry.isEmpty = false;
           this.historyWinds[i] = windEntry;
           requiresSync = true;
         }
@@ -82,7 +90,6 @@ export class HistoryWind {
     if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
       this.recordedCruiseWind.altitude = cruiseAltitude;
       Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector);
-
       this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
     }
 
@@ -97,24 +104,37 @@ export class HistoryWind {
     this.syncToLocalStorage();
   }
 
-  public getRecordedWinds(cruiseLevel: number | null): Readonly<WindEntry>[] {
+  public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<HistoryWindEntry>[] {
     const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude - b.altitude);
+    const interpolationSourceWinds = this.filterEmptyOnInterpolation
+      ? historyWinds.filter((entry) => entry.isEmpty !== true)
+      : historyWinds;
+    const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
 
     const shouldAddInterpolatedWind =
-      historyWinds.length >= 0 &&
-      cruiseLevel !== null &&
-      !historyWinds.some((wind) => wind.altitude === cruiseLevel * 100);
+      cruiseAltitude !== null &&
+      !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
+      interpolationSourceWinds.length >= 0 &&
+      (!this.filterEmptyOnInterpolation || // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
+        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && !wind.isEmpty) &&
+          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && !wind.isEmpty)));
 
     if (shouldAddInterpolatedWind) {
-      const cruiseAltitude = cruiseLevel * 100;
-
       this.interpolationCache.altitude = cruiseAltitude;
-      WindUtils.interpolateWindEntries(historyWinds, cruiseAltitude, this.interpolationCache.vector);
-
+      WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector);
       historyWinds.push(this.interpolationCache);
+    } else if (
+      this.filterEmptyOnInterpolation &&
+      cruiseAltitude !== null &&
+      !historyWinds.some((wind) => wind.altitude === cruiseAltitude)
+    ) {
+      historyWinds.push({
+        altitude: cruiseAltitude,
+        vector: Vec2Math.create(),
+        isEmpty: true,
+      });
     }
-
-    return historyWinds.sort((a, b) => a.altitude - b.altitude);
+    return historyWinds.sort((a, b) => (sortAscending ? a.altitude - b.altitude : b.altitude - a.altitude));
   }
 
   private syncToLocalStorage() {
@@ -132,7 +152,9 @@ export class HistoryWind {
 
       if (Array.isArray(deserialized) && deserialized.length === this.historyWinds.length) {
         for (let i = 0; i < deserialized.length; i++) {
-          this.historyWinds[i] = deserialized[i];
+          if (deserialized[i] !== null) {
+            this.historyWinds[i] = deserialized[i];
+          }
         }
       } else {
         console.log(`[FMS/History Winds] Deserialized history winds with invalid format: "${historyWindsString}"`);

@@ -1,0 +1,224 @@
+@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+$table-margin-history: 92px;
+$table-margin-no-history: 125px;
+$header-height-no-history: 63px;
+$header-height-history: 65px;
+$history-fl-label-padding-top: 41px;
+$history-fl-value-padding-top: 39px;
+$wind-row-width: 465px;
+.mfd-fms-wind-page-container {
+  margin-top: 34px;
+}
+
+.mfd-fms-wind-page-title-container {
+  margin-left: $table-margin-no-history;
+  display: flex;
+  flex-direction: row;
+  height: 58px;
+}
+
+.mfd-fms-wind-page-title-container.history {
+  margin-left: $table-margin-history;
+}
+
+.mfd-fms-wind-page-table-row {
+  margin-left: $table-margin-no-history;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid $display-grey;
+  width: $wind-row-width;
+}
+
+.mfd-fms-wind-page-table-row.history {
+  width: 522px;
+  margin-left: $table-margin-history;
+}
+
+.mfd-fms-wind-page-table-row.des {
+  height: 83px;
+}
+
+.mfd-fms-wind-page-table-message-area {
+  padding-top: 16px;
+  padding-left: 60px;
+  height: $header-height-no-history;
+}
+
+.mfd-fms-wind-page-table-message-area.history {
+  height: $header-height-history;
+}
+
+.mfd-fms-wind-page-table-row.header {
+    justify-content: space-between;
+    height: $header-height-no-history;
+    padding-left: 49px;
+    padding-top: 15px;
+    padding-right: 67px;
+}
+
+.mfd-fms-wind-page-table-row.header.history {
+  padding-left: 95px;
+  padding-top: 16px;
+  padding-right: 80px;
+  height: $header-height-history;
+}
+
+.mfd-fms-wind-page-table-row.entry.first {
+  height: 95px;
+}
+
+.mfd-fms-wind-page-table-row.entry {
+  height: 85px;
+}
+
+.history-wind-button-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-end;
+  flex-grow: 1;
+}
+
+.mfd-fms-wind-page-history-wind-fl-label {
+  padding-top: $history-fl-label-padding-top;
+}
+
+.mfd-fms-wind-page-history-wind-fl-value {
+  padding-top: $history-fl-value-padding-top;
+}
+
+.mfd-fms-wind-history-fl-entry {
+  display: flex;
+  flex-direction: row;
+  margin-right: 115px;
+}
+
+.mfd-fms-wind-history-wind-entry {
+  display: flex;
+  flex-direction: row;
+  padding-top: 38px;
+}
+
+.mfd-fms-wind-direction-speed-entry-container {
+  display: flex;
+  width: 231px;
+  flex-direction: row;
+  border: 1px solid #4f5467;
+  margin-top: 14px;
+  padding: 5px;
+  height: 55px;
+}
+
+.mfd-fms-wind-direction-speed-entry-container.first {
+  margin-top: 25px;
+}
+
+.mfd-fms-wind-direction-speed-entry-container.des {
+  margin-top: 12px;
+}
+
+
+.mfd-fms-wind-direction-speed-entry-container.no-margin {
+  margin-top: 0px;
+}
+
+.mfd-fms-wind-bottom-buttons-container {
+  display: flex;
+  flex-direction: row;
+  padding-left: 4px;
+  padding-bottom:4px;
+  padding-top:10px;
+  align-items: flex-end;
+}
+
+.mfd-fms-wind-page-entry-row {
+  display: flex;
+  flex-direction: row;
+  padding-left: 10px;
+}
+
+.mfd-fms-wind-altitude-entry-container {
+  padding-top: 24px;
+  width: 215px;
+}
+
+.mfd-fms-wind-altitude-entry-container.first {
+  padding-top: 33px;
+}
+
+.mfd-fms-wind-altitude-entry-container.des {
+  padding-top: 22px;
+}
+
+.mfd-fms-wind-alternate-row {
+    border: 1px solid $display-grey;
+    margin-left: $table-margin-no-history;
+    padding-top: 8px; //FIX ME It should be 16px but we have no more space at the bottom of the page.
+    padding-left: 8px;
+    width: $wind-row-width;
+}
+
+.mfd-fms-wind-alternate-row-cruise-fl {
+  display: flex;
+  flex-direction: row;
+  padding-top: 29px;
+  padding-left: 7px;
+  padding-right: 127px;
+}
+
+.mfd-fms-wind-page-container.crz {
+  margin-top: 13px;
+}
+
+.mfd-fms-wind-page-crz-title-buttons-container {
+  display: flex;
+  flex-direction: row;
+  margin-left: $table-margin-no-history;
+   padding-bottom: 18px;
+}
+
+.mfd-fms-wind-page-crz-title-container {
+  padding-top: 21px;
+  margin-right: 22px
+}
+
+.mfd-fms-wind-page-crz-dropdown-container {
+  padding-top: 10px;
+}
+
+.mfd-fms-wind-page-buttons-container {
+  display: flex;
+  flex-direction: row;
+
+}
+
+.mfd-fms-wind-page-crz-temp-table {
+    margin-left: $table-margin-no-history;
+    height: 114px;
+    width: 367px;
+    padding-top: 15px;
+    margin-top: 50px;
+    border: 1px solid $display-grey;
+}
+
+.mfd-fms-wind-crz-temp-alt-header-container {
+    padding-left: 67px;
+}
+
+.mfd-fms-wind-crz-temp-sat-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+  padding-right: 37px;
+}
+
+.mfd-fms-wind-crz-temp-entry-container {
+  display: flex;
+  flex-direction: row;
+  padding-top: 19px;
+  padding-left: 10px;
+  padding-right: 10px;
+}

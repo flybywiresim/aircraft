@@ -30,6 +30,9 @@ import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanCh
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CpnyFplnButtonUtils } from '../../shared/CpnyFplnButtonUtils';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -51,6 +54,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     FlightPlanIndex.Active,
   );
 
+  private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
+
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
@@ -68,12 +73,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fpIndex]) =>
-      (fp > FmgcFlightPhase.Preflight && this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
-      tmpy,
+    ([fp, tmpy, activeOrCopyOfActive]) => (fp > FmgcFlightPhase.Preflight && activeOrCopyOfActive) || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
-    this.loadedFlightPlanIndex,
+    this.fpIsActiveOrCopyOfActive,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
@@ -100,15 +103,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
   private readonly costIndexModeDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, fpIndex]) =>
-      !toIcao ||
-      !fromIcao ||
-      (flightPhase >= FmgcFlightPhase.Descent &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
+    ([toIcao, fromIcao, flightPhase, isActiveOrCopyOfActive]) =>
+      !toIcao || !fromIcao || (flightPhase >= FmgcFlightPhase.Descent && isActiveOrCopyOfActive),
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
-    this.loadedFlightPlanIndex,
+    this.fpIsActiveOrCopyOfActive,
   );
 
   private readonly costIndexDisabled = MappedSubject.create(
@@ -120,13 +120,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly tropopause = Subject.create<number | null>(null);
   private readonly tropopauseIsPilotEntered = Subject.create<boolean>(false);
 
+  private readonly fpHasWindEntries = Subject.create(false);
   private readonly tripWind = Subject.create<number | null>(null);
 
   private readonly tripWindDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, fpHasWindEntries]) => !toIcao || !fromIcao || fpHasWindEntries,
     this.fromIcao,
     this.toIcao,
+    this.fpHasWindEntries,
   );
+
+  private readonly tripWindTextAlign = this.tripWindDisabled.map((it) => (it ? 'flex-start' : 'center'));
 
   private readonly cpnyRteMandatory = MappedSubject.create(
     ([toIcao, fromIcao, mandatoryAndActive]) => (!toIcao || !fromIcao) && mandatoryAndActive,
@@ -204,6 +208,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.cpnyRteMandatory,
       this.departureButtonDisabled,
       this.costIndexModeDisabled,
+      this.tripWindTextAlign,
     );
   }
   private invalidateDataFields() {
@@ -226,19 +231,32 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const fp = this.loadedFlightPlan;
-
     const fpIndex = this.loadedFlightPlanIndex.get();
+    const fp = this.props.flightPlanInterface.has(fpIndex) ? this.props.flightPlanInterface.get(fpIndex) : undefined;
     const pd = fp?.performanceData;
-
+    this.fpIsActiveOrCopyOfActive.set(fp?.isActiveOrCopiedFromActive() ?? false);
     this.tropopause.set(pd?.tropopause.get() ?? null);
     this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
     this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
     this.flightNumber.set(
       this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
     );
-    this.tripWind.set(pd?.pilotTripWind.get() ?? null);
-    this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
+    const hasWind = this.props.flightPlanInterface.has(fpIndex)
+      ? this.props.flightPlanInterface.get(fpIndex).hasWindEntries()
+      : false;
+    this.fpHasWindEntries.set(hasWind);
+    if (this.tripWindDisabled.get() || !fp || !pd) {
+      this.tripWind.set(null);
+    } else {
+      this.tripWind.set(pd.pilotTripWind.get() ?? 0);
+    }
+
+    // Cruise temp is shown as -- once in the cruise phase.
+    const cruiseTemp =
+      !fp?.isActiveOrCopiedFromActive() || this.activeFlightPhase.get() < FmgcFlightPhase.Cruise
+        ? pd?.cruiseTemperature.get()
+        : null;
+    this.cruiseTemperature.set(cruiseTemp ?? null);
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
     this.costIndex.set(pd?.costIndex.get() ?? null);
@@ -269,12 +287,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const fpIndex = this.loadedFlightPlanIndex.get();
     this.crzFlIsMandatory.set(
       this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent &&
-        (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary),
+        this.fpIsActiveOrCopyOfActive.get(),
     );
     const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
     const cruiseTemp = this.loadedFlightPlan.performanceData.cruiseTemperature.get();
 
-    if (cruiseLevel && (!cruiseTemp || cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5)) {
+    if (
+      cruiseLevel &&
+      (!cruiseTemp ||
+        (!this.loadedFlightPlan.performanceData.isCruiseTemperaturePilotEntered.get() &&
+          cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5))
+    ) {
       this.props.flightPlanInterface.setPerformanceData(
         'cruiseTemperatureIsaTemp',
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
@@ -334,7 +357,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private requestId = 0;
 
-  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = []; //FIXME this should not be here. Move to datalink system instead.
 
   private async connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
     const publisher = this.props.bus.getPublisher<FmsRouterMessages>();
@@ -386,13 +409,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new LongAlphanumericFormat()}
                 disabled={this.noFlightPlan}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).getFlightNumber().set(v);
+                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).setFlightNumber(v!);
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 readonlyValue={this.flightNumber}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -406,11 +429,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <Button
                 label={this.cpnyFplnButtonLabel}
                 disabled={this.cpnyFplnButtonDisabled}
-                onClick={() =>
-                  this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get()
-                    ? {}
-                    : this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())
-                }
+                onClick={() => this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())}
                 buttonStyle="width: 175px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
                 menuItems={this.cpnyFplnButtonMenuItems}
@@ -422,11 +441,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.fromIcao.set(v);
-                  this.cityPairModified();
+                  if (v) {
+                    const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                    if (!airport) {
+                      throw new FmsError(FmsErrorType.NotInDatabase);
+                    }
+                    this.fromIcao.set(v);
+                    this.cityPairModified();
+                  }
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 value={this.fromIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
@@ -437,12 +462,18 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-space-lr">TO</div>
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  this.toIcao.set(v);
-                  this.cityPairModified();
+                onModified={async (v) => {
+                  if (v) {
+                    const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                    if (!airport) {
+                      throw new FmsError(FmsErrorType.NotInDatabase);
+                    }
+                    this.toIcao.set(v);
+                    this.cityPairModified();
+                  }
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
-                canBeCleared={Subject.create(false)}
+                canBeCleared={false}
                 value={this.toIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
@@ -453,11 +484,18 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-space-lr">ALTN</div>
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  this.altnIcao.set(v === 'NONE' ? null : v);
+                onModified={async (v) => {
+                  const isClear = v === 'NONE';
+                  this.altnIcao.set(isClear ? null : v);
                   if (v) {
+                    if (!isClear) {
+                      const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
+                      if (!airport) {
+                        throw new FmsError(FmsErrorType.NotInDatabase);
+                      }
+                    }
                     await this.props.flightPlanInterface.setAlternate(
-                      v === 'NONE' ? undefined : v,
+                      isClear ? undefined : v,
                       this.loadedFlightPlanIndex.get(),
                     );
                     this.props.fmcService.master.acInterface.updateFmsData();
@@ -465,6 +503,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 disabled={this.altnDisabled}
+                canBeCleared={false}
                 value={this.altnIcao}
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
@@ -633,24 +672,27 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   disabled={this.tripWindDisabled}
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
-                  alignText="center"
+                  alignText={this.tripWindTextAlign}
                   errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
               <Button
-                disabled={true}
                 label="WIND"
-                onClick={() => console.log('WIND')}
+                onClick={() =>
+                  this.props.mfd.uiService.navigateTo(
+                    `fms/${this.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}`,
+                  )
+                }
                 buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />
-              <Button
-                disabled={true}
-                label="CPNY WIND<br />REQUEST"
-                onClick={() => console.log('CPNY WIND REQUEST')}
-                buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
+              <CpnyWindRequestButton
+                fmc={this.props.fmcService.master}
+                flightPlanIndex={this.loadedFlightPlanIndex}
+                tmpyExists={this.tmpyExists}
+                isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
               />
             </div>
             <div style={{ visibility: this.visibilityOnlyInActive }}>

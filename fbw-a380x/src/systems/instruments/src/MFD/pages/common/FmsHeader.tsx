@@ -1,7 +1,7 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
 import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
-import { activeFlightPlanPageUri, activeFlightPlanFuelAndLoadUri, dataStatusUri } from '../../shared/utils';
+import { activeFlightPlanFuelAndLoadUri, activeFlightPlanPageUri, dataStatusUri } from '../../shared/utils';
 
 /*
  * Complete header for the FMS system
@@ -49,7 +49,7 @@ export class FmsHeader extends AbstractHeader {
               { label: 'F-PLN', action: () => this.props.uiService.navigateTo(activeFlightPlanPageUri) },
               { label: 'PERF', action: () => this.props.uiService.navigateTo('fms/active/perf') },
               { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo(activeFlightPlanFuelAndLoadUri) },
-              { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind'), disabled: true },
+              { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind') },
               { label: 'INIT', action: () => this.props.uiService.navigateTo('fms/active/init') },
             ]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorActive`}
