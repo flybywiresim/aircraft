@@ -256,6 +256,8 @@ export class PseudoFWC {
 
   private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
+  private readonly fwcOut125 = Arinc429RegisterSubject.createEmpty();
+
   private readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
   private readonly ir1InAttAlign = Subject.create(false);
@@ -284,6 +286,8 @@ export class PseudoFWC {
   private readonly sdac00401Word = Arinc429Register.empty();
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
+
+  private readonly sdac00510Word = Arinc429Register.empty();
 
   private readonly sdac00511Word = Arinc429Register.empty();
 
@@ -1637,6 +1641,7 @@ export class PseudoFWC {
 
   /* SETTINGS */
   private readonly configPortableDevices = Subject.create(false);
+  private readonly avionicsTestMode = Subject.create(false);
 
   /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
@@ -1754,6 +1759,11 @@ export class PseudoFWC {
       v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_124');
     }, true);
 
+    this.fwcOut125.sub((v) => {
+      v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_125');
+      v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_125');
+    }, true);
+
     this.stallWarning.sub((v) => {
       this.fwcOut126.setBitValue(17, v);
       // set the sound on/off
@@ -1767,7 +1777,13 @@ export class PseudoFWC {
     }, true);
 
     // FIXME depend on FWC state
+    this.fwcOut125.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+
+    NXDataStore.getSetting('CONFIG_AVIONICS_TEST_MODE').sub(
+      (avionicsTestMode) => this.avionicsTestMode.set(avionicsTestMode),
+      true,
+    );
 
     const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
@@ -2070,6 +2086,10 @@ export class PseudoFWC {
     this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
     this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
 
+    this.sdac00510Word.set(0);
+    this.sdac00510Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00510Word.setBitValue(28, this.avionicsTestMode.get());
+
     this.sdac00511Word.set(0);
     this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00511Word.setBitValue(22, this.brakeAccuPressVar.get() < 1650);
@@ -2148,6 +2168,8 @@ export class PseudoFWC {
 
     /** SDAC acquisition */
     this.acquireSdac();
+
+    this.fwcOut125.setBitValue(11, this.sdac00510Word.bitValue(28));
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 

@@ -28,6 +28,7 @@ import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/Destroy
 import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
+import { FwcFlightPhaseIndicator } from './elements/FwcFlightPhaseIndicator';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars>();
@@ -375,9 +376,10 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
               <text x={384} y={316} class="White F26 Center">
                 EGT
               </text>
-              <text x={384} y={339} class="Cyan F20 Center">
+              <text x={379} y={339} class="Cyan F20 Center">
                 &deg;C
               </text>
+              <FwcFlightPhaseIndicator bus={this.props.bus} />
             </svg>
           </div>
           <div class="WarningDisplayArea">
