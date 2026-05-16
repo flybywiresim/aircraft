@@ -330,7 +330,7 @@ export class FwsCore {
   public readonly fwc1Out126 = Arinc429RegisterSubject.createEmpty();
   public readonly fwc2Out126 = Arinc429RegisterSubject.createEmpty();
 
-  private readonly airbusTestMode = Subject.create(false);
+  private readonly avionicsTestMode = Subject.create(false);
 
   public readonly approachAutoDisplayQnhSetPulseNode = new NXLogicPulseNode(true);
   public readonly approachAutoDisplaySlatsExtendedPulseNode = new NXLogicPulseNode(true);
@@ -2446,8 +2446,8 @@ export class FwsCore {
     );
 
     this.subs.push(
-      NXDataStore.getSetting('CONFIG_AIRBUS_TEST_MODE').sub(
-        (airbusTestMode) => this.airbusTestMode.set(airbusTestMode),
+      NXDataStore.getSetting('CONFIG_AVIONICS_TEST_MODE').sub(
+        (avionicsTestMode) => this.avionicsTestMode.set(avionicsTestMode),
         true,
       ),
     );
@@ -2500,7 +2500,7 @@ export class FwsCore {
     );
 
     this.subs.push(
-      this.airbusTestMode.sub((v) => {
+      this.avionicsTestMode.sub((v) => {
         this.fwc1Out125.setBitValue(11, v);
         this.fwc2Out125.setBitValue(11, v);
       }, true),

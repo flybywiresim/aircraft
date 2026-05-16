@@ -43,7 +43,7 @@ render(
           satcom: false,
           latLonExtend: false,
           rmpVhfSpacing: false,
-          airbusTestMode: true,
+          avionicsTestMode: true,
         },
         realism: {
           mcduKeyboard: false,

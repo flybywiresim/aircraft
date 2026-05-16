@@ -14,7 +14,7 @@ export class FwcFlightPhaseIndicator extends DisplayComponent<FwcFlightPhaseIndi
     this.props.bus.getSubscriber<FwcBusEvents>().on('a32nx_fwc_discrete_word_125_1'),
   );
 
-  private readonly airbusTestMode = MappedSubject.create(
+  private readonly avionicsTestMode = MappedSubject.create(
     ([fwcDiscreteWord125]) => fwcDiscreteWord125.bitValueOr(11, false),
     this.fwcDiscreteWord125,
   );
@@ -30,7 +30,7 @@ export class FwcFlightPhaseIndicator extends DisplayComponent<FwcFlightPhaseIndi
         class="White F22 Center"
         x={384}
         y={371}
-        visibility={this.airbusTestMode.map((airbusTestMode) => (airbusTestMode ? 'inherit' : 'hidden'))}
+        visibility={this.avionicsTestMode.map((avionicsTestMode) => (avionicsTestMode ? 'inherit' : 'hidden'))}
       >
         {this.fwcFlightPhase}
       </text>

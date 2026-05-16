@@ -46,7 +46,7 @@ render(
           paxSign: true,
           rmpVhfSpacing: true,
           satcom: true,
-          airbusTestMode: true,
+          avionicsTestMode: true,
         },
         realism: {
           mcduKeyboard: true,
