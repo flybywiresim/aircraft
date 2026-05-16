@@ -132,6 +132,7 @@
 1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
 1. [A32NX] Split navigation lights into two separate systems - @tracernz (Mike)
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
 
 ## 0.14.0
 
