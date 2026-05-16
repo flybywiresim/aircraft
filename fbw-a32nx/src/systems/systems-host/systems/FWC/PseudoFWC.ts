@@ -3718,7 +3718,7 @@ export class PseudoFWC {
       (lgciu1Or2DiscreteWord3Invalid && (lgciu1GearLeverSelectUp || lgciu2GearLeverSelectUp));
 
     this.gearNotUplockedRecycleMemoryNode.write(
-      this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get(), deltaTime) &&
+      this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get()) &&
         this.lgNotUplockedMemoryNode.read(), // TODO: Check SHOCK ABSORBER FAULT
       this.fwcFlightPhase.get() === 8,
     );
