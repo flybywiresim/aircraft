@@ -1008,6 +1008,14 @@ export class PseudoFWC {
 
   private readonly yepumpPBisAuto = Subject.create(false);
 
+  private readonly blueSysAbnormalLowPressure = Subject.create(false);
+
+  private readonly yellowSysAbnormalLowPressure = Subject.create(false);
+
+  private readonly greenSysAbnormalLowPressure = Subject.create(false);
+
+  private readonly twoHydraulicsOut = Subject.create(false);
+
   /* 31 - FWS */
 
   public readonly fwcFlightPhase = Subject.create(-1);
@@ -1029,6 +1037,8 @@ export class PseudoFWC {
   private readonly flightPhase34 = Subject.create(false);
 
   private readonly flightPhase345 = Subject.create(false);
+
+  private readonly flightPhase56 = Subject.create(false);
 
   public readonly flightPhase567 = Subject.create(false);
 
@@ -1199,7 +1209,7 @@ export class PseudoFWC {
 
   private readonly gearLeverSelectDownPhase67PulseNode = new NXLogicPulseNode();
 
-  private readonly gearNotDownlockedMemoryNode = new NXLogicMemoryNode(true);
+  private readonly gearNotDownlockedRecycleMemoryNode = new NXLogicMemoryNode(true);
 
   private readonly lgNotDown = Subject.create(false);
 
@@ -1210,6 +1220,34 @@ export class PseudoFWC {
   private readonly lgNotDownPulse1 = new NXLogicPulseNode();
 
   private readonly lgNotDownPulse2 = new NXLogicPulseNode();
+
+  private readonly lhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_LEFT_GEAR_UNLOCKED');
+
+  private readonly rhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_RIGHT_GEAR_UNLOCKED');
+
+  private readonly noseLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_NOSE_GEAR_UNLOCKED');
+
+  private readonly lgNotLocked = Subject.create(false);
+
+  private readonly gearNotLockUpAndNotSelectDown = Subject.create(false);
+
+  private readonly gearNotLockUpAndNotSelectDownFor30Seconds = new NXLogicConfirmNode(30, true);
+
+  private readonly gearLockedUp = Subject.create(false);
+
+  private readonly gearLockedUpFor5Seconds = new NXLogicConfirmNode(5, true);
+
+  private readonly lgNotUplockedMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly lgNotUplocked = Subject.create(false);
+
+  private readonly gearNotUplockedWarning = Subject.create(false);
+
+  private readonly gearLeverSelectUpPhase56PulseNode = new NXLogicPulseNode();
+
+  private readonly gearNotUplockedRecycleMemoryNode = new NXLogicMemoryNode(true);
+
+  private readonly lgDownlockedFor10Seconds = new NXLogicConfirmNode(10, true);
 
   private readonly lgciu1OnGroundDisagreeConf = new NXLogicConfirmNode(1, true);
 
@@ -1263,6 +1301,8 @@ export class PseudoFWC {
   private readonly adr2Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_2'));
 
   private readonly adr3Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_3'));
+
+  private readonly adr123CasAbove220Kts = Subject.create(false);
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
 
@@ -1365,6 +1405,14 @@ export class PseudoFWC {
   );
 
   private engine1Or2Running = false;
+
+  private readonly engine1Or2RunningFor1Second = new NXLogicConfirmNode(1, true);
+
+  private readonly engine1And2NotRunningInAirFor5Seconds = new NXLogicConfirmNode(5, true);
+
+  private readonly engine1RunningOrNotFlightPhase12910For1Second = new NXLogicConfirmNode(1, true);
+
+  private readonly engine2RunningOrNotFlightPhase12910For1Second = new NXLogicConfirmNode(1, true);
 
   private readonly engDualFault = Subject.create(false);
 
@@ -2124,6 +2172,7 @@ export class PseudoFWC {
     this.flightPhase29.set(flightPhase === 2 || flightPhase === 9);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(flightPhase === 3 || flightPhase === 4 || flightPhase === 5);
+    this.flightPhase56.set(flightPhase === 5 || flightPhase === 6);
     this.flightPhase567.set(flightPhase === 5 || flightPhase === 6 || flightPhase === 7);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
     this.flightPhase678.set(flightPhase === 6 || flightPhase === 7 || flightPhase === 8);
@@ -2252,6 +2301,25 @@ export class PseudoFWC {
     const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
     const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
+    this.blueSysAbnormalLowPressure.set(
+      !blueSysPressurised &&
+        (this.engine1Or2RunningFor1Second.read() || this.engine1And2NotRunningInAirFor5Seconds.read()),
+    );
+    this.yellowSysAbnormalLowPressure.set(
+      !yellowSysPressurised && this.engine2RunningOrNotFlightPhase12910For1Second.read(),
+    );
+    this.greenSysAbnormalLowPressure.set(
+      !greenSysPressurised && this.engine1RunningOrNotFlightPhase12910For1Second.read(),
+    );
+
+    this.twoHydraulicsOut.set(
+      countTrue(
+        this.greenSysAbnormalLowPressure.get(),
+        this.yellowSysAbnormalLowPressure.get(),
+        this.blueSysAbnormalLowPressure.get(),
+      ) > 1,
+    );
+
     /* ADIRS acquisition */
     const adr1PressureAltitude = this.adr1PressureAlt.get();
     const adr2PressureAltitude = this.adr2PressureAlt.get();
@@ -2332,6 +2400,7 @@ export class PseudoFWC {
     const lgciu2DiscreteWord4Invalid = this.lgciu2DiscreteWord4.isInvalid();
 
     const lgciu1Or2DiscreteWord1Invalid = lgciu1DiscreteWord1Invalid || lgciu2DiscreteWord1Invalid;
+    const lgciu1Or2DiscreteWord3Invalid = lgciu1DiscreteWord3Invalid || lgciu2DiscreteWord3Invalid;
 
     const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(23, false);
     const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(23, false);
@@ -2711,7 +2780,25 @@ export class PseudoFWC {
           (this.engine1State.get() === EngineState.Off && this.engine2State.get() === EngineState.Off) ||
           (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
     );
+
     this.engine1Or2Running = this.engine1CoreAtOrAboveMinIdle.get() || this.engine2CoreAtOrAboveMinIdle.get();
+    this.engine1Or2RunningFor1Second.write(this.engine1Or2Running, deltaTime);
+
+    this.engine1And2NotRunningInAirFor5Seconds.write(
+      !this.engine1CoreAtOrAboveMinIdle.get() &&
+        !this.engine2CoreAtOrAboveMinIdle.get() &&
+        !this.aircraftOnGround.get(),
+      deltaTime,
+    );
+
+    this.engine1RunningOrNotFlightPhase12910For1Second.write(
+      this.engine1CoreAtOrAboveMinIdle.get() || !this.flightPhase12910.get(),
+      deltaTime,
+    );
+    this.engine2RunningOrNotFlightPhase12910For1Second.write(
+      this.engine2CoreAtOrAboveMinIdle.get() || !this.flightPhase12910.get(),
+      deltaTime,
+    );
 
     // Memo
     this.toMemoFlipFlop.write(
@@ -3554,10 +3641,98 @@ export class PseudoFWC {
     const gearLeverSelectDownPhase67Pulse = this.gearLeverSelectDownPhase67PulseNode.write(
       gearLeverSelectDown && this.flightPhase67.get(),
     );
-    this.gearNotDownlockedMemoryNode.write(
+    this.gearNotDownlockedRecycleMemoryNode.write(
       this.gearNotDownlocked.get() && gearLeverSelectDownPhase67Pulse,
       this.fwcFlightPhase.get() === 8,
     );
+
+    // l/g not uplocked
+    this.lgNotLocked.set(this.lhLgNotLocked.get() || this.rhLgNotLocked.get() || this.noseLgNotLocked.get());
+
+    const lgciu1LhGearNotLockUpAndNotSelectDown = this.lgciu1DiscreteWord1.bitValueOr(11, false);
+    const lgciu2LhGearNotLockUpAndNotSelectDown = this.lgciu2DiscreteWord1.bitValueOr(11, false);
+    const lhGearNotLockUpAndNotSelectDown =
+      (lgciu1LhGearNotLockUpAndNotSelectDown && lgciu2LhGearNotLockUpAndNotSelectDown) ||
+      (lgciu1Or2DiscreteWord1Invalid &&
+        (lgciu1LhGearNotLockUpAndNotSelectDown || lgciu2LhGearNotLockUpAndNotSelectDown));
+
+    const lgciu1RhGearNotLockUpAndNotSelectDown = this.lgciu1DiscreteWord1.bitValueOr(12, false);
+    const lgciu2RhGearNotLockUpAndNotSelectDown = this.lgciu2DiscreteWord1.bitValueOr(12, false);
+    const rhGearNotLockUpAndNotSelectDown =
+      (lgciu1RhGearNotLockUpAndNotSelectDown && lgciu2RhGearNotLockUpAndNotSelectDown) ||
+      (lgciu1Or2DiscreteWord1Invalid &&
+        (lgciu1RhGearNotLockUpAndNotSelectDown || lgciu2RhGearNotLockUpAndNotSelectDown));
+
+    const lgciu1NoseGearNotLockUpAndNotSelectDown = this.lgciu1DiscreteWord1.bitValueOr(13, false);
+    const lgciu2NoseGearNotLockUpAndNotSelectDown = this.lgciu2DiscreteWord1.bitValueOr(13, false);
+    const noseGearNotLockUpAndNotSelectDown =
+      (lgciu1NoseGearNotLockUpAndNotSelectDown && lgciu2NoseGearNotLockUpAndNotSelectDown) ||
+      (lgciu1Or2DiscreteWord1Invalid &&
+        (lgciu1NoseGearNotLockUpAndNotSelectDown || lgciu2NoseGearNotLockUpAndNotSelectDown));
+
+    this.gearNotLockUpAndNotSelectDown.set(
+      lhGearNotLockUpAndNotSelectDown || rhGearNotLockUpAndNotSelectDown || noseGearNotLockUpAndNotSelectDown,
+    );
+    this.gearNotLockUpAndNotSelectDownFor30Seconds.write(this.gearNotLockUpAndNotSelectDown.get(), deltaTime);
+
+    const lgciu1LhGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(11, false);
+    const lgciu2LhGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(11, false);
+    const lhGearLockUp =
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1LhGearNotLockUp && !lgciu2LhGearNotLockUp) ||
+      (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1LhGearNotLockUp) ||
+      (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2LhGearNotLockUp);
+
+    const lgciu1RhGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(12, false);
+    const lgciu2RhGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(12, false);
+    const rhGearLockUp =
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1RhGearNotLockUp && !lgciu2RhGearNotLockUp) ||
+      (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1RhGearNotLockUp) ||
+      (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2RhGearNotLockUp);
+
+    const lgciu1NoseGearNotLockUp = this.lgciu1DiscreteWord3.bitValueOr(13, false);
+    const lgciu2NoseGearNotLockUp = this.lgciu2DiscreteWord3.bitValueOr(13, false);
+    const noseGearLockUp =
+      (!lgciu1Or2DiscreteWord3Invalid && !lgciu1NoseGearNotLockUp && !lgciu2NoseGearNotLockUp) ||
+      (lgciu2DiscreteWord3Invalid && !lgciu1DiscreteWord3Invalid && !lgciu1NoseGearNotLockUp) ||
+      (lgciu1DiscreteWord3Invalid && !lgciu2DiscreteWord3Invalid && !lgciu2NoseGearNotLockUp);
+
+    this.gearLockedUp.set(lhGearLockUp && rhGearLockUp && noseGearLockUp);
+
+    this.lgNotUplocked.set(
+      !this.twoHydraulicsOut.get() &&
+        (this.lgDownlocked.get() || this.lgNotLocked.get()) &&
+        this.gearNotLockUpAndNotSelectDownFor30Seconds.read(),
+    );
+
+    this.gearNotUplockedWarning.set(
+      this.lgNotUplockedMemoryNode.write(
+        this.lgNotUplocked.get(),
+        this.gearLockedUpFor5Seconds.write(this.gearLockedUp.get(), deltaTime),
+      ),
+    );
+
+    const lgciu1GearLeverSelectUp = this.lgciu1DiscreteWord3.bitValueOr(14, false);
+    const lgciu2GearLeverSelectUp = this.lgciu2DiscreteWord3.bitValueOr(14, false);
+    const gearLeverSelectUp =
+      (lgciu1GearLeverSelectUp && lgciu2GearLeverSelectUp) ||
+      (lgciu1Or2DiscreteWord3Invalid && (lgciu1GearLeverSelectUp || lgciu2GearLeverSelectUp));
+
+    this.gearNotUplockedRecycleMemoryNode.write(
+      this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get()) &&
+        this.lgNotUplockedMemoryNode.read(), // TODO: Check SHOCK ABSORBER FAULT
+      this.fwcFlightPhase.get() === 8,
+    );
+
+    const adr1CS = this.adr1Cas.get();
+    const adr2CS = this.adr2Cas.get();
+    const adr3CS = this.adr3Cas.get();
+    this.adr123CasAbove220Kts.set(
+      (adr1CS.value > 220 && !(adr1CS.isInvalid() || adr1CS.isNoComputedData())) ||
+        (adr2CS.value > 220 && !(adr2CS.isInvalid() || adr2CS.isNoComputedData())) ||
+        (adr3CS.value > 220 && !(adr3CS.isInvalid() || adr3CS.isNoComputedData())),
+    );
+
+    this.lgDownlockedFor10Seconds.write(this.lgDownlocked.get(), deltaTime);
 
     this.phase84s5Trigger.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.groundSpoiler5sDelayed.write(
@@ -6034,8 +6209,8 @@ export class PseudoFWC {
       simVarIsActive: this.gearNotDownlocked,
       whichCodeToReturn: () => [
         0,
-        !this.gearNotDownlockedMemoryNode.read() ? 1 : null,
-        !this.gearNotDownlockedMemoryNode.read() ? 2 : null,
+        !this.gearNotDownlockedRecycleMemoryNode.read() ? 1 : null,
+        !this.gearNotDownlockedRecycleMemoryNode.read() ? 2 : null,
         3,
         4,
       ],
@@ -6072,6 +6247,41 @@ export class PseudoFWC {
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
       cancel: true,
+    },
+    3200130: {
+      // GEAR NOT UPLOCKED
+      flightPhaseInhib: [3, 4, 7, 8, 9, 10],
+      simVarIsActive: this.gearNotUplockedWarning,
+      whichCodeToReturn: () => [
+        0,
+        !this.lgDownlocked.get() ? 1 : null,
+        !this.gearNotUplockedRecycleMemoryNode.read() && !this.adr123CasAbove220Kts.get() ? 2 : null,
+        !this.gearNotUplockedRecycleMemoryNode.read() &&
+        !this.adr123CasAbove220Kts.get() &&
+        !this.lgDownlockedFor10Seconds.read()
+          ? 3
+          : null,
+        !this.adr123CasAbove220Kts.get() && !this.lgDownlockedFor10Seconds.read() ? 4 : null,
+        this.lgDownlocked.get() ? 5 : null,
+        !this.lgDownlocked.get() ? 6 : null, // TODO: !Check one door not closed
+        !this.aircraftOnGround.get() ? 7 : null, // TODO: Check engines out
+        !this.aircraftOnGround.get() ? 8 : null, // TODO: Check engines out
+      ],
+      codesToReturn: [
+        '320013001',
+        '320013002',
+        '320013003',
+        '320013004',
+        '320013005',
+        '320013006',
+        '320013007',
+        '320013008',
+        '320013009',
+      ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.WHEEL,
+      side: 'LEFT',
     },
     3200180: {
       // LGCIU 1 FAULT
