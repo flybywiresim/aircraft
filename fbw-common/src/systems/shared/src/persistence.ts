@@ -168,9 +168,7 @@ export class NXDataStore {
   public static getLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, defaultVal?: string): any {
     const val = NXDataStore.getRaw(key);
 
-    // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
-    // We could use SearchStoredData, but that spams the console with every key (somebody left their debug print in)
-    if (val === null || val.length === 0) {
+    if (val.length === 0) {
       return defaultVal;
     }
 
@@ -183,7 +181,9 @@ export class NXDataStore {
    * @returns a string, or the empty string if the value is not present
    */
   private static getRaw(key: string): string {
-    return GetStoredData(`${this.aircraftProjectPrefix}_${key}`);
+    // GetStoredData for a non-existing key returns '' on FS2020, or null on FS2024, and null on error for both.
+    // We don't care for the distinction so just return an empty string for any of those cases.
+    return GetStoredData(`${this.aircraftProjectPrefix}_${key}`) ?? '';
   }
 
   /**
