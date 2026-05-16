@@ -45,7 +45,7 @@ export const TemperatureCorrectionWidget = () => {
   const dispatch = useAppDispatch();
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+  const [metarSource] = usePersistentSetting('CONFIG_METAR_SRC');
   const { usingMetric: usingMetricPinProg } = Units;
 
   const { icao, temperature, fieldElevation, publishedAltitudes } = useAppSelector(
