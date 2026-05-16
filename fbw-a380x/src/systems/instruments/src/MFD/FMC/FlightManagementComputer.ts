@@ -1724,8 +1724,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
       }
       this.companyWindUplinkPending.set(
-        this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get(), throttledDt) &&
-          this.#flightPlanService.hasTemporary,
+        this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get()) && this.#flightPlanService.hasTemporary,
       );
       this.draftWindsExist.set(this.flightPlanInterface.hasDraftWinds());
       // TODO port over from legacy code
