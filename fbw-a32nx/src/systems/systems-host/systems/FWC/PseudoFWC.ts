@@ -135,7 +135,7 @@ enum EngineState {
 type PlugRow = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12' | '13' | '14' | '15';
 type PlugColumn = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K';
 type PlugPin = `${PlugRow}${PlugColumn}`;
-type Plug<TPin extends PlugPin> = Partial<Record<TPin, boolean>>;
+type Plug<TPin extends PlugPin> = Record<TPin, boolean>;
 
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<
@@ -279,9 +279,9 @@ export class PseudoFWC {
   private navMode = false;
 
   /* Plugs */
-  private readonly ltp: Plug<'07C'> = {};
+  private readonly ltp: Plug<'07C'> = { '07C': false };
 
-  private readonly rtp: Plug<'07E'> = {};
+  private readonly rtp: Plug<'07E'> = { '07E': false };
 
   /* SDAC */
   private readonly sdac00100Word = Arinc429Register.empty();
@@ -3175,13 +3175,11 @@ export class PseudoFWC {
 
     /* ELEC STUFF USED BY A LOT OF LOGIC */
 
-    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
-    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const gen1LineContactorOff = this.sdac00201Word.bitValue(14);
     const gen2LineContactorOff = this.sdac00210Word.bitValue(14);
 
-    this.engine1OnFor15s.write(this.engine1N2Sup.get() && this.engine1Master.get(), deltaTime);
-    this.engine2OnFor15s.write(this.engine2N2Sup.get() && this.engine2Master.get(), deltaTime);
+    this.engine1OnFor15s.write(this.engine1CoreAtOrAboveMinIdle.get() && this.engine1Master.get(), deltaTime);
+    this.engine2OnFor15s.write(this.engine2CoreAtOrAboveMinIdle.get() && this.engine2Master.get(), deltaTime);
 
     this.gen1Inop.set(this.engine1OnFor15s.read() && gen1LineContactorOff);
     this.gen2Inop.set(this.engine2OnFor15s.read() && gen2LineContactorOff);
