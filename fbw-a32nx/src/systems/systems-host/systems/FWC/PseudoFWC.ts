@@ -1641,7 +1641,7 @@ export class PseudoFWC {
 
   /* SETTINGS */
   private readonly configPortableDevices = Subject.create(false);
-  private readonly developmentMode = Subject.create(false);
+  private readonly airbusTestMode = Subject.create(false);
 
   /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
@@ -1780,8 +1780,8 @@ export class PseudoFWC {
     this.fwcOut125.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
-    NXDataStore.getSetting('CONFIG_A32NX_DEVELOPMENT_MODE').sub(
-      (developmentMode) => this.developmentMode.set(developmentMode),
+    NXDataStore.getSetting('CONFIG_A32NX_AIRBUS_TEST_MODE').sub(
+      (airbusTestMode) => this.airbusTestMode.set(airbusTestMode),
       true,
     );
 
@@ -2088,7 +2088,7 @@ export class PseudoFWC {
 
     this.sdac00510Word.set(0);
     this.sdac00510Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.sdac00510Word.setBitValue(28, this.developmentMode.get());
+    this.sdac00510Word.setBitValue(28, this.airbusTestMode.get());
 
     this.sdac00511Word.set(0);
     this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);

@@ -37,7 +37,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
   const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
   const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
-  const [developmentMode, setDevelopmentMode] = usePersistentSetting('CONFIG_A32NX_DEVELOPMENT_MODE');
+  const [airbusTestMode, setAirbusTestMode] = usePersistentSetting('CONFIG_A32NX_AIRBUS_TEST_MODE');
 
   const handleSetThrustReductionAlt = (value: string) => {
     setThrustReductionHeightSetting(value);
@@ -208,9 +208,9 @@ export const AircraftOptionsPinProgramsPage = () => {
             </Link>
           </SettingItem>
 
-          {aircraftContext.settingsPages.pinProgram.developmentMode && (
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.DevelopmentMode')}>
-              <Toggle value={developmentMode} onToggle={(value) => setDevelopmentMode(value)} />
+          {aircraftContext.settingsPages.pinProgram.airbusTestMode && (
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.AirbusTestMode')}>
+              <Toggle value={airbusTestMode} onToggle={(value) => setAirbusTestMode(value)} />
             </SettingItem>
           )}
         </SettingsPage>

@@ -16,7 +16,7 @@ interface A32NXFwcBusBaseEvents {
    * Discrete word with FWC outputs. Raw ARINC word.
    * * Bit | Meaning
    *   --- | ---
-   *    11 | Development Mode
+   *    11 | Airbus Test Mode
    */
   a32nx_fwc_discrete_word_125: number;
   /**
