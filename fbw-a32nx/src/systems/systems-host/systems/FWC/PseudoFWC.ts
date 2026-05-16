@@ -3782,7 +3782,7 @@ export class PseudoFWC {
       (lgciu1GearLeverSelectUp && lgciu2GearLeverSelectUp) ||
       (lgciu1Or2DiscreteWord3Invalid && (lgciu1GearLeverSelectUp || lgciu2GearLeverSelectUp));
 
-    this.gearLeverSelectUpPulseNode.write(gearLeverSelectUp, deltaTime);
+    this.gearLeverSelectUpPulseNode.write(gearLeverSelectUp);
 
     this.gearNotUplockedRecycleMemoryNode.write(
       this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get()) &&
@@ -3831,7 +3831,7 @@ export class PseudoFWC {
     this.doorsNotClosedWarning.set(this.doorsNotClosed.get());
 
     this.doorsNotClosedRecycleMemoryNode.write(
-      this.doorsNotClosedPulseNode.write(this.doorsNotClosed.get(), deltaTime) && gearLeverSelectUp,
+      this.doorsNotClosedPulseNode.write(this.doorsNotClosed.get()) && gearLeverSelectUp,
       (this.doorsNotClosed.get() && this.gearLeverSelectUpPulseNode.read()) || this.fwcFlightPhase.get() === 8,
     );
 
