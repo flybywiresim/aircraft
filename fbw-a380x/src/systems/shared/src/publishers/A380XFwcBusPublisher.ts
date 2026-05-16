@@ -3,7 +3,7 @@
 
 import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
-interface FwcBusBaseEvents {
+interface A380XFwcBusBaseEvents {
   /**
    * Discrete word with FWC outputs. Raw ARINC word.
    * * Bit | Meaning
@@ -29,32 +29,32 @@ interface FwcBusBaseEvents {
   a32nx_fwc_discrete_word_126: number;
 }
 
-type IndexedTopics = keyof FwcBusBaseEvents;
+type IndexedTopics = keyof A380XFwcBusBaseEvents;
 
 type FwcIndexedEventType<T extends string> = `${T}_${1 | 2}`;
 
-type FwcBusIndexedEvents = {
-  [P in keyof Pick<FwcBusBaseEvents, IndexedTopics> as FwcIndexedEventType<P>]: FwcBusBaseEvents[P];
+type A380XFwcBusIndexedEvents = {
+  [P in keyof Pick<A380XFwcBusBaseEvents, IndexedTopics> as FwcIndexedEventType<P>]: A380XFwcBusBaseEvents[P];
 };
 
-interface FwcBusPublisherEvents extends FwcBusBaseEvents, FwcBusIndexedEvents {}
+interface A380XFwcBusPublisherEvents extends A380XFwcBusBaseEvents, A380XFwcBusIndexedEvents {}
 
 /**
- * Events for  FWC output bus local vars.
+ * Events for A380X FWC output bus local vars.
  */
-export interface FwcBusEvents extends Omit<FwcBusBaseEvents, IndexedTopics>, FwcBusIndexedEvents {}
+export interface A380XFwcBusEvents extends Omit<A380XFwcBusBaseEvents, IndexedTopics>, A380XFwcBusIndexedEvents {}
 
 /**
- * Publisher for  FWC output bus local vars.
+ * Publisher for A380X FWC output bus local vars.
  */
-export class FwcBusPublisher extends SimVarPublisher<FwcBusPublisherEvents> {
+export class A380XFwcBusPublisher extends SimVarPublisher<A380XFwcBusPublisherEvents> {
   /**
    * Create a publisher.
    * @param bus The EventBus to publish to
    * @param pacer An optional pacer to use to control the rate of publishing
    */
-  public constructor(bus: EventBus, pacer?: PublishPacer<FwcBusPublisherEvents>) {
-    const simvars = new Map<keyof FwcBusPublisherEvents, SimVarPublisherEntry<any>>([
+  public constructor(bus: EventBus, pacer?: PublishPacer<A380XFwcBusPublisherEvents>) {
+    const simvars = new Map<keyof A380XFwcBusPublisherEvents, SimVarPublisherEntry<any>>([
       [
         'a32nx_fwc_discrete_word_124',
         {

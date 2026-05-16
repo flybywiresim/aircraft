@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429LocalVarConsumerSubject, FwcBusEvents } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { A380XFwcBusEvents } from '@shared/publishers/A380XFwcBusPublisher';
 import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 
 interface FwcFlightPhaseIndicatorProps {
@@ -11,7 +12,7 @@ interface FwcFlightPhaseIndicatorProps {
 
 export class FwcFlightPhaseIndicator extends DisplayComponent<FwcFlightPhaseIndicatorProps> {
   private readonly fwcDiscreteWord125 = Arinc429LocalVarConsumerSubject.create(
-    this.props.bus.getSubscriber<FwcBusEvents>().on('a32nx_fwc_discrete_word_125_1'),
+    this.props.bus.getSubscriber<A380XFwcBusEvents>().on('a32nx_fwc_discrete_word_125_1'),
   );
 
   private readonly avionicsTestMode = MappedSubject.create(
