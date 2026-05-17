@@ -2,18 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 import {
   NXLogicConfirmNode,
-  NxHysterisNode,
   NXLogicPulseNode,
   NXLogicMemoryNode,
   NXLogicTriggeredMonostableNode,
-  LowPassFilter,
-  Arinc429WordData,
   Arinc429Register,
   RegisteredSimVar,
-  NXDataStore,
 } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
-import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { FwsCore } from './FwsCore';
 
 export class FwsAutoCallouts {
@@ -25,10 +20,10 @@ export class FwsAutoCallouts {
   private readonly pedalInputLeft = RegisteredSimVar.create('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', SimVarValueType.Number);
   private readonly pedalInputRight = RegisteredSimVar.create('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', SimVarValueType.Number);
   private readonly phase10RowRopMtrig = new NXLogicTriggeredMonostableNode(4.5, false, true);
-  private readonly brakeMaxBraking = Subject.create(false);
+  public readonly brakeMaxBraking = Subject.create(false);
   // SET MAX REVERSE
   private readonly setMaxReverseConf = new NXLogicConfirmNode(0.2);
-  private readonly setMaxReverse = Subject.create(false);
+  public readonly setMaxReverse = Subject.create(false);
 
   // KEEP MAX REVERSE
   private readonly keepMaxReverseMemory = new NXLogicMemoryNode();
@@ -48,7 +43,8 @@ export class FwsAutoCallouts {
   }
 
   updateRowRopWarnings(flightPhase: number, deltaTime: number) {
-    const onGroundOrBounce =
+    this.rowRopStatusWord.set(this.rowRopStatusWordVar.get());
+    const rolloutOrBouncedLanding =
       flightPhase == 11 ||
       flightPhase == 10 ||
       (this.phase10RowRopMtrig.write(flightPhase === 10, deltaTime) && (flightPhase === 8 || flightPhase === 9));
@@ -56,12 +52,12 @@ export class FwsAutoCallouts {
     // MAX BRAKING
     const maxBrakingRequested = this.rowRopStatusWord.bitValueOr(11, false);
     const maxBrakingSet = this.pedalInputLeft.get() > 90 || this.pedalInputRight.get() > 90;
-    const brakeMaxBraking = maxBrakingRequested && !maxBrakingSet && onGroundOrBounce;
+    const brakeMaxBraking = maxBrakingRequested && !maxBrakingSet && rolloutOrBouncedLanding;
     this.brakeMaxBraking.set(brakeMaxBraking);
 
     // SET MAX REVERSE
     const maxReverseRequested = this.rowRopStatusWord.bitValueOr(12, false);
-    this.setMaxReverse.set(this.setMaxReverseConf.write(maxReverseRequested, deltaTime) && onGroundOrBounce); //FIXME: Check reverser INOP
+    this.setMaxReverse.set(this.setMaxReverseConf.write(maxReverseRequested, deltaTime) && rolloutOrBouncedLanding); //FIXME: Check reverser INOP
 
     // KEEP MAX REVERSE.
     const keepMaxReverseMemory = this.keepMaxReverseMemory.write(

@@ -4509,7 +4509,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 ## ROW / ROP / OANS (ATA 34)
 
 - A32NX_ROW_ROP_WORD_1
-    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD.
+    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD and generating warnings on the FWC.
     - Arinc429<Discrete>
     - | Bit |            Description            |
       |:---:|:---------------------------------:|

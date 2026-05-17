@@ -635,7 +635,7 @@ struct AutobrakeRunwayOverrunProtection {
     is_actively_braking: bool,
 
     is_any_autobrake_active: bool,
-    is_rev_thrust_selected: bool,
+    is_full_rev_selected: bool,
     status_word: Arinc429Word<u32>,
 
     row_rop_lost: bool,
@@ -666,7 +666,7 @@ impl AutobrakeRunwayOverrunProtection {
             is_actively_braking: false,
 
             is_any_autobrake_active: false,
-            is_rev_thrust_selected: false,
+            is_full_rev_selected: false,
 
             status_word: Arinc429Word::new(0, SignStatus::NormalOperation),
 
@@ -696,7 +696,7 @@ impl AutobrakeRunwayOverrunProtection {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        if (self.is_row_rop_operative(context)) {
+        if self.is_row_rop_operative(context) {
             self.status_word.set_ssm(SignStatus::NormalOperation);
 
             self.is_any_autobrake_active = is_any_autobrake_active;
@@ -726,22 +726,28 @@ impl AutobrakeRunwayOverrunProtection {
             let overrun_detected =
                 is_on_ground && max_braking_prediction >= self.distance_to_runway_end.value();
 
+            let ground_speed_kts = context.ground_speed().get::<knot>();
+
             // BRAKE MAX BRAKING Requested
             self.status_word.set_bit(
                 11,
-                self.should_show_manual_braking_warning(context, overrun_detected),
+                self.should_show_manual_braking_warning(overrun_detected),
             );
 
             // SET MAX REVERSE Requested
             self.status_word.set_bit(
                 12,
-                self.should_request_max_reverse(context, overrun_detected),
+                !self.is_full_rev_selected
+                    && overrun_detected
+                    && ground_speed_kts >= Self::MAX_REVERSE_REQUEST_SPEED_KTS,
             );
 
             // KEEP MAX REVERSE Requested
             self.status_word.set_bit(
                 13,
-                self.should_request_keep_max_reverse(context, overrun_detected),
+                overrun_detected
+                    && self.is_full_rev_selected
+                    && ground_speed_kts <= Self::MAX_REVERSE_REQUEST_SPEED_KTS,
             );
 
             let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
@@ -767,11 +773,7 @@ impl AutobrakeRunwayOverrunProtection {
         self.is_actively_braking
     }
 
-    fn should_show_manual_braking_warning(
-        &self,
-        context: &UpdateContext,
-        overrun_detected: bool,
-    ) -> bool {
+    fn should_show_manual_braking_warning(&self, overrun_detected: bool) -> bool {
         let any_engine_not_idle_or_reverse = self.throttle_percents.iter().any(|&x| x > 2.);
 
         if !any_engine_not_idle_or_reverse && !self.is_any_autobrake_active {
@@ -779,22 +781,6 @@ impl AutobrakeRunwayOverrunProtection {
         } else {
             false
         }
-    }
-
-    fn should_request_max_reverse(&self, context: &UpdateContext, overrun_detected: bool) -> bool {
-        !self.is_rev_thrust_selected
-            && overrun_detected
-            && context.ground_speed().get::<knot>() >= Self::MAX_REVERSE_REQUEST_SPEED_KTS
-    }
-
-    fn should_request_keep_max_reverse(
-        &self,
-        context: &UpdateContext,
-        overrun_detected: bool,
-    ) -> bool {
-        overrun_detected
-            && self.is_rev_thrust_selected
-            && context.ground_speed().get::<knot>() <= Self::MAX_REVERSE_REQUEST_SPEED_KTS
     }
 }
 impl SimulationElement for AutobrakeRunwayOverrunProtection {

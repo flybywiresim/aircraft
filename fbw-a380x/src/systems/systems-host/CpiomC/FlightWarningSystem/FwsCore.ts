@@ -84,6 +84,7 @@ import {
   OisDebugDataControlEvents,
 } from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -1553,17 +1554,24 @@ export class FwsCore {
 
   public readonly gearLeverPos = Subject.create(false);
 
-  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
+  private readonly ir1GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_1_GROUND_SPEED`, SimVarValueType.Enum);
+  private readonly ir1GroundSpeed = Arinc429Register.empty();
+  private readonly ir2GroundSpeed = Arinc429Register.empty();
+  private readonly ir2GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_2_GROUND_SPEED`, SimVarValueType.Enum);
+  private readonly ir3GroundSpeed = Arinc429Register.empty();
+  private readonly ir3GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_3_GROUND_SPEED`, SimVarValueType.Enum);
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  private readonly autobrakeActiveVar = RegisteredSimVar.createBoolean('L:A32NX_AUTOBRAKES_ACTIVE');
 
-  public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(true);
 
+  private readonly autoBrakeOffConfirmNode = new NXLogicConfirmNode(1, true);
+
+  private readonly autoBrakeOffMemory = new NXLogicMemoryNode(false);
+  private readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, true, true); // When ABRK deactivated, emit this for 9 sec
+  private readonly autoBrakeOffMasterCautionMemory = new NXLogicMemoryNode(true);
+  private readonly autoBrakeOffMasterCaution = new NXLogicTriggeredMonostableNode(3, true, true);
   public readonly autoBrakeOff = Subject.create(false);
-
-  private autoBrakeOffAuralTriggered = false;
-
-  private autoBrakeOffMemoInhibited = false;
 
   public readonly rowLost = MappedSubject.create(
     ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(11, false) || w2.bitValueOr(11, false)),
@@ -2241,6 +2249,7 @@ export class FwsCore {
   public readonly information = new FwsInformation(this);
   public readonly limitations = new FwsLimitations(this);
   public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
+  private readonly autoCallouts = new FwsAutoCallouts(this);
   public ewdAbnormal: EwdAbnormalDict;
   public allSuppressableItems: FwsSuppressableItemDict;
   private readonly failureActivationTime = new Map<keyof FwsSuppressableItemDict, number>();
@@ -2579,6 +2588,26 @@ export class FwsCore {
           this.publisher.pub('a380x_ois_fws_debug_data', data, true);
         }
       }, true),
+
+      this.autoCallouts.brakeMaxBraking.sub((v) => {
+        this.soundManager.handleSoundCondition('brakeMaxBraking', v);
+      }),
+
+      this.autoCallouts.runwayTooShort.sub((v) => {
+        this.soundManager.handleSoundCondition('runwayTooShort', v);
+      }),
+
+      this.autoCallouts.keepMaxReverse.sub((v) => {
+        this.soundManager.handleSoundCondition('keepMaxReverse', v);
+      }),
+
+      this.autoCallouts.setMaxReverse.sub((v) => {
+        this.soundManager.handleSoundCondition('setMaxReverse', v);
+      }),
+
+      this.autoBrakeOff.sub((v) => {
+        this.soundManager.handleSoundCondition('autoBrakeOff', v);
+      }),
     );
 
     // Inhibit single chimes for the first two seconds after power-on
@@ -3266,6 +3295,9 @@ export class FwsCore {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
+    this.ir1GroundSpeed.set(this.ir1GroundSpeedVar.get());
+    this.ir2GroundSpeed.set(this.ir2GroundSpeedVar.get());
+    this.ir3GroundSpeed.set(this.ir3GroundSpeedVar.get());
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
     const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
@@ -3654,35 +3686,25 @@ export class FwsCore {
       engineThrustLockedAndAthrDisconnected5s && this.engineThrustLockedDelayNode,
     );
 
-    this.autobrakeDeactivatedPulseNode // AUTO BRAKE OFF
-      .write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'));
+    const abOffConfirm = this.autoBrakeOffConfirmNode.write(!this.autobrakeActiveVar.get(), deltaTime);
+    const abOffPulse = this.autobrakeDeactivatedPulseNode // AUTO BRAKE OFF
+      .write(abOffConfirm);
 
-    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
-      this.autobrakeDeactivatedPulseNode.read() &&
-        this.aircraftOnGround.get() &&
-        this.computedAirSpeedToNearest2.get() > 33,
-      deltaTime,
+    const groundSpeedLeft = this.ir3UsedLeft ? this.ir3GroundSpeed.valueOr(0) : this.ir1GroundSpeed.valueOr(0);
+    const groundSpeedRight = this.ir3UsedRight ? this.ir3GroundSpeed.valueOr(0) : this.ir2GroundSpeed.valueOr(0);
+    const autoBrakeOffShouldTrigger =
+      abOffPulse && (flightPhase === 10 || flightPhase === 11) && (groundSpeedLeft > 33 || groundSpeedRight > 33);
+    this.autoBrakeOff.set(
+      this.autoBrakeOffMemory.write(
+        autoBrakeOffShouldTrigger,
+        !this.autoBrakeDeactivatedNode.write(autoBrakeOffShouldTrigger, deltaTime) || this.aThrDiscInputBuffer.read(),
+      ),
     );
 
-    if (!autoBrakeOffShouldTrigger) {
-      this.autoBrakeOffMemoInhibited = false;
-      this.requestMasterCautionFromABrkOff = false;
-      this.autoBrakeOffAuralTriggered = false;
-    }
-
-    this.autoBrakeOffAuralConfirmNode.write(autoBrakeOffShouldTrigger && !this.autoBrakeOffMemoInhibited, deltaTime);
-
-    if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
-      // Triggered in this cycle -> request master caution
-      this.requestMasterCautionFromABrkOff = true;
-    }
-
-    // FIXME double callout if ABRK fails
-    this.autoBrakeOff.set(autoBrakeOffShouldTrigger);
-    if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read() && !this.autoBrakeOffAuralTriggered) {
-      this.soundManager.enqueueSound('autoBrakeOff');
-      this.autoBrakeOffAuralTriggered = true;
-    }
+    this.autoBrakeOffMasterCautionMemory.write(
+      autoBrakeOffShouldTrigger,
+      !this.autoBrakeOffMasterCaution.write(autoBrakeOffShouldTrigger, deltaTime) || this.aThrDiscInputBuffer.read(),
+    );
 
     // Engine Logic
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
@@ -5778,7 +5800,7 @@ export class FwsCore {
 
     this.masterCaution.set(
       this.requestMasterCautionFromFaults ||
-        this.requestMasterCautionFromABrkOff ||
+        this.autoBrakeOffMasterCautionMemory.read() ||
         this.requestMasterCautionFromAThrOff,
     );
 
@@ -5911,7 +5933,7 @@ export class FwsCore {
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
     this.systemDisplayLogic.update(deltaTime);
-    this.updateRowRopWarnings();
+    this.autoCallouts.update(deltaTime);
 
     if (this.debugDataToOisEnabled.get()) {
       this.updateOisDebugData();
@@ -5977,13 +5999,6 @@ export class FwsCore {
   }
 
   autoThrottleInstinctiveDisconnect() {
-    // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
-    // Unclear refs, whether this has to happen within the audio confirm node time (1s)
-    if (this.autoBrakeDeactivatedNode.read()) {
-      this.autoBrakeOffMemoInhibited = true;
-      this.requestMasterCautionFromABrkOff = false;
-    }
-
     this.aThrDiscInputBuffer.write(true, false);
 
     if (this.autoThrustOffVoluntary.get()) {
