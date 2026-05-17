@@ -314,8 +314,8 @@ export const TemperatureCorrectionWidget = () => {
                       value={temperatureUnit}
                       className="w-20 rounded-l-none"
                       options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
+                        { value: 'C', displayValue: '°C' },
+                        { value: 'F', displayValue: '°F' },
                       ]}
                       onChange={(newValue) => setTemperatureUnit(newValue as 'C' | 'F')}
                     />
