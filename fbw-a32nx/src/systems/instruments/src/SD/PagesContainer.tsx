@@ -15,8 +15,6 @@ import { ApuPage } from './Pages/Apu/Apu';
 import { CondPage } from './Pages/Cond/Cond';
 import { DoorPage } from './Pages/Door/Door';
 import { WheelPage } from './Pages/Wheel/Wheel';
-import { FctlPage } from './Pages/Fctl/Fctl';
-import { StatusPage } from './Pages/Status/Status';
 import { CrzPage } from './Pages/Crz/Crz';
 import { SdPages } from '@shared/SdPages';
 
@@ -261,9 +259,9 @@ export const PagesContainer = () => {
     7: <CondPage />,
     8: <DoorPage />,
     9: <WheelPage />,
-    10: <FctlPage />,
+    10: <></>,
     11: <CrzPage />,
-    12: <StatusPage />,
+    12: <></>,
   };
 
   return (
