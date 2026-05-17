@@ -130,6 +130,10 @@
 1. [A32NX/SD] Add abnormal pressurisation indications to CRZ SD page - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Fixed Radio altimeter callouts being overfly sensitive to terrain changes - @BravoMike99 (bruno_pt99), @lukecologne (luke)
 1. [A32NX/FWS] Added Five Hundred callout only not on glide option - @BravoMike99 (bruno_pt99)
+1. [A32NX] Split navigation lights into two separate systems - @tracernz (Mike)
+1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
+1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
+1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
 
