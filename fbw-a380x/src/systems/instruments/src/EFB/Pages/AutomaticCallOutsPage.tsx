@@ -1,13 +1,16 @@
-// Copyright (c) 2023-2026 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { pathify, SettingGroup, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
+import { pathify, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../../../shared/src/AutoCallOuts';
-import { usePersistentSetting } from '../../../../../../../fbw-common/src/systems/instruments/src/react';
+import { usePersistentNumberProperty } from '../../../../../../../fbw-common/src/systems/instruments/src/react';
 
 export const AutomaticCallOutsPage: React.FC = () => {
-  const [autoCallOuts, setAutoCallOuts] = usePersistentSetting('CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS');
+  const [autoCallOuts, setAutoCallOuts] = usePersistentNumberProperty(
+    'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS',
+    A380X_DEFAULT_RADIO_AUTO_CALL_OUTS,
+  );
 
   const toggleRadioAcoFlag = (flag: A380XRadioAutoCallOutFlags): void => {
     let newFlags = autoCallOuts;
@@ -77,21 +80,23 @@ export const AutomaticCallOutsPage: React.FC = () => {
               onToggle={() => toggleRadioAcoFlag(A380XRadioAutoCallOutFlags.OneThousand)}
             />
           </SettingItem>
-          <SettingGroup>
-            <SettingItem name="Five Hundred" groupType="parent">
-              <Toggle
-                value={(autoCallOuts & A380XRadioAutoCallOutFlags.FiveHundred) > 0}
-                onToggle={() => toggleRadioAcoFlag(A380XRadioAutoCallOutFlags.FiveHundred)}
-              />
-            </SettingItem>
-            <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundredGlide')} groupType="sub">
-              <Toggle
-                value={(autoCallOuts & A380XRadioAutoCallOutFlags.FiveHundredGlide) > 0}
-                disabled={(autoCallOuts & A380XRadioAutoCallOutFlags.FiveHundred) === 0}
-                onToggle={() => toggleRadioAcoFlag(A380XRadioAutoCallOutFlags.FiveHundredGlide)}
-              />
-            </SettingItem>
-          </SettingGroup>
+          {/* TODO enable this when the new rust FWC is merged with the 500 hundred GS inhibit logic */}
+          {/* <SettingGroup> */}
+          {/* groupType="parent" */}
+          <SettingItem name="Five Hundred">
+            <Toggle
+              value={(autoCallOuts & A380XRadioAutoCallOutFlags.FiveHundred) > 0}
+              onToggle={() => toggleRadioAcoFlag(A380XRadioAutoCallOutFlags.FiveHundred)}
+            />
+          </SettingItem>
+          {/* <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundredGlide')} groupType="sub">
+                            <Toggle
+                                value={(autoCallOuts & RadioAutoCallOutFlags.FiveHundredGlide) > 0}
+                                disabled={(autoCallOuts & RadioAutoCallOutFlags.FiveHundred) === 0}
+                                onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FiveHundredGlide)}
+                            />
+                        </SettingItem> */}
+          {/* </SettingGroup> */}
           <SettingItem name="Four Hundred">
             <Toggle
               value={(autoCallOuts & A380XRadioAutoCallOutFlags.FourHundred) > 0}

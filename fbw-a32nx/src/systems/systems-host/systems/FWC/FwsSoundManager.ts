@@ -391,10 +391,8 @@ export class FwsSoundManager {
 
     this.currentSoundPlaying = soundKey;
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length!;
-    if (sound.periodicWithPause !== undefined) {
-      this.soundToRepeat = sound.periodicWithPause ? soundKey : null;
-      this.soundToRepeatDelay = sound.periodicWithPause ?? null;
-    }
+    this.soundToRepeat = sound.periodicWithPause ? soundKey : null;
+    this.soundToRepeatDelay = sound.periodicWithPause ?? null;
     if (this.numberOfTimesToRepeatSound === null && !sound.continuous) {
       this.numberOfTimesToRepeatSound = sound.repeatFor ? sound.repeatFor - 1 : null; // Subtract one for subsequent plays
     }
