@@ -277,17 +277,19 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
 
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
+    const navRadialSub = sub.on('navRadialError').handle(this.handleNavRadialError.bind(this), true);
+
     sub
       .on('hasLoc')
       .whenChanged()
       .handle((hasLoc) => {
         if (hasLoc) {
           this.diamondGroup.instance.classList.remove('HiddenElement');
-          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.resume(true);
         } else {
           this.diamondGroup.instance.classList.add('HiddenElement');
           this.lagFilter.reset();
-          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.pause();
         }
       });
   }
