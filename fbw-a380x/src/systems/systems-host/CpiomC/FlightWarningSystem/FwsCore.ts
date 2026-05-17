@@ -159,6 +159,8 @@ export class FwsCore {
     this.sub.on('a380x_ois_fws_debug_data_enabled'),
     false,
   );
+
+  public readonly gpsPositionAlt = RegisteredSimVar.create('GPS POSITION ALT', SimVarValueType.Feet);
   public readonly debugDataToOis: DebugDataTableRow[] = [
     { label: 'FWS Flight Phase', value: '' },
     { label: 'Startup Completed', value: '' },
@@ -689,10 +691,10 @@ export class FwsCore {
 
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
-  public readonly apEngaged = Subject.create(false);
+  public readonly apEngaged = RegisteredSimVar.createBoolean('L:A32NX_AUTOPILOT_ACTIVE');
   public readonly apOff = Subject.create(false);
-  public readonly fd1Active = Subject.create(false);
-  public readonly fd2Active = Subject.create(false);
+  public readonly fd1Active = RegisteredSimVar.createBoolean('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1');
+  public readonly fd2Active = RegisteredSimVar.createBoolean('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2');
   public readonly fdOff = Subject.create(false);
 
   public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
@@ -1612,6 +1614,9 @@ export class FwsCore {
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
 
+  public readonly adr1PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON');
+  public readonly adr2PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON');
+  public readonly adr3PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON');
   public readonly allAdrPbsOff = Subject.create(false);
 
   public readonly ir1Align = Subject.create(false);
@@ -3342,11 +3347,7 @@ export class FwsCore {
     // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-    this.allAdrPbsOff.set(
-      !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON', 'Bool'),
-    );
+    this.allAdrPbsOff.set(!this.adr1PbOn.get() && !this.adr2PbOn.get() && !this.adr3PbOn.get());
 
     // TODO use GPS alt if ADRs not available
     this.adrPressureAltitude.set(
@@ -3515,14 +3516,10 @@ export class FwsCore {
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
     // AP OFF
-    const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
-    this.apEngaged.set(apEngaged);
+    const apEngaged = this.apEngaged.get();
     this.apOff.set(!apEngaged);
-    this.fd1Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', SimVarValueType.Bool) > 0);
-    this.fd2Active.set(SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', SimVarValueType.Bool) > 0);
     this.fdOff.set(!this.fd1Active.get() && !this.fd2Active.get());
 
-    this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
     this.autoPilotDisengagedInstantPulse.write(apEngaged);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();

@@ -391,69 +391,80 @@ export class FwsAbnormalNonSensed {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [
-        true, // [1]
-        true, // [2]
-        true, // [3]
-        true, // [4]
-        this.fws.flightPhase.get() <= 7, // [5]
-        this.fws.flightPhase.get() <= 7 && (this.fws.adrPressureAltitude.get() ?? 0) < 10_000, // [6]
-        this.fws.flightPhase.get() <= 7 && (this.fws.adrPressureAltitude.get() ?? 0) >= 10_000, // [7]
-        false, // [8] //TODO: if derated climb engaged
-        this.fws.flightPhase.get() > 7, // [9]
-        this.fws.flightPhase.get() > 7 && (this.fws.adrPressureAltitude.get() ?? 0) < 10_000, // [10]
-        this.fws.flightPhase.get() > 7 &&
-          (this.fws.adrPressureAltitude.get() ?? 0) >= 10_000 &&
-          (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [11]
-        this.fws.flightPhase.get() > 7 && (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000, // [12]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [13]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [14]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [15]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [16]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [17]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000 && this.fws.flapsHandle.get() === 4, // [18]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [19]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [20]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [21]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [22]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [23]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [24]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [25]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [26]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [27]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [28]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [29]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [30]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [31]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [32] //TODO check if at least two MFP heating failed
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [33]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [34]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [35] //TODO check if soft GA is lost
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [36]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [37]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [38]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [39]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [40]
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000, // [41]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [42]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [43]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [44]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [45]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [46]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [47]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [48]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [49]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [50]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [51]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [52]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [53]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [54]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [55]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [56]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [57]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [58]
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000, // [59] //TODO check if soft GA is lost
-      ],
+      whichItemsToShow: () => {
+        const flightPhase = this.fws.flightPhase.get();
+        const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
+        const adrAlt = this.fws.adrPressureAltitude.get() ?? 0;
+
+        const isGpsBelow10k = gpsAlt < 10000;
+        const isGpsAbove10k = gpsAlt >= 10000;
+        const isAdrBelow25k = adrAlt < 25000;
+        const isAdrAbove25k = adrAlt >= 25000;
+        const beforeThrustRed = flightPhase <= 7;
+        const afterThrustRed = flightPhase > 7;
+
+        return [
+          true, // [1]
+          true, // [2]
+          true, // [3]
+          true, // [4]
+          beforeThrustRed, // [5]
+          beforeThrustRed && isGpsBelow10k, // [6]
+          beforeThrustRed && isGpsAbove10k, // [7]
+          false, // [8] //TODO: if derated climb engaged
+          afterThrustRed, // [9]
+          afterThrustRed && isGpsBelow10k, // [10]
+          afterThrustRed && isGpsAbove10k && isAdrBelow25k, // [11]
+          afterThrustRed && isAdrAbove25k, // [12]
+          isAdrBelow25k, // [13]
+          isAdrBelow25k, // [14]
+          isAdrBelow25k, // [15]
+          isAdrBelow25k, // [16]
+          isAdrBelow25k, // [17]
+          isAdrBelow25k && this.fws.flapsHandle.get() === 4, // [18]
+          isAdrBelow25k, // [19]
+          isAdrBelow25k, // [20]
+          isAdrBelow25k, // [21]
+          isAdrBelow25k, // [22]
+          isAdrBelow25k, // [23]
+          isAdrBelow25k, // [24]
+          isAdrBelow25k, // [25]
+          isAdrBelow25k, // [26]
+          isAdrBelow25k, // [27]
+          isAdrBelow25k, // [28]
+          isAdrBelow25k, // [29]
+          isAdrBelow25k, // [30]
+          isAdrBelow25k, // [31]
+          isAdrBelow25k, // [32] //TODO check if at least two MFP heating failed
+          isAdrBelow25k, // [33]
+          isAdrBelow25k, // [34]
+          isAdrBelow25k, // [35] //TODO check if soft GA is lost
+          isAdrBelow25k, // [36]
+          isAdrBelow25k, // [37]
+          isAdrBelow25k, // [38]
+          isAdrBelow25k, // [39]
+          isAdrBelow25k, // [40]
+          isAdrBelow25k, // [41]
+          isAdrAbove25k, // [42]
+          isAdrAbove25k, // [43]
+          isAdrAbove25k, // [44]
+          isAdrAbove25k, // [45]
+          isAdrAbove25k, // [46]
+          isAdrAbove25k, // [47]
+          isAdrAbove25k, // [48]
+          isAdrAbove25k, // [49]
+          isAdrAbove25k, // [50]
+          isAdrAbove25k, // [51]
+          isAdrAbove25k, // [52]
+          isAdrAbove25k, // [53]
+          isAdrAbove25k, // [54]
+          isAdrAbove25k, // [55]
+          isAdrAbove25k, // [56]
+          isAdrAbove25k, // [57]
+          isAdrAbove25k, // [58]
+          isAdrAbove25k, // [59] //TODO check if soft GA is lost
+        ];
+      },
       whichItemsChecked: () => [
         false, // [1]
         this.fws.apOff.get(), // [2]
@@ -520,22 +531,29 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.None,
       limitationsAllPhases: () => [],
       inopSysAllPhases: () => [],
-      info: () => [
-        '220200015',
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000 ? '340200007' : '',
-        this.fws.allAdrPbsOff.get() ? '340200006' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200010' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200011' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200012' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200009' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200013' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200014' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200015' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200016' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '340200017' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '220200014' : '',
-        (this.fws.adrPressureAltitude.get() ?? 0) >= 25_000 ? '220200011' : '',
-      ],
+      info: () => {
+        const adrAlt = this.fws.adrPressureAltitude.get() ?? 0;
+        const isAdrBelow25k = adrAlt < 25000;
+        const isAdrAbove25k = adrAlt >= 25000;
+        const allAdrOff = this.fws.allAdrPbsOff.get();
+
+        return [
+          '220200015',
+          isAdrBelow25k ? '340200007' : '',
+          allAdrOff ? '340200006' : '',
+          isAdrAbove25k ? '340200010' : '',
+          isAdrAbove25k ? '340200011' : '',
+          isAdrAbove25k ? '340200012' : '',
+          isAdrAbove25k ? '340200009' : '',
+          isAdrAbove25k ? '340200013' : '',
+          isAdrAbove25k ? '340200014' : '',
+          isAdrAbove25k ? '340200015' : '',
+          isAdrAbove25k ? '340200016' : '',
+          isAdrAbove25k ? '340200017' : '',
+          isAdrAbove25k ? '220200014' : '',
+          isAdrAbove25k ? '220200011' : '',
+        ];
+      },
     },
   };
   public ewdDeferredProcs: EwdAbnormalDict = {
