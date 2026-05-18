@@ -134,6 +134,7 @@
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
 1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
+1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
 
 ## 0.14.0
 
