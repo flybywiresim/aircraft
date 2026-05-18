@@ -26,8 +26,8 @@ export class FwsAutoCallouts {
   public readonly setMaxReverse = Subject.create(false);
 
   // KEEP MAX REVERSE
-  private readonly keepMaxReverseMemory = new NXLogicMemoryNode();
-  private readonly phase9DownPulse = new NXLogicPulseNode(false);
+  private readonly keepMaxReverseMemory = new NXLogicMemoryNode(false);
+  private readonly phase11DownPulse = new NXLogicPulseNode(false);
   private readonly setReversePulse = new NXLogicPulseNode(false);
   private readonly keepMaxReverseConfirm = new NXLogicConfirmNode(0.6);
   public readonly keepMaxReverse = Subject.create(false);
@@ -44,10 +44,9 @@ export class FwsAutoCallouts {
 
   updateRowRopWarnings(flightPhase: number, deltaTime: number) {
     this.rowRopStatusWord.set(this.rowRopStatusWordVar.get());
+    const phase10RowRopMtrigOutput = this.phase10RowRopMtrig.write(flightPhase === 10, deltaTime);
     const rolloutOrBouncedLanding =
-      flightPhase == 11 ||
-      flightPhase == 10 ||
-      (this.phase10RowRopMtrig.write(flightPhase === 10, deltaTime) && (flightPhase === 8 || flightPhase === 9));
+      flightPhase == 11 || flightPhase == 10 || (phase10RowRopMtrigOutput && (flightPhase === 8 || flightPhase === 9));
 
     // MAX BRAKING
     const maxBrakingRequested = this.rowRopStatusWord.bitValueOr(11, false);
@@ -66,7 +65,7 @@ export class FwsAutoCallouts {
         !maxBrakingRequested ||
         flightPhase === 2 ||
         flightPhase === 12 ||
-        this.phase9DownPulse.write(flightPhase === 9),
+        this.phase11DownPulse.write(flightPhase === 11),
     );
     this.keepMaxReverse.set(flightPhase === 11 && keepMaxReverseMemory);
 

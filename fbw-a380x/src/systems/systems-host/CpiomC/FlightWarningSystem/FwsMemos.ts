@@ -366,7 +366,7 @@ export class FwsMemos {
     320000001: {
       // AUTO BRK OFF
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.autoBrakeOff,
+      simVarIsActive: this.fws.autoBrakeOffMemoAndAudio,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
       memoInhibit: () => false,

@@ -278,7 +278,6 @@ export class FwsCore {
   public recallFailures: string[] = [];
 
   private requestMasterCautionFromFaults = false;
-  private requestMasterCautionFromABrkOff = false;
   private requestMasterCautionFromAThrOff = false;
 
   private requestSingleChimeFromAThrOff = false;
@@ -1566,12 +1565,13 @@ export class FwsCore {
   private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(true);
 
   private readonly autoBrakeOffConfirmNode = new NXLogicConfirmNode(1, true);
-
   private readonly autoBrakeOffMemory = new NXLogicMemoryNode(false);
+  private readonly autoBrakeOffAthrDiscPressedTriggeredNode = new NXLogicTriggeredMonostableNode(0.5, true, true);
   private readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, true, true); // When ABRK deactivated, emit this for 9 sec
   private readonly autoBrakeOffMasterCautionMemory = new NXLogicMemoryNode(true);
   private readonly autoBrakeOffMasterCaution = new NXLogicTriggeredMonostableNode(3, true, true);
-  public readonly autoBrakeOff = Subject.create(false);
+  public readonly autoBrakeOffMemoAndAudio = Subject.create(false);
+  public readonly autoBrakeOffMasterCautionLight = Subject.create(false);
 
   public readonly rowLost = MappedSubject.create(
     ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(11, false) || w2.bitValueOr(11, false)),
@@ -2605,7 +2605,7 @@ export class FwsCore {
         this.soundManager.handleSoundCondition('setMaxReverse', v);
       }),
 
-      this.autoBrakeOff.sub((v) => {
+      this.autoBrakeOffMemoAndAudio.sub((v) => {
         this.soundManager.handleSoundCondition('autoBrakeOff', v);
       }),
     );
@@ -3686,24 +3686,30 @@ export class FwsCore {
       engineThrustLockedAndAthrDisconnected5s && this.engineThrustLockedDelayNode,
     );
 
-    const abOffConfirm = this.autoBrakeOffConfirmNode.write(!this.autobrakeActiveVar.get(), deltaTime);
+    const autoBrakeIsoff = !this.autobrakeActiveVar.get();
+    const abOffConfirm = this.autoBrakeOffConfirmNode.write(autoBrakeIsoff, deltaTime);
     const abOffPulse = this.autobrakeDeactivatedPulseNode // AUTO BRAKE OFF
       .write(abOffConfirm);
+
+    const athrDiscBuffer = this.autoBrakeOffAthrDiscPressedTriggeredNode.write(
+      this.aThrDiscInputBuffer.read(),
+      deltaTime,
+    );
 
     const groundSpeedLeft = this.ir3UsedLeft ? this.ir3GroundSpeed.valueOr(0) : this.ir1GroundSpeed.valueOr(0);
     const groundSpeedRight = this.ir3UsedRight ? this.ir3GroundSpeed.valueOr(0) : this.ir2GroundSpeed.valueOr(0);
     const autoBrakeOffShouldTrigger =
       abOffPulse && (flightPhase === 10 || flightPhase === 11) && (groundSpeedLeft > 33 || groundSpeedRight > 33);
-    this.autoBrakeOff.set(
+    this.autoBrakeOffMemoAndAudio.set(
       this.autoBrakeOffMemory.write(
         autoBrakeOffShouldTrigger,
-        !this.autoBrakeDeactivatedNode.write(autoBrakeOffShouldTrigger, deltaTime) || this.aThrDiscInputBuffer.read(),
+        !this.autoBrakeDeactivatedNode.write(autoBrakeOffShouldTrigger, deltaTime) || athrDiscBuffer,
       ),
     );
 
     this.autoBrakeOffMasterCautionMemory.write(
       autoBrakeOffShouldTrigger,
-      !this.autoBrakeOffMasterCaution.write(autoBrakeOffShouldTrigger, deltaTime) || this.aThrDiscInputBuffer.read(),
+      !this.autoBrakeOffMasterCaution.write(autoBrakeOffShouldTrigger, deltaTime) || athrDiscBuffer,
     );
 
     // Engine Logic
@@ -5250,7 +5256,6 @@ export class FwsCore {
     if (masterCautionButtonLeft || masterCautionButtonRight) {
       this.auralSingleChimePending = false;
       this.requestMasterCautionFromFaults = false;
-      this.requestMasterCautionFromABrkOff = false;
       this.requestMasterCautionFromAThrOff = false;
       this.autoThrustInhibitCaution = true;
     }
@@ -5798,11 +5803,7 @@ export class FwsCore {
       this.requestMasterWarningFromFaults = false;
     }
 
-    this.masterCaution.set(
-      this.requestMasterCautionFromFaults ||
-        this.autoBrakeOffMasterCautionMemory.read() ||
-        this.requestMasterCautionFromAThrOff,
-    );
+    this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromAThrOff);
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
