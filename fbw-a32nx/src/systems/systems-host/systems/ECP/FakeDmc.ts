@@ -37,36 +37,7 @@ export class FakeDmc implements Instrument {
 
   constructor(private readonly bus: EventBus) {}
 
-  public init(): void {
-    // Map buttons to the legacy local var for the react SD
-    this.buttonMapperFactory(SdPages.ENG, 11, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.BLEED, 12, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.APU, 13, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.HYD, 14, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.ELEC, 15, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.COND, 17, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.PRESS, 18, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.FUEL, 19, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.FCTL, 20, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.DOOR, 21, this.ecpSystemButtons);
-    this.buttonMapperFactory(SdPages.WHEEL, 22, this.ecpSystemButtons);
-
-    this.buttonMapperFactory(SdPages.STS, 13, this.ecpWarningButtons);
-  }
-
-  private buttonMapperFactory(sdPage: SdPages, bit: number, word: Arinc429LocalVarConsumerSubject) {
-    return word
-      .map((w) => w.bitValueOr(bit, false))
-      .sub(
-        (v) =>
-          v &&
-          SimVar.SetSimVarValue(
-            'L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX',
-            SimVarValueType.Enum,
-            this.sdPage === sdPage ? -1 : sdPage,
-          ),
-      );
-  }
+  public init(): void {}
 
   private readonly publishToBus = () =>
     this.publisher.pub('fake_dmc_light_status_275', this.outputWord.getRawBusValue());

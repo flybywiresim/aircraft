@@ -25,6 +25,7 @@ import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOv
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 import { FakeDmc } from './systems/ECP/FakeDmc';
 import { FwsManager } from './systems/FWC/FwsManager';
+import { DmcSdPageLogic } from './systems/DmcSdPageLogic/DmcSdPageLogic';
 import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
 
 class SystemsHost extends BaseInstrument {
@@ -56,6 +57,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fwc = new FwsManager(this.bus);
 
+  private readonly dmcSdPage = new DmcSdPageLogic(this.bus);
+
   constructor() {
     super();
 
@@ -79,6 +82,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FacBus', this.facBusPublisher);
 
     this.fwc.init();
+    this.dmcSdPage.init();
     let lastUpdateTime: number;
     this.bus
       .getSubscriber<ClockEvents>()
@@ -89,6 +93,7 @@ class SystemsHost extends BaseInstrument {
         lastUpdateTime = now;
 
         this.fwc.update(dt);
+        this.dmcSdPage.update(dt);
       });
   }
 
