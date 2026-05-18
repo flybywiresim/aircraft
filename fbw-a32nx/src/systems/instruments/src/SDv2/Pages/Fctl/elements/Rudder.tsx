@@ -74,13 +74,13 @@ export class Rudder extends DestroyableComponent<ComponentPositionProps & { bus:
         <path
           id="rudderLeftBorder"
           class="SW3 White LineJoinRound"
-          transform="rotate(30 0 26)"
+          transform="rotate(25 0 26)"
           d="m-4.5 151 v 6 h 9 v-6"
         />
         <path
           id="rudderRightBorder"
           class="SW3 White LineJoinRound"
-          transform="rotate(-30 0 26)"
+          transform="rotate(-25 0 26)"
           d="m-4.5 151 v 6 h 9 v-6"
         />
 
