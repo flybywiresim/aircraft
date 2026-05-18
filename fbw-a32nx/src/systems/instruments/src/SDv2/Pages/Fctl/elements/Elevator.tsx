@@ -1,4 +1,4 @@
-import { ConsumerSubject, EventBus, FSComponent, MappedSubject, MathUtils } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, FSComponent, MappedSubject, MathUtils, VNode } from '@microsoft/msfs-sdk';
 
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { ComponentPositionProps } from '../../../common/ComponentPositionProps';
@@ -91,22 +91,50 @@ export class Elevator extends DestroyableComponent<
     this.blueHydraulicsPressurized,
   );
 
-  public onAfterRender(): void {
-    this.fcdc1Chosen.sub((fcdc1Chosen) => {
-      this.chosenElevatorPosition.setConsumer(
-        fcdc1Chosen
-          ? this.sub.on(
-              this.props.side === 'left'
-                ? 'a32nx_fcdc_left_elevator_position_deg_1'
-                : 'a32nx_fcdc_right_elevator_position_deg_1',
-            )
-          : this.sub.on(
-              this.props.side === 'left'
-                ? 'a32nx_fcdc_left_elevator_position_deg_2'
-                : 'a32nx_fcdc_right_elevator_position_deg_2',
-            ),
-      );
-    }, true);
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.fcdc1Chosen.sub((fcdc1Chosen) => {
+        this.chosenElevatorPosition.setConsumer(
+          fcdc1Chosen
+            ? this.sub.on(
+                this.props.side === 'left'
+                  ? 'a32nx_fcdc_left_elevator_position_deg_1'
+                  : 'a32nx_fcdc_right_elevator_position_deg_1',
+              )
+            : this.sub.on(
+                this.props.side === 'left'
+                  ? 'a32nx_fcdc_left_elevator_position_deg_2'
+                  : 'a32nx_fcdc_right_elevator_position_deg_2',
+              ),
+        );
+      }, true),
+    );
+
+    this.subscriptions.push(
+      this.elevatorPositionWord1,
+      this.fcdc1Chosen,
+      this.chosenElevatorPosition,
+      this.fcdcDiscreteWord2,
+      this.fcdcDiscreteWord3,
+      this.servocontrol1Avail,
+      this.servocontrol2Avail,
+      this.servocontrol1Fault,
+      this.servocontrol2Fault,
+      this.elevatorDeflectPctNormalized,
+      this.elevatorPositionValid,
+      this.cursorClass,
+      this.greenHydraulicsPressurized,
+      this.blueHydraulicsPressurized,
+      this.yellowHydraulicsPressurized,
+      this.hydraulics1Pressurized,
+      this.hydraulics2Pressurized,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 
   render() {

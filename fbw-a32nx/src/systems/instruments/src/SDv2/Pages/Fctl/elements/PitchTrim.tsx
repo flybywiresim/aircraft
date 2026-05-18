@@ -1,4 +1,4 @@
-import { ConsumerSubject, EventBus, FSComponent, MappedSubject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { ComponentPositionProps } from '../../../common/ComponentPositionProps';
@@ -12,10 +12,10 @@ import { FcdcChoiceEvents } from '../../../providers/FcdcChoiceProvider';
 export class PitchTrim extends DestroyableComponent<ComponentPositionProps & { bus: EventBus }> {
   private readonly sub = this.props.bus.getSubscriber<A32NXFcdcBusEvents & FcdcChoiceEvents>();
 
-  private readonly elevatorPositionWord1 = Arinc429LocalVarConsumerSubject.create(
+  private readonly thsPositionWord1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcdc_ths_position_deg_1'),
   );
-  private readonly fcdc1Chosen = this.elevatorPositionWord1.map((word) => !word.isFailureWarning());
+  private readonly fcdc1Chosen = this.thsPositionWord1.map((word) => !word.isFailureWarning());
   private readonly chosenTrimPosition = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly fcdcDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
@@ -47,12 +47,33 @@ export class PitchTrim extends DestroyableComponent<ComponentPositionProps & { b
     Math.abs(position.value).toFixed(1).split('.'),
   );
 
-  public onAfterRender(): void {
-    this.fcdc1Chosen.sub((fcdc1Chosen) => {
-      this.chosenTrimPosition.setConsumer(
-        fcdc1Chosen ? this.sub.on('a32nx_fcdc_ths_position_deg_1') : this.sub.on('a32nx_fcdc_ths_position_deg_2'),
-      );
-    }, true);
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.fcdc1Chosen.sub((fcdc1Chosen) => {
+        this.chosenTrimPosition.setConsumer(
+          fcdc1Chosen ? this.sub.on('a32nx_fcdc_ths_position_deg_1') : this.sub.on('a32nx_fcdc_ths_position_deg_2'),
+        );
+      }, true),
+    );
+
+    this.subscriptions.push(
+      this.thsPositionWord1,
+      this.fcdc1Chosen,
+      this.chosenTrimPosition,
+      this.fcdcDiscreteWord2,
+      this.thsJam,
+      this.pitchTrimPositionValid,
+      this.greenHydraulicsPressurized,
+      this.yellowHydraulicsPressurized,
+      this.hydraulicAvailableClass,
+      this.trimSeparated,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 
   render() {

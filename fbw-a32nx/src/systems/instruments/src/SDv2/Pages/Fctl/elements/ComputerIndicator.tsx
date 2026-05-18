@@ -26,6 +26,8 @@ export class SecComputerIndicator extends DestroyableComponent<ElacSecProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subscriptions.push(this.fcdcDiscreteWord1, this.fcdcWordValid, this.computerFailed);
   }
 
   destroy(): void {
@@ -58,6 +60,8 @@ export class ElacComputerIndicator extends DestroyableComponent<ElacSecProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subscriptions.push(this.fcdcDiscreteWord1, this.fcdcWordValid, this.computerFailed);
   }
 
   destroy(): void {
@@ -95,6 +99,16 @@ class ElacSecShape extends DestroyableComponent<ElacSecShapeProps> {
     this.props.infoAvailable,
     this.props.computerFailed,
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(this.lineColorClass, this.textColorClass);
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
 
   render() {
     return (

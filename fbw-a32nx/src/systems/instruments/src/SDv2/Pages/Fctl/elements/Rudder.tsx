@@ -1,4 +1,4 @@
-import { ConsumerSubject, EventBus, FSComponent, MappedSubject, MathUtils, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, FSComponent, MappedSubject, MathUtils, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { ComponentPositionProps } from '../../../common/ComponentPositionProps';
@@ -43,6 +43,23 @@ export class Rudder extends DestroyableComponent<ComponentPositionProps & { bus:
     this.blueHydraulicsPressurized,
     this.yellowHydraulicsPressurized,
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.rudderDeflection,
+      this.rudderDeflectPctNormalized,
+      this.greenHydraulicsPressurized,
+      this.blueHydraulicsPressurized,
+      this.yellowHydraulicsPressurized,
+      this.cursorClass,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
 
   render() {
     return (
@@ -114,12 +131,29 @@ class RudderTrim extends DestroyableComponent<{ bus: EventBus }> {
 
   private readonly trimDisplayPosition = this.trimPosition.map((position) => MathUtils.round(position.value, 0.01));
 
-  onAfterRender(): void {
-    this.facSourceForRudderTrim.sub((source) => {
-      this.trimPosition.setConsumer(
-        this.sub.on(source === 1 ? 'a32nx_fac_rudder_trim_position_1' : 'a32nx_fac_rudder_trim_position_2'),
-      );
-    }, true);
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.facSourceForRudderTrim.sub((source) => {
+        this.trimPosition.setConsumer(
+          this.sub.on(source === 1 ? 'a32nx_fac_rudder_trim_position_1' : 'a32nx_fac_rudder_trim_position_2'),
+        );
+      }, true),
+    );
+
+    this.subscriptions.push(
+      this.fac1DiscreteWord2,
+      this.fac2DiscreteWord2,
+      this.anyRudderTrimEngaged,
+      this.facSourceForRudderTrim,
+      this.trimPosition,
+      this.trimDisplayPosition,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 
   render() {
@@ -188,12 +222,30 @@ class RudderTravelLimiter extends DestroyableComponent<{ bus: EventBus }> {
     (position) => MathUtils.round(position.value, 0.01) + 2,
   );
 
-  onAfterRender(): void {
-    this.facSourceForRudderTravelLim.sub((source) => {
-      this.travelLimiterPosition.setConsumer(
-        this.sub.on(source === 1 ? 'a32nx_fac_rudder_travel_lim_command_1' : 'a32nx_fac_rudder_travel_lim_command_2'),
-      );
-    }, true);
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.facSourceForRudderTravelLim.sub((source) => {
+        this.travelLimiterPosition.setConsumer(
+          this.sub.on(source === 1 ? 'a32nx_fac_rudder_travel_lim_command_1' : 'a32nx_fac_rudder_travel_lim_command_2'),
+        );
+      }, true),
+    );
+
+    this.subscriptions.push(
+      this.fac1DiscreteWord2,
+      this.fac2DiscreteWord2,
+      this.anyTravelLimiterEngaged,
+      this.travelLimitSymbolClass,
+      this.facSourceForRudderTravelLim,
+      this.travelLimiterPosition,
+      this.travelLimiterDisplayPosition,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 
   render() {

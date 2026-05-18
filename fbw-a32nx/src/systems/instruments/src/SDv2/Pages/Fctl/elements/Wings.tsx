@@ -1,4 +1,4 @@
-import { ConsumerSubject, EventBus, FSComponent } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { ComponentPositionProps } from '../../../common/ComponentPositionProps';
@@ -22,6 +22,20 @@ export class Wings extends DestroyableComponent<ComponentPositionProps & { bus: 
     this.props.bus.getSubscriber<SDSimvars>().on('yellowHydraulicPressureSwitchPressurized'),
     false,
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.greenHydraulicsPressurized,
+      this.blueHydraulicsPressurized,
+      this.yellowHydraulicsPressurized,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
 
   render() {
     return (
