@@ -60,7 +60,7 @@ export class SD extends DestroyableComponent<SDProps> {
     null, // COND
     null, // DOOR
     null, // WHEEL
-    <FctlPage ref={this.pageRef[SdPages.STS]} bus={this.props.bus} visible={this.pageVisible[SdPages.FCTL]} />, // FCTL
+    <FctlPage ref={this.pageRef[SdPages.FCTL]} bus={this.props.bus} visible={this.pageVisible[SdPages.FCTL]} />,
     null, // CRZ
     <StatusPage ref={this.pageRef[SdPages.STS]} bus={this.props.bus} visible={this.pageVisible[SdPages.STS]} />,
   ];
