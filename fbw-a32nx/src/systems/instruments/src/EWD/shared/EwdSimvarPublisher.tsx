@@ -53,6 +53,7 @@ export type EwdSimvars = {
   ewdLowerLeft5: number;
   ewdLowerLeft6: number;
   ewdLowerLeft7: number;
+  ewdLowerLeftOverflow: boolean;
   ewdLowerRight1: number;
   ewdLowerRight2: number;
   ewdLowerRight3: number;
@@ -113,6 +114,7 @@ export enum EwdVars {
   ewdLowerLeft5 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_5',
   ewdLowerLeft6 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_6',
   ewdLowerLeft7 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_7',
+  ewdLowerLeftOverflow = 'L:A32NX_Ewd_LOWER_LEFT_OVERFLOW',
   ewdLowerRight1 = 'L:A32NX_Ewd_LOWER_RIGHT_LINE_1',
   ewdLowerRight2 = 'L:A32NX_Ewd_LOWER_RIGHT_LINE_2',
   ewdLowerRight3 = 'L:A32NX_Ewd_LOWER_RIGHT_LINE_3',
@@ -176,6 +178,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
     ['ewdLowerLeft5', { name: EwdVars.ewdLowerLeft5, type: SimVarValueType.Number }],
     ['ewdLowerLeft6', { name: EwdVars.ewdLowerLeft6, type: SimVarValueType.Number }],
     ['ewdLowerLeft7', { name: EwdVars.ewdLowerLeft7, type: SimVarValueType.Number }],
+    ['ewdLowerLeftOverflow', { name: EwdVars.ewdLowerLeftOverflow, type: SimVarValueType.Bool }],
     ['ewdLowerRight1', { name: EwdVars.ewdLowerRight1, type: SimVarValueType.Number }],
     ['ewdLowerRight2', { name: EwdVars.ewdLowerRight2, type: SimVarValueType.Number }],
     ['ewdLowerRight3', { name: EwdVars.ewdLowerRight3, type: SimVarValueType.Number }],

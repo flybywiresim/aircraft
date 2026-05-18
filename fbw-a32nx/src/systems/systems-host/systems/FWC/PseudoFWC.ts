@@ -35,7 +35,13 @@ import {
   RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
-import { EwdMessageCodeOrder, getEwdMessageGroup } from '../../../shared/src/EwdMessages';
+import {
+  EwdMessageCodeOrder,
+  getEwdGroupTitleCode,
+  getEwdMessageGroup,
+  isEwdSecondaryFailureCode,
+  isEwdSpecialLineCode,
+} from '../../../shared/src/EwdMessages';
 import { SdPages as EcamSysPage } from '../../../shared/src/SdPages';
 import { VerticalMode } from '@shared/autopilot';
 import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
@@ -103,6 +109,91 @@ interface EWDFailureTimingState {
   displayedForSeconds: number;
   clearEligible: boolean;
 }
+
+interface EwdOrderedFailureLine {
+  failureKey: string;
+  group?: string;
+  code: string;
+  isItemTitle: boolean;
+  codeOrder: number;
+}
+
+interface EwdLayout {
+  orderedEntries: EwdOrderedFailureLine[];
+  displayedEntries: EwdOrderedFailureLine[];
+  overflow: boolean;
+  visibleGroups: string[];
+  visibleItemKeys: string[];
+  hiddenItemTitleGroups: string[];
+}
+
+const compareEwdMessageCodes = (a: string, b: string): number =>
+  EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!;
+
+const EMPTY_EWD_LAYOUT: EwdLayout = {
+  orderedEntries: [],
+  displayedEntries: [],
+  overflow: false,
+  visibleGroups: [],
+  visibleItemKeys: [],
+  hiddenItemTitleGroups: [],
+};
+
+const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: number): EwdLayout => {
+  if (entries.length === 0) {
+    return EMPTY_EWD_LAYOUT;
+  }
+
+  entries.sort((a, b) => a.codeOrder - b.codeOrder);
+
+  const overflow = entries.length > displayedLineCount;
+  const displayedEntries: EwdOrderedFailureLine[] = overflow ? [] : entries;
+  const visibleGroups: string[] = [];
+  const visibleItemKeys: string[] = [];
+  const hiddenItemTitleGroups: string[] = [];
+  const displayedEntryCount = Math.min(entries.length, displayedLineCount);
+
+  for (let i = 0; i < displayedEntryCount; i++) {
+    const entry = entries[i];
+
+    if (overflow) {
+      displayedEntries.push(entry);
+    }
+
+    if (entry.isItemTitle) {
+      const group = entry.group!;
+
+      if (!visibleGroups.includes(group)) {
+        visibleGroups.push(group);
+      }
+
+      visibleItemKeys.push(entry.failureKey);
+    }
+  }
+
+  if (overflow) {
+    for (let i = displayedLineCount; i < entries.length; i++) {
+      const entry = entries[i];
+
+      if (entry.isItemTitle) {
+        const group = entry.group!;
+
+        if (!visibleGroups.includes(group) && !hiddenItemTitleGroups.includes(group)) {
+          hiddenItemTitleGroups.push(group);
+        }
+      }
+    }
+  }
+
+  return {
+    orderedEntries: entries,
+    displayedEntries,
+    overflow,
+    visibleGroups,
+    visibleItemKeys,
+    hiddenItemTitleGroups,
+  };
+};
 
 enum FwcAuralWarning {
   None,
@@ -180,6 +271,10 @@ export class PseudoFWC {
     Subject.create(''),
   );
 
+  private readonly ewdLowerLeftOverflow = Subject.create(false);
+  private currentEwdLeftLayout = EMPTY_EWD_LAYOUT;
+  private currentEwdSecondaryFailureKey: string | undefined;
+
   private readonly ewdLeftFailureActive = Subject.create(false);
   private readonly activeFailureSysPage = Subject.create<EcamSysPage>(EcamSysPage.NONE);
 
@@ -197,6 +292,9 @@ export class PseudoFWC {
   private readonly specialCodes: string[] = [];
 
   private recallFailures: string[] = [];
+
+  private readonly ewdPrimaryFailuresClearedLines = new Map<string, number>();
+  private readonly ewdSecondaryFailuresCleared = new Set<string>();
 
   private requestMasterCautionFromFaults = false;
   private requestMasterCautionFromABrkOff = false;
@@ -1706,6 +1804,8 @@ export class PseudoFWC {
           });
         } else {
           this.ewdFailureTiming.delete(key);
+          this.ewdPrimaryFailuresClearedLines.delete(key);
+          this.ewdSecondaryFailuresCleared.delete(key);
         }
       }, true);
     }
@@ -1724,6 +1824,10 @@ export class PseudoFWC {
 
     this.ewdLeftFailureActive.sub((v) => {
       SimVar.SetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', 'bool', v);
+    }, true);
+
+    this.ewdLowerLeftOverflow.sub((v) => {
+      SimVar.SetSimVarValue('L:A32NX_EWD_LOWER_LEFT_OVERFLOW', 'bool', v);
     }, true);
 
     this.activeFailureSysPage.sub((sysPage) => {
@@ -1948,9 +2052,180 @@ export class PseudoFWC {
     this.keyEventManager!.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 
-  mapOrder(array: string[]): string[] {
-    array.sort((a, b) => (EwdMessageCodeOrder.get(a) ?? Infinity) - (EwdMessageCodeOrder.get(b) ?? Infinity));
-    return array;
+  private getEwdMessageCodes(item: EWDMessageItem): string[] {
+    const codeToReturn = item.whichCodeToReturn();
+
+    if (typeof codeToReturn === 'string') {
+      return [codeToReturn];
+    }
+
+    const codes: string[] = [];
+    for (let i = 0; i < codeToReturn.length; i++) {
+      const codeIndex = codeToReturn[i];
+
+      if (codeIndex !== null) {
+        codes.push(item.codesToReturn[codeIndex]);
+      }
+    }
+
+    return codes;
+  }
+
+  private getEwdFailureLayoutEntries(failureKey: string): EwdOrderedFailureLine[] {
+    const item = this.ewdMessageFailures[failureKey];
+
+    if (!item.simVarIsActive.get() || !this.ewdFailureTiming.get(failureKey)?.displayEligible) {
+      return [];
+    }
+
+    const codes = this.getEwdMessageCodes(item);
+    const clearedProcedureLineCount = this.ewdPrimaryFailuresClearedLines.get(failureKey) ?? 0;
+    const displayCodes =
+      clearedProcedureLineCount > 0 ? [codes[0]!, ...codes.slice(clearedProcedureLineCount + 1)] : codes;
+
+    return displayCodes.map((code) => {
+      const group = getEwdMessageGroup(code);
+
+      return {
+        failureKey,
+        group,
+        code,
+        isItemTitle: group !== undefined,
+        codeOrder: EwdMessageCodeOrder.get(code)!,
+      };
+    });
+  }
+
+  private getFailureGroup(failureKey: string): string | undefined {
+    const codes = this.getEwdMessageCodes(this.ewdMessageFailures[failureKey]);
+
+    return getEwdMessageGroup(codes[0]!);
+  }
+
+  private updateRecallFailuresFromDisplayedFailures(): void {
+    this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+  }
+
+  private clearVisibleProcedureLines(failureKey: string, layout: EwdLayout): void {
+    let visibleProcedureLineCount = 0;
+
+    for (let i = 0; i < layout.displayedEntries.length; i++) {
+      const entry = layout.displayedEntries[i];
+
+      if (entry.failureKey === failureKey && !entry.isItemTitle) {
+        visibleProcedureLineCount++;
+      }
+    }
+
+    if (visibleProcedureLineCount === 0) {
+      return;
+    }
+
+    this.ewdPrimaryFailuresClearedLines.set(
+      failureKey,
+      (this.ewdPrimaryFailuresClearedLines.get(failureKey) ?? 0) + visibleProcedureLineCount,
+    );
+  }
+
+  private pruneInactiveFailureKeys(keys: string[]): void {
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const item = this.ewdMessageFailures[keys[i]];
+
+      if (item === undefined || !item.simVarIsActive.get()) {
+        keys.splice(i, 1);
+      }
+    }
+  }
+
+  private clearFailureGroup(targetGroup: string): void {
+    const remainingFailures: string[] = [];
+    const clearedFailures: string[] = [];
+    let canClearTargetGroup = true;
+
+    for (const failureKey of this.failuresLeft) {
+      if (this.getFailureGroup(failureKey) === targetGroup) {
+        const timing = this.ewdFailureTiming.get(failureKey);
+
+        if (timing === undefined || !timing.clearEligible) {
+          canClearTargetGroup = false;
+          break;
+        }
+
+        clearedFailures.push(failureKey);
+      } else {
+        remainingFailures.push(failureKey);
+      }
+    }
+
+    if (!canClearTargetGroup) {
+      return;
+    }
+
+    this.failuresLeft.splice(0, this.failuresLeft.length, ...remainingFailures);
+    for (const failureKey of clearedFailures) {
+      this.ewdPrimaryFailuresClearedLines.delete(failureKey);
+    }
+    this.updateRecallFailuresFromDisplayedFailures();
+  }
+
+  private clearSecondaryFailure(): void {
+    const failureKey = this.currentEwdSecondaryFailureKey;
+
+    if (failureKey === undefined || !this.ewdFailureTiming.get(failureKey)?.clearEligible) {
+      return;
+    }
+
+    for (let i = this.failuresRight.length - 1; i >= 0; i--) {
+      if (this.failuresRight[i] === failureKey) {
+        this.failuresRight.splice(i, 1);
+        break;
+      }
+    }
+
+    this.ewdSecondaryFailuresCleared.add(failureKey);
+  }
+
+  private clearEwdFailure(): void {
+    const layout = this.currentEwdLeftLayout;
+
+    if (layout.overflow) {
+      if (layout.visibleItemKeys.length === 1) {
+        const [failureKey] = layout.visibleItemKeys;
+        const timing = this.ewdFailureTiming.get(failureKey);
+
+        if (timing !== undefined && timing.clearEligible) {
+          this.clearVisibleProcedureLines(failureKey, layout);
+        }
+
+        return;
+      }
+
+      if (layout.visibleGroups.length === 1) {
+        const firstClearableVisibleItem = layout.visibleItemKeys.find(
+          (failureKey) => this.ewdFailureTiming.get(failureKey)?.clearEligible,
+        );
+
+        if (firstClearableVisibleItem !== undefined) {
+          this.failuresLeft.splice(
+            0,
+            this.failuresLeft.length,
+            ...this.failuresLeft.filter((key) => key !== firstClearableVisibleItem),
+          );
+          this.ewdPrimaryFailuresClearedLines.delete(firstClearableVisibleItem);
+          this.updateRecallFailuresFromDisplayedFailures();
+        }
+
+        return;
+      }
+    }
+
+    const targetGroup = layout.visibleGroups[0];
+
+    if (targetGroup !== undefined) {
+      this.clearFailureGroup(targetGroup);
+    } else if (layout.orderedEntries.length === 0) {
+      this.clearSecondaryFailure();
+    }
   }
 
   private readonly ecpClear1Pulse = new NXLogicPulseNode(true);
@@ -4280,63 +4555,7 @@ export class PseudoFWC {
     }
 
     if (this.ecpClearPulseUp && !this.ecpClearPulseUpHandled) {
-      const clearableFailures = this.failuresLeft.map((key) => {
-        const value = this.ewdMessageFailures[key];
-        const codeToReturn = value.whichCodeToReturn();
-        let code: string | null = null;
-        if (typeof codeToReturn === 'string') {
-          code = codeToReturn;
-        } else {
-          const found = codeToReturn.find((e) => e !== null);
-          if (found === undefined) {
-            console.warn('No valid return code found for failure ' + key);
-          } else {
-            code = value.codesToReturn[found];
-          }
-        }
-        if (code !== null) {
-          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
-        }
-      });
-
-      let targetGroup: string | undefined;
-      let bestOrder = Infinity;
-
-      for (const failure of clearableFailures) {
-        if (failure !== undefined) {
-          if (failure.group !== undefined && failure.order < bestOrder) {
-            bestOrder = failure.order;
-            targetGroup = failure.group;
-          }
-        }
-      }
-
-      if (targetGroup !== undefined) {
-        const remainingFailures: string[] = [];
-        let canClearTargetGroup = true;
-
-        for (const item of clearableFailures) {
-          if (item !== undefined) {
-            if (item.group === targetGroup) {
-              const timing = this.ewdFailureTiming.get(item.key);
-
-              if (timing === undefined || !timing.clearEligible) {
-                canClearTargetGroup = false;
-                break;
-              }
-            } else {
-              remainingFailures.push(item.key);
-            }
-          }
-        }
-
-        if (canClearTargetGroup) {
-          this.failuresLeft.splice(0, this.failuresLeft.length, ...remainingFailures);
-
-          this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
-        }
-      }
-
+      this.clearEwdFailure();
       this.ecpClearPulseUpHandled = true;
     }
 
@@ -4349,6 +4568,8 @@ export class PseudoFWC {
         this.failuresLeft.push(...this.recallFailures.splice(0));
       }
 
+      this.ewdPrimaryFailuresClearedLines.clear();
+      this.ewdSecondaryFailuresCleared.clear();
       this.ecpRecallPulseUpHandled = true;
     }
 
@@ -4379,27 +4600,24 @@ export class PseudoFWC {
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
-    let tempFailureArrayLeft: string[] = [];
-    let failureKeysLeft: string[] = [...this.failuresLeft];
-    let recallFailureKeys: string[] = [...this.recallFailures];
-    let tempFailureArrayRight: string[] = [];
-    let failureKeysRight: string[] = [...this.failuresRight];
-    const failureSysPageItems: { order: number; sysPage: EcamSysPage }[] = [];
+    const tempFailureEntriesLeft: EwdOrderedFailureLine[] = [];
+    const failureKeysLeft: string[] = [...this.failuresLeft];
+    const recallFailureKeys: string[] = [...this.recallFailures];
+    const tempFailureArrayRight: string[] = [];
+    const failureKeysRight: string[] = [...this.failuresRight];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
     let activeMasterWarningFailureCount = 0;
     let activeMasterCautionFailureCount = 0;
+    let topSecondaryFailureKey: string | undefined;
+    let topSecondaryFailureCode: string | undefined;
 
     // Update failure lists in case failures have been resolved
-    for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (!value.simVarIsActive.get()) {
-        failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
-        failureKeysRight = failureKeysRight.filter((e) => e !== key);
-        recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
-      }
-    }
+    this.pruneInactiveFailureKeys(failureKeysLeft);
+    this.pruneInactiveFailureKeys(failureKeysRight);
+    this.pruneInactiveFailureKeys(recallFailureKeys);
 
     this.recallFailures.length = 0;
     this.recallFailures.push(...recallFailureKeys);
@@ -4411,7 +4629,7 @@ export class PseudoFWC {
       const newWarning =
         (value.side === undefined && !this.specialCodes.includes(key)) ||
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
-        (value.side === 'RIGHT' && !this.failuresRight.includes(key));
+        (value.side === 'RIGHT' && !this.failuresRight.includes(key) && !this.ewdSecondaryFailuresCleared.has(key));
 
       if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
@@ -4470,32 +4688,20 @@ export class PseudoFWC {
           allFailureKeys.push(key);
         }
 
-        const newCode: string[] = [];
-        if (!recallFailureKeys.includes(key)) {
-          const codeToReturn = value.whichCodeToReturn !== undefined ? value.whichCodeToReturn() : undefined;
-          if (codeToReturn !== undefined) {
-            if (typeof codeToReturn === 'string') {
-              newCode.push(codeToReturn);
-            } else {
-              if (value.codesToReturn !== undefined) {
-                const codeIndex = codeToReturn.filter((e) => e !== null);
-                codeIndex.forEach((e: number) => {
-                  newCode.push(value.codesToReturn![e]);
-                });
+        if (value.side === 'LEFT' && !recallFailureKeys.includes(key)) {
+          tempFailureEntriesLeft.push(...this.getEwdFailureLayoutEntries(key));
+        } else if (value.side === 'RIGHT' && !this.ewdSecondaryFailuresCleared.has(key)) {
+          const codes = this.getEwdMessageCodes(value);
+          tempFailureArrayRight.push(...codes);
+          for (let i = 0; i < codes.length; i++) {
+            const code = codes[i];
+
+            if (isEwdSecondaryFailureCode(code)) {
+              if (topSecondaryFailureCode === undefined || compareEwdMessageCodes(code, topSecondaryFailureCode) < 0) {
+                topSecondaryFailureKey = key;
+                topSecondaryFailureCode = code;
               }
             }
-          }
-
-          if (value.sysPage !== EcamSysPage.NONE) {
-            const order = EwdMessageCodeOrder.get(newCode[0]) ?? Infinity;
-            failureSysPageItems.push({ order, sysPage: value.sysPage });
-          }
-        }
-        if (value.side !== undefined) {
-          if (value.side === 'LEFT') {
-            tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
-          } else {
-            tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
           }
         }
       }
@@ -4545,10 +4751,13 @@ export class PseudoFWC {
       this.cChordActive.set(false);
     }
 
-    const failLeft = tempFailureArrayLeft.length > 0;
-    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft);
-    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight);
+    const ewdLeftLayout = buildEwdLayout(tempFailureEntriesLeft, PseudoFWC.EWD_MESSAGE_LINES);
+    const failLeft = ewdLeftLayout.orderedEntries.length > 0;
+    const orderedFailureArrayRight = tempFailureArrayRight.sort(compareEwdMessageCodes);
+    this.currentEwdLeftLayout = ewdLeftLayout;
+    this.currentEwdSecondaryFailureKey = topSecondaryFailureKey;
     this.ewdLeftFailureActive.set(failLeft);
+    this.ewdLowerLeftOverflow.set(ewdLeftLayout.overflow);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
@@ -4558,8 +4767,9 @@ export class PseudoFWC {
 
     this.failuresRight.length = 0;
     this.failuresRight.push(...failureKeysRight);
-    if (tempFailureArrayLeft.length > 0) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
+
+    if (failLeft) {
+      this.ewdMessageLinesLeft.forEach((l, i) => l.set(ewdLeftLayout.displayedEntries[i]?.code));
     }
 
     for (const [, value] of Object.entries(this.ewdMessageMemos)) {
@@ -4568,20 +4778,7 @@ export class PseudoFWC {
         !value.memoInhibit?.() &&
         !value.flightPhaseInhib.some((e) => e === flightPhase)
       ) {
-        const newCode: string[] = [];
-        const codeToReturn = value.whichCodeToReturn !== undefined ? value.whichCodeToReturn() : undefined;
-        if (codeToReturn !== undefined) {
-          if (typeof codeToReturn === 'string') {
-            newCode.push(codeToReturn);
-          } else {
-            if (value.codesToReturn !== undefined) {
-              const codeIndex = codeToReturn.filter((e) => e !== null);
-              codeIndex.forEach((e: number) => {
-                newCode.push(value.codesToReturn![e]);
-              });
-            }
-          }
-        }
+        const newCode = this.getEwdMessageCodes(value);
 
         if (value.side === 'LEFT' && !failLeft) {
           tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
@@ -4593,19 +4790,13 @@ export class PseudoFWC {
       }
     }
 
-    let activeFailureSysPage = EcamSysPage.NONE;
-    let activeFailureSysPageOrder = Infinity;
-    for (const sysPageItem of failureSysPageItems) {
-      if (sysPageItem.order < activeFailureSysPageOrder) {
-        activeFailureSysPageOrder = sysPageItem.order;
-        activeFailureSysPage = sysPageItem.sysPage;
-      }
-    }
+    const topFailureKey = ewdLeftLayout.orderedEntries[0]?.failureKey ?? topSecondaryFailureKey;
+    this.activeFailureSysPage.set(
+      topFailureKey === undefined ? EcamSysPage.NONE : this.ewdMessageFailures[topFailureKey].sysPage,
+    );
 
-    this.activeFailureSysPage.set(activeFailureSysPage);
-
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft);
-    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight);
+    const orderedMemoArrayLeft = tempMemoArrayLeft.sort(compareEwdMessageCodes);
+    let orderedMemoArrayRight: string[] = tempMemoArrayRight.sort(compareEwdMessageCodes);
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
@@ -4622,8 +4813,33 @@ export class PseudoFWC {
 
     this.masterWarning.set(this.requestMasterWarningFromFaults);
 
-    if (orderedFailureArrayRight.length > 0) {
-      orderedMemoArrayRight = this.mapOrder([...orderedMemoArrayRight, ...orderedFailureArrayRight]);
+    const hasRightSideSecondaryFailure = orderedFailureArrayRight.some((code) => isEwdSecondaryFailureCode(code));
+
+    if (ewdLeftLayout.hiddenItemTitleGroups.length > 0 || hasRightSideSecondaryFailure) {
+      const overflowGroupTitleCodes = ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group));
+      const rightSideLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight];
+      const rightSideSpecialLines: string[] = [];
+      const rightSideSecondaryFailures: string[] = [];
+      for (let i = 0; i < rightSideLines.length; i++) {
+        const code = rightSideLines[i];
+
+        if (isEwdSpecialLineCode(code)) {
+          rightSideSpecialLines.push(code);
+        }
+        if (isEwdSecondaryFailureCode(code)) {
+          rightSideSecondaryFailures.push(code);
+        }
+      }
+      rightSideSpecialLines.sort(compareEwdMessageCodes);
+      rightSideSecondaryFailures.sort(compareEwdMessageCodes);
+
+      orderedMemoArrayRight = [
+        ...rightSideSpecialLines,
+        ...overflowGroupTitleCodes,
+        ...rightSideSecondaryFailures,
+      ].slice(0, PseudoFWC.EWD_MESSAGE_LINES);
+    } else if (orderedFailureArrayRight.length > 0) {
+      orderedMemoArrayRight = [...orderedMemoArrayRight, ...orderedFailureArrayRight].sort(compareEwdMessageCodes);
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
@@ -4688,6 +4904,7 @@ export class PseudoFWC {
 
       if (!isActive) {
         this.ewdFailureTiming.delete(key);
+        this.ewdSecondaryFailuresCleared.delete(key);
         continue;
       }
 
@@ -5756,7 +5973,6 @@ export class PseudoFWC {
         this.cabAltSetResetState2.get() ? 13 : null,
         14,
         15,
-        16,
       ],
       codesToReturn: [
         '213122101',
@@ -6442,7 +6658,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900126: {
-      // *HYD  - Blue reservoir overheat
+      // HYD B RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.blueRvrOvht,
       whichCodeToReturn: () => [0, this.blueElecPumpPBAuto.get() ? 1 : null],
@@ -6453,7 +6669,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900127: {
-      // *HYD  - Yellow reservoir overheat
+      // HYD Y RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.yellowRvrOvht,
       whichCodeToReturn: () => [
@@ -6469,7 +6685,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2900128: {
-      // *HYD  - Green reservoir overheat
+      // HYD G RSVR OVHT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.greenRvrOvht,
       whichCodeToReturn: () => [0, this.ptuAuto.get() ? 1 : null, this.eng1pumpPBisAuto.get() ? 2 : null],

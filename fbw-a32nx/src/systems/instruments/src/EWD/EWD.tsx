@@ -20,6 +20,8 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
 
   private ewdPotentiometer = Subject.create(0);
 
+  private lowerLeftOverflow = Subject.create(false);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -38,6 +40,13 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
       .handle((pot) => {
         this.ewdPotentiometer.set(pot);
       });
+
+    sub
+      .on('ewdLowerLeftOverflow')
+      .whenChanged()
+      .handle((overflow) => {
+        this.lowerLeftOverflow.set(overflow);
+      });
   }
 
   render(): VNode {
@@ -49,6 +58,11 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
           <line class="Separator" x1="522" y1="520" x2="764" y2="520" />
           <LowerLeftDisplay bus={this.props.bus} />
           <line class="Separator" x1="484" y1="540" x2="484" y2="730" />
+          <path
+            class="GreenFill"
+            d="m 481 734 h 6 v 17 h 4 l -7,14 l -7,-14 h 4 v -17"
+            visibility={this.lowerLeftOverflow.map((overflow) => (overflow ? 'visible' : 'hidden'))}
+          />
           <LowerRightDisplay bus={this.props.bus} />
         </svg>
       </DisplayUnit>
