@@ -30,6 +30,9 @@ export class FwsAbnormalNonSensed {
 
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
+  private readonly gpsBelow25k = Subject.create(false);
+  private readonly gpsAbove25k = Subject.create(false);
+
   constructor(private fws: FwsCore) {
     this.subscriptions.push(
       this.checklistId.sub((id) => {
@@ -81,6 +84,12 @@ export class FwsAbnormalNonSensed {
   }
 
   update() {
+    const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
+    if (this.fws.activeAbnormalNonSensedKeys.has(340900003)) {
+      this.gpsBelow25k.set(gpsAlt < 25000);
+      this.gpsAbove25k.set(gpsAlt >= 25000);
+    }
+
     if (this.fws.abnProcPulseNode.read()) {
       this.checklistId.set(0);
       this.selectedItem.set(0);
@@ -394,12 +403,11 @@ export class FwsAbnormalNonSensed {
       whichItemsToShow: () => {
         const flightPhase = this.fws.flightPhase.get();
         const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
-        const adrAlt = this.fws.adrPressureAltitude.get() ?? 0;
 
         const isGpsBelow10k = gpsAlt < 10000;
         const isGpsAbove10k = gpsAlt >= 10000;
-        const isAdrBelow25k = adrAlt < 25000;
-        const isAdrAbove25k = adrAlt >= 25000;
+        const isGpsBelow25k = gpsAlt < 25000;
+        const isGpsAbove25k = gpsAlt >= 25000;
         const beforeThrustRed = flightPhase <= 7;
         const afterThrustRed = flightPhase > 7;
 
@@ -414,55 +422,55 @@ export class FwsAbnormalNonSensed {
           false, // [8] //TODO: if derated climb engaged
           afterThrustRed, // [9]
           afterThrustRed && isGpsBelow10k, // [10]
-          afterThrustRed && isGpsAbove10k && isAdrBelow25k, // [11]
-          afterThrustRed && isAdrAbove25k, // [12]
-          isAdrBelow25k, // [13]
-          isAdrBelow25k, // [14]
-          isAdrBelow25k, // [15]
-          isAdrBelow25k, // [16]
-          isAdrBelow25k, // [17]
-          isAdrBelow25k && this.fws.flapsHandle.get() === 4, // [18]
-          isAdrBelow25k, // [19]
-          isAdrBelow25k, // [20]
-          isAdrBelow25k, // [21]
-          isAdrBelow25k, // [22]
-          isAdrBelow25k, // [23]
-          isAdrBelow25k, // [24]
-          isAdrBelow25k, // [25]
-          isAdrBelow25k, // [26]
-          isAdrBelow25k, // [27]
-          isAdrBelow25k, // [28]
-          isAdrBelow25k, // [29]
-          isAdrBelow25k, // [30]
-          isAdrBelow25k, // [31]
-          isAdrBelow25k, // [32] //TODO check if at least two MFP heating failed
-          isAdrBelow25k, // [33]
-          isAdrBelow25k, // [34]
-          isAdrBelow25k, // [35] //TODO check if soft GA is lost
-          isAdrBelow25k, // [36]
-          isAdrBelow25k, // [37]
-          isAdrBelow25k, // [38]
-          isAdrBelow25k, // [39]
-          isAdrBelow25k, // [40]
-          isAdrBelow25k, // [41]
-          isAdrAbove25k, // [42]
-          isAdrAbove25k, // [43]
-          isAdrAbove25k, // [44]
-          isAdrAbove25k, // [45]
-          isAdrAbove25k, // [46]
-          isAdrAbove25k, // [47]
-          isAdrAbove25k, // [48]
-          isAdrAbove25k, // [49]
-          isAdrAbove25k, // [50]
-          isAdrAbove25k, // [51]
-          isAdrAbove25k, // [52]
-          isAdrAbove25k, // [53]
-          isAdrAbove25k, // [54]
-          isAdrAbove25k, // [55]
-          isAdrAbove25k, // [56]
-          isAdrAbove25k, // [57]
-          isAdrAbove25k, // [58]
-          isAdrAbove25k, // [59] //TODO check if soft GA is lost
+          afterThrustRed && isGpsAbove10k && isGpsBelow25k, // [11]
+          afterThrustRed && isGpsAbove25k, // [12]
+          isGpsBelow25k, // [13]
+          isGpsBelow25k, // [14]
+          isGpsBelow25k, // [15]
+          isGpsBelow25k, // [16]
+          isGpsBelow25k, // [17]
+          isGpsBelow25k && this.fws.flapsHandle.get() === 4, // [18]
+          isGpsBelow25k, // [19]
+          isGpsBelow25k, // [20]
+          isGpsBelow25k, // [21]
+          isGpsBelow25k, // [22]
+          isGpsBelow25k, // [23]
+          isGpsBelow25k, // [24]
+          isGpsBelow25k, // [25]
+          isGpsBelow25k, // [26]
+          isGpsBelow25k, // [27]
+          isGpsBelow25k, // [28]
+          isGpsBelow25k, // [29]
+          isGpsBelow25k, // [30]
+          isGpsBelow25k, // [31]
+          isGpsBelow25k, // [32] //TODO check if at least two MFP heating failed
+          isGpsBelow25k, // [33]
+          isGpsBelow25k, // [34]
+          isGpsBelow25k, // [35] //TODO check if soft GA is lost
+          isGpsBelow25k, // [36]
+          isGpsBelow25k, // [37]
+          isGpsBelow25k, // [38]
+          isGpsBelow25k, // [39]
+          isGpsBelow25k, // [40]
+          isGpsBelow25k, // [41]
+          isGpsAbove25k, // [42]
+          isGpsAbove25k, // [43]
+          isGpsAbove25k, // [44]
+          isGpsAbove25k, // [45]
+          isGpsAbove25k, // [46]
+          isGpsAbove25k, // [47]
+          isGpsAbove25k, // [48]
+          isGpsAbove25k, // [49]
+          isGpsAbove25k, // [50]
+          isGpsAbove25k, // [51]
+          isGpsAbove25k, // [52]
+          isGpsAbove25k, // [53]
+          isGpsAbove25k, // [54]
+          isGpsAbove25k, // [55]
+          isGpsAbove25k, // [56]
+          isGpsAbove25k, // [57]
+          isGpsAbove25k, // [58]
+          isGpsAbove25k, // [59] //TODO check if soft GA is lost
         ];
       },
       whichItemsChecked: () => [
@@ -532,26 +540,26 @@ export class FwsAbnormalNonSensed {
       limitationsAllPhases: () => [],
       inopSysAllPhases: () => [],
       info: () => {
-        const adrAlt = this.fws.adrPressureAltitude.get() ?? 0;
-        const isAdrBelow25k = adrAlt < 25000;
-        const isAdrAbove25k = adrAlt >= 25000;
+        const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
+        const isGpsBelow25k = gpsAlt < 25000;
+        const isGpsAbove25k = gpsAlt >= 25000;
         const allAdrOff = this.fws.allAdrPbsOff.get();
 
         return [
           '220200015',
-          isAdrBelow25k ? '340200007' : '',
+          isGpsBelow25k ? '340200007' : '',
           allAdrOff ? '340200006' : '',
-          isAdrAbove25k ? '340200010' : '',
-          isAdrAbove25k ? '340200011' : '',
-          isAdrAbove25k ? '340200012' : '',
-          isAdrAbove25k ? '340200009' : '',
-          isAdrAbove25k ? '340200013' : '',
-          isAdrAbove25k ? '340200014' : '',
-          isAdrAbove25k ? '340200015' : '',
-          isAdrAbove25k ? '340200016' : '',
-          isAdrAbove25k ? '340200017' : '',
-          isAdrAbove25k ? '220200014' : '',
-          isAdrAbove25k ? '220200011' : '',
+          isGpsAbove25k ? '340200010' : '',
+          isGpsAbove25k ? '340200011' : '',
+          isGpsAbove25k ? '340200012' : '',
+          isGpsAbove25k ? '340200009' : '',
+          isGpsAbove25k ? '340200013' : '',
+          isGpsAbove25k ? '340200014' : '',
+          isGpsAbove25k ? '340200015' : '',
+          isGpsAbove25k ? '340200016' : '',
+          isGpsAbove25k ? '340200017' : '',
+          isGpsAbove25k ? '220200014' : '',
+          isGpsAbove25k ? '220200011' : '',
         ];
       },
     },
@@ -559,32 +567,43 @@ export class FwsAbnormalNonSensed {
   public ewdDeferredProcs: EwdAbnormalDict = {
     340700003: {
       flightPhaseInhib: [],
-      simVarIsActive: Subject.create(true),
+      simVarIsActive: this.gpsBelow25k,
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [
-        (this.fws.adrPressureAltitude.get() ?? 0) < 25_000,
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
-        (this.fws.adrPressureAltitude.get() ?? 0) > 25_000,
-      ],
-      whichItemsChecked: () => [false, false, false, false, this.fws.manCabinAltMode.get(), false],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
       failure: 0,
       sysPage: SdPages.None,
     },
     340700002: {
       flightPhaseInhib: [],
-      simVarIsActive: Subject.create(true),
+      simVarIsActive: this.gpsAbove25k,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
         true,
         true,
         true,
         true,
         false, //TODO check if at least two MFP heating failed
       ],
-      whichItemsChecked: () => [this.fws.allAdrPbsOff.get(), false, false, false, false],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        this.fws.manCabinAltMode.get(),
+        false,
+        false,
+        this.fws.allAdrPbsOff.get(),
+        false,
+        false,
+        false,
+        false,
+      ],
       failure: 0,
       sysPage: SdPages.None,
     },

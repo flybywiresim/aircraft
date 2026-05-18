@@ -5503,7 +5503,10 @@ export class FwsCore {
             itemsTimeStamp: itemsTimer,
           });
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
-            if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
+            if (
+              EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
+              deferredValue.simVarIsActive.get()
+            ) {
               const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
@@ -5679,7 +5682,7 @@ export class FwsCore {
     const deferredProcedureKeys: string[] = [];
     allFailureKeys.forEach((failureKey) => {
       for (const [deferredKey, _] of ewdDeferredEntries) {
-        if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey)) {
+        if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey) && _.simVarIsActive.get()) {
           deferredProcedureKeys.push(deferredKey);
         }
       }
