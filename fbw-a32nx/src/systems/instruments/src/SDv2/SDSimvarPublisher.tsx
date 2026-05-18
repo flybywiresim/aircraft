@@ -33,7 +33,7 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
   private static simvars = new Map<keyof SDSimvars, SimVarPublisherEntry<any>>([
     ...AdirsSimVarDefinitions,
     ...SwitchingPanelSimVarsDefinitions,
-    ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', type: SimVarValueType.Enum }],
+    ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_DISPLAY', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
     ['grossWeight', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
     [
