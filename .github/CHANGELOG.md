@@ -17,6 +17,7 @@
 1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
 1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
 1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
+1. [A32NX/A380X] Corrected off-by-.01 conversion value for kohlsman event - @rthom91 (Randy)
 1. [A380X/MODEL] Add ability to hide EFB model via a clickspot - @heclak (Heclak)
 1. [A380X/MODEL] Fix cargo air cond temp knob animation out of range - @heclak (Heclak)
 1. [A380X/MODEL] Fix RMP Voice volume knob animations - @heclak (Heclak)
