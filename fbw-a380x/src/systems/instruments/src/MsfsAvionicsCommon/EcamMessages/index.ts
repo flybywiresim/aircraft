@@ -67,6 +67,8 @@ export const EcamMemos: { [n: string]: string } = {
   '000018001': '\x1b<3mAPU BLEED',
   '000029001': '\x1b<3mSWITCHG PNL',
   '210000001': '\x1b<3mHI ALT AIRPORT',
+  '210000002': '\x1b<4mCAB PRESS MAN MODE',
+  '210000003': '\x1b<3mCAB PRESS MAN MODE',
   '220000001': '\x1b<2mAP OFF',
   '220000002': '\x1b<4mA/THR OFF',
   '221000001': '\x1b<3mFMS SWTG',
