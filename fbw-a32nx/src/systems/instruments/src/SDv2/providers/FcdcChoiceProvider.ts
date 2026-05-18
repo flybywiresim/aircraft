@@ -1,4 +1,4 @@
-import { Arinc429LocalVarConsumerSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { A32NXFcdcBusEvents } from '@shared/publishers/A32NXFcdcBusPublisher';
 
@@ -37,8 +37,6 @@ export class FcdcChoiceProvider implements Instrument {
     const publisher = this.bus.getPublisher<FcdcChoiceEvents>();
 
     this.fcdc_1_valid.sub((fcdc1Chosen) => {
-      console.log(`switching to FCDC ${fcdc1Chosen ? 1 : 2}`);
-
       this.fcdc_discrete_word_040.setConsumer(
         this.sub.on(fcdc1Chosen ? 'a32nx_fcdc_discrete_word_040_1' : 'a32nx_fcdc_discrete_word_040_2'),
       );
@@ -54,8 +52,6 @@ export class FcdcChoiceProvider implements Instrument {
     }, true);
 
     this.fcdc_discrete_word_040.sub((word) => {
-      const lol = Arinc429Register.empty().set(word);
-      console.log(`Setting FCDC word 040 with SSM ${lol.ssm}`);
       publisher.pub('a32nx_fcdc_discrete_word_040', word);
     }, true);
 
