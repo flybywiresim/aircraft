@@ -203,6 +203,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_1',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -211,6 +212,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_2',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -219,6 +221,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_3',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -227,6 +230,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_4',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -235,6 +239,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_5',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -243,6 +248,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_CAPT_ROLL_COMMAND',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -251,6 +257,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_FO_ROLL_COMMAND',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -259,6 +266,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_CAPT_PITCH_COMMAND',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -267,6 +275,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_FO_PITCH_COMMAND',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -275,6 +284,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_RUDDER_PEDAL_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -283,6 +293,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -291,6 +302,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -299,6 +311,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -307,6 +320,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
       [
@@ -315,6 +329,7 @@ export class A32NXFcdcBusPublisher extends SimVarPublisher<A32NXFcdcBusPublisher
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_TRIM_POS',
           type: SimVarValueType.Enum,
           indexed: true,
+          defaultIndex: null,
         },
       ],
     ]);
