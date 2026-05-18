@@ -16,10 +16,14 @@ export class SvgGroup extends DisplayComponent<SvgGroupProps> {
   );
 
   render() {
-    return (
-      <g transform={this.transformString} class={this.props.class}>
-        {this.props.children}
-      </g>
-    );
+    if (this.props.class) {
+      return (
+        <g transform={this.transformString} class={this.props.class}>
+          {this.props.children}
+        </g>
+      );
+    } else {
+      return <g transform={this.transformString}>{this.props.children}</g>;
+    }
   }
 }
