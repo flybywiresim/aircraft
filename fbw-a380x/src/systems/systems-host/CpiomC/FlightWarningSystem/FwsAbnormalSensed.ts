@@ -3689,6 +3689,17 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Wheel,
       cancel: true,
     },
+    320000001: {
+      // AUTO BRK OFF Master Caution light
+      simVarIsActive: this.fws.autoBrakeOffMasterCautionLight,
+      failure: 2,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      flightPhaseInhib: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.None,
+    },
+
     // ATA 34 - NAVIGATION
     340800001: {
       // ADR 1 FAULT

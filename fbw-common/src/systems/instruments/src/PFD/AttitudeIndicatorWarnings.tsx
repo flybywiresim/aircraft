@@ -13,7 +13,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
 
   private readonly maxReverseActive = Subject.create(false);
 
-  private readonly maxReverseMaxBrakingActive = Subject.create(false);
+  private readonly maxBrakingActive = Subject.create(false);
 
   private readonly ifWetRwyTooShortActive = Subject.create(false);
 
@@ -53,11 +53,11 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
       .whenChanged()
       .handle((raw) => {
         this.rowRopWord1.setWord(raw);
-
-        this.maxReverseActive.set(this.rowRopWord1.get().bitValueOr(12, false));
-        this.maxReverseMaxBrakingActive.set(this.rowRopWord1.get().bitValueOr(13, false));
-        this.ifWetRwyTooShortActive.set(this.rowRopWord1.get().bitValueOr(14, false));
-        this.rwyTooShortActive.set(this.rowRopWord1.get().bitValueOr(15, false));
+        const rowRopWord1 = this.rowRopWord1.get();
+        this.maxBrakingActive.set(rowRopWord1.bitValueOr(11, false));
+        this.maxReverseActive.set(rowRopWord1.bitValueOr(12, false));
+        this.ifWetRwyTooShortActive.set(rowRopWord1.bitValueOr(14, false));
+        this.rwyTooShortActive.set(rowRopWord1.bitValueOr(15, false));
       });
 
     sub
@@ -95,7 +95,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
               ([maxReverse, maxRmB, wetTooShort, tooShort, stall]) =>
                 (maxReverse || maxRmB) && !wetTooShort && !tooShort && !stall,
               this.maxReverseActive,
-              this.maxReverseMaxBrakingActive,
+              this.maxBrakingActive,
               this.ifWetRwyTooShortActive,
               this.rwyTooShortActive,
               this.stallActive,
@@ -112,7 +112,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
             display: MappedSubject.create(
               ([maxBraking, wetTooShort, tooShort, stall, stopRudder]) =>
                 maxBraking && !wetTooShort && !tooShort && !stall && !stopRudder,
-              this.maxReverseMaxBrakingActive,
+              this.maxBrakingActive,
               this.ifWetRwyTooShortActive,
               this.rwyTooShortActive,
               this.stallActive,
@@ -186,7 +186,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
               ([windshear, maxReverse, maxBraking]) => windshear && !maxReverse && !maxBraking,
               this.windshearActive,
               this.maxReverseActive,
-              this.maxReverseMaxBrakingActive,
+              this.maxBrakingActive,
             ).map((it) => (it ? 'block' : 'none')),
           }}
         >
@@ -203,7 +203,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
               this.wsAheadCaution,
               this.wsAheadWarning,
               this.maxReverseActive,
-              this.maxReverseMaxBrakingActive,
+              this.maxBrakingActive,
               this.windshearActive,
               this.stallActive,
             ).map((it) => (it ? 'block' : 'none')),
@@ -221,7 +221,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
                 wsAheadWarning && !maxReverse && !maxBraking && !windshear && !stall,
               this.wsAheadWarning,
               this.maxReverseActive,
-              this.maxReverseMaxBrakingActive,
+              this.maxBrakingActive,
               this.windshearActive,
               this.stallActive,
             ).map((it) => (it ? 'block' : 'none')),

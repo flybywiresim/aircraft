@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { pathify, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../../../shared/src/AutoCallOuts';
+import { usePersistentNumberProperty } from '../../../../../../../fbw-common/src/systems/instruments/src/react';
 
 export const AutomaticCallOutsPage: React.FC = () => {
   const [autoCallOuts, setAutoCallOuts] = usePersistentNumberProperty(
