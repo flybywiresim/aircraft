@@ -4,7 +4,6 @@ import { FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 import { PageTitle } from '../Generic/PageTitle';
-import { SDSimvars } from '../../SDSimvarPublisher';
 import { SdPageProps } from '../../SD';
 import { ElacComputerIndicator, SecComputerIndicator } from './elements/ComputerIndicator';
 import { Aileron } from './elements/Aileron';
@@ -14,8 +13,6 @@ import { PitchTrim } from './elements/PitchTrim';
 import { Wings } from './elements/Wings';
 
 export class FctlPage extends DestroyableComponent<SdPageProps> {
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
-
   private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
   onAfterRender(node: VNode): void {
