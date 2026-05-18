@@ -22,6 +22,8 @@ export type BaseSDSimvars = AdirsSimVars &
     rudderDeflection: number;
     ac2BusPowered: boolean;
     sdPotentiometer: number;
+    ir1NormalAcc: number;
+    fwcFlightPhase: number;
   };
 
 type SDIndexedEvents = {
@@ -37,7 +39,7 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ...SwitchingPanelSimVarsDefinitions,
     ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_DISPLAY', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
-    ['grossWeight', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
+    ['grossWeight', { name: 'L:A32NX_FM_GROSS_WEIGHT', type: SimVarValueType.Number }],
     [
       'greenHydraulicPressureSwitchPressurized',
       { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
@@ -53,6 +55,8 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['rudderDeflection', { name: 'L:A32NX_HYD_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
     ['ac2BusPowered', { name: 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED', type: SimVarValueType.Bool }],
     ['sdPotentiometer', { name: 'LIGHT POTENTIOMETER:93', type: SimVarValueType.Number }],
+    ['ir1NormalAcc', { name: 'L:A32NX_ADIRS_IR_1_BODY_NORMAL_ACC', type: SimVarValueType.Number }],
+    ['fwcFlightPhase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

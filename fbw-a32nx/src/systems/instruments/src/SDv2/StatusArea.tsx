@@ -8,12 +8,13 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
+  Subject,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { Arinc429LocalVarConsumerSubject, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, NXDataStore, NXLogicConfirmNode, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXAdrBusEvents } from '@shared/publishers/A32NXAdrBusPublisher';
@@ -75,13 +76,30 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.sat,
   );
 
-  // private readonly normalAcc = Arinc429LocalVarConsumerSubject.create(this.sub.on('normalAccRaw'));
+  private prevSimTime = 0;
 
-  // private readonly gLoadStyle = this.normalAcc.map(
-  //   (gLoad) => (gLoad.isNormalOperation() && (gLoad.value < 0.7 || gLoad.value > 1.4) ? 'inherit' : 'hidden'), // FIXME
-  // );
-  //
-  // private readonly gLoadText = this.normalAcc.map((gLoad) => getValuePrefix(gLoad.value) + gLoad.value.toFixed(1));
+  private readonly normalAcc = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir1NormalAcc'));
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  private readonly gLoadConfirm = new NXLogicConfirmNode(2, true);
+
+  private readonly gLoadConfirm2 = new NXLogicConfirmNode(5, false);
+
+  private readonly gLoadExcessive = Subject.create(false);
+
+  private readonly gLoadLabelStyle = this.gLoadExcessive.map((gLoadExcessive) =>
+    gLoadExcessive ? 'inherit' : 'hidden',
+  );
+
+  private readonly gLoadTextStyle = MappedSubject.create(
+    ([normalAcc, gLoadExcessive]) =>
+      !(normalAcc.isFailureWarning() || normalAcc.isNoComputedData()) && gLoadExcessive ? 'inherit' : 'hidden',
+    this.normalAcc,
+    this.gLoadExcessive,
+  );
+
+  private readonly gLoadText = this.normalAcc.map((gLoad) => getValuePrefix(gLoad.value) + gLoad.value.toFixed(1));
 
   private readonly zuluTime = ConsumerSubject.create(this.sub.on('zuluTime'), 0);
 
@@ -97,25 +115,39 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   // This call to NXUnits ensures that metricWeightVal is set early on
   private readonly userWeight = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) => (v ? 'KG' : 'LBS'));
 
-  //private readonly fqmsGrossWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fmsGrossWeight = ConsumerSubject.create(this.sub.on('grossWeight'), 0);
 
-  //private readonly gwText = MappedSubject.create(
-  //  ([gw, _uw]) =>
-  //    gw.isNormalOperation()
-  //      ? (Math.round(NXUnits.kgToUser(gw.value) / 100) * 100).toFixed(0)
-  //      : gw.isNoComputedData()
-  //        ? '--\xa0\xa0'
-  //        : 'XX\xa0\xa0',
-  //  this.fqmsGrossWeight,
-  //  this.userWeight,
-  //);
-  //
-  //private readonly gwClass = this.fqmsGrossWeight.map((gw) =>
-  //  gw.isNormalOperation() ? 'F27 Green EndAlign' : gw.isNoComputedData() ? 'F27 Cyan EndAlign' : 'F27 Amber EndAlign',
-  //);
+  private readonly gwText = MappedSubject.create(
+    ([gw, _uw]) => (gw !== 0 ? (Math.round(NXUnits.kgToUser(gw * 10)) * 100).toFixed(0) : '--\xa0\xa0'),
+    this.fmsGrossWeight,
+    this.userWeight,
+  );
+
+  private readonly gwClass = this.fmsGrossWeight.map((gw) => (gw !== 0 ? 'F27 Green EndAlign' : 'F27 Cyan EndAlign'));
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.sub.on('simTime').handle((simTime) => {
+        const dt = Math.max(simTime - this.prevSimTime, 1);
+
+        this.gLoadExcessive.set(
+          this.gLoadConfirm2.write(
+            this.gLoadConfirm.write(
+              !(this.normalAcc.get().isFailureWarning() || this.normalAcc.get().isNoComputedData()) &&
+                (this.normalAcc.get().value > 1.4 || this.normalAcc.get().value < 0.7) &&
+                this.fwcFlightPhase.get() >= 4 &&
+                this.fwcFlightPhase.get() <= 8,
+              dt,
+            ),
+            dt,
+          ),
+        );
+
+        this.prevSimTime = simTime;
+      }),
+    );
 
     this.subscriptions.push(
       this.userWeight,
@@ -130,15 +162,17 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.isa,
       this.isaText,
       this.isaVisibility,
-      //this.normalAcc,
-      //this.gLoadStyle,
-      //this.gLoadText,
+      this.normalAcc,
+      this.fwcFlightPhase,
+      this.gLoadLabelStyle,
+      this.gLoadTextStyle,
+      this.gLoadText,
       this.zuluTime,
       this.timeHH,
       this.timeMM,
-      //this.fqmsGrossWeight,
-      //this.gwText,
-      //this.gwClass,
+      this.fmsGrossWeight,
+      this.gwText,
+      this.gwClass,
     );
   }
 
@@ -206,14 +240,14 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
           style="position: absolute; top: 0px; left: 0px;"
         >
           {/* G Load Indication */}
-          {/*<g visibility={this.gLoadStyle}>
-            <text x={296} y={702} class="F27 Amber">
+          <g>
+            <text x={296} y={702} class="F27 Amber" visibility={this.gLoadLabelStyle}>
               G LOAD
             </text>
-            <text x={410} y={702} class="F27 Amber">
+            <text x={410} y={702} class="F27 Amber" visibility={this.gLoadTextStyle}>
               {this.gLoadText}
             </text>
-          </g>*/}
+          </g>
 
           {/* Clock */}
           <text x={327} y={729} class="F29 Green">
@@ -241,9 +275,9 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
             GW
           </text>
 
-          {/*<text x={705} y={696} class={this.gwClass}>
+          <text x={698} y={696} class={this.gwClass}>
             {this.gwText}
-          </text>*/}
+          </text>
 
           <text x={706} y={697} class="F22 Cyan">
             {this.userWeight}
