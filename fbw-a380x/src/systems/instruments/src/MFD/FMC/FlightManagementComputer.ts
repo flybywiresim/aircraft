@@ -1430,6 +1430,8 @@ export class FlightManagementComputer implements FmcInterface {
                 SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20)),
         );
 
+        this.acInterface.sfccAquisition();
+        this.acInterface.fgAquisition();
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -1440,7 +1442,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkTooSteepPath();
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
-        this.acInterface.checkEngineOut(throttledDt);
+        this.acInterface.checkEngineOut();
         this.acInterface.checkLateralDiscontinuityAhead();
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         this.acInterface.setTakeoffFlaps(toFlaps ?? null);
@@ -1674,6 +1676,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.wasReset = true;
     await this.flightPlanInterface.reset();
     this.fmgc.data.reset();
+    this.acInterface.invalidateManagedSpeed();
     this.initSimVars();
     this.deleteAllStoredWaypoints();
     this.clearLatestFmsErrorMessage();
