@@ -32,6 +32,7 @@
       "@flybywiresim/navigation-display": ["../../../fbw-common/src/systems/instruments/src/ND/index.ts"],
       "@flybywiresim/oanc": ["../../../fbw-common/src/systems/instruments/src/OANC/index.ts"],
       "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"],
+      "@flybywiresim/popup": ["../../../fbw-common/src/systems/instruments/src/popup/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
       "@localization/*": ["../localization/*"],
