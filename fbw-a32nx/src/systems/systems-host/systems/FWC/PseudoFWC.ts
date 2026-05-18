@@ -834,15 +834,33 @@ export class PseudoFWC {
 
   private readonly flapsInferiorToPositionA = Subject.create(false);
 
+  private readonly flapsSuperiorToPositionC = Subject.create(false);
+
   private readonly flapsSuperiorToPositionD = Subject.create(false);
 
   private readonly flapsSuperiorToPositionF = Subject.create(false);
 
   private readonly slatsInferiorToPositionD = Subject.create(false);
 
+  private readonly slatsInferiorToPositionE = Subject.create(false);
+
+  private readonly slatsSuperiorToPositionA = Subject.create(false);
+
   private readonly slatsSuperiorToPositionG = Subject.create(false);
 
   private readonly flapsSuperiorToPositionDOrSlatsSuperiorToPositionC = Subject.create(false);
+
+  private readonly slatsFlapsSpeedCase1 = Subject.create(false);
+
+  private readonly slatsFlapsSpeedCase2 = Subject.create(false);
+
+  private readonly slatsFlapsSpeedCase3 = Subject.create(false);
+
+  private readonly slatsFlapsSpeedCase4 = Subject.create(false);
+
+  private readonly slatsFlapsSpeedCase5 = Subject.create(false);
+
+  private readonly slatsFlapsSpeedLimitApplies = Subject.create(false);
 
   private readonly flapsNotTo = Subject.create(false);
 
@@ -1221,6 +1239,18 @@ export class PseudoFWC {
 
   private readonly lgNotDownPulse2 = new NXLogicPulseNode();
 
+  private readonly doorsNotUplockedFor30Seconds = new NXLogicConfirmNode(30, true);
+
+  private readonly doorsNotClosed = Subject.create(false);
+
+  private readonly doorsNotClosedMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly doorsNotClosedWarning = Subject.create(false);
+
+  private readonly doorsNotClosedPulseNode = new NXLogicPulseNode(true);
+
+  private readonly doorsNotClosedRecycleMemoryNode = new NXLogicMemoryNode(true);
+
   private readonly lhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_LEFT_GEAR_UNLOCKED');
 
   private readonly rhLgNotLocked = RegisteredSimVar.createBoolean('L:A32NX_LGCIU_1_RIGHT_GEAR_UNLOCKED');
@@ -1242,6 +1272,8 @@ export class PseudoFWC {
   private readonly lgNotUplocked = Subject.create(false);
 
   private readonly gearNotUplockedWarning = Subject.create(false);
+
+  private readonly gearLeverSelectUpPulseNode = new NXLogicPulseNode();
 
   private readonly gearLeverSelectUpPhase56PulseNode = new NXLogicPulseNode();
 
@@ -3358,12 +3390,45 @@ export class PseudoFWC {
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
     this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 65);
+    this.flapsSuperiorToPositionC.set(flapsPos.isNormalOperation() && flapsPos.value > 136);
     this.flapsSuperiorToPositionD.set(flapsPos.isNormalOperation() && flapsPos.value > 152);
     this.flapsSuperiorToPositionF.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
     this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 210.46);
+    this.slatsInferiorToPositionE.set(slatsPos.isNormalOperation() && slatsPos.value < 112.38);
+    this.slatsSuperiorToPositionA.set(slatsPos.isNormalOperation() && slatsPos.value > 24.76);
     this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 309.53);
     this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.set(
       this.flapsSuperiorToPositionD.get() || (slatsPos.isNormalOperation() && slatsPos.value > 198.1),
+    );
+
+    this.slatsFlapsSpeedCase1.set(this.slatsSuperiorToPositionG.get() || this.flapsSuperiorToPositionF.get());
+    this.slatsFlapsSpeedCase2.set(!this.slatsFlapsSpeedCase1.get() && this.flapsSuperiorToPositionD.get());
+    this.slatsFlapsSpeedCase3.set(
+      !this.slatsFlapsSpeedCase1.get() &&
+        !this.slatsFlapsSpeedCase2.get() &&
+        (this.flapsSuperiorToPositionC.get() || !this.slatsInferiorToPositionE.get()),
+    );
+    this.slatsFlapsSpeedCase4.set(
+      !this.slatsFlapsSpeedCase1.get() &&
+        !this.slatsFlapsSpeedCase2.get() &&
+        !this.slatsFlapsSpeedCase3.get() &&
+        !this.flapsInferiorToPositionA.get() &&
+        this.slatsInferiorToPositionE.get(),
+    );
+    this.slatsFlapsSpeedCase5.set(
+      !this.slatsFlapsSpeedCase1.get() &&
+        !this.slatsFlapsSpeedCase2.get() &&
+        !this.slatsFlapsSpeedCase3.get() &&
+        !this.slatsFlapsSpeedCase4.get() &&
+        this.slatsSuperiorToPositionA.get() &&
+        this.slatsInferiorToPositionE.get(),
+    );
+    this.slatsFlapsSpeedLimitApplies.set(
+      this.slatsFlapsSpeedCase1.get() ||
+        this.slatsFlapsSpeedCase2.get() ||
+        this.slatsFlapsSpeedCase3.get() ||
+        this.slatsFlapsSpeedCase4.get() ||
+        this.slatsFlapsSpeedCase5.get(),
     );
 
     // flap, slat and speedbrake config warning logic
@@ -3717,6 +3782,8 @@ export class PseudoFWC {
       (lgciu1GearLeverSelectUp && lgciu2GearLeverSelectUp) ||
       (lgciu1Or2DiscreteWord3Invalid && (lgciu1GearLeverSelectUp || lgciu2GearLeverSelectUp));
 
+    this.gearLeverSelectUpPulseNode.write(gearLeverSelectUp);
+
     this.gearNotUplockedRecycleMemoryNode.write(
       this.gearLeverSelectUpPhase56PulseNode.write(gearLeverSelectUp && this.flightPhase56.get()) &&
         this.lgNotUplockedMemoryNode.read(), // TODO: Check SHOCK ABSORBER FAULT
@@ -3733,6 +3800,40 @@ export class PseudoFWC {
     );
 
     this.lgDownlockedFor10Seconds.write(this.lgDownlocked.get(), deltaTime);
+
+    const lgciu1LhDoorNotUplock = this.lgciu1DiscreteWord1.bitValueOr(17, false);
+    const lgciu2LhDoorNotUplock = this.lgciu2DiscreteWord1.bitValueOr(17, false);
+    const lhDoorNotUplock =
+      (lgciu1LhDoorNotUplock && lgciu2LhDoorNotUplock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1LhDoorNotUplock || lgciu2LhDoorNotUplock));
+
+    const lgciu1RhDoorNotUplock = this.lgciu1DiscreteWord1.bitValueOr(18, false);
+    const lgciu2RhDoorNotUplock = this.lgciu2DiscreteWord1.bitValueOr(18, false);
+    const rhDoorNotUplock =
+      (lgciu1RhDoorNotUplock && lgciu2RhDoorNotUplock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1RhDoorNotUplock || lgciu2RhDoorNotUplock));
+
+    const lgciu1NoseDoorNotUplock = this.lgciu1DiscreteWord1.bitValueOr(19, false);
+    const lgciu2NoseDoorNotUplock = this.lgciu2DiscreteWord1.bitValueOr(19, false);
+    const noseDoorNotUplock =
+      (lgciu1NoseDoorNotUplock && lgciu2NoseDoorNotUplock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1NoseDoorNotUplock || lgciu2NoseDoorNotUplock));
+
+    this.doorsNotClosed.set(
+      this.doorsNotClosedMemoryNode.write(
+        this.doorsNotUplockedFor30Seconds.write(lhDoorNotUplock || rhDoorNotUplock || noseDoorNotUplock, deltaTime) &&
+          !(this.lgNotUplocked.get() || this.gearNotDownlocked.get()),
+        !lhDoorNotUplock && !rhDoorNotUplock && !noseDoorNotUplock,
+      ),
+    );
+
+    // TODO: Check all ADR fault
+    this.doorsNotClosedWarning.set(this.doorsNotClosed.get());
+
+    this.doorsNotClosedRecycleMemoryNode.write(
+      this.doorsNotClosedPulseNode.write(this.doorsNotClosed.get()) && gearLeverSelectUp,
+      (this.doorsNotClosed.get() && this.gearLeverSelectUpPulseNode.read()) || this.fwcFlightPhase.get() === 8,
+    );
 
     this.phase84s5Trigger.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.groundSpoiler5sDelayed.write(
@@ -6247,6 +6348,29 @@ export class PseudoFWC {
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
       cancel: true,
+    },
+    3100120: {
+      // DOORS NOT CLOSED
+      flightPhaseInhib: [1, 3, 4, 5, 8, 9, 10],
+      simVarIsActive: this.doorsNotClosedWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.doorsNotClosedRecycleMemoryNode.read() ? 1 : null,
+        this.doorsNotClosedRecycleMemoryNode.read() ? 2 : null,
+        // TODO: Check engines out, flaps failures
+        this.doorsNotClosedRecycleMemoryNode.read() &&
+        (!(false && this.slatsFlapsSpeedLimitApplies.get()) || !this.aircraftOnGround.get())
+          ? 3
+          : null,
+        4,
+        !this.aircraftOnGround.get() ? 5 : null,
+        !this.aircraftOnGround.get() ? 6 : null,
+      ],
+      codesToReturn: ['310012001', '310012002', '310012003', '310012004', '310012005', '310012006', '310012007'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.WHEEL,
+      side: 'LEFT',
     },
     3200130: {
       // GEAR NOT UPLOCKED
