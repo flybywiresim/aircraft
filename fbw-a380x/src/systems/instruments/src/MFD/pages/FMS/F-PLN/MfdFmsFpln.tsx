@@ -849,9 +849,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private goToTimeConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
     if (
+      this.loadedFlightPlan &&
       isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
+      !data.isAltnWaypoint &&
+      data.originalLegIndex !== null &&
       MfdFmsFplnVertRev.isEligibleForVerticalRevision(
         data.originalLegIndex,
         this.loadedFlightPlan.legElementAt(data.originalLegIndex),
@@ -871,47 +872,49 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private goToSpeedConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
-    if (
-      isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
-      MfdFmsFplnVertRev.isEligibleForVerticalRevision(
-        data.originalLegIndex,
-        this.loadedFlightPlan.legElementAt(data.originalLegIndex),
-        this.loadedFlightPlan,
-      )
-    ) {
-      this.props.fmcService.master.setRevisedWaypoint(
-        data.originalLegIndex,
-        this.loadedFlightPlanIndex.get(),
-        data.isAltnWaypoint,
-      );
-      this.props.mfd.uiService.navigateTo(
-        `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
-      );
+    if (isWaypoint(data) && data.originalLegIndex !== null) {
+      const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+      if (
+        fp &&
+        MfdFmsFplnVertRev.isEligibleForVerticalRevision(
+          data.originalLegIndex,
+          fp.legElementAt(data.originalLegIndex),
+          fp,
+        )
+      ) {
+        this.props.fmcService.master.setRevisedWaypoint(
+          data.originalLegIndex,
+          this.loadedFlightPlanIndex.get(),
+          data.isAltnWaypoint,
+        );
+        this.props.mfd.uiService.navigateTo(
+          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
+        );
+      }
     }
   }
 
   private goToAltitudeConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
-    if (
-      isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
-      MfdFmsFplnVertRev.isEligibleForVerticalRevision(
-        data.originalLegIndex,
-        this.loadedFlightPlan.legElementAt(data.originalLegIndex),
-        this.loadedFlightPlan,
-      )
-    ) {
-      this.props.fmcService.master.setRevisedWaypoint(
-        data.originalLegIndex,
-        this.loadedFlightPlanIndex.get(),
-        data.isAltnWaypoint,
-      );
-      this.props.mfd.uiService.navigateTo(
-        `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
-      );
+    if (isWaypoint(data) && data.originalLegIndex !== null) {
+      const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+      if (
+        fp &&
+        MfdFmsFplnVertRev.isEligibleForVerticalRevision(
+          data.originalLegIndex,
+          fp.legElementAt(data.originalLegIndex),
+          fp,
+        )
+      ) {
+        this.props.fmcService.master.setRevisedWaypoint(
+          data.originalLegIndex,
+          this.loadedFlightPlanIndex.get(),
+          data.isAltnWaypoint,
+        );
+        this.props.mfd.uiService.navigateTo(
+          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
+        );
+      }
     }
   }
 

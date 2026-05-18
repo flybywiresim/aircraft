@@ -134,6 +134,8 @@
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
 1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
+1. [A380X/MFD] Fixed TMPY being generated upon accessing lateral or vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the lateral & vertical revision pages - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
