@@ -1,0 +1,8 @@
+{
+  "index": "./instrument.tsx",
+  "isInteractive": true,
+  "extraDeps": [
+    "../MsfsAvionicsCommon",
+    "/fbw-common/src/systems/instruments/src/popup"
+  ]
+}
