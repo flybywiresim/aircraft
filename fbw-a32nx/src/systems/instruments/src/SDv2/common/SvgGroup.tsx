@@ -4,7 +4,6 @@ interface SvgGroupProps {
   x: Subscribable<number> | number;
   y: Subscribable<number> | number;
   rotation?: Subscribable<number | string>;
-  class?: Subscribable<string>;
 }
 
 export class SvgGroup extends DisplayComponent<SvgGroupProps> {
@@ -16,14 +15,6 @@ export class SvgGroup extends DisplayComponent<SvgGroupProps> {
   );
 
   render() {
-    if (this.props.class) {
-      return (
-        <g transform={this.transformString} class={this.props.class}>
-          {this.props.children}
-        </g>
-      );
-    } else {
-      return <g transform={this.transformString}>{this.props.children}</g>;
-    }
+    return <g transform={this.transformString}>{this.props.children}</g>;
   }
 }
