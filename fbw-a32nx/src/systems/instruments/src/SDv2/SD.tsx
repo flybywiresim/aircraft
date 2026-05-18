@@ -14,6 +14,7 @@ import {
 import { PermanentData } from './StatusArea';
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { SdPages } from '@shared/SdPages';
+import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
 import './style.scss';
 import '../index.scss';
@@ -32,6 +33,10 @@ export interface SdPageProps extends ComponentProps {
 
 export class SD extends DestroyableComponent<SDProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
+
+  private readonly ac2BusPowered = ConsumerSubject.create(this.sub.on('ac2BusPowered'), false);
+
+  private readonly sdPotentiometer = ConsumerSubject.create(this.sub.on('sdPotentiometer'), 0);
 
   private readonly pageToShow = ConsumerSubject.create(this.sub.on('sdPageToShow'), 0);
 
@@ -97,11 +102,13 @@ export class SD extends DestroyableComponent<SDProps> {
 
   render(): VNode | null {
     return (
-      <div class="sd">
-        {this.sdPages}
-        <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
-        <PermanentData bus={this.props.bus} />
-      </div>
+      <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.sdPotentiometer} powered={this.ac2BusPowered}>
+        <div class="sd">
+          {this.sdPages}
+          <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
+          <PermanentData bus={this.props.bus} />
+        </div>
+      </DisplayUnit>
     );
   }
 }
