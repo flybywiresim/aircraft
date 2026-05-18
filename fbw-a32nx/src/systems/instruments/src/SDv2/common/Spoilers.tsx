@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, MappedSubject, FSComponent } from '@microsoft/msfs-sdk';
+import { EventBus, MappedSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
@@ -52,6 +52,22 @@ class Spoiler extends DestroyableComponent<
   private readonly spoilerOut = this.fcdcDiscreteWord4.map((word) =>
     word.bitValueOr(9 + this.props.number * 2 + (this.props.side === 'left' ? 0 : 1), false),
   );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.fcdcDiscreteWord3,
+      this.fcdcDiscreteWord4,
+      this.servocontrolAvail,
+      this.positionValid,
+      this.spoilerOut,
+    );
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
 
   render() {
     return (
