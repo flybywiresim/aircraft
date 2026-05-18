@@ -2,6 +2,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
+    <Include RelativeFile="./Inputs/Overhead_Inputs.xml"/>
     <Include RelativeFile="./Inputs/Pedestal_Inputs.xml"/>
     <Include RelativeFile="../Airbus.xml"/>
     <Include RelativeFile="../AirlinerCommon.xml"/>
@@ -22,5 +23,6 @@
     <Include RelativeFile="../generated/A32NX_Interior_RMP.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Sidestick.xml"/>
     <Include RelativeFile="../generated/A32NX_Windshield.xml"/>
+    <Include RelativeFile="./Overhead/A32NX_Lights.xml"/>
     <Include RelativeFile="./Pedestal/A32NX_ECP.xml"/>
 </ModelBehaviors>
