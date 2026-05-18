@@ -20,6 +20,8 @@ export type BaseSDSimvars = AdirsSimVars &
     yellowHydraulicPressureSwitchPressurized: boolean;
     blueHydraulicPressureSwitchPressurized: boolean;
     rudderDeflection: number;
+    ac2BusPowered: boolean;
+    sdPotentiometer: number;
   };
 
 type SDIndexedEvents = {
@@ -49,6 +51,8 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
       { name: 'L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
     ],
     ['rudderDeflection', { name: 'L:A32NX_HYD_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
+    ['ac2BusPowered', { name: 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['sdPotentiometer', { name: 'LIGHT POTENTIOMETER:93', type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {
