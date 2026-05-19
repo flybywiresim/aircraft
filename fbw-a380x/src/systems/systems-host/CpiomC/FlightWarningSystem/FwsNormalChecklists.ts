@@ -151,10 +151,10 @@ export class FwsNormalChecklists {
                 },
                 (newState) => {
                   // Handle procedure activation/deactivation
-                  const whichItemsActive = this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsActive;
+                  const whichItemsActive = this.fws.allEwdDeferredProcs[proc.id].whichItemsActive;
                   const deferredItemsActive = whichItemsActive
                     ? whichItemsActive()
-                    : Array(this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsChecked().length).fill(
+                    : Array(this.fws.allEwdDeferredProcs[proc.id].whichItemsChecked().length).fill(
                         newState.procedureActivated,
                       );
                   newState.itemsActive = deferredItemsActive;
