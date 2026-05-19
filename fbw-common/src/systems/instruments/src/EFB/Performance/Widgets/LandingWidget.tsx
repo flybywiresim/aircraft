@@ -219,7 +219,7 @@ export const LandingWidget = () => {
           pressure: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
     }
   };
@@ -268,7 +268,7 @@ export const LandingWidget = () => {
       }
 
       dispatch(setLandingValues(values));
-    } catch (err) {
+    } catch (_err) {
       showModal(
         <PromptModal
           title={t('Performance.Landing.MetarErrorDialogTitle')}

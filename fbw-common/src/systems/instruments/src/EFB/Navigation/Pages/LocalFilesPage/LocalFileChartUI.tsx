@@ -118,7 +118,7 @@ export const LocalFileChartUI = () => {
           }
         });
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Error encountered while fetching resources.');
     }
 

@@ -24,7 +24,7 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
     toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
     toast.dismiss(id);
     return objectURL;
-  } catch (err) {
+  } catch (_err) {
     toast.dismiss(id);
     toast.error(t('NavigationAndCharts.LoadingPdfFailed'), { autoClose: 1000 });
     return Promise.reject();
@@ -39,7 +39,7 @@ export const getImageUrl = async (fileName: string): Promise<string> => {
     toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
     toast.dismiss(id);
     return objectURL;
-  } catch (err) {
+  } catch (_err) {
     toast.dismiss(id);
     toast.error(t('NavigationAndCharts.LoadingImageFailed'), { autoClose: 1000 });
     return Promise.reject();
