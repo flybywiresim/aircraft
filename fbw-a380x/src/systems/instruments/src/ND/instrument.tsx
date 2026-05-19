@@ -60,7 +60,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { PowerSupplySimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PowerSupplyPublisher';
+import { A380XElectricalSystemPublisher } from '@shared/publishers/A380XElectricalSystemPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -213,7 +213,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);
     this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
-    this.backplane.addPublisher('power', new PowerSupplySimvarPublisher(this.bus));
+    this.backplane.addPublisher('power', new A380XElectricalSystemPublisher(this.bus));
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);

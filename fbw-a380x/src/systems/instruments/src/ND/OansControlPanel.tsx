@@ -17,7 +17,6 @@ import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/R
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { PowerSupplySimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PowerSupplyPublisher';
 
 import {
   AmdbAirportSearchResult,
@@ -66,6 +65,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
+import { A380XElectricalSystemEvents } from '@shared/publishers/A380XElectricalSystemPublisher';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -88,15 +88,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       NDSimvars &
       OansControlEvents &
       ResetPanelSimvars &
-      PowerSupplySimvars
+      A380XElectricalSystemEvents
   >();
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
   //FIXME: We should have an OANC in systems host handling system state?
   private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
-  private readonly ac4BusPowered = ConsumerSubject.create(this.sub.on('ac_bus_powered_4'), false);
-  private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dc_bus_powered_1'), false);
+  private readonly ac4BusPowered = ConsumerSubject.create(this.sub.on('ac_bus_4_powered'), false);
+  private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dc_bus_1_powered'), false);
   private readonly oancDisabled = MappedSubject.create(
     ([ac4, dc1, reset]) => reset || !ac4 || !dc1,
     this.ac4BusPowered,

@@ -578,16 +578,19 @@
       - AC_4
       - AC_ESS
       - AC_ESS_SCHED
-      - AC_247XP
+      - AC_GND_FLT_SVC
       - DC_1
       - DC_2
       - DC_ESS
-      - DC_247PP
+      - DC_GND_FLT_SVC
       - DC_HOT_1
       - DC_HOT_2
       - DC_HOT_3
       - DC_HOT_4
-      - DC_GND_FLT_SVC
+      - 108PH
+      - 247PP
+      - 247XP
+      - 309PP
 
 - A32NX_ELEC_{name}_POTENTIAL
     - Volts
