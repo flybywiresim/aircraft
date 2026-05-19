@@ -1421,6 +1421,18 @@ export class FwsCore {
 
   private readonly flightPhase1112 = this.flightPhase.map((v) => v >= 11);
 
+  public readonly gpsAltBelow10k = Subject.create(false);
+
+  public readonly gpsAltAbove10k = Subject.create(false);
+
+  public readonly gpsAltBelow25k = Subject.create(false);
+
+  public readonly gpsAltAbove25k = Subject.create(false);
+
+  public readonly beforeThrustReduction = Subject.create(false);
+
+  public readonly afterThrustReduction = Subject.create(false);
+
   private readonly flightPhase12Or1112 = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.flightPhase1Or2,
@@ -2800,6 +2812,15 @@ export class FwsCore {
 
     // Update flight phases
     this.flightPhases.update(deltaTime);
+
+    const gpsAlt = this.gpsPositionAlt.get() ?? 0;
+    this.gpsAltBelow10k.set(gpsAlt < 10000);
+    this.gpsAltAbove10k.set(gpsAlt >= 10000);
+    this.gpsAltBelow25k.set(gpsAlt < 25000);
+    this.gpsAltAbove25k.set(gpsAlt >= 25000);
+
+    this.beforeThrustReduction.set(this.flightPhase.get() <= 7);
+    this.afterThrustReduction.set(this.flightPhase.get() > 7);
 
     // Play sounds
     this.soundManager.onUpdate(deltaTime);
@@ -5681,8 +5702,11 @@ export class FwsCore {
     // Retrieve all active deferred procedure keys, delete inactive
     const deferredProcedureKeys: string[] = [];
     allFailureKeys.forEach((failureKey) => {
-      for (const [deferredKey, _] of ewdDeferredEntries) {
-        if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey) && _.simVarIsActive.get()) {
+      for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
+        if (
+          EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey) &&
+          deferredValue.simVarIsActive.get()
+        ) {
           deferredProcedureKeys.push(deferredKey);
         }
       }

@@ -30,8 +30,6 @@ export class FwsAbnormalNonSensed {
 
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
-  private readonly gpsBelow25k = Subject.create(false);
-  private readonly gpsAbove25k = Subject.create(false);
 
   constructor(private fws: FwsCore) {
     this.subscriptions.push(
@@ -84,12 +82,6 @@ export class FwsAbnormalNonSensed {
   }
 
   update() {
-    const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
-    if (this.fws.activeAbnormalNonSensedKeys.has(340900003)) {
-      this.gpsBelow25k.set(gpsAlt < 25000);
-      this.gpsAbove25k.set(gpsAlt >= 25000);
-    }
-
     if (this.fws.abnProcPulseNode.read()) {
       this.checklistId.set(0);
       this.selectedItem.set(0);
@@ -401,15 +393,12 @@ export class FwsAbnormalNonSensed {
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => {
-        const flightPhase = this.fws.flightPhase.get();
-        const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
-
-        const isGpsBelow10k = gpsAlt < 10000;
-        const isGpsAbove10k = gpsAlt >= 10000;
-        const isGpsBelow25k = gpsAlt < 25000;
-        const isGpsAbove25k = gpsAlt >= 25000;
-        const beforeThrustRed = flightPhase <= 7;
-        const afterThrustRed = flightPhase > 7;
+        const isGpsBelow10k = this.fws.gpsAltBelow10k.get();
+        const isGpsAbove10k = this.fws.gpsAltAbove10k.get();
+        const isGpsBelow25k = this.fws.gpsAltBelow25k.get();
+        const isGpsAbove25k = this.fws.gpsAltAbove25k.get();
+        const beforeThrustRed = this.fws.beforeThrustReduction.get();
+        const afterThrustRed = this.fws.afterThrustReduction.get();
 
         return [
           true, // [1]
@@ -564,9 +553,8 @@ export class FwsAbnormalNonSensed {
       limitationsAllPhases: () => [],
       inopSysAllPhases: () => [],
       info: () => {
-        const gpsAlt = this.fws.gpsPositionAlt.get() ?? 0;
-        const isGpsBelow25k = gpsAlt < 25000;
-        const isGpsAbove25k = gpsAlt >= 25000;
+        const isGpsBelow25k = this.fws.gpsAltBelow25k.get();
+        const isGpsAbove25k = this.fws.gpsAltAbove25k.get();
         const allAdrOff = this.fws.allAdrPbsOff.get();
 
         return [
@@ -591,7 +579,7 @@ export class FwsAbnormalNonSensed {
   public ewdDeferredProcs: EwdAbnormalDict = {
     340700003: {
       flightPhaseInhib: [],
-      simVarIsActive: this.gpsBelow25k,
+      simVarIsActive: this.fws.gpsAltBelow25k,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
@@ -600,7 +588,7 @@ export class FwsAbnormalNonSensed {
     },
     340700002: {
       flightPhaseInhib: [],
-      simVarIsActive: this.gpsAbove25k,
+      simVarIsActive: this.fws.gpsAltAbove25k,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
