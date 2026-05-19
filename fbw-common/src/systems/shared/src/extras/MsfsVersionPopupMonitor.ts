@@ -10,11 +10,11 @@ export class MsfsVersionPopupMonitor {
   private static readonly POPUP_TIME = 15_000;
 
   public constructor(bus: EventBus, acName: string) {
-    if (!MsfsVersionPopupMonitor.isMsfs2024()) {
+    if (MsfsVersionPopupMonitor.isMsfs2024()) {
       const transporter = new PopupTransporter(bus, {
         uuid: PopupUuid.MsfsVersion,
         title: 'Wrong MSFS Version',
-        message: `This version of the ${acName} is built specifically for MSFS2024. Please install the MSFS2020 version using the FlyByWire installer!`,
+        message: `This version of the ${acName} is built specifically for MSFS2020. Please install the MSFS2024 version using the FlyByWire installer!`,
         timeout: MsfsVersionPopupMonitor.POPUP_TIME,
       });
 
