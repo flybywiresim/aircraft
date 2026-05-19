@@ -3,20 +3,15 @@ use std::time::Duration;
 
 use systems::air_conditioning::AdirsToAirCondInterface;
 use systems::auto_flight::FlightControlUnitBusOutput;
-use systems::navigation::adirs::air_data_sensors::air_data_module::{
-    AirDataModule, AirDataModuleInstallationPosition,
+use systems::navigation::adirs::air_data_sensors::air_data_module_probes_complex::{
+    AirDataModuleAirDataSensorsComplex, AngleOfAttackExcitationPowerProvider,
 };
 use systems::navigation::adirs::hw_block3_adiru::adm_adr_runtime::AdmAirDataReferenceRuntime;
 use systems::navigation::adirs::{
-    air_data_sensors::{
-        AngleOfAttackVane, PitotTube, PressureTube, StaticPort, TemperatureProbe,
-        TotalAirTemperatureProbe, WindVane,
-    },
     hw_block3_adiru::{adiru::AirDataInertialReferenceUnit, AdiruElectricalHarness},
-    AdrAnalogInput, AdrAnalogInputs, AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition,
-    AirDataModulePowerProvider, AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput,
-    InertialReferenceBusOutput, InertialReferenceDiscreteOutput, IrDiscreteInputs,
-    ModeSelectorPosition,
+    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
+    AirDataReferenceDiscreteOutput, InertialReferenceBusOutput, InertialReferenceDiscreteOutput,
+    IrDiscreteInputs, ModeSelectorPosition,
 };
 use systems::shared::{
     arinc429::Arinc429Word, logic_nodes::ConfirmationNode, AdirsDiscreteOutputs,
@@ -26,18 +21,16 @@ use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
-use uom::si::{
-    angle::degree, f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius,
-};
+use uom::si::{f64::*, pressure::hectopascal};
 
 pub struct A320AirDataInertialReferenceSystem {
     pub adiru_1: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
     pub adiru_2: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
     pub adiru_3: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
 
-    pub sensor_complex_1: A320AirDataSensorsComplex,
-    pub sensor_complex_2: A320AirDataSensorsComplex,
-    pub sensor_complex_3: A320AirDataSensorsComplex,
+    pub sensor_complex_1: AirDataModuleAirDataSensorsComplex,
+    pub sensor_complex_2: AirDataModuleAirDataSensorsComplex,
+    pub sensor_complex_3: AirDataModuleAirDataSensorsComplex,
 }
 impl A320AirDataInertialReferenceSystem {
     pub fn new(context: &mut InitContext) -> Self {
@@ -46,9 +39,9 @@ impl A320AirDataInertialReferenceSystem {
             adiru_2: AirDataInertialReferenceUnit::new(context, 2),
             adiru_3: AirDataInertialReferenceUnit::new(context, 3),
 
-            sensor_complex_1: A320AirDataSensorsComplex::new(context, 1),
-            sensor_complex_2: A320AirDataSensorsComplex::new(context, 2),
-            sensor_complex_3: A320AirDataSensorsComplex::new(context, 3),
+            sensor_complex_1: AirDataModuleAirDataSensorsComplex::new(context, 1),
+            sensor_complex_2: AirDataModuleAirDataSensorsComplex::new(context, 2),
+            sensor_complex_3: AirDataModuleAirDataSensorsComplex::new(context, 3),
         }
     }
 
@@ -81,8 +74,7 @@ impl A320AirDataInertialReferenceSystem {
                     &mut self.sensor_complex_3,
                     Some(
                         self.sensor_complex_1
-                            .tat_probe
-                            .as_ref()
+                            .tat_probe()
                             .expect("Sensor complex 1 did not have TAT probe."),
                     ),
                 ),
@@ -94,14 +86,14 @@ impl A320AirDataInertialReferenceSystem {
             adiru_own.update(
                 context,
                 adiru_harness.adr_discrete_inputs(),
-                &sensor_complex.analog_input_data,
+                sensor_complex.adr_analog_inputs(),
                 adiru_harness.ir_discrete_inputs(),
                 fcu,
                 adr_1,
                 adr_2,
-                &sensor_complex.adm_1,
-                &sensor_complex.adm_2,
-                sensor_complex.adm_3.as_ref(),
+                sensor_complex.adm_1_bus_output(),
+                sensor_complex.adm_2_bus_output(),
+                sensor_complex.adm_3_bus_output(),
             );
         });
     }
@@ -203,131 +195,6 @@ impl SimulationElement for A320AirDataInertialReferenceSystem {
         self.adiru_1.accept(visitor);
         self.adiru_2.accept(visitor);
         self.adiru_3.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
-pub struct A320AirDataSensorsComplex {
-    pitot_tube: PitotTube,
-
-    left_static_port: StaticPort,
-    right_static_port: StaticPort,
-
-    pressure_tube: Option<PressureTube>,
-
-    aoa_probe: AngleOfAttackVane,
-
-    tat_probe: Option<TotalAirTemperatureProbe>,
-
-    pub adm_1: AirDataModule,
-    pub adm_2: AirDataModule,
-    pub adm_3: Option<AirDataModule>,
-
-    analog_input_data: AdrAnalogInputs,
-}
-impl A320AirDataSensorsComplex {
-    pub fn new(context: &mut InitContext, num: usize) -> Self {
-        Self {
-            pitot_tube: PitotTube::new(context, num),
-
-            left_static_port: StaticPort::new(context, num),
-            right_static_port: StaticPort::new(context, num),
-
-            pressure_tube: if num == 3 {
-                Some(PressureTube::new())
-            } else {
-                None
-            },
-
-            aoa_probe: AngleOfAttackVane::new(context, num),
-
-            tat_probe: if num == 3 {
-                None
-            } else {
-                Some(TotalAirTemperatureProbe::new(context))
-            },
-
-            adm_1: AirDataModule::new(context, AirDataModuleInstallationPosition::TotalPressure),
-            adm_2: AirDataModule::new(
-                context,
-                if num == 3 {
-                    AirDataModuleInstallationPosition::AverageStaticPressure
-                } else {
-                    AirDataModuleInstallationPosition::LeftStaticPressure
-                },
-            ),
-            adm_3: if num == 3 {
-                None
-            } else {
-                Some(AirDataModule::new(
-                    context,
-                    AirDataModuleInstallationPosition::RightStaticPressure,
-                ))
-            },
-
-            analog_input_data: AdrAnalogInputs::default(),
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        adiru: &impl AirDataModulePowerProvider,
-        adiru_harness: &A320AdiruElectricalHarness,
-        tat_probe_1: Option<&TotalAirTemperatureProbe>,
-    ) {
-        self.adm_1.set_powered(adiru.provides_power());
-        self.adm_2.set_powered(adiru.provides_power());
-        if let Some(adm_3) = &mut self.adm_3 {
-            adm_3.set_powered(adiru.provides_power());
-        }
-
-        self.adm_1.update(context, &self.pitot_tube);
-
-        if let Some(pressure_tube) = &mut self.pressure_tube {
-            pressure_tube.update(&self.left_static_port, &self.right_static_port);
-
-            self.adm_2.update(context, pressure_tube);
-        } else {
-            self.adm_2.update(context, &self.left_static_port);
-        };
-
-        if let Some(adm_3) = &mut self.adm_3 {
-            adm_3.update(context, &self.right_static_port);
-        };
-
-        self.analog_input_data.aoa_excitation_voltage_v = if adiru_harness.aoa_excitation_powered()
-        {
-            26.
-        } else {
-            0.
-        };
-        self.analog_input_data.aoa_resolver_angle_deg = self.aoa_probe.get_angle().get::<degree>();
-        self.analog_input_data.tat_value_deg_c = if let Some(tat_probe) = &self.tat_probe {
-            tat_probe.get_temperature()
-        } else {
-            tat_probe_1
-                .expect("No TAT probe 1 received in ADIRU 3 sensors.")
-                .get_temperature()
-        }
-        .get::<degree_celsius>()
-    }
-}
-impl AdrAnalogInput for A320AirDataSensorsComplex {
-    fn analog_input(&self) -> &AdrAnalogInputs {
-        &self.analog_input_data
-    }
-}
-impl SimulationElement for A320AirDataSensorsComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.aoa_probe.accept(visitor);
-        if let Some(tat_probe) = &mut self.tat_probe {
-            tat_probe.accept(visitor);
-        }
-        self.pitot_tube.accept(visitor);
-        self.left_static_port.accept(visitor);
-        self.right_static_port.accept(visitor);
 
         visitor.visit(self);
     }
@@ -660,10 +527,6 @@ impl A320AdiruElectricalHarness {
         self.ir_fault_warn = ir_discrete_outputs.ir_fault;
         self.ir_align_discrete = ir_discrete_outputs.align;
     }
-
-    fn aoa_excitation_powered(&self) -> bool {
-        self.aoa_excitation_powered
-    }
 }
 impl AdiruElectricalHarness for A320AdiruElectricalHarness {
     fn adr_discrete_inputs(&self) -> &AdrDiscreteInputs {
@@ -672,6 +535,11 @@ impl AdiruElectricalHarness for A320AdiruElectricalHarness {
 
     fn ir_discrete_inputs(&self) -> &IrDiscreteInputs {
         &self.ir_discrete_input
+    }
+}
+impl AngleOfAttackExcitationPowerProvider for A320AdiruElectricalHarness {
+    fn aoa_excitation_powered(&self) -> bool {
+        self.aoa_excitation_powered
     }
 }
 impl SimulationElement for A320AdiruElectricalHarness {

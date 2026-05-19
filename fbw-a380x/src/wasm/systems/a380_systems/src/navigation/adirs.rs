@@ -3,17 +3,16 @@ use std::time::Duration;
 
 use systems::air_conditioning::AdirsToAirCondInterface;
 use systems::auto_flight::FlightControlUnitBusOutput;
-use systems::navigation::adirs::air_data_sensors::integrated_probes::{
-    IntegratedStaticProbe, IntegratedStaticProbeInstallationPosition, MultifunctionProbe,
-    SideslipAngleProbe,
+use systems::navigation::adirs::air_data_sensors::integrated_probes_complex::{
+    IntegratedAirDataSensorsComplex, IntegratedProbesPowerProvider,
 };
 use systems::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
 use systems::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
 use systems::navigation::adirs::hw_block3_adiru::AdiruElectricalHarness;
 use systems::navigation::adirs::{
-    AdrAnalogInput, AdrAnalogInputs, AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition,
-    AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput, InertialReferenceBusOutput,
-    InertialReferenceDiscreteOutput, IrDiscreteInputs, ModeSelectorPosition,
+    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
+    AirDataReferenceDiscreteOutput, InertialReferenceBusOutput, InertialReferenceDiscreteOutput,
+    IrDiscreteInputs, ModeSelectorPosition,
 };
 use systems::shared::arinc429::Arinc429Word;
 use systems::shared::logic_nodes::ConfirmationNode;
@@ -32,9 +31,9 @@ pub struct A380AirDataInertialReferenceSystem {
     pub adiru_2: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
     pub adiru_3: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
 
-    pub sensor_complex_1: A380AirDataSensorsComplex,
-    pub sensor_complex_2: A380AirDataSensorsComplex,
-    pub sensor_complex_3: A380AirDataSensorsComplex,
+    pub sensor_complex_1: IntegratedAirDataSensorsComplex,
+    pub sensor_complex_2: IntegratedAirDataSensorsComplex,
+    pub sensor_complex_3: IntegratedAirDataSensorsComplex,
 }
 impl A380AirDataInertialReferenceSystem {
     pub fn new(context: &mut InitContext) -> Self {
@@ -43,9 +42,9 @@ impl A380AirDataInertialReferenceSystem {
             adiru_2: AirDataInertialReferenceUnit::new(context, 2),
             adiru_3: AirDataInertialReferenceUnit::new(context, 3),
 
-            sensor_complex_1: A380AirDataSensorsComplex::new(context, 1),
-            sensor_complex_2: A380AirDataSensorsComplex::new(context, 2),
-            sensor_complex_3: A380AirDataSensorsComplex::new(context, 3),
+            sensor_complex_1: IntegratedAirDataSensorsComplex::new(context, 1),
+            sensor_complex_2: IntegratedAirDataSensorsComplex::new(context, 2),
+            sensor_complex_3: IntegratedAirDataSensorsComplex::new(context, 3),
         }
     }
 
@@ -83,15 +82,15 @@ impl A380AirDataInertialReferenceSystem {
             adiru_own.update(
                 context,
                 adiru_harness.adr_discrete_inputs(),
-                &sensor_complex.analog_input_data,
+                sensor_complex.adr_analog_inputs(),
                 adiru_harness.ir_discrete_inputs(),
                 fcu,
                 adr_1,
                 adr_2,
-                &sensor_complex.mfp,
-                &sensor_complex.left_isp,
-                &sensor_complex.right_isp,
-                &sensor_complex.sideslip_probe,
+                sensor_complex.mfp_bus_output(),
+                sensor_complex.left_isp_bus_output(),
+                sensor_complex.right_isp_bus_output(),
+                sensor_complex.ssp_bus_output(),
             );
         });
     }
@@ -198,78 +197,6 @@ impl SimulationElement for A380AirDataInertialReferenceSystem {
     }
 }
 
-pub struct A380AirDataSensorsComplex {
-    num: usize,
-
-    mfp: MultifunctionProbe,
-
-    left_isp: IntegratedStaticProbe,
-    right_isp: IntegratedStaticProbe,
-
-    sideslip_probe: SideslipAngleProbe,
-
-    analog_input_data: AdrAnalogInputs,
-}
-impl A380AirDataSensorsComplex {
-    pub fn new(context: &mut InitContext, num: usize) -> Self {
-        Self {
-            num,
-
-            mfp: MultifunctionProbe::new(context, num),
-
-            left_isp: IntegratedStaticProbe::new(
-                context,
-                num,
-                IntegratedStaticProbeInstallationPosition::Left,
-            ),
-            right_isp: IntegratedStaticProbe::new(
-                context,
-                num,
-                IntegratedStaticProbeInstallationPosition::Right,
-            ),
-
-            sideslip_probe: SideslipAngleProbe::new(context, num),
-
-            analog_input_data: AdrAnalogInputs::default(),
-        }
-    }
-
-    pub fn update(&mut self, context: &UpdateContext, adirs_harness: &A380AdirsElectricalHarness) {
-        self.mfp
-            .set_powered(adirs_harness.get_mfp_powered(self.num));
-        self.left_isp.set_powered(
-            adirs_harness.get_isp_dc_powered(self.num),
-            adirs_harness.get_isp_ac_powered(self.num),
-        );
-        self.right_isp.set_powered(
-            adirs_harness.get_isp_dc_powered(self.num),
-            adirs_harness.get_isp_ac_powered(self.num),
-        );
-        self.sideslip_probe
-            .set_powered(adirs_harness.get_ssa_powered(self.num));
-
-        self.mfp.update(context);
-        self.left_isp.update(context);
-        self.right_isp.update(context);
-        self.sideslip_probe.update(context);
-    }
-}
-impl AdrAnalogInput for A380AirDataSensorsComplex {
-    fn analog_input(&self) -> &AdrAnalogInputs {
-        &self.analog_input_data
-    }
-}
-impl SimulationElement for A380AirDataSensorsComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.mfp.accept(visitor);
-        self.left_isp.accept(visitor);
-        self.right_isp.accept(visitor);
-        self.sideslip_probe.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
 pub(crate) struct A380AdirsElectricalHarness {
     pub adiru_1_electrical_harness: A380AdiruElectricalHarness,
     pub adiru_2_electrical_harness: A380AdiruElectricalHarness,
@@ -342,42 +269,6 @@ impl A380AdirsElectricalHarness {
         &self[num]
     }
 
-    fn get_isp_dc_powered(&self, num: usize) -> bool {
-        self.probe_supply_logic(
-            self.dc_ess_powered,
-            self.dc_2_powered,
-            self.dc_1_powered,
-            num,
-        )
-    }
-
-    fn get_isp_ac_powered(&self, num: usize) -> bool {
-        self.probe_supply_logic(
-            self.ac_ess_shed_powered,
-            self.ac_4_powered,
-            self.ac_2_powered,
-            num,
-        )
-    }
-
-    fn get_mfp_powered(&self, num: usize) -> bool {
-        self.probe_supply_logic(
-            self.ac_ess_powered,
-            self.ac_4_powered,
-            self.ac_2_powered,
-            num,
-        )
-    }
-
-    fn get_ssa_powered(&self, num: usize) -> bool {
-        self.probe_supply_logic(
-            self.ac_ess_shed_powered,
-            self.ac_4_powered,
-            self.ac_2_powered,
-            num,
-        )
-    }
-
     fn probe_supply_logic(
         &self,
         powered_1: bool,
@@ -409,6 +300,43 @@ impl A380AdirsElectricalHarness {
         };
 
         (output_1, output_2)
+    }
+}
+impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
+    fn isp_dc_powered(&self, num: usize) -> bool {
+        self.probe_supply_logic(
+            self.dc_ess_powered,
+            self.dc_2_powered,
+            self.dc_1_powered,
+            num,
+        )
+    }
+
+    fn isp_ac_powered(&self, num: usize) -> bool {
+        self.probe_supply_logic(
+            self.ac_ess_shed_powered,
+            self.ac_4_powered,
+            self.ac_2_powered,
+            num,
+        )
+    }
+
+    fn mfp_powered(&self, num: usize) -> bool {
+        self.probe_supply_logic(
+            self.ac_ess_powered,
+            self.ac_4_powered,
+            self.ac_2_powered,
+            num,
+        )
+    }
+
+    fn ssp_powered(&self, num: usize) -> bool {
+        self.probe_supply_logic(
+            self.ac_ess_shed_powered,
+            self.ac_4_powered,
+            self.ac_2_powered,
+            num,
+        )
     }
 }
 impl Index<usize> for A380AdirsElectricalHarness {
