@@ -79,7 +79,7 @@ impl IntegratedAirDataSensorsComplex {
     }
 
     pub fn right_isp_bus_output(&self) -> &impl IntegratedStaticProbeBusOutput {
-        &self.left_isp
+        &self.right_isp
     }
 
     pub fn mfp_bus_output(&self) -> &impl MultifunctionProbeBusOutput {
