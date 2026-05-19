@@ -33,6 +33,7 @@ use systems::shared::{
     HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use systems_wasm::aspects::ExecuteOn;
+use systems_wasm::navigation::navigation;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
@@ -293,6 +294,21 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             34_030,
             FailureType::EnhancedGroundProximityWarningSystemComputer,
         ),
+        (34_100, FailureType::Adr(1)),
+        (34_101, FailureType::Adr(2)),
+        (34_102, FailureType::Adr(3)),
+        (34_103, FailureType::Ir(1)),
+        (34_104, FailureType::Ir(2)),
+        (34_105, FailureType::Ir(3)),
+        (34_110, FailureType::PitotBlockage(1)),
+        (34_111, FailureType::PitotBlockage(2)),
+        (34_112, FailureType::PitotBlockage(3)),
+        (34_113, FailureType::StaticBlockage(1)),
+        (34_114, FailureType::StaticBlockage(2)),
+        (34_115, FailureType::StaticBlockage(3)),
+        (34_116, FailureType::AoaProbeStuck(1)),
+        (34_117, FailureType::AoaProbeStuck(2)),
+        (34_118, FailureType::AoaProbeStuck(3)),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -353,6 +369,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
     .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
+    .provides_aircraft_variable("DYNAMIC PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
@@ -460,6 +477,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(gear)?
     .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
+    .with_aspect(navigation)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

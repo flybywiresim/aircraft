@@ -8,6 +8,11 @@ impl<T: Copy> Arinc429Word<T> {
         Self { value, ssm }
     }
 
+    pub fn set(&mut self, value: T, ssm: SignStatus) {
+        self.set_value(value);
+        self.set_ssm(ssm);
+    }
+
     pub fn value(&self) -> T {
         self.value
     }
