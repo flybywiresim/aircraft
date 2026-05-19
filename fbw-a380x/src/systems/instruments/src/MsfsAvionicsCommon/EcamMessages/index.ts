@@ -4,22 +4,13 @@
 export const WD_NUM_LINES = 18;
 export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
-import {
-  EcamAbnormalSensedAta212223,
-  EcamDeferredProcAta212223,
-} from './AbnormalSensed/ata21-22-23';
+import { EcamAbnormalSensedAta212223, EcamDeferredProcAta212223 } from './AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from './AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from './AbnormalSensed/ata26';
-import {
-  EcamAbnormalSensedAta27,
-  EcamDeferredProcAta27,
-} from './AbnormalSensed/ata27';
+import { EcamAbnormalSensedAta27, EcamDeferredProcAta27 } from './AbnormalSensed/ata27';
 import { EcamAbnormalSensedAta28 } from './AbnormalSensed/ata28';
 import { EcamAbnormalSensedAta2930 } from './AbnormalSensed/ata29-30';
-import {
-  EcamAbnormalSensedAta313233,
-  EcamDeferredProcAta313233,
-} from './AbnormalSensed/ata31-32-33';
+import { EcamAbnormalSensedAta313233, EcamDeferredProcAta313233 } from './AbnormalSensed/ata31-32-33';
 import { EcamAbnormalSensedAta34 } from './AbnormalSensed/ata34';
 import { EcamAbnormalSensedAta353642 } from './AbnormalSensed/ata35-36-42';
 import { EcamAbnormalSensedAta46495256 } from './AbnormalSensed/ata46-49-52-56';

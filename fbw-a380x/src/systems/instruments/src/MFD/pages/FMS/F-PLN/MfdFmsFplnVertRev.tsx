@@ -22,11 +22,7 @@ import { Footer } from '../../common/Footer';
 import './MfdFmsFplnVertRev.scss';
 import { FmsPage } from '../../common/FmsPage';
 import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
-import {
-  AltitudeOrFlightLevelFormat,
-  SpeedKnotsFormat,
-  TimeHHMMSSFormat,
-} from '../../common/DataEntryFormats';
+import { AltitudeOrFlightLevelFormat, SpeedKnotsFormat, TimeHHMMSSFormat } from '../../common/DataEntryFormats';
 import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';

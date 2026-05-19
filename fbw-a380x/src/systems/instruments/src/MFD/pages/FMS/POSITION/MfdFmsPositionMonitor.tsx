@@ -11,11 +11,7 @@ import './MfdFmsPositionMonitor.scss';
 import { distanceTo } from 'msfs-geo';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import {
-  getEtaFromUtcOrPresent,
-  noPositionAvailableText,
-  showReturnButtonUriExtra,
-} from '../../../shared/utils';
+import { getEtaFromUtcOrPresent, noPositionAvailableText, showReturnButtonUriExtra } from '../../../shared/utils';
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import { MfdFmsPositionNavaids } from './MfdFmsPositionNavaids';

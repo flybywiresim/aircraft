@@ -1,11 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  AbnormalProcedure,
-  ChecklistLineStyle,
-  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
-} from '..';
+import { AbnormalProcedure, ChecklistLineStyle, FMS_PRED_UNRELIABLE_CHECKLIST_ITEM } from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter
