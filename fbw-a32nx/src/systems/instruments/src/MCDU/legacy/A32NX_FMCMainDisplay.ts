@@ -16,7 +16,6 @@ import {
   Fix,
   FmArinc429OutputWord,
   IlsNavaid,
-  isMsfs2024,
   ISimbriefData,
   MathUtils,
   NdbNavaid,
@@ -116,7 +115,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
   public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
-  public readonly msfsRouteSync = isMsfs2024() ? new MsfsFlightPlanSync(this.bus, this.currFlightPlanService) : null;
+  public readonly msfsRouteSync = new MsfsFlightPlanSync(this.bus, this.currFlightPlanService);
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);

@@ -11,7 +11,6 @@ import {
   GsxSimVarPublisher,
   GsxSyncA380X,
   GroundSupportPublisher,
-  isMsfs2024,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -139,9 +138,7 @@ class ExtrasHost extends BaseInstrument {
     this.versionCheck = new VersionCheck(aircraftProjectPrefix, this.bus);
     this.aircraftSync = new AircraftSync(aircraftProjectPrefix, this.bus);
 
-    if (isMsfs2024()) {
-      NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
-    }
+    NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);

@@ -3,7 +3,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Atis, Metar, Taf, Telex, AircraftStatus } from '@flybywiresim/api-client';
-import { ConfigWeatherMap, isMsfs2024, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   AtsuMessage,
@@ -135,7 +135,7 @@ export class NXApiConnector {
   }
 
   public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+    const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', 'MSFS');
 
     return Taf.get(icao, ConfigWeatherMap[storedTafSrc])
       .then((data) => {

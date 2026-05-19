@@ -2,7 +2,7 @@
 //  Copyright (c) 2021, 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { isMsfs2024, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { EventBus } from '@microsoft/msfs-sdk';
 import {
   DatalinkModeCode,
@@ -274,7 +274,7 @@ export class Router {
           );
         }
       } else {
-        const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+        const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', 'MSFS');
         if (storedTafSrc === 'MSFS') {
           retval = await MsfsConnector.receiveMsfsTaf(icaos[index], message).then(() =>
             this.receiveWeatherData(requestMetar, icaos, index + 1, message),

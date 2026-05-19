@@ -9,7 +9,6 @@ import { SettingsPage } from '../Settings';
 import { useTroubleshooting } from '../../TroubleshootingContext';
 import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
 import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
-import { isMsfs2024 } from '../../../../../shared/src/MsfsDetect';
 import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
 
 export const TroubleshootingPage = () => {
@@ -46,7 +45,8 @@ export const TroubleshootingPage = () => {
       <pre className="w-full whitespace-pre-wrap font-mono text-base">
         Aircraft Version: {buildInfo?.version}
         {'\n'}
-        MSFS2024: {isMsfs2024() ? 'True\n' : 'False\n'}
+        MSFS2024: True
+        {'\n'}
         NavData Dates: {navDates + '\n'}
         Navigraph NavData: {naviInstalled ? 'True\n' : 'False\n'}
         ACARS: {acarsStateInfo() + '\n'}

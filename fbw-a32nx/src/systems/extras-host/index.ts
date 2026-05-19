@@ -11,7 +11,6 @@ import {
   FlightDeckBounds,
   GPUManagement,
   GroundSupportPublisher,
-  isMsfs2024,
   GsxSimVarPublisher,
   GsxSyncA32NX,
   MsfsElectricsPublisher,
@@ -24,7 +23,6 @@ import {
   TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
-import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
 import { A32NXKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
@@ -97,8 +95,6 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly telexCheck = new TelexCheck();
 
-  private readonly flightPlanAsoboSync: FlightPlanAsoboSync | undefined;
-
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
 
@@ -144,10 +140,6 @@ class ExtrasHost extends BaseInstrument {
     this.versionCheck = new VersionCheck(aircraftProjectPrefix, this.bus);
     this.aircraftSync = new AircraftSync(aircraftProjectPrefix, this.bus);
 
-    if (!isMsfs2024()) {
-      this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
-    }
-
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
@@ -182,7 +174,6 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
-    this.flightPlanAsoboSync?.connectedCallback();
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
@@ -204,7 +195,6 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
-        this.flightPlanAsoboSync?.init();
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
       }
