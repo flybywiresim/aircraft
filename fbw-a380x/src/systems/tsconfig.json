@@ -13,9 +13,12 @@
         "../../../fbw-common/src/typings",
         "../../../node_modules/@types",
       ],
-      "moduleResolution": "node",
+      "types": ["*"], // could specify exactly which types for better perf
+      "moduleResolution": "bundler",
+      "module": "preserve",
       "allowSyntheticDefaultImports": true,
       "forceConsistentCasingInFileNames": true,
+      "incremental": false,
       "paths": {
         "@atsu/*": ["./atsu/src/*"],
         "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],

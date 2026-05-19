@@ -7,14 +7,15 @@
         "name": "typescript-strict-plugin"
       }
     ],
-    "baseUrl": ".",
     "resolveJsonModule" : true,
     "skipLibCheck": true,
     "typeRoots": [
       "../../../fbw-common/src/typings",
       "../../../node_modules/@types",
     ],
-    "moduleResolution": "node",
+    "types": ["*"], // could specify exactly which types for better perf
+    "moduleResolution": "bundler",
+    "module": "preserve",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": false,

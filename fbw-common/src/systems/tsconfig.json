@@ -13,11 +13,12 @@
       "../typings",
       "../../../node_modules/@types",
     ],
-    "moduleResolution": "node",
+    "types": ["*"], // could specify exactly which types for better perf
+    "moduleResolution": "bundler",
+    "module": "preserve",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "jsx": "react",
+    "incremental": false,
     "paths": {
       "@datalink/aoc": ["./datalink/aoc/src/index.ts"],
       "@datalink/atc": ["./datalink/atc/src/index.ts"],
