@@ -1729,6 +1729,26 @@ export class FwsCore {
 
   public readonly overspeedVfeConfFull = Subject.create(false);
 
+  // Non-normal configuration overspeed subjects based on physical surface limits
+  public readonly overspeedVfeF0_S0_1 = Subject.create(false);
+  public readonly overspeedVfeF0_SGt1 = Subject.create(false);
+
+  public readonly overspeedVfeF0_1_S0 = Subject.create(false);
+  public readonly overspeedVfeF0_1_S0_1 = Subject.create(false);
+  public readonly overspeedVfeF0_1_SGt1 = Subject.create(false);
+
+  public readonly overspeedVfeF1_2_S0 = Subject.create(false);
+  public readonly overspeedVfeF1_2_S0_1 = Subject.create(false);
+  public readonly overspeedVfeF1_2_SGt1 = Subject.create(false);
+
+  public readonly overspeedVfeF2_3_S0 = Subject.create(false);
+  public readonly overspeedVfeF2_3_S0_1 = Subject.create(false);
+  public readonly overspeedVfeF2_3_SGt1 = Subject.create(false);
+
+  public readonly overspeedVfeFGt3_S0 = Subject.create(false);
+  public readonly overspeedVfeFGt3_S0_1 = Subject.create(false);
+  public readonly overspeedVfeFGt3_SGt1 = Subject.create(false);
+
   public readonly overspeedOccurredDuringFlight = Subject.create(false);
 
   public readonly loadAnalysysRequired = Subject.create(false);
@@ -3739,17 +3759,71 @@ export class FwsCore {
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
     const isOverMach = (limit: number) => this.machSelectedFromAdr.get() > limit + 0.006;
-    this.overspeedVmo.set(
-      !this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vmo) || isOverMach(Mmo)),
-    );
-    this.overspeedVle.set(
-      this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vle) || isOverMach(Mle)),
-    );
-    this.overspeedVfeConf1.set(this.flapsIndex.get() === 1 && isOverspeed(VfeF1));
-    this.overspeedVfeConf1F.set(this.flapsIndex.get() === 2 && isOverspeed(VfeF1F));
-    this.overspeedVfeConf2.set(this.flapsIndex.get() === 3 && isOverspeed(VfeF2));
-    this.overspeedVfeConf3.set((this.flapsIndex.get() === 4 || this.flapsIndex.get() === 5) && isOverspeed(VfeF3));
-    this.overspeedVfeConfFull.set(this.flapsIndex.get() === 6 && isOverspeed(VfeFF));
+    this.overspeedVmo.set(!this.isAllGearDownlocked && (isOverspeed(Vmo) || isOverMach(Mmo)));
+    this.overspeedVle.set(this.isAllGearDownlocked && (isOverspeed(Vle) || isOverMach(Mle)));
+    // Non-normal flap configuration overspeed monitoring based on actual surface limits
+    const sfcc1Aw = this.slatFlapsSystem1ActualPositionWord;
+    const sfcc2Aw = this.slatFlapsSystem2ActualPositionWord;
+
+    const flaps0 = sfcc1Aw.bitValueOr(19, false) || sfcc2Aw.bitValueOr(19, false);
+    const flapsGt1 = sfcc1Aw.bitValueOr(21, false) || sfcc2Aw.bitValueOr(21, false);
+    const flapsGt2 = sfcc1Aw.bitValueOr(22, false) || sfcc2Aw.bitValueOr(22, false);
+    const flapsGt3 = sfcc1Aw.bitValueOr(23, false) || sfcc2Aw.bitValueOr(23, false);
+
+    // Enforce mutual exclusivity: higher extension (more restrictive speed) wins in case of sensor overlap or SFCC disagreement
+    const isFGt3 = flapsGt3;
+    const isF2_3 = flapsGt2 && !isFGt3;
+    const isF1_2 = flapsGt1 && !flapsGt2 && !isFGt3;
+    const isF0_1 = !flaps0 && !flapsGt1 && !flapsGt2 && !isFGt3;
+    const isF0 = flaps0 && !flapsGt1 && !flapsGt2 && !isFGt3;
+
+    const slatsRetracted = sfcc1Aw.bitValueOr(12, true) && sfcc2Aw.bitValueOr(12, true);
+    const slatsGt1 = sfcc1Aw.bitValueOr(14, false) || sfcc2Aw.bitValueOr(14, false); // Slats >= 23°
+
+    const isSGt1 = slatsGt1;
+    const isS0_1 = !slatsRetracted && !isSGt1;
+    const isS0 = slatsRetracted && !isSGt1;
+
+    // Standard flap configuration overspeed monitoring based on actual physical positions rather than lever index
+    const isFlaps1Physical = isF0 && isS0_1;
+    const isFlaps1FPhysical = isF0_1 && isS0_1;
+    const isFlaps2Physical = isF1_2 && isS0_1;
+    const isFlaps3Physical = isF2_3 && isSGt1;
+    const isFlapsFullPhysical = isFGt3 && isSGt1;
+
+    // Evaluate whether the plane is in a purely normal commanded configuration
+    const lever = this.flapsIndex.get();
+    let isNormalConfig = false;
+
+    if (lever === 0 && isF0 && isS0) isNormalConfig = true;
+    else if (lever === 1 && isFlaps1Physical) isNormalConfig = true;
+    else if (lever === 2 && isFlaps1FPhysical) isNormalConfig = true;
+    else if (lever === 3 && isFlaps2Physical) isNormalConfig = true;
+    else if ((lever === 4 || lever === 5) && isFlaps3Physical) isNormalConfig = true;
+    else if (lever === 6 && isFlapsFullPhysical) isNormalConfig = true;
+
+    const isAbnConfig = !isNormalConfig;
+
+    this.overspeedVfeConf1.set(isNormalConfig && isFlaps1Physical && isOverspeed(VfeF1));
+    this.overspeedVfeConf1F.set(isNormalConfig && isFlaps1FPhysical && isOverspeed(VfeF1F));
+    this.overspeedVfeConf2.set(isNormalConfig && isFlaps2Physical && isOverspeed(VfeF2));
+    this.overspeedVfeConf3.set(isNormalConfig && isFlaps3Physical && isOverspeed(VfeF3));
+    this.overspeedVfeConfFull.set(isNormalConfig && isFlapsFullPhysical && isOverspeed(VfeFF));
+
+    this.overspeedVfeF0_S0_1.set(isAbnConfig && isF0 && isS0_1 && isOverspeed(263));
+    this.overspeedVfeF0_SGt1.set(isAbnConfig && isF0 && isSGt1 && isOverspeed(220));
+    this.overspeedVfeF0_1_S0.set(isAbnConfig && isF0_1 && isS0 && isOverspeed(245));
+    this.overspeedVfeF0_1_S0_1.set(isAbnConfig && isF0_1 && isS0_1 && isOverspeed(243));
+    this.overspeedVfeF0_1_SGt1.set(isAbnConfig && isF0_1 && isSGt1 && isOverspeed(218));
+    this.overspeedVfeF1_2_S0.set(isAbnConfig && isF1_2 && isS0 && isOverspeed(243));
+    this.overspeedVfeF1_2_S0_1.set(isAbnConfig && isF1_2 && isS0_1 && isOverspeed(241));
+    this.overspeedVfeF1_2_SGt1.set(isAbnConfig && isF1_2 && isSGt1 && isOverspeed(216));
+    this.overspeedVfeF2_3_S0.set(isAbnConfig && isF2_3 && isS0 && isOverspeed(219));
+    this.overspeedVfeF2_3_S0_1.set(isAbnConfig && isF2_3 && isS0_1 && isOverspeed(216));
+    this.overspeedVfeF2_3_SGt1.set(isAbnConfig && isF2_3 && isSGt1 && isOverspeed(196));
+    this.overspeedVfeFGt3_S0.set(isAbnConfig && isFGt3 && isS0 && isOverspeed(186));
+    this.overspeedVfeFGt3_S0_1.set(isAbnConfig && isFGt3 && isS0_1 && isOverspeed(184));
+    this.overspeedVfeFGt3_SGt1.set(isAbnConfig && isFGt3 && isSGt1 && isOverspeed(182));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
