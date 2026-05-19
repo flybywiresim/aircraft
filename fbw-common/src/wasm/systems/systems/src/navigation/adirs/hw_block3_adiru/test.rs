@@ -1,9 +1,10 @@
-use super::{adiru::*, adr_runtime::*, ir_runtime::*, *};
-use crate::auto_flight::FlightControlUnitBusOutputs;
-use crate::navigation::adirs::{
-    hw_block3_adiru::simulator_data::AdrSimulatorData,
-    hw_block3_adiru::simulator_data::IrSimulatorData, *,
-};
+use super::{adiru::*, adm_adr_runtime::*, ir_runtime::*, *};
+use crate::auto_flight::{FlightControlUnitBusOutput, FlightControlUnitBusOutputs};
+use crate::navigation::adirs::air_data_sensors::air_data_module_probes_complex::AirDataModuleAirDataSensorsComplex;
+use crate::navigation::adirs::air_data_sensors::integrated_probes_complex::IntegratedAirDataSensorsComplex;
+use crate::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
+use crate::navigation::adirs::{hw_block3_adiru::simulator_data::IrSimulatorData, *};
+use crate::simulation::{InitContext, SimulationElement};
 use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -16,6 +17,7 @@ use crate::{
 };
 use ntest::assert_about_eq;
 use rstest::rstest;
+use std::marker::PhantomData;
 use std::time::Duration;
 use uom::si::{
     angle::degree,
@@ -155,17 +157,28 @@ impl TestAdiruElectricalHarness {
         self.ir_discrete_input.simulator_instant_align = instant_align;
     }
 
-    pub fn set_primary_supply(&mut self, supply: bool, adiru: &mut AirDataInertialReferenceUnit) {
+    pub fn set_primary_supply<T: AdrRuntimeTemplate>(
+        &mut self,
+        supply: bool,
+        adiru: &mut AirDataInertialReferenceUnit<T>,
+    ) {
         self.primary_powered = supply;
-        self.update_adiru_supply(adiru);
+        self.update_adiru_supply::<T>(adiru);
     }
 
-    pub fn set_backup_supply(&mut self, supply: bool, adiru: &mut AirDataInertialReferenceUnit) {
+    pub fn set_backup_supply<T: AdrRuntimeTemplate>(
+        &mut self,
+        supply: bool,
+        adiru: &mut AirDataInertialReferenceUnit<T>,
+    ) {
         self.backup_powered = supply;
         self.update_adiru_supply(adiru);
     }
 
-    fn update_adiru_supply(&self, adiru: &mut AirDataInertialReferenceUnit) {
+    fn update_adiru_supply<T: AdrRuntimeTemplate>(
+        &self,
+        adiru: &mut AirDataInertialReferenceUnit<T>,
+    ) {
         adiru.set_powered(self.primary_powered, self.backup_powered);
     }
 }
@@ -179,39 +192,68 @@ impl AdiruElectricalHarness for TestAdiruElectricalHarness {
     }
 }
 
-struct TestAircraft {
+struct TestAircraft<T> {
     test_fcu: TestFcu,
     test_adr_1: TestAdr,
     test_adr_2: TestAdr,
-    adiru: AirDataInertialReferenceUnit,
+    adiru: AirDataInertialReferenceUnit<T>,
     harness: TestAdiruElectricalHarness,
+
+    integrated_sensors_complex: IntegratedAirDataSensorsComplex,
+    adm_sensors_complex: AirDataModuleAirDataSensorsComplex,
 }
-impl TestAircraft {
+impl<T: AdrRuntimeTemplate> TestAircraft<T> {
     fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
             test_fcu: TestFcu::default(),
             test_adr_1: TestAdr::new(),
             test_adr_2: TestAdr::new(),
-            adiru: AirDataInertialReferenceUnit::new(context, num),
+            adiru: AirDataInertialReferenceUnit::<T>::new(context, num),
             harness: TestAdiruElectricalHarness::new(),
+            integrated_sensors_complex: IntegratedAirDataSensorsComplex::new(context, num),
+            adm_sensors_complex: AirDataModuleAirDataSensorsComplex::new(context, num),
         }
     }
 }
-impl Aircraft for TestAircraft {
+impl Aircraft for TestAircraft<AdmAirDataReferenceRuntime> {
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
         self.adiru.update(
             context,
             &self.harness.adr_discrete_inputs(),
+            self.adm_sensors_complex.adr_analog_inputs(),
             &self.harness.ir_discrete_inputs(),
             &self.test_fcu,
             &self.test_adr_1,
             &self.test_adr_2,
+            self.adm_sensors_complex.adm_1_bus_output(),
+            self.adm_sensors_complex.adm_2_bus_output(),
+            self.adm_sensors_complex.adm_3_bus_output(),
         );
     }
 }
-impl SimulationElement for TestAircraft {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+impl Aircraft for TestAircraft<IntegratedAirDataReferenceRuntime> {
+    fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.adiru.update(
+            context,
+            &self.harness.adr_discrete_inputs(),
+            self.adm_sensors_complex.adr_analog_inputs(),
+            &self.harness.ir_discrete_inputs(),
+            &self.test_fcu,
+            &self.test_adr_1,
+            &self.test_adr_2,
+            self.integrated_sensors_complex.mfp_bus_output(),
+            self.integrated_sensors_complex.left_isp_bus_output(),
+            self.integrated_sensors_complex.right_isp_bus_output(),
+            self.integrated_sensors_complex.ssp_bus_output(),
+        );
+    }
+}
+impl<T> SimulationElement for TestAircraft<T> {
+    fn accept<U: SimulationElementVisitor>(&mut self, visitor: &mut U) {
         self.adiru.accept(visitor);
+
+        self.integrated_sensors_complex.accept(visitor);
+        self.adm_sensors_complex.accept(visitor);
 
         visitor.visit(self);
     }
@@ -221,10 +263,23 @@ impl SimulationElement for TestAircraft {
     fn write(&self, _writer: &mut SimulatorWriter) {}
 }
 
-struct AdirsTestBed {
-    test_bed: SimulationTestBed<TestAircraft>,
+struct AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
+    test_bed: SimulationTestBed<TestAircraft<T>>,
 }
-impl AdirsTestBed {
+impl<T> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
+    const MACH: &'static str = "AIRSPEED MACH";
+    const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
+    const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
+    const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
+
     fn new(num: usize) -> Self {
         Self {
             test_bed: SimulationTestBed::new(|context| TestAircraft::new(context, num)),
@@ -253,7 +308,7 @@ impl AdirsTestBed {
     }
 
     fn mach_of(mut self, mach: MachNumber) -> Self {
-        self.write_by_name(AdrSimulatorData::MACH, mach);
+        self.write_by_name(Self::MACH, mach);
         self
     }
 
@@ -266,17 +321,17 @@ impl AdirsTestBed {
     }
 
     fn true_airspeed_of(mut self, velocity: Velocity) -> Self {
-        self.write_by_name(AdrSimulatorData::TRUE_AIRSPEED, velocity);
+        self.write_by_name(Self::TRUE_AIRSPEED, velocity);
         self
     }
 
     fn total_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
-        self.write_by_name(AdrSimulatorData::TOTAL_AIR_TEMPERATURE, temperature);
+        self.write_by_name(Self::TOTAL_AIR_TEMPERATURE, temperature);
         self
     }
 
     fn angle_of_attack_of(mut self, angle: Angle) -> Self {
-        self.write_by_name(AdrSimulatorData::ANGLE_OF_ATTACK, angle);
+        self.write_by_name(Self::ANGLE_OF_ATTACK, angle);
         self
     }
 
@@ -463,24 +518,26 @@ impl AdirsTestBed {
     }
 
     // Getters and asserts
-    fn get_adr_discrete_outputs(aircraft: &TestAircraft) -> &AdrDiscreteOutputs {
-        <AirDataInertialReferenceUnit as AirDataReferenceDiscreteOutput>::discrete_outputs(
+    fn get_adr_discrete_outputs(aircraft: &TestAircraft<T>) -> &AdrDiscreteOutputs {
+        <AirDataInertialReferenceUnit<T> as AirDataReferenceDiscreteOutput>::discrete_outputs(
             &aircraft.adiru,
         )
     }
 
-    fn get_ir_discrete_outputs(aircraft: &TestAircraft) -> &IrDiscreteOutputs {
-        <AirDataInertialReferenceUnit as InertialReferenceDiscreteOutput>::discrete_outputs(
+    fn get_ir_discrete_outputs(aircraft: &TestAircraft<T>) -> &IrDiscreteOutputs {
+        <AirDataInertialReferenceUnit<T> as InertialReferenceDiscreteOutput>::discrete_outputs(
             &aircraft.adiru,
         )
     }
 
-    fn get_adr_bus_outputs(aircraft: &TestAircraft) -> &AirDataReferenceBusOutputs {
-        <AirDataInertialReferenceUnit as AirDataReferenceBusOutput>::bus_outputs(&aircraft.adiru)
+    fn get_adr_bus_outputs(aircraft: &TestAircraft<T>) -> &AirDataReferenceBusOutputs {
+        <AirDataInertialReferenceUnit<T> as AirDataReferenceBusOutput>::bus_outputs(&aircraft.adiru)
     }
 
-    fn get_ir_bus_outputs(aircraft: &TestAircraft) -> &InertialReferenceBusOutputs {
-        <AirDataInertialReferenceUnit as InertialReferenceBusOutput>::bus_outputs(&aircraft.adiru)
+    fn get_ir_bus_outputs(aircraft: &TestAircraft<T>) -> &InertialReferenceBusOutputs {
+        <AirDataInertialReferenceUnit<T> as InertialReferenceBusOutput>::bus_outputs(
+            &aircraft.adiru,
+        )
     }
 
     fn adr_off_light_illuminated(&self) -> bool {
@@ -580,107 +637,107 @@ impl AdirsTestBed {
     }
 
     fn pitch(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).pitch_angle)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).pitch_angle)
     }
 
     fn roll(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).roll_angle)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).roll_angle)
     }
 
     fn heading(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).magnetic_heading)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).magnetic_heading)
     }
 
     fn true_heading(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).true_heading)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).true_heading)
     }
 
     fn track(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).magnetic_track)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).magnetic_track)
     }
 
     fn true_track(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).true_track)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).true_track)
     }
 
     fn drift_angle(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).drift_angle)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).drift_angle)
     }
 
     fn flight_path_angle(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).flight_path_angle)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).flight_path_angle)
     }
 
     fn body_pitch_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_pitch_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_pitch_rate)
     }
 
     fn body_roll_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_roll_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_roll_rate)
     }
 
     fn body_yaw_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_yaw_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_yaw_rate)
     }
 
     fn body_long_acc(&mut self) -> Arinc429Word<Ratio> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_long_acc)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_long_acc)
     }
 
     fn body_lat_acc(&mut self) -> Arinc429Word<Ratio> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_lat_acc)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_lat_acc)
     }
 
     fn body_normal_acc(&mut self) -> Arinc429Word<Ratio> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).body_normal_acc)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).body_normal_acc)
     }
 
     fn pitch_att_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).pitch_att_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).pitch_att_rate)
     }
 
     fn roll_att_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).roll_att_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).roll_att_rate)
     }
 
     fn track_rate(&mut self) -> Arinc429Word<AngularVelocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).track_angle_rate)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).track_angle_rate)
     }
 
     fn ground_speed(&mut self) -> Arinc429Word<Velocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).ground_speed)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).ground_speed)
     }
 
     fn wind_direction(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).wind_dir_true_bcd)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).wind_dir_true_bcd)
     }
 
     fn wind_direction_bnr(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).wind_dir_true)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).wind_dir_true)
     }
 
     fn wind_speed(&mut self) -> Arinc429Word<Velocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).wind_speed_bcd)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).wind_speed_bcd)
     }
 
     fn wind_speed_bnr(&mut self) -> Arinc429Word<Velocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).wind_speed)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).wind_speed)
     }
 
     fn inertial_vertical_speed(&mut self) -> Arinc429Word<Velocity> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).inertial_vertical_speed)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).inertial_vertical_speed)
     }
 
     fn longitude(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).ppos_longitude)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).ppos_longitude)
     }
 
     fn latitude(&mut self) -> Arinc429Word<Angle> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).ppos_latitude)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).ppos_latitude)
     }
 
     fn maint_word(&self) -> Arinc429Word<u32> {
-        self.query(|a: &TestAircraft| Self::get_ir_bus_outputs(a).discrete_word_1)
+        self.query(|a: &TestAircraft<T>| Self::get_ir_bus_outputs(a).discrete_word_1)
     }
 
     fn assert_adr_data_valid(&mut self, valid: bool) {
@@ -781,33 +838,53 @@ impl AdirsTestBed {
         assert_about_eq!(self.wind_speed_bnr().value().get::<knot>(), 0.);
     }
 }
-impl TestBed for AdirsTestBed {
-    type Aircraft = TestAircraft;
+impl<T> TestBed for AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
+    type Aircraft = TestAircraft<T>;
 
-    fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+    fn test_bed(&self) -> &SimulationTestBed<TestAircraft<T>> {
         &self.test_bed
     }
 
-    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft<T>> {
         &mut self.test_bed
     }
 }
 
-fn test_bed_with(num: usize) -> AdirsTestBed {
+fn test_bed_with<T>(num: usize) -> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
     test_bed(num)
 }
 
-fn test_bed(num: usize) -> AdirsTestBed {
+fn test_bed<T>(num: usize) -> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
     // Nearly all tests require mode selectors to be off, therefore it is the default.
     // TODO This is mislabeled. The ADIRU does not start off here, it starts in the power down state.
     adiru_aligned_test_bed(num).mode_selector_off()
 }
 
-fn adiru_aligned_test_bed_with(num: usize) -> AdirsTestBed {
+fn adiru_aligned_test_bed_with<T>(num: usize) -> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
     adiru_aligned_test_bed(num)
 }
 
-fn adiru_unaligned_test_bed_with(num: usize) -> AdirsTestBed {
+fn adiru_unaligned_test_bed_with<T>(num: usize) -> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
     let mut bed = adiru_aligned_test_bed(num)
         .mode_selector_off()
         .primary_power_set_to(true)
@@ -818,7 +895,11 @@ fn adiru_unaligned_test_bed_with(num: usize) -> AdirsTestBed {
     bed
 }
 
-fn adiru_aligned_test_bed(num: usize) -> AdirsTestBed {
+fn adiru_aligned_test_bed<T>(num: usize) -> AdirsTestBed<T>
+where
+    TestAircraft<T>: Aircraft,
+    T: AdrRuntimeTemplate,
+{
     AdirsTestBed::new(num)
         .primary_power_set_to(true)
         .and()
