@@ -1,7 +1,12 @@
 use super::{adiru::*, adm_adr_runtime::*, ir_runtime::*, *};
 use crate::auto_flight::{FlightControlUnitBusOutput, FlightControlUnitBusOutputs};
-use crate::navigation::adirs::air_data_sensors::air_data_module_probes_complex::AirDataModuleAirDataSensorsComplex;
-use crate::navigation::adirs::air_data_sensors::integrated_probes_complex::IntegratedAirDataSensorsComplex;
+use crate::navigation::adirs::air_data_sensors::air_data_module_probes_complex::{
+    AirDataModuleAirDataSensorsComplex, AngleOfAttackExcitationPowerProvider,
+};
+use crate::navigation::adirs::air_data_sensors::integrated_probes_complex::{
+    IntegratedAirDataSensorsComplex, IntegratedProbesPowerProvider,
+};
+use crate::navigation::adirs::air_data_sensors::TotalAirTemperatureProbe;
 use crate::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
 use crate::navigation::adirs::{hw_block3_adiru::simulator_data::IrSimulatorData, *};
 use crate::simulation::{InitContext, SimulationElement};
@@ -100,6 +105,14 @@ struct TestAdiruElectricalHarness {
     // Powersupply
     primary_powered: bool,
     backup_powered: bool,
+
+    // Probes Powersupplies
+    aoa_excitation_powered: bool,
+
+    isp_dc_powered: bool,
+    isp_ac_powered: bool,
+    mfp_powered: bool,
+    ssp_powered: bool,
 }
 impl TestAdiruElectricalHarness {
     fn new() -> Self {
@@ -109,6 +122,13 @@ impl TestAdiruElectricalHarness {
 
             primary_powered: false,
             backup_powered: false,
+
+            aoa_excitation_powered: false,
+
+            isp_dc_powered: false,
+            isp_ac_powered: false,
+            mfp_powered: false,
+            ssp_powered: false,
         };
 
         // Start with NAV mode selected per default
@@ -164,6 +184,13 @@ impl TestAdiruElectricalHarness {
     ) {
         self.primary_powered = supply;
         self.update_adiru_supply::<T>(adiru);
+
+        // TODO extract into own function and tests
+        self.aoa_excitation_powered = supply;
+        self.isp_ac_powered = supply;
+        self.isp_dc_powered = supply;
+        self.mfp_powered = supply;
+        self.ssp_powered = supply;
     }
 
     pub fn set_backup_supply<T: AdrRuntimeTemplate>(
@@ -191,6 +218,28 @@ impl AdiruElectricalHarness for TestAdiruElectricalHarness {
         &self.ir_discrete_input
     }
 }
+impl AngleOfAttackExcitationPowerProvider for TestAdiruElectricalHarness {
+    fn aoa_excitation_powered(&self) -> bool {
+        self.aoa_excitation_powered
+    }
+}
+impl IntegratedProbesPowerProvider for TestAdiruElectricalHarness {
+    fn isp_ac_powered(&self, _num: usize) -> bool {
+        self.isp_ac_powered
+    }
+
+    fn isp_dc_powered(&self, _num: usize) -> bool {
+        self.isp_dc_powered
+    }
+
+    fn mfp_powered(&self, _num: usize) -> bool {
+        self.mfp_powered
+    }
+
+    fn ssp_powered(&self, _num: usize) -> bool {
+        self.ssp_powered
+    }
+}
 
 struct TestAircraft<T> {
     test_fcu: TestFcu,
@@ -200,7 +249,9 @@ struct TestAircraft<T> {
     harness: TestAdiruElectricalHarness,
 
     integrated_sensors_complex: IntegratedAirDataSensorsComplex,
+
     adm_sensors_complex: AirDataModuleAirDataSensorsComplex,
+    tat_probe: Option<TotalAirTemperatureProbe>,
 }
 impl<T: AdrRuntimeTemplate> TestAircraft<T> {
     fn new(context: &mut InitContext, num: usize) -> Self {
@@ -210,13 +261,27 @@ impl<T: AdrRuntimeTemplate> TestAircraft<T> {
             test_adr_2: TestAdr::new(),
             adiru: AirDataInertialReferenceUnit::<T>::new(context, num),
             harness: TestAdiruElectricalHarness::new(),
+
             integrated_sensors_complex: IntegratedAirDataSensorsComplex::new(context, num),
+
             adm_sensors_complex: AirDataModuleAirDataSensorsComplex::new(context, num),
+            tat_probe: if num == 3 {
+                Some(TotalAirTemperatureProbe::new(context))
+            } else {
+                None
+            },
         }
     }
 }
 impl Aircraft for TestAircraft<AdmAirDataReferenceRuntime> {
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.adm_sensors_complex.update(
+            context,
+            &self.adiru,
+            &self.harness,
+            self.tat_probe.as_ref(),
+        );
+
         self.adiru.update(
             context,
             &self.harness.adr_discrete_inputs(),
@@ -233,6 +298,9 @@ impl Aircraft for TestAircraft<AdmAirDataReferenceRuntime> {
 }
 impl Aircraft for TestAircraft<IntegratedAirDataReferenceRuntime> {
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.integrated_sensors_complex
+            .update(context, &self.harness);
+
         self.adiru.update(
             context,
             &self.harness.adr_discrete_inputs(),
