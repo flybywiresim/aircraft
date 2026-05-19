@@ -16,8 +16,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { LatchedDescentGuidance } from '@fmgc/guidance/vnav/descent/LatchedDescentGuidance';
 import { DescentGuidance } from '@fmgc/guidance/vnav/descent/DescentGuidance';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -31,9 +29,11 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
+import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -49,8 +49,6 @@ export class VnavDriver implements GuidanceComponent {
   private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
 
   private descentGuidance: DescentGuidance | LatchedDescentGuidance;
-
-  private headingProfile: NavHeadingProfile;
 
   private profileManager: VerticalProfileManager;
 
@@ -75,14 +73,13 @@ export class VnavDriver implements GuidanceComponent {
   private prevMcduPredReadyToDisplay = false;
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
     private readonly atmosphericConditions: AtmosphericConditions,
-    private readonly windProfileFactory: WindProfileFactory,
     private readonly acConfig: AircraftConfig,
   ) {
-    this.headingProfile = new NavHeadingProfile(flightPlanService);
     this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
     this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
@@ -91,6 +88,7 @@ export class VnavDriver implements GuidanceComponent {
     this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
       ? new LatchedDescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -98,6 +96,7 @@ export class VnavDriver implements GuidanceComponent {
         )
       : new DescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -105,13 +104,11 @@ export class VnavDriver implements GuidanceComponent {
         );
 
     this.profileManager = new VerticalProfileManager(
+      this.bus,
       this.flightPlanService,
-      this.guidanceController,
       this.computationParametersObserver,
       this.atmosphericConditions,
       this.constraintReader,
-      this.headingProfile,
-      this.windProfileFactory,
       this.aircraftToDescentProfileRelation,
       this.acConfig,
     );
@@ -152,8 +149,6 @@ export class VnavDriver implements GuidanceComponent {
 
     const newParameters = this.computationParametersObserver.get();
 
-    this.windProfileFactory.updateAircraftDistanceFromStart(this.constraintReader.distanceToPresentPosition);
-    this.headingProfile.updateGeometry(geometry);
     this.currentMcduSpeedProfile?.update(this.constraintReader.distanceToPresentPosition);
 
     // No predictions in go around phase
@@ -610,6 +605,29 @@ export class VnavDriver implements GuidanceComponent {
         `VDEV ${this.descentGuidance.getLinearDeviation()?.toFixed(0) ?? '---'} FT\n` +
         `VS ${this.descentGuidance.getTargetVerticalSpeed()?.toFixed(0) ?? '---'} FT/MIN\n`,
     );
+  }
+
+  shouldShowLatDiscontinuityAhead(): boolean {
+    if (this.computationParametersObserver.get().fcuLateralMode !== LateralMode.NAV) {
+      return false;
+    }
+    const activeLeg = this.flightPlanService.active?.activeLeg;
+    if (isLeg(activeLeg) && !activeLeg.isVectors() && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
+      // If we are on a vectors leg or hold without exit toggled, we don't want to trigger the message.
+      const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
+      if (lastLegIndexBeforeDiscontinuity !== null) {
+        const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
+        if (vnavPrediction) {
+          return vnavPrediction.secondsFromPresent < 30;
+        } else {
+          // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+          if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
+            return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   shouldShowTooSteepPathAhead(): boolean {

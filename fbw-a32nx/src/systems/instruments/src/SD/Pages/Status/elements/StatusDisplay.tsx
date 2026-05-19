@@ -2,7 +2,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import EWDMessages from '@instruments/common/EWDMessages';
+import { formatEwdMessages } from '@shared/EwdMessages';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React from 'react';
 import FormattedFwcText from './FormattedFwcText';
@@ -55,7 +55,7 @@ export const StatusDisplay: React.FC<DisplayProps> = ({ x, y, side }) => {
     line18,
   ];
 
-  const message = lineNumbers.map((line) => EWDMessages[padCode(line)]).join('\r');
+  const message = formatEwdMessages(lineNumbers.map((line) => padCode(line))).join('\r');
 
   return (
     <g id={`StatusDisplay${side}`}>

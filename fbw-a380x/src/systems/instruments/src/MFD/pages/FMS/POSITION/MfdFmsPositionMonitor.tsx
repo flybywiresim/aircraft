@@ -428,7 +428,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   bigUnit={true}
@@ -583,22 +583,22 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
             <div class="fr space-between" style="margin-bottom: 19px;">
               <Button
-                label={Subject.create(
+                label={
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <span style="text-align: center; vertical-align: center; margin-right: 25px;">
                       {this.positionSensorsButtonLabel}
                       <br />
                       POS SENSORS
                     </span>
-                  </div>,
-                )}
+                  </div>
+                }
                 onClick={() => this.toggleSensorsVisibility()}
                 selected={this.positionSensorsVisible}
                 buttonStyle="width: 219px; margin-left: 95px; height:58px;"
               />
 
               <Button
-                label={Subject.create(
+                label={
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                       {this.positionFrozenLabel}
@@ -606,8 +606,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                       POS DATA
                     </span>
                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                  </div>,
-                )}
+                  </div>
+                }
                 onClick={() => this.togglePositionFrozen()}
                 selected={this.positionFrozen}
                 buttonStyle="width: 212px; margin-right:60px; height:58px"
@@ -620,7 +620,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="fr space-between">
             <Button
               label="POSITION <br /> UPDATE"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 138px; height:59px; margin-top:18px;"
             />
@@ -653,7 +653,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   enteredByPilot={this.waypointEntered}
                   canBeCleared={Subject.create(true)}
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   containerStyle='"width:130px;'
@@ -699,7 +699,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               />
               <Button
                 label="GNSS"
-                disabled={Subject.create(true)}
+                disabled={true}
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gnss')}
                 buttonStyle="margin-right: 5px; width:133px; height:43px;"
               />
