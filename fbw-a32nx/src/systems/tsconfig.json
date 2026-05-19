@@ -17,6 +17,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "paths": {
       "@atsu/fmsclient": ["./atsu/fmsclient/src/index.ts"],
       "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],

@@ -7,8 +7,8 @@
         "name": "typescript-strict-plugin"
       }
     ],
-    "baseUrl": ".",
     "resolveJsonModule" : true,
+    "skipLibCheck": true,
     "typeRoots": [
       "../typings",
       "../../../node_modules/@types",
