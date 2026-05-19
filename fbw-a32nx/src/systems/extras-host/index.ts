@@ -17,6 +17,7 @@ import {
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
+  MsfsVersionPopupMonitor,
   NotificationManager,
   PilotSeatManager,
   PilotSeatPublisher,
@@ -65,6 +66,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clock = new Clock(this.bus);
+
+  private readonly msfsVersionPopup = new MsfsVersionPopupMonitor(this.bus, 'A32NX');
 
   private readonly notificationManager: NotificationManager;
 

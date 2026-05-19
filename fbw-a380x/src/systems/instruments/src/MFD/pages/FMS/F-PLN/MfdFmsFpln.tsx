@@ -955,8 +955,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     this.checkScrollButtons();
     if (this.lineData) {
-      const whichLineIndex =
-        this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan?.destinationLegIndex) + 1;
+      const destLegIndex = this.loadedFlightPlan?.destinationLegIndex;
+      let whichLineIndex = -1;
+      if (destLegIndex !== null) {
+        whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === destLegIndex) + 1;
+      }
       if (whichLineIndex === -1) {
         this.displayFplnFromLineIndex.set(0);
       } else {
