@@ -1,10 +1,11 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, Publisher, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ClockEvents, EventBus, Publisher, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { PopupControlEvents } from '../../../shared/src/popup/PopupControlEvents';
 import { PopupDefinition } from '../../../shared/src/popup/PopupTypes';
 import { PopupEvents } from '../../../shared/src/popup/PopupEvents';
+import { RegisteredSimVar } from 'shared/src';
 
 export class PopupManager {
   private readonly publisher: Publisher<PopupEvents>;
@@ -16,6 +17,8 @@ export class PopupManager {
 
   private readonly _visiblePopupTimeRemaining = Subject.create<number | undefined>(undefined);
   public readonly visiblePopupTimeRemaining: Subscribable<number | undefined> = this._visiblePopupTimeRemaining;
+
+  private readonly simDurationVar = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private lastSimDuration = 0;
 
@@ -29,7 +32,6 @@ export class PopupManager {
     sub.on('popup_dequeue_popup').handle(this.onDequeue.bind(this));
     sub.on('popup_enqueue_popup').handle(this.onEnqueue.bind(this));
 
-    // FIXME switch to activeSimDuration with msfs-sdk v2
     sub.on('simTime').handle(this.onUpdate.bind(this));
   }
 
@@ -61,7 +63,8 @@ export class PopupManager {
     this._visiblePopup.set(this.queue[0]);
   }
 
-  private onUpdate(simDuration: number): void {
+  private onUpdate(): void {
+    const simDuration = this.simDurationVar.get() * 1000;
     const dt = this.lastSimDuration > 0 ? simDuration - this.lastSimDuration : 0;
     this.lastSimDuration = simDuration;
 
