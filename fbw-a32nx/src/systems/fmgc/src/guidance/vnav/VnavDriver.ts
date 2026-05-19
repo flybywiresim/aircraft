@@ -443,7 +443,7 @@ export class VnavDriver implements GuidanceComponent {
   public getDestinationPrediction(): VerticalWaypointPrediction | null {
     const destLegIndex = this.flightPlanService.active.destinationLegIndex;
 
-    return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
+    return destLegIndex !== null ? this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex) : null;
   }
 
   /**
