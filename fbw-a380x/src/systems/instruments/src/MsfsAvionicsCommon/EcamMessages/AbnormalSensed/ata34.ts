@@ -1058,7 +1058,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       { name: 'NO AIR DATA RELIABLE :', condition: true, sensed: false, level: 1 }, // [68]
       { name: 'ONE ADR : KEEP ON', sensed: false, level: 2 }, // [69]
       { name: 'TWO ADR P/Bs', labelNotCompleted: 'OFF', sensed: false, level: 2 }, // [70]
-      { name: 'GA THR : TOGA ONLY', sensed: false, style: ChecklistLineStyle.Cyan, level: 2 }, // [71]
+      { name: 'GA THR : TOGA ONLY', sensed: false, style: ChecklistLineStyle.Cyan, level: 1 }, // [71]
     ],
   },
 };
