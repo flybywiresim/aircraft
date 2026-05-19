@@ -322,6 +322,9 @@ impl<T> SimulationElement for TestAircraft<T> {
 
         self.integrated_sensors_complex.accept(visitor);
         self.adm_sensors_complex.accept(visitor);
+        if let Some(tat_probe) = &mut self.tat_probe {
+            tat_probe.accept(visitor);
+        }
 
         visitor.visit(self);
     }
