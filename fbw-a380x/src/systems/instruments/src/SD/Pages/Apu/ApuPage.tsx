@@ -5,7 +5,7 @@ import { Layer } from '@instruments/common/utils';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../Generic/PageTitle';
-import { ApuGenerator } from 'instruments/src/SD/Pages/Apu/elements/ApuGenerator';
+import { ApuGenerator } from './elements/ApuGenerator';
 import Valve from '../../../Common/Valve';
 import { NXUnits } from '@flybywiresim/fbw-sdk-react';
 

@@ -38,7 +38,7 @@ import {
 } from '@flybywiresim/fbw-sdk-react';
 import { ToastContainer } from 'react-toastify';
 import { OisInternalData } from '../OIT/OisInternalPublisher';
-import { simbriefDataFromFms } from 'instruments/src/OITlegacy/utils';
+import { simbriefDataFromFms } from './utils';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))

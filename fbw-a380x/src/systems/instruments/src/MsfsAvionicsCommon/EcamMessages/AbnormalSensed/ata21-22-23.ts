@@ -6,7 +6,7 @@ import {
   ChecklistLineStyle,
   DeferredProcedure,
   DeferredProcedureType,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter

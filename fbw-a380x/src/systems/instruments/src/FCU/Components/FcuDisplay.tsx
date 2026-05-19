@@ -7,7 +7,7 @@ import { Baro } from './Baro';
 import { Heading } from './Heading';
 import { Speed } from './Speed';
 import { VerticalSpeed } from './VerticalSpeed';
-import { NdData } from 'instruments/src/FCU/Components/NdData';
+import { NdData } from './NdData';
 
 export interface FcuDisplayProps {
   readonly bus: EventBus;

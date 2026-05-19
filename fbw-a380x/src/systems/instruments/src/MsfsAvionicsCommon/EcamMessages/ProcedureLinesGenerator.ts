@@ -23,9 +23,9 @@ import {
   AbstractChecklistItem,
   WdSpecialLine,
   WD_LINE_CHARACTERS,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+} from './';
+import { EcamNormalProcedures } from './NormalProcedures';
+import { ChecklistState } from '../providers/FwsPublisher';
 
 export enum ProcedureType {
   Normal,

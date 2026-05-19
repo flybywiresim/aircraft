@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk-react';
-import { deflectionToXOffset } from 'instruments/src/SD/Pages/Fctl/elements/HorizontalDeflectionIndicator';
+import { deflectionToXOffset } from './HorizontalDeflectionIndicator';
 import React, { FC } from 'react';
 
 export enum RudderPosition {

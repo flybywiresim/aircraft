@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps } from '../../../MFD';
 import { FmsPage } from '../../common/FmsPage';
 import { Arinc429Register, coordinateToString, Fix, MagVar, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -15,9 +15,9 @@ import {
   getEtaFromUtcOrPresent,
   noPositionAvailableText,
   showReturnButtonUriExtra,
-} from 'instruments/src/MFD/shared/utils';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+} from '../../../shared/utils';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import { MfdFmsPositionNavaids } from './MfdFmsPositionNavaids';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
