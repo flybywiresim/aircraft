@@ -59,6 +59,7 @@ module.exports = {
       {
         varsIgnorePattern: 'FSComponent|_.*',
         argsIgnorePattern: '_.*',
+        caughtErrorsIgnorePattern: '_.*',
       },
     ],
 

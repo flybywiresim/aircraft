@@ -23,12 +23,12 @@ import {
   PilotSeatPublisher,
   TelexCheck,
 } from '@flybywiresim/fbw-sdk';
-import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
-import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
+import { PushbuttonCheck } from './modules/pushbutton_check/PushbuttonCheck';
+import { FlightPlanAsoboSync } from './modules/flightplan_sync/FlightPlanAsoboSync';
 import { A32NXKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
-import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { LightSync } from './modules/light_sync/LightSync';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 
 /**

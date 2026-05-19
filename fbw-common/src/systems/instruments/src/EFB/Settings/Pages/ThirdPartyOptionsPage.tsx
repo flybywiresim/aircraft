@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import {
+  NavigraphSubscriptionStatus,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+} from '@flybywiresim/fbw-sdk-react';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { IconTrash } from '@tabler/icons';

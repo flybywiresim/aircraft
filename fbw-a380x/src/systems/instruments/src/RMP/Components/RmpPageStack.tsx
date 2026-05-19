@@ -13,8 +13,8 @@ import {
 
 import { RmpPage } from './RmpPage';
 import { VhfComPage } from '../Pages/VhfCom/VhfComPage';
-import { KeypadEvents, SystemKeys } from 'instruments/src/RMP/Systems/KeypadController';
-import { TransponderPage } from 'instruments/src/RMP/Pages/Transponder/TransponderPage';
+import { KeypadEvents, SystemKeys } from '../Systems/KeypadController';
+import { TransponderPage } from '../Pages/Transponder/TransponderPage';
 
 export interface RmpPageStackProps extends ComponentProps {
   bus: EventBus;

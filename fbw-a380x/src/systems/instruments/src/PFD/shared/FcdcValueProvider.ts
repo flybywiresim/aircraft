@@ -3,8 +3,8 @@
 
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
-import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { DmcLogicEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
 
 export class FcdcValueProvider {
   private readonly subscriptions: Subscription[] = [];
