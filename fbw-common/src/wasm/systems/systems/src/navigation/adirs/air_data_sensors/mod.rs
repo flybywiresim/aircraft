@@ -12,7 +12,9 @@ use crate::{
 };
 
 pub mod air_data_module;
+pub mod air_data_module_probes_complex;
 pub mod integrated_probes;
+pub mod integrated_probes_complex;
 
 pub trait PressureSource {
     fn get_pressure(&self) -> Pressure;
