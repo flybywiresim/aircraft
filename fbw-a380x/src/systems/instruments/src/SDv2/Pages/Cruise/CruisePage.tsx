@@ -1,7 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
 import { PageTitle } from '../Generic/PageTitle';

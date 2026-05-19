@@ -11,17 +11,16 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { PermanentData } from './StatusArea';
-import { AtcMailbox } from './AtcMailbox';
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
-import { SdPages } from '@shared/EcamSystemPages';
+import { SdPages } from '@shared/SdPages';
+import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
 import './style.scss';
 import '../index.scss';
-import { CruisePage } from './Pages/Cruise/CruisePage';
 import { SDSimvars } from './SDSimvarPublisher';
 import { StatusPage } from './Pages/Status/StatusPage';
+import { FctlPage } from './Pages/Fctl/FctlPage';
 
 export interface SDProps {
   readonly bus: EventBus;
@@ -34,6 +33,10 @@ export interface SdPageProps extends ComponentProps {
 
 export class SD extends DestroyableComponent<SDProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
+
+  private readonly ac2BusPowered = ConsumerSubject.create(this.sub.on('ac2BusPowered'), false);
+
+  private readonly sdPotentiometer = ConsumerSubject.create(this.sub.on('sdPotentiometer'), 0);
 
   private readonly pageToShow = ConsumerSubject.create(this.sub.on('sdPageToShow'), 0);
 
@@ -53,25 +56,22 @@ export class SD extends DestroyableComponent<SDProps> {
   // holds all page objects, make sure this is in line with the enum in EcamSystemPages.ts
   private readonly sdPages: DestroyableComponent<SdPageProps>[] = [
     null, // ENG
-    null, // APU
     null, // BLEED
-    null, // COND
     null, // PRESS
-    null, // DOOR
-    null, // ELEC AC
-    null, // ELEC DC
-    null, // FUEL
-    null, // WHEEL
+    null, // ELEC
     null, // HYD
-    null, // FCTL
-    null, // CB
-    <CruisePage ref={this.pageRef[SdPages.Crz]} bus={this.props.bus} visible={this.pageVisible[SdPages.Crz]} />,
-    <StatusPage ref={this.pageRef[SdPages.Status]} bus={this.props.bus} visible={this.pageVisible[SdPages.Status]} />, // STATUS
-    null, // TODO video page
+    null, // FUEL
+    null, // APU
+    null, // COND
+    null, // DOOR
+    null, // WHEEL
+    <FctlPage ref={this.pageRef[SdPages.FCTL]} bus={this.props.bus} visible={this.pageVisible[SdPages.FCTL]} />,
+    null, // CRZ
+    <StatusPage ref={this.pageRef[SdPages.STS]} bus={this.props.bus} visible={this.pageVisible[SdPages.STS]} />,
   ];
 
   // Once a page is ported, add its enum value here
-  private readonly indicesToShowInV2 = [SdPages.Crz, SdPages.Status];
+  private readonly indicesToShowInV2 = [SdPages.STS, SdPages.FCTL];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -102,12 +102,13 @@ export class SD extends DestroyableComponent<SDProps> {
 
   render(): VNode | null {
     return (
-      <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.Sd}>
-        {this.sdPages}
-        <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
-        <PermanentData bus={this.props.bus} />
-        <AtcMailbox bus={this.props.bus} />
-      </CdsDisplayUnit>
+      <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.sdPotentiometer} powered={this.ac2BusPowered}>
+        <div class="sd">
+          {this.sdPages}
+          <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
+          <PermanentData bus={this.props.bus} />
+        </div>
+      </DisplayUnit>
     );
   }
 }

@@ -10,7 +10,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import {
   DEFERRED_PROCEDURE_TYPE_TO_STRING,
   DeferredProcedureType,
