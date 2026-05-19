@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@flybywiresim/fbw-sdk';
+import { Viewer } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../../Localization/translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';

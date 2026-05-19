@@ -15,7 +15,7 @@ import {
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';

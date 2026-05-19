@@ -5,7 +5,7 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk';
+import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../../Localization/translation';
 import {
   addPinnedChart,

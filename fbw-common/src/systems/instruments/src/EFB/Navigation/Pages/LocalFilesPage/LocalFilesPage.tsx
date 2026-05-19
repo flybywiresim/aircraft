@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { ClientState, Viewer } from '@flybywiresim/fbw-sdk';
+import { ClientState, Viewer } from '@flybywiresim/fbw-sdk-react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 

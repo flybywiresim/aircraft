@@ -3,7 +3,7 @@ import FormattedFwcText from '../../../Common/ReactEwdMessageParser';
 import { EcamInfos, EcamInopSys } from '../../../MsfsAvionicsCommon/EcamMessages';
 import { PageTitle } from '../Generic/PageTitle';
 import { StatusTitle } from 'instruments/src/SD/Pages/Status/elements/StatusTitle';
-import { useSimVar, useSimVarList } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useSimVarList } from '@flybywiresim/fbw-sdk-react';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 

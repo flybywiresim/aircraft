@@ -26,6 +26,7 @@
       "@failures": ["./failures/src/index.ts"],
       "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"],
       "@flybywiresim/fbw-sdk": ["./index.ts"],
+      "@flybywiresim/fbw-sdk-react": ["./index-react.ts"],
       "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
       "@flybywiresim/oanc": ["./instruments/src/OANC/index.ts"],
       // FIXME no a32nx imports in fbw-common!

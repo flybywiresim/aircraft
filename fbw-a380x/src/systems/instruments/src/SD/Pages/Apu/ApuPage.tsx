@@ -7,7 +7,7 @@ import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges
 import { PageTitle } from '../Generic/PageTitle';
 import { ApuGenerator } from 'instruments/src/SD/Pages/Apu/elements/ApuGenerator';
 import Valve from '../../../Common/Valve';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { NXUnits } from '@flybywiresim/fbw-sdk-react';
 
 export const ApuPage = () => {
   const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);

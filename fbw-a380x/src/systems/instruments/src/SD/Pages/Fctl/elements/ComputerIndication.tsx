@@ -1,4 +1,4 @@
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import React, { FC } from 'react';
 
 interface FctlComputerShapeProps {
