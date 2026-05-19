@@ -168,6 +168,9 @@ impl AirDataReferenceBus for TestAdiru {
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle> {
         Arinc429Word::new(Angle::default(), self.adr_ssm)
     }
+    fn corrected_side_slip_angle(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(Angle::default(), self.adr_ssm)
+    }
 }
 impl InertialReferenceBus for TestAdiru {
     /// Label 015

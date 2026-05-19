@@ -974,14 +974,33 @@ where
         .backup_power_set_to(true)
 }
 
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn starts_initialized_and_aligned(#[case] adiru_number: usize) {
-    // The structs start in an aligned state to support starting a flight
-    // on the runway or in the air with the mode selectors in the NAV position.
-    let mut test_bed = adiru_aligned_test_bed(adiru_number);
+// Single helper macro to declare ADIRU tests with common rstest cases and `where` bounds.
+// Usage:
+// - Generic tests (with PhantomData<T> marker):
+//   adiru_test!(generic test_name, { /* function body */ });
+// - Simple tests (only `adiru_number` case):
+//   adiru_test!(simple test_name, { /* function body */ });
+macro_rules! adiru_test {
+    ($name:ident, $body:expr) => {
+        #[rstest]
+        #[case(PhantomData::<IntegratedAirDataReferenceRuntime>, 1)]
+        #[case(PhantomData::<IntegratedAirDataReferenceRuntime>, 2)]
+        #[case(PhantomData::<IntegratedAirDataReferenceRuntime>, 3)]
+        #[case(PhantomData::<AdmAirDataReferenceRuntime>, 1)]
+        #[case(PhantomData::<AdmAirDataReferenceRuntime>, 2)]
+        #[case(PhantomData::<AdmAirDataReferenceRuntime>, 3)]
+        fn $name<T>(#[case] _marker: PhantomData<T>, #[case] adiru_number: usize)
+        where
+            TestAircraft<T>: Aircraft,
+            T: AdrRuntimeTemplate,
+        {
+            ($body)(adiru_number)
+        }
+    };
+}
+
+adiru_test!(starts_initialized_and_aligned, |adiru_number| {
+    let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
     test_bed.run();
 
     let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
@@ -991,48 +1010,47 @@ fn starts_initialized_and_aligned(#[case] adiru_number: usize) {
     );
     test_bed.assert_all_adr_words_available(true);
     test_bed.assert_all_ir_words_available(true);
-}
+});
 
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn adiru_is_not_aligning_nor_aligned_when_ir_mode_selector_off(#[case] adiru_number: usize) {
-    let mut test_bed =
-        test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Off);
+adiru_test!(
+    adiru_is_not_aligning_nor_aligned_when_ir_mode_selector_off,
+    |adiru_number| {
+        let mut test_bed =
+            test_bed_with::<T>(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Off);
 
-    test_bed.run_with_delta(Duration::from_secs(0));
+        test_bed.run_with_delta(Duration::from_secs(0));
 
-    assert!(!test_bed.is_align_discrete_set());
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & (IrMaintFlags::ALIGNMENT_NOT_READY | IrMaintFlags::NAV_MODE),
-        IrMaintFlags::empty()
-    );
+        assert!(!test_bed.is_align_discrete_set());
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap()
+                & (IrMaintFlags::ALIGNMENT_NOT_READY | IrMaintFlags::NAV_MODE),
+            IrMaintFlags::empty()
+        );
 
-    test_bed.assert_adr_data_valid(false);
-    test_bed.assert_all_ir_data_available(false);
-}
+        test_bed.assert_adr_data_valid(false);
+        test_bed.assert_all_ir_data_available(false);
+    }
+);
 
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn adiru_instantly_aligns_when_instant_align_is_set(#[case] adiru_number: usize) {
-    let mut test_bed = test_bed_with(adiru_number)
-        .and()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run_without_delta();
+adiru_test!(
+    adiru_instantly_aligns_when_instant_align_is_set,
+    |adiru_number| {
+        let mut test_bed = test_bed_with::<T>(adiru_number)
+            .and()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run_without_delta();
 
-    test_bed = test_bed.perform_instant_align();
+        test_bed = test_bed.perform_instant_align();
 
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
-        IrMaintFlags::NAV_MODE
-    );
-    test_bed.assert_all_adr_words_available(true);
-}
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
+        test_bed.assert_all_adr_words_available(true);
+    }
+);
 
 #[rstest]
 #[case(ModeSelectorPosition::Navigation)]
@@ -1041,10 +1059,12 @@ fn ten_and_a_half_seconds_after_moving_the_mode_selector_the_on_bat_light_illumi
     #[case] mode: ModeSelectorPosition,
 ) {
     let adiru_number = 1;
-    let mut test_bed = test_bed_with(adiru_number).ir_mode_selector_set_to(mode);
+    let mut test_bed =
+        test_bed_with::<AdmAirDataReferenceRuntime>(adiru_number).ir_mode_selector_set_to(mode);
 
     test_bed.run_with_delta(
-        AirDataInertialReferenceUnit::BACKUP_SUPPLY_TEST_START_TIME - Duration::from_millis(1),
+        AirDataInertialReferenceUnit::<AdmAirDataReferenceRuntime>::BACKUP_SUPPLY_TEST_START_TIME
+            - Duration::from_millis(1),
     );
     assert!(!test_bed.on_bat_light_illuminated());
 
@@ -1053,7 +1073,8 @@ fn ten_and_a_half_seconds_after_moving_the_mode_selector_the_on_bat_light_illumi
     assert!(test_bed.on_bat_light_illuminated());
 
     test_bed.run_with_delta(
-        AirDataInertialReferenceUnit::BACKUP_SUPPLY_TEST_DURATION - Duration::from_millis(500),
+        AirDataInertialReferenceUnit::<AdmAirDataReferenceRuntime>::BACKUP_SUPPLY_TEST_DURATION
+            - Duration::from_millis(500),
     );
     assert!(test_bed.on_bat_light_illuminated());
 
@@ -1062,153 +1083,138 @@ fn ten_and_a_half_seconds_after_moving_the_mode_selector_the_on_bat_light_illumi
     assert!(!test_bed.on_bat_light_illuminated());
 }
 
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn switching_between_nav_and_att_doesnt_affect_the_on_bat_light_illumination(
-    #[case] adiru_number: usize,
-) {
-    let mut test_bed =
-        test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run_with_delta(AirDataInertialReferenceUnit::BACKUP_SUPPLY_TEST_START_TIME);
-    test_bed.run_with_delta(Duration::from_millis(420));
+adiru_test!(
+    switching_between_nav_and_att_doesnt_affect_the_on_bat_light_illumination,
+    |adiru_number| {
+        let mut test_bed = test_bed_with::<T>(adiru_number)
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run_with_delta(AirDataInertialReferenceUnit::<T>::BACKUP_SUPPLY_TEST_START_TIME);
+        test_bed.run_with_delta(Duration::from_millis(420));
 
-    assert!(test_bed.on_bat_light_illuminated());
+        assert!(test_bed.on_bat_light_illuminated());
 
-    test_bed = test_bed
-        .then_continue_with()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
-    test_bed.run();
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
+        test_bed.run();
 
-    assert!(test_bed.on_bat_light_illuminated());
-}
+        assert!(test_bed.on_bat_light_illuminated());
+    }
+);
 
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn adiru_is_powered_on_both_primary_and_backup_supply(#[case] adiru_number: usize) {
-    let mut test_bed = adiru_aligned_test_bed(adiru_number);
-    test_bed.run_without_delta();
+adiru_test!(
+    adiru_is_powered_on_both_primary_and_backup_supply,
+    |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+        test_bed.run_without_delta();
 
-    test_bed = test_bed.then_continue_with().primary_power_set_to(false);
-    test_bed.run();
+        test_bed = test_bed.then_continue_with().primary_power_set_to(false);
+        test_bed.run();
 
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::ON_DC,
-        IrMaintFlags::ON_DC
-    );
-    test_bed.assert_all_adr_words_available(true);
-    test_bed.assert_all_ir_words_available(true);
-    assert!(test_bed.on_bat_light_illuminated());
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::ON_DC,
+            IrMaintFlags::ON_DC
+        );
+        test_bed.assert_all_adr_words_available(true);
+        test_bed.assert_all_ir_words_available(true);
+        assert!(test_bed.on_bat_light_illuminated());
 
-    test_bed = test_bed
-        .then_continue_with()
-        .primary_power_set_to(true)
-        .and()
-        .backup_power_set_to(false);
-    test_bed.run();
+        test_bed = test_bed
+            .then_continue_with()
+            .primary_power_set_to(true)
+            .and()
+            .backup_power_set_to(false);
+        test_bed.run();
 
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::DC_FAIL,
-        IrMaintFlags::DC_FAIL
-    );
-    test_bed.assert_all_adr_words_available(true);
-    test_bed.assert_all_ir_words_available(true);
-    assert!(!test_bed.on_bat_light_illuminated());
-}
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::DC_FAIL,
+            IrMaintFlags::DC_FAIL
+        );
+        test_bed.assert_all_adr_words_available(true);
+        test_bed.assert_all_ir_words_available(true);
+        assert!(!test_bed.on_bat_light_illuminated());
+    }
+);
 
 mod adr {
     use ntest::{assert_false, assert_true};
     use uom::si::{pressure::inch_of_mercury, time::second};
 
-    use crate::{
-        navigation::adirs::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
-        shared::InternationalStandardAtmosphere,
-    };
+    use crate::shared::InternationalStandardAtmosphere;
+
+    use crate::navigation::adirs::hw_block3_adiru::adm_adr_runtime::AdmAirDataReferenceRuntime;
 
     use super::*;
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn data_is_valid_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run_without_delta();
+    adiru_test!(
+        data_is_valid_18_seconds_after_alignment_began,
+        |adiru_number| {
+            let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run_without_delta();
 
-        test_bed.assert_adr_data_valid(false);
+            test_bed.assert_adr_data_valid(false);
 
-        test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::ADR_AVERAGE_STARTUP_TIME_MILLIS + Duration::from_secs(1),
-        );
+            test_bed.run_with_delta(
+                AirDataInertialReferenceUnit::<T>::ADR_AVERAGE_STARTUP_TIME_MILLIS
+                    + Duration::from_secs(1),
+            );
 
-        test_bed.run_with_delta(Duration::from_millis(1));
-        test_bed.assert_adr_data_valid(true);
-    }
+            test_bed.run_with_delta(Duration::from_millis(1));
+            test_bed.assert_adr_data_valid(true);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn data_is_no_longer_valid_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.run();
-        test_bed.assert_adr_data_valid(true);
+    adiru_test!(
+        data_is_no_longer_valid_when_adiru_mode_selector_off,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.run();
+            test_bed.assert_adr_data_valid(true);
 
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(ModeSelectorPosition::Off);
-        test_bed.run();
-        test_bed.assert_adr_data_valid(false);
-    }
+            test_bed = test_bed
+                .then_continue_with()
+                .ir_mode_selector_set_to(ModeSelectorPosition::Off);
+            test_bed.run();
+            test_bed.assert_adr_data_valid(false);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn when_adr_push_button_off_data_is_not_valid(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).adr_push_button_pushed(true);
+    adiru_test!(when_adr_push_button_off_data_is_not_valid, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).adr_push_button_pushed(true);
         test_bed.run();
         test_bed = test_bed.adr_push_button_pushed(false);
         test_bed.run();
 
         test_bed.assert_adr_data_valid(false);
         assert!(test_bed.adr_off_light_illuminated())
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn corrected_average_static_pressure_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+    adiru_test!(
+        corrected_average_static_pressure_is_supplied_by_adr,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
 
-        // let the filter run a bit
-        test_bed.run_iterations_with_delta(5, Duration::from_millis(250));
+            // let the filter run a bit
+            test_bed.run_iterations_with_delta(5, Duration::from_millis(250));
 
-        assert_about_eq!(
-            test_bed
-                .corrected_average_static_pressure()
-                .normal_value()
-                .unwrap()
-                .get::<hectopascal>(),
-            1013.,
-            1e-4
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .corrected_average_static_pressure()
+                    .normal_value()
+                    .unwrap()
+                    .get::<hectopascal>(),
+                1013.,
+                1e-4
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn baro_correction_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+    adiru_test!(baro_correction_is_supplied_by_adr, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
             .altimeter_setting_of(Pressure::new::<hectopascal>(1020.));
 
         test_bed.run();
@@ -1234,16 +1240,12 @@ mod adr {
             test_bed.baro_correction_2_inhg().normal_value().unwrap(),
             29.80
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
+    adiru_test!(altitude_is_supplied_by_adr, |adiru_number| {
         use uom::si::pressure::pascal;
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         // set_pressure_altitude is only valid in the troposhere (due to InternationalStandardAtmosphere::pressure_at_altitude)
         // test_bed.set_pressure_altitude(Length::new::<foot>(41000.));
         test_bed.set_ambient_pressure(Pressure::new::<pascal>(17874.)); // 41000 feet
@@ -1255,159 +1257,139 @@ mod adr {
             41000.,
             2.,
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn baro_corrected_altitude_1_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
+    adiru_test!(
+        baro_corrected_altitude_1_is_supplied_by_adr,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-        test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-        assert_about_eq!(
-            test_bed
-                .baro_corrected_altitude_1()
-                .normal_value()
-                .unwrap()
-                .get::<foot>(),
-            10000.,
-            2.,
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .baro_corrected_altitude_1()
+                    .normal_value()
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn baro_corrected_altitude_2_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
+    adiru_test!(
+        baro_corrected_altitude_2_is_supplied_by_adr,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-        test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-        assert_about_eq!(
-            test_bed
-                .baro_corrected_altitude_2()
-                .normal_value()
-                .unwrap()
-                .get::<foot>(),
-            10000.,
-            2.,
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .baro_corrected_altitude_2()
+                    .normal_value()
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn computed_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_30_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let velocity = Velocity::new::<knot>(AirDataReferenceRuntime::MINIMUM_CAS);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
-        test_bed.run();
+    adiru_test!(
+        computed_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_30_knots,
+        |adiru_number| {
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.run();
 
-        assert_eq!(
-            test_bed.computed_airspeed().normal_value().unwrap(),
-            velocity
-        );
-    }
+            assert_eq!(
+                test_bed.computed_airspeed().normal_value().unwrap(),
+                velocity
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn computed_airspeed_is_ncd_and_zero_when_less_than_30_knots(#[case] adiru_number: usize) {
-        let velocity = Velocity::new::<knot>(AirDataReferenceRuntime::MINIMUM_CAS - 0.01);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
-        test_bed.run();
+    adiru_test!(
+        computed_airspeed_is_ncd_and_zero_when_less_than_30_knots,
+        |adiru_number| {
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS - 0.01);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.run();
 
-        assert_about_eq!(test_bed.computed_airspeed().value().get::<knot>(), 0.);
-        assert_eq!(
-            test_bed.computed_airspeed().ssm(),
-            SignStatus::NoComputedData
-        );
-    }
+            assert_about_eq!(test_bed.computed_airspeed().value().get::<knot>(), 0.);
+            assert_eq!(
+                test_bed.computed_airspeed().ssm(),
+                SignStatus::NoComputedData
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn max_airspeed_is_provided_at_sea_level(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    adiru_test!(max_airspeed_is_provided_at_sea_level, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
         test_bed.run();
 
         assert_true!(test_bed.max_airspeed().value().get::<knot>() > 330.);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn max_airspeed_is_limited_by_mmo(#[case] adiru_number: usize) {
+    adiru_test!(max_airspeed_is_limited_by_mmo, |adiru_number| {
         use ntest::assert_true;
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
             Length::new::<foot>(39_000.),
         ));
         test_bed.run();
 
         assert_true!(test_bed.max_airspeed().value().get::<knot>() < 300.);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn overspeed_warning_is_inactive_at_normal_speed_at_sea_level(#[case] adiru_number: usize) {
-        // check a value that's below VMO, but above MMO at higher altitudes
-        let velocity = Velocity::new::<knot>(330.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
-        test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
-        test_bed.run();
+    adiru_test!(
+        overspeed_warning_is_inactive_at_normal_speed_at_sea_level,
+        |adiru_number| {
+            // check a value that's below VMO, but above MMO at higher altitudes
+            let velocity = Velocity::new::<knot>(330.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
+            test_bed.run();
 
-        let discrete_word_flags =
-            AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1().value());
-        assert_false!(discrete_word_flags
-            .unwrap()
-            .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
-    }
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1().value());
+            assert_false!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn overspeed_warning_is_inactive_at_normal_speed_at_high_level(#[case] adiru_number: usize) {
-        let fl390_pressure =
-            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
-        let velocity = MachNumber(0.78).to_cas(fl390_pressure);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
-        test_bed.set_ambient_pressure(fl390_pressure);
-        test_bed.run();
+    adiru_test!(
+        overspeed_warning_is_inactive_at_normal_speed_at_high_level,
+        |adiru_number| {
+            let fl390_pressure =
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
+            let velocity = MachNumber(0.78).to_cas(fl390_pressure);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.set_ambient_pressure(fl390_pressure);
+            test_bed.run();
 
-        let discrete_word_flags =
-            AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1().value());
-        assert_false!(discrete_word_flags
-            .unwrap()
-            .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
-    }
+            let discrete_word_flags =
+                AdrDiscrete1Flags::from_bits(test_bed.adr_discrete_word_1().value());
+            assert_false!(discrete_word_flags
+                .unwrap()
+                .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn overspeed_warning_is_active_above_vmo(#[case] adiru_number: usize) {
+    adiru_test!(overspeed_warning_is_active_above_vmo, |adiru_number| {
         let velocity = Velocity::new::<knot>(400.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(velocity);
         test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
         test_bed.run();
@@ -1417,18 +1399,14 @@ mod adr {
         assert_true!(discrete_word_flags
             .unwrap()
             .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn overspeed_warning_is_active_above_mmo(#[case] adiru_number: usize) {
+    adiru_test!(overspeed_warning_is_active_above_mmo, |adiru_number| {
         let fl390_pressure =
             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
         // This speed will be above MMO, but below VMO, so we ensure MMO gets tested.
         let velocity = MachNumber(0.9).to_cas(fl390_pressure);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(velocity);
         test_bed.set_ambient_pressure(fl390_pressure);
         test_bed.run();
@@ -1438,98 +1416,85 @@ mod adr {
         assert_true!(discrete_word_flags
             .unwrap()
             .contains(AdrDiscrete1Flags::OVERSPEED_WARNING));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn mach_is_supplied_by_adr_when_greater_than_or_equal_to_zero_point_1(
-        #[case] adiru_number: usize,
-    ) {
-        let mach = MachNumber::from(AirDataReferenceRuntime::MINIMUM_MACH);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).mach_of(mach);
-        test_bed.run();
-
-        assert_about_eq!(
-            f64::from(test_bed.mach().normal_value().unwrap()),
-            f64::from(mach)
-        );
-    }
-
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn mach_is_ncd_and_zero_when_less_than_zero_point_1(#[case] adiru_number: usize) {
-        let mach = MachNumber::from(AirDataReferenceRuntime::MINIMUM_MACH - 0.01);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).mach_of(mach);
-        test_bed.run();
-
-        assert_about_eq!(f64::from(test_bed.mach().value()), 0.);
-        assert_eq!(test_bed.mach().ssm(), SignStatus::NoComputedData);
-    }
-
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn barometric_vertical_speed_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
-        let mut altitude = Length::new::<foot>(0.);
-        for _ in 0..5 {
-            test_bed.set_pressure_altitude(altitude);
+    adiru_test!(
+        mach_is_supplied_by_adr_when_greater_than_or_equal_to_zero_point_1,
+        |adiru_number| {
+            let mach = MachNumber::from(AdmAirDataReferenceRuntime::MINIMUM_MACH);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).mach_of(mach);
             test_bed.run();
 
-            altitude += vertical_speed * Time::new::<second>(1.);
+            assert_about_eq!(
+                f64::from(test_bed.mach().normal_value().unwrap()),
+                f64::from(mach)
+            );
         }
+    );
 
-        assert_about_eq!(
-            test_bed
-                .barometric_vertical_speed()
-                .normal_value()
-                .unwrap()
-                .get::<foot_per_minute>(),
-            vertical_speed.get::<foot_per_minute>(),
-            10.
-        );
-    }
+    adiru_test!(
+        mach_is_ncd_and_zero_when_less_than_zero_point_1,
+        |adiru_number| {
+            let mach = MachNumber::from(AdmAirDataReferenceRuntime::MINIMUM_MACH - 0.01);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).mach_of(mach);
+            test_bed.run();
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let velocity = Velocity::new::<knot>(AirDataReferenceRuntime::MINIMUM_TAS);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).true_airspeed_of(velocity);
-        test_bed.run();
+            assert_about_eq!(f64::from(test_bed.mach().value()), 0.);
+            assert_eq!(test_bed.mach().ssm(), SignStatus::NoComputedData);
+        }
+    );
 
-        assert_eq!(test_bed.true_airspeed().normal_value().unwrap(), velocity);
-    }
+    adiru_test!(
+        barometric_vertical_speed_is_supplied_by_adr,
+        |adiru_number| {
+            let vertical_speed = Velocity::new::<foot_per_minute>(300.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
+            let mut altitude = Length::new::<foot>(0.);
+            for _ in 0..5 {
+                test_bed.set_pressure_altitude(altitude);
+                test_bed.run();
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_airspeed_is_ncd_and_zero_when_less_than_60_knots(#[case] adiru_number: usize) {
-        let velocity = Velocity::new::<knot>(AirDataReferenceRuntime::MINIMUM_TAS - 0.01);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).true_airspeed_of(velocity);
-        test_bed.run();
+                altitude += vertical_speed * Time::new::<second>(1.);
+            }
 
-        assert_about_eq!(test_bed.true_airspeed().value().get::<knot>(), 0.);
-        assert_eq!(test_bed.true_airspeed().ssm(), SignStatus::NoComputedData);
-    }
+            assert_about_eq!(
+                test_bed
+                    .barometric_vertical_speed()
+                    .normal_value()
+                    .unwrap()
+                    .get::<foot_per_minute>(),
+                vertical_speed.get::<foot_per_minute>(),
+                10.
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn static_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
+    adiru_test!(
+        true_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots,
+        |adiru_number| {
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).true_airspeed_of(velocity);
+            test_bed.run();
+
+            assert_eq!(test_bed.true_airspeed().normal_value().unwrap(), velocity);
+        }
+    );
+
+    adiru_test!(
+        true_airspeed_is_ncd_and_zero_when_less_than_60_knots,
+        |adiru_number| {
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS - 0.01);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).true_airspeed_of(velocity);
+            test_bed.run();
+
+            assert_about_eq!(test_bed.true_airspeed().value().get::<knot>(), 0.);
+            assert_eq!(test_bed.true_airspeed().ssm(), SignStatus::NoComputedData);
+        }
+    );
+
+    adiru_test!(static_air_temperature_is_supplied_by_adr, |adiru_number| {
         let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_ambient_temperature(sat);
         test_bed.run();
 
@@ -1537,62 +1502,50 @@ mod adr {
             test_bed.static_air_temperature().normal_value().unwrap(),
             sat
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn total_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
+    adiru_test!(total_air_temperature_is_supplied_by_adr, |adiru_number| {
         let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).total_air_temperature_of(tat);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).total_air_temperature_of(tat);
         test_bed.run();
 
         assert_eq!(
             test_bed.total_air_temperature().normal_value().unwrap(),
             tat
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn angle_of_attack_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let angle = Angle::new::<degree>(1.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).angle_of_attack_of(angle);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(
-            AirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA,
-        ));
-        test_bed.run();
+    adiru_test!(
+        angle_of_attack_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(1.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).angle_of_attack_of(angle);
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
+                AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA,
+            ));
+            test_bed.run();
 
-        assert_eq!(test_bed.angle_of_attack().normal_value().unwrap(), angle);
-    }
+            assert_eq!(test_bed.angle_of_attack().normal_value().unwrap(), angle);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn angle_of_attack_is_ncd_when_less_than_60_knots(#[case] adiru_number: usize) {
-        let angle = Angle::new::<degree>(1.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).angle_of_attack_of(angle);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(
-            AirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA - 0.01,
-        ));
-        test_bed.run();
+    adiru_test!(
+        angle_of_attack_is_ncd_when_less_than_60_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(1.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).angle_of_attack_of(angle);
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
+                AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA - 0.01,
+            ));
+            test_bed.run();
 
-        assert_eq!(test_bed.angle_of_attack().value(), angle);
-        assert_eq!(test_bed.angle_of_attack().ssm(), SignStatus::NoComputedData);
-    }
+            assert_eq!(test_bed.angle_of_attack().value(), angle);
+            assert_eq!(test_bed.angle_of_attack().ssm(), SignStatus::NoComputedData);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn discrete_output_speed_warning_1(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    adiru_test!(discrete_output_speed_warning_1, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(95.));
         test_bed.run();
 
@@ -1601,14 +1554,10 @@ mod adr {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(105.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_1));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn discrete_output_speed_warning_2(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    adiru_test!(discrete_output_speed_warning_2, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(45.));
         test_bed.run();
 
@@ -1617,14 +1566,10 @@ mod adr {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(55.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_2));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn discrete_output_speed_warning_3(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    adiru_test!(discrete_output_speed_warning_3, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(150.));
         test_bed.run();
 
@@ -1633,14 +1578,10 @@ mod adr {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(160.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_3));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn discrete_output_speed_warning_4(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    adiru_test!(discrete_output_speed_warning_4, |adiru_number| {
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(255.));
         test_bed.run();
 
@@ -1649,25 +1590,32 @@ mod adr {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
         test_bed.run();
         assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_4));
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn discrete_output_speed_warnings_with_off_adiru(#[case] adiru_number: usize) {
-        let mut test_bed = test_bed(adiru_number);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(5.));
-        test_bed.run();
+    adiru_test!(
+        discrete_output_speed_warnings_with_off_adiru,
+        |adiru_number| {
+            let mut test_bed = test_bed::<T>(adiru_number);
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(5.));
+            test_bed.run();
 
-        assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_1));
+            assert!(
+                !test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_1)
+            );
 
-        assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_2));
+            assert!(
+                !test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_2)
+            );
 
-        assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_3));
+            assert!(
+                !test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_3)
+            );
 
-        assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_4));
-    }
+            assert!(
+                !test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_4)
+            );
+        }
+    );
 }
 
 mod ir {
@@ -1678,45 +1626,45 @@ mod ir {
         ratio::ratio,
     };
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn adirs_aligns_in_90_seconds_when_configured_align_time_is_fast(#[case] adiru_number: usize) {
-        let mut test_bed = test_bed_with(adiru_number)
-            .fast_align_set_to(true)
-            .and()
-            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+    adiru_test!(
+        adirs_aligns_in_90_seconds_when_configured_align_time_is_fast,
+        |adiru_number| {
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .fast_align_set_to(true)
+                .and()
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
 
-        // Set the state without any time passing to be able to measure exact time afterward.
-        test_bed.run_with_delta(Duration::from_secs(0));
+            // Set the state without any time passing to be able to measure exact time afterward.
+            test_bed.run_with_delta(Duration::from_secs(0));
 
-        test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS
-                + InertialReferenceRuntime::COARSE_ALIGN_QUICK_DURATION
-                + Duration::from_secs(2),
-        );
-        assert!(test_bed.is_align_discrete_set());
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
-            IrMaintFlags::ALIGNMENT_NOT_READY
-        );
+            test_bed.run_with_delta(
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                    + InertialReferenceRuntime::COARSE_ALIGN_QUICK_DURATION
+                    + Duration::from_secs(2),
+            );
+            assert!(test_bed.is_align_discrete_set());
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
+                IrMaintFlags::ALIGNMENT_NOT_READY
+            );
 
-        test_bed.run_with_delta(InertialReferenceRuntime::FINE_ALIGN_QUICK_DURATION);
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
-            IrMaintFlags::NAV_MODE
-        );
-    }
+            test_bed.run_with_delta(InertialReferenceRuntime::FINE_ALIGN_QUICK_DURATION);
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+                IrMaintFlags::NAV_MODE
+            );
+        }
+    );
 
     #[rstest]
     #[case(Angle::new::<degree>(85.))]
     #[case(Angle::new::<degree>(-85.))]
     fn adirs_does_not_align_near_the_poles(#[case] polar_latitude: Angle) {
         let adiru_number = 1;
-        let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
+        let mut test_bed =
+            start_align_at_latitude::<AdmAirDataReferenceRuntime>(polar_latitude, adiru_number);
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(20 * 60)); // run for 20 minutes, enough for any alignment
 
@@ -1732,7 +1680,7 @@ mod ir {
     #[case(Angle::new::<degree>(-85.))]
     fn adirs_stays_aligned_near_the_poles(#[case] polar_latitude: Angle) {
         let adiru_number = 1;
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+        let mut test_bed = adiru_aligned_test_bed::<AdmAirDataReferenceRuntime>(adiru_number)
             .ir_mode_selector_set_to(ModeSelectorPosition::Navigation)
             .and()
             .latitude_of(polar_latitude);
@@ -1746,9 +1694,15 @@ mod ir {
     }
 
     #[rstest]
-    fn adiru_detects_excess_motion_during_alignment() {
+    #[case(PhantomData::<IntegratedAirDataReferenceRuntime>)]
+    #[case(PhantomData::<AdmAirDataReferenceRuntime>)]
+    fn adiru_detects_excess_motion_during_alignment<T>(#[case] _marker: PhantomData<T>)
+    where
+        TestAircraft<T>: Aircraft,
+        T: AdrRuntimeTemplate,
+    {
         let adiru_number = 1;
-        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
+        let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
             .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
             .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
         test_bed.run();
@@ -1761,24 +1715,23 @@ mod ir {
         );
     }
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn adirs_does_not_detect_excess_motion_with_excess_motion_inhibit(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-            .excess_motion_inhibit_set_to(true)
-            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
-            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run();
-        test_bed.run();
+    adiru_test!(
+        adirs_does_not_detect_excess_motion_with_excess_motion_inhibit,
+        |adiru_number| {
+            let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
+                .excess_motion_inhibit_set_to(true)
+                .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run();
+            test_bed.run();
 
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
-            IrMaintFlags::empty()
-        );
-    }
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+                IrMaintFlags::empty()
+            );
+        }
+    );
 
     #[rstest]
     #[case(Angle::new::<degree>(80.))]
@@ -1791,14 +1744,20 @@ mod ir {
         let step_duration = Duration::from_secs(10);
 
         let mut equator_alignment_time = Duration::ZERO;
-        let mut test_bed = start_align_at_latitude(Angle::new::<degree>(0.), adiru_number);
+        let mut test_bed = start_align_at_latitude::<IntegratedAirDataReferenceRuntime>(
+            Angle::new::<degree>(0.),
+            adiru_number,
+        );
         while test_bed.is_align_discrete_set() {
             test_bed.run_with_delta(step_duration);
             equator_alignment_time = equator_alignment_time.saturating_add(step_duration);
         }
 
         let mut south_pole_alignment_time = Duration::ZERO;
-        let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
+        let mut test_bed = start_align_at_latitude::<IntegratedAirDataReferenceRuntime>(
+            polar_latitude,
+            adiru_number,
+        );
         while test_bed.is_align_discrete_set() {
             test_bed.run_with_delta(step_duration);
             south_pole_alignment_time = south_pole_alignment_time.saturating_add(step_duration);
@@ -1807,7 +1766,11 @@ mod ir {
         assert!(equator_alignment_time < south_pole_alignment_time);
     }
 
-    fn start_align_at_latitude(latitude: Angle, adiru_number: usize) -> AdirsTestBed {
+    fn start_align_at_latitude<T>(latitude: Angle, adiru_number: usize) -> AdirsTestBed<T>
+    where
+        TestAircraft<T>: Aircraft,
+        T: AdrRuntimeTemplate,
+    {
         let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
             .latitude_of(latitude)
             .and()
@@ -1815,7 +1778,8 @@ mod ir {
 
         // Run for startup duration to begin alignment
         test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS + Duration::from_secs(1),
+            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                + Duration::from_secs(1),
         );
         test_bed
     }
@@ -1827,7 +1791,7 @@ mod ir {
     fn adirs_aligns_quick_when_mode_selector_off_for_3_secs(#[case] latitude: Angle) {
         let adiru_number = 1;
         // Create the conditions for a quick align (aligned, then less than 5 secs off)
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+        let mut test_bed = adiru_aligned_test_bed::<AdmAirDataReferenceRuntime>(adiru_number)
             .latitude_of(latitude)
             .and()
             .ir_mode_selector_set_to(ModeSelectorPosition::Off);
@@ -1862,7 +1826,8 @@ mod ir {
         #[case] mode: ModeSelectorPosition,
     ) {
         let adiru_number = 1;
-        let mut test_bed = test_bed_with(adiru_number).ir_mode_selector_set_to(mode);
+        let mut test_bed = test_bed_with::<IntegratedAirDataReferenceRuntime>(adiru_number)
+            .ir_mode_selector_set_to(mode);
 
         test_bed.run_without_delta();
         assert!(test_bed.ir_fault_light_illuminated());
@@ -1876,188 +1841,166 @@ mod ir {
         assert!(!test_bed.ir_fault_light_illuminated());
     }
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn ir_fault_light_doesnt_briefly_flash_when_moving_mode_selector_between_nav_and_att(
-        #[case] adiru_number: usize,
-    ) {
-        let mut test_bed =
-            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run_without_delta();
-        test_bed.run();
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
-        test_bed.run_with_delta(Duration::from_millis(1));
-
-        assert!(!test_bed.ir_fault_light_illuminated());
-    }
-
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn all_data_is_available_after_full_alignment_completed(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS + Duration::from_secs(1),
-        );
-
-        while test_bed.is_align_discrete_set() {
-            // As the attitude and heading data will become available at some point, we're not checking it here.
-            test_bed.assert_ir_non_attitude_data_available(false);
+    adiru_test!(
+        ir_fault_light_doesnt_briefly_flash_when_moving_mode_selector_between_nav_and_att,
+        |adiru_number| {
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run_without_delta();
             test_bed.run();
+
+            test_bed = test_bed
+                .then_continue_with()
+                .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
+            test_bed.run_with_delta(Duration::from_millis(1));
+
+            assert!(!test_bed.ir_fault_light_illuminated());
         }
+    );
 
-        test_bed = test_bed
-            .then_continue_with()
-            .true_airspeed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        all_data_is_available_after_full_alignment_completed,
+        |adiru_number| {
+            let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run_with_delta(
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                    + Duration::from_secs(1),
+            );
 
-        test_bed.assert_all_ir_data_available(true);
-    }
+            while test_bed.is_align_discrete_set() {
+                // As the attitude and heading data will become available at some point, we're not checking it here.
+                test_bed.assert_ir_non_attitude_data_available(false);
+                test_bed.run();
+            }
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-        let mut test_bed =
-            adiru_aligned_test_bed(adiru_number).true_airspeed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 0.01,
-            ));
-        test_bed.run();
-        test_bed.assert_all_ir_data_available(true);
+            test_bed = test_bed
+                .then_continue_with()
+                .true_airspeed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS
+                        + 0.01,
+                ));
+            test_bed.run();
 
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(ModeSelectorPosition::Off);
-        test_bed.run();
-        test_bed.assert_all_ir_data_available(false);
-    }
+            test_bed.assert_all_ir_data_available(true);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn only_attitude_and_heading_data_is_available_when_reverting_from_nav_to_att_mode(
-        #[case] adiru_number: usize,
-    ) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
-        test_bed.run();
-        test_bed
-            .run_with_delta(InertialReferenceRuntime::ERECT_ATT_DURATION + Duration::from_secs(1));
+    adiru_test!(
+        data_is_no_longer_available_when_adiru_mode_selector_off,
+        |adiru_number| {
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).true_airspeed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS
+                        + 0.01,
+                ));
+            test_bed.run();
+            test_bed.assert_all_ir_data_available(true);
 
-        test_bed.assert_ir_attitude_data_available(true);
-        test_bed.assert_ir_heading_data_available(true);
-        test_bed.assert_ir_non_attitude_data_available(false);
-    }
+            test_bed = test_bed
+                .then_continue_with()
+                .ir_mode_selector_set_to(ModeSelectorPosition::Off);
+            test_bed.run();
+            test_bed.assert_all_ir_data_available(false);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn in_nav_mode_attitude_is_available_28_seconds_after_alignment_began(
-        #[case] adiru_number: usize,
-    ) {
-        let mut test_bed =
-            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run_without_delta();
+    adiru_test!(
+        only_attitude_and_heading_data_is_available_when_reverting_from_nav_to_att_mode,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
+            test_bed.run();
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::ERECT_ATT_DURATION + Duration::from_secs(1),
+            );
 
-        test_bed.run_with_delta(
-            InertialReferenceRuntime::COARSE_ALIGN_DURATION - Duration::from_millis(1),
-        );
-        test_bed.assert_ir_attitude_data_available(false);
-        test_bed.assert_ir_heading_data_available(false);
+            test_bed.assert_ir_attitude_data_available(true);
+            test_bed.assert_ir_heading_data_available(true);
+            test_bed.assert_ir_non_attitude_data_available(false);
+        }
+    );
 
-        test_bed.run_with_delta(Duration::from_millis(1));
-        test_bed.assert_ir_attitude_data_available(true);
-        test_bed.assert_ir_heading_data_available(false);
-    }
+    adiru_test!(
+        in_nav_mode_attitude_is_available_28_seconds_after_alignment_began,
+        |adiru_number| {
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run_without_delta();
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn in_att_mode_attitude_and_heading_are_available_28_seconds_after_alignment_began(
-        #[case] adiru_number: usize,
-    ) {
-        // Note that in reality the HDG part needs HDG entry through the MCDU. As we haven't implemented
-        // that feature yet, for now we'll just make it available after 28 seconds in ATT mode.
-        let mut test_bed =
-            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
-        test_bed.run_without_delta();
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::COARSE_ALIGN_DURATION - Duration::from_millis(1),
+            );
+            test_bed.assert_ir_attitude_data_available(false);
+            test_bed.assert_ir_heading_data_available(false);
 
-        test_bed.run_with_delta(
-            InertialReferenceRuntime::ERECT_ATT_DURATION - Duration::from_millis(1),
-        );
-        test_bed.assert_ir_attitude_data_available(false);
-        // TODO check if HDG should indeed not be available in ERECT ATT mode
-        //test_bed.assert_ir_heading_data_available(false);
+            test_bed.run_with_delta(Duration::from_millis(1));
+            test_bed.assert_ir_attitude_data_available(true);
+            test_bed.assert_ir_heading_data_available(false);
+        }
+    );
 
-        test_bed.run_with_delta(Duration::from_millis(1));
-        test_bed.assert_ir_attitude_data_available(true);
-        test_bed.assert_ir_heading_data_available(true);
+    adiru_test!(
+        in_att_mode_attitude_and_heading_are_available_28_seconds_after_alignment_began,
+        |adiru_number| {
+            // Note that in reality the HDG part needs HDG entry through the MCDU. As we haven't implemented
+            // that feature yet, for now we'll just make it available after 28 seconds in ATT mode.
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
+            test_bed.run_without_delta();
 
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::REV_ATT_MODE,
-            IrMaintFlags::REV_ATT_MODE
-        );
-    }
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::ERECT_ATT_DURATION - Duration::from_millis(1),
+            );
+            test_bed.assert_ir_attitude_data_available(false);
+            // TODO check if HDG should indeed not be available in ERECT ATT mode
+            //test_bed.assert_ir_heading_data_available(false);
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn when_ir_push_button_off_data_is_not_available(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).ir_push_button_pushed(true);
-        test_bed.run();
-        test_bed = test_bed.ir_push_button_pushed(false);
-        test_bed.run();
+            test_bed.run_with_delta(Duration::from_millis(1));
+            test_bed.assert_ir_attitude_data_available(true);
+            test_bed.assert_ir_heading_data_available(true);
 
-        test_bed.assert_all_ir_data_available(false);
-        assert!(test_bed.ir_off_light_illuminated());
-    }
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::REV_ATT_MODE,
+                IrMaintFlags::REV_ATT_MODE
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn pitch_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(
+        when_ir_push_button_off_data_is_not_available,
+        |adiru_number| {
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).ir_push_button_pushed(true);
+            test_bed.run();
+            test_bed = test_bed.ir_push_button_pushed(false);
+            test_bed.run();
+
+            test_bed.assert_all_ir_data_available(false);
+            assert!(test_bed.ir_off_light_illuminated());
+        }
+    );
+
+    adiru_test!(pitch_is_supplied_by_ir, |adiru_number| {
         let angle = Angle::new::<degree>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).pitch_of(angle);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).pitch_of(angle);
         test_bed.run();
 
         assert_eq!(test_bed.pitch().normal_value().unwrap(), -angle);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn roll_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(roll_is_supplied_by_ir, |adiru_number| {
         let angle = Angle::new::<degree>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).roll_of(angle);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).roll_of(angle);
         test_bed.run();
 
         assert_eq!(test_bed.roll().normal_value().unwrap(), -angle);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_roll_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_roll_rate_is_supplied_by_ir, |adiru_number| {
         let rate = AngularVelocity::new::<revolution_per_minute>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).body_roll_rate_of(rate);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).body_roll_rate_of(rate);
         test_bed.run();
 
         assert_about_eq!(
@@ -2068,15 +2011,11 @@ mod ir {
                 .get::<degree_per_second>(),
             -rate.get::<degree_per_second>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_pitch_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_pitch_rate_is_supplied_by_ir, |adiru_number| {
         let rate = AngularVelocity::new::<revolution_per_minute>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).body_pitch_rate_of(rate);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).body_pitch_rate_of(rate);
         test_bed.run();
 
         assert_about_eq!(
@@ -2087,15 +2026,11 @@ mod ir {
                 .get::<radian_per_second>(),
             -rate.get::<radian_per_second>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_yaw_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_yaw_rate_is_supplied_by_ir, |adiru_number| {
         let rate = AngularVelocity::new::<degree_per_second>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).body_yaw_rate_of(rate);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).body_yaw_rate_of(rate);
         test_bed.run();
 
         assert_about_eq!(
@@ -2106,18 +2041,14 @@ mod ir {
                 .get::<degree_per_second>(),
             rate.get::<degree_per_second>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_long_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_long_acc_is_supplied_by_ir, |adiru_number| {
         let acc = Acceleration::new::<meter_per_second_squared>(1.);
         let g = Acceleration::new::<meter_per_second_squared>(9.81);
         let pitch = Angle::new::<degree>(5.);
         let roll = Angle::new::<degree>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
             .pitch_of(pitch)
             .roll_of(roll);
         test_bed.set_long_acc(acc);
@@ -2131,18 +2062,14 @@ mod ir {
                 .get::<ratio>(),
             (acc / g + test_bed.pitch().normal_value().unwrap().sin()).get::<ratio>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_lat_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_lat_acc_is_supplied_by_ir, |adiru_number| {
         let acc = Acceleration::new::<meter_per_second_squared>(1.);
         let g = Acceleration::new::<meter_per_second_squared>(9.81);
         let pitch = Angle::new::<degree>(5.);
         let roll = Angle::new::<degree>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
             .pitch_of(pitch)
             .roll_of(roll);
         test_bed.set_lat_acc(acc);
@@ -2159,18 +2086,14 @@ mod ir {
                     * test_bed.roll().normal_value().unwrap().sin())
             .get::<ratio>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn body_norm_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(body_norm_acc_is_supplied_by_ir, |adiru_number| {
         let acc = Acceleration::new::<meter_per_second_squared>(1.);
         let g = Acceleration::new::<meter_per_second_squared>(9.81);
         let pitch = Angle::new::<degree>(5.);
         let roll = Angle::new::<degree>(5.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
             .pitch_of(pitch)
             .roll_of(roll);
         test_bed.set_norm_acc(acc);
@@ -2187,407 +2110,362 @@ mod ir {
                     * test_bed.roll().normal_value().unwrap().cos())
             .get::<ratio>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn heading_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(heading_is_supplied_by_ir, |adiru_number| {
         let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).heading_of(angle);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).heading_of(angle);
         test_bed.run();
 
         assert_eq!(test_bed.heading().normal_value().unwrap(), angle);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_heading_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(true_heading_is_supplied_by_ir, |adiru_number| {
         let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).true_heading_of(angle);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).true_heading_of(angle);
         test_bed.run();
 
         assert_eq!(test_bed.true_heading().normal_value().unwrap(), angle);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_heading_is_normal_when_5_minutes_into_alignment(#[case] adiru_number: usize) {
-        let mut test_bed =
-            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+    adiru_test!(
+        true_heading_is_normal_when_5_minutes_into_alignment,
+        |adiru_number| {
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
 
-        // Run once to let the simulation write the remaining alignment time.
-        test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
-        test_bed.run_with_delta(
-            InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION + Duration::from_secs(1),
-        );
+            // Run once to let the simulation write the remaining alignment time.
+            test_bed.run_with_delta(Duration::from_secs(0));
+            test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION + Duration::from_secs(1),
+            );
 
-        assert!(test_bed.true_heading().is_normal_operation());
-    }
+            assert!(test_bed.true_heading().is_normal_operation());
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_heading_is_not_normal_when_remaining_align_is_less_than_5_minutes(
-        #[case] adiru_number: usize,
-    ) {
-        let mut test_bed =
-            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+    adiru_test!(
+        true_heading_is_not_normal_when_remaining_align_is_less_than_5_minutes,
+        |adiru_number| {
+            let mut test_bed = test_bed_with::<T>(adiru_number)
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
 
-        // Run once to let the simulation write the remaining alignment time.
-        test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
-        test_bed.run_with_delta(
-            InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION - Duration::from_secs(1),
-        );
+            // Run once to let the simulation write the remaining alignment time.
+            test_bed.run_with_delta(Duration::from_secs(0));
+            test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION - Duration::from_secs(1),
+            );
 
-        assert!(!test_bed.true_heading().is_normal_operation());
-    }
+            assert!(!test_bed.true_heading().is_normal_operation());
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn magnetic_heading_is_supplied_and_equal_to_true_heading_when_in_polar_region(
-        #[case] adiru_number: usize,
-    ) {
-        let true_heading = Angle::new::<degree>(160.);
-        let mag_heading = Angle::new::<degree>(142.);
-        let polar_latitude = Angle::new::<degree>(83.);
+    adiru_test!(
+        magnetic_heading_is_supplied_and_equal_to_true_heading_when_in_polar_region,
+        |adiru_number| {
+            let true_heading = Angle::new::<degree>(160.);
+            let mag_heading = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_heading_of(true_heading)
-            .heading_of(mag_heading)
-            .latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_heading_of(true_heading)
+                .heading_of(mag_heading)
+                .latitude_of(polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.true_heading().is_normal_operation());
-        assert!(test_bed.heading().is_normal_operation());
-        assert_about_eq!(
-            test_bed.true_heading().value().get::<degree>(),
-            test_bed.heading().value().get::<degree>()
-        );
-    }
+            assert!(test_bed.true_heading().is_normal_operation());
+            assert!(test_bed.heading().is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_heading().value().get::<degree>(),
+                test_bed.heading().value().get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn magnetic_heading_is_supplied_and_not_equal_to_true_heading_when_left_polar_region(
-        #[case] adiru_number: usize,
-    ) {
-        let true_heading = Angle::new::<degree>(160.);
-        let mag_heading = Angle::new::<degree>(142.);
-        let polar_latitude = Angle::new::<degree>(83.);
-        let non_polar_latitude = Angle::new::<degree>(80.);
+    adiru_test!(
+        magnetic_heading_is_supplied_and_not_equal_to_true_heading_when_left_polar_region,
+        |adiru_number| {
+            let true_heading = Angle::new::<degree>(160.);
+            let mag_heading = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_heading_of(true_heading)
-            .heading_of(mag_heading)
-            .latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_heading_of(true_heading)
+                .heading_of(mag_heading)
+                .latitude_of(polar_latitude);
+            test_bed.run();
 
-        test_bed.set_latitude(non_polar_latitude);
-        test_bed.run();
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.true_heading().is_normal_operation());
-        assert!(test_bed.heading().is_normal_operation());
-        assert_about_eq!(
-            test_bed.true_heading().value().get::<degree>(),
-            true_heading.get::<degree>()
-        );
-        assert_about_eq!(
-            test_bed.heading().value().get::<degree>(),
-            mag_heading.get::<degree>()
-        );
-    }
+            assert!(test_bed.true_heading().is_normal_operation());
+            assert!(test_bed.heading().is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_heading().value().get::<degree>(),
+                true_heading.get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.heading().value().get::<degree>(),
+                mag_heading.get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn extreme_latitude_flag_is_set_in_polar_region(#[case] adiru_number: usize) {
-        let polar_latitude = Angle::new::<degree>(83.);
+    adiru_test!(
+        extreme_latitude_flag_is_set_in_polar_region,
+        |adiru_number| {
+            let polar_latitude = Angle::new::<degree>(83.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).latitude_of(polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.maint_word().is_normal_operation());
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
-            IrMaintFlags::EXTREME_LATITUDE
-        );
-    }
+            assert!(test_bed.maint_word().is_normal_operation());
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
+                IrMaintFlags::EXTREME_LATITUDE
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn extreme_latitude_flag_is_unset_when_left_polar_region(#[case] adiru_number: usize) {
-        let polar_latitude = Angle::new::<degree>(83.);
-        let non_polar_latitude = Angle::new::<degree>(80.);
+    adiru_test!(
+        extreme_latitude_flag_is_unset_when_left_polar_region,
+        |adiru_number| {
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).latitude_of(polar_latitude);
+            test_bed.run();
 
-        test_bed.set_latitude(non_polar_latitude);
-        test_bed.run();
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.maint_word().is_normal_operation());
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-        assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
-            IrMaintFlags::default()
-        );
-    }
+            assert!(test_bed.maint_word().is_normal_operation());
+            let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
+                IrMaintFlags::default()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .track_of(angle)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
-            ));
-        test_bed.run();
+    adiru_test!(
+        track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .track_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
 
-        assert_eq!(test_bed.track().normal_value().unwrap(), angle);
-    }
+            assert_eq!(test_bed.track().normal_value().unwrap(), angle);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_track_of(angle)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
-            ));
-        test_bed.run();
+    adiru_test!(
+        true_track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_track_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
 
-        assert_eq!(test_bed.true_track().normal_value().unwrap(), angle);
-    }
+            assert_eq!(test_bed.true_track().normal_value().unwrap(), angle);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn track_is_heading_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
-        let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .heading_of(angle)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        track_is_heading_when_ground_speed_less_than_50_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .heading_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
 
-        assert_eq!(test_bed.track().normal_value().unwrap(), angle);
-    }
+            assert_eq!(test_bed.track().normal_value().unwrap(), angle);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn true_track_is_true_heading_when_ground_speed_less_than_50_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let angle = Angle::new::<degree>(160.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_heading_of(angle)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        true_track_is_true_heading_when_ground_speed_less_than_50_knots,
+        |adiru_number| {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_heading_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
 
-        assert_eq!(test_bed.true_track().normal_value().unwrap(), angle);
-    }
+            assert_eq!(test_bed.true_track().normal_value().unwrap(), angle);
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn magnetic_track_is_supplied_and_equal_to_true_track_when_in_polar_region(
-        #[case] adiru_number: usize,
-    ) {
-        let true_track = Angle::new::<degree>(160.);
-        let mag_track = Angle::new::<degree>(142.);
-        let polar_latitude = Angle::new::<degree>(83.);
+    adiru_test!(
+        magnetic_track_is_supplied_and_equal_to_true_track_when_in_polar_region,
+        |adiru_number| {
+            let true_track = Angle::new::<degree>(160.);
+            let mag_track = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_track_of(true_track)
-            .track_of(mag_track)
-            .latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_track_of(true_track)
+                .track_of(mag_track)
+                .latitude_of(polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.true_track().is_normal_operation());
-        assert!(test_bed.track().is_normal_operation());
-        assert_about_eq!(
-            test_bed.true_track().value().get::<degree>(),
-            test_bed.track().value().get::<degree>()
-        );
-    }
+            assert!(test_bed.true_track().is_normal_operation());
+            assert!(test_bed.track().is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_track().value().get::<degree>(),
+                test_bed.track().value().get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn magnetic_track_is_supplied_and_not_equal_to_true_track_when_left_polar_region(
-        #[case] adiru_number: usize,
-    ) {
-        let true_track = Angle::new::<degree>(160.);
-        let mag_track = Angle::new::<degree>(142.);
-        let polar_latitude = Angle::new::<degree>(83.);
-        let non_polar_latitude = Angle::new::<degree>(80.);
+    adiru_test!(
+        magnetic_track_is_supplied_and_not_equal_to_true_track_when_left_polar_region,
+        |adiru_number| {
+            let true_track = Angle::new::<degree>(160.);
+            let mag_track = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .true_heading_of(true_track)
-            .heading_of(mag_track)
-            .latitude_of(polar_latitude);
-        test_bed.run();
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .true_heading_of(true_track)
+                .heading_of(mag_track)
+                .latitude_of(polar_latitude);
+            test_bed.run();
 
-        test_bed.set_latitude(non_polar_latitude);
-        test_bed.run();
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
 
-        assert!(test_bed.true_track().is_normal_operation());
-        assert!(test_bed.track().is_normal_operation());
-        assert_about_eq!(
-            test_bed.true_track().value().get::<degree>(),
-            true_track.get::<degree>()
-        );
-        assert_about_eq!(
-            test_bed.track().value().get::<degree>(),
-            mag_track.get::<degree>()
-        );
-    }
+            assert!(test_bed.true_track().is_normal_operation());
+            assert!(test_bed.track().is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_track().value().get::<degree>(),
+                true_track.get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.track().value().get::<degree>(),
+                mag_track.get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn drift_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let heading = Angle::new::<degree>(160.);
-        let track = Angle::new::<degree>(180.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .track_of(track)
-            .heading_of(heading)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
-            ));
-        test_bed.run();
+    adiru_test!(
+        drift_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots,
+        |adiru_number| {
+            let heading = Angle::new::<degree>(160.);
+            let track = Angle::new::<degree>(180.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .track_of(track)
+                .heading_of(heading)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
 
-        assert_about_eq!(
-            test_bed
-                .drift_angle()
-                .normal_value()
-                .unwrap()
-                .get::<degree>(),
-            (track - heading).get::<degree>()
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .drift_angle()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                (track - heading).get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn drift_angle_is_zero_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
-        let heading = Angle::new::<degree>(160.);
-        let track = Angle::new::<degree>(180.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .track_of(track)
-            .and()
-            .heading_of(heading)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        drift_angle_is_zero_when_ground_speed_less_than_50_knots,
+        |adiru_number| {
+            let heading = Angle::new::<degree>(160.);
+            let track = Angle::new::<degree>(180.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .track_of(track)
+                .and()
+                .heading_of(heading)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
 
-        assert_eq!(
-            test_bed.drift_angle().normal_value().unwrap(),
-            Angle::new::<degree>(0.)
-        );
-    }
+            assert_eq!(
+                test_bed.drift_angle().normal_value().unwrap(),
+                Angle::new::<degree>(0.)
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn flight_path_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let vs = Velocity::new::<foot_per_minute>(500.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .vertical_speed_of(vs)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
-            ));
-        test_bed.run();
+    adiru_test!(
+        flight_path_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots,
+        |adiru_number| {
+            let vs = Velocity::new::<foot_per_minute>(500.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .vertical_speed_of(vs)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
 
-        assert_about_eq!(
-            test_bed
-                .flight_path_angle()
-                .normal_value()
-                .unwrap()
-                .get::<degree>(),
-            vs.atan2(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
-            ))
-            .get::<degree>()
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .flight_path_angle()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                vs.atan2(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ))
+                .get::<degree>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn flight_path_angle_is_zero_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
-        let vs = Velocity::new::<foot_per_minute>(500.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .vertical_speed_of(vs)
-            .and()
-            .ground_speed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        flight_path_angle_is_zero_when_ground_speed_less_than_50_knots,
+        |adiru_number| {
+            let vs = Velocity::new::<foot_per_minute>(500.);
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .vertical_speed_of(vs)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
 
-        assert_eq!(
-            test_bed.drift_angle().normal_value().unwrap(),
-            Angle::new::<degree>(0.)
-        );
-    }
+            assert_eq!(
+                test_bed.drift_angle().normal_value().unwrap(),
+                Angle::new::<degree>(0.)
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn vertical_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(vertical_speed_is_supplied_by_ir, |adiru_number| {
         let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).vertical_speed_of(vertical_speed);
+        let mut test_bed =
+            adiru_aligned_test_bed::<T>(adiru_number).vertical_speed_of(vertical_speed);
         test_bed.run();
 
         assert_about_eq!(
@@ -2598,175 +2476,159 @@ mod ir {
                 .get::<foot_per_minute>(),
             vertical_speed.get::<foot_per_minute>()
         );
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn ground_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(ground_speed_is_supplied_by_ir, |adiru_number| {
         let gs = Velocity::new::<knot>(200.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).ground_speed_of(gs);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).ground_speed_of(gs);
         test_bed.run();
 
         assert_eq!(test_bed.ground_speed().normal_value().unwrap(), gs);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn wind_is_supplied_when_true_airspeed_greater_than_or_equal_to_100_knots(
-        #[case] adiru_number: usize,
-    ) {
-        let wind_angle = Angle::new::<degree>(270.);
-        let wind_speed = Velocity::new::<knot>(40.);
+    adiru_test!(
+        wind_is_supplied_when_true_airspeed_greater_than_or_equal_to_100_knots,
+        |adiru_number| {
+            let wind_angle = Angle::new::<degree>(270.);
+            let wind_speed = Velocity::new::<knot>(40.);
 
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).wind_of(wind_angle, wind_speed);
-        test_bed.run();
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).wind_of(wind_angle, wind_speed);
+            test_bed.run();
 
-        assert_about_eq!(
-            test_bed
-                .wind_direction()
-                .normal_value()
-                .unwrap()
-                .get::<degree>(),
-            wind_angle.get::<degree>()
-        );
-        assert_about_eq!(
-            test_bed
-                .wind_direction_bnr()
-                .normal_value()
-                .unwrap()
-                .get::<degree>(),
-            wind_angle.normalised_180().get::<degree>()
-        );
-        assert_about_eq!(
-            test_bed.wind_speed().normal_value().unwrap().get::<knot>(),
-            wind_speed.get::<knot>()
-        );
-        assert_about_eq!(
-            test_bed
-                .wind_speed_bnr()
-                .normal_value()
-                .unwrap()
-                .get::<knot>(),
-            wind_speed.get::<knot>()
-        );
-    }
+            assert_about_eq!(
+                test_bed
+                    .wind_direction()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                wind_angle.get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed
+                    .wind_direction_bnr()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                wind_angle.normalised_180().get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.wind_speed().normal_value().unwrap().get::<knot>(),
+                wind_speed.get::<knot>()
+            );
+            assert_about_eq!(
+                test_bed
+                    .wind_speed_bnr()
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
+                wind_speed.get::<knot>()
+            );
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn wind_is_zero_when_true_airspeed_less_than_100_knots(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
-            .and()
-            .true_airspeed_of(Velocity::new::<knot>(
-                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS - 0.01,
-            ));
-        test_bed.run();
+    adiru_test!(
+        wind_is_zero_when_true_airspeed_less_than_100_knots,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
+                .and()
+                .true_airspeed_of(Velocity::new::<knot>(
+                    InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS
+                        - 0.01,
+                ));
+            test_bed.run();
 
-        test_bed.assert_wind_direction_and_velocity_zero();
-    }
+            test_bed.assert_wind_direction_and_velocity_zero();
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn wind_is_zero_when_true_airspeed_is_unavailable(#[case] adiru_number: usize) {
-        let mut test_bed = adiru_aligned_test_bed(adiru_number)
-            .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
-            .and()
-            .adr_push_button_pushed(true);
+    adiru_test!(
+        wind_is_zero_when_true_airspeed_is_unavailable,
+        |adiru_number| {
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
+                .and()
+                .adr_push_button_pushed(true);
 
-        test_bed.run();
-        test_bed = test_bed.adr_push_button_pushed(false);
+            test_bed.run();
+            test_bed = test_bed.adr_push_button_pushed(false);
 
-        test_bed.assert_wind_direction_and_velocity_zero();
-    }
+            test_bed.assert_wind_direction_and_velocity_zero();
+        }
+    );
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn latitude_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(latitude_is_supplied_by_ir, |adiru_number| {
         let latitude = Angle::new::<degree>(10.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).latitude_of(latitude);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).latitude_of(latitude);
         test_bed.run();
 
         assert_eq!(test_bed.latitude().normal_value().unwrap(), latitude);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn longitude_is_supplied_by_ir(#[case] adiru_number: usize) {
+    adiru_test!(longitude_is_supplied_by_ir, |adiru_number| {
         let longitude = Angle::new::<degree>(10.);
-        let mut test_bed = adiru_aligned_test_bed(adiru_number).longitude_of(longitude);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).longitude_of(longitude);
         test_bed.run();
 
         assert_eq!(test_bed.longitude().normal_value().unwrap(), longitude);
-    }
+    });
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn manual_adr_select_discretes_force_external_adr_usage(#[case] adiru_number: usize) {
-        let velocity = Velocity::new::<knot>(
-            InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 1.,
-        );
+    adiru_test!(
+        manual_adr_select_discretes_force_external_adr_usage,
+        |adiru_number| {
+            let velocity = Velocity::new::<knot>(
+                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 1.,
+            );
 
-        let mut test_bed = adiru_aligned_test_bed_with(adiru_number)
-            .true_airspeed_of(velocity)
-            .adr_tas_of(1, velocity)
-            .adr_tas_of(2, velocity);
-        test_bed.run();
+            let mut test_bed = adiru_aligned_test_bed_with::<T>(adiru_number)
+                .true_airspeed_of(velocity)
+                .adr_tas_of(1, velocity)
+                .adr_tas_of(2, velocity);
+            test_bed.run();
 
-        // Check that IR ADR based values are normal
-        test_bed.assert_ir_adr_dependent_data_available(true);
+            // Check that IR ADR based values are normal
+            test_bed.assert_ir_adr_dependent_data_available(true);
 
-        // Check that own ADR is correctly used with AUTO DADS select set
-        test_bed = test_bed
-            .then_continue_with()
-            .adr_failed(1, true)
-            .adr_failed(2, true);
-        test_bed.run();
+            // Check that own ADR is correctly used with AUTO DADS select set
+            test_bed = test_bed
+                .then_continue_with()
+                .adr_failed(1, true)
+                .adr_failed(2, true);
+            test_bed.run();
 
-        test_bed.assert_ir_adr_dependent_data_available(true);
+            test_bed.assert_ir_adr_dependent_data_available(true);
 
-        // Check that no ADR values are available if all ADRs are failed
-        test_bed = test_bed.adr_push_button_pushed(true);
-        test_bed.run();
-        test_bed = test_bed.adr_push_button_pushed(false);
-        test_bed.assert_ir_adr_dependent_data_available(false);
+            // Check that no ADR values are available if all ADRs are failed
+            test_bed = test_bed.adr_push_button_pushed(true);
+            test_bed.run();
+            test_bed = test_bed.adr_push_button_pushed(false);
+            test_bed.assert_ir_adr_dependent_data_available(false);
 
-        // Check that ADR own is not selected if AUTO DADS SELECT is not set
-        test_bed = test_bed.adr_push_button_pushed(true);
-        test_bed.run();
-        test_bed = test_bed
-            .adr_push_button_pushed(false)
-            .then_continue_with()
-            .auto_dads_select_set_to(false)
-            .and()
-            .manual_dads_select_set_to(false);
-        test_bed.run();
-        test_bed.assert_ir_adr_dependent_data_available(false);
+            // Check that ADR own is not selected if AUTO DADS SELECT is not set
+            test_bed = test_bed.adr_push_button_pushed(true);
+            test_bed.run();
+            test_bed = test_bed
+                .adr_push_button_pushed(false)
+                .then_continue_with()
+                .auto_dads_select_set_to(false)
+                .and()
+                .manual_dads_select_set_to(false);
+            test_bed.run();
+            test_bed.assert_ir_adr_dependent_data_available(false);
 
-        // Check that the external ADRs are properly switched with the MANUAL DADS select discrete
-        test_bed = test_bed.then_continue_with().adr_failed(1, false);
-        test_bed.run();
-        test_bed.assert_ir_adr_dependent_data_available(true);
+            // Check that the external ADRs are properly switched with the MANUAL DADS select discrete
+            test_bed = test_bed.then_continue_with().adr_failed(1, false);
+            test_bed.run();
+            test_bed.assert_ir_adr_dependent_data_available(true);
 
-        test_bed = test_bed
-            .then_continue_with()
-            .adr_failed(1, true)
-            .adr_failed(2, false)
-            .manual_dads_select_set_to(true);
-        test_bed.run();
-        test_bed.assert_ir_adr_dependent_data_available(true);
-    }
+            test_bed = test_bed
+                .then_continue_with()
+                .adr_failed(1, true)
+                .adr_failed(2, false)
+                .manual_dads_select_set_to(true);
+            test_bed.run();
+            test_bed.assert_ir_adr_dependent_data_available(true);
+        }
+    );
 }
