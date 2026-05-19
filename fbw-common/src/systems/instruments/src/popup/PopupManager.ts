@@ -5,7 +5,7 @@ import { ClockEvents, EventBus, Publisher, SimVarValueType, Subject, Subscribabl
 import { PopupControlEvents } from '../../../shared/src/popup/PopupControlEvents';
 import { PopupDefinition } from '../../../shared/src/popup/PopupTypes';
 import { PopupEvents } from '../../../shared/src/popup/PopupEvents';
-import { RegisteredSimVar } from 'shared/src';
+import { RegisteredSimVar } from '../../../shared/src';
 
 export class PopupManager {
   private readonly publisher: Publisher<PopupEvents>;
