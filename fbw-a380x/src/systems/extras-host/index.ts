@@ -19,6 +19,7 @@ import {
   PilotSeatManager,
   TelexCheck,
   PilotSeatPublisher,
+  MsfsVersionPopupMonitor,
 } from '@flybywiresim/fbw-sdk';
 
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
@@ -64,6 +65,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clock = new Clock(this.bus);
+
+  private readonly msfsVersionPopup = new MsfsVersionPopupMonitor(this.bus, 'A380X');
 
   private readonly notificationManager: NotificationManager;
 

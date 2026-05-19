@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.15.0",
+  "version": "2024.1.0",
   "edition": "development",
   "imports": {
     "#build-utils": "./build-utils.js"
@@ -144,7 +144,7 @@
     "@flybywiresim/react-components": "^0.3.1",
     "@flybywiresim/tailwind-config": "^0.5.0",
     "@localazy/cli": "^1.6.0",
-    "@microsoft/msfs-sdk": "^0.8.0",
+    "@microsoft/msfs-sdk": "^2.3.0",
     "@react-hook/mouse-position": "~4.1.0",
     "@reduxjs/toolkit": "^1.6.2",
     "@rollup/plugin-json": "^4.1.0",
