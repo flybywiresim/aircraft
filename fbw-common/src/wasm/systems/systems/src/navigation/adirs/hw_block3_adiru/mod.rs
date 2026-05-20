@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnitProgramming;
 use crate::navigation::adirs::{AdrDiscreteInputs, IrDiscreteInputs};
 use crate::simulation::{Read, Reader, Write, Writer};
 use uom::si::f64::*;
@@ -79,6 +80,6 @@ pub trait AdiruElectricalHarness {
 }
 
 pub trait AdrRuntimeTemplate {
-    fn new(self_check: Duration) -> Self;
-    fn new_running() -> Self;
+    fn new(self_check: Duration, programming: &AirDataInertialReferenceUnitProgramming) -> Self;
+    fn new_running(programming: &AirDataInertialReferenceUnitProgramming) -> Self;
 }

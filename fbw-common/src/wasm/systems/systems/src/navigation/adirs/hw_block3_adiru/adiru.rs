@@ -58,11 +58,43 @@ pub(super) struct InternalIrDiscreteInputs {
     pub hardware_fault: bool,
 }
 
+#[derive(Clone)]
+pub struct AirDataInertialReferenceUnitProgramming {
+    pub vmo: f64,
+    pub mmo: f64,
+    pub low_speed_warning_thresholds: [LowSpeedWarningThreshold; 4],
+}
+impl AirDataInertialReferenceUnitProgramming {
+    pub fn new(
+        vmo: f64,
+        mmo: f64,
+        low_speed_warning_thresholds: [LowSpeedWarningThreshold; 4],
+    ) -> Self {
+        Self {
+            vmo,
+            mmo,
+            low_speed_warning_thresholds,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct LowSpeedWarningThreshold {
+    pub lower: f64,
+    pub upper: f64,
+}
+impl LowSpeedWarningThreshold {
+    pub fn new(lower: f64, upper: f64) -> Self {
+        Self { lower, upper }
+    }
+}
+
 pub struct AirDataInertialReferenceUnit<AdrRuntime> {
     adr_failure: Failure,
     ir_failure: Failure,
 
     // TODO replace with pin prog
+    #[allow(unused)]
     num: usize,
 
     // Power
@@ -102,6 +134,9 @@ pub struct AirDataInertialReferenceUnit<AdrRuntime> {
     ir_bus_output_data: InertialReferenceBusOutputs,
 
     ir_measurement_inputs: IrSimulatorData,
+
+    // Nonvalatile Programming
+    adiru_programming: AirDataInertialReferenceUnitProgramming,
 
     // ADR Output Lvars
     baro_correction_1_hpa: VariableIdentifier,
@@ -210,9 +245,9 @@ impl AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> {
         // immediately without waiting for the runtime to start up again.
         if is_powered {
             // Either initialize and run or continue running the existing runtime
-            let runtime = self
-                .adr_runtime
-                .get_or_insert_with(|| AdmAirDataReferenceRuntime::new(self.adr_self_check_time));
+            let runtime = self.adr_runtime.get_or_insert_with(|| {
+                AdmAirDataReferenceRuntime::new(self.adr_self_check_time, &self.adiru_programming)
+            });
             runtime.update(
                 context,
                 adr_discrete_inputs,
@@ -298,7 +333,10 @@ impl AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> {
         if is_powered {
             // Either initialize and run or continue running the existing runtime
             let runtime = self.adr_runtime.get_or_insert_with(|| {
-                IntegratedAirDataReferenceRuntime::new(self.adr_self_check_time)
+                IntegratedAirDataReferenceRuntime::new(
+                    self.adr_self_check_time,
+                    &self.adiru_programming,
+                )
             });
             runtime.update(
                 context,
@@ -380,7 +418,11 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
     pub(super) const BACKUP_SUPPLY_TEST_START_TIME: Duration = Duration::from_millis(10500);
     pub(super) const BACKUP_SUPPLY_TEST_DURATION: Duration = Duration::from_millis(5500);
 
-    pub fn new(context: &mut InitContext, num: usize) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        num: usize,
+        programming: AirDataInertialReferenceUnitProgramming,
+    ) -> Self {
         let is_powered = context.has_engines_running();
 
         let mut result = Self {
@@ -431,7 +473,7 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
             )),
 
             adr_runtime: if is_powered {
-                Some(AdrRuntime::new_running())
+                Some(AdrRuntime::new_running(&programming))
             } else {
                 None
             },
@@ -448,6 +490,8 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
             ir_bus_output_data: InertialReferenceBusOutputs::default(),
 
             ir_measurement_inputs: IrSimulatorData::new(context),
+
+            adiru_programming: programming,
 
             baro_correction_1_hpa: context.get_identifier(output_data_id(
                 OutputDataType::Adr,

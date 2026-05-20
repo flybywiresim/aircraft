@@ -256,11 +256,22 @@ struct TestAircraft<T> {
 }
 impl<T: AdrRuntimeTemplate> TestAircraft<T> {
     fn new(context: &mut InitContext, num: usize) -> Self {
+        let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
+            340.,
+            0.82,
+            [
+                LowSpeedWarningThreshold::new(100., 104.),
+                LowSpeedWarningThreshold::new(50., 54.),
+                LowSpeedWarningThreshold::new(155., 159.),
+                LowSpeedWarningThreshold::new(260., 264.),
+            ],
+        );
+
         Self {
             test_fcu: TestFcu::default(),
             test_adr_1: TestAdr::new(),
             test_adr_2: TestAdr::new(),
-            adiru: AirDataInertialReferenceUnit::<T>::new(context, num),
+            adiru: AirDataInertialReferenceUnit::<T>::new(context, num, adirs_programming),
             harness: TestAdiruElectricalHarness::new(),
 
             integrated_sensors_complex: IntegratedAirDataSensorsComplex::new(context, num),

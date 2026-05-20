@@ -6,7 +6,9 @@ use systems::auto_flight::FlightControlUnitBusOutput;
 use systems::navigation::adirs::air_data_sensors::integrated_probes_complex::{
     IntegratedAirDataSensorsComplex, IntegratedProbesPowerProvider,
 };
-use systems::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
+use systems::navigation::adirs::hw_block3_adiru::adiru::{
+    AirDataInertialReferenceUnit, AirDataInertialReferenceUnitProgramming, LowSpeedWarningThreshold,
+};
 use systems::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
 use systems::navigation::adirs::hw_block3_adiru::AdiruElectricalHarness;
 use systems::navigation::adirs::{
@@ -37,10 +39,22 @@ pub struct A380AirDataInertialReferenceSystem {
 }
 impl A380AirDataInertialReferenceSystem {
     pub fn new(context: &mut InitContext) -> Self {
+        let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
+            340.,
+            0.89,
+            [
+                LowSpeedWarningThreshold::new(50., 54.),
+                LowSpeedWarningThreshold::new(260., 264.),
+                LowSpeedWarningThreshold::new(100., 104.),
+                // Not used in A380 (but we keep it the same as A320 because there are still some A320 systems)
+                LowSpeedWarningThreshold::new(260., 264.),
+            ],
+        );
+
         Self {
-            adiru_1: AirDataInertialReferenceUnit::new(context, 1),
-            adiru_2: AirDataInertialReferenceUnit::new(context, 2),
-            adiru_3: AirDataInertialReferenceUnit::new(context, 3),
+            adiru_1: AirDataInertialReferenceUnit::new(context, 1, adirs_programming.clone()),
+            adiru_2: AirDataInertialReferenceUnit::new(context, 2, adirs_programming.clone()),
+            adiru_3: AirDataInertialReferenceUnit::new(context, 3, adirs_programming.clone()),
 
             sensor_complex_1: IntegratedAirDataSensorsComplex::new(context, 1),
             sensor_complex_2: IntegratedAirDataSensorsComplex::new(context, 2),

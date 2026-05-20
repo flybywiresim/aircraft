@@ -2,6 +2,7 @@ use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::navigation::adirs::air_data_sensors::integrated_probes::{
     IntegratedStaticProbeBusOutput, MultifunctionProbeBusOutput, SideslipAngleProbeBusOutput,
 };
+use crate::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnitProgramming;
 use crate::navigation::adirs::hw_block3_adiru::AdrRuntimeTemplate;
 use crate::navigation::adirs::{
     AdrAnalogInputs, AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs,
@@ -95,6 +96,8 @@ pub struct IntegratedAirDataReferenceRuntime {
     true_airspeed_valid: bool,
 
     // Overspeed
+    vmo_knot: f64,
+    mmo: f64,
     max_allowable_speed_knot: f64,
     max_allowable_speed_valid: bool,
     overspeed_active: bool,
@@ -106,11 +109,11 @@ pub struct IntegratedAirDataReferenceRuntime {
     low_speed_warning_4_hysteresis: HysteresisNode<f64>,
 }
 impl AdrRuntimeTemplate for IntegratedAirDataReferenceRuntime {
-    fn new_running() -> Self {
-        Self::new(Duration::ZERO)
+    fn new_running(programming: &AirDataInertialReferenceUnitProgramming) -> Self {
+        Self::new(Duration::ZERO, programming)
     }
 
-    fn new(self_check: Duration) -> Self {
+    fn new(self_check: Duration, programming: &AirDataInertialReferenceUnitProgramming) -> Self {
         Self {
             remaining_startup: self_check,
 
@@ -163,25 +166,27 @@ impl AdrRuntimeTemplate for IntegratedAirDataReferenceRuntime {
             true_airspeed_knot: 0.,
             true_airspeed_valid: false,
 
+            vmo_knot: programming.vmo,
+            mmo: programming.mmo,
             max_allowable_speed_knot: 0.,
             max_allowable_speed_valid: false,
             overspeed_active: false,
 
             low_speed_warning_1_hysteresis: HysteresisNode::new(
-                Self::LOW_SPEED_WARNING_1_THRESHOLD,
-                Self::LOW_SPEED_WARNING_1_THRESHOLD + Self::LOW_SPEED_WARNING_HYSTERESIS,
+                programming.low_speed_warning_thresholds[0].lower,
+                programming.low_speed_warning_thresholds[0].upper,
             ),
             low_speed_warning_2_hysteresis: HysteresisNode::new(
-                Self::LOW_SPEED_WARNING_2_THRESHOLD,
-                Self::LOW_SPEED_WARNING_2_THRESHOLD + Self::LOW_SPEED_WARNING_HYSTERESIS,
+                programming.low_speed_warning_thresholds[1].lower,
+                programming.low_speed_warning_thresholds[1].upper,
             ),
             low_speed_warning_3_hysteresis: HysteresisNode::new(
-                Self::LOW_SPEED_WARNING_3_THRESHOLD,
-                Self::LOW_SPEED_WARNING_3_THRESHOLD + Self::LOW_SPEED_WARNING_HYSTERESIS,
+                programming.low_speed_warning_thresholds[2].lower,
+                programming.low_speed_warning_thresholds[2].upper,
             ),
             low_speed_warning_4_hysteresis: HysteresisNode::new(
-                Self::LOW_SPEED_WARNING_4_THRESHOLD,
-                Self::LOW_SPEED_WARNING_4_THRESHOLD + Self::LOW_SPEED_WARNING_HYSTERESIS,
+                programming.low_speed_warning_thresholds[3].lower,
+                programming.low_speed_warning_thresholds[3].upper,
             ),
         }
     }
@@ -193,16 +198,6 @@ impl IntegratedAirDataReferenceRuntime {
     pub(super) const MINIMUM_CAS_FOR_AOA: f64 = 60.;
     pub(super) const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
     pub(super) const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
-
-    // TODO These should be configurable
-    const LOW_SPEED_WARNING_1_THRESHOLD: f64 = 50.;
-    const LOW_SPEED_WARNING_2_THRESHOLD: f64 = 260.;
-    const LOW_SPEED_WARNING_3_THRESHOLD: f64 = 100.;
-    const LOW_SPEED_WARNING_4_THRESHOLD: f64 = 260.;
-    const LOW_SPEED_WARNING_HYSTERESIS: f64 = 4.;
-
-    const V_MO: f64 = 340.;
-    const M_MO: f64 = 0.89;
 
     // 1 second filter
     const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
@@ -409,10 +404,10 @@ impl IntegratedAirDataReferenceRuntime {
     }
 
     fn update_overspeed_status(&mut self) {
-        let m_mo_equivalent_speed = MachNumber(Self::M_MO).to_cas(Pressure::new::<hectopascal>(
+        let m_mo_equivalent_speed = MachNumber(self.mmo).to_cas(Pressure::new::<hectopascal>(
             self.averaged_static_pressure_hpa,
         ));
-        self.max_allowable_speed_knot = Self::V_MO.min(m_mo_equivalent_speed.get::<knot>());
+        self.max_allowable_speed_knot = self.vmo_knot.min(m_mo_equivalent_speed.get::<knot>());
         self.max_allowable_speed_valid = self.corrected_averaged_static_pressure_avail;
 
         self.overspeed_active = self.max_allowable_speed_valid
