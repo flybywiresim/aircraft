@@ -136,6 +136,7 @@
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 1. [A32NX/MCDU] Fix NEW DEST not available in LAT REV on first flightplan waypoint - @BravoMike99 (bruno_pt99)
 1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
+1. [A380X/FLIGHT MODEL] Fixes drag level for MSFS 2024 native version - @donstim (donbikes)
 
 ## 0.14.0
 
