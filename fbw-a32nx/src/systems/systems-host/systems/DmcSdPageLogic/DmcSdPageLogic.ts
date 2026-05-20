@@ -48,7 +48,7 @@ export class DmcSdPageLogic {
 
   private readonly cruiseConditionConfirmNode = new NXLogicConfirmNode(60, true);
 
-  private readonly stsPageNormalMtrig = new NXLogicTriggeredMonostableNode(3, true);
+  private readonly stsPageNormalMtrig = new NXLogicTriggeredMonostableNode(3, true, true);
 
   private readonly stsPageNormalPulse = new NXLogicPulseNode(false);
 
