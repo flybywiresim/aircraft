@@ -1822,12 +1822,16 @@ mod ir {
     {
         let adiru_number = 1;
         let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
-            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
             .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-        test_bed.run();
+        test_bed.run_with_delta(
+            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                + Duration::from_secs(1),
+        );
+        test_bed = test_bed.body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1));
         test_bed.run();
 
-        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        let maint_word_flags =
+            IrMaintFlags::from_bits(test_bed.maint_word().normal_value().unwrap());
         assert_eq!(
             maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
             IrMaintFlags::EXCESS_MOTION_ERROR
@@ -1838,10 +1842,14 @@ mod ir {
         adirs_does_not_detect_excess_motion_with_excess_motion_inhibit,
         |adiru_number| {
             let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
-                .excess_motion_inhibit_set_to(true)
-                .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
                 .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-            test_bed.run();
+            test_bed.run_with_delta(
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                    + Duration::from_secs(1),
+            );
+            test_bed = test_bed
+                .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+                .excess_motion_inhibit_set_to(true);
             test_bed.run();
 
             let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
