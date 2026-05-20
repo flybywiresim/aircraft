@@ -32,11 +32,11 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
         viewBox="0 0 768 768"
         style={{ display: this.topSvgDisplay }}
       >
-        <PageTitle x={250} y={36}>
+        <PageTitle x={316} y={38}>
           STATUS
         </PageTitle>
 
-        <line class="SW2 Grey" x1="486" y1="92" x2="486" y2="589" />
+        <line class="SW4 Grey LineRound" x1="483" y1="96" x2="483" y2="593" />
       </svg>
     );
   }
