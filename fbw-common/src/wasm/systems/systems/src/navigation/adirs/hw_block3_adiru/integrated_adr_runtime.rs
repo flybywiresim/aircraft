@@ -96,6 +96,7 @@ pub struct IntegratedAirDataReferenceRuntime {
 
     // Overspeed
     max_allowable_speed_knot: f64,
+    max_allowable_speed_valid: bool,
     overspeed_active: bool,
 
     // Low Speed Warnings
@@ -163,6 +164,7 @@ impl AdrRuntimeTemplate for IntegratedAirDataReferenceRuntime {
             true_airspeed_valid: false,
 
             max_allowable_speed_knot: 0.,
+            max_allowable_speed_valid: false,
             overspeed_active: false,
 
             low_speed_warning_1_hysteresis: HysteresisNode::new(
@@ -215,7 +217,7 @@ impl IntegratedAirDataReferenceRuntime {
         &mut self,
         context: &UpdateContext,
         discrete_inputs: &AdrDiscreteInputs,
-        analog_inputs: &AdrAnalogInputs,
+        #[allow(unused)] analog_inputs: &AdrAnalogInputs, // TODO this is used for the OAT probe analog inputs, which are not implemented
         fcu: &impl FlightControlUnitBusOutput,
         mfp: &impl MultifunctionProbeBusOutput,
         isp_left: &impl IntegratedStaticProbeBusOutput,
@@ -411,9 +413,11 @@ impl IntegratedAirDataReferenceRuntime {
             self.averaged_static_pressure_hpa,
         ));
         self.max_allowable_speed_knot = Self::V_MO.min(m_mo_equivalent_speed.get::<knot>());
+        self.max_allowable_speed_valid = self.corrected_averaged_static_pressure_avail;
 
-        self.overspeed_active = self.computed_airspeed_knot
-            > (self.max_allowable_speed_knot + if self.overspeed_active { 4. } else { 8. });
+        self.overspeed_active = self.max_allowable_speed_valid
+            && self.computed_airspeed_knot
+                > (self.max_allowable_speed_knot + if self.overspeed_active { 4. } else { 8. });
     }
 
     fn update_low_speed_warning_status(&mut self) {
@@ -484,15 +488,27 @@ impl IntegratedAirDataReferenceRuntime {
                 .set(Default::default(), SignStatus::NoComputedData);
         }
 
-        bus.corrected_average_static_pressure.set(
-            Pressure::new::<hectopascal>(self.averaged_static_pressure_hpa),
-            SignStatus::NormalOperation,
-        );
+        if !self.corrected_averaged_static_pressure_avail {
+            bus.corrected_average_static_pressure
+                .set(Pressure::new::<hectopascal>(0.), SignStatus::FailureWarning);
+        } else {
+            bus.corrected_average_static_pressure.set(
+                Pressure::new::<hectopascal>(self.averaged_static_pressure_hpa),
+                SignStatus::NormalOperation,
+            );
+        }
 
-        bus.vertical_speed.set(
-            self.vertical_speed_filter.output(),
-            SignStatus::NormalOperation,
-        );
+        if !self.corrected_averaged_static_pressure_avail {
+            bus.vertical_speed.set(
+                Velocity::new::<foot_per_minute>(0.),
+                SignStatus::FailureWarning,
+            )
+        } else {
+            bus.vertical_speed.set(
+                self.vertical_speed_filter.output(),
+                SignStatus::NormalOperation,
+            )
+        };
 
         // If CAS is below 30kn, output as 0 with SSM = NCD
         if !self.computed_airspeed_valid {
@@ -508,10 +524,15 @@ impl IntegratedAirDataReferenceRuntime {
                 .set(Velocity::new::<knot>(0.), SignStatus::NoComputedData);
         };
 
-        bus.max_allowable_airspeed.set(
-            Velocity::new::<knot>(self.max_allowable_speed_knot),
-            SignStatus::NormalOperation,
-        );
+        if !self.max_allowable_speed_valid {
+            bus.max_allowable_airspeed
+                .set(Velocity::new::<knot>(0.), SignStatus::FailureWarning);
+        } else {
+            bus.max_allowable_airspeed.set(
+                Velocity::new::<knot>(self.max_allowable_speed_knot),
+                SignStatus::NormalOperation,
+            );
+        }
 
         // If mach is below 0.1, output as 0 with SSM = NCD
         if !self.mach_valid {
