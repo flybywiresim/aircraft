@@ -1945,14 +1945,16 @@ mod ir {
         #[case] mode: ModeSelectorPosition,
     ) {
         let adiru_number = 1;
-        let mut test_bed = test_bed_with::<IntegratedAirDataReferenceRuntime>(adiru_number)
-            .ir_mode_selector_set_to(mode);
+        let mut test_bed =
+            adiru_unaligned_test_bed_with::<IntegratedAirDataReferenceRuntime>(adiru_number)
+                .ir_mode_selector_set_to(mode);
 
         test_bed.run_without_delta();
         assert!(test_bed.ir_fault_light_illuminated());
 
         test_bed.run_with_delta(
-            InertialReferenceRuntime::IR_FAULT_FLASH_DURATION - Duration::from_millis(1),
+            AirDataInertialReferenceUnit::<IntegratedAirDataReferenceRuntime>::IR_FAULT_FLASH_DURATION
+                - Duration::from_millis(1),
         );
         assert!(test_bed.ir_fault_light_illuminated());
 

@@ -111,7 +111,6 @@ pub struct InertialReferenceRuntime {
 }
 impl InertialReferenceRuntime {
     // Mode transition durations
-    pub(super) const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     pub(super) const COARSE_ALIGN_DURATION: Duration = Duration::from_secs(30);
     pub(super) const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(10);
     pub(super) const FINE_ALIGN_MAX_DURATION: Duration = Duration::from_secs(570);
@@ -556,16 +555,19 @@ impl InertialReferenceRuntime {
 
     pub fn set_discrete_outputs(&self, discrete_outputs: &mut IrDiscreteOutputs) {
         if !self.is_initialized() {
-            return;
+            discrete_outputs.ir_off = false;
+            discrete_outputs.ir_fault = false;
+            discrete_outputs.battery_operation = false;
+            discrete_outputs.align = false;
+        } else {
+            discrete_outputs.ir_off = self.is_off;
+            discrete_outputs.ir_fault = !self.is_off
+                && (self.unrecoverable_fault_active
+                    || (self.att_recoverable_fault_active
+                        && self.one_hertz_clock < Duration::from_secs(1)));
+            discrete_outputs.battery_operation = self.on_battery_power;
+            discrete_outputs.align = self.is_aligning();
         }
-
-        discrete_outputs.ir_off = self.is_off;
-        discrete_outputs.ir_fault = !self.is_off
-            && (self.unrecoverable_fault_active
-                || (self.att_recoverable_fault_active
-                    && self.one_hertz_clock < Duration::from_secs(1)));
-        discrete_outputs.battery_operation = self.on_battery_power;
-        discrete_outputs.align = self.is_aligning();
     }
 
     pub fn set_bus_outputs(&self, bus_outputs: &mut InertialReferenceBusOutputs) {

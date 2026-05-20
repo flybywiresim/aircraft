@@ -124,6 +124,9 @@ pub struct AirDataInertialReferenceUnit<AdrRuntime> {
     adr_self_check_time: Duration,
     ir_self_check_time: Duration,
 
+    /// Remaining flash duration of the IR FAULT light
+    ir_fault_remaining_flash_time: Duration,
+
     adr_runtime: Option<AdrRuntime>,
     ir_runtime: Option<InertialReferenceRuntime>,
 
@@ -413,6 +416,8 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
     pub(super) const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
     pub(super) const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
+    pub(super) const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
+
     pub(super) const POWER_DOWN_DURATION: u64 = 15_000;
 
     pub(super) const BACKUP_SUPPLY_TEST_START_TIME: Duration = Duration::from_millis(10500);
@@ -471,6 +476,8 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
                 Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
                 Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
             )),
+
+            ir_fault_remaining_flash_time: Duration::ZERO,
 
             adr_runtime: if is_powered {
                 Some(AdrRuntime::new_running(&programming))
@@ -774,9 +781,13 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
         // immediately without waiting for the runtime to start up again.
         if is_powered {
             // Either initialize and run or continue running the existing runtime
-            let runtime = self
-                .ir_runtime
-                .get_or_insert_with(|| InertialReferenceRuntime::new_off(self.ir_self_check_time));
+            let runtime = self.ir_runtime.get_or_insert_with(|| {
+                self.ir_fault_remaining_flash_time = Self::IR_FAULT_FLASH_DURATION;
+                InertialReferenceRuntime::new_off(self.ir_self_check_time)
+            });
+            self.ir_fault_remaining_flash_time = self
+                .ir_fault_remaining_flash_time
+                .saturating_sub(context.delta());
             runtime.update(
                 context,
                 ir_discrete_inputs,
@@ -792,6 +803,7 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
             );
 
             runtime.set_discrete_outputs(&mut self.ir_discrete_output_data);
+            self.ir_discrete_output_data.ir_fault |= !self.ir_fault_remaining_flash_time.is_zero();
 
             if !runtime.is_output_inhibited() {
                 runtime.set_bus_outputs(&mut self.ir_bus_output_data);
