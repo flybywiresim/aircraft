@@ -9,7 +9,7 @@ import { BrowserTracing } from '@sentry/tracing';
 import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
 import { Integration } from '@sentry/types';
 import { NXDataStore } from './persistence';
-import { PopUpDialog } from './popup';
+import { PopUpDialog } from './LegacyPopupTypes';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
 

@@ -33,6 +33,7 @@
       - [ARINC429 Output Bus](#arinc429-output-bus-1)
       - [Hardwired Discretes](#hardwired-discretes)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
+  - [Lighting (ATA 33)](#lighting-ata-33)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
@@ -4045,6 +4046,28 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
   - Right DMC copy of IR3 pitch angle.
   - Arinc429Word<Degrees>
 
+- `L:A32NX_DMC_DH_LEFT`
+  - Left DMC copy of the FM radio minimum
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_DH_RIGHT`
+  - Right DMC copy of the FM radio minimum
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_DISCRETE_WORD_270_LEFT`
+  - The Left DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 20  | Altitude less than hundred feet above baro minimum |
+     | 21  | Altitude below baro minimum |
+
+- `L:A32NX_DMC_DISCRETE_WORD_270_RIGHT`
+  - The Right DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 20  | Altitude less than hundred feet above baro minimum |
+     | 21  | Altitude below baro minimum |
+
 
 ### ECP
 
@@ -4273,6 +4296,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
     - Indicates that gear lever just hit the baulk lock mechanism
     - Boolean
 
+## Lighting (ATA 33)
+
+- `L:A32NX_LIGHTS_NAV_LOGO`
+  - The state of the NAV/LOGO LT switch.
+  - Enum
+    | Mode     | Value |
+    |----------|-------|
+    | Off      | 0     |
+    | System 1 | 1     |
+    | System 2 | 2     |
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE
@@ -4471,14 +4505,6 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 - A32NX_GPWS_FLAPS3
     - Boolean
     - Indicates whether the GPWS LDG FLAP 3 pushbutton is ON
-
-- A32NX_GPWS_GROUND_STATE
-    - Boolean
-    - Indicates whether the GPWS is in ground vs airborne mode
-
-- A32NX_GPWS_APPROACH_STATE
-    - Boolean
-    - Indicates whether the GPWS is in Approach vs Takeoff mode
 
 ## ROW / ROP / OANS (ATA 34)
 
