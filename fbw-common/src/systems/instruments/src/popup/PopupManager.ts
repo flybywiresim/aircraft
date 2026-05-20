@@ -29,8 +29,7 @@ export class PopupManager {
     sub.on('popup_dequeue_popup').handle(this.onDequeue.bind(this));
     sub.on('popup_enqueue_popup').handle(this.onEnqueue.bind(this));
 
-    // FIXME switch to activeSimDuration with msfs-sdk v2
-    sub.on('simTime').handle(this.onUpdate.bind(this));
+    sub.on('activeSimDuration').handle(this.onUpdate.bind(this));
   }
 
   private onVisiblePopupChanged(definition: PopupDefinition | undefined): void {
