@@ -661,32 +661,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLeg() {
-    return this.legElementAt(this.destinationLegIndex);
+    const destinationLegIndex = this.destinationLegIndex;
+    return destinationLegIndex !== null ? this.legElementAt(destinationLegIndex) : undefined;
   }
 
   get destinationLegIndex() {
-    let targetSegment: FlightPlanSegment = undefined;
-
-    if (this.destinationSegment.allLegs.length > 0) {
-      targetSegment = this.destinationSegment;
-    } else if (this.approachSegment.allLegs.length > 0) {
-      targetSegment = this.approachSegment;
-    } else if (this.enrouteSegment.allLegs.length > 0) {
-      targetSegment = this.enrouteSegment;
-    } else {
-      return -1;
-    }
-
-    let accumulator = 0;
-    for (const segment of this.orderedSegments) {
-      accumulator += segment.allLegs.length;
-
-      if (segment === targetSegment) {
-        break;
+    for (let i = this.firstMissedApproachLegIndex - 1; i >= 0; i--) {
+      const leg = this.maybeElementAt(i);
+      if (
+        isLeg(leg) &&
+        (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationAirport) ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationRunway))
+      ) {
+        return i;
       }
     }
 
-    return accumulator - 1;
+    return null;
   }
 
   get endsAtRunway() {
@@ -3070,8 +3062,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   getLastLegIndexBeforeDiscontinuity(): number | null {
     for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
-      // Handle case of end of flightplan or discontinuity outside of a manual leg.
-      if (isLeg(this.activeLeg) && !this.activeLeg.isVectors() && (!nextLeg || nextLeg.isDiscontinuity)) {
+      if (!nextLeg || nextLeg.isDiscontinuity) {
         return i;
       }
     }

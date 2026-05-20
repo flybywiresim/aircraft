@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import {
   Arinc429Word,
   NXLogicConfirmNode,
@@ -7,44 +6,44 @@ import {
 } from '@flybywiresim/fbw-sdk';
 
 // FIXME move to PseudoFWC
-export class A32NX_FWC {
+export class FwsLegacyFlightPhases {
   // persistent
-  private flightPhase = null;
+  private flightPhase: number | null = null;
 
   // ESDL 1. 0. 60
-  private gndMemo = new NXLogicConfirmNode(1); // outptuts ZGND
+  private readonly gndMemo = new NXLogicConfirmNode(1); // outptuts ZGND
 
   // ESDL 1. 0. 60
-  private eng1OrTwoRunningConf = new NXLogicConfirmNode(30);
+  private readonly eng1OrTwoRunningConf = new NXLogicConfirmNode(30);
 
   // ESDL 1. 0. 73
-  private speedAbove80KtsMemo = new NXLogicMemoryNode(true);
+  private readonly speedAbove80KtsMemo = new NXLogicMemoryNode(true);
 
   // ESDL 1. 0. 79 / ESDL 1. 0. 80
-  private mctMemo = new NXLogicConfirmNode(60, false);
+  private readonly mctMemo = new NXLogicConfirmNode(60, false);
 
   // ESDL 1. 0.100
-  private firePBOutConf = new NXLogicConfirmNode(0.2); // CONF01
-  private firePBOutMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 05
-  private firePBClear10 = new NXLogicMemoryNode(false);
-  private phase110Memo = new NXLogicTriggeredMonostableNode(300); // MTRIG 03
-  private phase8GroundMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 06
-  private ac80KtsMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 04
-  private prevPhase9InvertMemo = new NXLogicTriggeredMonostableNode(3, false); // MTRIG 02
-  private eng1Or2TOPowerInvertMemo = new NXLogicTriggeredMonostableNode(1, false); // MTRIG 01
-  private phase9Nvm = new NXLogicMemoryNode(true, true);
+  private readonly firePBOutConf = new NXLogicConfirmNode(0.2); // CONF01
+  private readonly firePBOutMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 05
+  private readonly firePBClear10 = new NXLogicMemoryNode(false);
+  private readonly phase110Memo = new NXLogicTriggeredMonostableNode(300); // MTRIG 03
+  private readonly phase8GroundMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 06
+  private readonly ac80KtsMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 04
+  private readonly prevPhase9InvertMemo = new NXLogicTriggeredMonostableNode(3, false); // MTRIG 02
+  private readonly eng1Or2TOPowerInvertMemo = new NXLogicTriggeredMonostableNode(1, false); // MTRIG 01
+  private readonly phase9Nvm = new NXLogicMemoryNode(true, true);
   private prevPhase9 = false;
 
   // ESDL 1. 0.110
-  private groundImmediateMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 03
-  private phase5Memo = new NXLogicTriggeredMonostableNode(120); // MTRIG 01
-  private phase67Memo = new NXLogicTriggeredMonostableNode(180); // MTRIG 02
+  private readonly groundImmediateMemo = new NXLogicTriggeredMonostableNode(2); // MTRIG 03
+  private readonly phase5Memo = new NXLogicTriggeredMonostableNode(120); // MTRIG 01
+  private readonly phase67Memo = new NXLogicTriggeredMonostableNode(180); // MTRIG 02
 
-  update(_deltaTime, _core) {
+  update(_deltaTime: number) {
     this._updateFlightPhase(_deltaTime);
   }
 
-  _updateFlightPhase(_deltaTime) {
+  _updateFlightPhase(_deltaTime: number) {
     const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     const radioHeight =
@@ -151,9 +150,9 @@ export class A32NX_FWC {
     }
 
     const activePhases = phases
-      .map((x, i) => [x, i + 1])
-      .filter((y) => !!y[0])
-      .map((z) => z[1]);
+      .map((x, i) => ({ x, i: i + 1 }))
+      .filter((y) => !!y.x)
+      .map((z) => z.i);
 
     // the usual and easy case: only one flight phase is valid
     if (activePhases.length === 1) {
@@ -167,7 +166,7 @@ export class A32NX_FWC {
     // the mixed case => warn
     if (activePhases.length > 1) {
       console.warn(`Multiple FWC flight phases are valid: ${activePhases.join(', ')}`);
-      if (activePhases.indexOf(this.flightPhase) !== -1) {
+      if (this.flightPhase !== null && activePhases.indexOf(this.flightPhase) !== -1) {
         // if the currently active one is present, keep it
         console.warn(`Remaining in FWC flight phase ${this.flightPhase}`);
         return;
@@ -185,7 +184,7 @@ export class A32NX_FWC {
     }
   }
 
-  _setFlightPhase(flightPhase) {
+  _setFlightPhase(flightPhase: number | null) {
     if (flightPhase === this.flightPhase) {
       return;
     }
