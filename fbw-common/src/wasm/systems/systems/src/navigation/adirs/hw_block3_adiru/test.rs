@@ -9,6 +9,7 @@ use crate::navigation::adirs::air_data_sensors::integrated_probes_complex::{
 use crate::navigation::adirs::air_data_sensors::TotalAirTemperatureProbe;
 use crate::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
 use crate::navigation::adirs::{hw_block3_adiru::simulator_data::IrSimulatorData, *};
+use crate::simulation::test::ReadByName;
 use crate::simulation::{InitContext, SimulationElement};
 use crate::{
     shared::{
@@ -28,10 +29,10 @@ use uom::si::{
     angle::degree,
     angular_velocity::{degree_per_second, radian_per_second},
     length::foot,
-    pressure::hectopascal,
+    pressure::{hectopascal, inch_of_mercury},
     ratio::ratio,
-    thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, foot_per_second, knot},
+    thermodynamic_temperature::{degree_celsius, kelvin},
+    velocity::{foot_per_minute, foot_per_second, knot, meter_per_second},
 };
 
 #[derive(Default)]
@@ -346,10 +347,14 @@ where
     TestAircraft<T>: Aircraft,
     T: AdrRuntimeTemplate,
 {
-    const MACH: &'static str = "AIRSPEED MACH";
-    const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
+    const DYNAMIC_PRESSURE: &'static str = "DYNAMIC PRESSURE";
+
+    const ISENTROPIC_EXPONENT_KAPPA: f64 = 1.4;
+    const STANDARD_AIR_PRESSURE_HPA: f64 = 1013.25;
+    const STANDARD_SPEED_OF_SOUND_MS: f64 = 340.2919;
+    const SPECIFIC_GAS_CONSTANT_AIR_J_PER_KG_K: f64 = 287.0528;
 
     fn new(num: usize) -> Self {
         Self {
@@ -379,7 +384,21 @@ where
     }
 
     fn mach_of(mut self, mach: MachNumber) -> Self {
-        self.write_by_name(Self::MACH, mach);
+        let static_pressure = Pressure::new::<inch_of_mercury>(
+            self.read_by_name(UpdateContext::AMBIENT_PRESSURE_KEY),
+        );
+
+        let total_pressure = ((mach.0.powf(2.) * (Self::ISENTROPIC_EXPONENT_KAPPA - 1.) / 2.) + 1.)
+            .powf(Self::ISENTROPIC_EXPONENT_KAPPA / (Self::ISENTROPIC_EXPONENT_KAPPA - 1.))
+            * static_pressure;
+
+        let dynamic_pressure = total_pressure - static_pressure;
+
+        self.write_by_name(
+            Self::DYNAMIC_PRESSURE,
+            dynamic_pressure.get::<inch_of_mercury>(),
+        );
+        self.recompute_total_air_temperature();
         self
     }
 
@@ -392,12 +411,79 @@ where
     }
 
     fn true_airspeed_of(mut self, velocity: Velocity) -> Self {
-        self.write_by_name(Self::TRUE_AIRSPEED, velocity);
+        let static_pressure = Pressure::new::<inch_of_mercury>(
+            self.read_by_name(UpdateContext::AMBIENT_PRESSURE_KEY),
+        );
+        let static_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(
+            self.read_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY),
+        );
+
+        let speed_of_sound_ms = (Self::ISENTROPIC_EXPONENT_KAPPA
+            * Self::SPECIFIC_GAS_CONSTANT_AIR_J_PER_KG_K
+            * static_air_temperature.get::<kelvin>())
+        .sqrt();
+
+        let dynamic_pressure = (((velocity.get::<meter_per_second>() / speed_of_sound_ms)
+            .powf(2.)
+            * (Self::ISENTROPIC_EXPONENT_KAPPA - 1.)
+            / 2.
+            + 1.)
+            .powf(Self::ISENTROPIC_EXPONENT_KAPPA / (Self::ISENTROPIC_EXPONENT_KAPPA - 1.))
+            - 1.)
+            * static_pressure;
+
+        self.write_by_name(
+            Self::DYNAMIC_PRESSURE,
+            dynamic_pressure.get::<inch_of_mercury>(),
+        );
+        self.recompute_total_air_temperature();
         self
+    }
+
+    fn computed_airspeed_of(mut self, velocity: Velocity) -> Self {
+        let dynamic_pressure =
+            ((((velocity.get::<meter_per_second>() / Self::STANDARD_SPEED_OF_SOUND_MS).powf(2.)
+                * (Self::ISENTROPIC_EXPONENT_KAPPA - 1.)
+                / 2.)
+                + 1.)
+                .powf(Self::ISENTROPIC_EXPONENT_KAPPA / (Self::ISENTROPIC_EXPONENT_KAPPA - 1.))
+                - 1.)
+                * Pressure::new::<hectopascal>(Self::STANDARD_AIR_PRESSURE_HPA);
+
+        self.write_by_name(
+            Self::DYNAMIC_PRESSURE,
+            dynamic_pressure.get::<inch_of_mercury>(),
+        );
+        self.recompute_total_air_temperature();
+        self
+    }
+
+    fn recompute_total_air_temperature(&mut self) {
+        let static_pressure = Pressure::new::<inch_of_mercury>(
+            self.read_by_name(UpdateContext::AMBIENT_PRESSURE_KEY),
+        );
+        let dynamic_pressure =
+            Pressure::new::<inch_of_mercury>(self.read_by_name(Self::DYNAMIC_PRESSURE));
+        let static_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(
+            self.read_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY),
+        );
+
+        let mach = (5.
+            * (((dynamic_pressure / static_pressure).get::<ratio>() + 1.).powf(2. / 7.) - 1.))
+            .sqrt();
+
+        let tat = static_air_temperature * (1. + 0.2 * mach.powf(2.));
+        self.write_by_name(Self::TOTAL_AIR_TEMPERATURE, tat);
     }
 
     fn total_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
         self.write_by_name(Self::TOTAL_AIR_TEMPERATURE, temperature);
+        self
+    }
+
+    fn static_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
+        self.write_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY, temperature);
+        self.recompute_total_air_temperature();
         self
     }
 
@@ -471,10 +557,7 @@ where
     }
 
     /// caution: sets tas, true heading, gs, true track, and pitch angle
-    fn wind_of(self, angle: Angle, velocity: Velocity) -> Self {
-        let tas = Velocity::new::<knot>(
-            InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 10.,
-        );
+    fn wind_of(self, angle: Angle, velocity: Velocity, tas: Velocity) -> Self {
         let heading = Angle::new::<degree>(0.);
 
         let gs = Velocity::new::<knot>(
@@ -486,8 +569,7 @@ where
         );
         let track = (tas / gs).acos();
 
-        self.true_airspeed_of(tas)
-            .true_heading_of(heading)
+        self.true_heading_of(heading)
             .ground_speed_of(gs)
             .true_track_of(track)
             .pitch_of(Angle::default())
@@ -812,6 +894,11 @@ where
     }
 
     fn assert_adr_data_valid(&mut self, valid: bool) {
+        self.assert_adr_data_without_tat_valid(valid);
+        self.assert_adr_data_tat_valid(valid);
+    }
+
+    fn assert_adr_data_without_tat_valid(&mut self, valid: bool) {
         assert_eq!(
             !self
                 .corrected_average_static_pressure()
@@ -836,8 +923,11 @@ where
         );
         assert_eq!(!self.true_airspeed().is_failure_warning(), valid);
         assert_eq!(!self.static_air_temperature().is_failure_warning(), valid);
-        assert_eq!(!self.total_air_temperature().is_failure_warning(), valid);
         assert_eq!(!self.angle_of_attack().is_failure_warning(), valid);
+    }
+
+    fn assert_adr_data_tat_valid(&mut self, valid: bool) {
+        assert_eq!(!self.total_air_temperature().is_failure_warning(), valid);
     }
 
     fn assert_adr_status_words_available(&mut self, available: bool) {
@@ -1119,7 +1209,9 @@ adiru_test!(
             maint_word_flags.unwrap() & IrMaintFlags::ON_DC,
             IrMaintFlags::ON_DC
         );
-        test_bed.assert_all_adr_words_available(true);
+        // Need to test without TAT, as AdmAdr has TAT as analog input
+        test_bed.assert_adr_data_without_tat_valid(false);
+        test_bed.assert_adr_status_words_available(true);
         test_bed.assert_all_ir_words_available(true);
         assert!(test_bed.on_bat_light_illuminated());
 
@@ -1305,14 +1397,19 @@ mod adr {
     adiru_test!(
         computed_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_30_knots,
         |adiru_number| {
-            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-            test_bed.set_indicated_airspeed(velocity);
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS + 0.1);
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
             test_bed.run();
 
-            assert_eq!(
-                test_bed.computed_airspeed().normal_value().unwrap(),
-                velocity
+            assert_about_eq!(
+                test_bed
+                    .computed_airspeed()
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
+                velocity.get::<knot>(),
+                1e-5
             );
         }
     );
@@ -1320,9 +1417,9 @@ mod adr {
     adiru_test!(
         computed_airspeed_is_ncd_and_zero_when_less_than_30_knots,
         |adiru_number| {
-            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS - 0.01);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-            test_bed.set_indicated_airspeed(velocity);
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_CAS - 0.1);
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
             test_bed.run();
 
             assert_about_eq!(test_bed.computed_airspeed().value().get::<knot>(), 0.);
@@ -1358,8 +1455,8 @@ mod adr {
         |adiru_number| {
             // check a value that's below VMO, but above MMO at higher altitudes
             let velocity = Velocity::new::<knot>(330.);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-            test_bed.set_indicated_airspeed(velocity);
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
             test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
             test_bed.run();
 
@@ -1377,8 +1474,8 @@ mod adr {
             let fl390_pressure =
                 InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
             let velocity = MachNumber(0.78).to_cas(fl390_pressure);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-            test_bed.set_indicated_airspeed(velocity);
+            let mut test_bed =
+                adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
             test_bed.set_ambient_pressure(fl390_pressure);
             test_bed.run();
 
@@ -1392,8 +1489,7 @@ mod adr {
 
     adiru_test!(overspeed_warning_is_active_above_vmo, |adiru_number| {
         let velocity = Velocity::new::<knot>(400.);
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
         test_bed.set_ambient_pressure(InternationalStandardAtmosphere::ground_pressure());
         test_bed.run();
 
@@ -1409,8 +1505,7 @@ mod adr {
             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(39_000.));
         // This speed will be above MMO, but below VMO, so we ensure MMO gets tested.
         let velocity = MachNumber(0.9).to_cas(fl390_pressure);
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(velocity);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).computed_airspeed_of(velocity);
         test_bed.set_ambient_pressure(fl390_pressure);
         test_bed.run();
 
@@ -1475,18 +1570,26 @@ mod adr {
     adiru_test!(
         true_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots,
         |adiru_number| {
-            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS);
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS + 0.1);
             let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).true_airspeed_of(velocity);
             test_bed.run();
 
-            assert_eq!(test_bed.true_airspeed().normal_value().unwrap(), velocity);
+            assert_about_eq!(
+                test_bed
+                    .true_airspeed()
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
+                velocity.get::<knot>(),
+                1e-3
+            );
         }
     );
 
     adiru_test!(
         true_airspeed_is_ncd_and_zero_when_less_than_60_knots,
         |adiru_number| {
-            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS - 0.01);
+            let velocity = Velocity::new::<knot>(AdmAirDataReferenceRuntime::MINIMUM_TAS - 0.1);
             let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).true_airspeed_of(velocity);
             test_bed.run();
 
@@ -1497,8 +1600,7 @@ mod adr {
 
     adiru_test!(static_air_temperature_is_supplied_by_adr, |adiru_number| {
         let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_ambient_temperature(sat);
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).static_air_temperature_of(sat);
         test_bed.run();
 
         assert_eq!(
@@ -1522,10 +1624,12 @@ mod adr {
         angle_of_attack_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots,
         |adiru_number| {
             let angle = Angle::new::<degree>(1.);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).angle_of_attack_of(angle);
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
-                AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA,
-            ));
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .angle_of_attack_of(angle)
+                .and()
+                .computed_airspeed_of(Velocity::new::<knot>(
+                    AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA + 0.1,
+                ));
             test_bed.run();
 
             assert_eq!(test_bed.angle_of_attack().normal_value().unwrap(), angle);
@@ -1536,10 +1640,11 @@ mod adr {
         angle_of_attack_is_ncd_when_less_than_60_knots,
         |adiru_number| {
             let angle = Angle::new::<degree>(1.);
-            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).angle_of_attack_of(angle);
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
-                AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA - 0.01,
-            ));
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .angle_of_attack_of(angle)
+                .computed_airspeed_of(Velocity::new::<knot>(
+                    AdmAirDataReferenceRuntime::MINIMUM_CAS_FOR_AOA - 0.1,
+                ));
             test_bed.run();
 
             assert_eq!(test_bed.angle_of_attack().value(), angle);
@@ -1548,49 +1653,49 @@ mod adr {
     );
 
     adiru_test!(discrete_output_speed_warning_1, |adiru_number| {
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(95.));
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+            .computed_airspeed_of(Velocity::new::<knot>(95.));
         test_bed.run();
 
         assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_1));
 
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(105.));
+        test_bed = test_bed.computed_airspeed_of(Velocity::new::<knot>(105.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_1));
     });
 
     adiru_test!(discrete_output_speed_warning_2, |adiru_number| {
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(45.));
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+            .computed_airspeed_of(Velocity::new::<knot>(45.));
         test_bed.run();
 
         assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_2));
 
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(55.));
+        test_bed = test_bed.computed_airspeed_of(Velocity::new::<knot>(55.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_2));
     });
 
     adiru_test!(discrete_output_speed_warning_3, |adiru_number| {
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(150.));
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+            .computed_airspeed_of(Velocity::new::<knot>(150.));
         test_bed.run();
 
         assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_3));
 
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(160.));
+        test_bed = test_bed.computed_airspeed_of(Velocity::new::<knot>(160.));
         test_bed.run();
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_3));
     });
 
     adiru_test!(discrete_output_speed_warning_4, |adiru_number| {
-        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(255.));
+        let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+            .computed_airspeed_of(Velocity::new::<knot>(255.));
         test_bed.run();
 
         assert!(test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_4));
 
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
+        test_bed = test_bed.computed_airspeed_of(Velocity::new::<knot>(265.));
         test_bed.run();
         assert!(!test_bed.query(|a| AdirsTestBed::get_adr_discrete_outputs(a).low_speed_warning_4));
     });
@@ -2494,9 +2599,12 @@ mod ir {
         |adiru_number| {
             let wind_angle = Angle::new::<degree>(270.);
             let wind_speed = Velocity::new::<knot>(40.);
-
-            let mut test_bed =
-                adiru_aligned_test_bed::<T>(adiru_number).wind_of(wind_angle, wind_speed);
+            let tas = Velocity::new::<knot>(
+                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 1.,
+            );
+            let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
+                .wind_of(wind_angle, wind_speed, tas)
+                .true_airspeed_of(tas);
             test_bed.run();
 
             assert_about_eq!(
@@ -2533,13 +2641,14 @@ mod ir {
     adiru_test!(
         wind_is_zero_when_true_airspeed_less_than_100_knots,
         |adiru_number| {
+            let tas = Velocity::new::<knot>(
+                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS - 0.1,
+            );
+
             let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
-                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.), tas)
                 .and()
-                .true_airspeed_of(Velocity::new::<knot>(
-                    InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS
-                        - 0.01,
-                ));
+                .true_airspeed_of(tas);
             test_bed.run();
 
             test_bed.assert_wind_direction_and_velocity_zero();
@@ -2549,8 +2658,13 @@ mod ir {
     adiru_test!(
         wind_is_zero_when_true_airspeed_is_unavailable,
         |adiru_number| {
+            let tas = Velocity::new::<knot>(
+                InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS - 0.1,
+            );
+
             let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number)
-                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.), tas)
+                .true_airspeed_of(tas)
                 .and()
                 .adr_push_button_pushed(true);
 
