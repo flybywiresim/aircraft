@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { EngPage } from './Pages/Eng/Eng';
 import { BleedPage } from './Pages/Bleed/Bleed';
 import { PressPage } from './Pages/Press/Press';
