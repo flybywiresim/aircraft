@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 import { OitFolder, OitFile } from '../OitAvncsFolderNavigator';
 import { OitUiService } from '../../../OitUiService';
 

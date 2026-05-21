@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';

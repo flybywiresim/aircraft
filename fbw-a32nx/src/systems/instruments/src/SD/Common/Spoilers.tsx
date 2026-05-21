@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk-react';
 import { ComponentPositionProps } from './ComponentPositionProps';
 import { ComponentSidePositionProps } from './ComponentSidePositionProps';
 import { SvgGroup } from './SvgGroup';

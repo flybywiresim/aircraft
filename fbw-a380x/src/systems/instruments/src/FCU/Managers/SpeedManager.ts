@@ -3,7 +3,7 @@
 
 import { ConsumerSubject, EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 

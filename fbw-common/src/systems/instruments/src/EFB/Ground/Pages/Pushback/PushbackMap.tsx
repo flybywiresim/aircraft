@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk-react';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';

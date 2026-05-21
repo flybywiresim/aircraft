@@ -19,23 +19,23 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { DmcLogicEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
+import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { NDControlEvents } from '../NDControlEvents';
+import { NDSimvars } from '../NDSimvarPublisher';
 import {
   VD_FPA_TO_DISPLAY_ANGLE,
   VERTICAL_DISPLAY_CANVAS_HEIGHT,
   VERTICAL_DISPLAY_CANVAS_WIDTH,
   VerticalDisplay,
-} from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
-import { VerticalDisplayWaypointLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayWaypointLayer';
+} from './VerticalDisplay';
+import { VerticalDisplayWaypointLayer } from './VerticalDisplayWaypointLayer';
 import { VdPseudoWaypointLayer } from './VdPseudoWaypointLayer';
-import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayRunwayLayer';
+import { VerticalDisplayRunwayLayer } from './VerticalDisplayRunwayLayer';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { MfdSurvEvents } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;

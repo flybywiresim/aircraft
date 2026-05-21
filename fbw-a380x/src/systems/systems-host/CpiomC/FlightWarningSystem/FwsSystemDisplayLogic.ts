@@ -4,7 +4,7 @@
 import { Arinc429Register, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
-import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore } from './FwsCore';
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
 const ENG_CONDITION_TIMER_DURATION = 10;

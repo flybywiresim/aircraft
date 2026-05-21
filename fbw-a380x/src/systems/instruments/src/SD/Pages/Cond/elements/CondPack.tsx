@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { Triangle } from '@instruments/common/Shapes';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 interface CondPackProps {
   x: number;
