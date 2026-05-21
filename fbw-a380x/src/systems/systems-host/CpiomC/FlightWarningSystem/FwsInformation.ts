@@ -4,7 +4,7 @@
 
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
 import { EcamInfos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
 export interface FwsInfoItem extends FwsSuppressableItem {}
 

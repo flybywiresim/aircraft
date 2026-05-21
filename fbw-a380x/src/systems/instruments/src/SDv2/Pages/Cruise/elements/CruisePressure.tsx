@@ -1,6 +1,6 @@
 import { ConsumerSubject, EventBus, FSComponent, MappedSubject, SubscribableUtils, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent as DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
-import { splitDecimals, GaugeComponent, GaugeMarkerComponent } from 'instruments/src/MsfsAvionicsCommon/gauges';
+import { DestroyableComponent as DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { splitDecimals, GaugeComponent, GaugeMarkerComponent } from '../../../../MsfsAvionicsCommon/gauges';
 import { SDSimvars } from '../../../SDSimvarPublisher';
 import { Arinc429LocalVarConsumerSubject, FmsData } from '@flybywiresim/fbw-sdk';
 
