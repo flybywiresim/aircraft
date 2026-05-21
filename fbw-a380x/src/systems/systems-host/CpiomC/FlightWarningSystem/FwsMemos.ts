@@ -10,7 +10,7 @@ import {
   SubscribableMapFunctions,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore } from './FwsCore';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];

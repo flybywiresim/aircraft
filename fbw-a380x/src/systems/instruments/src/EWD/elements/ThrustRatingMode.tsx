@@ -8,9 +8,9 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { ThrustGauge } from 'instruments/src/EWD/elements/ThrustGauge';
+import { Arinc429Values } from '../shared/ArincValueProvider';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
+import { ThrustGauge } from './ThrustGauge';
 
 export class N1Limit extends DisplayComponent<{
   x: number;

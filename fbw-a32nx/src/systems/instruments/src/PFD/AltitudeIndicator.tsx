@@ -22,15 +22,15 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
 
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { A32NXFwcBusEvents } from '@shared/publishers/A32NXFwcBusPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
