@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import {
   ScrollableContainer,

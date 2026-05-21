@@ -13,15 +13,15 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomMfdPageProps } from '../../MFD';
 
-import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { NewAtisIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/NewAtisIcon';
-import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUpdateIcon';
-import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
+import { AirportFormat } from '../../pages/common/DataEntryFormats';
+import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { NewAtisIcon } from './Elements/NewAtisIcon';
+import { AutoUpdateIcon } from './Elements/AutoUpdateIcon';
+import { AutoPrintIcon } from './Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 import { AtisMessage, AtisType } from '@datalink/common';
 import { AtcDatalinkMessages } from '../../ATCCOM/AtcDatalinkPublisher';

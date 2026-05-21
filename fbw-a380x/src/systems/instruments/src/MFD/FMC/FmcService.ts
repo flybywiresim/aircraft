@@ -8,12 +8,12 @@ import {
   Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
-import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
-import { FmcIndex, FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { FlightManagementComputer } from './FlightManagementComputer';
+import { FmcInterface, FmcOperatingModes } from './FmcInterface';
+import { FmcIndex, FmcServiceInterface } from './FmcServiceInterface';
+import { MfdDisplayInterface } from '../MFD';
+import { MfdSimvars } from '../shared/MFDSimvarPublisher';
+import { ResetPanelSimvars } from '../../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { DummyFlightManagementComputer } from './DummyFlightManagementComputer';
 
 /*

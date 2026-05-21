@@ -10,13 +10,13 @@ import {
 
 import './MfdSurvStatusSwitching.scss';
 
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvStatusButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
-import { SurvStatusItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
+import { MfdSurvEvents } from '../../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
+import { SurvStatusButton } from '../../../MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
+import { SurvStatusItem } from '../../../MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
 
