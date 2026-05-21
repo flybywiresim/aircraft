@@ -76,6 +76,7 @@ import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
+import { isCabPressManMode } from './CabPressMemoUtils';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 import {
@@ -588,6 +589,14 @@ export class FwsCore {
   public readonly flowSelectorKnob = Subject.create(0);
 
   public readonly manCabinAltMode = Subject.create(false);
+
+  public readonly manCabinVsMode = Subject.create(false);
+
+  public readonly cabPressManMode = MappedSubject.create(
+    ([manCabinAltMode, manCabinVsMode]) => isCabPressManMode(manCabinAltMode, manCabinVsMode),
+    this.manCabinAltMode,
+    this.manCabinVsMode,
+  );
 
   private readonly cabinAltitude = Arinc429Register.empty();
 
@@ -4239,6 +4248,7 @@ export class FwsCore {
     );
 
     this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
+    this.manCabinVsMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO', 'bool'));
 
     if (flightPhase8) {
       this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');

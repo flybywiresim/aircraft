@@ -11,6 +11,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { getCabPressManModeMemoCode } from './CabPressMemoUtils';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];
@@ -37,6 +38,13 @@ export class FwsMemos {
       simVarIsActive: this.fws.highLandingFieldElevation,
       whichCodeToReturn: () => [0],
       codesToReturn: ['210000001'],
+      memoInhibit: () => false,
+    },
+    210000002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.cabPressManMode,
+      whichCodeToReturn: () => [getCabPressManModeMemoCode(this.fws.flightPhase.get()) === '210000002' ? 0 : 1],
+      codesToReturn: ['210000002', '210000003'],
       memoInhibit: () => false,
     },
     271000001: {
