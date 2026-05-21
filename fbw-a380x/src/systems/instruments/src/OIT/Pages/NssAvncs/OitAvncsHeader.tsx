@@ -2,12 +2,12 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
 import { FmsData } from '@flybywiresim/fbw-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
 interface OitAvncsHeaderProps {
   readonly bus: EventBus;

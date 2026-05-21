@@ -19,9 +19,9 @@ import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
 import { VideoPage } from './Pages/Video/VideoPage';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 import '../index.scss';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export const SystemDisplay = () => {
   // make sure this is in line with the enum in EcamSystemPages.ts

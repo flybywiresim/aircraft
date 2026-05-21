@@ -34,8 +34,8 @@ import {
 import { NDComponent } from '@flybywiresim/navigation-display';
 import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc } from '@flybywiresim/oanc';
 
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
-import { MouseCursor, MouseCursorColor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { ContextMenu, ContextMenuElement } from '../MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { MouseCursor, MouseCursorColor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 import { EraseSymbolsDialog, OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -51,15 +51,15 @@ import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
-import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
 import './oans-style.scss';
-import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
+import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
 import { A380XElectricalSystemPublisher } from '@shared/publishers/A380XElectricalSystemPublisher';
 
 declare type MousePosition = {

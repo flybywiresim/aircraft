@@ -5,7 +5,7 @@
 
 import React, { FC, useState, useEffect } from 'react';
 import { Arc, Needle } from '@instruments/common/gauges';
-import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';

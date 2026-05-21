@@ -10,7 +10,7 @@ import { Aileron, AileronPosition, AileronSide } from './elements/Aileron';
 import { Rudder, RudderPosition } from './elements/Rudder';
 import { RudderTrim } from './elements/RudderTrim';
 import { Spoiler, SpoilerSide } from './elements/Spoiler';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 export const FctlPage = () => {
   const [onGround] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'boolean', 500); // TODO: Use better logic

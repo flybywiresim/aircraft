@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk-react';
 import React from 'react';
 import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
