@@ -112,6 +112,7 @@ impl SimulationElement for StaticPort {
 
 /// A pressure tube that carries pressure between two points. Currently represents the connection
 /// between left and right static ports 3 and is simulated as a simple averageing operation.
+#[derive(Default)]
 pub struct PressureTube {
     average_static_pressure: Pressure,
 }

@@ -252,7 +252,7 @@ impl A320AdirsElectricalHarness {
         context: &UpdateContext,
         adirs: &mut A320AirDataInertialReferenceSystem,
     ) {
-        (1..=3).into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_before_adirus(context, &mut adirs[adiru_num]);
         });
@@ -264,14 +264,14 @@ impl A320AdirsElectricalHarness {
     pub fn update_after_adirus(&mut self, adirs: &A320AirDataInertialReferenceSystem) {
         self.on_bat_light = false;
 
-        (1..=3).into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
                 let adiru = &adirs[adiru_num];
                 let adiru_harness = &mut self[adiru_num ];
                 adiru_harness.update_after_adirus(adiru);
 
                 let adiru_is_on_bat =
                     <AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> as InertialReferenceDiscreteOutput>::discrete_outputs(
-                        &adiru,
+                        adiru,
                     ).battery_operation;
 
                 self.on_bat_light |= adiru_is_on_bat;
@@ -528,11 +528,11 @@ impl A320AdiruElectricalHarness {
     ) {
         let adr_discrete_outputs =
             <AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> as AirDataReferenceDiscreteOutput>::discrete_outputs(
-                &adiru,
+                adiru,
             );
         let ir_discrete_outputs =
             <AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> as InertialReferenceDiscreteOutput>::discrete_outputs(
-                &adiru,
+                adiru,
             );
 
         self.adr_off_light = adr_discrete_outputs.adr_off;
@@ -595,10 +595,10 @@ impl SimulationElement for A320AdiruElectricalHarness {
         self.backup_powered = buses.is_powered(self.backup_powersupply);
         self.backup_powersupply_relay_switching_powered_1 = self
             .backup_powersupply_relay_switching_1
-            .map_or(false, |bus| buses.is_powered(bus));
+            .is_some_and(|bus| buses.is_powered(bus));
         self.backup_powersupply_relay_switching_powered_2 = self
             .backup_powersupply_relay_switching_2
-            .map_or(false, |bus| buses.is_powered(bus));
+            .is_some_and(|bus| buses.is_powered(bus));
 
         self.aoa_excitation_powered = buses.is_powered(self.aoa_excitation_power_source);
     }

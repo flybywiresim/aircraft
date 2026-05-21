@@ -265,14 +265,14 @@ impl A380AdirsElectricalHarness {
                 && self.dc_ess_powered
                 && self.air_data_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::CaptOn3;
 
-        (1..=3).into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_before_adirus(context, &mut adirs[adiru_num]);
         });
     }
 
     pub fn update_after_adirus(&mut self, adirs: &A380AirDataInertialReferenceSystem) {
-        (1..=3).into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             let adiru = &adirs[adiru_num];
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_after_adirus(adiru);
@@ -597,11 +597,11 @@ impl A380AdiruElectricalHarness {
     ) {
         let adr_discrete_outputs =
             <AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> as AirDataReferenceDiscreteOutput>::discrete_outputs(
-                &adiru,
+                adiru,
             );
         let ir_discrete_outputs =
             <AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> as InertialReferenceDiscreteOutput>::discrete_outputs(
-                &adiru,
+                adiru,
             );
 
         self.adr_off_light = adr_discrete_outputs.adr_off;
@@ -658,11 +658,11 @@ impl SimulationElement for A380AdiruElectricalHarness {
         self.primary_powered = buses.is_powered(self.primary_powersupply);
         self.primary_2_powered = self
             .primary_powersupply_2
-            .map_or(false, |bus| buses.is_powered(bus));
+            .is_some_and(|bus| buses.is_powered(bus));
 
         self.backup_powered = buses.is_powered(self.backup_powersupply);
         self.backup_powersupply_relay_switching_powered = self
             .backup_powersupply_relay_switching
-            .map_or(false, |bus| buses.is_powered(bus));
+            .is_some_and(|bus| buses.is_powered(bus));
     }
 }

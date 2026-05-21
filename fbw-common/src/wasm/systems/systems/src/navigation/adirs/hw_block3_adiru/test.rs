@@ -296,9 +296,9 @@ impl Aircraft for TestAircraft<AdmAirDataReferenceRuntime> {
 
         self.adiru.update(
             context,
-            &self.harness.adr_discrete_inputs(),
+            self.harness.adr_discrete_inputs(),
             self.adm_sensors_complex.adr_analog_inputs(),
-            &self.harness.ir_discrete_inputs(),
+            self.harness.ir_discrete_inputs(),
             &self.test_fcu,
             &self.test_adr_1,
             &self.test_adr_2,
@@ -315,9 +315,9 @@ impl Aircraft for TestAircraft<IntegratedAirDataReferenceRuntime> {
 
         self.adiru.update(
             context,
-            &self.harness.adr_discrete_inputs(),
+            self.harness.adr_discrete_inputs(),
             self.adm_sensors_complex.adr_analog_inputs(),
-            &self.harness.ir_discrete_inputs(),
+            self.harness.ir_discrete_inputs(),
             &self.test_fcu,
             &self.test_adr_1,
             &self.test_adr_2,
