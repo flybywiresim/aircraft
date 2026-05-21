@@ -48,7 +48,7 @@ function createTrack(addonKey, prNumber, prTitle, prBody, textureQuality) {
   const addon = addonKey.includes('a32nx') ? 'a32nx' : addonKey.includes('a380x') ? 'a380x' : addonKey;
   const simulator = addonKey.includes('fs2024') ? 'msfs2024' : addonKey.includes('fs2020') ? 'msfs2020' : '';
 
-  const baseUrl = `https://flybywirecdn.com/addons/${simulator}/${addon}/pr-${prNumber}`;
+  const baseUrl = `https://flybywirecdn.com/addons/${simulator}/${addon}/pr-${prNumber}${textureQualitySuffix}`;
 
   return {
     name: trackName,
