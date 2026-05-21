@@ -9,7 +9,7 @@ import {
 import { ArincEventBus, FailuresConsumer, FmsDataPublisher } from '@flybywiresim/fbw-sdk';
 import { SD } from './SD';
 import { SDSimvarPublisher } from './SDSimvarPublisher';
-import { AdirsValueProvider } from 'instruments/src/MsfsAvionicsCommon/AdirsValueProvider';
+import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXAdrBusPublisher } from '@shared/publishers/A32NXAdrBusPublisher';
 import { A32NXFacBusPublisher } from '@shared/publishers/A32NXFacBusPublisher';
