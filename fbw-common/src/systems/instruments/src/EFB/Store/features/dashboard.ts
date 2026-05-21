@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MetarParserType } from '@flybywiresim/fbw-sdk';
+import { MetarParserType } from '@flybywiresim/fbw-sdk-react';
 
 /**
  * DashboardState holds any preservable states on the Dashboard Widgets and its

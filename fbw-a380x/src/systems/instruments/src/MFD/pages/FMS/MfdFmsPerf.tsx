@@ -1,8 +1,8 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import {
   ArraySubject,
@@ -18,10 +18,10 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonGroup } from '../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
 import './MfdFmsPerf.scss';
 import {
@@ -39,14 +39,14 @@ import {
   TemperatureFormat,
   WindDirectionFormat,
   WindSpeedFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
+} from '../common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { ConfirmationDialog } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { ConfirmationDialog } from '../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
+import { FmsPage } from '../common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
-import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FmgcData } from '../../FMC/fmgc';
+import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
@@ -56,7 +56,7 @@ import {
   showReturnButtonUriExtra,
 } from '../../shared/utils';
 import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdFmsFplnVertRev } from './F-PLN/MfdFmsFplnVertRev';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import {

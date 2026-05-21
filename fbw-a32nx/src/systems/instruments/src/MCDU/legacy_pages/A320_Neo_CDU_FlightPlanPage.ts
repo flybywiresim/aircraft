@@ -1126,28 +1126,30 @@ export class CDUFlightPlanPage {
         `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`,
       ];
 
-      addLskAt(
-        5,
-        () => mcdu.getDelaySwitchPage(),
-        () => {
-          mcdu.returnPageCallback = () => {
-            CDUFlightPlanPage.ShowDestinationPage(mcdu, isPageB, forPlan);
-          };
-          CDULateralRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg, targetPlan.destinationLegIndex, forPlan);
-          mcdu.efisInterfaces?.L.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
-          mcdu.efisInterfaces?.R.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
-        },
-      );
+      const destLegIndex = targetPlan.destinationLegIndex;
+      const destLeg = targetPlan.destinationLeg;
+      if (destLegIndex !== null && destLeg && isLeg(destLeg)) {
+        addLskAt(
+          5,
+          () => mcdu.getDelaySwitchPage(),
+          () => {
+            mcdu.returnPageCallback = () => {
+              CDUFlightPlanPage.ShowDestinationPage(mcdu, isPageB, forPlan);
+            };
+            CDULateralRevisionPage.ShowPage(mcdu, destLeg, destLegIndex, forPlan);
+            mcdu.efisInterfaces?.L.setPlanCentre(targetPlan.index, destLegIndex, false);
+            mcdu.efisInterfaces?.R.setPlanCentre(targetPlan.index, destLegIndex, false);
+          },
+        );
 
-      addRskAt(
-        5,
-        () => mcdu.getDelaySwitchPage(),
-        () => {
-          if (isLeg(targetPlan.destinationLeg)) {
+        addRskAt(
+          5,
+          () => mcdu.getDelaySwitchPage(),
+          () => {
             CDUVerticalRevisionPage.ShowPage(
               mcdu,
-              targetPlan.destinationLeg,
-              targetPlan.destinationLegIndex,
+              destLeg,
+              destLegIndex,
               undefined,
               undefined,
               undefined,
@@ -1155,9 +1157,9 @@ export class CDUFlightPlanPage {
               forPlan,
               false,
             );
-          }
-        },
-      );
+          },
+        );
+      }
     }
 
     // scrollText pad to 10 rows

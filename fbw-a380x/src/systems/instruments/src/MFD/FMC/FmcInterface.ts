@@ -4,11 +4,11 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
-import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
-import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
-import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { FmsErrorMessage } from './FlightManagementComputer';
+import { FmcAircraftInterface } from './FmcAircraftInterface';
+import { MfdDisplayInterface } from '../MFD';
+import { FmgcDataService } from './fmgc';
+import { TypeIMessage, TypeIIMessage } from '../shared/NXSystemMessages';
 import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
