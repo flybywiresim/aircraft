@@ -1545,7 +1545,7 @@ export class A320_Neo_CDU_MainDisplay
     if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
       try {
         this.mcduServerClient.send(message);
-      } catch (e) {
+      } catch (_e) {
         /** ignore **/
       }
     }

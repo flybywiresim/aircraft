@@ -11,7 +11,7 @@ import {
   SentryConsentState,
   SENTRY_CONSENT_KEY,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { PageLink, pathify, t, TabRoutes } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore

@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import '../index.scss';
+import './style.scss';
+
 import { Clock, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
-import '../index.scss';
-import './style.scss';
-import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
+import { EngineWarningDisplay } from './EWD';
 import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
-import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
-import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FcdcSimvarPublisher } from '../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();

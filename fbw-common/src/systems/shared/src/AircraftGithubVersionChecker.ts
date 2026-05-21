@@ -201,7 +201,7 @@ export class AircraftGithubVersionChecker {
     try {
       const edition = await AircraftGithubVersionChecker.getEdition(aircraft);
       return SimVar.SetSimVarValue('L:FBW_BUILD_EDITION', 'enum', edition);
-    } catch (e) {
+    } catch (_e) {
       return SimVar.SetSimVarValue('L:FBW_BUILD_EDITION', 'enum', FbwBuildEdition.Unknown);
     }
   }

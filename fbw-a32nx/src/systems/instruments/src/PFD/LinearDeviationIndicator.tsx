@@ -5,8 +5,8 @@
 
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
+import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { Arinc429Values } from './shared/ArincValueProvider';
 
 type LinearDeviationIndicatorProps = {
   bus: ArincEventBus;

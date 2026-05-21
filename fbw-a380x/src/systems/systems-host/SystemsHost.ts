@@ -16,11 +16,11 @@ import {
   SimVarValueType,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { LegacyGpws } from 'systems-host/Misc/LegacyGpws';
-import { LegacyFuel } from 'systems-host/CpiomF/LegacyFuel';
-import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
-import { LegacyTcasComputer } from 'systems-host/Misc/tcas/components/LegacyTcasComputer';
-import { VhfRadio } from 'systems-host/Misc/Communications/VhfRadio';
+import { LegacyGpws } from './Misc/LegacyGpws';
+import { LegacyFuel } from './CpiomF/LegacyFuel';
+import { LegacySoundManager } from './Misc/LegacySoundManager';
+import { LegacyTcasComputer } from './Misc/tcas/components/LegacyTcasComputer';
+import { VhfRadio } from './Misc/Communications/VhfRadio';
 import {
   IrBusPublisher,
   ArincEventBus,
@@ -34,33 +34,43 @@ import {
   RaBusPublisher,
   LgciuBusPublisher,
 } from '@flybywiresim/fbw-sdk';
-import { AudioManagementUnit } from 'systems-host/Misc/Communications/AudioManagementUnit';
-import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPublisher';
-import { Transponder } from 'systems-host/Misc/Communications/Transponder';
-import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/Misc/powersupply';
-import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManager';
-import { AtsuSystem } from 'systems-host/CpiomD/atsu';
-import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { BrakeToVacate } from 'systems-host/PseudoPRIM/BrakeToVacate';
-import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
-import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { AudioManagementUnit } from './Misc/Communications/AudioManagementUnit';
+import { RmpAmuBusPublisher } from './Misc/Communications/RmpAmuBusPublisher';
+import { Transponder } from './Misc/Communications/Transponder';
+import { PowerSupplyBusTypes, PowerSupplyBusses } from './Misc/powersupply';
+import { SimAudioManager } from './Misc/Communications/SimAudioManager';
+import { AtsuSystem } from './CpiomD/atsu';
+import { FwsCore } from './CpiomC/FlightWarningSystem/FwsCore';
+// FIXME should not import from instruments
+import { FuelSystemPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { BrakeToVacate } from './PseudoPRIM/BrakeToVacate';
+// FIXME should not import from instruments
+import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+// FIXME should not import from instruments
+import { FcdcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+// FIXME should not import from instruments
 import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
-} from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+} from '../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+// FIXME should not import from instruments
 import {
   CpiomAvailableSimvarPublisher,
   CpiomAvailableSimvars,
-} from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
-import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
-import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+} from '../instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
+// FIXME should not import from instruments
+import { EgpwcBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+// FIXME should not import from instruments
+import { FGDataPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+// FIXME should not import from instruments
+import { AesuBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
-import { AutoThsTrimmer } from 'systems-host/PseudoPRIM/AutoThsTrimmer';
-import { EfisTawsBridge } from 'systems-host/Misc/EfisTawsBridge';
-import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { AutoThsTrimmer } from './PseudoPRIM/AutoThsTrimmer';
+import { EfisTawsBridge } from './Misc/EfisTawsBridge';
+// FIXME should not import from ND!!
+import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
+// FIXME should not import from instruments
+import { FmsMessagePublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class SystemsHost extends BaseInstrument {

@@ -17,7 +17,7 @@ import {
   useSimVar,
   ChecklistProvider,
   usePersistentSetting,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { Provider } from 'react-redux';
 import { customAlphabet } from 'nanoid';

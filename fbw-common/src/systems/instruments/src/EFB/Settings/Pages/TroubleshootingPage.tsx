@@ -10,7 +10,7 @@ import { useTroubleshooting } from '../../TroubleshootingContext';
 import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
 import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
 import { isMsfs2024 } from '../../../../../shared/src/MsfsDetect';
-import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 export const TroubleshootingPage = () => {
   const errorLog = useTroubleshooting();

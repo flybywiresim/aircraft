@@ -12,7 +12,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
+import { TriangleDown, TriangleUp } from './shapes';
 
 export type ButtonMenuItem = {
   label: string | Subscribable<string>;
