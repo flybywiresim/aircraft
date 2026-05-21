@@ -9,7 +9,7 @@ import {
   usePersistentProperty,
   usePersistentSetting,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import Slider from 'rc-slider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';

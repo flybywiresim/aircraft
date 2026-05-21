@@ -19,14 +19,14 @@ import {
   Arinc429Word,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { LagFilter, RateLimiter } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
-import { SfccEvents } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
+import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;

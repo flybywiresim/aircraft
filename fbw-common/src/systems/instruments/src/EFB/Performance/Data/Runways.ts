@@ -1,4 +1,4 @@
-import { RunwayDesignatorChar } from '@flybywiresim/fbw-sdk';
+import { RunwayDesignatorChar } from '@flybywiresim/fbw-sdk-react';
 
 export interface Runway {
   airportIdent: string;
