@@ -485,7 +485,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
                 onModified={async (v) => {
-                  const isClear = v === 'NONE';
+                  const isClear = !v || v === 'NONE';
                   this.altnIcao.set(isClear ? null : v);
                   if (v) {
                     if (!isClear) {
@@ -503,7 +503,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 disabled={this.altnDisabled}
-                canBeCleared={false}
+                canBeCleared={true}
                 value={this.altnIcao}
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
