@@ -136,6 +136,10 @@
 1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 1. [A32NX/MCDU] Fix NEW DEST not available in LAT REV on first flightplan waypoint - @BravoMike99 (bruno_pt99)
+1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
+1. [A32NX/FLIGHT MODEL] Updated flight model for MSFS 2024 - @donstim (donbikes)
+1. [A380X/FLIGHT MODEL] Fixes drag level for MSFS 2024 native version - @donstim (donbikes)
+1. [A380X/FUEL SYSTEM] Fixes unbalanced fuel transfer when transfer not active for all feed tanks - @donstim (donbikes)
 
 ## 0.14.0
 
@@ -282,6 +286,7 @@
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
 1. [MISC] Prevent long sim freezes in some scenarios in MSFS 2024 - @Benjozork (Benjamin Dupont)
+1. [A380X/Flight Model] Flight Model update for MSFS 2024 - @donstim (donbikes)
 
 ## 0.13.0
 
