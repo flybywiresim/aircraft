@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useCallback, useRef } from 'react';
-import { RateMultiplierKnob, UpdateValueCallback, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import { RateMultiplierKnob, UpdateValueCallback, useInteractionEvent } from '@flybywiresim/fbw-sdk-react';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
 interface Props {

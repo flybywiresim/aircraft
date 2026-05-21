@@ -7,7 +7,7 @@ import NacelleTemperatureGauge from './NacelleTemperatureGauge';
 import OilPressureGauge from './OilPressureGauge';
 import OilQuantityGauge from './OilQuantityGauge';
 import StartValve from './StartValve';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { NXUnits } from '@flybywiresim/fbw-sdk-react';
 
 interface EngineColumnProps {
   anyEngineRunning: boolean;

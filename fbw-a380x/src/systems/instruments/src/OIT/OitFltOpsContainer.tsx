@@ -24,7 +24,7 @@ import { OitNotFound } from './Pages/OitNotFound';
 import { OitFltOpsFooter } from './Pages/FltOps/OitFltOpsFooter';
 import { OisLaptop } from './OisLaptop';
 import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
-import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { OitFltOpsLoadingScreen } from './Pages/FltOps/OitFltOpsLoadingScreen';
 import { OitFltOpsLogin } from './Pages/FltOps/OitFltOpsLogin';
 

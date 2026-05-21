@@ -4,7 +4,7 @@
 
 /* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
-import { GPUControlEvents, isMsfs2024, useSimVar } from '@flybywiresim/fbw-sdk';
+import { GPUControlEvents, isMsfs2024, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import {
   ArchiveFill,
   ConeStriped,
