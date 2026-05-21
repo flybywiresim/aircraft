@@ -5,7 +5,8 @@
 
 <ModelInfo>
 	<LODS>
-		<LOD minSize="0" ModelFile="../../Part_Exterior_Fuselage/model/A380_FUSELAGE.gltf"/>
+		<LOD minSize="2" ModelFile="../../Part_Exterior_Fuselage/model/A380_FUSELAGE.gltf"/>
+		<LOD minSize="1" ModelFile="../../Part_Exterior_Fuselage/model/A380_FUSELAGE_LOD02.gltf"/>
 	</LODS>
 	<Behaviors>
 		<IncludeBase RelativeFile="../../Part_Exterior_Fuselage/model/A380_Fuselage_Behavior.xml"/>

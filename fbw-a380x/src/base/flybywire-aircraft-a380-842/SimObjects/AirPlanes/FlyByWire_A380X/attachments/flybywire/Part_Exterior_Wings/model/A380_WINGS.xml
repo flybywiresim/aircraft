@@ -3,7 +3,8 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 <ModelInfo>
 	<LODS>
-		<LOD minSize="0" ModelFile="../../Part_Exterior_Wings/model/A380_WINGS.gltf"/>
+		<LOD minSize="2" ModelFile="../../Part_Exterior_Wings/model/A380_WINGS.gltf"/>
+		<LOD minSize="1" ModelFile="../../Part_Exterior_Wings/model/A380_WINGS_LOD02.gltf"/>
 	</LODS>
 	<Behaviors>
 		<!-- <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml"/> -->
