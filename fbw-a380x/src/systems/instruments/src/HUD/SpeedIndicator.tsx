@@ -19,18 +19,18 @@ import {
   Arinc429Word,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { LagFilter, RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { WindMode, HudElems } from './HUDUtils';
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { AutoThrustMode } from '../../../shared/autopilot';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
-import { SfccEvents } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
+import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 45.6;
