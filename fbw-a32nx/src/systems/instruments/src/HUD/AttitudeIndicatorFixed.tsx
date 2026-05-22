@@ -3,26 +3,28 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
+  ConsumerSubject,
+  ConsumerValue,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
-  VNode,
-  ClockEvents,
+  SubscribableMapFunctions,
   Subscription,
-  ConsumerSubject,
-  MappedSubject,
+  VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429ConsumerSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 import { LateralMode } from '@shared/autopilot';
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlightPathDirector } from './FlightPathDirector';
-import { HudElems, LagFilter, FIVE_DEG } from './HUDUtils';
+import { HudElems, LagFilter, FIVE_DEG, calculateHorizonOffsetFromPitch } from './HUDUtils';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -438,90 +440,106 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
 }
 
 class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
-  private LSLocRef = FSComponent.createRef<SVGGElement>();
-  private lagFilter = new LagFilter(1.5);
-  private rightDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & HUDSimvars & Arinc429Values>();
 
-  private leftDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly lagFilter = new LagFilter(1.5);
 
-  private locDiamond = FSComponent.createRef<SVGPathElement>();
+  private readonly backbeam = ConsumerValue.create(this.sub.on('fm1Backbeam'), false);
 
-  private diamondGroup = FSComponent.createRef<SVGGElement>();
-  private handleNavRadialError(radialError: number): void {
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
+
+  private readonly locRadialError = ConsumerValue.create(this.sub.on('navRadialError'), 0);
+
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+
+  private readonly dots = Subject.create(0);
+
+  private YawLocRef = FSComponent.createRef<SVGGElement>();
+
+  private readonly isLeftDiamondHidden = this.dots.map((v) => v >= -2);
+
+  private readonly isRightDiamondHidden = this.dots.map((v) => v <= 2);
+
+  private readonly isLocDiamondHidden = this.dots.map((v) => v < -2 || v > 2);
+
+  private handleNavRadialError(): void {
+    const radialError = MathUtils.correctMsfsLocaliserError(this.locRadialError.get());
     const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
-    const dots = deviation / 0.8;
+    this.dots.set(((this.backbeam.get() ? -1 : 1) * deviation) / 0.8);
 
-    if (dots > 2) {
-      this.rightDiamond.instance.classList.remove('HiddenElement');
-      this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.classList.add('HiddenElement');
-    } else if (dots < -2) {
-      this.rightDiamond.instance.classList.add('HiddenElement');
-      this.leftDiamond.instance.classList.remove('HiddenElement');
-      this.locDiamond.instance.classList.add('HiddenElement');
-    } else {
-      this.locDiamond.instance.classList.remove('HiddenElement');
-      this.rightDiamond.instance.classList.add('HiddenElement');
-      this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.style.transform = `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`;
-    }
+    const LSLocGroupVerticalOffset = 105 + calculateHorizonOffsetFromPitch(this.pitch.get().value);
+    this.YawLocRef.instance.style.transform = `translate3d(467px, ${LSLocGroupVerticalOffset}px, 0px)`;
+    //transform="translate(467.5 105)"
+
+    console.log(
+      'handleNavRadialError:\n' +
+        '  pitch: ' +
+        this.pitch.get().value +
+        '  LSLocGroupVerticalOffset: ' +
+        LSLocGroupVerticalOffset,
+    );
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(
-      this.sub
-        .on('hasLoc')
-        //.whenChanged()
-        .handle((hasLoc) => {
-          if (hasLoc) {
-            this.diamondGroup.instance.classList.remove('HiddenElement');
-            this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
-          } else {
-            this.diamondGroup.instance.classList.add('HiddenElement');
-            this.lagFilter.reset();
-            this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
-          }
-        }),
-    );
-  }
+    const lagFilterSub = this.sub.on('realTime').handle(this.handleNavRadialError.bind(this), true);
 
-  destroy(): void {
-    for (const s of this.subscriptions) {
-      s.destroy();
-    }
+    this.hasLoc.sub((hasLoc) => {
+      if (hasLoc) {
+        lagFilterSub.resume(true);
+      } else {
+        lagFilterSub.pause();
+        this.lagFilter.reset();
+      }
+    });
 
-    super.destroy();
+    this.pitch.sub(() => {
+      this.handleNavRadialError();
+    });
   }
 
   render(): VNode {
     return (
-      <g id="YawLocSymbolsGroup" transform="translate(467.5 105)">
-        <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
+      <g ref={this.YawLocRef} id="YawLocSymbolsGroup">
+        <g id="LocalizerSymbolsGroup">
           <path class="NormalStroke Green" d="m137.01 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
           <path class="NormalStroke Green" d="m99.232 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
           <path class="NormalStroke Green" d="m212.56 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
           <path class="NormalStroke Green" d="m250.325 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
-          <g class="HiddenElement" ref={this.diamondGroup}>
+          <g
+            class={{
+              HiddenElement: this.hasLoc.map(SubscribableMapFunctions.not()),
+            }}
+          >
             <path
               id="LocDiamondRight"
-              ref={this.rightDiamond}
-              class="NormalStroke Green HiddenElement"
+              class={{
+                NormalStroke: true,
+                Green: true,
+                HiddenElement: this.isRightDiamondHidden,
+              }}
               d="m247.817 332.575 9.444 -6.3 -9.444 -6.3"
             />
             <path
               id="LocDiamondLeft"
-              ref={this.leftDiamond}
-              class="NormalStroke Green HiddenElement"
+              class={{
+                NormalStroke: true,
+                Green: true,
+                HiddenElement: this.isLeftDiamondHidden,
+              }}
               d="m96.715 332.575 -9.444 -6.3 9.444 -6.3"
             />
             <path
               id="LocDiamond"
-              ref={this.locDiamond}
-              class="NormalStroke Green HiddenElement"
+              class={{
+                NormalStroke: true,
+                Green: true,
+                HiddenElement: this.isLocDiamondHidden,
+              }}
+              style={{
+                transform: this.dots.map((dots) => `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`),
+              }}
               d="m162.823 326.275 9.444 6.3 9.444 -6.3 -9.444 -6.3z"
             />
           </g>
