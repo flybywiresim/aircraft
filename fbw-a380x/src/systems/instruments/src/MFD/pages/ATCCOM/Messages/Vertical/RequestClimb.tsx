@@ -18,7 +18,7 @@ export class RequestClimb extends DisplayComponent<MessageVisualizationProps> {
               value={Subject.create('')}
               containerStyle="width: 130px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -32,7 +32,7 @@ export class RequestClimb extends DisplayComponent<MessageVisualizationProps> {
               value={Subject.create('')}
               containerStyle="width: 337px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />

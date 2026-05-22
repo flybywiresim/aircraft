@@ -1,5 +1,5 @@
 import { ArraySubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from '../../../MFD';
+import { AtccomMfdPageProps } from '../../../MFD';
 import { RequestClimb } from './Vertical/RequestClimb';
 import { RequestDescend } from './Vertical/RequestDescend';
 import { RequestDepartureClearance } from './Clearance/RequestDepartureClearance';
@@ -9,12 +9,9 @@ import { RequestHeading } from './Lateral/RequestHeading';
 
 export const MaxRequestElements = 5;
 
-export interface MessageVisualizationProps extends AbstractMfdPageProps {
-  // x?: number;
-  // y?: number;
+export interface MessageVisualizationProps extends AtccomMfdPageProps {
   mode: string;
   index: number;
-  // messageElements: { id: string; message: string | undefined; readyToSend: boolean }[];
   messageElements: ArraySubject<MessageFrame>;
   onDelete: () => void;
 }
@@ -46,7 +43,7 @@ export const MessageTable: {
         <RequestClimb
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}
@@ -64,7 +61,7 @@ export const MessageTable: {
         <RequestDescend
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}
@@ -82,7 +79,7 @@ export const MessageTable: {
         <RequestDirect
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}
@@ -100,7 +97,7 @@ export const MessageTable: {
         <RequestHeading
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}
@@ -118,7 +115,7 @@ export const MessageTable: {
         <RequestGroundTrack
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}
@@ -136,7 +133,7 @@ export const MessageTable: {
         <RequestDepartureClearance
           bus={props.bus}
           mfd={props.mfd}
-          fmcService={props.fmcService}
+          atcService={props.atcService}
           mode={mode}
           index={index}
           messageElements={messageElements}

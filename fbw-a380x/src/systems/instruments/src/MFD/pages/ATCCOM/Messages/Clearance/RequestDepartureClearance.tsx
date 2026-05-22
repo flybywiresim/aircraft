@@ -143,7 +143,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
               value={this.originAirport}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -155,7 +155,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
               value={this.gate}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -167,7 +167,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
               value={this.atisCode}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -180,7 +180,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
               value={this.aircraftType}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -193,7 +193,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
               value={this.destAirport}
               containerStyle="width: 120px; margin-right: 5px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -205,10 +205,10 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
                 value={this.freeText}
                 containerStyle="width: 100%;"
                 alignText="flex-start"
-                // errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
-                canOverflow={true}
+                freeText={true}
               />
             </div>
             <div class="request-textbox-nav">
