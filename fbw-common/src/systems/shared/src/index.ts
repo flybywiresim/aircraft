@@ -55,3 +55,4 @@ export * from './types';
 export * from './TelexCheck';
 export * from './ViewListenerUtils';
 export * from './DateTimeFormatters';
+export * from './LegacyPopupTypes';

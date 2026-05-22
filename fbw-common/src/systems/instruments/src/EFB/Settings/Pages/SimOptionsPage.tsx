@@ -11,7 +11,7 @@ import {
   usePersistentProperty,
   usePersistentSetting,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
