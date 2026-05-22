@@ -13,7 +13,7 @@ import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
 import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import { ChecklistLineStyle, WD_NUM_LINES, WdLineData, WdSpecialLine } from '../../MsfsAvionicsCommon/EcamMessages';
-import { DestroyableComponent } from '../..//MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { FormattedFwcText } from './FormattedFwcText';
 import { EclSoftKeys } from './EclSoftKeys';
 import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
