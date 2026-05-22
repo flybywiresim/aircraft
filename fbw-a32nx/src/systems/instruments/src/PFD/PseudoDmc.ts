@@ -15,11 +15,13 @@ import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32N
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import {
+  AirDataSwitchingKnob,
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429WordData,
+  AttHdgSwitchingKnob,
   DmcSwitchingKnob,
   IrBusEvents,
 } from '@flybywiresim/fbw-sdk';
@@ -146,11 +148,17 @@ export class PseudoDmc implements Instrument {
       this.adrSwitchingKnob.sub(
         (knobPosition) => {
           if (this.isRightSide) {
-            this.dmcDiscreteWord272.setBitValue(13, knobPosition === 2);
-            this.dmcDiscreteWord272.setBitValue(14, knobPosition === 1 || knobPosition === 2);
+            this.dmcDiscreteWord272.setBitValue(13, knobPosition === AirDataSwitchingKnob.Fo);
+            this.dmcDiscreteWord272.setBitValue(
+              14,
+              knobPosition === AirDataSwitchingKnob.Norm || knobPosition === AirDataSwitchingKnob.Fo,
+            );
           } else {
-            this.dmcDiscreteWord272.setBitValue(13, knobPosition === 0 || knobPosition === 1);
-            this.dmcDiscreteWord272.setBitValue(14, knobPosition === 0);
+            this.dmcDiscreteWord272.setBitValue(
+              13,
+              knobPosition === AirDataSwitchingKnob.Capt || knobPosition === AirDataSwitchingKnob.Norm,
+            );
+            this.dmcDiscreteWord272.setBitValue(14, knobPosition === AirDataSwitchingKnob.Capt);
           }
           this.dmcDiscreteWord272.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         },
@@ -181,11 +189,17 @@ export class PseudoDmc implements Instrument {
       this.irSwitchingKnob.sub(
         (knobPosition) => {
           if (this.isRightSide) {
-            this.dmcDiscreteWord272.setBitValue(11, knobPosition === 2);
-            this.dmcDiscreteWord272.setBitValue(12, knobPosition === 1 || knobPosition === 2);
+            this.dmcDiscreteWord272.setBitValue(11, knobPosition === AttHdgSwitchingKnob.Fo);
+            this.dmcDiscreteWord272.setBitValue(
+              12,
+              knobPosition === AttHdgSwitchingKnob.Norm || knobPosition === AttHdgSwitchingKnob.Fo,
+            );
           } else {
-            this.dmcDiscreteWord272.setBitValue(11, knobPosition === 0 || knobPosition === 1);
-            this.dmcDiscreteWord272.setBitValue(12, knobPosition === 0);
+            this.dmcDiscreteWord272.setBitValue(
+              11,
+              knobPosition === AttHdgSwitchingKnob.Capt || knobPosition === AttHdgSwitchingKnob.Norm,
+            );
+            this.dmcDiscreteWord272.setBitValue(12, knobPosition === AttHdgSwitchingKnob.Capt);
           }
           this.dmcDiscreteWord272.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         },

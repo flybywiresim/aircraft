@@ -1049,7 +1049,7 @@ export class PseudoFWC {
 
   private readonly flightPhase78 = Subject.create(false);
 
-  private readonly flightPhase1_10 = Subject.create(false);
+  private flightPhase1_10 = false;
 
   private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
@@ -2228,7 +2228,7 @@ export class PseudoFWC {
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
     this.flightPhase678.set(flightPhase === 6 || flightPhase === 7 || flightPhase === 8);
     this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
-    this.flightPhase1_10.set(flightPhase === 1 || flightPhase === 10);
+    this.flightPhase1_10 = flightPhase === 1 || flightPhase === 10;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -4156,9 +4156,9 @@ export class PseudoFWC {
     );
 
     // TODO should come from the SDAC
-    const ir1FaultSignal = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE', 'number');
-    const ir2FaultSignal = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE', 'number');
-    const ir3FaultSignal = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE', 'number');
+    const ir1FaultSignal = this.sdac00401Word.bitValue(28);
+    const ir2FaultSignal = this.sdac00410Word.bitValue(28);
+    const ir3FaultSignal = this.sdac00411Word.bitValue(28);
 
     // Fake simplified emer elec
     const emergencyElecConfig = !this.ac1BusPowered.get() && !this.ac2BusPowered.get();
@@ -4220,41 +4220,33 @@ export class PseudoFWC {
     this.adr1and2and3FaultActive.set(
       !(!this.acESSBusPowered.get() && !this.ac2BusPowered.get() && !this.ac1BusPowered.get()) &&
         adr1and2and3Faulty &&
-        !this.flightPhase1_10.get(),
+        !this.flightPhase1_10,
     );
 
     this.adr1and2FaultActive.set(
-      !(this.flightPhase1_10.get() || (!this.ac2BusPowered.get() && !this.acESSBusPowered.get())) &&
+      !(this.flightPhase1_10 || (!this.ac2BusPowered.get() && !this.acESSBusPowered.get())) &&
         adr1Faulty &&
         adr2Faulty &&
-        !this.adr1and2and3FaultActive.get(),
+        !this.adr1and2and3FaultActive,
     );
     this.adr1and3FaultActive.set(
-      !this.flightPhase1_10.get() &&
-        adr1Faulty &&
-        adr3Faulty &&
-        !this.adr1and2and3FaultActive.get() &&
-        !emergencyElecConfig,
+      !this.flightPhase1_10 && adr1Faulty && adr3Faulty && !this.adr1and2and3FaultActive.get() && !emergencyElecConfig,
     );
     this.adr2and3FaultActive.set(
-      !this.flightPhase1_10.get() &&
-        adr2Faulty &&
-        adr3Faulty &&
-        !this.adr1and2and3FaultActive.get() &&
-        !emergencyElecConfig,
+      !this.flightPhase1_10 && adr2Faulty && adr3Faulty && !this.adr1and2and3FaultActive.get() && !emergencyElecConfig,
     );
 
     this.adr1FaultActive.set(
       adr1Faulty &&
         !(this.adr1and3FaultActive.get() || this.adr1and2FaultActive.get()) &&
-        !(this.flightPhase1_10.get() || !this.acESSBusPowered.get()) &&
+        !(this.flightPhase1_10 || !this.acESSBusPowered.get()) &&
         !this.adr1and2and3FaultActive.get(),
     );
 
     this.adr2FaultActive.set(
       adr2Faulty &&
         !(this.adr1and2FaultActive.get() || this.adr2and3FaultActive.get()) &&
-        !this.flightPhase1_10.get() &&
+        !this.flightPhase1_10 &&
         this.ac2BusPowered.get() &&
         !this.adr1and2and3FaultActive.get(),
     );
@@ -4266,7 +4258,7 @@ export class PseudoFWC {
         (this.adr3FaultFlipFlop.read() || this.adr3Used.get() || this.fwcFlightPhase.get() != 3) &&
         !(this.adr1and3FaultActive.get() || this.adr2and3FaultActive.get()) &&
         !this.adr1and2and3FaultActive.get() &&
-        !(this.flightPhase1_10.get() || !this.ac1BusPowered.get()),
+        !(this.flightPhase1_10 || !this.ac1BusPowered.get()),
     );
 
     // ALT ALERT
