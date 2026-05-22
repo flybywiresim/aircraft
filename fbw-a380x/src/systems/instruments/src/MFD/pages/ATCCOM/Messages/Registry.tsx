@@ -1,9 +1,9 @@
 import { ArraySubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { RequestClimb } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical/RequestClimb';
-import { RequestDescend } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical/RequestDescend';
-import { RequestDepartureClearance } from 'instruments/src/MFD/pages/ATCCOM/Messages/Clearance/RequestDepartureClearance';
-import { RequestDirect } from 'instruments/src/MFD/pages/ATCCOM/Messages/Lateral/RequestDirect';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { RequestClimb } from './Vertical/RequestClimb';
+import { RequestDescend } from './Vertical/RequestDescend';
+import { RequestDepartureClearance } from './Clearance/RequestDepartureClearance';
+import { RequestDirect } from './Lateral/RequestDirect';
 import { RequestGroundTrack } from './Lateral/RequestGroundTrack';
 import { RequestHeading } from './Lateral/RequestHeading';
 

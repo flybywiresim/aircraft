@@ -1,8 +1,8 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
+import { InputField } from '../../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { HeadingFormat } from '../../../common/DataEntryFormats';
+import { IconButton } from '../../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { MessageVisualizationProps } from '../Registry';
 
 export class RequestGroundTrack extends DisplayComponent<MessageVisualizationProps> {
   render(): VNode {
