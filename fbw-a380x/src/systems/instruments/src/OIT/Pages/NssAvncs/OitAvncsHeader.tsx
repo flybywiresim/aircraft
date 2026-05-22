@@ -7,7 +7,7 @@ import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
 import { FmsData } from '@flybywiresim/fbw-sdk';
-import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 interface OitAvncsHeaderProps {
   readonly bus: EventBus;
