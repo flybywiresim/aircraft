@@ -136,6 +136,8 @@
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
 1. [A32NX/MCDU] Fix NEW DEST not available in LAT REV on first flightplan waypoint - @BravoMike99 (bruno_pt99)
 1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
+1. [A380X/MFD] Fix SURV page radio buttons not matching the actual state of the TCAS system - @heclak (Heclak)
+1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
 
 ## 0.14.0
 
