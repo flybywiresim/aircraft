@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-export interface Fix {
+export interface CoRouteFix {
   ident: String;
 
   name: String;

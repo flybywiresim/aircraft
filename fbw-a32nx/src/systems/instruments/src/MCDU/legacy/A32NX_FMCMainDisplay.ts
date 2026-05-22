@@ -51,7 +51,7 @@ import { A320_Neo_CDU_SelectWptPage } from '../legacy_pages/A320_Neo_CDU_SelectW
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
 import { Navigation, SelectedNavaid } from '@fmgc/navigation/Navigation';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { CompanyRoute } from '@simbridge/index';
+import { CompanyRoute } from '@flybywiresim/fbw-sdk';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes, CruiseWindRequest, WindRequestMessage } from '@datalink/common';
