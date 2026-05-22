@@ -1,5 +1,5 @@
 import { EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { getDisplayIndex } from '../HUD';
 import { HUDSimvarPublisher, HUDSimvars } from './HUDSimvarPublisher';
 
 export class AdirsValueProvider implements Instrument {

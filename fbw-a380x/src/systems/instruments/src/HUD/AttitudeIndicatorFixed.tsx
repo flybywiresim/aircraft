@@ -10,7 +10,7 @@ import {
   MappedSubject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { getDisplayIndex } from '../HUD/HUD';
 import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';

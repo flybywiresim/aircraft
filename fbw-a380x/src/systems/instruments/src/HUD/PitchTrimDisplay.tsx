@@ -14,7 +14,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { HUDSimvars } from 'instruments/src/HUD/shared/HUDSimvarPublisher';
+import { HUDSimvars } from '../HUD/shared/HUDSimvarPublisher';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 
 enum PitchTrimStatus {

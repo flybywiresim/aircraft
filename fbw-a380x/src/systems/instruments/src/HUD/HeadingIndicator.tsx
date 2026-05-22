@@ -13,9 +13,9 @@ import {
 import { FIVE_DEG, getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
-import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 const DisplayRange = 18;
 const DistanceSpacing = FIVE_DEG;

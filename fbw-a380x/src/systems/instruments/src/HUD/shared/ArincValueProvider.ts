@@ -1,8 +1,8 @@
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { getDisplayIndex } from '../HUD';
 
 import {
   Arinc429LocalVarConsumerSubject,

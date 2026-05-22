@@ -7,8 +7,8 @@ import {
   Subject,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
+import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { ONE_DEG, ALT_TAPE_XPOS, ALT_TAPE_YPOS, HudElems, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 
 let DisplayRange = 600;
