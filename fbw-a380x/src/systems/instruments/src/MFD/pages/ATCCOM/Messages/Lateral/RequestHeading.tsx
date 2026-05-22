@@ -21,7 +21,7 @@ export class RequestHeading extends DisplayComponent<MessageVisualizationProps> 
               value={Subject.create(null)}
               containerStyle="width: 150px; position:relative;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />

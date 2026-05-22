@@ -23,7 +23,7 @@ export class RequestDirect extends DisplayComponent<MessageVisualizationProps> {
               value={Subject.create('')}
               containerStyle="width: 353px; position:relative; left:200px;"
               alignText="center"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
