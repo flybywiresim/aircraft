@@ -15,12 +15,12 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
 
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBus } from '../PFD/shared/FgBusProvider';
+import { FcuBus } from '../PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
-import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
+import { ExtendedClockEvents } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 import { HudElems } from './HUDUtils';
 
@@ -491,17 +491,6 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   setIsVisible() {
     // ATHR mode overrides BRK LO and MED memo
-    console.log(
-      this.AThrMode +
-        ' ' +
-        this.decMode +
-        ' ' +
-        this.autobrakeMode +
-        ' ' +
-        this.autobrakeActive +
-        ' ' +
-        this.text.get(),
-    );
     if (this.text.get() == '') {
       this.isVisible.set('hidden');
       return;
@@ -1377,18 +1366,6 @@ class B2Cell extends ShowForSecondsComponent<CellProps> {
       .handle((v) => {
         this.handleMessage();
         this.decMode = v;
-        // if (this.decMode !== 2) {
-        //   console.log('dec : ' + this.text1Sub.get());
-        //   this.text1Sub.get() === '' && this.text2Sub.get() === ''
-        //     ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-        //     : this.modeArmed.instance.setAttribute('visibility', 'visible');
-        //   this.cellTextRef.instance.setAttribute('visibility', 'visible');
-        //   this.cellTextRef2.instance.setAttribute('visibility', 'visible');
-        // } else {
-        //   this.modeArmed.instance.setAttribute('visibility', 'hidden');
-        //   this.cellTextRef.instance.setAttribute('visibility', 'hidden');
-        //   this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
-        // }
         if (this.decMode === 2) {
           this.cellTextRef.instance.style.visibility = 'hidden';
           this.cellTextRef2.instance.style.visibility = 'hidden';

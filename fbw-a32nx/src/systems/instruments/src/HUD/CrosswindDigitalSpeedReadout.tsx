@@ -16,7 +16,7 @@ import {
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FgBus } from './shared/FgBusProvider';
 import { FcuBus } from './shared/FcuBusProvider';
 const UnitDigits = (value: number) => {
   let text: string;

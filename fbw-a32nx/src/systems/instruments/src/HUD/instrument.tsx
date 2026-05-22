@@ -7,11 +7,11 @@ import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } fro
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
-import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
-import { FcuBusProvider } from 'instruments/src/HUD/shared/FcuBusProvider';
-import { FgBusProvider } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBusProvider } from './shared/FcuBusProvider';
+import { FgBusProvider } from './shared/FgBusProvider';
 import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';

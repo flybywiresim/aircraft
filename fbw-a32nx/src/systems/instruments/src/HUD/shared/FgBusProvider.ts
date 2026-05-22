@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Instrument, Publisher } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { getDisplayIndex } from '../HUD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';

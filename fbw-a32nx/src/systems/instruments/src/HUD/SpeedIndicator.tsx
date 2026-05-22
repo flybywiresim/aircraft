@@ -22,8 +22,8 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { WindMode, HudElems, FIVE_DEG, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 
@@ -815,19 +815,19 @@ class DecelMode extends DisplayComponent<{
       case 1:
         //MIN
         this.yOffset.set(0);
-        this.decelRef.instance.setAttribute('d', `m93 ${427 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
+        this.decelRef.instance.setAttribute('d', `m93 ${430 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
 
         break;
       case 2:
         //MED
         this.yOffset.set(60);
-        this.decelRef.instance.setAttribute('d', `m93 ${427 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
+        this.decelRef.instance.setAttribute('d', `m93 ${430 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
 
         break;
       case 3:
         // MAX
         this.yOffset.set(100);
-        this.decelRef.instance.setAttribute('d', `m93 ${427 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
+        this.decelRef.instance.setAttribute('d', `m93 ${430 + this.yOffset.get()} h 55.25 v -25.5 h -55.25 z`);
         break;
       default:
         break;

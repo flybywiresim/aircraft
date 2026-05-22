@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Instrument, ClockEvents, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
+import { getDisplayIndex } from '../HUD';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './ArincValueProvider';
+import { FcuBus } from './FcuBusProvider';
 
 export class HudValueProvider implements Instrument {
   private flightPhase = 0;
   private declutterMode = 0;
   private crosswindMode = false;
-  private fcuAtsFmaDiscreteWord = Arinc429RegisterSubject.createEmpty();
 
   private elems: HudElems = {
     spdTape: '',
@@ -46,7 +46,7 @@ export class HudValueProvider implements Instrument {
   private logCase = '';
   private isToga = false;
   private isFlx = false;
-  private readonly sub = this.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents>();
+  private readonly sub = this.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents & FcuBus>();
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);

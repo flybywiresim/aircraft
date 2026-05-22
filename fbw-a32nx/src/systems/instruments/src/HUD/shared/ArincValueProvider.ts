@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { getDisplayIndex } from '../HUD';
+import { FcuBus } from './FcuBusProvider';
 
 import {
   Arinc429ConsumerSubject,
@@ -17,7 +17,7 @@ import {
 import { ClockEvents, ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 
 import { HUDSimvars } from './HUDSimvarPublisher';
-import { LagFilter } from 'instruments/src/HUD/HUDUtils';
+import { LagFilter } from '../HUDUtils';
 
 export interface Arinc429Values {
   pitchAr: Arinc429WordData;

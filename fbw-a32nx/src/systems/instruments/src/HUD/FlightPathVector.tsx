@@ -26,7 +26,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems, FIVE_DEG } from './HUDUtils';
 
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FcuBus } from '../PFD/shared/FcuBusProvider';
 import { FgBus } from './shared/FgBusProvider';
 import { HudMode } from './HUDUtils';
 const DistanceSpacing = (1024 / 28) * 5;

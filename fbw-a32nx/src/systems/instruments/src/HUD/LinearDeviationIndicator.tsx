@@ -9,8 +9,8 @@ import {
   MappedSubject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
+import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, ALT_TAPE_YPOS, ALT_TAPE_XPOS, FIVE_DEG } from './HUDUtils';
 

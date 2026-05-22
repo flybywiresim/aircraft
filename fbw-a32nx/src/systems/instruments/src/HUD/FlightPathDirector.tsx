@@ -13,13 +13,13 @@ import {
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from '../PFD/shared/FcuBusProvider';
+import { FgBus } from '../PFD/shared/FgBusProvider';
 
 import { calculateHorizonOffsetFromPitch, HudElems, FIVE_DEG } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import { getDisplayIndex } from './HUD';
 
 const DistanceSpacing = (1024 / 28) * 5;

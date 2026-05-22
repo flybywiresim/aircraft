@@ -25,14 +25,14 @@ import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
 
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { A32NXFwcBusEvents } from '@shared/publishers/A32NXFwcBusPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
