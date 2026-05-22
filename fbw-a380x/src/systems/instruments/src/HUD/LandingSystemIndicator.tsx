@@ -287,6 +287,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const navRadialSub = sub.on('navRadialError').handle(this.handleNavRadialError.bind(this), true);
 
     const isCaptainSide = getDisplayIndex() === 1;
     sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
@@ -326,11 +327,11 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       .handle((hasLoc) => {
         if (hasLoc) {
           this.diamondGroup.instance.classList.remove('HiddenElement');
-          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.resume(true);
         } else {
           this.diamondGroup.instance.classList.add('HiddenElement');
           this.lagFilter.reset();
-          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.pause();
         }
       });
     sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').handle((value) => {
