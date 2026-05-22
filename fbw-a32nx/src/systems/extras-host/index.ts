@@ -22,12 +22,12 @@ import {
   PilotSeatManager,
   PilotSeatPublisher,
   TelexCheck,
+  UniversalConfigProvider,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from './modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from './modules/flightplan_sync/FlightPlanAsoboSync';
 import { A32NXKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from './modules/light_sync/LightSync';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 
@@ -91,8 +91,6 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly keyInterceptor: A32NXKeyInterceptor;
 
-  private readonly aircraftSync: AircraftSync;
-
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   private readonly telexCheck = new TelexCheck();
@@ -142,7 +140,6 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor = new A32NXKeyInterceptor(this.bus, this.notificationManager);
 
     this.versionCheck = new VersionCheck(aircraftProjectPrefix, this.bus);
-    this.aircraftSync = new AircraftSync(aircraftProjectPrefix, this.bus);
 
     if (!isMsfs2024()) {
       this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
@@ -183,16 +180,10 @@ class ExtrasHost extends BaseInstrument {
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
     this.flightPlanAsoboSync?.connectedCallback();
-    this.aircraftSync.connectedCallback();
 
     this.backplane.init();
 
     this.baroUnitSelector.performSelection();
-  }
-
-  public parseXMLConfig(): void {
-    super.parseXMLConfig();
-    this.aircraftSync.parseXMLConfig(this.xmlConfig);
   }
 
   public Update(): void {
@@ -201,18 +192,20 @@ class ExtrasHost extends BaseInstrument {
     if (this.gameState !== GameState.ingame) {
       const gs = this.getGameState();
       if (gs === GameState.ingame) {
+        if (process.env.AIRCRAFT_PROJECT_PREFIX && process.env.AIRCRAFT_VARIANT) {
+          UniversalConfigProvider.initialize(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT);
+        }
+
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
         this.flightPlanAsoboSync?.init();
-        this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
       }
       this.gameState = gs;
     }
 
     this.versionCheck.update();
-    this.aircraftSync.update();
 
     this.backplane.onUpdate();
   }
