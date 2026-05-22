@@ -18,7 +18,6 @@ import {
   Arinc429LocalVarOutputWord,
   NearbyFacilityType,
   isNearbyVhfFacility,
-  isMsfs2024,
   WaypointConstraintType,
   InternalFmsSymbol,
   NdSymbol,
@@ -259,8 +258,7 @@ export class EfisSymbols<T extends number> {
     const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
     const editArea = this.calculateEditArea(range, mode);
 
-    // MSFS2024 can load facs much more efficiently with minimal facilities, so we can afford to follow the MRP in plan mode.
-    const nearbyMrp = isMsfs2024() ? mapReferencePoint : ppos;
+    const nearbyMrp = mapReferencePoint;
     const [nearbyRadius, nearbyCentre] = EfisSymbols.calculateNearbyParams(editArea, nearbyMrp, mapOrientation);
     if (efisOption & EfisOption.Airports) {
       this.nearbyAirportMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);

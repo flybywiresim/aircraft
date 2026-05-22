@@ -15,7 +15,6 @@ import {
   JSAirportRequestFlags,
 } from './FsTypes';
 import { Waypoint } from '../../../shared';
-import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 export enum LoadType {
@@ -195,41 +194,6 @@ export class FacilityCache {
     }
   }
 
-  /**
-   * Fix up airport ICAOs to a format that MSFS2020 can understand and load.
-   * Note: this is **not** required for MSFS2024.
-   * @param airport The airport facility to fix up.
-   */
-  private static fixupAirportRegions(airport: JS_FacilityAirport): void {
-    for (const appr of airport.approaches) {
-      for (const trans of appr.transitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(appr.finalLegs);
-      FacilityCache.fixupLegAirportRegions(appr.missedLegs);
-    }
-
-    for (const sid of airport.departures) {
-      for (const trans of sid.runwayTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(sid.commonLegs);
-      for (const trans of sid.enRouteTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-    }
-
-    for (const star of airport.arrivals) {
-      for (const trans of star.enRouteTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(star.commonLegs);
-      for (const trans of star.runwayTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-    }
-  }
-
   private receiveFacility(facility: JS_Facility): void {
     let loadType: LoadType;
     switch (facility.icao.charAt(0)) {
@@ -259,10 +223,6 @@ export class FacilityCache {
       if (dataFlags !== undefined && (dataFlags & JSAirportRequestFlags.All) !== JSAirportRequestFlags.All) {
         // ignore minimal airports
         return;
-      }
-
-      if (!isMsfs2024() && loadType === LoadType.Airport) {
-        FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
       }
     }
 

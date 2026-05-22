@@ -6,7 +6,6 @@ import React, { useContext, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import {
   DefaultPilotSeatConfig,
-  isMsfs2024,
   PilotSeatConfig,
   usePersistentNumberProperty,
   usePersistentProperty,
@@ -31,9 +30,6 @@ export const SimOptionsPage = () => {
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
-
-  // Legacy MSFS2020 flight plan sync
-  const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
 
   const [autoRouteLoad, setAutoRouteLoad] = usePersistentSetting('CONFIG_AUTO_SIM_ROUTE_LOAD');
 
@@ -65,12 +61,6 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Hpa'), setting: 'HPA' },
   ];
 
-  const fpSyncButtons: ButtonType[] = [
-    { name: t('Settings.SimOptions.None'), setting: 'NONE' },
-    { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
-    { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
-  ];
-
   const pilotSeatButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: PilotSeatConfig.Auto },
     { name: t('Settings.SimOptions.Left'), setting: PilotSeatConfig.Left },
@@ -97,27 +87,9 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          {!isMsfs2024() && aircraftContext.settingsPages.sim.msfsFplnSync && (
-            <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
-              <SelectGroup>
-                {fpSyncButtons.map((button) => (
-                  <SelectItem
-                    key={button.setting}
-                    onSelect={() => setFpSync(button.setting)}
-                    selected={fpSync === button.setting}
-                  >
-                    {button.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SettingItem>
-          )}
-
-          {isMsfs2024() && (
-            <SettingItem name={t('Settings.SimOptions.AutoLoadMsfsRoute')}>
-              <Toggle value={!!autoRouteLoad} onToggle={(value) => setAutoRouteLoad(value)} />
-            </SettingItem>
-          )}
+          <SettingItem name={t('Settings.SimOptions.AutoLoadMsfsRoute')}>
+            <Toggle value={!!autoRouteLoad} onToggle={(value) => setAutoRouteLoad(value)} />
+          </SettingItem>
 
           <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
             <SelectGroup>
