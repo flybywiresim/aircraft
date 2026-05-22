@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -43,7 +42,7 @@ export class GPUManagement implements Instrument {
     this.cameraState,
   );
 
-  private initialIngameFrame: boolean;
+  private initialIngameFrame?: boolean;
   constructor(
     private readonly bus: EventBus,
     private readonly gpuDoorIndex: number,
@@ -123,7 +122,7 @@ export class GPUManagement implements Instrument {
   private anyMSFSGPUAvail(): boolean {
     let state = false;
     for (let index = 1; index <= this.numberOfGPUs; index++) {
-      state ||= this.msfsExtPowerAvailStates.get(index).get();
+      state ||= this.msfsExtPowerAvailStates.get(index)?.get() ?? false;
     }
     return state;
   }
@@ -131,7 +130,7 @@ export class GPUManagement implements Instrument {
   private anyGPUAvail(): boolean {
     let state = false;
     for (let index = 1; index <= this.numberOfGPUs; index++) {
-      state ||= this.ExtPowerAvailStates.get(index).get();
+      state ||= this.ExtPowerAvailStates.get(index)?.get() ?? false;
     }
     return state;
   }

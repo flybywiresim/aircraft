@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -20,7 +19,7 @@ export interface BaseExtrasSimVarEvents {
   fwc_flight_phase: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type ExtrasIndexedSimVarEvents = {
   [P in keyof Pick<BaseExtrasSimVarEvents, IndexedTopics> as IndexedEventType<P>]: BaseExtrasSimVarEvents[P];

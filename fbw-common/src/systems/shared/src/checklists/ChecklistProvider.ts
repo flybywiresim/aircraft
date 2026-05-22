@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,7 +13,7 @@ import { ChecklistItem, ChecklistJsonDefinition } from './ChecklistInterfaces';
 export class ChecklistProvider {
   private readonly configFilename: string;
 
-  private static instance: ChecklistProvider = undefined;
+  private static instance?: ChecklistProvider = undefined;
 
   private checklists: ChecklistJsonDefinition[] = [];
 
@@ -89,7 +88,7 @@ export class ChecklistProvider {
     const checklists: ChecklistJsonDefinition[] = json.checklists;
     // check each checklist's items for validity and add valid checklists to the checklist's array
     checklists.forEach((checklist, _) => {
-      const checklistItems = [];
+      const checklistItems: ChecklistItem[] = [];
       const items: ChecklistItem[] = checklist.items;
       items.forEach((checklistItem, _) => {
         if (this.isValidChecklistItem(checklistItem)) {

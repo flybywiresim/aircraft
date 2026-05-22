@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -30,7 +29,7 @@ interface A32NXOverheadDiscreteBaseEvents {
   ovhd_ann_lt_dim: boolean;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXOverheadDiscreteIndexedEvents = {
   [P in keyof Pick<

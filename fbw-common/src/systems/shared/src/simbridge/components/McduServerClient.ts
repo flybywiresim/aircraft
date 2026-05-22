@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -18,7 +17,7 @@ export class McduServerClient {
 
   private state: ClientState = ClientState.getInstance();
 
-  private socket: WebSocket = undefined;
+  private socket?: WebSocket = undefined;
 
   /**
    * Will attempt to connect to the SimBridge MCDU server. Will throw an error if the connection fails.
@@ -72,7 +71,7 @@ export class McduServerClient {
    * Checks if the McduServerClient is connected to the SimBridge MCDU server via the websocket.
    */
   public isConnected(): boolean {
-    return this.socket && this.socket.readyState === 1;
+    return this.socket?.readyState === 1;
   }
 
   /**

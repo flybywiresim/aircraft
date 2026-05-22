@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -267,7 +266,7 @@ export class FmsClient implements Instrument {
 
   public maxUplinkDelay: number = -1;
 
-  public modificationMessage: CpdlcMessage = null;
+  public modificationMessage: CpdlcMessage | null = null;
 
   public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
@@ -410,7 +409,7 @@ export class FmsClient implements Instrument {
 
   public atisReports(icao: string): AtisMessage[] {
     if (this.messageStorage.atisReports.has(icao)) {
-      return this.messageStorage.atisReports.get(icao);
+      return this.messageStorage.atisReports.get(icao) ?? [];
     }
     return [];
   }

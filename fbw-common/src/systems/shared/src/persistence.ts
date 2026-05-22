@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+import { PilotSeatConfig } from './PilotSeatTypes';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
@@ -17,6 +18,8 @@ export interface NXDataStoreSettings {
 
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
 
+  CONFIG_PILOT_SEAT: PilotSeatConfig;
+
   CONFIG_USING_METRIC_UNIT: boolean;
 }
 
@@ -30,6 +33,7 @@ export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
+    CONFIG_PILOT_SEAT: PilotSeatConfig.Left,
     CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',
   };

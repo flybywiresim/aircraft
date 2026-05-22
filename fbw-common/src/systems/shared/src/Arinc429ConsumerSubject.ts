@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) Microsoft Corporation
 //
@@ -13,13 +12,14 @@ export const Arinc429EqualityFunc = (a: Arinc429WordData, b: Arinc429WordData) =
 /** This typing should technically be `a: Arinc429WordData` to match the ConsumerSubject.create signature, but practically arg a is always the initialVal: Arinc429Register.  */
 export const Arinc429MutateFunc = (a: Arinc429Register, b: Arinc429WordData) => a.set(b.rawWord);
 
+/** @deprecated */
 export class Arinc429ConsumerSubject {
   static create(initialConsumer: Consumer<Arinc429WordData> | undefined): ConsumerSubject<Arinc429WordData> {
     return ConsumerSubject.create(
       initialConsumer ?? null,
       Arinc429Register.empty(),
       Arinc429EqualityFunc,
-      Arinc429MutateFunc,
+      Arinc429MutateFunc as any, // FIXME type issue with init value
     );
   }
 }

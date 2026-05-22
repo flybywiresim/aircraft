@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 
 let nxNotificationsListener: ViewListener.ViewListener;
@@ -56,7 +55,7 @@ export interface NotificationData extends Omit<NotificationParameters, 'message'
  */
 
 export class NotificationManager {
-  manager: KeyEventManager;
+  manager?: KeyEventManager;
 
   notifications: Notification[];
 
@@ -69,10 +68,10 @@ export class NotificationManager {
   }
 
   registerIntercepts() {
-    this.manager.interceptKey('PAUSE_TOGGLE', true);
-    this.manager.interceptKey('PAUSE_ON', true);
-    this.manager.interceptKey('PAUSE_OFF', true);
-    this.manager.interceptKey('PAUSE_SET', true);
+    this.manager?.interceptKey('PAUSE_TOGGLE', true);
+    this.manager?.interceptKey('PAUSE_ON', true);
+    this.manager?.interceptKey('PAUSE_OFF', true);
+    this.manager?.interceptKey('PAUSE_SET', true);
 
     const subscriber = this.bus.getSubscriber<KeyEvents>();
     subscriber.on('key_intercept').handle((keyData) => {

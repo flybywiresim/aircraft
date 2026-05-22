@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -68,7 +67,7 @@ interface A380XFcuBusBaseEvents {
   a380x_fcu_eis_baro_hpa_right: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A380XFcuBusIndexedEvents = {
   [P in keyof Pick<A380XFcuBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A380XFcuBusBaseEvents[P];

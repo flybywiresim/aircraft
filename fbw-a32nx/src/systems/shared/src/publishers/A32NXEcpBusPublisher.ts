@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -82,7 +81,7 @@ interface A32NXEcpBusBaseEvents {
   a32nx_ecp_discrete_out_all: boolean;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXEcpBusIndexedEvents = {
   [P in keyof Pick<A32NXEcpBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A32NXEcpBusBaseEvents[P];

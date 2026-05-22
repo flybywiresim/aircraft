@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { SimVarValueType, Wait } from '@microsoft/msfs-sdk';
 import { v4 as uuidv4 } from 'uuid';
 /**
@@ -139,14 +138,16 @@ export class PopUpDialog {
     if (callbackYes) {
       const yes = typeof callbackYes === 'function' ? callbackYes : () => callbackYes;
       Coherent.on(`FBW_POP_${this.params.id}_YES`, () => {
-        Coherent.off(`FBW_POP_${this.params.id}_YES`, null, null);
+        // FIXME wrong type?
+        Coherent.off(`FBW_POP_${this.params.id}_YES`, null as any, null);
         yes();
       });
     }
     if (callbackNo) {
       const no = typeof callbackNo === 'function' ? callbackNo : () => callbackNo;
       Coherent.on(`FBW_POP_${this.params.id}_NO`, () => {
-        Coherent.off(`FBW_POP_${this.params.id}_NO`, null, null);
+        // FIXME wrong type?
+        Coherent.off(`FBW_POP_${this.params.id}_NO`, null as any, null);
         no();
       });
     }
@@ -184,7 +185,8 @@ export class PopUpDialog {
     if (callback) {
       const yes = typeof callback === 'function' ? callback : () => callback;
       Coherent.on(`FBW_POP_${this.params.id}_YES`, () => {
-        Coherent.off(`FBW_POP_${this.params.id}_YES`, null, null);
+        // FIXME wrong type?
+        Coherent.off(`FBW_POP_${this.params.id}_YES`, null as any, null);
         yes();
       });
     }

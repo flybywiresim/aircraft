@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2022-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,7 +14,7 @@ export class MathUtils {
 
   public static TWO_PI = Math.PI * 2;
 
-  private static optiPow10 = [];
+  private static optiPow10: number[] = [];
 
   public static fastToFixed(val: number, fraction: number): string {
     if (fraction <= 0) {
@@ -302,7 +301,7 @@ export class MathUtils {
    * @param pressure current pressure hpa
    * @returns True Air Speed
    */
-  public static convertKCasToKTAS(kcas, oat, pressure): number {
+  public static convertKCasToKTAS(kcas: number, oat: number, pressure: number): number {
     return (
       1479.1 *
       Math.sqrt(
@@ -541,7 +540,7 @@ export class MathUtils {
    * @param lower lowest boundary value
    * @param upper highest boundary value
    */
-  public static clamp(value, lower, upper) {
+  public static clamp(value: number, lower: number, upper: number): number {
     return Math.min(Math.max(value, lower), upper);
   }
 

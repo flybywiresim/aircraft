@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -42,6 +41,10 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -70,6 +73,10 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -92,13 +99,15 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         }
       }
 
-      if (symbol.constraints) {
-        this.paintSymbolConstraints(context, rx, ry, symbol);
-      }
+      this.paintSymbolConstraints(context, rx, ry, symbol);
     }
   }
 
   private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+    if (symbol.constraints === undefined) {
+      return;
+    }
+
     context.fillStyle = '#ff94ff';
 
     for (let i = 0; i < symbol.constraints.length; i++) {
@@ -215,7 +224,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
   ) {
     const left = symbol.type & NdSymbolTypeFlags.CourseReversalLeft;
     const arcEnd = left ? -42 : 42;
-    const rotation = mapParameters.rotation(symbol.direction);
+    const rotation = mapParameters.rotation(symbol.direction ?? mapParameters.mapUpTrueDeg);
     context.strokeStyle = '#fff';
     context.lineWidth = 1.75;
     context.translate(x, y);

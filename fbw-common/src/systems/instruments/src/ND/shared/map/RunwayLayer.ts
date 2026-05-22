@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -19,6 +18,10 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -40,6 +43,10 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -62,6 +69,10 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     mapParameters: MapParameters,
   ) {
+    if (symbol.length === undefined || symbol.direction === undefined) {
+      return;
+    }
+
     // Runway shape
     const length = symbol.length * mapParameters.nmToPx;
     const rotation = mapParameters.rotation(symbol.direction);
@@ -96,6 +107,10 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     mapParameters: MapParameters,
   ) {
+    if (symbol.direction === undefined) {
+      return;
+    }
+
     // Runway shape
     const rotation = mapParameters.rotation(symbol.direction);
 

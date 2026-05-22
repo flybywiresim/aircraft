@@ -1,8 +1,9 @@
-// @ts-strict-ignore
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2022-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { UnitType } from '@microsoft/msfs-sdk';
 import { ColorCode, MetarParserType, Visibility, Wind } from '../../instruments/src/metarTypes';
+import { MathUtils } from './MathUtils';
 
 /**
  * Convert METAR string into structured object.
@@ -82,10 +83,8 @@ export function parseMetar(metarString: string): MetarParserType {
     flight_category: '',
   };
 
-  const calcHumidity = (temp, dew) =>
+  const calcHumidity = (temp: number, dew: number): number =>
     Math.exp((17.625 * dew) / (243.04 + dew)) / Math.exp((17.625 * temp) / (243.04 + temp));
-
-  const round = (value, toNext = 500) => Math.round(value / toNext) * toNext;
 
   // mode describes which metar part are we expecting next
   enum Mode {
@@ -153,11 +152,12 @@ export function parseMetar(metarString: string): MetarParserType {
         // Wind
         match = metarPart.match(/^(\d\d\d|VRB)P?(\d+)(?:G(\d+))?(KT|MPS|KPH)/);
         if (match) {
-          match[2] = Number(match[2]);
-          match[3] = match[3] ? Number(match[3]) : match[2];
+          let speed = Number(match[2]);
+          let gust = match[3] ? Number(match[3]) : speed;
+
           if (match[4] === 'KPH') {
-            match[2] = convert.kphToMps(match[2]);
-            match[3] = convert.kphToMps(match[3]);
+            speed = UnitType.MPS.convertFrom(speed, UnitType.KPH);
+            gust = UnitType.MPS.convertFrom(gust, UnitType.KPH);
             match[4] = 'MPS';
           }
 
@@ -165,10 +165,10 @@ export function parseMetar(metarString: string): MetarParserType {
             degrees: match[1] === 'VRB' ? 180 : Number(match[1]),
             degrees_from: match[1] === 'VRB' ? 0 : Number(match[1]),
             degrees_to: match[1] === 'VRB' ? 359 : Number(match[1]),
-            speed_kts: match[4] === 'MPS' ? convert.mpsToKts(match[2]) : match[2],
-            speed_mps: match[4] === 'MPS' ? match[2] : convert.ktsToMps(match[2]),
-            gust_kts: match[4] === 'MPS' ? convert.mpsToKts(match[3]) : match[3],
-            gust_mps: match[4] === 'MPS' ? match[3] : convert.ktsToMps(match[3]),
+            speed_kts: match[4] === 'MPS' ? UnitType.KNOT.convertFrom(speed, UnitType.MPS) : speed,
+            speed_mps: match[4] === 'MPS' ? speed : UnitType.MPS.convertFrom(speed, UnitType.KNOT),
+            gust_kts: match[4] === 'MPS' ? UnitType.KNOT.convertFrom(gust, UnitType.MPS) : gust,
+            gust_mps: match[4] === 'MPS' ? gust : UnitType.MPS.convertFrom(gust, UnitType.KNOT),
           };
 
           // only write to the object for the main section
@@ -190,13 +190,19 @@ export function parseMetar(metarString: string): MetarParserType {
         // Visibility
         match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?(NDV)?$/);
         if (match) {
-          const speed: number = match[2] ? Number(match[1]) / Number(match[2]) : Number(match[1]);
+          const vis: number = match[2] ? Number(match[1]) / Number(match[2]) : Number(match[1]);
 
           const tmpVisibility: Visibility = {
-            miles: match[3] && match[3] === 'SM' ? speed.toString() : convert.metersToMiles(speed).toString(),
-            miles_float: match[3] && match[3] === 'SM' ? speed : convert.metersToMiles(speed),
-            meters: match[3] && match[3] === 'SM' ? convert.milesToMeters(speed).toString() : speed.toString(),
-            meters_float: match[3] && match[3] === 'SM' ? convert.milesToMeters(speed) : speed,
+            miles:
+              match[3] && match[3] === 'SM'
+                ? vis.toString()
+                : UnitType.MILE.convertFrom(vis, UnitType.METER).toString(),
+            miles_float: match[3] && match[3] === 'SM' ? vis : UnitType.MILE.convertFrom(vis, UnitType.METER),
+            meters:
+              match[3] && match[3] === 'SM'
+                ? UnitType.METER.convertFrom(vis, UnitType.MILE).toString()
+                : vis.toString(),
+            meters_float: match[3] && match[3] === 'SM' ? UnitType.METER.convertFrom(vis, UnitType.MILE) : vis,
           };
 
           // coloring
@@ -218,8 +224,8 @@ export function parseMetar(metarString: string): MetarParserType {
             metarObject.visibility = {
               miles: '10',
               miles_float: 10,
-              meters: convert.milesToMeters(10).toString(),
-              meters_float: convert.milesToMeters(10),
+              meters: UnitType.METER.convertFrom(10, UnitType.MILE).toString(),
+              meters_float: UnitType.METER.convertFrom(10, UnitType.MILE),
             };
           }
           mode = Mode.CLOUD; // no visibility & conditions reported
@@ -280,11 +286,11 @@ export function parseMetar(metarString: string): MetarParserType {
         // Clouds
         match = metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)(CB|TCU)?/);
         if (match) {
-          match[2] = Number(match[2]) * 100;
+          const baseFeet = Number(match[2]) * 100;
           const cloud = {
             code: match[1],
-            base_feet_agl: match[2],
-            base_meters_agl: convert.feetToMeters(match[2]),
+            base_feet_agl: baseFeet,
+            base_meters_agl: UnitType.METER.convertFrom(baseFeet, UnitType.FOOT),
           };
 
           // only write to the object for the main section
@@ -293,7 +299,7 @@ export function parseMetar(metarString: string): MetarParserType {
           // coloring
           if (cloud.code !== 'VV' && cloud.base_feet_agl <= 300) {
             metarObject.color_codes[index] = ColorCode.Warning;
-          } else if (match[3] || match[2] < 800) {
+          } else if (match[3] || baseFeet < 800) {
             // CB or TCU suffix
             metarObject.color_codes[index] = ColorCode.Caution;
           }
@@ -303,17 +309,17 @@ export function parseMetar(metarString: string): MetarParserType {
         // Temperature
         match = metarPart.match(/^(M?\d+)\/(M?\d+)$/);
         if (match) {
-          match[1] = Number(match[1].replace('M', '-'));
-          match[2] = Number(match[2].replace('M', '-'));
+          const temperature = Number(match[1].replace('M', '-'));
+          const dewpoint = Number(match[2].replace('M', '-'));
           const tmpTemperature = {
-            celsius: match[1],
-            fahrenheit: convert.celsiusToFahrenheit(match[1]),
+            celsius: temperature,
+            fahrenheit: UnitType.FAHRENHEIT.convertFrom(temperature, UnitType.CELSIUS),
           };
           const tmpDewpoint = {
-            celsius: match[2],
-            fahrenheit: convert.celsiusToFahrenheit(match[2]),
+            celsius: dewpoint,
+            fahrenheit: UnitType.FAHRENHEIT.convertFrom(dewpoint, UnitType.CELSIUS),
           };
-          const tmpHumidityPercent = calcHumidity(match[1], match[2]) * 100;
+          const tmpHumidityPercent = calcHumidity(temperature, dewpoint) * 100;
 
           // only write to the object for the main section
           if (!trendMode) {
@@ -336,14 +342,14 @@ export function parseMetar(metarString: string): MetarParserType {
         // Pressure
         match = metarPart.match(/^([QA])(\d+)$/);
         if (match) {
-          match[2] = Number(match[2]);
-          match[2] /= match[1] === 'Q' ? 10 : 100;
+          let qnh = Number(match[2]);
+          qnh /= match[1] === 'Q' ? 10 : 100;
           if (!trendMode) {
             // only update the metar object once
             metarObject.barometer = {
-              hg: match[1] === 'Q' ? convert.kpaToInhg(match[2]) : match[2],
-              kpa: match[1] === 'Q' ? match[2] : convert.inhgToKpa(match[2]),
-              mb: match[1] === 'Q' ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
+              hg: match[1] === 'Q' ? UnitType.IN_HG.convertFrom(qnh * 10, UnitType.HPA) : qnh,
+              kpa: match[1] === 'Q' ? qnh : UnitType.HPA.convertFrom(qnh, UnitType.IN_HG) / 10,
+              mb: match[1] === 'Q' ? qnh * 10 : UnitType.HPA.convertFrom(qnh, UnitType.IN_HG),
             };
           }
           mode = Mode.TREND;
@@ -388,15 +394,15 @@ export function parseMetar(metarString: string): MetarParserType {
     metarObject.visibility = {
       miles: '10',
       miles_float: 10,
-      meters: convert.milesToMeters(10).toString(),
-      meters_float: convert.milesToMeters(10),
+      meters: UnitType.METER.convertFrom(10, UnitType.MILE).toString(),
+      meters_float: UnitType.METER.convertFrom(10, UnitType.MILE),
     };
   }
 
   // Finishing touches
 
-  metarObject.visibility.miles = String(round(metarObject.visibility.miles, 0.5));
-  metarObject.visibility.meters = String(round(metarObject.visibility.meters));
+  metarObject.visibility.miles = String(MathUtils.round(parseInt(metarObject.visibility.miles), 0.5));
+  metarObject.visibility.meters = String(MathUtils.round(parseInt(metarObject.visibility.meters), 500));
 
   if (metarObject.clouds.length) {
     const highestCloud = metarObject.clouds[metarObject.clouds.length - 1];
@@ -423,41 +429,3 @@ export function parseMetar(metarString: string): MetarParserType {
 
   return metarObject;
 }
-
-const convert = {
-  celsiusToFahrenheit(celsius) {
-    return celsius * 1.8 + 32;
-  },
-
-  feetToMeters(feet) {
-    return feet * 0.3048;
-  },
-
-  milesToMeters(miles) {
-    return miles * 1609.344;
-  },
-
-  metersToMiles(meters) {
-    return meters / 1609.344;
-  },
-
-  inhgToKpa(inHg) {
-    return inHg / 0.29529988;
-  },
-
-  kpaToInhg(kpa) {
-    return kpa * 0.29529988;
-  },
-
-  kphToMps(kph) {
-    return (kph / 3600) * 1000;
-  },
-
-  mpsToKts(mps) {
-    return mps * 1.9438445;
-  },
-
-  ktsToMps(kts) {
-    return kts / 1.9438445;
-  },
-};

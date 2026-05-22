@@ -19,6 +19,7 @@ export * from './MsfsDetect';
 export * from './ObjectUtils';
 export * from './PathVector';
 export * from './PilotSeat';
+export * from './PilotSeatTypes';
 export * from './publishers';
 export * from './RadioTypes';
 export * from './RadioUtils';

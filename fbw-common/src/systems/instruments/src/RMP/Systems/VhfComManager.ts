@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -73,9 +72,9 @@ export class VhfComManager implements Instrument {
   private readonly standbyModeDataTopic: keyof VhfComManagerDataEvents = `vhf_com_standby_mode_${this.index}`;
   private readonly standbyModeLocalVar = `L:FBW_RMP_MODE_STANDBY_${this.index}` as const;
 
-  private readonly standbyControlTopic: keyof VhfComManagerControlEvents = `vhf_com_set_standby_frequency_${this.index}`;
+  private readonly standbyControlTopic: `vhf_com_set_standby_frequency_${VhfComIndices}` = `vhf_com_set_standby_frequency_${this.index}`;
 
-  private readonly standbyModeControlTopic: keyof VhfComManagerControlEvents = `vhf_com_set_standby_mode_${this.index}`;
+  private readonly standbyModeControlTopic: `vhf_com_set_standby_mode_${VhfComIndices}` = `vhf_com_set_standby_mode_${this.index}`;
 
   private readonly swapControlTopic: keyof VhfComManagerControlEvents = `vhf_com_swap_frequencies_${this.index}`;
 
@@ -195,8 +194,8 @@ export class VhfComManager implements Instrument {
     this.pub.pub(this.activeModeDataTopic, mode);
   }
 
-  private onActiveFrequencyChanged(frequency: number): void {
-    if (frequency < 1) {
+  private onActiveFrequencyChanged(frequency: number | null): void {
+    if (frequency === null || frequency < 1) {
       Arinc429Word.toSimVarValue(this.tuningVar, 0, Arinc429SignStatusMatrix.NoComputedData);
     } else {
       Arinc429Word.toSimVarValue(
@@ -205,7 +204,7 @@ export class VhfComManager implements Instrument {
         Arinc429SignStatusMatrix.NormalOperation,
       );
     }
-    this.pub.pub(this.activeDataTopic, frequency > 0 ? frequency : null);
+    this.pub.pub(this.activeDataTopic, frequency ? frequency : null);
   }
 
   private onStandbyModeChanged(mode: FrequencyMode): void {
@@ -213,7 +212,7 @@ export class VhfComManager implements Instrument {
   }
 
   private onStandbyFrequencyChanged(frequency: number | null): void {
-    this.pub.pub(this.standbyDataTopic, frequency > 0 ? frequency : null);
+    this.pub.pub(this.standbyDataTopic, frequency ? frequency : null);
   }
 
   /**
@@ -249,9 +248,9 @@ export class VhfComManager implements Instrument {
    * Sets the standby frequency.
    * @param frequency Frequency in BCD32.
    */
-  public setStandbyFrequency(frequency: number): void {
+  public setStandbyFrequency(frequency: number | null): void {
     if (this.rmpState.get() === RmpState.On) {
-      SimVar.SetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32', frequency);
+      SimVar.SetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32', frequency ?? 0);
     }
   }
 
@@ -259,9 +258,9 @@ export class VhfComManager implements Instrument {
    * Sets the standby mode.
    * @param mode New mode.
    */
-  public setStandbyMode(mode: FrequencyMode): void {
+  public setStandbyMode(mode: FrequencyMode | null): void {
     if (this.rmpState.get() === RmpState.On) {
-      SimVar.SetSimVarValue(this.standbyModeLocalVar, SimVarValueType.Enum, mode);
+      SimVar.SetSimVarValue(this.standbyModeLocalVar, SimVarValueType.Enum, mode ?? 0);
 
       switch (mode) {
         case FrequencyMode.Data:

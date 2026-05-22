@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -63,10 +62,10 @@ export class ApproachUtils {
 
   private static formatLongApproachName(approach: Approach): string {
     const appr = ApproachUtils.parseApproach(approach);
-    const runway = appr.runway;
-    const suffix = appr.designator ? `-${appr.designator}` : '';
+    const runway = appr?.runway ?? '';
+    const suffix = appr?.designator ? `-${appr.designator}` : '';
 
-    return `${appr.type}${runway}${suffix}`;
+    return `${appr?.type ?? ''}${runway}${suffix}`;
   }
 
   public static longApproachName: {

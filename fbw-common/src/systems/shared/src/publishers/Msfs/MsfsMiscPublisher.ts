@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import {
   EventBus,
   IndexedEventType,
@@ -17,7 +16,7 @@ interface MsfsMiscBaseEvents {
   msfs_longitude: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type MsfsMiscIndexedEvents = {
   [P in keyof Pick<MsfsMiscBaseEvents, IndexedTopics> as IndexedEventType<P>]: MsfsMiscBaseEvents[P];

@@ -1,11 +1,10 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, GameStateProvider, Instrument, KeyEventManager, Wait } from '@microsoft/msfs-sdk';
 
 export class LightSync implements Instrument {
-  private keyInterceptManager: KeyEventManager;
+  private keyInterceptManager?: KeyEventManager;
 
   private readonly bus: EventBus;
 
@@ -30,7 +29,7 @@ export class LightSync implements Instrument {
 
     // DOME
     if (autoBrightness < 50) {
-      this.keyInterceptManager.triggerKey('CABIN_LIGHTS_SET', false, 1);
+      this.keyInterceptManager?.triggerKey('CABIN_LIGHTS_SET', false, 1);
     }
     this.setPotentiometer(7, autoBrightness < 50 ? 20 : 0);
     // MAIN FLOOD

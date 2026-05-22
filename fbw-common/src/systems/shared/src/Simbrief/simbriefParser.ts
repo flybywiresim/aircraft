@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -43,6 +42,9 @@ export const getSimbriefData = async (
   // Adding the build version to the url parameters to allow Navigraph/Simbrief to track requests from the A32NX
   // try/catch here is an extra safety measure in case the configuration files are not found
   try {
+    if (process.env.AIRCRAFT_PROJECT_PREFIX === undefined || process.env.AIRCRAFT_VARIANT === undefined) {
+      throw new Error('AIRCRAFT_PROJECT_PREFIX or AIRCRAFT_VARIANT not set!');
+    }
     const airframeInfo = await UniversalConfigProvider.fetchAirframeInfo(
       process.env.AIRCRAFT_PROJECT_PREFIX,
       process.env.AIRCRAFT_VARIANT,

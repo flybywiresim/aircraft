@@ -5,7 +5,6 @@
 import React, { useContext, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import {
-  DefaultPilotSeatConfig,
   isMsfs2024,
   PilotSeatConfig,
   usePersistentNumberProperty,
@@ -52,7 +51,7 @@ export const SimOptionsPage = () => {
     1,
   );
   const [cabinManualBrightness, setCabinManualBrightness] = usePersistentNumberProperty('CABIN_MANUAL_BRIGHTNESS', 0);
-  const [pilotSeat, setPilotSeat] = usePersistentProperty('CONFIG_PILOT_SEAT', DefaultPilotSeatConfig);
+  const [pilotSeat, setPilotSeat] = usePersistentSetting('CONFIG_PILOT_SEAT');
 
   const [oansPerformanceMode, setOansPerformanceMode] = usePersistentNumberProperty(
     'CONFIG_A380X_OANS_PERFORMANCE_MODE',
@@ -71,7 +70,7 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
   ];
 
-  const pilotSeatButtons: ButtonType[] = [
+  const pilotSeatButtons: ButtonType<PilotSeatConfig>[] = [
     { name: t('Settings.SimOptions.Auto'), setting: PilotSeatConfig.Auto },
     { name: t('Settings.SimOptions.Left'), setting: PilotSeatConfig.Left },
     { name: t('Settings.SimOptions.Right'), setting: PilotSeatConfig.Right },
