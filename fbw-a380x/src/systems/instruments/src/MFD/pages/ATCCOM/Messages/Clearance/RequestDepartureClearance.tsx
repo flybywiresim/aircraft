@@ -1,14 +1,14 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AircraftType,
   AirportFormat,
   AtisCode,
   LongAlphanumericFormat,
   ShortAlphanumericFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
+} from '../../../common/DataEntryFormats';
+import { IconButton } from '../../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { MessageVisualizationProps } from '../Registry';
 
 interface CPDLCDataBlock {
   from: string;

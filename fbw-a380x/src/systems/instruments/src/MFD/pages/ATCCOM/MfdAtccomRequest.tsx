@@ -1,14 +1,14 @@
 import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomRequest.scss';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomMfdPageProps } from '../../MFD';
 import { AtccomFooter } from './MfdAtccomFooter';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { RequestMenuButton } from 'instruments/src/MFD/pages/common/RequestMenuButton';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { MaxRequestElements, MessageFrame, MessageTable } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { RequestMenuButton } from '../common/RequestMenuButton';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { MaxRequestElements, MessageFrame, MessageTable } from './Messages/Registry';
 import { DclMessage } from '@datalink/common';
 
 interface MfdAtccomRequestProps extends AtccomMfdPageProps {}
