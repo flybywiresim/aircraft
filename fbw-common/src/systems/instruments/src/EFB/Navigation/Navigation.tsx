@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -31,7 +30,7 @@ import {
   setBoundingBox,
   setProvider,
   setSelectedNavigationTabIndex,
-  setUsingDarkTheme,
+  setUsingLightTheme,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -40,20 +39,37 @@ import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 import { useNavigraphAuth } from '../../react/navigraph';
 import { navigraphCharts } from '../../navigraph';
+import { LidoChartPage } from './Pages/MsfsChartPage/LidoChartPage';
+import { FaaChartPage } from './Pages/MsfsChartPage/FaaChartPage';
+import { ChartsClient, ChartView } from '@microsoft/msfs-sdk';
+import { MsfsChartPage } from './Pages/MsfsChartPage/MsfsChartUtils';
 
 export const navigationTabs: (PageLink & { associatedTab: NavigationTab })[] = [
+  { name: 'LIDO', alias: '', component: <LidoChartPage />, associatedTab: NavigationTab.LIDO },
+  { name: 'FAA', alias: '', component: <FaaChartPage />, associatedTab: NavigationTab.FAA },
   { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
   { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
   { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
+function createMsfsImageSupplier() {
+  const view = new ChartView();
+  ChartsClient.initializeChartView(view);
+  return view;
+}
+
+const msfsLightImageSupplier = createMsfsImageSupplier();
+const msfsDarkImageSupplier = createMsfsImageSupplier();
+
 export const Navigation = () => {
   const dispatch = useAppDispatch();
 
   if (navigationTabs) {
-    navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
-    navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
-    navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
+    navigationTabs[0].alias = t('NavigationAndCharts.Msfs.Lido');
+    navigationTabs[1].alias = t('NavigationAndCharts.Msfs.Faa');
+    navigationTabs[2].alias = t('NavigationAndCharts.Navigraph.Title');
+    navigationTabs[3].alias = t('NavigationAndCharts.LocalFiles.Title');
+    navigationTabs[4].alias = t('NavigationAndCharts.PinnedCharts.Title');
   }
 
   return (
@@ -65,10 +81,12 @@ export const Navigation = () => {
           tabs={navigationTabs}
           basePath="/navigation"
           onSelected={(index) => {
-            const associatedTab = ChartProvider[navigationTabs[index].associatedTab];
             dispatch(setSelectedNavigationTabIndex(index));
             dispatch(setBoundingBox(undefined));
-            dispatch(setProvider(associatedTab));
+            if (navigationTabs[index].associatedTab !== 'PINNED_CHARTS') {
+              const associatedTab = ChartProvider[navigationTabs[index].associatedTab];
+              dispatch(setProvider(associatedTab));
+            }
           }}
         />
       </div>
@@ -83,7 +101,7 @@ export const Navigation = () => {
 
 export const ChartViewer = () => {
   const dispatch = useAppDispatch();
-  const { selectedNavigationTabIndex, usingDarkTheme, planeInFocus, boundingBox, provider } = useAppSelector(
+  const { selectedNavigationTabIndex, usingLightTheme, planeInFocus, boundingBox, provider } = useAppSelector(
     (state) => state.navigationTab,
   );
 
@@ -97,12 +115,33 @@ export const ChartViewer = () => {
     currentPage,
     chartPosition,
     chartRotation,
+    currentChartPages,
   } = useAppSelector((state) => state.navigationTab[currentTab]);
 
   // const [drawMode] = useState(false);
   // const [brushSize] = useState(10);
 
   const navigraphAuth = useNavigraphAuth();
+
+  const [msfsLightUrl, setMsfsLightUrl] = useState<string | null>(null);
+  const [msfsDarkUrl, setMsfsDarkUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const lightSub = msfsLightImageSupplier.image.sub((image) => {
+      if (image.imageUrl) {
+        setMsfsLightUrl(image.imageUrl);
+      }
+    }, true);
+    const darkSub = msfsDarkImageSupplier.image.sub((image) => {
+      if (image.imageUrl) {
+        setMsfsDarkUrl(image.imageUrl);
+      }
+    }, true);
+    return () => {
+      lightSub.destroy();
+      darkSub.destroy();
+    };
+  }, []);
 
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLImageElement>(null);
@@ -118,11 +157,32 @@ export const ChartViewer = () => {
   const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
   const [loading, setLoading] = useState(true);
 
-  const [chartLightBlob, setChartLightBlob] = useState<Blob | null>(null);
-  const chartLightUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartLightBlob) : null), [chartLightBlob]);
+  const [navigraphChartLightBlob, setNavigraphChartLightBlob] = useState<Blob | null>(null);
+  const [navigraphChartDarkBlob, setNavigraphChartDarkBlob] = useState<Blob | null>(null);
 
-  const [chartDarkBlob, setChartDarkBlob] = useState<Blob | null>(null);
-  const chartDarkUrl = useMemo(() => (chartLightBlob ? URL.createObjectURL(chartDarkBlob) : null), [chartDarkBlob]);
+  const chartLightUrl = useMemo(() => {
+    let url: string | null;
+    if (provider === ChartProvider.NAVIGRAPH && navigraphChartLightBlob) {
+      url = URL.createObjectURL(navigraphChartLightBlob);
+    } else if ((provider === ChartProvider.FAA || provider === ChartProvider.LIDO) && msfsLightUrl) {
+      url = msfsLightUrl;
+    } else {
+      url = null;
+    }
+    return url;
+  }, [provider, navigraphChartLightBlob, msfsLightUrl]);
+
+  const chartDarkUrl = useMemo(() => {
+    let url: string | null;
+    if (provider === ChartProvider.NAVIGRAPH && navigraphChartDarkBlob) {
+      url = URL.createObjectURL(navigraphChartDarkBlob);
+    } else if ((provider === ChartProvider.FAA || provider === ChartProvider.LIDO) && msfsDarkUrl) {
+      url = msfsDarkUrl;
+    } else {
+      url = null;
+    }
+    return url;
+  }, [provider, navigraphChartDarkBlob, msfsDarkUrl]);
 
   useEffect(() => {
     let visible = false;
@@ -156,18 +216,31 @@ export const ChartViewer = () => {
 
   useEffect(() => {
     setLoading(true);
-    navigraphCharts
-      .getChartImage({
-        chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
-        theme: 'light',
-      })
-      .then((blob) => setChartLightBlob(blob));
-    navigraphCharts
-      .getChartImage({
-        chart: { image_day_url: chartLinks.light, image_night_url: chartLinks.dark } as Chart,
-        theme: 'dark',
-      })
-      .then((blob) => setChartDarkBlob(blob));
+    if (provider === ChartProvider.NAVIGRAPH) {
+      navigraphCharts
+        .getChartImage({
+          chart: { image_day_url: chartLinks.light } as Chart,
+          theme: 'light',
+        })
+        .then((blob) => setNavigraphChartLightBlob(blob));
+      if ('dark' in chartLinks) {
+        navigraphCharts
+          .getChartImage({
+            chart: { image_night_url: chartLinks.dark } as Chart,
+            theme: 'dark',
+          })
+          .then((blob) => setNavigraphChartDarkBlob(blob));
+      }
+    } else if (provider === ChartProvider.FAA || provider === ChartProvider.LIDO) {
+      if (chartLinks.light) {
+        msfsLightImageSupplier.showChartImage(chartLinks.light);
+      }
+      if ('dark' in chartLinks && chartLinks.dark) {
+        msfsDarkImageSupplier.showChartImage(chartLinks.dark);
+      } else {
+        setMsfsDarkUrl(null);
+      }
+    }
   }, [chartLinks]);
 
   const handleRotateRight = () => {
@@ -216,20 +289,29 @@ export const ChartViewer = () => {
 
   useEffect(() => {
     if (pagesViewable > 1) {
-      getPdfUrl(chartId, currentPage)
-        .then((url) => {
-          dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
-        })
-        .catch((error) => {
-          console.error(`Error: ${error}`);
-        });
+      if (provider === ChartProvider.LOCAL_FILES) {
+        getPdfUrl(chartId, currentPage)
+          .then((url) => {
+            dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
+          })
+          .catch((error) => {
+            console.error(`Error: ${error}`);
+          });
+      } else if (provider === ChartProvider.FAA || provider === ChartProvider.LIDO) {
+        const pages = currentChartPages as MsfsChartPage[] | undefined;
+        if (pages && currentPage <= pages.length) {
+          const light = pages[currentPage - 1].lightUrl;
+          const dark = pages[currentPage - 1].darkUrl;
+          dispatch(editTabProperty({ tab: currentTab, chartLinks: { light, dark } }));
+        }
+      }
     }
   }, [currentPage]);
 
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
   const planeRef = useRef(null);
 
-  if (!chartLinks.light || !chartLinks.dark) {
+  if (!chartLinks.light && !chartLinks.dark) {
     return (
       <div
         className={`relative flex items-center justify-center rounded-lg bg-theme-accent ${!isFullScreen && 'ml-6 rounded-l-none'}`}
@@ -248,6 +330,14 @@ export const ChartViewer = () => {
       </div>
     );
   }
+
+  const lightChartAvailable = !!chartLinks.light;
+  const darkChartAvailable =
+    !!chartLinks.dark &&
+    (provider === ChartProvider.NAVIGRAPH || provider === ChartProvider.FAA || provider === ChartProvider.LIDO);
+
+  const showDarkChart = !usingLightTheme && chartDarkUrl && darkChartAvailable;
+  const showDarkLightButton = lightChartAvailable && darkChartAvailable;
 
   // noinspection PointlessBooleanExpressionJS
   return (
@@ -489,12 +579,12 @@ export const ChartViewer = () => {
                   {isFullScreen ? <FullscreenExit size={40} /> : <ArrowsFullscreen size={40} />}
                 </div>
 
-                {provider === 'NAVIGRAPH' && (
+                {showDarkLightButton && (
                   <div
                     className="mt-3 cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-                    onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
+                    onClick={() => dispatch(setUsingLightTheme(!usingLightTheme))}
                   >
-                    {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
+                    {!usingLightTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
                   </div>
                 )}
               </div>
@@ -562,7 +652,7 @@ export const ChartViewer = () => {
 
                     {chartDarkUrl && (
                       <img
-                        className={`absolute left-0 w-full select-none transition duration-100 ${usingDarkTheme && 'opacity-0'}`}
+                        className={`absolute left-0 w-full select-none transition duration-100 ${!showDarkChart && 'opacity-0'}`}
                         draggable={false}
                         src={chartDarkUrl}
                         alt="chart"
