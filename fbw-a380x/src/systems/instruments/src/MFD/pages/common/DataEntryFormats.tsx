@@ -991,9 +991,9 @@ export class QnhFormat implements DataEntryFormat<number> {
 
   private readonly requiredFormat = 'XXXX';
 
-  private minHpaValue = 745;
+  public static readonly minHpaValue = 745;
 
-  private maxHpaValue = 1100;
+  public static readonly maxHpaValue = 1100;
 
   private minInHgValue = 22.0;
 
@@ -1003,7 +1003,7 @@ export class QnhFormat implements DataEntryFormat<number> {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
-    return [value < this.minHpaValue ? value.toFixed(2) : value.toFixed(0), null, null] as FieldFormatTuple;
+    return [value < QnhFormat.minHpaValue ? value.toFixed(2) : value.toFixed(0), null, null] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -1018,8 +1018,8 @@ export class QnhFormat implements DataEntryFormat<number> {
     }
 
     const hpa = input.indexOf('.') === -1 && input.length >= 3;
-    const minValue = hpa ? this.minHpaValue : this.minInHgValue;
-    const maxValue = hpa ? this.maxHpaValue : this.maxInHgValue;
+    const minValue = hpa ? QnhFormat.minHpaValue : this.minInHgValue;
+    const maxValue = hpa ? QnhFormat.maxHpaValue : this.maxInHgValue;
 
     if (nbr >= minValue && nbr <= maxValue) {
       return nbr;

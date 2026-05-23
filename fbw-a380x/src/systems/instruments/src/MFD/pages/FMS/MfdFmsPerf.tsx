@@ -3138,18 +3138,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               return;
                             }
 
-                            let qnhMillibar = v;
-
-                            if (v < 745 || v > 1050) {
-                              qnhMillibar = v * 33.8639;
-                            }
-
+                            const isMiliBar = v >= QnhFormat.minHpaValue && v <= QnhFormat.maxHpaValue;
                             this.props.flightPlanInterface.setPerformanceData(
                               'approachQnh',
-                              qnhMillibar,
+                              v,
                               this.loadedFlightPlanIndex.get(),
                             );
-                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+                            SimVar.SetSimVarValue(
+                              'L:A32NX_DESTINATION_QNH',
+                              'Millibar',
+                              isMiliBar ? v : UnitType.HPA.convertFrom(v, UnitType.IN_HG),
+                            );
                           }}
                           mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachQnh}

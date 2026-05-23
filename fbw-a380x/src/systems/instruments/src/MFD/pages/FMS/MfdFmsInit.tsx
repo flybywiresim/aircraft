@@ -149,7 +149,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly cruiseTemperature = Subject.create<number | null>(null);
   private readonly cruiseTemperatureIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly crzTempDisabled = this.crzFl.map((it) => it === null);
+  private readonly crzTempDisabled = MappedSubject.create(
+    ([crzFl, isActiveOrCopyOfActive, flightPhase]) =>
+      crzFl === null || (isActiveOrCopyOfActive && flightPhase >= FmgcFlightPhase.Cruise),
+    this.crzFl,
+    this.fpIsActiveOrCopyOfActive,
+    this.activeFlightPhase,
+  );
 
   private readonly flightNumber = Subject.create<string | null>(null);
 
@@ -209,6 +215,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.departureButtonDisabled,
       this.costIndexModeDisabled,
       this.tripWindTextAlign,
+      this.crzTempDisabled,
     );
   }
   private invalidateDataFields() {
