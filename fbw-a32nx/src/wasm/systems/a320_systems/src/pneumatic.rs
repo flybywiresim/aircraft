@@ -1900,6 +1900,7 @@ impl FlightPhaseLoop {
 
 #[cfg(test)]
 pub mod tests {
+    use more_asserts::*;
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
@@ -3214,9 +3215,18 @@ pub mod tests {
             test_bed.run_with_delta(Duration::from_millis(16));
         }
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.blue_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
@@ -3287,14 +3297,32 @@ pub mod tests {
             .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
-        assert!((test_bed.ip_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
-        assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_lt!(
+            (test_bed.ip_pressure(1) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.ip_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
-        assert!((test_bed.hp_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
-        assert!((test_bed.hp_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_lt!(
+            (test_bed.hp_pressure(1) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.hp_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
-        assert!((test_bed.transfer_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
-        assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_lt!(
+            (test_bed.transfer_pressure(1) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.transfer_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
         assert!(
             (test_bed.precooler_inlet_pressure(1) - ambient_pressure).abs() < pressure_tolerance()
@@ -3331,19 +3359,43 @@ pub mod tests {
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_gt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.ip_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
-        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.hp_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_gt!(
+            test_bed.hp_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.hp_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
-        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert_gt!(
+            test_bed.transfer_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_lt!(
+            (test_bed.transfer_pressure(2) - ambient_pressure).abs(),
+            pressure_tolerance()
+        );
 
-        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_inlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
         assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
 
-        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_outlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
         assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
 
         assert!(test_bed.hp_valve_is_open(1));
@@ -3367,20 +3419,50 @@ pub mod tests {
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.ip_pressure(2) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.ip_pressure(2) - ambient_pressure,
+            pressure_tolerance()
+        );
 
-        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.hp_pressure(2) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.hp_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.hp_pressure(2) - ambient_pressure,
+            pressure_tolerance()
+        );
 
-        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.transfer_pressure(2) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.transfer_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.transfer_pressure(2) - ambient_pressure,
+            pressure_tolerance()
+        );
 
-        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!((test_bed.precooler_inlet_pressure(2) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_inlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
+        assert_gt!(
+            (test_bed.precooler_inlet_pressure(2) - ambient_pressure),
+            pressure_tolerance()
+        );
 
-        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!((test_bed.precooler_outlet_pressure(2) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_outlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
+        assert_gt!(
+            (test_bed.precooler_outlet_pressure(2) - ambient_pressure),
+            pressure_tolerance()
+        );
 
         assert!(test_bed.hp_valve_is_open(1));
         assert!(test_bed.hp_valve_is_open(2));
@@ -3403,8 +3485,14 @@ pub mod tests {
             .mach_number(MachNumber(0.))
             .and_stabilize();
 
-        assert!(test_bed.precooler_outlet_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.precooler_outlet_pressure(2) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(2) - ambient_pressure,
+            pressure_tolerance()
+        );
 
         test_bed = test_bed.set_bleed_air_running();
 
@@ -3834,8 +3922,14 @@ pub mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
-        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(2),
+            Pressure::new::<psi>(35.)
+        );
     }
 
     #[test]
@@ -3854,8 +3948,14 @@ pub mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
-        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(2),
+            Pressure::new::<psi>(35.)
+        );
     }
 
     #[test]
@@ -3867,9 +3967,18 @@ pub mod tests {
             .set_bleed_air_running()
             .and_stabilize();
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.blue_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
     }
 
     #[test]
@@ -3892,9 +4001,18 @@ pub mod tests {
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
+        assert_gt!(
+            test_bed.blue_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
     }
 
     #[test]
@@ -3917,9 +4035,18 @@ pub mod tests {
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
+        assert_gt!(
+            test_bed.blue_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
     }
 
     #[test]
@@ -3936,7 +4063,10 @@ pub mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.cross_bleed_valve_is_open());
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1),
+            Pressure::new::<psi>(35.)
+        );
         assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
     }
 
@@ -3954,7 +4084,10 @@ pub mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.cross_bleed_valve_is_open());
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1),
+            Pressure::new::<psi>(35.)
+        );
         assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
     }
 
@@ -4133,9 +4266,18 @@ pub mod tests {
 
         test_bed = test_bed.idle_eng1().and_stabilize();
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() >= pressure_before_green);
-        assert!(test_bed.blue_hydraulic_reservoir_pressure() >= pressure_before_blue);
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() >= pressure_before_yellow);
+        assert_ge!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            pressure_before_green
+        );
+        assert_ge!(
+            test_bed.blue_hydraulic_reservoir_pressure(),
+            pressure_before_blue
+        );
+        assert_ge!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            pressure_before_yellow
+        );
     }
 
     #[test]
@@ -4222,10 +4364,10 @@ pub mod tests {
         println!("Eng 1 pressure: {}", eng1_pressure.get::<psi>());
         println!("Eng 2 pressure: {}", eng2_pressure.get::<psi>());
 
-        assert!(eng1_pressure >= Pressure::new::<psi>(40.));
-        assert!(eng1_pressure <= Pressure::new::<psi>(44.));
-        assert!(eng2_pressure >= Pressure::new::<psi>(40.));
-        assert!(eng2_pressure <= Pressure::new::<psi>(44.));
+        assert_ge!(eng1_pressure, Pressure::new::<psi>(40.));
+        assert_le!(eng1_pressure, Pressure::new::<psi>(44.));
+        assert_ge!(eng2_pressure, Pressure::new::<psi>(40.));
+        assert_le!(eng2_pressure, Pressure::new::<psi>(44.));
     }
 
     #[test]
@@ -4244,8 +4386,8 @@ pub mod tests {
         println!("Eng 1 pressure: {}", eng1_pressure.get::<psi>());
         println!("Eng 2 pressure: {}", eng2_pressure.get::<psi>());
 
-        assert!(eng2_pressure >= Pressure::new::<psi>(48.));
-        assert!(eng2_pressure <= Pressure::new::<psi>(52.));
+        assert_ge!(eng2_pressure, Pressure::new::<psi>(48.));
+        assert_le!(eng2_pressure, Pressure::new::<psi>(52.));
     }
 
     #[test]
@@ -4304,8 +4446,14 @@ pub mod tests {
                 (test_bed.hp_pressure(i) - ambient_pressure).get::<psi>()
             );
 
-            assert!(test_bed.hp_pressure(i) - ambient_pressure > Pressure::new::<psi>(600.));
-            assert!(test_bed.hp_pressure(i) - ambient_pressure < Pressure::new::<psi>(670.));
+            assert_gt!(
+                test_bed.hp_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(600.)
+            );
+            assert_lt!(
+                test_bed.hp_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(670.)
+            );
         }
     }
 
@@ -4328,8 +4476,14 @@ pub mod tests {
                 (test_bed.ip_pressure(i) - ambient_pressure).get::<psi>()
             );
 
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(120.));
-            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(165.));
+            assert_gt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(120.)
+            );
+            assert_lt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(165.)
+            );
         }
     }
 
@@ -4347,7 +4501,10 @@ pub mod tests {
 
         for i in 1..2 {
             // Below the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(38.9));
+            assert_lt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(38.9)
+            );
 
             // Check HP pressure is used
             assert!(!test_bed.ip_valve_is_open(i));
@@ -4364,7 +4521,10 @@ pub mod tests {
 
         for i in 1..2 {
             // Above the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(38.9));
+            assert_gt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(38.9)
+            );
 
             // Check IP pressure is used
             assert!(test_bed.ip_valve_is_open(i));
@@ -4386,7 +4546,10 @@ pub mod tests {
 
         for i in 1..2 {
             // Below the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(43.2));
+            assert_lt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(43.2)
+            );
 
             // Check HP pressure is used
             assert!(test_bed.hp_valve_is_open(i));
@@ -4402,7 +4565,10 @@ pub mod tests {
 
         for i in 1..2 {
             // Above the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(43.2));
+            assert_gt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                Pressure::new::<psi>(43.2)
+            );
 
             // Check IP pressure is used
             assert!(test_bed.ip_valve_is_open(i));
@@ -4424,7 +4590,10 @@ pub mod tests {
             .and_stabilize();
 
         // Below the switching threshold
-        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(48.2));
+        assert_lt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            Pressure::new::<psi>(48.2)
+        );
 
         // Check HP pressure is used
         assert!(test_bed.hp_valve_is_open(1));
@@ -4436,7 +4605,10 @@ pub mod tests {
             .and_stabilize();
 
         // Above the switching threshold
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(48.2));
+        assert_gt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            Pressure::new::<psi>(48.2)
+        );
 
         // Check IP pressure is used
         assert!(!test_bed.hp_valve_is_open(1));
@@ -4455,7 +4627,10 @@ pub mod tests {
             .and_stabilize();
 
         // Below the switching threshold
-        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(60.5));
+        assert_lt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            Pressure::new::<psi>(60.5)
+        );
 
         // Check HP pressure is used
         assert!(test_bed.hp_valve_is_open(1));
@@ -4469,7 +4644,10 @@ pub mod tests {
             .and_stabilize();
 
         // Above the switching threshold
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(60.5));
+        assert_gt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            Pressure::new::<psi>(60.5)
+        );
 
         // Check IP pressure is used
         assert!(!test_bed.hp_valve_is_open(1));
@@ -4684,8 +4862,14 @@ pub mod tests {
             test_bed.set_lgciu_on_ground(true);
             test_bed = test_bed.and_stabilize();
 
-            assert!((test_bed.left_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
-            assert!((test_bed.right_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert_lt!(
+                (test_bed.left_wai_pressure() - ambient_pressure).abs(),
+                pressure_epsilon
+            );
+            assert_lt!(
+                (test_bed.right_wai_pressure() - ambient_pressure).abs(),
+                pressure_epsilon
+            );
             assert!(
                 (test_bed.left_wai_temperature().get::<degree_celsius>()
                     - ambient_temperature.get::<degree_celsius>())
@@ -4728,8 +4912,14 @@ pub mod tests {
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
                 .and_stabilize();
 
-            assert!((test_bed.left_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
-            assert!((test_bed.right_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert_lt!(
+                (test_bed.left_wai_pressure() - ambient_pressure).abs(),
+                pressure_epsilon
+            );
+            assert_lt!(
+                (test_bed.right_wai_pressure() - ambient_pressure).abs(),
+                pressure_epsilon
+            );
             assert!(
                 (test_bed.left_wai_temperature().get::<degree_celsius>()
                     - ambient_temperature.get::<degree_celsius>())
@@ -4752,7 +4942,10 @@ pub mod tests {
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
                 .and_stabilize();
             // Wing pressure must be higher than ambient, no abs()
-            assert!(test_bed.left_wai_pressure() - ambient_pressure > pressure_epsilon_pressurized);
+            assert_gt!(
+                test_bed.left_wai_pressure() - ambient_pressure,
+                pressure_epsilon_pressurized
+            );
             assert!(
                 test_bed.right_wai_pressure() - ambient_pressure > pressure_epsilon_pressurized
             );
@@ -4781,7 +4974,7 @@ pub mod tests {
 
             assert!(!test_bed.left_precooler_pressurised());
             assert!(!test_bed.right_precooler_pressurised());
-            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
+            assert_gt!(test_bed.valve_controller_timer(), Duration::from_secs(0));
             assert!(test_bed.left_valve_closed());
             assert!(test_bed.right_valve_closed());
             assert!(test_bed.wing_anti_ice_has_fault());
@@ -4880,7 +5073,7 @@ pub mod tests {
                 .and_stabilize();
             test_bed.set_lgciu_on_ground(true);
 
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(0));
 
             test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
             test_bed.run_with_delta(Duration::from_millis(16));
@@ -4889,7 +5082,7 @@ pub mod tests {
             for _ in 0..375 {
                 test_bed.run_with_delta(Duration::from_millis(16));
             }
-            assert!(test_bed.valve_controller_timer() < Duration::from_secs(7));
+            assert_lt!(test_bed.valve_controller_timer(), Duration::from_secs(7));
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
             assert!(!test_bed.wing_anti_ice_has_fault());
@@ -4899,7 +5092,7 @@ pub mod tests {
             for _ in 0..1625 {
                 test_bed.run_with_delta(Duration::from_millis(16));
             }
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(30));
             assert!(test_bed.wing_anti_ice_system_selected());
             assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(!test_bed.wing_anti_ice_system_on());
@@ -4936,14 +5129,14 @@ pub mod tests {
             assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(0));
 
             test_bed.set_lgciu_on_ground(true);
             test_bed.run_with_delta(Duration::from_millis(500));
 
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
-            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
+            assert_gt!(test_bed.valve_controller_timer(), Duration::from_secs(0));
 
             test_bed.run_with_delta(Duration::from_secs(30));
             assert!(test_bed.left_valve_closed());
@@ -4960,7 +5153,7 @@ pub mod tests {
                 .and_stabilize();
             test_bed.set_lgciu_on_ground(true);
 
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(0));
 
             test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
             test_bed.run_with_delta(Duration::from_secs(31));
@@ -4970,7 +5163,7 @@ pub mod tests {
             assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(test_bed.left_valve_closed());
             assert!(test_bed.right_valve_closed());
-            assert!(test_bed.valve_controller_timer() >= Duration::from_secs(30));
+            assert_ge!(test_bed.valve_controller_timer(), Duration::from_secs(30));
 
             test_bed = test_bed
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
@@ -4978,7 +5171,7 @@ pub mod tests {
                 .and_stabilize();
             test_bed = test_bed.set_dc_ess_shed_bus_power(true).and_stabilize();
 
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(0));
         }
 
         #[test]
@@ -4996,7 +5189,7 @@ pub mod tests {
 
             assert!(test_bed.left_valve_closed());
             assert!(test_bed.right_valve_closed());
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(0));
             assert!(test_bed.wing_anti_ice_system_selected());
             assert!(!test_bed.wing_anti_ice_system_on());
             assert!(!test_bed.wing_anti_ice_has_fault());
@@ -5031,8 +5224,8 @@ pub mod tests {
             assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(test_bed.wing_anti_ice_system_on());
             assert!(test_bed.wing_anti_ice_system_selected());
-            assert!(time_to_open_valve.as_secs_f32() >= 2.);
-            assert!(time_to_open_valve.as_secs_f32() <= 3.);
+            assert_ge!(time_to_open_valve.as_secs_f32(), 2.);
+            assert_le!(time_to_open_valve.as_secs_f32(), 3.);
         }
 
         #[test]
@@ -5060,10 +5253,10 @@ pub mod tests {
 
             // At 22000ft, flow rate is given at 0.327kg/s
             // Checking between 0.326 and 0.328
-            assert!(left_flow_rate >= 327.0 - 1.);
-            assert!(left_flow_rate <= 327.0 + 1.);
-            assert!(right_flow_rate >= 327.0 - 1.);
-            assert!(right_flow_rate <= 327.0 + 1.);
+            assert_ge!(left_flow_rate, 327.0 - 1.);
+            assert_le!(left_flow_rate, 327.0 + 1.);
+            assert_ge!(right_flow_rate, 327.0 - 1.);
+            assert_le!(right_flow_rate, 327.0 + 1.);
         }
 
         #[test]
@@ -5088,7 +5281,7 @@ pub mod tests {
             }
             // According to the schematics, the relay starts counting
             // regardless of the pressurisation
-            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
+            assert_eq!(test_bed.valve_controller_timer(), Duration::from_secs(30));
             test_bed = test_bed
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
                 .and_stabilize();
@@ -5201,8 +5394,8 @@ pub mod tests {
                 .both_packs_auto()
                 .and_stabilize();
 
-            assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
-            assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
+            assert_gt!(test_bed.pack_flow_valve_flow(1), flow_rate_tolerance());
+            assert_gt!(test_bed.pack_flow_valve_flow(2), flow_rate_tolerance());
 
             test_bed = test_bed
                 .set_pack_flow_pb_is_auto(1, false)
@@ -5210,8 +5403,8 @@ pub mod tests {
                 .and_run()
                 .and_run();
 
-            assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
-            assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
+            assert_lt!(test_bed.pack_flow_valve_flow(1), flow_rate_tolerance());
+            assert_lt!(test_bed.pack_flow_valve_flow(2), flow_rate_tolerance());
         }
     }
 }

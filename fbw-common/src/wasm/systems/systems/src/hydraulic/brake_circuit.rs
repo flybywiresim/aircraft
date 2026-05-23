@@ -419,7 +419,7 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AutobrakeMode {
     NONE = 0,
     LOW = 1,
