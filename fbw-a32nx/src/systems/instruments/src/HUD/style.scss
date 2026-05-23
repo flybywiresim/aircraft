@@ -37,6 +37,11 @@
   animation-iteration-count: 9;
 }
 
+.PulseGreen9Seconds {
+  @include GenericPulsingFill($display-green, pulse-green-fill);
+  animation-duration: 1s;
+  animation-iteration-count: 9;
+}
 .Wind text{
   fill: $display-green;
   stroke: none;
