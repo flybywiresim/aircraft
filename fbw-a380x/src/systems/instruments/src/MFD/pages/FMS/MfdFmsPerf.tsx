@@ -1458,8 +1458,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.flightPlanInterface.setPerformanceData('v1', v, this.loadedFlightPlanIndex.get());
-                          SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v);
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('v1', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1495,27 +1495,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         }
                         onClick={() => {
                           const fm = this.props.fmcService.master.fmgc.data;
+                          const fpIndex = this.loadedFlightPlanIndex.get();
                           if (fm && this.loadedFlightPlan) {
-                            SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', fm.v1ToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'v1',
-                              fm.v1ToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('v1', fm.v1ToBeConfirmed.get(), fpIndex);
                             fm.v1ToBeConfirmed.set(null);
-                            SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', fm.vrToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'vr',
-                              fm.vrToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('vr', fm.vrToBeConfirmed.get(), fpIndex);
                             fm.vrToBeConfirmed.set(null);
-                            SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', fm.v2ToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'v2',
-                              fm.v2ToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('v2', fm.v2ToBeConfirmed.get(), fpIndex);
                             fm.v2ToBeConfirmed.set(null);
                           }
                         }}
@@ -1534,8 +1520,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v);
-                          this.props.flightPlanInterface.setPerformanceData('vr', v, this.loadedFlightPlanIndex.get());
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('vr', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1566,8 +1552,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v);
-                          this.props.flightPlanInterface.setPerformanceData('v2', v, this.loadedFlightPlanIndex.get());
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('v2', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -3138,17 +3124,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               return;
                             }
 
-                            const isMiliBar = v >= QnhFormat.minHpaValue && v <= QnhFormat.maxHpaValue;
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'approachQnh',
-                              v,
-                              this.loadedFlightPlanIndex.get(),
-                            );
-                            SimVar.SetSimVarValue(
-                              'L:A32NX_DESTINATION_QNH',
-                              'Millibar',
-                              isMiliBar ? v : UnitType.HPA.convertFrom(v, UnitType.IN_HG),
-                            );
+                            const fpIndex = this.loadedFlightPlanIndex.get();
+                            this.props.flightPlanInterface.setPerformanceData('approachQnh', v, fpIndex);
                           }}
                           mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachQnh}
@@ -3169,9 +3146,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           dataHandlerDuringValidation={async (v) => {
                             const fpIndex = this.loadedFlightPlanIndex.get();
                             this.props.flightPlanInterface.setPerformanceData('approachBaroMinimum', v, fpIndex);
-                            if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
-                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
-                            }
                           }}
                           readonlyValue={this.approachBaroMinimum}
                           containerStyle="width: 150px;"
@@ -3191,9 +3165,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               dataHandlerDuringValidation={async (v) => {
                                 const fpIndex = this.loadedFlightPlanIndex.get();
                                 this.props.flightPlanInterface.setPerformanceData('approachRadioMinimum', v, fpIndex);
-                                if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v);
-                                }
                               }}
                               readonlyValue={this.approachRadioMinimum}
                               containerStyle="width: 150px;"

@@ -858,9 +858,6 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', NaN);
 
     const gpsDriven = SimVar.GetSimVarValue('GPS DRIVES NAV1', 'Bool');
     if (!gpsDriven) {

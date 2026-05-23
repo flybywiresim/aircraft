@@ -9,6 +9,7 @@ import {
   SimVarValueType,
   Subject,
   Subscription,
+  UnitType,
 } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
@@ -117,6 +118,12 @@ export class FmcAircraftInterface {
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedShortTermManaged = Subject.create(0);
+  private readonly simVarV1Speed = Subject.create<number | null>(null);
+  private readonly simVarVrSpeed = Subject.create<number | null>(null);
+  private readonly simVarV2Speed = Subject.create<number | null>(null);
+  private readonly simVarDestinationQnh = Subject.create<number | null>(null);
+  private readonly simVarMda = Subject.create<number | null>(null);
+  private readonly simVarDh = Subject.create<number | string | null>(null);
 
   private readonly tdReached = this.bus
     .getSubscriber<FmsMessageVars>()
@@ -259,6 +266,18 @@ export class FmcAircraftInterface {
         (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
         true,
       ),
+    );
+
+    this.subs.push(
+      this.simVarV1Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v ?? NaN), true),
+      this.simVarV2Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v ?? NaN), true),
+      this.simVarVrSpeed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v ?? NaN), true),
+      this.simVarDestinationQnh.sub((v) => {
+        const qnhInHpa = v !== null ? (v > 100 ? v : UnitType.HPA.convertFrom(v, UnitType.IN_HG)) : 0;
+        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhInHpa);
+      }, true),
+      this.simVarMda.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v ?? 0), true),
+      this.simVarDh.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v), true),
     );
 
     this.subs.push(
@@ -469,31 +488,22 @@ export class FmcAircraftInterface {
   }
 
   public updatePerformanceData() {
-    if (!this.flightPlanService.hasActive) {
-      return;
-    }
+    const performanceData = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
 
     // If spawned after T/O, set reasonable V2
-    if (this.flightPhase.get() > FmgcFlightPhase.Preflight && !this.flightPlanService.active.performanceData.v2.get()) {
+    if (performanceData && this.flightPhase.get() > FmgcFlightPhase.Preflight && !performanceData.v2.get()) {
       const fSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number;
       this.flightPlanService.setPerformanceData('v2', Math.round(fSpeed));
     }
 
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_V1_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.v1.get() ?? NaN,
-    );
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_V2_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.v2.get() ?? NaN,
-    );
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_VR_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.vr.get() ?? NaN,
-    );
+    this.simVarV1Speed.set(performanceData?.v1.get() ?? null);
+    this.simVarV2Speed.set(performanceData?.v2.get() ?? null);
+    this.simVarVrSpeed.set(performanceData?.vr.get() ?? null);
+
+    const approachQnh = performanceData?.approachQnh.get() ?? null;
+    this.simVarDestinationQnh.set(approachQnh);
+    this.simVarMda.set(performanceData?.approachBaroMinimum.get() ?? null);
+    this.simVarDh.set(performanceData?.approachRadioMinimum.get() ?? null);
   }
 
   public getToSpeedsTooLow(): boolean {
