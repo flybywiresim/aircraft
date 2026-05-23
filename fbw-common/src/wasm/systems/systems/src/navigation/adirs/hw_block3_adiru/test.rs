@@ -225,19 +225,19 @@ impl AngleOfAttackExcitationPowerProvider for TestAdiruElectricalHarness {
     }
 }
 impl IntegratedProbesPowerProvider for TestAdiruElectricalHarness {
-    fn isp_ac_powered(&self, _num: usize) -> bool {
+    fn isp_ac_powered(&self, _num: AdiruNumber) -> bool {
         self.isp_ac_powered
     }
 
-    fn isp_dc_powered(&self, _num: usize) -> bool {
+    fn isp_dc_powered(&self, _num: AdiruNumber) -> bool {
         self.isp_dc_powered
     }
 
-    fn mfp_powered(&self, _num: usize) -> bool {
+    fn mfp_powered(&self, _num: AdiruNumber) -> bool {
         self.mfp_powered
     }
 
-    fn ssp_powered(&self, _num: usize) -> bool {
+    fn ssp_powered(&self, _num: AdiruNumber) -> bool {
         self.ssp_powered
     }
 }
@@ -255,7 +255,7 @@ struct TestAircraft<T> {
     tat_probe: Option<TotalAirTemperatureProbe>,
 }
 impl<T: AdrRuntimeTemplate> TestAircraft<T> {
-    fn new(context: &mut InitContext, num: usize) -> Self {
+    fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
         let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
             340.,
             0.82,
@@ -277,7 +277,7 @@ impl<T: AdrRuntimeTemplate> TestAircraft<T> {
             integrated_sensors_complex: IntegratedAirDataSensorsComplex::new(context, num),
 
             adm_sensors_complex: AirDataModuleAirDataSensorsComplex::new(context, num),
-            tat_probe: if num == 3 {
+            tat_probe: if num == AdiruNumber::Three {
                 Some(TotalAirTemperatureProbe::new(context))
             } else {
                 None
@@ -367,7 +367,7 @@ where
     const STANDARD_SPEED_OF_SOUND_MS: f64 = 340.2919;
     const SPECIFIC_GAS_CONSTANT_AIR_J_PER_KG_K: f64 = 287.0528;
 
-    fn new(num: usize) -> Self {
+    fn new(num: AdiruNumber) -> Self {
         Self {
             test_bed: SimulationTestBed::new(|context| TestAircraft::new(context, num)),
         }
@@ -1072,7 +1072,7 @@ where
     TestAircraft<T>: Aircraft,
     T: AdrRuntimeTemplate,
 {
-    AdirsTestBed::new(num)
+    AdirsTestBed::new(num.into())
         .primary_power_set_to(true)
         .and()
         .backup_power_set_to(true)

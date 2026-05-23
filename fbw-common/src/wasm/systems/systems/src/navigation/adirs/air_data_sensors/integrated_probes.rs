@@ -3,9 +3,12 @@ use uom::si::{angle::degree, pressure::hectopascal, thermodynamic_temperature::d
 
 use crate::{
     failures::{Failure, FailureType},
-    navigation::adirs::air_data_sensors::{
-        AngleOfAttackVane, PitotTube, PressureSource, SideslipVane, StaticPort, TemperatureProbe,
-        TotalAirTemperatureProbe, WindVane,
+    navigation::adirs::{
+        air_data_sensors::{
+            AngleOfAttackVane, PitotTube, PressureSource, SideslipVane, StaticPort,
+            TemperatureProbe, TotalAirTemperatureProbe, WindVane,
+        },
+        AdiruNumber,
     },
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -55,11 +58,11 @@ impl MultifunctionProbe {
     const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
     const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
-    pub fn new(context: &mut InitContext, number: usize) -> Self {
+    pub fn new(context: &mut InitContext, number: AdiruNumber) -> Self {
         let is_powered = context.has_engines_running();
 
         Self {
-            failure: Failure::new(FailureType::Mfp(number)),
+            failure: Failure::new(FailureType::Mfp(number.into())),
 
             is_powered: false,
             power_holdover: Duration::from_secs_f64(random_from_range(
@@ -289,7 +292,7 @@ impl IntegratedStaticProbe {
 
     pub fn new(
         context: &mut InitContext,
-        number: usize,
+        number: AdiruNumber,
         installation_position: IntegratedStaticProbeInstallationPosition,
     ) -> Self {
         let is_powered = context.has_engines_running();
@@ -297,9 +300,9 @@ impl IntegratedStaticProbe {
         Self {
             failure: Failure::new(
                 if installation_position == IntegratedStaticProbeInstallationPosition::Left {
-                    FailureType::IspLeft(number)
+                    FailureType::IspLeft(number.into())
                 } else {
-                    FailureType::IspRight(number)
+                    FailureType::IspRight(number.into())
                 },
             ),
 
@@ -525,11 +528,11 @@ impl SideslipAngleProbe {
     const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
     const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
-    pub fn new(context: &mut InitContext, number: usize) -> Self {
+    pub fn new(context: &mut InitContext, number: AdiruNumber) -> Self {
         let is_powered = context.has_engines_running();
 
         Self {
-            failure: Failure::new(FailureType::Ssa(number)),
+            failure: Failure::new(FailureType::Ssa(number.into())),
 
             is_powered: false,
             power_holdover: Duration::from_secs_f64(random_from_range(

@@ -29,7 +29,10 @@ use navigation::{
     A320RadioAltimeters,
 };
 use power_consumption::A320PowerConsumption;
-use systems::{auto_flight::FlightControlUnitShim, navigation::ils::MultiModeReceiverShim};
+use systems::{
+    auto_flight::FlightControlUnitShim,
+    navigation::{adirs::AdiruNumber, ils::MultiModeReceiverShim},
+};
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     surveillance::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
@@ -283,8 +286,8 @@ impl Aircraft for A320 {
             &self.egpws_electrical_harness,
             self.radio_altimeters.radio_altimeter_1(),
             self.radio_altimeters.radio_altimeter_2(),
-            &self.adirs[1],
-            &self.adirs[1],
+            &self.adirs[AdiruNumber::One],
+            &self.adirs[AdiruNumber::One],
             &self.mmr,
         );
     }

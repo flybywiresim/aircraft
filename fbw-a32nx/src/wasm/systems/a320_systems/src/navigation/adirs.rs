@@ -12,7 +12,7 @@ use systems::navigation::adirs::hw_block3_adiru::adiru::{
 use systems::navigation::adirs::hw_block3_adiru::adm_adr_runtime::AdmAirDataReferenceRuntime;
 use systems::navigation::adirs::{
     hw_block3_adiru::{adiru::AirDataInertialReferenceUnit, AdiruElectricalHarness},
-    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
+    AdiruNumber, AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
     AirDataReferenceDiscreteOutput, InertialReferenceBusOutput, InertialReferenceDiscreteOutput,
     IrDiscreteInputs, ModeSelectorPosition,
 };
@@ -49,13 +49,25 @@ impl A320AirDataInertialReferenceSystem {
         );
 
         Self {
-            adiru_1: AirDataInertialReferenceUnit::new(context, 1, adirs_programming.clone()),
-            adiru_2: AirDataInertialReferenceUnit::new(context, 2, adirs_programming.clone()),
-            adiru_3: AirDataInertialReferenceUnit::new(context, 3, adirs_programming.clone()),
+            adiru_1: AirDataInertialReferenceUnit::new(
+                context,
+                AdiruNumber::One,
+                adirs_programming.clone(),
+            ),
+            adiru_2: AirDataInertialReferenceUnit::new(
+                context,
+                AdiruNumber::Two,
+                adirs_programming.clone(),
+            ),
+            adiru_3: AirDataInertialReferenceUnit::new(
+                context,
+                AdiruNumber::Three,
+                adirs_programming.clone(),
+            ),
 
-            sensor_complex_1: AirDataModuleAirDataSensorsComplex::new(context, 1),
-            sensor_complex_2: AirDataModuleAirDataSensorsComplex::new(context, 2),
-            sensor_complex_3: AirDataModuleAirDataSensorsComplex::new(context, 3),
+            sensor_complex_1: AirDataModuleAirDataSensorsComplex::new(context, AdiruNumber::One),
+            sensor_complex_2: AirDataModuleAirDataSensorsComplex::new(context, AdiruNumber::Two),
+            sensor_complex_3: AirDataModuleAirDataSensorsComplex::new(context, AdiruNumber::Three),
         }
     }
 
@@ -65,7 +77,7 @@ impl A320AirDataInertialReferenceSystem {
         electrical_harness: &A320AdirsElectricalHarness,
         fcu: &impl FlightControlUnitBusOutput,
     ) {
-        (1..=3).for_each(|adiru_num| {
+        AdiruNumber::One.into_iter().for_each(|adiru_num| {
             // For the ADR input:
             // Nr. | Input 1 | Input 2
             // ----|---------|--------
@@ -74,17 +86,16 @@ impl A320AirDataInertialReferenceSystem {
             // 3   | ADR 1   | ADR 2
 
             let (adiru_own, adr_1, adr_2) = match adiru_num {
-                1 => (&mut self.adiru_1, &self.adiru_3, &self.adiru_2),
-                2 => (&mut self.adiru_2, &self.adiru_3, &self.adiru_1),
-                3 => (&mut self.adiru_3, &self.adiru_1, &self.adiru_2),
-                _ => panic!("Impossible Installation position encountered"),
+                AdiruNumber::One => (&mut self.adiru_1, &self.adiru_3, &self.adiru_2),
+                AdiruNumber::Two => (&mut self.adiru_2, &self.adiru_3, &self.adiru_1),
+                AdiruNumber::Three => (&mut self.adiru_3, &self.adiru_1, &self.adiru_2),
             };
 
             let adiru_harness = electrical_harness.get_adiru_electrical_harness(adiru_num);
             let (sensor_complex, tat_probe_1) = match adiru_num {
-                1 => (&mut self.sensor_complex_1, None),
-                2 => (&mut self.sensor_complex_2, None),
-                3 => (
+                AdiruNumber::One => (&mut self.sensor_complex_1, None),
+                AdiruNumber::Two => (&mut self.sensor_complex_2, None),
+                AdiruNumber::Three => (
                     &mut self.sensor_complex_3,
                     Some(
                         self.sensor_complex_1
@@ -92,7 +103,6 @@ impl A320AirDataInertialReferenceSystem {
                             .expect("Sensor complex 1 did not have TAT probe."),
                     ),
                 ),
-                _ => panic!("Impossible Installation position encountered"),
             };
 
             sensor_complex.update(context, adiru_own, adiru_harness, tat_probe_1);
@@ -112,91 +122,93 @@ impl A320AirDataInertialReferenceSystem {
         });
     }
 }
-impl Index<usize> for A320AirDataInertialReferenceSystem {
+impl Index<AdiruNumber> for A320AirDataInertialReferenceSystem {
     type Output = AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>;
 
-    fn index(&self, num: usize) -> &Self::Output {
+    fn index(&self, num: AdiruNumber) -> &Self::Output {
         match num {
-            1 => &self.adiru_1,
-            2 => &self.adiru_2,
-            3 => &self.adiru_3,
-            _ => panic!("Invalid ADIRU Index {num}"),
+            AdiruNumber::One => &self.adiru_1,
+            AdiruNumber::Two => &self.adiru_2,
+            AdiruNumber::Three => &self.adiru_3,
         }
     }
 }
-impl IndexMut<usize> for A320AirDataInertialReferenceSystem {
-    fn index_mut(&mut self, num: usize) -> &mut Self::Output {
+impl IndexMut<AdiruNumber> for A320AirDataInertialReferenceSystem {
+    fn index_mut(&mut self, num: AdiruNumber) -> &mut Self::Output {
         match num {
-            1 => &mut self.adiru_1,
-            2 => &mut self.adiru_2,
-            3 => &mut self.adiru_3,
-            _ => panic!("Invalid ADIRU Index {num}"),
+            AdiruNumber::One => &mut self.adiru_1,
+            AdiruNumber::Two => &mut self.adiru_2,
+            AdiruNumber::Three => &mut self.adiru_3,
         }
     }
 }
 // Implement legacy discrete outputs to satisfy trait bounds
 impl AdirsDiscreteOutputs for A320AirDataInertialReferenceSystem {
     fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_1
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
+            .low_speed_warning_1
     }
 
     fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_2
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
+            .low_speed_warning_2
     }
 
     fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_3
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
+            .low_speed_warning_3
     }
 
     fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_4
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
+            .low_speed_warning_4
     }
 }
 impl AdirsMeasurementOutputs for A320AirDataInertialReferenceSystem {
     fn is_fully_aligned(&self, adiru_number: usize) -> bool {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number])
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
             .discrete_word_1
             .get_bit(13)
     }
     fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_latitude
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ppos_latitude
     }
     fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_longitude
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ppos_longitude
     }
     fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).magnetic_heading
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).magnetic_heading
     }
     fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).true_heading
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).true_heading
     }
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).inertial_vertical_speed
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).inertial_vertical_speed
     }
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).standard_altitude
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).standard_altitude
     }
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).corrected_angle_of_attack
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).corrected_angle_of_attack
     }
     fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).computed_airspeed
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).computed_airspeed
     }
 }
 impl AdirsToAirCondInterface for A320AirDataInertialReferenceSystem {
     fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ground_speed
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ground_speed
     }
     fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).true_airspeed
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).true_airspeed
     }
     fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
-        let word =
-            AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).baro_correction_1_hpa;
+        let word = AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
+            .baro_correction_1_hpa;
         Arinc429Word::new(Pressure::new::<hectopascal>(word.value()), word.ssm())
     }
     fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number])
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
             .corrected_average_static_pressure
     }
 }
@@ -252,7 +264,7 @@ impl A320AdirsElectricalHarness {
         context: &UpdateContext,
         adirs: &mut A320AirDataInertialReferenceSystem,
     ) {
-        (1..=3).for_each(|adiru_num| {
+        AdiruNumber::One.into_iter().for_each(|adiru_num| {
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_before_adirus(context, &mut adirs[adiru_num]);
         });
@@ -264,7 +276,8 @@ impl A320AdirsElectricalHarness {
     pub fn update_after_adirus(&mut self, adirs: &A320AirDataInertialReferenceSystem) {
         self.on_bat_light = false;
 
-        (1..=3).for_each(|adiru_num| {
+        AdiruNumber::One
+            .into_iter().for_each(|adiru_num| {
                 let adiru = &adirs[adiru_num];
                 let adiru_harness = &mut self[adiru_num ];
                 adiru_harness.update_after_adirus(adiru);
@@ -278,29 +291,27 @@ impl A320AdirsElectricalHarness {
             });
     }
 
-    fn get_adiru_electrical_harness(&self, num: usize) -> &A320AdiruElectricalHarness {
+    fn get_adiru_electrical_harness(&self, num: AdiruNumber) -> &A320AdiruElectricalHarness {
         &self[num]
     }
 }
-impl Index<usize> for A320AdirsElectricalHarness {
+impl Index<AdiruNumber> for A320AdirsElectricalHarness {
     type Output = A320AdiruElectricalHarness;
 
-    fn index(&self, num: usize) -> &Self::Output {
+    fn index(&self, num: AdiruNumber) -> &Self::Output {
         match num {
-            1 => &self.adiru_1_electrical_harness,
-            2 => &self.adiru_2_electrical_harness,
-            3 => &self.adiru_3_electrical_harness,
-            _ => panic!("Invalid ADIRU Index {num}"),
+            AdiruNumber::One => &self.adiru_1_electrical_harness,
+            AdiruNumber::Two => &self.adiru_2_electrical_harness,
+            AdiruNumber::Three => &self.adiru_3_electrical_harness,
         }
     }
 }
-impl IndexMut<usize> for A320AdirsElectricalHarness {
-    fn index_mut(&mut self, num: usize) -> &mut Self::Output {
+impl IndexMut<AdiruNumber> for A320AdirsElectricalHarness {
+    fn index_mut(&mut self, num: AdiruNumber) -> &mut Self::Output {
         match num {
-            1 => &mut self.adiru_1_electrical_harness,
-            2 => &mut self.adiru_2_electrical_harness,
-            3 => &mut self.adiru_3_electrical_harness,
-            _ => panic!("Invalid ADIRU Index {num}"),
+            AdiruNumber::One => &mut self.adiru_1_electrical_harness,
+            AdiruNumber::Two => &mut self.adiru_2_electrical_harness,
+            AdiruNumber::Three => &mut self.adiru_3_electrical_harness,
         }
     }
 }
