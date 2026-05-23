@@ -381,7 +381,6 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
     this.subscriptions.push(
       this.sub.on('yawFdCommand').handle((fy) => {
         this.fdYawCommand = fy;
-
         this.handleFdState();
       }),
     );
@@ -466,18 +465,8 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
     const radialError = MathUtils.correctMsfsLocaliserError(this.locRadialError.get());
     const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
     this.dots.set(((this.backbeam.get() ? -1 : 1) * deviation) / 0.8);
-
     const LSLocGroupVerticalOffset = 105 + calculateHorizonOffsetFromPitch(this.pitch.get().value);
     this.YawLocRef.instance.style.transform = `translate3d(467px, ${LSLocGroupVerticalOffset}px, 0px)`;
-    //transform="translate(467.5 105)"
-
-    console.log(
-      'handleNavRadialError:\n' +
-        '  pitch: ' +
-        this.pitch.get().value +
-        '  LSLocGroupVerticalOffset: ' +
-        LSLocGroupVerticalOffset,
-    );
   }
 
   onAfterRender(node: VNode): void {

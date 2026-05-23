@@ -16,7 +16,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject, MathUtils, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from './HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -46,7 +46,10 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
   private readonly lsGrp = ConsumerSubject.create(this.sub.on('IlsLoc'), '');
   private readonly isLsGrpVisible = MappedSubject.create(
     ([ls1Btn, ls2Btn, lsGrp]) => {
-      return lsGrp === 'block' ? (ls1Btn === true || ls2Btn === true ? 'block' : 'none') : 'none';
+      const isCaptainSide = getDisplayIndex() === 1;
+      const lsBtn = isCaptainSide ? ls1Btn : ls2Btn;
+
+      return lsGrp === 'block' ? (lsBtn === true ? 'block' : 'none') : 'none';
     },
     this.ls1Button,
     this.ls2Button,
@@ -365,73 +368,43 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   private readonly isLocDiamondHidden = this.dots.map((v) => v < -2 || v > 2);
   private LSLocRef = FSComponent.createRef<SVGGElement>();
 
-  private readonly flightPhase = ConsumerValue.create(this.sub.on('fwcFlightPhase'), -1);
-  private readonly fmgcFlightPhase = ConsumerValue.create(this.sub.on('fmgcFlightPhase'), -1);
   private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode'), -1);
-  private readonly LsState = ConsumerSubject.create(this.sub.on('decMode'), 0);
-  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly Ls1State = ConsumerSubject.create(this.sub.on('ls1Button'), false);
+  private readonly Ls2State = ConsumerSubject.create(this.sub.on('ls2Button'), false);
   private readonly onGround = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
 
   private readonly groupVis = Subject.create('');
   private readonly locVis = this.groupVis.map((v) => v == 'visible');
 
-  private readonly LSLocGroupVerticalOffset = Subject.create(0);
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-
-  private diamondGroup = FSComponent.createRef<SVGGElement>();
-  private doOnce = 0;
+  private LsState = Subject.create(false);
 
   private handleNavRadialError(): void {
     const radialError = MathUtils.correctMsfsLocaliserError(this.locRadialError.get());
     const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
     this.dots.set(((this.backbeam.get() ? -1 : 1) * deviation) / 0.8);
-    const LSLocGroupVerticalOffset = 60 - ((DistanceSpacing / ValueSpacing) * this.pitch.get().value) / 2.5;
-
-    if (this.fmgcFlightPhase.get() == 1) {
-      this.doOnce = 0;
-      this.groupVis.set('visible');
-      this.LSLocRef.instance.style.transform = `translate3d(0px, ${LSLocGroupVerticalOffset}px, 0px)`;
-    } else {
-      if (this.doOnce == 0) {
-        this.doOnce = 1;
-        this.groupVis.set('hidden');
-      }
-    }
-
-    if (this.onGround.get()) {
-      this.LSLocRef.instance.style.transform = `translate3d(-152px, ${LSLocGroupVerticalOffset}px, 0px)`;
-      this.groupVis.set('visible');
-    } else {
-      this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
-      this.groupVis.set('hidden');
-    }
   }
 
-  private setLocGroupPos(): void {
-    const LSLocGroupVerticalOffset = 60 - ((DistanceSpacing / ValueSpacing) * this.pitch.get().value) / 2.5;
+  private setLocGroup(): void {
+    this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
+    const isCaptainSide = getDisplayIndex() === 1;
+    if (isCaptainSide) {
+      this.LsState.set(this.Ls1State.get());
+    } else {
+      this.LsState.set(this.Ls2State.get());
+    }
     if (this.LsState.get()) {
       if (this.onGround) {
         this.groupVis.set('visible');
-        this.LSLocRef.instance.style.transform = `translate3d(-152px, ${LSLocGroupVerticalOffset}px, 0px)`;
       } else {
         if (this.declutterMode.get() == 2) {
           this.groupVis.set('hidden');
         } else {
           this.groupVis.set('visible');
         }
-        this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
       }
     } else {
-      if (this.onGround.get()) {
-        this.groupVis.set('visible');
-        this.LSLocRef.instance.style.transform = `translate3d(-152px, ${LSLocGroupVerticalOffset}px, 0px)`;
-      } else {
-        this.groupVis.set('hidden');
-        this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
-      }
+      this.groupVis.set('hidden');
     }
-
-    console.log('setLocGroupPos:\n' + 'LsState: ' + this.LsState.get() + 'onGround: ' + this.onGround.get());
   }
 
   onAfterRender(node: VNode): void {
@@ -449,15 +422,17 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
     });
 
     this.declutterMode.sub(() => {
-      this.setLocGroupPos();
-    });
-
-    this.LsState.sub(() => {
-      this.setLocGroupPos();
-    });
-
-    this.pitch.sub(() => {
       this.handleNavRadialError();
+      this.setLocGroup();
+    });
+
+    this.Ls1State.sub(() => {
+      this.handleNavRadialError();
+      this.setLocGroup();
+    });
+    this.Ls2State.sub(() => {
+      this.handleNavRadialError();
+      this.setLocGroup();
     });
   }
 
@@ -467,10 +442,9 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
         ref={this.LSLocRef}
         id="LocalizerSymbolsGroup"
         class={{
-          HiddenElement: this.locVis,
+          HiddenElement: this.locVis.get(),
         }}
       >
-        //locPos locVis
         <path class="NormalStroke Green" d="m137.01 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
         <path class="NormalStroke Green" d="m99.232 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
         <path class="NormalStroke Green" d="m212.56 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
@@ -538,6 +512,8 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
     this.mixLocVnav,
   );
 
+  private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
+  private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
   private readonly hasGlideSlope = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
   private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
 
@@ -568,6 +544,18 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
 
   private diamondGroup = FSComponent.createRef<SVGGElement>();
 
+  private lsBtn = MappedSubject.create(
+    ([ls1Button, ls2Button]) => {
+      if (getDisplayIndex() === 1) {
+        return ls1Button;
+      } else {
+        return ls2Button;
+      }
+    },
+    this.ls1Button,
+    this.ls2Button,
+  );
+
   private handleGlideSlopeError(glideSlopeError: number): void {
     const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
     const dots = deviation / 0.4;
@@ -585,6 +573,12 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
       this.lowerDiamond.instance.classList.add('HiddenElement');
       this.glideSlopeDiamond.instance.classList.remove('HiddenElement');
       this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 75.238) / 2}px, 0px)`;
+    }
+
+    if (this.lsBtn) {
+      this.LSGsRef.instance.style.visibility = 'visible';
+    } else {
+      this.LSGsRef.instance.style.visibility = 'hidden';
     }
   }
 
@@ -663,19 +657,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
           }
         }
       }),
-    );
-
-    this.subscriptions.push(
-      this.sub
-        .on('ls1Button')
-        .whenChanged()
-        .handle((value) => {
-          if (value) {
-            this.LSGsRef.instance.style.visibility = 'visible';
-          } else {
-            this.LSGsRef.instance.style.visibility = 'hidden';
-          }
-        }),
     );
   }
   private MoveGlideSlopeGroup() {
