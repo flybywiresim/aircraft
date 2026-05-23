@@ -99,7 +99,7 @@ export class VerticalProfileComputationParametersObserver {
       zeroFuelWeight: this.getZeroFuelWeight(),
       fuelOnBoard: this.getFuelOnBoard(),
       v2Speed: this.getV2Speed(),
-      tropoPause: this.fmgc.getTropoPause(),
+      tropoPause: this.fmgc.getTropoPause() ?? 36000,
       perfFactor: this.fmgc.getPerformanceFactorPercent() ?? 0,
       departureElevation: this.fmgc.getDepartureElevation() ?? DefaultVerticalProfileParameters.departureElevation,
       /**

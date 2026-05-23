@@ -1414,7 +1414,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
             </div>
             <TopTabNavigator
-              pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])}
+              pageTitles={['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA']}
               selectedPageIndex={this.flightPhasesSelectedPageIndex}
               pageChangeCallback={(val) => {
                 this.flightPhasesSelectedPageIndex.set(val);
@@ -3126,23 +3126,29 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">QNH</span>
                         <InputField<number, number, false>
                           dataEntryFormat={new QnhFormat()}
-                          dataHandlerDuringValidation={async (v) => {
+                          dataHandlerDuringValidation={async (v, old) => {
                             if (!v) {
+                              if (old !== null) {
+                                this.props.fmcService.master.addMessageToQueue(
+                                  NXSystemMessages.notAllowed,
+                                  undefined,
+                                  undefined,
+                                );
+                              }
                               return;
                             }
 
-                            let qnhMillibar = v;
-
-                            if (v < 745 || v > 1050) {
-                              qnhMillibar = v * 33.8639;
-                            }
-
+                            const isMiliBar = v >= QnhFormat.minHpaValue && v <= QnhFormat.maxHpaValue;
                             this.props.flightPlanInterface.setPerformanceData(
                               'approachQnh',
-                              qnhMillibar,
+                              v,
                               this.loadedFlightPlanIndex.get(),
                             );
-                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+                            SimVar.SetSimVarValue(
+                              'L:A32NX_DESTINATION_QNH',
+                              'Millibar',
+                              isMiliBar ? v : UnitType.HPA.convertFrom(v, UnitType.IN_HG),
+                            );
                           }}
                           mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachQnh}
@@ -3161,12 +3167,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number, number, false>
                           dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'approachBaroMinimum',
-                              v,
-                              this.loadedFlightPlanIndex.get(),
-                            );
-                            SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            const fpIndex = this.loadedFlightPlanIndex.get();
+                            this.props.flightPlanInterface.setPerformanceData('approachBaroMinimum', v, fpIndex);
+                            if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
+                              SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            }
                           }}
                           readonlyValue={this.approachBaroMinimum}
                           containerStyle="width: 150px;"
@@ -3184,12 +3189,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <InputField<number, number, false>
                               dataEntryFormat={new RadioAltitudeFormat()}
                               dataHandlerDuringValidation={async (v) => {
-                                this.props.flightPlanInterface.setPerformanceData(
-                                  'approachRadioMinimum',
-                                  v,
-                                  this.loadedFlightPlanIndex.get(),
-                                );
-                                SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v);
+                                const fpIndex = this.loadedFlightPlanIndex.get();
+                                this.props.flightPlanInterface.setPerformanceData('approachRadioMinimum', v, fpIndex);
+                                if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v);
+                                }
                               }}
                               readonlyValue={this.approachRadioMinimum}
                               containerStyle="width: 150px;"

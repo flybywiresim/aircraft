@@ -167,7 +167,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_directToDropdown`}
                     selectedIndex={this.selectedWaypointIndex}
                     values={this.availableWaypoints}
-                    freeTextAllowed
+                    freeTextAllowed={true}
                     containerStyle="width: 175px;"
                     alignLabels="flex-start"
                     onModified={(i, text) => {

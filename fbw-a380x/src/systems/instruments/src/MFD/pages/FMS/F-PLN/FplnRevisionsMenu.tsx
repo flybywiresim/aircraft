@@ -3,12 +3,11 @@
 import { TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { lateralRevisionHoldPage } from '../../../shared/utils';
+import { lateralRevisionHoldPage, showReturnButtonUriExtra } from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -231,21 +230,19 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         ),
     },
     {
-      name: '(N/A) WIND',
-      disabled: true,
+      name: 'WIND',
+      disabled:
+        altnFlightPlan ||
+        !isLegTerminatingAtDatabaseFix ||
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath,
       onPressed: () => {
         if (!revisedLeg || revisedLeg.isDiscontinuity !== false) {
           return;
         }
-
-        // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
-        if (revisedLeg.segment.class === SegmentClass.Arrival) {
-          fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/des`);
-        } else if (revisedLeg.segment.class === SegmentClass.Enroute) {
-          fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/crz`);
-        } else {
-          fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/clb`);
-        }
+        fpln.props.mfd.uiService.navigateTo(
+          `fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}/${legIndex}`,
+        );
       },
     },
   ];
