@@ -726,12 +726,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return false;
   }
 
+  isActive(): boolean {
+    return this.index === FlightPlanIndex.Active || this.index === FlightPlanIndex.Temporary;
+  }
+
   isActiveOrCopiedFromActive(): boolean {
-    return (
-      this.index === FlightPlanIndex.Active ||
-      this.index === FlightPlanIndex.Temporary ||
-      (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
-    );
+    return this.isActive() || (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
   }
 
   getFlightNumber(): Subject<string | null> {

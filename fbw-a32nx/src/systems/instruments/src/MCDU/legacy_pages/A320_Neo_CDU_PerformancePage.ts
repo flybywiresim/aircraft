@@ -13,6 +13,7 @@ import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanM
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export class CDUPerformancePage {
   private static _timer: number | undefined = undefined;
@@ -466,12 +467,7 @@ export class CDUPerformancePage {
       (isPhaseActiveInActive && Simplane.getAutoPilotAirspeedSelected()) ||
       (!isPhaseActiveInActive && preselectedClimbSpeed !== null);
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
-      targetPlan.performanceData.costIndex.get(),
-      isActivePlan,
-      hasFromToPair,
-      true,
-    );
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(targetPlan, mcdu);
     const canClickManagedSpeed = showManagedSpeed && preselectedClimbSpeed !== null && !isPhaseActive;
 
     // Predictions to altitude
@@ -682,12 +678,7 @@ export class CDUPerformancePage {
 
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
-      targetPlan.performanceData.costIndex.get(),
-      isActivePlan,
-      hasFromToPair,
-      true,
-    );
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(targetPlan, mcdu);
 
     const shouldShowToTdInformation = isActivePlan && isFlying;
     const shouldShowCabinRate = isActivePlan;
@@ -895,12 +886,7 @@ export class CDUPerformancePage {
       );
     }
 
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
-      targetPlan.performanceData.costIndex.get(),
-      isActivePlan,
-      hasFromToPair,
-      !isPhaseActive,
-    );
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(targetPlan, mcdu);
 
     const econDesPilotEntered = targetPlan.performanceData.pilotManagedDescentSpeed.get() !== null;
     const econDes = econDesPilotEntered
@@ -1572,18 +1558,14 @@ export class CDUPerformancePage {
     return [toReasonCell, toDistCell, toTimeCell, stepWaypoint];
   }
 
-  static formatCostIndexCell(
-    costIndex: number | null,
-    isActive: boolean,
-    hasFromToPair: boolean,
-    allowModification: boolean,
-  ) {
+  static formatCostIndexCell(plan: FlightPlan, mcdu: LegacyFmsPageInterface): string {
     let costIndexCell = '---';
-    if (hasFromToPair) {
+    if (plan.destinationAirport !== undefined) {
+      const costIndex = plan.performanceData.costIndex.get();
       if (costIndex !== null) {
-        costIndexCell = `${costIndex.toFixed(0)}[color]${allowModification ? 'cyan' : 'green'}`;
+        costIndexCell = `${costIndex.toFixed(0)}[color]${mcdu.isCostIndexModificationDisabled(plan) ? 'cyan' : 'green'}`;
       } else {
-        costIndexCell = isActive ? '___[color]amber' : '[\xa0][color]cyan';
+        costIndexCell = plan.isActive() ? '___[color]amber' : '[\xa0][color]cyan';
       }
     }
 

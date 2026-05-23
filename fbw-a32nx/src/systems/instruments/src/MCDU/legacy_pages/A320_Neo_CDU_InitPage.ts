@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
@@ -122,6 +121,14 @@ export class CDUInitPage {
           requestButton = '';
         }
 
+        const ciModificationDisabled = mcdu.isCostIndexModificationDisabled(plan);
+        let ciEmptyValue = '[\xa0][color]cyan';
+        if (ciModificationDisabled) {
+          ciEmptyValue = '---[color]white';
+        } else if (isForPrimary) {
+          ciEmptyValue = '___[color]amber';
+        }
+
         // Cost index
         [costIndexAction, costIndexText, costIndexColor] = new CDU_SingleValueField(
           mcdu,
@@ -129,13 +136,13 @@ export class CDUInitPage {
           plan.performanceData.costIndex.get(),
           {
             clearable: true,
-            emptyValue: isForPrimary ? '___[color]amber' : '[\xa0][color]cyan',
+            emptyValue: ciEmptyValue,
             minValue: 0,
             maxValue: 999,
-            suffix: '[color]cyan',
+            suffix: '[color]' + (ciModificationDisabled ? 'cyan' : 'green'),
           },
           (value) => {
-            plan.setPerformanceData('costIndex', typeof value === 'number' ? value : null);
+            mcdu.tryUpdateCostIndex(value, forPlan);
             CDUInitPage.ShowPage1(mcdu, forPlan);
           },
         ).getFieldAsColumnParameters();

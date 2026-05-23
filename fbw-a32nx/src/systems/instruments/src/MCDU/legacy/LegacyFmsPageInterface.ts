@@ -29,6 +29,7 @@ import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
 import { WindEntry } from '@fmgc/flightplanning/data/wind';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -225,6 +226,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
+  isCostIndexModificationDisabled(plan: FlightPlan): boolean;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;

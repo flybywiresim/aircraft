@@ -97,6 +97,7 @@ import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -2120,20 +2121,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean {
-    const value = parseInt(costIndex);
-    if (isFinite(value)) {
-      if (value >= 0) {
-        if (value < 1000) {
-          this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
-          this.updateManagedSpeeds();
-          return true;
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+
+    if (plan && plan.destinationAirport !== undefined) {
+      if (this.isCostIndexModificationDisabled(plan)) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      } else {
+        const value = parseInt(costIndex);
+        if (isFinite(value)) {
+          if (value >= 0 && value < 1000) {
+            this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
+            this.updateManagedSpeeds();
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+          }
         } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-          return false;
+          this.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
     }
-    this.setScratchpadMessage(NXSystemMessages.notAllowed);
+
     return false;
   }
 
@@ -5951,5 +5960,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (forPlan === FlightPlanIndex.Active) {
       this.ettCheckSub.pause();
     }
+  }
+
+  /**
+   * Checks if cost index modification is disabled based on flight phase and if the plan is active or copied from active
+   * @param plan the flight plan to check cost index modification for
+   * @returns true if is disabled, false otherwise.
+   */
+  isCostIndexModificationDisabled(plan: FlightPlan): boolean {
+    return plan.isActiveOrCopiedFromActive() && this.getFlightPhase() >= FmgcFlightPhase.Descent;
   }
 }
