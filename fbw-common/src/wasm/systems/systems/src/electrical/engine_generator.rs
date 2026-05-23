@@ -431,6 +431,8 @@ impl SimulationElement for DirectDrive {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
     use crate::shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2};
 
@@ -920,7 +922,7 @@ mod tests {
             test_bed.command(|a| a.power_demand(Power::new::<watt>(50000.)));
             test_bed.run();
 
-            assert!(test_bed.load() > Ratio::new::<percent>(0.));
+            assert_gt!(test_bed.load(), Ratio::new::<percent>(0.));
         }
 
         #[test]

@@ -197,7 +197,8 @@ fn area_projected(size: Vector3<Length>, projection_vector: Vector3<f64>) -> Are
 
 #[cfg(test)]
 mod tests {
-    use more_asserts::{assert_ge, assert_gt, assert_le, assert_lt};
+    use more_asserts::*;
+
     use nalgebra::{Unit, Vector3};
 
     use super::*;

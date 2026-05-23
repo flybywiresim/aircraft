@@ -187,12 +187,13 @@ impl<const N: usize> SimulationElement for CanBus<N> {
 
 #[cfg(test)]
 mod tests {
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed},
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     };
-    use ntest::assert_about_eq;
 
     struct CanBusTestAircraft {
         can_bus: CanBus<5>,
@@ -238,7 +239,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
         let mut received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 1.0);
         received = test_bed.read_by_name("TEST_CAN_BUS_1_RECEIVED");
@@ -261,7 +262,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         let mut received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 0.0);
@@ -277,7 +278,7 @@ mod tests {
         let message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
         let value: Arinc825Word<f64> = Arinc825Word::from(message);
 
-        assert!(value.status() == word.status());
+        assert_eq!(value.status(), word.status());
         assert_about_eq!(value.value(), word.value());
     }
 
@@ -291,7 +292,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
@@ -325,7 +326,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
@@ -358,7 +359,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
@@ -400,7 +401,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(1);
@@ -416,14 +417,14 @@ mod tests {
 
         let mut message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
         let mut value: Arinc825Word<f64> = Arinc825Word::from(message);
-        assert!(value.status() == first_message.status());
+        assert_eq!(value.status(), first_message.status());
         assert_about_eq!(value.value(), first_message.value());
 
         test_bed.run();
 
         message = test_bed.read_by_name("TEST_CAN_BUS");
         value = Arinc825Word::from(message);
-        assert!(value.status() == second_message.status());
+        assert_eq!(value.status(), second_message.status());
         assert_about_eq!(value.value(), second_message.value());
     }
 
@@ -440,7 +441,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert!(available == 1.0);
+        assert_eq!(available, 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
@@ -472,7 +473,7 @@ mod tests {
 
         let mut message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
         let mut value: Arinc825Word<f64> = Arinc825Word::from(message);
-        assert!(value.status() == first_message.status());
+        assert_eq!(value.status(), first_message.status());
         assert_about_eq!(value.value(), first_message.value());
 
         test_bed.run();
@@ -500,7 +501,7 @@ mod tests {
 
         message = test_bed.read_by_name("TEST_CAN_BUS");
         value = Arinc825Word::from(message);
-        assert!(value.status() == second_message.status());
+        assert_eq!(value.status(), second_message.status());
         assert_about_eq!(value.value(), second_message.value());
     }
 }

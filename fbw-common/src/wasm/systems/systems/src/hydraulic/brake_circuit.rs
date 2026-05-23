@@ -661,11 +661,12 @@ impl Debug for BrakeAccumulatorCharacteristics {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, UpdateContext};
-    use more_asserts::{assert_ge, assert_le};
     use std::time::Duration;
     use uom::si::{pressure::psi, volume::gallon};
 
@@ -797,8 +798,8 @@ mod tests {
     fn brake_actuator_moves_with_pressure() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
-        assert!(test_bed.query_element(|e| e.current_position) == 0.);
-        assert!(test_bed.query_element(|e| e.required_position) == 0.);
+        assert_eq!(test_bed.query_element(|e| e.current_position), 0.);
+        assert_eq!(test_bed.query_element(|e| e.required_position), 0.);
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -811,7 +812,7 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(1));
 
-        assert!(test_bed.query_element(|e| e.current_position) >= 0.99);
+        assert_ge!(test_bed.query_element(|e| e.current_position), 0.99);
 
         assert_ge!(
             test_bed.query_element(|e| e.volume_to_actuator_accumulator),
@@ -850,7 +851,7 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(1));
 
-        assert!(test_bed.query_element(|e| e.current_position) <= 0.1);
+        assert_le!(test_bed.query_element(|e| e.current_position), 0.1);
     }
 
     #[test]
@@ -868,9 +869,12 @@ mod tests {
         let max_reachable_position =
             test_bed.query_element(|e| e.get_max_position_reachable(Pressure::new::<psi>(1500.)));
 
-        assert!(max_reachable_position < 0.9);
+        assert_lt!(max_reachable_position, 0.9);
 
-        assert!(test_bed.query_element(|e| e.current_position) <= max_reachable_position);
+        assert_le!(
+            test_bed.query_element(|e| e.current_position),
+            max_reachable_position
+        );
 
         // Now same max demand but pressure so low so actuator should get back to 0
         test_bed.command_element(|e| e.reset_volumes());
@@ -883,7 +887,7 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_secs(1));
 
         // We should have actuator back to 0
-        assert!(test_bed.query_element(|e| e.current_position) <= 0.1);
+        assert_le!(test_bed.query_element(|e| e.current_position), 0.1);
     }
 
     #[test]
@@ -909,9 +913,9 @@ mod tests {
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
 
-        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
-        assert!(test_bed.query_element(|e| e.accumulator_fluid_volume() == Volume::default()));
-        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() == init_max_vol));
+        test_bed.query_element(|e| assert_eq!(e.accumulator_total_volume(), init_max_vol));
+        test_bed.query_element(|e| assert_eq!(e.accumulator_fluid_volume(), Volume::default()));
+        test_bed.query_element(|e| assert_eq!(e.accumulator_gas_volume(), init_max_vol));
     }
 
     #[test]
@@ -936,9 +940,9 @@ mod tests {
         assert!(test_bed.query_element(
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
-        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
-        assert!(test_bed.query_element(|e| e.accumulator_fluid_volume() == init_max_vol / 2.0));
-        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() < init_max_vol));
+        test_bed.query_element(|e| assert_eq!(e.accumulator_total_volume(), init_max_vol));
+        test_bed.query_element(|e| assert_eq!(e.accumulator_fluid_volume(), init_max_vol / 2.0));
+        test_bed.query_element(|e| assert_lt!(e.accumulator_gas_volume(), init_max_vol));
     }
 
     #[test]
@@ -953,27 +957,45 @@ mod tests {
 
         let left_pressure = test_bed.query(|a| a.left_brake_pressure());
         let right_pressure = test_bed.query(|a| a.right_brake_pressure());
-        assert!(left_pressure + right_pressure < Pressure::new::<psi>(10.0));
+        assert_lt!(left_pressure + right_pressure, Pressure::new::<psi>(10.0));
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
 
         let left_pressure = test_bed.query(|a| a.left_brake_pressure());
         let right_pressure = test_bed.query(|a| a.right_brake_pressure());
-        assert!(left_pressure + right_pressure < Pressure::new::<psi>(10.0));
+        assert_lt!(left_pressure + right_pressure, Pressure::new::<psi>(10.0));
 
         test_bed.command(|a| a.set_brake_demands(Ratio::new::<ratio>(1.), Ratio::new::<ratio>(0.)));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.left_brake_pressure()) >= Pressure::new::<psi>(1000.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) <= Pressure::new::<psi>(50.));
-        assert!(test_bed.query(|a| a.brake_accumulator_volume()) >= Volume::new::<gallon>(0.1));
+        assert_ge!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(1000.)
+        );
+        assert_le!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(50.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.brake_accumulator_volume()),
+            Volume::new::<gallon>(0.1)
+        );
 
         test_bed.command(|a| a.set_brake_demands(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.left_brake_pressure()) <= Pressure::new::<psi>(50.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) >= Pressure::new::<psi>(1000.));
-        assert!(test_bed.query(|a| a.brake_accumulator_volume()) >= Volume::new::<gallon>(0.1));
+        assert_le!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(50.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(1000.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.brake_accumulator_volume()),
+            Volume::new::<gallon>(0.1)
+        );
     }
 
     #[test]
@@ -988,20 +1010,35 @@ mod tests {
 
         let left_pressure = test_bed.query(|a| a.left_brake_pressure());
         let right_pressure = test_bed.query(|a| a.right_brake_pressure());
-        assert!(left_pressure + right_pressure < Pressure::new::<psi>(10.0));
+        assert_lt!(left_pressure + right_pressure, Pressure::new::<psi>(10.0));
 
         test_bed.command(|a| a.set_brake_demands(Ratio::new::<ratio>(1.), Ratio::new::<ratio>(0.)));
         test_bed.run_with_delta(Duration::from_secs_f64(1.5));
 
-        assert!(test_bed.query(|a| a.left_brake_pressure()) >= Pressure::new::<psi>(2500.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) <= Pressure::new::<psi>(50.));
+        assert_ge!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(2500.)
+        );
+        assert_le!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(50.)
+        );
 
         test_bed.command(|a| a.set_brake_demands(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs_f64(1.5));
 
-        assert!(test_bed.query(|a| a.left_brake_pressure()) <= Pressure::new::<psi>(50.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) >= Pressure::new::<psi>(2500.));
-        assert!(test_bed.query(|a| a.brake_accumulator_volume()) == Volume::new::<gallon>(0.));
+        assert_le!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(50.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(2500.)
+        );
+        assert_eq!(
+            test_bed.query(|a| a.brake_accumulator_volume()),
+            Volume::new::<gallon>(0.)
+        );
     }
 
     #[test]
@@ -1017,22 +1054,34 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(1.5));
 
-        assert!(test_bed.query(|a| a.left_brake_pressure()) >= Pressure::new::<psi>(2900.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) >= Pressure::new::<psi>(2900.));
+        assert_ge!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(2900.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(2900.)
+        );
 
         let pressure_limit = Pressure::new::<psi>(1200.);
         test_bed.command(|a| a.set_pressure_limit(pressure_limit));
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
 
         // Now we limit to 1200 but pressure shouldn't drop instantly
-        assert!(test_bed.query(|a| a.left_brake_pressure()) >= Pressure::new::<psi>(2500.));
-        assert!(test_bed.query(|a| a.right_brake_pressure()) >= Pressure::new::<psi>(2500.));
+        assert_ge!(
+            test_bed.query(|a| a.left_brake_pressure()),
+            Pressure::new::<psi>(2500.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.right_brake_pressure()),
+            Pressure::new::<psi>(2500.)
+        );
 
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
         // After one second it should have reached the lower limit
-        assert!(test_bed.query(|a| a.left_brake_pressure()) <= pressure_limit);
-        assert!(test_bed.query(|a| a.right_brake_pressure()) <= pressure_limit);
+        assert_le!(test_bed.query(|a| a.left_brake_pressure()), pressure_limit);
+        assert_le!(test_bed.query(|a| a.right_brake_pressure()), pressure_limit);
     }
 
     fn brake_circuit(context: &mut InitContext, init_max_vol: Volume) -> BrakeCircuit {

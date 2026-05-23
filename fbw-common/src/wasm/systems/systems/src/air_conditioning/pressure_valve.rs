@@ -379,6 +379,7 @@ impl PressureValve {
 
 #[cfg(test)]
 mod pressure_valve_tests {
+    use more_asserts::*;
     use ntest::assert_about_eq;
 
     use super::*;
@@ -541,7 +542,10 @@ mod pressure_valve_tests {
         test_bed.command(|a| a.command_valve_close());
         test_bed.run();
 
-        assert!(test_bed.query(|a| a.valve_open_amount().get::<percent>()) > 0.);
+        assert_gt!(
+            test_bed.query(|a| a.valve_open_amount().get::<percent>()),
+            0.
+        );
     }
 
     #[test]
@@ -556,7 +560,7 @@ mod pressure_valve_tests {
         test_bed.command(|a| a.command_valve_close());
         test_bed.run_with_delta(Duration::from_secs(3));
 
-        assert!(test_bed.query(|a| a.valve_open_amount()) < valve_open_amount);
+        assert_lt!(test_bed.query(|a| a.valve_open_amount()), valve_open_amount);
     }
 
     #[test]
@@ -569,7 +573,10 @@ mod pressure_valve_tests {
         test_bed.command(|a| a.command_valve_open());
         test_bed.run_with_delta(Duration::from_secs(3));
 
-        assert!(test_bed.query(|a| a.valve_open_amount().get::<percent>()) < 100.);
+        assert_lt!(
+            test_bed.query(|a| a.valve_open_amount().get::<percent>()),
+            100.
+        );
     }
 
     #[test]

@@ -928,6 +928,8 @@ impl PotentialCollection {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
     use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
 
@@ -1733,7 +1735,7 @@ mod tests {
             let mut identifier = electricity.next_electrical_identifier();
             for _ in 1..=10 {
                 let next_identifier = electricity.next_electrical_identifier();
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }
@@ -1745,7 +1747,7 @@ mod tests {
             for _ in 1..=10 {
                 let next_identifier = electricity
                     .next_electrical_identifier_for_bus(ElectricalBusType::DirectCurrentBattery);
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }
@@ -1761,7 +1763,7 @@ mod tests {
                     electricity
                         .next_electrical_identifier_for_bus(ElectricalBusType::DirectCurrentBattery)
                 };
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }

@@ -225,6 +225,8 @@ mod tests {
 
     #[cfg(test)]
     mod battery_tests {
+        use more_asserts::*;
+
         use super::*;
         use crate::simulation::test::ReadByName;
         use crate::simulation::InitContext;
@@ -444,7 +446,7 @@ mod tests {
 
             test_bed.run();
 
-            assert!(test_bed.potential(1) > ElectricPotential::new::<volt>(0.));
+            assert_gt!(test_bed.potential(1), ElectricPotential::new::<volt>(0.));
         }
 
         #[test]
@@ -506,7 +508,7 @@ mod tests {
             test_bed.command(|a| a.supply_input_potential(input_potential));
             test_bed.run();
 
-            assert!(input_potential < test_bed.potential(1));
+            assert_lt!(input_potential, test_bed.potential(1));
         }
 
         #[test]
@@ -526,7 +528,7 @@ mod tests {
             test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run();
 
-            assert!(test_bed.current(1) > ElectricCurrent::new::<ampere>(0.));
+            assert_gt!(test_bed.current(1), ElectricCurrent::new::<ampere>(0.));
         }
 
         #[test]
@@ -568,7 +570,10 @@ mod tests {
             test_bed.command(|a| a.power_demand(Power::new::<watt>(28. * 5.)));
             test_bed.run_with_delta(Duration::from_secs(60));
 
-            assert!(test_bed.query(|a| a.battery_1_charge()) < charge_prior_to_run);
+            assert_lt!(
+                test_bed.query(|a| a.battery_1_charge()),
+                charge_prior_to_run
+            );
         }
 
         #[test]
@@ -580,7 +585,10 @@ mod tests {
             test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run_with_delta(Duration::from_secs(60));
 
-            assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
+            assert_gt!(
+                test_bed.query(|a| a.battery_1_charge()),
+                charge_prior_to_run
+            );
         }
 
         #[test]
@@ -592,7 +600,10 @@ mod tests {
             test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run_with_delta(Duration::from_secs(1_000));
 
-            assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
+            assert_gt!(
+                test_bed.query(|a| a.battery_1_charge()),
+                charge_prior_to_run
+            );
         }
 
         #[test]
