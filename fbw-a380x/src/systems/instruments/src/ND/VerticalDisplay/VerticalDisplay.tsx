@@ -1,4 +1,7 @@
-﻿import {
+﻿// Copyright (c) 2025-2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+import {
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   EfisNdMode,
@@ -21,19 +24,19 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { NDSimvars } from '../NDSimvarPublisher';
 
 import '../style.scss';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
-import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
+import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { FmsSymbolsData } from '../FmsSymbolsPublisher';
+import { NDControlEvents } from '../NDControlEvents';
+import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
-import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
-import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
+import { AesuBusEvents } from '../../MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { MfdSurvEvents } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -209,11 +212,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
   private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
-  private readonly shouldShowTrackLine = MappedSubject.create(
-    ([active, armed]) => TrackLine.shouldShowTrackLine(active, armed),
-    this.activeLateralMode,
-    this.armedLateralMode,
+  private readonly areActiveVectorsTransmitted = MappedSubject.create(
+    ([path]) => path !== undefined && path !== null,
+    this.fmsLateralPath,
   );
+  private readonly shouldShowTrackLine = this.areActiveVectorsTransmitted.map((transmitted) => !transmitted);
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
@@ -447,6 +450,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.rangeOver160ArrowVisible,
       this.activeLateralMode,
       this.armedLateralMode,
+      this.areActiveVectorsTransmitted,
       this.shouldShowTrackLine,
       this.activeVerticalMode,
       this.fgAltConstraint,

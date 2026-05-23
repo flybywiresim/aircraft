@@ -2566,6 +2566,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   -30.0,
 
+  1.5,
+
   0.0,
 
   16.0F,

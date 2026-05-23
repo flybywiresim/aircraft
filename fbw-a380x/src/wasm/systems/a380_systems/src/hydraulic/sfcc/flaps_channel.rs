@@ -24,11 +24,11 @@ impl FlapsChannel {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
             FlapsConf::Conf1 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1F => Angle::new::<degree>(108.28),
-            FlapsConf::Conf2 => Angle::new::<degree>(154.65),
-            FlapsConf::Conf2S => Angle::new::<degree>(154.65),
-            FlapsConf::Conf3 => Angle::new::<degree>(194.03),
-            FlapsConf::ConfFull => Angle::new::<degree>(218.91),
+            FlapsConf::Conf1F => Angle::new::<degree>(215.68),
+            FlapsConf::Conf2 => Angle::new::<degree>(259.28),
+            FlapsConf::Conf2S => Angle::new::<degree>(259.28),
+            FlapsConf::Conf3 => Angle::new::<degree>(297.59),
+            FlapsConf::ConfFull => Angle::new::<degree>(338.99),
         }
     }
 

@@ -1,14 +1,14 @@
 import { ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsPositionIrs.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { MfdSimvars } from '../../../shared/MFDSimvarPublisher';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { HeadingFormat } from '../../common/DataEntryFormats';
 import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsPositionIrsProps extends AbstractMfdPageProps {}
@@ -130,7 +130,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             this.alignmentLabel.set('IRS ALIGNED ON GPS POS:');
           }
           this.alignmentPosition.set(
-            coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
+            coordinateToString(this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
           );
         } else {
           if (this.irsAreAlignedOnRefPos.get()) {
@@ -139,7 +139,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             this.alignmentLabel.set('IRS ALIGNING ON GPS POS:');
           }
           this.alignmentPosition.set(
-            coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
+            coordinateToString(this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
           );
         }
       }, true),
@@ -203,9 +203,9 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
       this.irsDataMagneticVariation.set(Math.abs(magVar).toFixed(1));
       this.irsDataMagneticVariationUnit.set(magVar < 0 ? '°W' : '°E');
       this.irsDataGpirsPosition.set(
-        coordinateToString(this.props.fmcService.master?.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
+        coordinateToString(this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 }, false),
       );
-      this.irsDataAccuracy.set(this.props.fmcService.master?.navigation.getEpe().toFixed(0) ?? '');
+      this.irsDataAccuracy.set(this.props.fmcService.master.navigation.getEpe().toFixed(0) ?? '');
     }
   }
 
@@ -349,7 +349,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
               mandatory={Subject.create(true)}
               alignText="flex-end"
               containerStyle="width: 150px; margin-left: 10px;"
-              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
@@ -464,7 +464,12 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             />
           </div>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

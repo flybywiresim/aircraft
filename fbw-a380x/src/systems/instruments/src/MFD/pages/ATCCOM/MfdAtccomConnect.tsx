@@ -1,15 +1,16 @@
+import './MfdAtccomConnect.scss';
+
 import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdAtccomConnect.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-// import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+// import { FmsPage } from '../common/FmsPage';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
 
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { AdscButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/AdscButton';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { AdscButton } from '../../../MsfsAvionicsCommon/UiWidgets/AdscButton';
 
 interface MfdAtccomConnectProps extends AbstractMfdPageProps {}
 
@@ -33,12 +34,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONNECT')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONNECT')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-atccom-connect-row">
@@ -64,7 +60,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div style="display: flex; justify-content: center">
                 <Button
                   label="NOTIFY"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="margin-right: 10px; width: 120px;"
                 />
@@ -100,7 +96,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="DISCONNECT ALL"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 20px"
                 />
@@ -108,7 +104,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
               <div>
                 <Button
                   label="MODIFY<br /> MAX UPLINK DELAY"
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/status')}
                   buttonStyle="width: 260px; margin-top: 30px"
                 />
@@ -171,7 +167,12 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

@@ -12,10 +12,11 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { FMMessage, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+import { FMMessage, GenericAdirsEvents, NXDataStore, OansControlEvents } from '@flybywiresim/fbw-sdk';
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
@@ -55,7 +56,6 @@ import { FmsOansData } from '../../../shared/src/publishers/OansBtv/FmsOansPubli
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
-import { OansControlEvents } from '../OANC';
 import { MapOptions } from './types/MapOptions';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
@@ -161,6 +161,10 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
   );
 
   private showOans = Subject.create<boolean>(false);
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -382,7 +386,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-              <BtvRunwayInfo bus={this.props.bus} />
+              <BtvRunwayInfo bus={this.props.bus} lengthUnit={this.lengthUnit} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,11 +13,23 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { PropagatedWindEntry } from '../data/wind';
 
-export interface ReadonlyFlightPlan {
+export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
+  /**
+   * The time at which the flightplan was created in miliseconds since epoch. Undefined if no valid creation time is available or for alternate flightplans.
+   */
+  timeCreated?: number;
+
+  get wasModified(): boolean;
+
   get legCount(): number;
+
+  get enrouteLegCount(): number;
 
   get lastIndex(): number;
 
@@ -25,9 +37,15 @@ export interface ReadonlyFlightPlan {
 
   get firstApproachLegIndex(): number;
 
+  get firstEnrouteLegIndex(): number;
+
+  get lastEnrouteLegIndex(): number;
+
   get activeLegIndex(): number;
 
   get activeLeg(): ReadonlyFlightPlanElement;
+
+  get fromLegIndex(): number;
 
   get isApproachActive(): boolean;
 
@@ -41,7 +59,9 @@ export interface ReadonlyFlightPlan {
 
   get destinationLeg(): ReadonlyFlightPlanElement | undefined;
 
-  get destinationLegIndex(): number;
+  get destinationLegIndex(): number | null;
+
+  readonly availableDestinationRunways: Runway[];
 
   get endsAtRunway(): boolean;
 
@@ -53,13 +73,21 @@ export interface ReadonlyFlightPlan {
 
   maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
 
+  get allLegs(): readonly ReadonlyFlightPlanElement[];
+
+  get pendingAirways(): ReadonlyPendingAirways | undefined;
+
   get originAirport(): Airport | undefined;
 
   get originRunway(): Runway | undefined;
 
+  readonly availableOriginRunways: Runway[];
+
   get departureRunwayTransition(): ProcedureTransition | undefined;
 
   get originDeparture(): Departure | undefined;
+
+  readonly availableDepartures: Departure[];
 
   get departureEnrouteTransition(): ProcedureTransition | undefined;
 
@@ -72,9 +100,15 @@ export interface ReadonlyFlightPlan {
 
   get arrivalRunwayTransition(): ProcedureTransition | undefined;
 
+  readonly availableArrivals: Arrival[];
+
   get approachVia(): ProcedureTransition | undefined | null;
 
   get approach(): Approach | undefined;
+
+  readonly availableApproaches: Approach[];
+
+  readonly availableApproachVias: ProcedureTransition[];
 
   get destinationAirport(): Airport | undefined;
 
@@ -86,5 +120,7 @@ export interface ReadonlyFlightPlan {
 
   glideslopeIntercept(): number | undefined;
 
-  allLegs: readonly ReadonlyFlightPlanElement[];
+  get performanceData(): P;
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 }

@@ -1,10 +1,10 @@
 // @ts-strict-ignore
 import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LegacySoundManager, soundList } from 'systems-host/Misc/LegacySoundManager';
+import { LegacySoundManager, soundList } from './LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
 import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
-import { FwsSoundManagerControlEvents } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
+import { FwsSoundManagerControlEvents } from '../CpiomC/FlightWarningSystem/FwsSoundManager';
 
 type ModesType = {
   current: number;
@@ -208,7 +208,7 @@ export class LegacyGpws {
     this.egpwsAlertDiscreteWord1.setBitValue(12, false);
 
     // eslint-disable-next-line max-len
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS',
       (k, v) => k === 'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A380X_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),

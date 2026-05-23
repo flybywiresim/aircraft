@@ -1,5 +1,6 @@
 export * from './ArincBus';
 export * from './Extras';
+export * from './CpiomPublisher';
 export * from './FcuBusPublisher';
 export * from './FmsPublisher';
 export * from './GroundSupportPublisher';

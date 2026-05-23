@@ -16,11 +16,11 @@ import {
   SimVarValueType,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { LegacyGpws } from 'systems-host/Misc/LegacyGpws';
-import { LegacyFuel } from 'systems-host/CpiomF/LegacyFuel';
-import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
-import { LegacyTcasComputer } from 'systems-host/Misc/tcas/components/LegacyTcasComputer';
-import { VhfRadio } from 'systems-host/Misc/Communications/VhfRadio';
+import { LegacyGpws } from './Misc/LegacyGpws';
+import { LegacyFuel } from './CpiomF/LegacyFuel';
+import { LegacySoundManager } from './Misc/LegacySoundManager';
+import { LegacyTcasComputer } from './Misc/tcas/components/LegacyTcasComputer';
+import { VhfRadio } from './Misc/Communications/VhfRadio';
 import {
   IrBusPublisher,
   ArincEventBus,
@@ -31,34 +31,47 @@ import {
   PilotSeatPublisher,
   VhfComIndices,
   SwitchingPanelPublisher,
+  RaBusPublisher,
+  LgciuBusPublisher,
 } from '@flybywiresim/fbw-sdk';
-import { AudioManagementUnit } from 'systems-host/Misc/Communications/AudioManagementUnit';
-import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPublisher';
-import { Transponder } from 'systems-host/Misc/Communications/Transponder';
-import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/Misc/powersupply';
-import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManager';
-import { AtsuSystem } from 'systems-host/CpiomD/atsu';
-import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { BrakeToVacateDistanceUpdater } from 'systems-host/PseudoPRIM/BrakeToVacateDistanceUpdater';
-import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
-import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { AudioManagementUnit } from './Misc/Communications/AudioManagementUnit';
+import { RmpAmuBusPublisher } from './Misc/Communications/RmpAmuBusPublisher';
+import { Transponder } from './Misc/Communications/Transponder';
+import { PowerSupplyBusTypes, PowerSupplyBusses } from './Misc/powersupply';
+import { SimAudioManager } from './Misc/Communications/SimAudioManager';
+import { AtsuSystem } from './CpiomD/atsu';
+import { FwsCore } from './CpiomC/FlightWarningSystem/FwsCore';
+// FIXME should not import from instruments
+import { FuelSystemPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { BrakeToVacate } from './PseudoPRIM/BrakeToVacate';
+// FIXME should not import from instruments
+import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+// FIXME should not import from instruments
+import { FcdcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+// FIXME should not import from instruments
 import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
-} from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+} from '../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+// FIXME should not import from instruments
 import {
   CpiomAvailableSimvarPublisher,
   CpiomAvailableSimvars,
-} from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
-import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
-import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+} from '../instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
+// FIXME should not import from instruments
+import { EgpwcBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+// FIXME should not import from instruments
+import { FGDataPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+// FIXME should not import from instruments
+import { AesuBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
-import { AutoThsTrimmer } from 'systems-host/PseudoPRIM/AutoThsTrimmer';
-import { EfisTawsBridge } from 'systems-host/Misc/EfisTawsBridge';
-import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { AutoThsTrimmer } from './PseudoPRIM/AutoThsTrimmer';
+import { EfisTawsBridge } from './Misc/EfisTawsBridge';
+// FIXME should not import from ND!!
+import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
+// FIXME should not import from instruments
+import { FmsMessagePublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -105,7 +118,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly atsu = new AtsuSystem(this.bus);
 
-  private readonly btvDistanceUpdater = new BrakeToVacateDistanceUpdater(this.bus);
+  private readonly btv = new BrakeToVacate(this.bus, this);
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
@@ -118,6 +131,8 @@ class SystemsHost extends BaseInstrument {
   private readonly weightAndBalancePublisher = new WeightBalanceSimvarPublisher(this.bus);
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
+
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
@@ -136,6 +151,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
+  private readonly raBusPublisher = new RaBusPublisher(this.bus);
+  private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
 
@@ -198,7 +215,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
-    this.backplane.addInstrument('BtvDistanceUpdater', this.btvDistanceUpdater);
+    this.backplane.addInstrument('BtvDistanceUpdater', this.btv);
     this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
@@ -206,6 +223,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('BtvPublisher', this.btvPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
+    this.backplane.addPublisher('fqmsPublisher', this.fqmsPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('Fcdc', this.fcdcPublisher);
@@ -217,6 +235,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
+    this.backplane.addPublisher('RaBusPublisher', this.raBusPublisher);
+    this.backplane.addPublisher('LgciuBusPublisher', this.lgciuBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);

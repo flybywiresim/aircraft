@@ -3,9 +3,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
@@ -18,7 +15,9 @@ import {
 import { ClockEvents, ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { LagFilter } from 'instruments/src/PFD/PFDUtils';
+import { FcuBus } from './FcuBusProvider';
+import { LagFilter } from '../PFDUtils';
+import { getDisplayIndex } from '../PFD';
 
 export interface Arinc429Values {
   pitchAr: Arinc429WordData;
@@ -53,7 +52,7 @@ export interface Arinc429Values {
   vStallWarn: Arinc429Word;
   vMax: Arinc429Word;
   vFeNext: Arinc429Word;
-  vCTrend: Arinc429Word;
+  vCTrend: number;
   vMan: Arinc429Word;
   v4: Arinc429Word;
   v3: Arinc429Word;
@@ -434,15 +433,15 @@ export class ArincValueProvider implements Instrument {
 
     subscriber.on('fac1VCTrendRaw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('vCTrend', new Arinc429Word(word));
+        publisher.pub('vCTrend', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('vCTrend', new Arinc429Word(0));
+        publisher.pub('vCTrend', 0);
       }
     });
 
     subscriber.on('fac2VCTrendRaw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('vCTrend', new Arinc429Word(word));
+        publisher.pub('vCTrend', word);
       }
     });
 

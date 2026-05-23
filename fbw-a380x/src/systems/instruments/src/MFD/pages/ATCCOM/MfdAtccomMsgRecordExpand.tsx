@@ -1,11 +1,11 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomMsgRecord.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 
 interface MfdAtccomMsgRecordExpandProps extends AbstractMfdPageProps {}
 
@@ -13,12 +13,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('MSG RECORD/ALL MSG/EXPAND')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('MSG RECORD/ALL MSG/EXPAND')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="display:flex; flex: 1 1 auto; width:100%">
@@ -47,7 +42,6 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
             <div>
               <Button
                 label="RETURN<br />TO LIST"
-                disabled={Subject.create(false)}
                 onClick={() => {
                   this.props.mfd.uiService.navigateTo('atccom/msg-record/all-msg');
                 }}
@@ -55,12 +49,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
               />
             </div>
             <div style="position:absolute; top: 0px; right:0px">
-              <Button
-                label="PRINT"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="PRINT" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
           </div>
         </div>
@@ -80,7 +69,12 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

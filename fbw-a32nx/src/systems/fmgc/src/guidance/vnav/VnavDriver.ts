@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2023 FlyByWire Simulations
+//  Copyright (c) 2023-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -16,8 +16,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { LatchedDescentGuidance } from '@fmgc/guidance/vnav/descent/LatchedDescentGuidance';
 import { DescentGuidance } from '@fmgc/guidance/vnav/descent/DescentGuidance';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -31,10 +29,11 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
+import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -50,8 +49,6 @@ export class VnavDriver implements GuidanceComponent {
   private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
 
   private descentGuidance: DescentGuidance | LatchedDescentGuidance;
-
-  private headingProfile: NavHeadingProfile;
 
   private profileManager: VerticalProfileManager;
 
@@ -76,14 +73,13 @@ export class VnavDriver implements GuidanceComponent {
   private prevMcduPredReadyToDisplay = false;
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
     private readonly atmosphericConditions: AtmosphericConditions,
-    private readonly windProfileFactory: WindProfileFactory,
     private readonly acConfig: AircraftConfig,
   ) {
-    this.headingProfile = new NavHeadingProfile(flightPlanService);
     this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
     this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
@@ -92,6 +88,7 @@ export class VnavDriver implements GuidanceComponent {
     this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
       ? new LatchedDescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -99,6 +96,7 @@ export class VnavDriver implements GuidanceComponent {
         )
       : new DescentGuidance(
           this.acConfig,
+          this.bus,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -106,13 +104,11 @@ export class VnavDriver implements GuidanceComponent {
         );
 
     this.profileManager = new VerticalProfileManager(
+      this.bus,
       this.flightPlanService,
-      this.guidanceController,
       this.computationParametersObserver,
       this.atmosphericConditions,
       this.constraintReader,
-      this.headingProfile,
-      this.windProfileFactory,
       this.aircraftToDescentProfileRelation,
       this.acConfig,
     );
@@ -131,12 +127,11 @@ export class VnavDriver implements GuidanceComponent {
       const { flightPhase } = this.computationParametersObserver.get();
 
       this.updateDebugInformation();
-      this.updateDistanceToDestination();
 
       if (flightPhase >= FmgcFlightPhase.Takeoff) {
         this.updateHoldSpeed();
         this.updateDescentSpeedGuidance();
-        this.descentGuidance.update(deltaTime, this.guidanceController.alongTrackDistanceToDestination);
+        this.descentGuidance.update(deltaTime, this.guidanceController.getAlongTrackDistanceToDestination());
       }
     } catch (e) {
       console.error('[FMS] Failed to calculate vertical profile. See exception below.');
@@ -154,8 +149,6 @@ export class VnavDriver implements GuidanceComponent {
 
     const newParameters = this.computationParametersObserver.get();
 
-    this.windProfileFactory.updateAircraftDistanceFromStart(this.constraintReader.distanceToPresentPosition);
-    this.headingProfile.updateGeometry(geometry);
     this.currentMcduSpeedProfile?.update(this.constraintReader.distanceToPresentPosition);
 
     // No predictions in go around phase
@@ -229,10 +222,18 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   isLatAutoControlArmedWithIntercept(): boolean {
-    const { fcuArmedLateralMode } = this.computationParametersObserver.get();
+    const { fcuArmedLateralMode, fcuLateralMode } = this.computationParametersObserver.get();
 
-    // FIXME: Figure out if intercept exists
-    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV);
+    // FIXME actually compute intercept. At the moment, we never compute an intercept,
+    // so an intercept won't exist as long as a selected mode is active.
+    // Importantly, this condition is true on the ground (as it should be) since no lateral mode will be engaged there
+    const interceptExists =
+      fcuLateralMode !== LateralMode.HDG &&
+      fcuLateralMode !== LateralMode.TRACK &&
+      fcuLateralMode !== LateralMode.GA_TRACK &&
+      fcuLateralMode !== LateralMode.RWY_TRACK;
+
+    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV) && interceptExists;
   }
 
   isSelectedVerticalModeActive(): boolean {
@@ -442,7 +443,7 @@ export class VnavDriver implements GuidanceComponent {
   public getDestinationPrediction(): VerticalWaypointPrediction | null {
     const destLegIndex = this.flightPlanService.active.destinationLegIndex;
 
-    return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
+    return destLegIndex !== null ? this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex) : null;
   }
 
   /**
@@ -496,12 +497,13 @@ export class VnavDriver implements GuidanceComponent {
 
     for (let i = 1; i < this.profileManager.ndProfile.checkpoints.length - 1; i++) {
       const checkpoint = this.profileManager.ndProfile.checkpoints[i];
+      const prevCheckpoint = this.profileManager.ndProfile.checkpoints[i - 1];
 
       if (checkpoint.distanceFromStart < distanceToPresentPosition) {
         continue;
       } else if (
-        checkpoint.reason === VerticalCheckpointReason.TopOfClimb ||
-        checkpoint.reason === VerticalCheckpointReason.TopOfDescent
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfClimb ||
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfDescent
       ) {
         // At T/C, T/D, we expect to see a speed change the the respective ECON speed, but this is not indicated to the pilots
         return null;
@@ -513,11 +515,11 @@ export class VnavDriver implements GuidanceComponent {
             checkpoint.speed,
             this.atmosphericConditions.computeCasFromMach(checkpoint.altitude, checkpoint.mach),
           ) -
-            Math.max(this.profileManager.ndProfile.checkpoints[i - 1].speed, speedTarget) >
+            Math.max(prevCheckpoint.speed, speedTarget) >
           1
         ) {
           // Candiate for a climb speed change
-          return this.profileManager.ndProfile.checkpoints[i - 1].distanceFromStart;
+          return prevCheckpoint.distanceFromStart;
         }
       } else if (
         isSpeedChangePoint(checkpoint) &&
@@ -544,6 +546,7 @@ export class VnavDriver implements GuidanceComponent {
 
     // Invalidate MCDU profile, so the FPLAN page shows blank predictions
     this.profileManager.mcduProfile?.invalidate();
+    this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
   }
 
   // Only used to check whether T/D PWP should be displayed despite not being in lat auto control
@@ -592,8 +595,9 @@ export class VnavDriver implements GuidanceComponent {
     this.listener.triggerToAllSubscribers(
       'A32NX_FM_DEBUG_VNAV_STATUS',
       'A32NX FMS VNAV STATUS\n' +
-        `DTG ${this.guidanceController.activeLegAlongTrackCompletePathDtg?.toFixed(2) ?? '---'} NM\n` +
-        `DIST TO DEST ${this.guidanceController.alongTrackDistanceToDestination?.toFixed(2) ?? '---'} NM\n` +
+        `DTG ${this.guidanceController.displayActiveLegCompleteLegPathDtg?.toFixed(2) ?? '---'} NM\n` +
+        `DIST TO DEST ${this.guidanceController.getAlongTrackDistanceToDestination()?.toFixed(2) ?? '---'} NM\n` +
+        `SEC DIST TO DEST ${this.guidanceController.getAlongTrackDistanceToDestination(FlightPlanIndex.FirstSecondary)?.toFixed(2) ?? '---'} NM\n` +
         `DIST FROM START ${this.constraintReader.distanceToPresentPosition?.toFixed(2) ?? '---'} NM\n` +
         `TOTAL DIST ${this.constraintReader.totalFlightPlanDistance?.toFixed(2) ?? '---'} NM\n` +
         '---\n' +
@@ -603,54 +607,27 @@ export class VnavDriver implements GuidanceComponent {
     );
   }
 
-  private updateDistanceToDestination(): void {
-    const geometry = this.guidanceController.activeGeometry;
-    if (!geometry || geometry.legs.size <= 0) {
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
-      this.guidanceController.alongTrackDistanceToDestination = undefined;
-
-      return;
+  shouldShowLatDiscontinuityAhead(): boolean {
+    if (this.computationParametersObserver.get().fcuLateralMode !== LateralMode.NAV) {
+      return false;
     }
-
-    // TODO: Proper navigation
-    const ppos = this.guidanceController.lnavDriver.ppos;
-    const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
-
-    const activeLegIndx = this.guidanceController.activeLegIndex;
-    const activeLeg = geometry.legs.get(activeLegIndx);
-
-    let referenceLegIndex = activeLegIndx;
-    if (!activeLeg) {
-      referenceLegIndex = activeLegIndx + 1;
-    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
-      referenceLegIndex = activeLegIndx + 2;
+    const activeLeg = this.flightPlanService.active?.activeLeg;
+    if (isLeg(activeLeg) && !activeLeg.isVectors() && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
+      // If we are on a vectors leg or hold without exit toggled, we don't want to trigger the message.
+      const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
+      if (lastLegIndexBeforeDiscontinuity !== null) {
+        const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
+        if (vnavPrediction) {
+          return vnavPrediction.secondsFromPresent < 30;
+        } else {
+          // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+          if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
+            return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+          }
+        }
+      }
     }
-    const referenceLeg = geometry.legs.get(referenceLegIndex);
-
-    if (!referenceLeg) {
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
-      this.guidanceController.alongTrackDistanceToDestination = undefined;
-
-      return;
-    }
-
-    const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
-    const outboundTransition = geometry.transitions.get(referenceLegIndex);
-
-    const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
-      ppos,
-      trueTrack,
-      referenceLeg,
-      inboundTransition,
-      outboundTransition,
-    );
-
-    this.guidanceController.activeLegAlongTrackCompletePathDtg = completeLegAlongTrackPathDtg;
-    this.guidanceController.alongTrackDistanceToDestination = Number.isFinite(
-      referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions,
-    )
-      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
-      : undefined;
+    return false;
   }
 
   shouldShowTooSteepPathAhead(): boolean {

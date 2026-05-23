@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 
 export class Footer extends DisplayComponent<AbstractMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -8,13 +8,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
 
   private readonly buttonRef = FSComponent.createRef<Button>();
 
-  private readonly buttonText = Subject.create<VNode>(
-    <span>
-      MSG
-      <br />
-      LIST
-    </span>,
-  );
+  private readonly buttonText = Subject.create('MSG\nLIST');
 
   private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -39,24 +33,12 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
             } else if (arr[ind].backgroundColor === 'amber') {
               this.messageRef.instance.style.backgroundColor = '#e68000';
             }
-            this.buttonText.set(
-              <span>
-                CLEAR
-                <br />
-                INFO
-              </span>,
-            );
+            this.buttonText.set('CLEAR\nINFO');
           } else {
             this.messageToBeCleared.set(false);
             this.messageRef.instance.textContent = '';
             this.messageRef.instance.style.backgroundColor = 'none';
-            this.buttonText.set(
-              <span>
-                MSG
-                <br />
-                LIST
-              </span>,
-            );
+            this.buttonText.set('MSG\nLIST');
           }
         }, true),
       );
@@ -76,10 +58,10 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
         <Button
           ref={this.buttonRef}
           buttonStyle="width: 100px;"
-          label={this.buttonText}
+          label={<span style="white-space: pre">{this.buttonText}</span>}
           onClick={() => {
             if (this.messageToBeCleared.get()) {
-              this.props.fmcService.master?.clearLatestFmsErrorMessage();
+              this.props.fmcService.master.clearLatestFmsErrorMessage();
             } else {
               this.props.mfd.openMessageList();
             }

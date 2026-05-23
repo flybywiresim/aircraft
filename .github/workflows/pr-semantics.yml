@@ -14,6 +14,8 @@ jobs:
   main:
     name: Validate title semantics
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: amannn/action-semantic-pull-request@v5
         env:

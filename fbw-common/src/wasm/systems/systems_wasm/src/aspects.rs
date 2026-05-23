@@ -248,6 +248,23 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
+    /// Execute the given function whenever any of the observed variable values changes, using the
+    /// provided values as the initial previous values for change detection.
+    pub fn on_change_with_starting_values(
+        &mut self,
+        execute_on: ExecuteOn,
+        observed: Vec<Variable>,
+        starting_values: Vec<f64>,
+        func: OnChangeFn,
+    ) {
+        let observed = self.variables.register_many(&observed);
+
+        self.actions.push((
+            OnChange::new(observed, starting_values, func).into(),
+            execute_on,
+        ));
+    }
+
     fn precondition_not_aircraft_variable(variable: &Variable) {
         if matches!(variable, Variable::Aircraft(..)) {
             eprintln!("Writing to variable '{}' is unsupported.", variable);
@@ -491,9 +508,10 @@ pub fn min(accumulator: f64, item: f64) -> f64 {
     accumulator.min(item)
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq)]
 pub enum ObjectWrite {
     Ignore,
+    #[default]
     ToSim,
 }
 impl ObjectWrite {
@@ -503,11 +521,6 @@ impl ObjectWrite {
         } else {
             Self::Ignore
         }
-    }
-}
-impl Default for ObjectWrite {
-    fn default() -> Self {
-        Self::ToSim
     }
 }
 

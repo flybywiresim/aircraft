@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure } from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -968,7 +968,13 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
   701800158: {
     title: '\x1b<4m\x1b4mENG\x1bm THRUST LOCKED',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ALL THR LEVERS',
+        sensed: true,
+        labelNotCompleted: 'MOVE',
+      },
+    ],
   },
   701800159: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",

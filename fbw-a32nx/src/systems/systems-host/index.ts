@@ -1,21 +1,22 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  AdcPublisher,
   Clock,
   ClockEvents,
   EventBus,
   HEventPublisher,
   InstrumentBackplane,
+  MathUtils,
   StallWarningPublisher,
 } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
-import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FuelSystemPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
-import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXAdrBusPublisher } from '@shared/publishers/A32NXAdrBusPublisher';
 import { A32NXDisplayManagementPublisher } from '@shared/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
@@ -23,6 +24,8 @@ import { Ecp } from './systems/ECP/Ecp';
 import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 import { FakeDmc } from './systems/ECP/FakeDmc';
+import { FwsManager } from './systems/FWC/FwsManager';
+import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -39,16 +42,19 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
+  private readonly adcPublisher = new AdcPublisher(this.bus);
+  // stall warning publisher depends on adc publisher
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
   private readonly adrBusPublisher = new A32NXAdrBusPublisher(this.bus);
   private readonly dmcBusPublisher = new A32NXDisplayManagementPublisher(this.bus);
   private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly facBusPublisher = new A32NXFacBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly pseudoFwc = new PseudoFWC(this.bus, this);
+  private readonly fwc = new FwsManager(this.bus);
 
   constructor() {
     super();
@@ -61,6 +67,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
+    this.backplane.addPublisher('Adc', this.adcPublisher);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('AdrBus', this.adrBusPublisher);
     this.backplane.addPublisher('DmcBus', this.dmcBusPublisher);
@@ -69,18 +76,19 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
     this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('FacBus', this.facBusPublisher);
 
-    this.pseudoFwc.init();
+    this.fwc.init();
     let lastUpdateTime: number;
     this.bus
       .getSubscriber<ClockEvents>()
       .on('simTimeHiFreq')
       .atFrequency(50)
       .handle((now) => {
-        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        const dt = lastUpdateTime === undefined ? 0 : MathUtils.clamp(now - lastUpdateTime, 0, 1000);
         lastUpdateTime = now;
 
-        this.pseudoFwc.update(dt);
+        this.fwc.update(dt);
       });
   }
 

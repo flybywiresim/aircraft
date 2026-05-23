@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 
 enum BaroMode {
   QNH = 0,

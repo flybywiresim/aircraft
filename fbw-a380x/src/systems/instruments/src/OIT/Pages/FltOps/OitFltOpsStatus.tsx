@@ -3,10 +3,10 @@
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitFltOpsPageProps } from '../../OIT';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { AirportFormat, LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { AirportFormat, LongAlphanumericFormat } from '../../../MFD/pages/common/DataEntryFormats';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { OisInternalData } from '../../OisInternalPublisher';
 
 interface OitFltOpsStatusPageProps extends AbstractOitFltOpsPageProps {}
@@ -80,6 +80,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div style="flex-grow: 1" />
               </div>
@@ -96,6 +97,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div class="oit-label bigger" style="width: 100px; padding-left: 40px;">
                   TO
@@ -109,6 +111,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   hEventConsumer={this.props.container.hEventConsumer}
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
+                  errorHandler={() => {}}
                 />
                 <div style="flex-grow: 1" />
               </div>

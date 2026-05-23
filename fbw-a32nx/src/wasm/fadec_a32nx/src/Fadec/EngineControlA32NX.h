@@ -57,7 +57,7 @@ class EngineControl_A32NX {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature       = 0.0;
+  double latchedFlexTemperature    = 0.0;
   double prevThrustLimitType       = 0.0;
   double prevEngineMasterPos[2]    = {0, 0};
   bool   prevEngineStarterState[2] = {false, false};

@@ -1,21 +1,33 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
-// SPDX-License-Identifier: GPL-3.0
+import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { WindEntry } from '../../../flightplanning/data/wind';
+import { ConsumerValue, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
 
-import { WindVector } from '@fmgc/guidance/vnav/wind';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+export type WindMeasurement = WindEntry;
 
 export class WindObserver {
-  constructor(private irsIndex: number) {}
+  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
 
-  get(): WindVector | null {
-    const windDirection = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${this.irsIndex}_WIND_DIRECTION`);
-    const windSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${this.irsIndex}_WIND_SPEED`);
+  private readonly windDirection = ConsumerValue.create(this.sub.on('fms_nav_wind_direction'), null);
 
-    if (!windDirection.isNormalOperation() || !windSpeed.isNormalOperation()) {
+  private readonly windSpeed = ConsumerValue.create(this.sub.on('fms_nav_wind_speed'), null);
+
+  private readonly altitude = ConsumerValue.create(this.sub.on('fms_nav_pressure_altitude'), null);
+
+  constructor(private readonly bus: EventBus) {}
+
+  get(result: WindMeasurement): WindMeasurement | null {
+    const windDirection = this.windDirection.get();
+    const windSpeed = this.windSpeed.get();
+    const altitude = this.altitude.get();
+
+    if (windDirection === null || windSpeed === null || altitude === null) {
       return null;
     }
 
-    return new WindVector(windDirection.value, windSpeed.value);
+    result.altitude = altitude;
+    Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
+
+    return result;
   }
 }

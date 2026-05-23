@@ -11,7 +11,7 @@ import {
   Subscription,
   UnitType,
 } from '@microsoft/msfs-sdk';
-import { BaroEvents, BaroMode, BaroUnit } from 'instruments/src/FCU/Managers/BaroManager';
+import { BaroEvents, BaroMode, BaroUnit } from './BaroManager';
 
 interface DiscreteOutputWordDef {
   localVarName: string;

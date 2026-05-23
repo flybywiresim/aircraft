@@ -11,7 +11,7 @@ import Packs from './elements/Packs';
 import '../../../index.scss';
 import OutflowValve from './elements/OutflowValve';
 import ExtractValve from './elements/ExtractValve';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 export const PressPage = () => {
   const cpcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');

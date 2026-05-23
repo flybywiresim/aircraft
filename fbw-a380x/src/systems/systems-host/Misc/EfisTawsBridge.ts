@@ -37,13 +37,19 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
+// FIXME should not import from instruments
+import { ResetPanelSimvars } from '../../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+// FIXME should not import from ND!!!
+import { FmsSymbolsData } from '../../instruments/src/ND/FmsSymbolsPublisher';
 import { PowerSupplyBusTypes } from './powersupply';
-import { EgpwcSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+// FIXME should not import from instruments
+import { EgpwcSimVars } from '../../instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+// FIXME should not import from instruments
+import { FGVars } from '../../instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+// FIXME should not import from instruments
+import { AesuBusEvents } from '../../instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+// FIXME should not import from instruments
+import { MfdSurvEvents } from '../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { bearingTo, placeBearingDistance } from 'msfs-geo';
 
 /**
@@ -565,6 +571,7 @@ export class EfisTawsBridge implements Instrument {
         !this.ac4Powered.get() ||
         extremeLatitude,
     );
+    // FIXME add GPWS failure conditions for: FLAPS pos not avail
     this.gpws1Failed.set(
       this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
     );

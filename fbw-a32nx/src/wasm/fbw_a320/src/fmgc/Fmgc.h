@@ -35,6 +35,12 @@ class Fmgc {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
+  bool selfTestApEngagedDiscreteOn;
+
+  bool selfTestAthrEngagedDiscreteOn;
+
+  bool selfTestDigitalOutValid;
+
   bool cpuStopped;
 
   // Power Supply monitoring
@@ -51,5 +57,5 @@ class Fmgc {
   const bool isUnit1;
 
   const double minimumPowerOutageTimeForFailure = 0.02;
-  const double selfTestDuration = 4;
+  const double selfTestDuration = 30;
 };

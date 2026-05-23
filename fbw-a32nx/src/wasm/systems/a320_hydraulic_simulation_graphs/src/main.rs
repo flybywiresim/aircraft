@@ -93,7 +93,7 @@ fn main() {
     blue_circuit_epump(path);
 }
 
-fn make_figure(h: &History) -> Figure {
+fn make_figure(h: &'_ History) -> Figure<'_> {
     use rustplotlib::{Axes2D, Line2D};
 
     let mut all_axis: Vec<Option<Axes2D>> = Vec::new();

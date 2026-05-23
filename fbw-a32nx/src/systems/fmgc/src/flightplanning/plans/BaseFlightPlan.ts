@@ -1,13 +1,13 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import {
   Airport,
+  Airway,
   AltitudeConstraint,
-  AltitudeDescriptor,
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
@@ -17,6 +17,8 @@ import {
   Departure,
   Fix,
   LegType,
+  MathUtils,
+  MagVar,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
@@ -25,7 +27,13 @@ import {
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import {
+  FlightPlanElement,
+  FlightPlanLeg,
+  FlightPlanLegFlags,
+  isDiscontinuity,
+  isLeg,
+} from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
@@ -42,7 +50,15 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import {
+  FlightPlanEditSyncEvent,
   FlightPlanEvents,
+  FlightPlanLegCruiseStepEditEvent,
+  FlightPlanLegDefinitionEditEvent,
+  FlightPlanLegFlagsEditEvent,
+  FlightPlanPendingAirwaysEditEvent,
+  FlightPlanSetActiveLegIndexEvent,
+  FlightPlanSetFixInfoEntryEvent,
+  FlightPlanSetSegmentEvent,
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
@@ -51,7 +67,7 @@ import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
-import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
+import { LocalPendingAirways } from '@fmgc/flightplanning/plans/LocalPendingAirways';
 import {
   FlightPlanPerformanceData,
   SerializedFlightPlanPerformanceData,
@@ -60,147 +76,169 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
+import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
+import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAirways';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
+import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
 
-export enum FlightPlanQueuedOperation {
-  Restring,
-  RebuildArrivalAndApproach,
-  SyncSegmentLegs,
+export interface FlightPlanContext {
+  get syncClientID(): number;
+
+  get batchStack(): FlightPlanBatch[];
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
-  implements ReadonlyFlightPlan
+  implements ReadonlyFlightPlan<P>
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
-  public pendingAirways: PendingAirways | undefined;
+  public pendingAirways: ReadonlyPendingAirways | undefined;
 
   private subscriptions: Subscription[] = [];
 
+  private static readonly WindCache: PropagatedWindEntry[] = [];
+
   protected constructor(
+    protected readonly context: FlightPlanContext,
     public readonly index: number,
     public readonly bus: EventBus,
+    public readonly timeCreated?: number,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.wasModified = false;
+  }
 
-    const subs = this.bus.getSubscriber<SyncFlightPlanEvents>();
+  public async processSyncEvent(
+    event: keyof SyncFlightPlanEvents & `SYNC_flightPlan.${string}`,
+    data: FlightPlanEditSyncEvent,
+  ): Promise<void> {
+    // Protection against sync events coming from the same instrument
+    if (this.ignoreSync || data.syncClientID === this.context.syncClientID) {
+      return;
+    }
 
+    switch (event) {
+      case 'SYNC_flightPlan.setActiveLegIndex': {
+        this.handleSetActiveLegIndexSyncEvent(data as FlightPlanSetActiveLegIndexEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setSegment': {
+        await this.handleSetSegmentSyncEvent(data as FlightPlanSetSegmentEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.legFlagsEdit': {
+        this.handleLegFlagsEditSyncEvent(data as FlightPlanLegFlagsEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.legDefinitionEdit': {
+        this.handleLegDefinitionEditSyncEvent(data as FlightPlanLegDefinitionEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setLegCruiseStep': {
+        this.handleSetLegCruiseStepSyncEvent(data as FlightPlanLegCruiseStepEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setFixInfoEntry': {
+        this.handleSetPlanFixInfoEntry(data as FlightPlanSetFixInfoEntryEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.pendingAirwaysEdit': {
+        this.handlePendingAirwaysEdit(data as FlightPlanPendingAirwaysEditEvent);
+        break;
+      }
+    }
+  }
+
+  private handleSetActiveLegIndexSyncEvent(event: FlightPlanSetActiveLegIndexEvent): void {
+    this.activeLegIndex = event.activeLegIndex;
+
+    this.incrementVersion();
+  }
+
+  private async handleSetSegmentSyncEvent(event: FlightPlanSetSegmentEvent): Promise<void> {
+    const segment = this.orderedSegments[event.segmentIndex];
+
+    await segment.setFromSerializedSegment(event.serialized);
+
+    this.incrementVersion();
+  }
+
+  private handleLegFlagsEditSyncEvent(event: FlightPlanLegFlagsEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    element.flags = event.newFlags;
+
+    this.incrementVersion();
+  }
+
+  private handleLegDefinitionEditSyncEvent(event: FlightPlanLegDefinitionEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    Object.assign(element.definition, event.newDefinition);
+
+    this.incrementVersion();
+  }
+
+  private handleSetLegCruiseStepSyncEvent(event: FlightPlanLegCruiseStepEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    element.cruiseStep = event.cruiseStep;
+
+    this.incrementVersion();
+  }
+
+  private handleSetPlanFixInfoEntry(event: FlightPlanSetFixInfoEntryEvent): void {
     const isAlternatePlan = this instanceof AlternateFlightPlan;
 
     const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
 
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setActiveLegIndex').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
+    if (!this.ignoreSync) {
+      if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+        return;
+      }
 
-          this.activeLegIndex = event.activeLegIndex;
+      if (this instanceof FlightPlan) {
+        this.setFixInfoEntry(event.index, event.fixInfo, false);
 
-          this.incrementVersion();
+        this.incrementVersion();
 
-          flightPlanEventsPub.pub('flightPlan.setActiveLegIndex', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setSegmentLegs').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const segment = this.orderedSegments[event.segmentIndex];
-
-          const elements: FlightPlanElement[] = event.legs.map((it) => {
-            if (it.isDiscontinuity === false) {
-              return FlightPlanLeg.deserialize(it, segment);
-            }
-            return it;
-          });
-
-          segment.allLegs = elements;
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.setSegmentLegs', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.legFlagsEdit').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          element.flags = event.newFlags;
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.legFlagsEdit', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.legDefinitionEdit').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          Object.assign(element.definition, event.newDefinition);
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.legDefinitionEdit', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setLegCruiseStep').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          element.cruiseStep = event.cruiseStep;
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.setLegCruiseStep', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setFixInfoEntry').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          if (this instanceof FlightPlan) {
-            this.setFixInfoEntry(event.index, event.fixInfo, false);
-
-            this.incrementVersion();
-
-            flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
-          }
-        }
-      }),
-    );
+        flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
+      }
+    }
   }
+
+  private handlePendingAirwaysEdit(event: FlightPlanPendingAirwaysEditEvent): void {
+    switch (event.type) {
+      case 'create': {
+        if (this.pendingAirways) {
+          throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways already exist');
+        }
+
+        this.pendingAirways = new RemotePendingAirways();
+        break;
+      }
+      case 'edit': {
+        if (!this.pendingAirways) {
+          throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) No pending airways exist');
+        }
+
+        if (!(this.pendingAirways instanceof RemotePendingAirways)) {
+          throw new Error(
+            '[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways exist, but they are not RemotePendingAirways. This should never happen when handlePendingAirwaysEdit is called',
+          );
+        }
+
+        this.pendingAirways.elements = event.elements;
+        break;
+      }
+      case 'delete': {
+        this.pendingAirways = undefined;
+      }
+    }
+  }
+
+  abstract get performanceData(): P;
 
   destroy() {
     for (const subscription of this.subscriptions) {
@@ -208,8 +246,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
+  /**
+   * Whether the flight plan was modified after import or creation using a lateral or vertical flight plan revision.
+   */
+  public wasModified: boolean;
+
   get legCount() {
     return this.allLegs.length;
+  }
+
+  get enrouteLegCount(): number {
+    return this.enrouteSegment.legCount;
   }
 
   get lastIndex() {
@@ -224,6 +271,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return this.firstMissedApproachLegIndex - this.approachSegment.legCount;
   }
 
+  get firstEnrouteLegIndex(): number {
+    return this.lastEnrouteLegIndex - this.enrouteSegment.legCount;
+  }
+
+  get lastEnrouteLegIndex(): number {
+    return (
+      this.firstApproachLegIndex -
+      this.approachViaSegment.legCount -
+      this.arrivalRunwayTransitionSegment.legCount -
+      this.arrivalSegment.legCount -
+      this.arrivalEnrouteTransitionSegment.legCount -
+      1
+    );
+  }
+
   activeLegIndex = 1;
 
   get activeLeg(): FlightPlanElement {
@@ -233,6 +295,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected setActiveLegIndex(index: number) {
     this.activeLegIndex = index;
     this.sendEvent('flightPlan.setActiveLegIndex', {
+      syncClientID: this.context.syncClientID,
+      batchStack: this.context.batchStack,
       planIndex: this.index,
       forAlternate: this instanceof AlternateFlightPlan,
       activeLegIndex: index,
@@ -279,11 +343,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     for (let i = 0; i < this.allLegs.length; i++) {
       const element = this.allLegs[i];
 
-      if (element.isDiscontinuity === true) {
-        continue;
-      }
-
-      if (!element.isXF()) {
+      if (!isLeg(element) || !element.isXF()) {
         continue;
       }
 
@@ -292,6 +352,30 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
 
       return i;
+    }
+
+    return -1;
+  }
+
+  /**
+   * Finds the index of the first XF leg whose fix has the same coordintes as the coordinates provided, or -1 if none is found
+   *
+   * @param lat the latitude of the coordinates to look for
+   * @param lon the longitude of the coordinates to look for
+   */
+  findLegIndexByCoordinates(lat: number, lon: number): number {
+    for (let i = 0; i < this.allLegs.length; i++) {
+      const element = this.allLegs[i];
+
+      if (!isLeg(element) || !element.isXF()) {
+        continue;
+      }
+
+      const fixLocation = element.terminationWaypoint().location;
+
+      if (MathUtils.isAboutEqual(fixLocation.lat, lat) && MathUtils.isAboutEqual(fixLocation.long, lon)) {
+        return i;
+      }
     }
 
     return -1;
@@ -308,10 +392,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.stringMissedApproach();
     }
 
+    if (isLeg(this.activeLeg) && this.activeLeg.cruiseStep) {
+      this.autoDeleteCruiseStep(this.activeLegIndex);
+    }
+
     this.activeLegIndex++;
 
     this.sendEvent('flightPlan.setActiveLegIndex', {
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
+      batchStack: this.context.batchStack,
       forAlternate: false,
       activeLegIndex: this.activeLegIndex,
     });
@@ -470,9 +560,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
-    const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
-
-    this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
+    this.sendEvent('flightPlan.setSegment', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: false,
+      segmentIndex,
+      serialized: segment.serialize(),
+    });
   }
 
   syncLegFlagsChange(atIndex: number) {
@@ -480,7 +575,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (leg.isDiscontinuity === false) {
       this.sendEvent('flightPlan.legFlagsEdit', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         atIndex,
         forAlternate: this instanceof AlternateFlightPlan,
         newFlags: leg.flags,
@@ -493,10 +590,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (leg.isDiscontinuity === false) {
       this.sendEvent('flightPlan.legDefinitionEdit', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
+        forAlternate: this instanceof AlternateFlightPlan,
+        atIndex,
+        newDefinition: leg.definition,
+      });
+    }
+  }
+
+  syncCruiseWindChange(atIndex: number) {
+    const leg = this.elementAt(atIndex);
+
+    if (leg.isDiscontinuity === false) {
+      this.sendEvent('flightPlan.setCruiseWinds', {
+        syncClientID: this.context.syncClientID,
+        planIndex: this.index,
+        batchStack: this.context.batchStack,
         atIndex,
         forAlternate: this instanceof AlternateFlightPlan,
-        newDefinition: leg.definition,
+        newCruiseWinds: leg.cruiseWindEntries,
       });
     }
   }
@@ -547,32 +661,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLeg() {
-    return this.elementAt(this.destinationLegIndex);
+    const destinationLegIndex = this.destinationLegIndex;
+    return destinationLegIndex !== null ? this.legElementAt(destinationLegIndex) : undefined;
   }
 
   get destinationLegIndex() {
-    let targetSegment: FlightPlanSegment = undefined;
-
-    if (this.destinationSegment.allLegs.length > 0) {
-      targetSegment = this.destinationSegment;
-    } else if (this.approachSegment.allLegs.length > 0) {
-      targetSegment = this.approachSegment;
-    } else if (this.enrouteSegment.allLegs.length > 0) {
-      targetSegment = this.enrouteSegment;
-    } else {
-      return -1;
-    }
-
-    let accumulator = 0;
-    for (const segment of this.orderedSegments) {
-      accumulator += segment.allLegs.length;
-
-      if (segment === targetSegment) {
-        break;
+    for (let i = this.firstMissedApproachLegIndex - 1; i >= 0; i--) {
+      const leg = this.maybeElementAt(i);
+      if (
+        isLeg(leg) &&
+        (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationAirport) ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationRunway))
+      ) {
+        return i;
       }
     }
 
-    return accumulator - 1;
+    return null;
   }
 
   get endsAtRunway() {
@@ -786,23 +892,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
-  get originAirport(): Airport {
+  get originAirport(): Airport | undefined {
     return this.originSegment.originAirport;
   }
 
-  async setOriginAirport(icao: string) {
-    await this.originSegment.setOriginIcao(icao);
+  async setOriginAirport(icao: string | undefined) {
+    await this.originSegment.setAirport(icao);
 
     await this.flushOperationQueue();
     this.incrementVersion();
   }
 
-  get originRunway(): Runway {
+  get originRunway(): Runway | undefined {
     return this.originSegment.originRunway;
   }
 
-  async setOriginRunway(runwayIdent: string) {
-    await this.originSegment.setOriginRunway(runwayIdent);
+  async setOriginRunway(runwayIdent: string | undefined) {
+    await this.originSegment.setRunway(runwayIdent);
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -902,23 +1008,23 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get destinationAirport(): Airport {
+  get destinationAirport(): Airport | undefined {
     return this.destinationSegment.destinationAirport;
   }
 
   async setDestinationAirport(icao: string | undefined) {
-    await this.destinationSegment.setDestinationIcao(icao).then(() => this.incrementVersion());
+    await this.destinationSegment.setAirport(icao).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
     this.incrementVersion();
   }
 
-  get destinationRunway(): Runway {
+  get destinationRunway(): Runway | undefined {
     return this.destinationSegment.destinationRunway;
   }
 
   async setDestinationRunway(runwayIdent: string | undefined) {
-    await this.destinationSegment.setDestinationRunway(runwayIdent).then(() => this.incrementVersion());
+    await this.destinationSegment.setRunway(runwayIdent).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -1255,9 +1361,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param airportIdent the airport to use as the new destination
    */
   async newDest(index: number, airportIdent: string) {
-    this.redistributeLegsAt(index);
-
     const leg = this.legElementAt(index);
+
+    const segment = leg.segment;
+    this.redistributeLegsAt(segment.class === SegmentClass.Departure ? index + 1 : index);
+
     const legIndexInEnroute = this.enrouteSegment.allLegs.indexOf(leg);
 
     const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
@@ -1266,14 +1374,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
     await this.arrivalSegment.setProcedure(undefined);
-    await this.destinationSegment.setDestinationIcao(airportIdent);
-    await this.destinationSegment.setDestinationRunway(undefined);
 
-    await this.flushOperationQueue();
+    await this.setDestinationAirport(airportIdent);
+    await this.setDestinationRunway(undefined);
 
     this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
 
-    if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1].isDiscontinuity === false) {
+    if (!isDiscontinuity(this.enrouteSegment.allLegs[this.enrouteSegment.allLegs.length - 1])) {
       this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
     }
     this.enrouteSegment.strung = true;
@@ -1294,7 +1401,103 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       throw new Error('Cannot create a pending airways entry from a non XF or HX leg');
     }
 
-    this.pendingAirways = new PendingAirways(this, revisedLegIndex, leg);
+    this.pendingAirways = new LocalPendingAirways(this, revisedLegIndex, leg);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      type: 'create',
+      elements: this.pendingAirways.elements,
+    });
+  }
+
+  /**
+   * Continues an existing AIRWAYS revision, starting a VIA entry.
+   * @param airway the airway to insert
+   */
+  public async continueAirwayEntryViaAirway(airway: Airway): Promise<boolean> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](continueAirwayEntryViaAirway) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](continueAirwayEntryViaAirway) Pending airways exist, but they are not LocalPendingAirways. This should never happen when continueAirwayEntryViaAirway is called',
+      );
+    }
+
+    const result = this.pendingAirways.thenAirway(airway);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      type: 'edit',
+      elements: this.pendingAirways.elements,
+    });
+
+    return result;
+  }
+
+  /**
+   * Continues an existing AIRWAYS revision, inserting a fix.
+   * @param fix the fix to insert
+   * @param isDct whether the fix is a DCT
+   */
+  public async continueAirwayEntryToFix(fix: Fix, isDct = false): Promise<boolean> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](continueAirwayEntryDirectToFix) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](continueAirwayEntryDirectToFix) Pending airways exist, but they are not LocalPendingAirways. This should never happen when continueAirwayEntryDirectToFix is called',
+      );
+    }
+
+    const result = await this.pendingAirways.thenTo(fix, isDct);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      type: 'edit',
+      elements: this.pendingAirways.elements,
+    });
+
+    return result;
+  }
+
+  /**
+   * Finalises an existing AIRWAYS revision.
+   */
+  public async finaliseAirwayEntry(): Promise<void> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](finaliseAirwayEntry) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](finaliseAirwayEntry) Pending airways exist, but they are not LocalPendingAirways. This should never happen when finaliseAirwayEntry is called',
+      );
+    }
+
+    await this.pendingAirways.finalize();
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      type: 'delete',
+      elements: this.pendingAirways.elements,
+    });
+
+    this.pendingAirways = undefined;
   }
 
   async addOrEditManualHold(
@@ -1314,7 +1517,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
       targetLeg.type = LegType.HM;
       targetLeg.definition.turnDirection = desiredHold.turnDirection;
-      targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
+      targetLeg.definition.course = desiredHold.inboundMagneticCourse;
       targetLeg.definition.length = desiredHold.distance;
       targetLeg.definition.lengthTime = desiredHold.time;
 
@@ -1327,7 +1530,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
-    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
+    const magVar = MagVar.getForFix(waypoint);
+    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold, magVar);
 
     manualHoldLeg.modifiedHold = modifiedHold;
     manualHoldLeg.defaultHold = defaultHold;
@@ -1582,59 +1786,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  setAltitudeDescriptionAt(index: number, value: AltitudeDescriptor) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.altitudeDescriptor = value;
-    this.syncLegDefinitionChange(index);
-
-    this.incrementVersion();
-  }
-
-  setAltitudeAt(index: number, value: number, isDescentConstraint?: boolean) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.altitude1 = value;
-    this.syncLegDefinitionChange(index);
-
-    if (element.constraintType === WaypointConstraintType.Unknown) {
-      if (isDescentConstraint) {
-        this.setFirstDesConstraintWaypoint(index);
-      } else {
-        this.setLastClbConstraintWaypoint(index);
-      }
-    }
-
-    this.incrementVersion();
-  }
-
-  setSpeedAt(index: number, value: number, isDescentConstraint?: boolean) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.speed = value;
-    this.syncLegDefinitionChange(index);
-
-    if (isDescentConstraint) {
-      this.setFirstDesConstraintWaypoint(index);
-    } else {
-      this.setLastClbConstraintWaypoint(index);
-    }
-
-    this.incrementVersion();
-  }
-
   addOrUpdateCruiseStep(index: number, toAltitude: number) {
     const leg = this.legElementAt(index);
 
@@ -1645,7 +1796,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       isIgnored: false,
     };
     this.sendEvent('flightPlan.setLegCruiseStep', {
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
+      batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
       atIndex: index,
       cruiseStep: leg.cruiseStep,
@@ -1656,12 +1809,25 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
+  private autoDeleteCruiseStep(legIndex: number) {
+    this.sendEvent('flightPlan.autoDeleteCruiseStep', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+    });
+
+    this.removeCruiseStep(legIndex);
+  }
+
   removeCruiseStep(index: number) {
     const leg = this.legElementAt(index);
 
     leg.cruiseStep = undefined;
     this.sendEvent('flightPlan.setLegCruiseStep', {
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
+      batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
       atIndex: index,
       cruiseStep: undefined,
@@ -1686,7 +1852,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       element.cruiseStep.isIgnored = false;
       this.sendEvent('flightPlan.setLegCruiseStep', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         forAlternate: this instanceof AlternateFlightPlan,
         atIndex: i,
         cruiseStep: element.cruiseStep,
@@ -2132,7 +2300,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 element.terminationWaypoint().location,
               );
               element.type = LegType.CF;
-              element.definition.magneticCourse = track;
+              element.definition.course =
+                element.definition.magVar !== null ? MagVar.trueToMagnetic(track, element.definition.magVar) : track;
               // Get correct ident/annotation for CF leg
               [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
                 element.definition,
@@ -2351,7 +2520,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             throw new Error('[FMS/FPM] Duplicate leg cannot be a discontinuity');
           }
 
-          duplicateLeg.withDefinitionFrom(firstArrivalLeg).withPilotEnteredDataFrom(firstArrivalLeg);
+          // Do not copy pilot entered data since the arrival leg will not have any such data as the arrival has only
+          // just been selected when we string (right?)
+          // If we did, we'd override pilot entered data on the upstream segment
+          duplicateLeg.withDefinitionFrom(firstArrivalLeg);
 
           this.removeRange(duplicatePlanIndex + 1, firstArrivalLegIndexInPlan + 1);
           duplicateSegment.strung = true;
@@ -2479,6 +2651,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const { start, length } = toDelete[i];
         segment.allLegs.splice(start, length);
       }
+
+      this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, segment);
     }
   }
 
@@ -2684,20 +2858,215 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  protected hasLegAt(index: number): boolean {
+  hasLegAt(index: number): boolean {
     return isLeg(this.maybeElementAt(index));
   }
 
-  /**
-   * Finds the index of the final approach fix
-   * @returns The leg index, or -1 if not found.
-   */
-  getFinalApproachCourseFixIndex(): number {
-    return this.allLegs.findIndex(
-      (el) =>
-        el.isDiscontinuity === false &&
-        el.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix,
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[] {
+    let numWindEntries = 0;
+
+    for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
+      const element = this.maybeElementAt(i);
+
+      if (!isLeg(element)) {
+        continue;
+      }
+
+      for (const windEntry of element.cruiseWindEntries) {
+        let windPropagationType: PropagationType;
+        if (i < atIndex) {
+          windPropagationType = PropagationType.Forward;
+        } else if (i === atIndex) {
+          windPropagationType = PropagationType.Entry;
+        } else {
+          windPropagationType = PropagationType.Backward;
+        }
+
+        const existingEntryIndex = result.findIndex(
+          (e, index) => Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100) && index < numWindEntries,
+        );
+
+        if (existingEntryIndex >= 0) {
+          if (windPropagationType !== PropagationType.Backward) {
+            result[existingEntryIndex].altitude = windEntry.altitude;
+            result[existingEntryIndex].vector = windEntry.vector;
+            result[existingEntryIndex].type = windPropagationType;
+            result[existingEntryIndex].sourceLegIndex = i;
+          }
+        } else if (numWindEntries < maxNumEntries) {
+          if (numWindEntries >= result.length) {
+            result.push({
+              altitude: windEntry.altitude,
+              vector: windEntry.vector,
+              type: windPropagationType,
+              sourceLegIndex: i,
+            });
+          } else {
+            result[numWindEntries].altitude = windEntry.altitude;
+            result[numWindEntries].vector = windEntry.vector;
+            result[numWindEntries].type = windPropagationType;
+            result[numWindEntries].sourceLegIndex = i;
+          }
+
+          numWindEntries++;
+        }
+      }
+    }
+
+    return result.slice(0, numWindEntries).sort((a, b) => b.altitude - a.altitude);
+  }
+
+  async addCruiseWindEntry(atIndex: number, entry: WindEntry, maxNumEntries: number): Promise<void> {
+    const leg = this.maybeElementAt(atIndex);
+
+    if (leg?.isDiscontinuity === true) {
+      console.error('[FMS/FPM] Tried to add a cruise wind entry to a non-leg element');
+      return;
+    }
+
+    if (!leg.isXF()) {
+      console.error('[FMS/FPM] Tried to add a cruise wind entry to a non-XF leg');
+      return;
+    }
+
+    if (leg.cruiseWindEntries.some((e) => Math.round(e.altitude / 100) === Math.round(entry.altitude / 100))) {
+      // Tried to add a cruise wind entry with the same altitude as an existing one. Editing the existing one instead
+      this.editCruiseWindEntry(atIndex, entry.altitude, entry, maxNumEntries);
+    } else {
+      leg.cruiseWindEntries.push(entry);
+    }
+
+    this.syncCruiseWindChange(atIndex);
+  }
+
+  async deleteCruiseWindEntry(atIndex: number, altitude: number): Promise<void> {
+    const leg = this.maybeElementAt(atIndex);
+
+    if (leg?.isDiscontinuity === true) {
+      console.error('[FMS/FPM] Tried to delete a cruise wind entry to a non-leg element');
+      return;
+    }
+
+    if (!leg.isXF()) {
+      console.error('[FMS/FPM] Tried to delete a cruise wind entry to a non-XF leg');
+      return;
+    }
+
+    if (!leg.cruiseWindEntries.some((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100))) {
+      console.error('[FMS/FPM] Tried to delete a cruise wind entry that does not exist');
+      return;
+    }
+
+    // You cannot delete a propagated wind entry (FCOM)
+    leg.cruiseWindEntries = leg.cruiseWindEntries.filter(
+      (e) => Math.round(e.altitude / 100) !== Math.round(altitude / 100),
     );
+
+    this.syncCruiseWindChange(atIndex);
+  }
+
+  async editCruiseWindEntry(
+    atIndex: number,
+    altitude: number,
+    newEntry: WindEntry,
+    maxNumEntries: number,
+  ): Promise<void> {
+    // FIXME there is some unverified logic here. For example, what happens when you edit an entry with a new altitude
+    // and an entry already exists at the new altitude? For now, we just edit the old one instead.
+
+    const leg = this.maybeElementAt(atIndex);
+
+    if (leg?.isDiscontinuity === true) {
+      console.error('[FMS/FPM] Tried to edit a cruise wind entry to a non-leg element');
+      return;
+    }
+
+    if (!leg.isXF()) {
+      console.error('[FMS/FPM] Tried to edit a cruise wind entry to a non-XF leg');
+      return;
+    }
+
+    const existingEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache, maxNumEntries);
+
+    // Check if the entry we clicked on has one of the four available cruise levels
+    const clickedEntry = existingEntries.find((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100));
+    if (!clickedEntry) {
+      console.error(
+        "[FMS/FPM] Tried to edit a cruise wind entry that does not exist. If you're trying to edit a propagated wind entry, call this function with the source leg index instead",
+      );
+      return;
+    }
+
+    if (LnavConfig.VERBOSE_FPM_LOG) {
+      console.group('[FMS/FPM] Cruise wind modification');
+      console.log(`[FMS/FPM] 1) Entered ${debugFormatWindEntry(newEntry)}`);
+      console.log(`[FMS/FPM] 2) Clicked on entry ${debugFormatWindEntry(clickedEntry)}`);
+    }
+
+    // Check if the new altitude we entered already exists as a cruise wind entry level
+    const propagatedEntry = existingEntries.find(
+      (e) => Math.round(e.altitude / 100) === Math.round(newEntry.altitude / 100),
+    );
+
+    if (propagatedEntry) {
+      LnavConfig.VERBOSE_FPM_LOG &&
+        console.log(`[FMS/FPM] 3) Entry found at new altitude ${debugFormatWindEntry(propagatedEntry)}`);
+
+      if (propagatedEntry.type === PropagationType.Entry) {
+        LnavConfig.VERBOSE_FPM_LOG &&
+          console.log(
+            `[FMS/FPM] 4) Propagated wind entry exists on this leg. Editing ${debugFormatWindEntry(propagatedEntry)}`,
+          );
+
+        const oldEntry = leg.cruiseWindEntries.find(
+          (e) => Math.round(e.altitude / 100) === Math.round(newEntry.altitude / 100),
+        );
+
+        oldEntry!.vector = newEntry.vector;
+
+        this.syncCruiseWindChange(atIndex);
+      } else {
+        LnavConfig.VERBOSE_FPM_LOG &&
+          console.log(
+            `[FMS/FPM] 4) Propagated wind comes from a different leg. Adding ${debugFormatWindEntry(newEntry)}`,
+          );
+
+        await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries);
+      }
+    } else {
+      if (LnavConfig.VERBOSE_FPM_LOG) {
+        console.log(
+          `[FMS/FPM] 3) Editing a cruise wind entry. Deleting all entries at the old altitude (FL${(altitude / 100).toFixed(0).padStart(3, '0')}).`,
+        );
+        console.log(`[FMS/FPM] 4) Adding ${debugFormatWindEntry(newEntry)}`);
+      }
+
+      // Delete all entries with the same altitude (FCOM)
+      await Promise.all(
+        this.allLegs
+          .map((l, i) => [!isDiscontinuity(l) && l.hasCruiseWindEntryAt(altitude), i] as const)
+          .filter(([shouldDeleteCruiseWind, _]) => shouldDeleteCruiseWind)
+          .map(([_, i]) => this.deleteCruiseWindEntry(i, altitude)),
+      );
+
+      await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries);
+    }
+
+    LnavConfig.VERBOSE_FPM_LOG && console.groupEnd();
+  }
+
+  /**
+   * Gets the index of the last leg located before a discontinuity
+   * @returns null if no discontinuity exists, the leg index before the discontinuity otherwise
+   */
+  getLastLegIndexBeforeDiscontinuity(): number | null {
+    for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
+      const nextLeg = this.maybeElementAt(i + 1);
+      if (!nextLeg || nextLeg.isDiscontinuity) {
+        return i;
+      }
+    }
+    return null;
   }
 }
 

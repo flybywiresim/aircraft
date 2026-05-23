@@ -36,9 +36,10 @@ import {
   UpDownAdvisoryStatus,
   TCAS_CONST,
 } from '../lib/TcasConstants';
-import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
+import { LegacySoundManager } from '../../LegacySoundManager';
 import { ClockEvents, ConsumerSubject, EventBus, GameStateProvider, Instrument, Wait } from '@microsoft/msfs-sdk';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+// FIXME should not import from instruments
+import { MfdSurvEvents } from '../../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
   ID: string;
@@ -274,7 +275,7 @@ export class LegacyTcasComputer implements Instrument {
 
     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
     this.debug = false;
-    NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
+    NXDataStore.setLegacy('TCAS_DEBUG', '0'); // force debug off
     this.tcasPower = false;
     this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
     this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');

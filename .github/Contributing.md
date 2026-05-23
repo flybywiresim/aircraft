@@ -33,7 +33,7 @@ git submodule update --init
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
-To build only the A32NX or the A380X, change `build.sh` to `build_a32nx.sh` or `build_a380x.sh`. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command. Alternatively you can define the `USE_4K_TEXTURES=true` environment variable in a `.env` file at the root of the repo.
+To build only the A32NX or the A380X, run `build.sh` with either `-r "a32nx` or `-r "a380x" `. You can then still append further `-r` args to only build selected instruments. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command. Alternatively you can define the `USE_4K_TEXTURES=true` environment variable in a `.env` file at the root of the repo.
 
 If you are using WSL, ensure that the `Vmmem` process is not memory limited. At least `10GB` of memory is the recommended setting. This can be configured in `C:\<user>\.wslconfig`.
 
@@ -74,13 +74,15 @@ If you wish to add a new feature or you spot a bug that you wish to fix, **pleas
 
 The work-flow for submitting a new pull request is designed to be simple, but also to ensure consistency from **all** contributors:
 * Fork the project into your personal space on GitHub.com.
-* Create a new branch (with a clear name of what is being changed).
+* Create a new branch based either on `master` if your changes are for the Microsoft Flight Simulator 2024 version of our aircraft
+or based on `fs2020-master` if your changes are for the Microsoft Flight Simulator 2020 version of our aircraft
+(with a clear name of what is being changed).
 * Add changes to CHANGELOG.md with credits to yourself.
 * Commit your changes.
-* When writing commit messages make sure they are clear about what has been changed.
+* When writing commit messages make sure they are clear about what has been changed, please follow [semantic commit names](https://www.conventionalcommits.org/en/v1.0.0/).
 * Push the commit(s) to your fork.
-* Submit a pull request (PR) to the master branch.
-* The PR title should describe the change that has been made.
+* Submit a pull request (PR) to the `master` branch (for MSFS2024) or to the `fs2020-master` branch (for MSFS2020).
+* The PR title should describe the change that has been made and has to follow [semantic commit names](https://www.conventionalcommits.org/en/v1.0.0/).
 * Follow the PR template and write as much detail as necessary for your changes and include documents/screenshots if needed.
 * Be prepared to answer any questions about your PR when it is reviewed for acceptance.
 
