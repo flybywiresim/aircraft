@@ -73,6 +73,9 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
    * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
    */
   limitationsPfd?: (checked: boolean[]) => (string | null)[];
+
+  /** If true, is not used to display on the EWD */
+  nonProcedureKey?: boolean;
 }
 
 export interface EwdAbnormalDict {
@@ -3700,6 +3703,8 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       sysPage: SdPages.None,
+      monitorConfirmTime: 0,
+      nonProcedureKey: true,
     },
 
     // ATA 34 - NAVIGATION
