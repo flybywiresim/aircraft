@@ -2,8 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { Button } from '../MsfsAvionicsCommon/UiWidgets/Button';
+import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
 import './style.scss';
 

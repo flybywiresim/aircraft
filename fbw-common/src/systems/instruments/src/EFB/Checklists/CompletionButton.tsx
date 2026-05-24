@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { t, useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
-import { ChecklistJsonDefinition, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { ChecklistJsonDefinition, usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import React, { useEffect } from 'react';
 
 import {

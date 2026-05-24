@@ -9,7 +9,7 @@ import {
   Subject,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from './PFD';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -277,17 +277,19 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
 
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
+    const navRadialSub = sub.on('navRadialError').handle(this.handleNavRadialError.bind(this), true);
+
     sub
       .on('hasLoc')
       .whenChanged()
       .handle((hasLoc) => {
         if (hasLoc) {
           this.diamondGroup.instance.classList.remove('HiddenElement');
-          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.resume(true);
         } else {
           this.diamondGroup.instance.classList.add('HiddenElement');
           this.lagFilter.reset();
-          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+          navRadialSub.pause();
         }
       });
   }
