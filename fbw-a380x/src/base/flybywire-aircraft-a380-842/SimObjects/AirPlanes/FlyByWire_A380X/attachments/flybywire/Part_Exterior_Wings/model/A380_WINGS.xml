@@ -565,28 +565,7 @@
 				<ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
 			</UseTemplate>
 		</Component>
-		<Component ID="LANDING_GEAR_TILT">
-			<!-- LH Wing Tilt-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_w_gear_tilt</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_3_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Wing Tilt-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_w_gear_tilt</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_4_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Body Tilt-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_b_gear_tilt</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_1_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Body Tilt-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_b_gear_tilt</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_2_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
-			</UseTemplate>
-		</Component>
+
 		<Component ID="LANDING_FX">
 			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
 				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
