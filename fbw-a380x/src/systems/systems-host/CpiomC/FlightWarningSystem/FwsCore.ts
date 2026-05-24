@@ -186,7 +186,7 @@ export class FwsCore {
 
   public readonly fwsEcpFailed = Subject.create(false);
 
-  private readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
+  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
 
   private readonly flightPhases = new FwsFlightPhases(this);
 
