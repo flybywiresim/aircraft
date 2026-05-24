@@ -750,18 +750,17 @@ impl AutobrakeRunwayOverrunProtection {
                     && ground_speed_kts <= Self::MAX_REVERSE_REQUEST_SPEED_KTS,
             );
 
-            let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
             // Too short if wet
             self.status_word.set_bit(
                 14,
-                should_show_in_flight_row
+                !is_on_ground
                     && braking_distances.wet_landing() >= self.distance_to_runway_end.value(),
             );
 
             // Too short for dry
             self.status_word.set_bit(
                 15,
-                should_show_in_flight_row
+                !is_on_ground
                     && braking_distances.dry_landing() >= self.distance_to_runway_end.value(),
             );
         } else {
