@@ -172,5 +172,13 @@
 				<ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent)</ANIM_CODE>
 			</UseTemplate>
 		</Component>
+
+		<Component ID="LANDING_GEAR_TILT">
+            <!-- LH Wing Tilt-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_w_gear_tilt</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_3_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
+            </UseTemplate>
+        </Component>
 	</Behaviors>
 </ModelInfo>
