@@ -468,7 +468,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   protected initVariables(resetTakeoffData = true) {
-    this.costIndex = undefined;
     this.resetCoroute();
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
@@ -1770,17 +1769,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private getClbManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 330 * dCI;
   }
 
   private getCrzManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 310 * dCI;
   }
 
   private getDesManagedSpeedFromCostIndex() {
-    const dCI = (this.costIndex ? this.costIndex : 0) / 999;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = (ci ? ci : 0) / 999;
     return 288 * (1 - dCI) + 300 * dCI;
   }
 
@@ -2695,10 +2703,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
       this.flightPlanService.temporaryDelete();
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
@@ -2709,31 +2713,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
-      const oldCostIndex = this.costIndex;
+      const oldCostIndex = this.currFlightPlanService.active.performanceData.costIndex.get();
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
 
       await this.flightPlanService.temporaryInsert();
 
-      this.checkCostIndex(oldCostIndex);
-      // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+      this.checkCostIndex(oldCostIndex); //FIXME: This is bogus?...
+
       if (oldDestination !== undefined) {
         this.checkDestination(oldDestination);
       }
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
     }
   }
 
-  private checkCostIndex(oldCostIndex) {
-    if (this.costIndex !== oldCostIndex) {
-      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(this.costIndex.toFixed(0)));
+  private checkCostIndex(oldCostIndex: number) {
+    const ci = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData.costIndex.get() : null;
+    if (ci !== null && ci !== oldCostIndex) {
+      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(ci.toFixed(0)));
     }
   }
 
@@ -4798,25 +4799,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     return undefined;
-  }
-
-  public get costIndex() {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      return plan.performanceData.costIndex.get();
-    }
-
-    return undefined;
-  }
-
-  /** @deprecated */
-  public set costIndex(ci) {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      this.currFlightPlanService.setPerformanceData('costIndex', ci);
-    }
   }
 
   public get tropo() {

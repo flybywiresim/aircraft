@@ -118,10 +118,11 @@ export class CDUInitPage {
     // If an active SimBrief OFP matches the FP, hide the request option
     // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
     if (
-      dest &&
-      origin &&
-      (mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
-        (mcdu.simbriefOfp.origin.icao === origin.ident && mcdu.simbriefOfp.destination.icao === dest.ident))
+      fromToDisabled ||
+      (dest &&
+        origin &&
+        (mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
+          (mcdu.simbriefOfp.origin.icao === origin.ident && mcdu.simbriefOfp.destination.icao === dest.ident)))
     ) {
       requestEnable = false;
       requestButtonLabel = '';

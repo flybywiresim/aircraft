@@ -250,8 +250,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   simbriefOfpState: SimbriefOfpState;
   /** another mess */
   simbrief: any;
-  /** @deprecated */
-  costIndex: number | undefined;
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
