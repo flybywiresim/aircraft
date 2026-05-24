@@ -26,7 +26,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmcl, Vmo, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from './fmgc';
 import { ADIRS } from '../shared/Adirs';
@@ -1117,19 +1117,10 @@ export class FmcAircraftInterface {
 
     let Vtap = 0;
     let limitedByVls = false;
-    // VLS protection
+    // Minimum speed protection
     if (this.managedSpeedTarget) {
       const vls = this.speedVls.get();
-      if (this.managedSpeedTarget < vls) {
-        Vtap = vls;
-        limitedByVls = true;
-      }
-    }
-
-    if (!Vtap && this.managedSpeedTarget) {
-      // Overspeed protection and limiting characteristic speed protection
-      const vMax = this.speedVmax.get();
-      const vMin = takeoffGoAround
+      const limitingCharacteristicSpeed = takeoffGoAround
         ? null
         : this.getLimitingCharacteristicSpeed(
             phase === FmgcFlightPhase.Approach ||
@@ -1138,7 +1129,12 @@ export class FmcAircraftInterface {
               this.activeVerticalMode === VerticalMode.ROLL_OUT ||
               this.activeVerticalMode === VerticalMode.LAND,
           );
-      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin ?? 0), vMax - 5);
+      const vMax = this.speedVmax.get();
+      // Select the most limiting characteristic speed between speed target, VLS and current flap configuration. Limit by vmax.
+      Vtap = Math.min(Math.max(this.managedSpeedTarget, Math.max(vls, limitingCharacteristicSpeed ?? 0)), vMax - 5);
+      if (Vtap === vls) {
+        limitedByVls = true;
+      }
     }
     this.speedsManagedPfd.set(vPfd);
     this.speedsManagedAthr.set(Vtap);
