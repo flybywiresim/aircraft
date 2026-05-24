@@ -37,6 +37,11 @@ export class CDUInitPage {
     mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu, forPlan);
     mcdu.activeSystem = 'FMGC';
     mcdu.coRoute.routes = [];
+    mcdu.SelfPtr = setTimeout(() => {
+      if (mcdu.page.Current === mcdu.page.InitPageA) {
+        CDUInitPage.ShowPage1(mcdu, forPlan);
+      }
+    }, mcdu.PageTimeout.Slow);
 
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
     const plan = mcdu.getFlightPlan(forPlan);
@@ -46,7 +51,7 @@ export class CDUInitPage {
     const flightPhase = mcdu.flightPhaseManager.phase;
     const fromToDisabled = isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Preflight;
 
-    // FROM is diplayed as green after preflight.
+    // City pair is diplayed as green after preflight.
     let fromText = '----';
     let fromColor = Column.white;
     if (origin) {
@@ -63,7 +68,7 @@ export class CDUInitPage {
     if (coRouteNumber) {
       coRouteText = coRouteNumber;
       coRouteColor = fromToDisabled ? Column.green : Column.cyan;
-    } else if (!fromToDisabled) {
+    } else if (!fromToDisabled && !dest) {
       coRouteText = isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]';
       coRouteColor = isForPrimary ? Column.amber : Column.cyan;
     }
@@ -71,13 +76,13 @@ export class CDUInitPage {
     const coRoute = new Column(0, coRouteText, coRouteColor);
 
     const fromColumn = new Column(18, fromText, fromColor, Column.right);
-    let toText = '----';
+    let toText = '/----';
     let toColor = Column.white;
     if (dest) {
-      toText = '|' + dest.ident;
+      toText = '/' + dest.ident;
       toColor = fromToDisabled ? Column.green : Column.cyan;
     } else if (!fromToDisabled) {
-      toText = isForPrimary ? '|____' : '|[\xa0\xa0\xa0\xa0]';
+      toText = isForPrimary ? '/____' : '/[\xa0\xa0\xa0\xa0]';
       toColor = isForPrimary ? Column.amber : Column.cyan;
     }
 
@@ -85,9 +90,16 @@ export class CDUInitPage {
     const flightNumber = plan.flightNumber.get();
     const flightNumberColor = flightNumber === null && isForPrimary ? Column.amber : Column.cyan;
     const flightNumberText = flightNumber ?? (isForPrimary ? '________' : '[\xa0\xa0\xa0\xa0\xa0\xa0]');
+    mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
+      mcdu.updateFlightNo(value, forPlan, (result) => {
+        if (!result) {
+          scratchpadCallback();
+        }
+      });
+    };
 
     const altnAirport = plan.alternateDestinationAirport;
-    const altDest = new Column(0, `${altnAirport ? altnAirport.ident : '----'}|----------`);
+    const altDest = new Column(0, `${altnAirport ? altnAirport.ident : '----'}/----------`);
     const cruiseFl = new Column(0, '-----');
     const cruiseTemp = new Column(10, '---°', Column.right);
     const cruiseFlTempSeparator = new Column(6, '/');
@@ -136,7 +148,7 @@ export class CDUInitPage {
     const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
     const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
     let cruiseFlColor = Column.white;
-    let cruiseFlCell = '---';
+    let cruiseFlCell = '-----';
     let cruiseTempCell = '---°';
     let cruiseFlightLevelMandatoryMissing = false;
     let cruiseTempColor = Column.white;
@@ -145,8 +157,9 @@ export class CDUInitPage {
 
     // CRZ FL is amber if, active or copy of active before descent phase and missing.
     if (dest) {
+      altDest.update(altnAirport ? altnAirport.ident : 'NONE', Column.cyan);
       if (planCruiseLevel === null) {
-        if (isForPrimary) {
+        if (isActiveOrCopiedFromActive) {
           if (flightPhase < FmgcFlightPhase.Descent) {
             cruiseFlColor = Column.amber;
             cruiseFlCell = '_____';
@@ -172,6 +185,7 @@ export class CDUInitPage {
           if (planCruiseTemp !== null) {
             cruiseTempCell = CDUInitPage.formatTemperature(planCruiseTemp);
             cruiseTempColor = Column.cyan;
+            cruiseTempSeparatorColor = Column.cyan;
           } else {
             const planTropo = plan.performanceData.tropopause.get();
             cruiseTempCell = CDUInitPage.formatTemperature(
@@ -201,8 +215,6 @@ export class CDUInitPage {
     if (forPlan === FlightPlanIndex.Active && plan.originAirport) {
       alignOption = 'IRS INIT>';
     }
-
-    altDest.update(altnAirport ? altnAirport.ident : 'NONE', Column.cyan);
 
     // TODO differentiate for SEC
     mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
@@ -321,7 +333,7 @@ export class CDUInitPage {
 
     const planGroundTemp = plan.performanceData.groundTemperature!.get();
 
-    if (planGroundTemp !== null && (!plan.isActiveOrCopiedFromActive() || flightPhase < FmgcFlightPhase.Takeoff)) {
+    if (planGroundTemp !== null && (!isActiveOrCopiedFromActive || flightPhase < FmgcFlightPhase.Takeoff)) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,

@@ -550,15 +550,13 @@ export class CDUPerformancePage {
       targetPlan.performanceData.preselectedClimbSpeed.get(),
     );
 
-    if (hasFromToPair) {
-      mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
-      };
-    }
+    mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
+      } else {
+        scratchpadCallback();
+      }
+    };
 
     if (canClickManagedSpeed) {
       mcdu.onLeftInput[2] = (_, scratchpadCallback) => {
@@ -708,15 +706,13 @@ export class CDUPerformancePage {
       }
     }
 
-    if (hasFromToPair) {
-      mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
-      };
-    }
+    mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+        CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
+      } else {
+        scratchpadCallback();
+      }
+    };
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
@@ -958,16 +954,13 @@ export class CDUPerformancePage {
       bottomRowCells[0] = '';
     }
 
-    // Can only modify cost index until the phase is active
-    if (hasFromToPair && !isPhaseActive) {
-      mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
-      };
-    }
+    mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+        CDUPerformancePage.ShowDESPage(mcdu, forPlan);
+      } else {
+        scratchpadCallback();
+      }
+    };
 
     if (showManagedSpeed) {
       mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
@@ -1563,7 +1556,7 @@ export class CDUPerformancePage {
     if (plan.destinationAirport !== undefined) {
       const costIndex = plan.performanceData.costIndex.get();
       if (costIndex !== null) {
-        costIndexCell = `${costIndex.toFixed(0)}[color]${mcdu.isCostIndexModificationDisabled(plan) ? 'cyan' : 'green'}`;
+        costIndexCell = `${costIndex.toFixed(0)}[color]${mcdu.isCostIndexModificationDisabled(plan) ? 'green' : 'cyan'}`;
       } else {
         costIndexCell = plan.isActive() ? '___[color]amber' : '[\xa0][color]cyan';
       }
