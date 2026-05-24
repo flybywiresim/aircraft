@@ -723,9 +723,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private autoBrakeMode = 0;
 
-  private decMode = 0;
-
-  private previousText = '';
+  private decMode = -1;
 
   constructor(props) {
     super(props, 9);
@@ -741,15 +739,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     );
     this.isShown = isShown;
 
-    const hasChanged = text.length > 0 && text !== this.previousText;
-    this.previousText = text;
+    const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML;
     if (hasChanged) {
       this.displayModeChangedPath();
       this.handleDeclutterMode(false, this.decMode, this.cellRef);
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
       this.handleDeclutterMode(true, this.decMode, this.cellRef);
-      this.cellRef.instance.style.visibility = 'hidden';
     }
 
     this.cellRef.instance.innerHTML = text;
@@ -781,6 +777,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.cellRef.instance.style.visibility = 'visible';
           }
         }
+        this.setText();
+      });
+
+    sub
+      .on('AThrMode')
+      .whenChanged()
+      .handle(() => {
         this.setText();
       });
 
@@ -909,10 +912,6 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     this.textSub.get() === null ? this.isArmed.set('none') : this.isArmed.set('block');
   }
 
-  private autobrakeMode = 0;
-
-  private athrMessage = 0;
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -922,7 +921,6 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   render(): VNode {
     return (
       <g id="A3Cell">
-        {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="5 9" /> */}
         <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 16 82 h 140" stroke-dasharray="5 9" />
 
         <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
@@ -2428,7 +2426,9 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 
   private posSub = Subject.create(0);
 
-  private decMode = 0;
+  private decMode = -1;
+
+  private prevState = false;
 
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
@@ -2486,17 +2486,14 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 
         const className = `MiddleAlign ${this.getClass(atEngaged, atActive)}`;
 
-        const hasChanged = className.length > 0 && className !== this.classSub.get();
+        const hasChanged = this.prevState !== this.isShown;
         if (hasChanged) {
+          this.prevState = this.isShown;
           this.displayModeChangedPath();
-          if (this.decMode === 2) {
-            this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-          }
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         } else if (!this.isShown) {
           this.displayModeChangedPath(true);
-          if (this.decMode === 2) {
-            this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-          }
+          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
         }
 
         this.posSub.set(!atActive ? 103.25 : 105.75);
