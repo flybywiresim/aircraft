@@ -280,7 +280,7 @@ export class PseudoFWC {
   private navMode = false;
 
   /* Plugs */
-  private readonly ltp: Plug<'07C'> = { '07C': false };
+  private readonly ltp: Plug<'07C' | '08E'> = { '07C': false, '08E': false };
 
   private readonly rtp: Plug<'07E'> = { '07E': false };
 
@@ -684,7 +684,13 @@ export class PseudoFWC {
 
   private readonly ratFaultWarning = Subject.create(false);
 
+  private readonly essBusesOnBatWarning = Subject.create(false);
+
+  private readonly staticInverterOnFor10Seconds = new NXLogicConfirmNode(10, true);
+
   private readonly elecEmergency = Subject.create(false);
+
+  private readonly elecEmergencyMtrigFor10Seconds = new NXLogicTriggeredMonostableNode(10, true);
 
   private readonly elecEmerConfigWarning = Subject.create(false);
 
@@ -699,6 +705,14 @@ export class PseudoFWC {
   private readonly elecEmerGen2ResetMemoryNode = new NXLogicMemoryNode(false);
 
   private readonly elecEmerGen12Reset = Subject.create(false);
+
+  private readonly acEssBusFaultForPoint2Seconds = new NXLogicConfirmNode(0.2, true);
+
+  private readonly acEssBusFaultWarning = Subject.create(false);
+
+  private readonly acEssBusShedFor2Seconds = new NXLogicConfirmNode(2, true);
+
+  private readonly acEssBusShedWarning = Subject.create(false);
 
   private readonly gen1Inop = Subject.create(false);
 
@@ -2083,10 +2097,13 @@ export class PseudoFWC {
   }
 
   private readonly fac1HealthyVar = RegisteredSimVar.createBoolean('L:A32NX_FAC_1_HEALTHY');
+  private readonly elecContactor15XE2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED');
+
   private readonly fac2HealthyVar = RegisteredSimVar.createBoolean('L:A32NX_FAC_2_HEALTHY');
 
   private acquirePlugs(): void {
     this.ltp['07C'] = !this.fac1HealthyVar.get();
+    this.ltp['08E'] = this.elecContactor15XE2Var.get();
 
     this.rtp['07E'] = !this.fac2HealthyVar.get();
   }
@@ -2099,8 +2116,10 @@ export class PseudoFWC {
     SimVarValueType.PercentOver100,
   );
 
+  private readonly acEssShedBusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED');
   private readonly acEssBusPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED');
   private readonly elecContactor8PHVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_8PH_IS_CLOSED');
+  private readonly acEssFeedPbVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL');
   private readonly elecBusTiePbVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO');
   // TODO: Check actual parking brake position
   private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
@@ -2173,8 +2192,10 @@ export class PseudoFWC {
 
     this.sdac00200Word.set(0);
     this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00200Word.setBitValue(16, !this.acEssShedBusPoweredVar.get());
     this.sdac00200Word.setBitValue(18, !this.acEssBusPoweredVar.get());
     this.sdac00200Word.setBitValue(19, !this.elecContactor8PHVar.get());
+    this.sdac00200Word.setBitValue(20, !this.acEssFeedPbVar.get());
     this.sdac00200Word.setBitValue(21, !this.elecBusTiePbVar.get());
     this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
     this.sdac00200Word.setBitValue(23, !this.antiSkidOnVar.get());
@@ -3280,6 +3301,7 @@ export class PseudoFWC {
         (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
         (this.sdac00201Word.bitValue(20) && this.sdac00210Word.bitValue(20)),
     );
+    this.elecEmergencyMtrigFor10Seconds.write(this.elecEmergency.get(), deltaTime);
 
     /* OTHER STUFF */
 
@@ -4022,6 +4044,21 @@ export class PseudoFWC {
     // TODO: Check SMOKE
     this.emerGen1LineOffWarning.set(
       !this.emerGen1LinePbOn.get() && (this.fwcFlightPhase.get() === 2 || this.flightPhase6For60Seconds.read()),
+    );
+
+    this.essBusesOnBatWarning.set(this.staticInverterOnFor10Seconds.write(this.ltp['08E'], deltaTime));
+
+    this.acEssBusFaultWarning.set(
+      this.acEssBusFaultForPoint2Seconds.write(this.sdac00200Word.bitValue(18) && !this.elecEmergency.get(), deltaTime),
+    );
+
+    this.acEssBusShedWarning.set(
+      this.acEssBusShedFor2Seconds.write(
+        this.sdac00200Word.bitValue(16) &&
+          !this.sdac00200Word.bitValue(18) &&
+          !this.elecEmergencyMtrigFor10Seconds.read(),
+        deltaTime,
+      ),
     );
 
     const phase2Pulse = this.flightPhase2PulseNode.read();
@@ -5157,6 +5194,28 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     // 24 - ELECTRICAL
+    2400015: {
+      // AC ESS BUS FAULT
+      flightPhaseInhib: [4, 8],
+      simVarIsActive: this.acEssBusFaultWarning,
+      whichCodeToReturn: () => [0, !this.sdac00200Word.bitValue(20) ? 1 : null],
+      codesToReturn: ['240001501', '240001502'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.ELEC,
+      side: 'LEFT',
+    },
+    2400016: {
+      // AC ESS BUS SHED
+      flightPhaseInhib: [4, 8],
+      simVarIsActive: this.acEssBusShedWarning,
+      whichCodeToReturn: () => [0, !this.elecEmergency.get() && !this.sdac00100Word.bitValue(24) ? 1 : null], // TODO: Check XPDR faults
+      codesToReturn: ['240001601', '240001602'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.ELEC,
+      side: 'LEFT',
+    },
     2400031: {
       // ELEC EMER CONFIG
       flightPhaseInhib: [4, 8],
@@ -5236,6 +5295,21 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 1,
       sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2400622: {
+      // ESS BUSES ON BAT
+      flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.essBusesOnBatWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.sdac00101Word.bitValue(28) ? 1 : null,
+        !this.sdac00410Word.bitValue(27) ? 2 : null,
+      ],
+      codesToReturn: ['240062201', '240062202', '240062203'],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: EcamSysPage.ELEC,
       side: 'LEFT',
     },
     2400001: {
