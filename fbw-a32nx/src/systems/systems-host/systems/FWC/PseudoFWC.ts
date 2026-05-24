@@ -5185,6 +5185,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     3400170: {
       // OVER SPEED VMO/MMO
