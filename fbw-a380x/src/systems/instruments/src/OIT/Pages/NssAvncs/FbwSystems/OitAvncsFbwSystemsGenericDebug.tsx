@@ -3,12 +3,12 @@
 
 import { FSComponent, Subscribable, VNode, ConsumerSubject, Subject, ArraySubject } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 import {
   OisDebugDataControlEvents,
   OisDebugDataEvents,
-} from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+} from '../../../../MsfsAvionicsCommon/providers/OisDebugDataPublisher';
+import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 
 interface OitAvncsFbwSystemsGenericDebugProps extends AbstractOitAvncsPageProps {
   /** Title which should be displayed at the top of the page */

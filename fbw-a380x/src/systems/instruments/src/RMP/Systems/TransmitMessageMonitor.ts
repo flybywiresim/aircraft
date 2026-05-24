@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
-import { AudioControlLocalVarEvents } from 'instruments/src/RMP/Data/AudioControlPublisher';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { AudioControlLocalVarEvents } from '../Data/AudioControlPublisher';
+import { RmpMessageControlEvents } from './RmpMessageManager';
 
 /** Monitors the transmit state of each external COM means and posts a message if receive is not selected. */
 export class TransmitMessageMonitor implements Instrument {

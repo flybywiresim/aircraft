@@ -19,7 +19,7 @@ import { OitDisplayUnit } from './OitDisplayUnit';
 import { avncsPageForUrl } from './OitPageDirectory';
 import { OitNotFound } from './Pages/OitNotFound';
 import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
-import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { OitAvncsHeader } from './Pages/NssAvncs/OitAvncsHeader';
 import { OitAvncsFooter } from './Pages/NssAvncs/OitAvncsFooter';
 import { OitAvncsLoadingScreen } from './Pages/NssAvncs/OitAvncsLoadingScreen';

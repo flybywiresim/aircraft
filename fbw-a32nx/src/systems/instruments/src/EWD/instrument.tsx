@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, FSComponent, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
+import { FuelSystemPublisher } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { A32NXSfccBusPublisher } from '@shared/publishers/A32NXSfccBusPublisher';
 import { A32NXFwcBusPublisher } from '@shared/publishers/A32NXFwcBusPublisher';
@@ -12,7 +13,6 @@ import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import './style.scss';
-import { ExtendedClockEventProvider } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 class A32NX_EWD extends BaseInstrument {
   private readonly bus = new EventBus();

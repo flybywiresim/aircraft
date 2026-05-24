@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { AirframeType, Units, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeType, Units, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { isSimbriefDataLoaded } from '@flybywiresim/flypad';
 import { A320Fuel } from './A320_251N/A320Fuel';
 import { A380Fuel } from './A380_842/A380Fuel';

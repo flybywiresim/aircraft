@@ -17,7 +17,7 @@ import { InternalKbdKeyEvent, OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
 import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 import { AnsuOps } from './System/AnsuOps';
-import { ResetPanelSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { A380XFwcBusPublisher } from '@shared/publishers/A380XFwcBusPublisher';
 

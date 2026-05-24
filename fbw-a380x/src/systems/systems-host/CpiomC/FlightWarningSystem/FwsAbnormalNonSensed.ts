@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
-import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { FwcAuralWarning, FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { EcamAbNormalSensedSubMenuVector } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { EwdAbnormalDict } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
+// FIXME should not import from instruments
+import { ChecklistState, FwsEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+import { FwcAuralWarning, FwsCore } from './FwsCore';
+// FIXME should not import from instruments
+import { EcamAbNormalSensedSubMenuVector } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+// FIXME should not import from instruments
+import { AbnormalNonSensedProceduresOverview } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
+import { EwdAbnormalDict } from './FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
 
 export class FwsAbnormalNonSensed {
