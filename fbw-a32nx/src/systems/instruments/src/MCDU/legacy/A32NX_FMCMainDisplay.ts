@@ -218,7 +218,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private destinationLongitude = undefined;
   /** Speed in KCAS when the first engine failed during takeoff */
   private takeoffEngineOutSpeed = undefined;
-  private checkSpeedModeMessageActive = undefined;
+  private setManagedSpeedMessageActive = false;
   public perfClbPredToAltitudePilot = undefined;
   public perfDesPredToAltitudePilot = undefined;
 
@@ -556,7 +556,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.toSpeedsTooLow = false;
     this.vSpeedDisagree = false;
     this.takeoffEngineOutSpeed = undefined;
-    this.checkSpeedModeMessageActive = false;
+    this.setManagedSpeedMessageActive = false;
     this.perfClbPredToAltitudePilot = undefined;
     this.perfDesPredToAltitudePilot = undefined;
 
@@ -900,13 +900,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const isSpeedSelected = !Simplane.getAutoPilotAirspeedManaged();
     const hasPreselectedSpeed = preselectedSpeed !== undefined;
 
-    if (!this.checkSpeedModeMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
-      this.checkSpeedModeMessageActive = true;
+    if (!this.setManagedSpeedMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
+      this.setManagedSpeedMessageActive = true;
       this.addMessageToQueue(
-        NXSystemMessages.checkSpeedMode,
-        () => !this.checkSpeedModeMessageActive,
+        NXSystemMessages.setManagedSpeed,
+        () => !this.setManagedSpeedMessageActive,
         () => {
-          this.checkSpeedModeMessageActive = false;
+          this.setManagedSpeedMessageActive = false;
           SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
         },
       );
@@ -915,9 +915,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private clearCheckSpeedModeMessage() {
-    if (this.checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
-      this.checkSpeedModeMessageActive = false;
-      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+    if (this.setManagedSpeedMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+      this.setManagedSpeedMessageActive = false;
+      this.removeMessageFromQueue(NXSystemMessages.setManagedSpeed.text);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }
