@@ -73,121 +73,121 @@ export class A380XElectricalSystemPublisher extends SimVarPublisher<A380XElectri
       [
         'ac_bus_1_powered',
         {
-          name: 'A32NX_ELEC_AC_1_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_1_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'ac_bus_2_powered',
         {
-          name: 'A32NX_ELEC_AC_2_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'ac_bus_3_powered',
         {
-          name: 'A32NX_ELEC_AC_3_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_3_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'ac_bus_4_powered',
         {
-          name: 'A32NX_ELEC_AC_4_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_4_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
-      ['ac_ess_bus_powered', { name: 'A32NX_ELEC_AC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+      ['ac_ess_bus_powered', { name: 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
       [
         'ac_ess_sched_bus_powered',
         {
-          name: 'A32NX_ELEC_AC_ESS_SCHED_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_ESS_SCHED_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'ac_247xp_bus_powered',
         {
-          name: 'A32NX_ELEC_247XP_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_247XP_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'ac_gnd_flt_svc_bus_powered',
         {
-          name: 'A32NX_ELEC_AC_GND_FLT_SVC_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_AC_GND_FLT_SVC_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_bus_1_powered',
         {
-          name: 'A32NX_ELEC_DC_1_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_bus_2_powered',
         {
-          name: 'A32NX_ELEC_DC_2_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
-      ['dc_ess_bus_powered', { name: 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+      ['dc_ess_bus_powered', { name: 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
       [
         'dc_247pp_bus_powered',
         {
-          name: 'A32NX_ELEC_247PP_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_247PP_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_hot_1_bus_powered',
         {
-          name: 'A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_hot_2_bus_powered',
         {
-          name: 'A32NX_ELEC_DC_HOT_2_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_HOT_2_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_hot_3_bus_powered',
         {
-          name: 'A32NX_ELEC_DC_HOT_3_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_HOT_3_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_hot_4_bus_powered',
         {
-          name: 'A32NX_ELEC_DC_HOT_4_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_HOT_4_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_gnd_flt_svc_bus_powered',
         {
-          name: 'A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_bus_108ph_powered',
         {
-          name: 'A32NX_ELEC_108PH_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_108PH_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
       [
         'dc_bus_309pp_powered',
         {
-          name: 'A32NX_ELEC_309PP_BUS_IS_POWERED',
+          name: 'L:A32NX_ELEC_309PP_BUS_IS_POWERED',
           type: SimVarValueType.Bool,
         },
       ],
