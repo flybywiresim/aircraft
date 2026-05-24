@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -9,7 +8,7 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
@@ -70,7 +69,8 @@ export class CDUVerticalRevisionPage {
       showSpeedLim &&
       (isDestination ||
         constraintType === WaypointConstraintType.DES ||
-        (mcdu.flightPhaseManager.phase > FmgcFlightPhase.Cruise &&
+        (mainTargetPlan.isActiveOrCopiedFromActive() &&
+          mcdu.flightPhaseManager.phase > FmgcFlightPhase.Cruise &&
           mcdu.flightPhaseManager.phase < FmgcFlightPhase.GoAround));
 
     const climbSpeedLimitSpeed = inAlternate
@@ -95,29 +95,30 @@ export class CDUVerticalRevisionPage {
 
     let speedLimitTitle = '';
     let speedLimitCell = '';
+    const transitionLevel = performanceData.transitionLevel.get();
+    const transitionLevelAsAltitude = transitionLevel !== null ? transitionLevel * 100 : null;
     if (showDesSpeedLim) {
       speedLimitTitle = '\xa0DES SPD LIM';
       if (descentSpeedLimitSpeed !== null) {
-        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude, performanceData.transitionLevel.get() * 100)}{end}{end}`;
+        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude!, transitionLevelAsAltitude)}{end}{end}`;
       } else {
         speedLimitCell = '{cyan}*[ ]/[   ]{end}';
       }
     } else if (showSpeedLim) {
       speedLimitTitle = '\xa0CLB SPD LIM';
       if (climbSpeedLimitSpeed !== null) {
-        speedLimitCell = `{magenta}{${isClimbSpeedLimitPilotEntered ? 'big' : 'small'}}${climbSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(climbSpeedLimitAltitude, performanceData.transitionAltitude)}{end}{end}`;
+        speedLimitCell = `{magenta}{${isClimbSpeedLimitPilotEntered ? 'big' : 'small'}}${climbSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(climbSpeedLimitAltitude!, transitionLevelAsAltitude)}{end}{end}`;
       } else {
         speedLimitCell = '{cyan}*[ ]/[   ]{end}';
       }
     }
 
-    const speedConstraint = waypoint.speedConstraint
-      ? Math.round(waypoint.speedConstraint.speed).toFixed(0)
-      : undefined;
+    const speedConstraint =
+      waypoint.speedConstraint?.speed !== undefined ? Math.round(waypoint.speedConstraint.speed).toFixed(0) : undefined;
     const transAltLevel =
       constraintType === WaypointConstraintType.DES
-        ? performanceData.transitionLevel.get() * 100
-        : performanceData.transitionAltitude;
+        ? transitionLevelAsAltitude
+        : performanceData.transitionAltitude.get();
     const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
     const canHaveAltConstraint = !isDestination && !waypoint.isXA();
 
@@ -134,7 +135,7 @@ export class CDUVerticalRevisionPage {
     if (isDestination) {
       const hasGsIntercept =
         targetPlan.approach && (targetPlan.approach.type === 5 /* ILS */ || targetPlan.approach.type === 6); /* GLS */
-      const gsIntercept = hasGsIntercept ? targetPlan.glideslopeIntercept() : 0;
+      const gsIntercept = hasGsIntercept ? targetPlan.glideslopeIntercept() ?? 0 : 0;
 
       if (hasGsIntercept && gsIntercept > 0) {
         r3Title = 'G/S INTCP\xa0';
@@ -147,11 +148,12 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      if (Number.isFinite(mainTargetPlan.performanceData.approachQnh.get())) {
-        if (mainTargetPlan.performanceData.approachQnh.get() < 500) {
-          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.get().toFixed(2)}{end}`;
+      const qnh = mainTargetPlan.performanceData.approachQnh.get();
+      if (qnh !== null && Number.isFinite(qnh)) {
+        if (qnh < 500) {
+          l4Cell = `{cyan}${qnh.toFixed(2)}{end}`;
         } else {
-          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.get().toFixed(0)}{end}`;
+          l4Cell = `{cyan}${qnh.toFixed(0)}{end}`;
         }
       } else if (closeToDest) {
         l4Cell = '{amber}____{end}';
@@ -191,7 +193,8 @@ export class CDUVerticalRevisionPage {
 
       if (
         performanceData.cruiseFlightLevel.get() &&
-        (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Descent ||
+        (!mainTargetPlan.isActiveOrCopiedFromActive() ||
+          mcdu.flightPhaseManager.phase < FmgcFlightPhase.Descent ||
           mcdu.flightPhaseManager.phase > FmgcFlightPhase.GoAround)
       ) {
         r5Cell = 'STEP ALTS>';
@@ -343,7 +346,7 @@ export class CDUVerticalRevisionPage {
           inAlternate,
         );
 
-        mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+        mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
         this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
         return;
@@ -386,7 +389,7 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
 
-      mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+      mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
       this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
     }; // SPD CSTR
@@ -402,7 +405,7 @@ export class CDUVerticalRevisionPage {
           );
 
           mcdu.updateConstraints();
-          mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           this.ShowPage(
             mcdu,
@@ -468,7 +471,7 @@ export class CDUVerticalRevisionPage {
         );
 
         mcdu.updateConstraints();
-        mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+        mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
         this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
       }; // ALT CSTR
@@ -500,7 +503,10 @@ export class CDUVerticalRevisionPage {
     }; // WIND
 
     mcdu.onRightInput[4] = () => {
-      if (!performanceData.cruiseFlightLevel.get()) {
+      if (
+        !performanceData.cruiseFlightLevel.get() ||
+        (mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Descent && mainTargetPlan.isActiveOrCopiedFromActive())
+      ) {
         return;
       }
       CDUStepAltsPage.Return = () => {
@@ -520,7 +526,7 @@ export class CDUVerticalRevisionPage {
     }; // STEP ALTS
     if (!confirmConstraint) {
       mcdu.onLeftInput[5] = () => {
-        mcdu.returnPageCallback();
+        mcdu.returnPageCallback?.();
       };
     } else {
       mcdu.onLeftInput[5] = async () => {
@@ -533,7 +539,7 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
 
-          mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           this.ShowPage(
             mcdu,
@@ -560,7 +566,7 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
 
-          mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           this.ShowPage(
             mcdu,
@@ -586,7 +592,7 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
 
-          mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           this.ShowPage(
             mcdu,
@@ -612,7 +618,7 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
 
-          mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           this.ShowPage(
             mcdu,
@@ -632,7 +638,7 @@ export class CDUVerticalRevisionPage {
 
   private static getProfilePhase(
     leg: FlightPlanLeg,
-    verticalWaypoint: VerticalWaypointPrediction | null,
+    verticalWaypoint: VerticalWaypointPrediction | undefined,
   ): ProfilePhase {
     if (verticalWaypoint) {
       return verticalWaypoint.profilePhase;
@@ -649,14 +655,14 @@ export class CDUVerticalRevisionPage {
     }
   }
 
-  static formatFl(constraint, transAlt) {
-    if (transAlt >= 100 && constraint > transAlt) {
+  static formatFl(constraint: number, transAlt: number | null) {
+    if (transAlt !== null && transAlt >= 100 && constraint > transAlt) {
       return 'FL' + Math.round(constraint / 100);
     }
     return constraint;
   }
 
-  static formatAltConstraint(constraint, transAltLvl) {
+  static formatAltConstraint(constraint: AltitudeConstraint | undefined, transAltLvl: number | null) {
     if (!constraint) {
       return '';
     }
@@ -665,32 +671,32 @@ export class CDUVerticalRevisionPage {
       case '@': // AtAlt1
       case 'I': // AtAlt1GsIntcptAlt2
       case 'X': // AtAlt1AngleAlt2
-        return this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+        return this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
       case '+': // AtOrAboveAlt1
       case 'J': // AtOrAboveAlt1GsIntcptAlt2
       case 'V': // AtOrAboveAlt1AngleAlt2
-        return '+' + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+        return '+' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
       case '-': // AtOrBelowAlt1
       case 'Y': // AtOrBelowAlt1AngleAlt2
-        return '-' + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+        return '-' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
       case 'B': // range
-        if (constraint.altitude1 < constraint.altitude2) {
+        if (constraint.altitude1! < constraint.altitude2!) {
           return (
             '+' +
-            this.formatFl(Math.round(constraint.altitude1), transAltLvl) +
+            this.formatFl(Math.round(constraint.altitude1!), transAltLvl) +
             '/-' +
-            this.formatFl(Math.round(constraint.altitude2), transAltLvl)
+            this.formatFl(Math.round(constraint.altitude2!), transAltLvl)
           );
         } else {
           return (
             '+' +
-            this.formatFl(Math.round(constraint.altitude2), transAltLvl) +
+            this.formatFl(Math.round(constraint.altitude2!), transAltLvl) +
             '/-' +
-            this.formatFl(Math.round(constraint.altitude1), transAltLvl)
+            this.formatFl(Math.round(constraint.altitude1!), transAltLvl)
           );
         }
       case 'C': // AtOrAboveAlt2:
-        return '+' + this.formatFl(Math.round(constraint.altitude2), transAltLvl);
+        return '+' + this.formatFl(Math.round(constraint.altitude2!), transAltLvl);
       default:
         return '';
     }
@@ -703,13 +709,18 @@ export class CDUVerticalRevisionPage {
    * @param inAlternate {boolean}
    * @returns {number|(function(*, *): (*))|*|WaypointConstraintType|VerticalWaypointType}
    */
-  static constraintType(mcdu, legIndex, forPlan, inAlternate) {
+  static constraintType(
+    mcdu: LegacyFmsPageInterface,
+    legIndex: number,
+    forPlan: FlightPlanIndex,
+    inAlternate: boolean,
+  ) {
     const planAtIndex = mcdu.flightPlanService.get(forPlan);
     const plan = inAlternate ? planAtIndex.alternateFlightPlan : planAtIndex;
 
     const leg = plan.legElementAt(legIndex);
 
-    if (leg.constraintType !== 3 /* Unknown */) {
+    if (leg.constraintType !== WaypointConstraintType.Unknown) {
       return leg.constraintType;
     }
 
@@ -718,12 +729,12 @@ export class CDUVerticalRevisionPage {
 
   // constraints can be set directly by LSK on f-pln page
   static async setConstraints(
-    mcdu,
-    leg,
-    legIndex,
-    verticalWaypoint,
-    value,
-    scratchpadCallback,
+    mcdu: LegacyFmsPageInterface,
+    leg: FlightPlanLeg,
+    legIndex: number,
+    verticalWaypoint: VerticalWaypointPrediction | undefined,
+    value: string,
+    scratchpadCallback: () => void,
     offset = 0,
     forPlan = 0,
     inAlternate = false,
@@ -747,7 +758,7 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
 
-      mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+      mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
       CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
       return;
@@ -802,7 +813,7 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
 
-      mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+      mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
       CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
@@ -819,13 +830,16 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
 
-      mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+      mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
       CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
   }
 
-  static formatAltErrorTitleAndValue(waypoint, verticalWaypoint) {
+  static formatAltErrorTitleAndValue(
+    waypoint: FlightPlanLeg | undefined,
+    verticalWaypoint: VerticalWaypointPrediction | undefined,
+  ) {
     const empty = ['', ''];
 
     if (!waypoint || !verticalWaypoint) {

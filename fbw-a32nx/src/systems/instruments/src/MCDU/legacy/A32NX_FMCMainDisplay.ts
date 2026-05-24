@@ -2069,54 +2069,71 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /* MCDU GET/SET METHODS */
 
   public setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean {
-    if (input === Keypad.clrValue) {
-      this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
-      return true;
-    }
-    const flString = input.split('/')[0].replace('FL', '');
-    const tempString = input.split('/')[1];
-    const onlyTemp = flString.length === 0;
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
 
-    if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
-      if (forPlan === FlightPlanIndex.Active) {
-        const newLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
+    if (plan && plan.destinationAirport !== undefined) {
+      const flString = input.split('/')[0].replace('FL', '');
+      const tempString = input.split('/')[1];
+      const onlyTemp = flString.length === 0;
 
-        if (
-          SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
-          SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
-        ) {
-          SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', newLevel);
-        } else {
-          SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
-        }
-      }
-
-      if (!tempString) {
-        return true;
-      }
-    }
-
-    if (tempString) {
-      let temp = parseInt(tempString);
-
-      if (isFinite(temp) && this.getFlightPlan(forPlan).performanceData.cruiseFlightLevel.get()) {
-        if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
-          temp = -temp;
-        }
-        if (temp > -270 && temp < 100) {
-          this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
-          return true;
-        } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      // Temperature modification not allowed once at or after the cruise phase.
+      const crzTempModificationAllowed =
+        !plan.isActiveOrCopiedFromActive() || this.flightPhaseManager.phase < FmgcFlightPhase.Cruise;
+      if (!crzTempModificationAllowed) {
+        if (onlyTemp || input === Keypad.clrValue) {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        } else if (flString && tempString) {
+          this.setScratchpadMessage(NXSystemMessages.formatError);
           return false;
         }
-      } else {
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
       }
-    }
+      if (input === Keypad.clrValue) {
+        this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
+        return true;
+      }
 
-    this.setScratchpadMessage(NXSystemMessages.formatError);
+      if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
+        if (forPlan === FlightPlanIndex.Active) {
+          const newLevel = plan.performanceData.cruiseFlightLevel.get();
+
+          if (
+            SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
+            SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
+          ) {
+            SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', newLevel);
+          } else {
+            SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
+          }
+        }
+
+        if (!tempString) {
+          return true;
+        }
+      }
+
+      if (tempString) {
+        let temp = parseInt(tempString);
+
+        if (isFinite(temp) && plan.performanceData.cruiseFlightLevel.get()) {
+          if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
+            temp = -temp;
+          }
+          if (temp > -270 && temp < 100) {
+            this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+          }
+        } else {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        }
+      }
+
+      this.setScratchpadMessage(NXSystemMessages.formatError);
+    }
     return false;
   }
 
@@ -2187,7 +2204,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /** MCDU Init page method for FROM/TO, NOT for programmatic use */
   public tryUpdateFromTo(fromTo: string, forPlan: number, callback = EmptyCallback.Boolean) {
-    if (fromTo === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (
+      !plan ||
+      (plan.isActiveOrCopiedFromActive() && this.getFlightPhase() >= FmgcFlightPhase.Preflight) ||
+      fromTo === Keypad.clrValue
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return callback(false);
     }
@@ -2351,6 +2373,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
+    if (flightNo === Keypad.clrValue) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return callback(false);
+    }
     if (flightNo.length > 7) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return callback(false);
@@ -4469,20 +4495,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public trySetGroundTemp(scratchpadValue: string, forPlan: number) {
     // TODO check if this condition is still applicable in SEC
-    if (forPlan === FlightPlanIndex.Active && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
-      throw NXSystemMessages.notAllowed;
-    }
 
-    if (scratchpadValue === Keypad.clrValue) {
-      this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
-      return;
-    }
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (plan && plan.destinationAirport !== undefined) {
+      if (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
+        throw NXSystemMessages.notAllowed;
+      }
 
-    if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
-      throw NXSystemMessages.formatError;
-    }
+      if (scratchpadValue === Keypad.clrValue) {
+        this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
+        return;
+      }
 
-    this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+      if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
+        throw NXSystemMessages.formatError;
+      }
+
+      this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+    }
   }
 
   public isNavModeEngaged() {

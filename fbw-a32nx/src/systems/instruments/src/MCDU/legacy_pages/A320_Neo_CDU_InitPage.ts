@@ -3,7 +3,6 @@
 
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
-import { CDU_SingleValueField } from '../legacy/A320_Neo_CDU_Field';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUAvailableFlightPlanPage } from './A320_Neo_CDU_AvailableFlightPlanPage';
 import { CDUIRSInit } from './A320_Neo_CDU_IRSInit';
@@ -15,22 +14,21 @@ import { LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPag
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { BitFlags, Wait } from '@microsoft/msfs-sdk';
-import { AeroMath } from '@microsoft/msfs-sdk';
-import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
+import { AeroMath, Wait } from '@microsoft/msfs-sdk';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+      mcdu.efisInterfaces?.L.setSecRelatedPageOpen(
         forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
       );
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+      mcdu.efisInterfaces?.R.setSecRelatedPageOpen(
         forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
       );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces?.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces?.R.setSecRelatedPageOpen(null);
       };
     }
 
@@ -41,58 +39,60 @@ export class CDUInitPage {
     mcdu.coRoute.routes = [];
 
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
-
     const plan = mcdu.getFlightPlan(forPlan);
+    const origin = plan.originAirport;
+    const dest = plan.destinationAirport;
+    const isActiveOrCopiedFromActive = plan.isActiveOrCopiedFromActive();
+    const flightPhase = mcdu.flightPhaseManager.phase;
+    const fromToDisabled = isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Preflight;
 
-    const haveFlightPlan = plan.originAirport && plan.destinationAirport;
-
-    const coRoute = new Column(
-      0,
-      haveFlightPlan ? '' : isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]',
-      isForPrimary ? Column.amber : Column.cyan,
-    );
-    const fromTo = new Column(
-      23,
-      isForPrimary ? '____|____' : '[\xa0\xa0]|[\xa0\xa0]',
-      isForPrimary ? Column.amber : Column.cyan,
-      Column.right,
-    );
-
-    if (mcdu.coRoute.routeNumber) {
-      coRoute.update(mcdu.coRoute.routeNumber);
+    // FROM is diplayed as green after preflight.
+    let fromText = '----';
+    let fromColor = Column.white;
+    if (origin) {
+      fromText = origin.ident;
+      fromColor = fromToDisabled ? Column.green : Column.cyan;
+    } else if (!fromToDisabled) {
+      fromText = isForPrimary ? '____' : '[\xa0\xa0\xa0\xa0]';
+      fromColor = isForPrimary ? Column.amber : Column.cyan;
     }
 
-    const [flightNoAction, flightNoText, flightNoColor] = new CDU_SingleValueField(
-      mcdu,
-      'string',
-      plan.flightNumber.get() ?? '',
-      {
-        emptyValue: isForPrimary ? '________[color]amber' : '{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0]{end}',
-        suffix: '[color]cyan',
-        maxLength: 7,
-      },
-      (value: string) => {
-        mcdu.updateFlightNo(value, forPlan, (result) => {
-          if (result) {
-            CDUInitPage.ShowPage1(mcdu, forPlan);
-          } else {
-            mcdu.setScratchpadUserData(value);
-          }
-        });
-      },
-    ).getFieldAsColumnParameters();
+    let coRouteText = '----------';
+    let coRouteColor = Column.white;
+    const coRouteNumber = mcdu.coRoute.routeNumber;
+    if (coRouteNumber) {
+      coRouteText = coRouteNumber;
+      coRouteColor = fromToDisabled ? Column.green : Column.cyan;
+    } else if (!fromToDisabled) {
+      coRouteText = isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]';
+      coRouteColor = isForPrimary ? Column.amber : Column.cyan;
+    }
+
+    const coRoute = new Column(0, coRouteText, coRouteColor);
+
+    const fromColumn = new Column(18, fromText, fromColor, Column.right);
+    let toText = '----';
+    let toColor = Column.white;
+    if (dest) {
+      toText = '|' + dest.ident;
+      toColor = fromToDisabled ? Column.green : Column.cyan;
+    } else if (!fromToDisabled) {
+      toText = isForPrimary ? '|____' : '|[\xa0\xa0\xa0\xa0]';
+      toColor = isForPrimary ? Column.amber : Column.cyan;
+    }
+
+    const toColumn = new Column(23, toText, toColor, Column.right);
+    const flightNumber = plan.flightNumber.get();
+    const flightNumberColor = flightNumber === null && isForPrimary ? Column.amber : Column.cyan;
+    const flightNumberText = flightNumber ?? (isForPrimary ? '________' : '[\xa0\xa0\xa0\xa0\xa0\xa0]');
 
     const altnAirport = plan.alternateDestinationAirport;
     const altDest = new Column(0, `${altnAirport ? altnAirport.ident : '----'}|----------`);
-    let costIndexText = '---';
-    let costIndexAction;
-    let costIndexColor = Column.white;
-
     const cruiseFl = new Column(0, '-----');
     const cruiseTemp = new Column(10, '---°', Column.right);
     const cruiseFlTempSeparator = new Column(6, '/');
 
-    let alignOption;
+    let alignOption: string | null = null;
     const tropo = new Column(23, '36090', Column.small, Column.cyan, Column.right);
     let requestButton = 'REQUEST*';
     let requestButtonLabel = 'INIT';
@@ -103,126 +103,139 @@ export class CDUInitPage {
       requestButton = 'REQUEST ';
     }
 
-    const origin = plan.originAirport;
-    const dest = plan.destinationAirport;
+    // If an active SimBrief OFP matches the FP, hide the request option
+    // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
+    if (
+      dest &&
+      origin &&
+      (mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
+        (mcdu.simbriefOfp.origin.icao === origin.ident && mcdu.simbriefOfp.destination.icao === dest.ident))
+    ) {
+      requestEnable = false;
+      requestButtonLabel = '';
+      requestButton = '';
+    }
 
-    if (origin) {
-      if (dest) {
-        fromTo.update(origin.ident + '/' + dest.ident, Column.cyan);
+    const costIndex = plan.performanceData.costIndex.get();
+    const ciModificationDisabled = mcdu.isCostIndexModificationDisabled(plan);
+    let costIndexText = '---';
+    let costIndexColor = Column.white;
+    if (costIndex !== null) {
+      costIndexText = costIndex.toString();
+      costIndexColor = ciModificationDisabled ? Column.green : Column.cyan;
+    } else {
+      if (!ciModificationDisabled && dest) {
+        costIndexText = isForPrimary ? '___' : '[\xa0]';
+        costIndexColor = isForPrimary ? Column.amber : Column.cyan;
+      }
+    }
+    mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
+      mcdu.tryUpdateCostIndex(value, forPlan) ? CDUInitPage.ShowPage1(mcdu, forPlan) : scratchpadCallback();
+    };
 
-        // If an active SimBrief OFP matches the FP, hide the request option
-        // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
-        if (
-          mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
-          (mcdu.simbriefOfp.origin.icao === origin.ident && mcdu.simbriefOfp.destination.icao === dest.ident)
-        ) {
-          requestEnable = false;
-          requestButtonLabel = '';
-          requestButton = '';
+    const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+    const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
+    let cruiseFlColor = Column.white;
+    let cruiseFlCell = '---';
+    let cruiseTempCell = '---°';
+    let cruiseFlightLevelMandatoryMissing = false;
+    let cruiseTempColor = Column.white;
+    let cruiseTempSeparatorColor = Column.white;
+    let cruiseTempSize = Column.big;
+
+    // CRZ FL is amber if, active or copy of active before descent phase and missing.
+    if (dest) {
+      if (planCruiseLevel === null) {
+        if (isForPrimary) {
+          if (flightPhase < FmgcFlightPhase.Descent) {
+            cruiseFlColor = Column.amber;
+            cruiseFlCell = '_____';
+            cruiseFlightLevelMandatoryMissing = true;
+          }
+        } else {
+          cruiseFlColor = Column.cyan;
+          cruiseFlCell = '[\xa0\xa0\xa0]';
+          cruiseTempCell = '[\xa0]°';
+          cruiseTempColor = Column.cyan;
         }
+      } else {
+        cruiseFlCell = 'FL' + planCruiseLevel.toFixed(0).padStart(3, '0');
+        cruiseFlColor = Column.cyan;
+      }
 
-        const ciModificationDisabled = mcdu.isCostIndexModificationDisabled(plan);
-        let ciEmptyValue = '[\xa0][color]cyan';
-        if (ciModificationDisabled) {
-          ciEmptyValue = '---[color]white';
-        } else if (isForPrimary) {
-          ciEmptyValue = '___[color]amber';
-        }
-
-        // Cost index
-        [costIndexAction, costIndexText, costIndexColor] = new CDU_SingleValueField(
-          mcdu,
-          'int',
-          plan.performanceData.costIndex.get(),
-          {
-            clearable: true,
-            emptyValue: ciEmptyValue,
-            minValue: 0,
-            maxValue: 999,
-            suffix: '[color]' + (ciModificationDisabled ? 'cyan' : 'green'),
-          },
-          (value) => {
-            mcdu.tryUpdateCostIndex(value, forPlan);
-            CDUInitPage.ShowPage1(mcdu, forPlan);
-          },
-        ).getFieldAsColumnParameters();
-
-        mcdu.onLeftInput[4] = costIndexAction;
-
-        cruiseFl.update(isForPrimary ? '_____' : '[\xa0\xa0\xa0]', isForPrimary ? Column.amber : Column.cyan);
-        cruiseTemp.update(isForPrimary ? '|___°' : '|[\xa0]°', isForPrimary ? Column.amber : Column.cyan);
-        cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
-
-        const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-        const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
-
-        //This is done so pilot enters a FL first, rather than using the computed one
-        // TODO differentiate for SEC
-        if (planCruiseLevel) {
-          cruiseFl.update('FL' + planCruiseLevel.toFixed(0).padStart(3, '0'), Column.cyan);
-
+      if (!isActiveOrCopiedFromActive || flightPhase < FmgcFlightPhase.Cruise) {
+        if (planCruiseLevel === null) {
+          cruiseTempCell = cruiseFlightLevelMandatoryMissing ? '___°' : '[\xa0]°';
+          cruiseTempColor = cruiseFlightLevelMandatoryMissing ? Column.amber : Column.cyan;
+          cruiseTempSeparatorColor = cruiseFlightLevelMandatoryMissing ? Column.amber : Column.cyan;
+        } else {
           if (planCruiseTemp !== null) {
-            cruiseTemp.update(CDUInitPage.formatTemperature(planCruiseTemp), Column.cyan);
-            cruiseFlTempSeparator.updateAttributes(Column.cyan);
+            cruiseTempCell = CDUInitPage.formatTemperature(planCruiseTemp);
+            cruiseTempColor = Column.cyan;
           } else {
             const planTropo = plan.performanceData.tropopause.get();
-
-            cruiseTemp.update(
-              CDUInitPage.formatTemperature(
-                Math.round(AeroMath.isaTemperature(Math.min(planCruiseLevel * 100, planTropo ?? 36090) * 0.3048)),
-              ),
-              Column.cyan,
-              Column.small,
+            cruiseTempCell = CDUInitPage.formatTemperature(
+              Math.round(AeroMath.isaTemperature(Math.min(planCruiseLevel * 100, planTropo ?? 36090) * 0.3048)),
             );
-            cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
+            cruiseTempColor = Column.cyan;
+            cruiseTempSeparatorColor = Column.cyan;
+            cruiseTempSize = Column.small;
           }
         }
+      }
 
-        // CRZ FL / FLX TEMP
-        mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
-          if (mcdu.setCruiseFlightLevelAndTemperature(value, forPlan)) {
+      cruiseFl.update(cruiseFlCell, cruiseFlColor);
+      cruiseTemp.update(cruiseTempCell, cruiseTempColor, cruiseTempSize);
+      cruiseFlTempSeparator.updateAttributes(cruiseTempSeparatorColor, cruiseTempSize);
+    }
+
+    // CRZ FL / FLX TEMP
+    mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
+      if (mcdu.setCruiseFlightLevelAndTemperature(value, forPlan)) {
+        CDUInitPage.ShowPage1(mcdu, forPlan);
+      } else {
+        scratchpadCallback();
+      }
+    };
+
+    if (forPlan === FlightPlanIndex.Active && plan.originAirport) {
+      alignOption = 'IRS INIT>';
+    }
+
+    altDest.update(altnAirport ? altnAirport.ident : 'NONE', Column.cyan);
+
+    // TODO differentiate for SEC
+    mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
+      try {
+        if (value === '') {
+          await mcdu.getCoRouteList();
+          CDUAvailableFlightPlanPage.ShowPage(mcdu, forPlan);
+        } else {
+          if (await mcdu.tryUpdateAltDestination(value, forPlan)) {
             CDUInitPage.ShowPage1(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
-        };
-
-        if (forPlan === FlightPlanIndex.Active && plan.originAirport) {
-          alignOption = 'IRS INIT>';
         }
-
-        altDest.update(altnAirport ? altnAirport.ident : 'NONE', Column.cyan);
-
-        // TODO differentiate for SEC
-        mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
-          try {
-            if (value === '') {
-              await mcdu.getCoRouteList();
-              CDUAvailableFlightPlanPage.ShowPage(mcdu, forPlan);
-            } else {
-              if (await mcdu.tryUpdateAltDestination(value, forPlan)) {
-                CDUInitPage.ShowPage1(mcdu, forPlan);
-              } else {
-                scratchpadCallback();
-              }
-            }
-          } catch (error) {
-            console.error(error);
-            mcdu.logTroubleshootingError(error);
-            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-          }
-        };
+      } catch (error) {
+        console.error(error);
+        mcdu.logTroubleshootingError(error);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
       }
-    }
+    };
 
     mcdu.onLeftInput[0] = async (value, scratchpadCallback) => {
-      await mcdu.updateCoRoute(value, (result) => {
-        if (result) {
-          CDUInitPage.ShowPage1(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
-      });
+      if (fromToDisabled) {
+        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+      } else {
+        await mcdu.updateCoRoute(value, (result) => {
+          if (result) {
+            CDUInitPage.ShowPage1(mcdu, forPlan);
+          } else {
+            scratchpadCallback();
+          }
+        });
+      }
     };
 
     const planTropo = plan.performanceData.tropopause.get();
@@ -308,7 +321,7 @@ export class CDUInitPage {
 
     const planGroundTemp = plan.performanceData.groundTemperature!.get();
 
-    if (planGroundTemp !== null) {
+    if (planGroundTemp !== null && (!plan.isActiveOrCopiedFromActive() || flightPhase < FmgcFlightPhase.Takeoff)) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,
@@ -330,12 +343,16 @@ export class CDUInitPage {
       }
     };
 
-    mcdu.onLeftInput[2] = flightNoAction;
-
-    const isActivePlan = forPlan === FlightPlanIndex.Active;
-    const isCopiedFromActive = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
-
-    const canSwitchPage = !mcdu.isAnEngineOn() || isActivePlan || !isCopiedFromActive;
+    mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
+      mcdu.tryUpdateFromTo(value, forPlan, (result) => {
+        if (result) {
+          CDUInitPage.ShowPage1(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
+    };
+    const canSwitchPage = !mcdu.isAnEngineOn() || !isActiveOrCopiedFromActive;
 
     mcdu.setArrows(false, false, canSwitchPage, canSwitchPage);
     mcdu.onPrevPage = () => {
@@ -349,11 +366,11 @@ export class CDUInitPage {
       FormatTemplate([
         [new Column(1, forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : ''), new Column(10, 'INIT')],
         [new Column(1, 'CO RTE'), new Column(21, 'FROM/TO', Column.right)],
-        [coRoute, fromTo],
+        [coRoute, fromColumn, toColumn],
         [new Column(0, 'ALTN/CO RTE'), new Column(22, requestButtonLabel, Column.amber, Column.right)],
         [altDest, new Column(23, requestButton, Column.amber, Column.right)],
         [new Column(0, 'FLT NBR')],
-        [new Column(0, flightNoText, flightNoColor), new Column(23, alignOption || '', Column.right)],
+        [new Column(0, flightNumberText, flightNumberColor), new Column(23, alignOption || '', Column.right)],
         [],
         [new Column(23, 'WIND/TEMP>', Column.right)],
         [new Column(0, 'COST INDEX'), new Column(23, 'TROPO', Column.right)],
@@ -392,15 +409,15 @@ export class CDUInitPage {
   }
   static ShowPage2(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+      mcdu.efisInterfaces?.L.setSecRelatedPageOpen(
         forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
       );
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+      mcdu.efisInterfaces?.R.setSecRelatedPageOpen(
         forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
       );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces?.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces?.R.setSecRelatedPageOpen(null);
       };
     }
 
@@ -429,12 +446,12 @@ export class CDUInitPage {
     );
     const zfwCgCellDivider = new Column(18, '|', isForPrimary ? Column.amber : Column.cyan, Column.right);
 
-    if (
-      plan.performanceData.zeroFuelWeight.get() !== null &&
-      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null
-    ) {
-      zfwCell.update(NXUnits.kgToUser(plan.performanceData.zeroFuelWeight.get()).toFixed(1), Column.cyan);
-      zfwCgCell.update(plan.performanceData.zeroFuelWeightCenterOfGravity.get().toFixed(1), Column.cyan);
+    const zfw = plan.performanceData.zeroFuelWeight.get();
+    const zfwCg = plan.performanceData.zeroFuelWeightCenterOfGravity.get();
+
+    if (zfw !== null && zfwCg !== null) {
+      zfwCell.update(NXUnits.kgToUser(zfw).toFixed(1), Column.cyan);
+      zfwCgCell.update(zfwCg!.toFixed(1), Column.cyan);
       zfwCgCellDivider.updateAttributes(Column.cyan);
     }
     mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
@@ -608,7 +625,7 @@ export class CDUInitPage {
       ? predictions.routeReserveFuelPercentage
       : plan.performanceData.routeReserveFuelPercentage.get();
 
-    if (Number.isFinite(routeReserveFuelPercentage)) {
+    if (routeReserveFuelPercentage !== null && Number.isFinite(routeReserveFuelPercentage)) {
       // TODO thresholds should come from AMI
       const routeReserveOutOfRange = routeReserveFuelPercentage < 0 || routeReserveFuelPercentage > 15;
 
@@ -638,7 +655,7 @@ export class CDUInitPage {
     if (plan.performanceData.pilotFinalHoldingTime.get() !== null || !isRouteFinalEntered) {
       finalTimeCell.update(FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get()), Column.cyan);
       finalCellDivider.updateAttributes(Column.cyan);
-    } else if (Number.isFinite(predictions.finalHoldingTime)) {
+    } else if (predictions.finalHoldingTime !== null && Number.isFinite(predictions.finalHoldingTime)) {
       finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
       finalCellDivider.updateAttributes(Column.cyan, Column.small);
     }
@@ -673,7 +690,7 @@ export class CDUInitPage {
       } else if (Number.isFinite(predictions.alternateFuel)) {
         altnWeightCell.update(NXUnits.kgToUser(predictions.alternateFuel).toFixed(1), Column.cyan, Column.small);
 
-        if (Number.isFinite(predictions.alternateTime)) {
+        if (predictions.alternateTime !== null && Number.isFinite(predictions.alternateTime)) {
           altnTimeCell.update(FmsFormatters.minutesTohhmm(predictions.alternateTime), Column.green, Column.small);
           altnCellDivider.updateAttributes(Column.green, Column.small);
         }
@@ -715,9 +732,9 @@ export class CDUInitPage {
         }
       };
 
-      if (Number.isFinite(predictions.extraFuel)) {
+      if (predictions.extraFuel !== null && Number.isFinite(predictions.extraFuel)) {
         extraWeightCell.update(NXUnits.kgToUser(predictions.extraFuel).toFixed(1), Column.green, Column.small);
-        if (predictions.extraFuel >= 0) {
+        if (predictions.extraFuel >= 0 && predictions.extraTime !== null) {
           extraTimeCell.update(FmsFormatters.minutesTohhmm(predictions.extraTime), Column.green, Column.small);
           extraCellDivider.updateAttributes(Column.green, Column.small);
         }
@@ -753,7 +770,7 @@ export class CDUInitPage {
   }
 
   // Defining as static here to avoid duplicate code in CDUIRSInit
-  static ConvertDDToDMS(deg, lng) {
+  static ConvertDDToDMS(deg: number, lng: boolean) {
     // converts decimal degrees to degrees minutes seconds
     const M = 0 | ((deg % 1) * 60e7);
     let degree;
@@ -770,11 +787,11 @@ export class CDUInitPage {
     };
   }
 
-  static formatWindDirection(tailwindComponent) {
+  static formatWindDirection(tailwindComponent: number) {
     return Math.round(tailwindComponent) > 0 ? 'TL' : 'HD';
   }
 
-  static formatWindComponent(tailwindComponent) {
+  static formatWindComponent(tailwindComponent: number) {
     return Math.round(Math.abs(tailwindComponent)).toFixed(0).padStart(3, '0');
   }
 
