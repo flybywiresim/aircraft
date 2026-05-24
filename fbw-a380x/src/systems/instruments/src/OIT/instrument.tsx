@@ -11,7 +11,7 @@ import {
   ClockPublisher,
   HEvent,
 } from '@microsoft/msfs-sdk';
-import { AdrBusPublisher, FwcBusPublisher, FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { AdrBusPublisher, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from './OIT';
 import { InternalKbdKeyEvent, OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
@@ -19,6 +19,7 @@ import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 import { AnsuOps } from './System/AnsuOps';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { A380XFwcBusPublisher } from '@shared/publishers/A380XFwcBusPublisher';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -31,7 +32,7 @@ class OitInstrument implements FsInstrument {
 
   private readonly adrPublisher = new AdrBusPublisher(this.bus);
 
-  private readonly fwcPublisher = new FwcBusPublisher(this.bus);
+  private readonly fwcPublisher = new A380XFwcBusPublisher(this.bus);
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
