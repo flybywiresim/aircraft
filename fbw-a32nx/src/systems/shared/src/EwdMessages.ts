@@ -182,7 +182,7 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['213123504', { text: '\x1b<5m -CABIN CREW.......ALERT' }],
   ['240062201', { group: 'ELEC$1', text: ' ESS BUSES ON BAT' }],
   ['240062202', { text: '\x1b<5m MIN RAT SPD......140 KT' }],
-  ['240062203', { text: '\x1b<5m -ELEC EMER PWR...MAN ON' }],
+  ['240062203', { text: '\x1b<5m -EMER ELEC PWR...MAN ON' }],
   ['240003101', { group: 'ELEC$1', text: " \x1b'mEMER CONFIG\x1bm" }],
   ['240003102', { text: '\x1b<5m MIN RAT SPEED.....140KT' }],
   ['240003103', { text: '\x1b<5m -GEN 1+2....OFF THEN ON' }],
