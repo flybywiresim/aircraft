@@ -143,6 +143,7 @@
 1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
 1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
+1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
