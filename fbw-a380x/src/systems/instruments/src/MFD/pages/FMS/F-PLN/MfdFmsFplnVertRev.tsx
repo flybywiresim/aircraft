@@ -262,6 +262,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           ? currentSelection
           : indexToSelect,
       );
+      const newSelection = this.selectedLegIndex.get();
+      if (currentSelection !== newSelection) {
+        // Reset leg constraint options in case they were manually entered but not persisted.
+        this.spdConstraintTypeRadioSelected.set(null);
+        this.altConstraintTypeRadioSelected.set(null);
+        this.selectedAltitudeConstraintOption.set(null);
+        this.altitudeConstraintInput.set(null);
+        this.speedConstraintInput.set(null);
+      }
     }
 
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
@@ -307,14 +316,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.selectedAltitudeConstraintOption.set(null);
       return;
     }
-    this.speedMessageArea.set('');
-    this.spdConstraintDisabled.set(false);
-    this.altitudeMessageArea.set(isPartOfTooSteepPathSegment ? 'TOO STEEP PATH AHEAD' : '');
-    this.altConstraintDisabled.set(false);
-
     // Load speed constraints
     const selectedIndex = this.selectedPageIndex.get();
     if (selectedIndex === SelectedPage.SPD) {
+      this.speedMessageArea.set('');
+      this.spdConstraintDisabled.set(false);
       const constraintType =
         plan && selectedLegIdx !== null && leg?.constraintType === WaypointConstraintType.Unknown
           ? plan.autoConstraintTypeForLegIndex(selectedLegIdx)
@@ -366,19 +372,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             : plan?.performanceData.isDescentSpeedLimitPilotEntered.get() ?? false,
       );
 
-      this.speedConstraintInput.set(leg?.speedConstraint?.speed ?? null);
-      this.constraintType.set(
-        constraintType === WaypointConstraintType.CLB
-          ? 'CLB'
-          : constraintType === WaypointConstraintType.DES
-            ? 'DES'
-            : '',
-      );
-      this.spdConstraintTypeRadioSelected.set(
-        constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
-      );
+      if (constraintType !== WaypointConstraintType.Unknown) {
+        this.constraintType.set(constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
+        this.spdConstraintTypeRadioSelected.set(constraintType === WaypointConstraintType.CLB ? 0 : 1);
+        this.altitudeClbDesConstraintVisibility.set('hidden');
+        this.speedConstraintInput.set(leg?.speedConstraint?.speed ?? null);
+      } else {
+        this.altitudeClbDesConstraintVisibility.set('visible');
+      }
       this.cannotDeleteSpeedConstraint.set(!leg?.speedConstraint || !leg?.speedConstraint?.speed);
     } else if (selectedIndex === SelectedPage.ALT) {
+      this.altitudeMessageArea.set(isPartOfTooSteepPathSegment ? 'TOO STEEP PATH AHEAD' : '');
+      this.altConstraintDisabled.set(false);
       const constraintType =
         plan && selectedLegIdx !== null && leg?.constraintType === WaypointConstraintType.Unknown
           ? plan.autoConstraintTypeForLegIndex(selectedLegIdx)
@@ -390,38 +395,37 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             ? 'DES'
             : '',
       );
-      this.altConstraintTypeRadioSelected.set(
-        constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
-      );
-      this.altitudeClbDesConstraintVisibility.set(
-        constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
-      );
+      if (constraintType !== WaypointConstraintType.Unknown) {
+        this.altConstraintTypeRadioSelected.set(constraintType === WaypointConstraintType.CLB ? 0 : 1);
+        this.altitudeClbDesConstraintVisibility.set('hidden');
+        // Load altitude constraints
+        switch (leg?.altitudeConstraint?.altitudeDescriptor) {
+          case AltitudeDescriptor.AtAlt1:
+          case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+          case AltitudeDescriptor.AtAlt1AngleAlt2:
+            this.selectedAltitudeConstraintOption.set(0);
+            break;
+          case AltitudeDescriptor.AtOrAboveAlt1:
+          case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+          case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+            this.selectedAltitudeConstraintOption.set(1);
+            break;
+          case AltitudeDescriptor.AtOrBelowAlt1:
+          case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+            this.selectedAltitudeConstraintOption.set(2);
+            break;
+          default:
+            this.selectedAltitudeConstraintOption.set(null);
+            break;
+        }
+        this.altitudeConstraintInput.set(leg?.altitudeConstraint?.altitude1 ?? null);
+      } else {
+        this.altitudeClbDesConstraintVisibility.set('visible');
+      }
 
       this.cannotDeleteAltConstraint.set(
         !leg?.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
       );
-
-      // Load altitude constraints
-      switch (leg?.altitudeConstraint?.altitudeDescriptor) {
-        case AltitudeDescriptor.AtAlt1:
-        case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
-        case AltitudeDescriptor.AtAlt1AngleAlt2:
-          this.selectedAltitudeConstraintOption.set(0);
-          break;
-        case AltitudeDescriptor.AtOrAboveAlt1:
-        case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
-        case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-          this.selectedAltitudeConstraintOption.set(1);
-          break;
-        case AltitudeDescriptor.AtOrBelowAlt1:
-        case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-          this.selectedAltitudeConstraintOption.set(2);
-          break;
-        default:
-          this.selectedAltitudeConstraintOption.set(null);
-          break;
-      }
-      this.altitudeConstraintInput.set(leg?.altitudeConstraint?.altitude1 ?? null);
 
       const ac = leg?.altitudeConstraint;
       if (ac) {
@@ -648,12 +652,27 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
   }
 
-  private async tryUpdateSpeedConstraint(newSpeed?: number) {
+  private async tryUpdateSpeedConstraint() {
+    if (this.checkLegModificationAllowed() && this.spdConstraintTypeRadioSelected.get() !== null) {
+      const speed = this.speedConstraintInput.get();
+      if (speed !== null) {
+        this.props.fmcService.master!.flightPlanInterface.setPilotEnteredSpeedConstraintAt(
+          this.selectedLegIndex.get()!,
+          this.spdConstraintTypeRadioSelected.get() === 1,
+          speed,
+          this.loadedFlightPlanIndex.get(),
+          this.selectedLegIsAlternate.get() ?? false,
+        );
+      }
+    }
+  }
+
+  private async deleteSpeedConstraint() {
     if (this.checkLegModificationAllowed() && this.spdConstraintTypeRadioSelected.get() !== null) {
       this.props.fmcService.master!.flightPlanInterface.setPilotEnteredSpeedConstraintAt(
         this.selectedLegIndex.get()!,
         this.spdConstraintTypeRadioSelected.get() === 1,
-        newSpeed,
+        undefined,
         this.loadedFlightPlanIndex.get(),
         this.selectedLegIsAlternate.get() ?? false,
       );
@@ -1085,7 +1104,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                   <div class="mfd-vert-rev-spd-cstr-line">
                     <InputField<number>
                       dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                      dataHandlerDuringValidation={(val) => this.tryUpdateSpeedConstraint(val ?? undefined)}
+                      onModified={(val) => {
+                        this.speedConstraintInput.set(val);
+                        this.tryUpdateSpeedConstraint();
+                      }}
                       mandatory={Subject.create(false)}
                       disabled={this.spdConstraintDisabled}
                       value={this.speedConstraintInput}
@@ -1101,7 +1123,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         selectedIndex={this.spdConstraintTypeRadioSelected}
                         values={['CLB CSTR', 'DES CSTR']}
                         color={Subject.create(RadioButtonColor.Amber)}
-                        onModified={() => {
+                        onModified={(idx) => {
+                          this.spdConstraintTypeRadioSelected.set(idx);
                           this.tryUpdateSpeedConstraint();
                         }}
                       />
@@ -1118,7 +1141,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         </div>
                       }
                       onClick={() => {
-                        this.tryUpdateSpeedConstraint(undefined);
+                        this.deleteSpeedConstraint();
                       }}
                       disabled={this.cannotDeleteSpeedConstraint}
                       buttonStyle="adding-right: 2px;"
@@ -1231,7 +1254,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                               this.altConstraintTransitionIsFlightLevel,
                             )
                           }
-                          dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
+                          onModified={(val) => {
+                            this.altitudeConstraintInput.set(val);
+                            this.tryUpdateAltitudeConstraint();
+                          }}
                           mandatory={Subject.create(false)}
                           disabled={this.altConstraintDisabled}
                           value={this.altitudeConstraintInput}
@@ -1273,7 +1299,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           selectedIndex={this.altConstraintTypeRadioSelected}
                           values={['CLB CSTR', 'DES CSTR']}
                           color={Subject.create(RadioButtonColor.Amber)}
-                          onModified={() => {
+                          onModified={(idx) => {
+                            this.altConstraintTypeRadioSelected.set(idx);
                             this.tryUpdateAltitudeConstraint();
                           }}
                         />
