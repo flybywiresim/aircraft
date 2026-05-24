@@ -1414,7 +1414,6 @@ export class PseudoFWC {
   private readonly ir1FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
   private readonly ir2FaultConf = new NXLogicConfirmNode(0.5, true);
   private readonly ir2FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
-  private readonly ir2FaultElecEmerConf = new NXLogicConfirmNode(280, true);
   private readonly ir3FaultConf = new NXLogicConfirmNode(0.5, true);
   private readonly ir3FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
   private readonly ir3FaultFlipFlop = new NXLogicMemoryNode(false);
