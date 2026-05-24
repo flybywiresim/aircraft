@@ -186,7 +186,7 @@ export class FwsCore {
 
   public readonly fwsEcpFailed = Subject.create(false);
 
-  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
+  private readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
 
   private readonly flightPhases = new FwsFlightPhases(this);
 
@@ -5951,7 +5951,7 @@ export class FwsCore {
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
     this.systemDisplayLogic.update(deltaTime);
-    this.autoCallouts.update(deltaTime);
+    this.autoCallouts.update(deltaTime, this.soundManager.getKeepMaxReversePlayed());
 
     if (this.debugDataToOisEnabled.get()) {
       this.updateOisDebugData();

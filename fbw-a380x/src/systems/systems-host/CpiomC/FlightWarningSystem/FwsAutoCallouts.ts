@@ -26,9 +26,9 @@ export class FwsAutoCallouts {
   public readonly setMaxReverse = Subject.create(false);
 
   // KEEP MAX REVERSE
-  private readonly keepMaxReverseMemory = new NXLogicMemoryNode(false);
-  private readonly phase11DownPulse = new NXLogicPulseNode(false);
-  private readonly setReversePulse = new NXLogicPulseNode(false);
+  private readonly keepMaxReverseMemory = new NXLogicMemoryNode(true);
+  private readonly keepMaxReverseDownPulse = new NXLogicPulseNode(false);
+  private readonly keepMaxReversePulse = new NXLogicPulseNode(true);
   private readonly keepMaxReverseConfirm = new NXLogicConfirmNode(0.6);
   public readonly keepMaxReverse = Subject.create(false);
 
@@ -37,12 +37,12 @@ export class FwsAutoCallouts {
 
   constructor(private readonly fws: FwsCore) {}
 
-  public update(deltaTime: number) {
+  public update(deltaTime: number, maxReversePlayed: boolean): void {
     const flightPhase = this.fws.flightPhase.get();
-    this.updateRowRopWarnings(flightPhase, deltaTime);
+    this.updateRowRopWarnings(flightPhase, deltaTime, maxReversePlayed);
   }
 
-  updateRowRopWarnings(flightPhase: number, deltaTime: number) {
+  updateRowRopWarnings(flightPhase: number, deltaTime: number, maxReversePlayed: boolean): void {
     this.rowRopStatusWord.set(this.rowRopStatusWordVar.get());
     const phase10RowRopMtrigOutput = this.phase10RowRopMtrig.write(flightPhase === 10, deltaTime);
     const rolloutOrBouncedLanding =
@@ -56,18 +56,18 @@ export class FwsAutoCallouts {
 
     // SET MAX REVERSE
     const maxReverseRequested = this.rowRopStatusWord.bitValueOr(12, false);
-    this.setMaxReverse.set(this.setMaxReverseConf.write(maxReverseRequested, deltaTime) && rolloutOrBouncedLanding); //FIXME: Check reverser INOP
+    this.setMaxReverse.set(
+      this.setMaxReverseConf.write(maxReverseRequested, deltaTime) && rolloutOrBouncedLanding && !brakeMaxBraking,
+    ); //FIXME: Check reverser INOP
 
     // KEEP MAX REVERSE.
-    const keepMaxReverseMemory = this.keepMaxReverseMemory.write(
-      this.keepMaxReverseConfirm.write(this.rowRopStatusWord.bitValueOr(13, false), deltaTime),
-      this.setReversePulse.write(maxReverseRequested) ||
-        !maxBrakingRequested ||
-        flightPhase === 2 ||
-        flightPhase === 12 ||
-        this.phase11DownPulse.write(flightPhase === 11),
+    const keepMaxReverse =
+      this.keepMaxReverseConfirm.write(this.rowRopStatusWord.bitValueOr(13, false), deltaTime) && !brakeMaxBraking; // TODO - Check reverser INOP
+    this.keepMaxReverseMemory.write(
+      this.keepMaxReversePulse.write(keepMaxReverse),
+      this.keepMaxReverseDownPulse.write(keepMaxReverse) || maxReversePlayed,
     );
-    this.keepMaxReverse.set(flightPhase === 11 && keepMaxReverseMemory);
+    this.keepMaxReverse.set(keepMaxReverse);
 
     // RUNWAY TOO SHORT
     this.runwayTooShort.set(flightPhase >= 8 && flightPhase <= 10 && this.rowRopStatusWord.bitValueOr(15, false));

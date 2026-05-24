@@ -37,6 +37,12 @@ interface FwsAural {
   continuous?: boolean;
 }
 
+export interface FwsAudioOutputSignals {
+  keepMaxReverse: boolean;
+}
+
+const KEEP_MAX_REVERSE_OUTPUT_VAR = 'L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE';
+
 export const FwsAuralsList: Record<string, FwsAural> = {
   continuousRepetitiveChime: {
     localVarName: 'A32NX_FWC_CRC',
@@ -86,7 +92,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   keepMaxReverse: {
-    localVarName: 'A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
+    localVarName: KEEP_MAX_REVERSE_OUTPUT_VAR,
     length: 1.4,
     priority: 18,
     type: FwsAuralWarningType.SyntheticVoice,
@@ -281,6 +287,10 @@ export class FwsSoundManager {
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
 
+  private readonly soundOutputs: FwsAudioOutputSignals = {
+    keepMaxReverse: false,
+  };
+
   constructor(
     private readonly bus: EventBus,
     private readonly startupCompleted: Subscribable<boolean>,
@@ -322,15 +332,16 @@ export class FwsSoundManager {
   }
 
   private stopCurrentSound() {
-    // Only LVar sounds which are continuous can be stopped
-    if (
-      this.currentSoundPlaying &&
-      FwsAuralsList[this.currentSoundPlaying].localVarName &&
-      FwsAuralsList[this.currentSoundPlaying]?.continuous
-    ) {
-      SimVar.SetSimVarValue(`L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`, SimVarValueType.Bool, false);
+    if (this.currentSoundPlaying) {
+      const sound = FwsAuralsList[this.currentSoundPlaying];
+      // Only LVar sounds which are continuous can be stopped
+      if (!sound.localVarName || !sound.continuous) {
+        return;
+      }
+      SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
       this.currentSoundPlaying = null;
       this.currentSoundPlayTimeRemaining = 0;
+      this.setAudioOutputSignals(sound.localVarName, false);
     }
   }
 
@@ -359,6 +370,7 @@ export class FwsSoundManager {
 
     if (sound.localVarName) {
       SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, true);
+      this.setAudioOutputSignals(sound.localVarName, true);
     } else if (sound.wwiseEventName) {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
@@ -417,13 +429,11 @@ export class FwsSoundManager {
         // Wait for sound to be finished
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
       } else {
+        const sound = FwsAuralsList[this.currentSoundPlaying];
         // Sound finishes in this cycle
-        if (FwsAuralsList[this.currentSoundPlaying].localVarName) {
-          SimVar.SetSimVarValue(
-            `L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`,
-            SimVarValueType.Bool,
-            false,
-          );
+        if (sound.localVarName) {
+          SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
+          this.setAudioOutputSignals(sound.localVarName, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
@@ -457,5 +467,15 @@ export class FwsSoundManager {
       // Play next sound
       this.selectAndPlayMostImportantSound();
     }
+  }
+
+  private setAudioOutputSignals(localVarName: string, value: boolean) {
+    if (localVarName === KEEP_MAX_REVERSE_OUTPUT_VAR) {
+      this.soundOutputs.keepMaxReverse = value;
+    }
+  }
+
+  public getKeepMaxReversePlayed(): boolean {
+    return this.soundOutputs.keepMaxReverse;
   }
 }
