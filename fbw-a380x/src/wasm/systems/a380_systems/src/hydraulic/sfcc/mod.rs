@@ -483,7 +483,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
     }
     impl PositionPickoffUnit for SlatFlapGear {
-        fn angle(&self) -> Angle {
+        fn fppu_angle(&self) -> Angle {
             self.current_angle
         }
     }
@@ -525,9 +525,9 @@ mod tests {
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
                 if let Some(demanded_angle) = demanded_angle {
-                    let actual_minus_target_ffpu = demanded_angle - self.angle();
+                    let actual_minus_target_ffpu = demanded_angle - self.fppu_angle();
 
-                    let fppu_angle = self.angle();
+                    let fppu_angle = self.fppu_angle();
 
                     if actual_minus_target_ffpu.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                         self.current_angle += Angle::new::<degree>(
@@ -537,7 +537,7 @@ mod tests {
                         );
                         self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
 
-                        let new_ffpu_angle = self.angle();
+                        let new_ffpu_angle = self.fppu_angle();
                         // If demand was crossed between two frames: fixing to demand
                         if new_ffpu_angle > demanded_angle && fppu_angle < demanded_angle
                             || new_ffpu_angle < demanded_angle && fppu_angle > demanded_angle
@@ -845,11 +845,11 @@ mod tests {
         }
 
         fn get_flaps_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.flap_gear.angle().get::<degree>())
+            self.query(|a| a.flap_gear.fppu_angle().get::<degree>())
         }
 
         fn get_slats_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.slat_gear.angle().get::<degree>())
+            self.query(|a| a.slat_gear.fppu_angle().get::<degree>())
         }
 
         fn get_is_approaching_position(

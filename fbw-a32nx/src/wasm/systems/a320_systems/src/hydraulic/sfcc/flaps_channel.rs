@@ -435,7 +435,7 @@ impl FlapsChannel {
         self.csu_monitor.update(context);
         self.flaps_demanded_angle = self.generate_flap_angle(adirs);
 
-        self.flaps_feedback_angle = flaps_feedback.angle();
+        self.flaps_feedback_angle = flaps_feedback.fppu_angle();
         self.fap_update();
     }
 

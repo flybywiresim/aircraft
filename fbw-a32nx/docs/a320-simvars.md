@@ -1190,6 +1190,13 @@
     - Degrees
     - The angle of the flaps FPPU synchro
 
+- A32NX_{side}_FLAPS_APPU_ANGLE
+    - Degrees
+    - The APPU synchro angle of the flaps on the wing
+    - Side
+        - LEFT
+        - RIGHT
+
 - A32NX_SLATS_IPPU_ANGLE
     - Degrees
     - The angle of the slats IPPU synchro
@@ -1197,6 +1204,13 @@
 - A32NX_SLATS_FPPU_ANGLE
     - Degrees
     - The angle of the slats FPPU synchro
+
+- A32NX_{side}_SLATS_APPU_ANGLE
+    - Degrees
+    - The APPU synchro angle of the slats on the wing
+    - Side
+        - LEFT
+        - RIGHT
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean

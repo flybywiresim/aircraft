@@ -1,6 +1,7 @@
 use crate::{
     apu::ApuGenerator,
     electrical::{ElectricalElement, Potential},
+    hydraulic::flap_slat::SecondarySurfaceSide,
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
 };
@@ -95,7 +96,14 @@ pub trait AngularSpeedSensor {
 }
 
 pub trait PositionPickoffUnit {
-    fn angle(&self) -> Angle;
+    fn fppu_angle(&self) -> Angle;
+    // NOTE: defaulting the FPPU angle for simplified implementations
+    fn ippu_angle(&self) -> Angle {
+        self.fppu_angle()
+    }
+    fn appu_angle(&self, _id: SecondarySurfaceSide) -> Angle {
+        self.fppu_angle()
+    }
 }
 
 pub trait CargoDoorLocked {

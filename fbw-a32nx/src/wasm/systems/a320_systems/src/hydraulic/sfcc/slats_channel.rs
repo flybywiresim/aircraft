@@ -277,7 +277,7 @@ impl SlatsChannel {
         self.csu_monitor.update(context);
         self.slats_demanded_angle = self.generate_slat_angle(adirs, lgciu);
 
-        self.slats_feedback_angle = slats_feedback.angle();
+        self.slats_feedback_angle = slats_feedback.fppu_angle();
         self.sap_update();
     }
 
