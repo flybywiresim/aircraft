@@ -38,7 +38,7 @@ impl FlapsChannel {
         feedback_position: &impl PositionPickoffUnit,
     ) {
         self.demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(flaps_conf);
-        self.feedback_angle = feedback_position.angle();
+        self.feedback_angle = feedback_position.fppu_angle();
     }
 
     pub(super) fn get_demanded_angle(&self) -> Angle {
