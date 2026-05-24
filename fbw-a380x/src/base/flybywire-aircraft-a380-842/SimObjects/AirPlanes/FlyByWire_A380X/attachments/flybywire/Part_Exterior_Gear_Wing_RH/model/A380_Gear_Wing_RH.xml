@@ -11,147 +11,14 @@
 		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
 		<Component ID="GEARS">
-			<!-- Nose Landing Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_CENTER_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- Nose Landing Gear Door FWD -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear_door1</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_CENTER_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- Nose Landing Gear Door AFT -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear_door2</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_CENTER_SMALL_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Body Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_b_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:1, Percent) 0.5 * +</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Body Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_b_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:2, Percent) 0.5 * +</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Wing Gear-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_w_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:3, Percent) 0.5 * + </ANIM_CODE>
-			</UseTemplate>
+
 			<!-- RH Wing Gear-->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>r_w_gear</ANIM_NAME>
 				<ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:4, Percent) 0.5 * +</ANIM_CODE>
 			</UseTemplate>
 
-			<!-- LH Secondary Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_blg_inner_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Wing Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_wing_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_body_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Secondary Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_blg_inner_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Wing Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_wing_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- Steering -->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>c_wheel</NODE_ID>
-				<ANIM_NAME>c_wheel</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_NOSE_WHEEL_POSITION)</ANIM_CODE>
-				<ANIM_LENGTH>1</ANIM_LENGTH>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GEAR_Steering_Template">
-				<ANIM_NAME>l_wheel</ANIM_NAME>
-				<ID>1</ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GEAR_Steering_Template">
-				<ANIM_NAME>r_wheel</ANIM_NAME>
-				<ID>2</ID>
-			</UseTemplate>
-			<!-- rear left Steering -->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>left_bws</NODE_ID>
-				<ANIM_NAME>left_bws</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
-				<ANIM_LENGTH>1</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- rear right Steering -->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>right_bws</NODE_ID>
-				<ANIM_NAME>right_bws</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
-				<ANIM_LENGTH>1</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation REAR LEFT LH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>ll_tire_key</NODE_ID>
-				<ANIM_NAME>ll_tire_key</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation REAR LEFT RH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>lr_tire_key</NODE_ID>
-				<ANIM_NAME>lr_tire_key</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation REAR RIGHT LH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>rl_tire_key</NODE_ID>
-				<ANIM_NAME>rl_tire_key</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation REAR RIGHT RH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>rr_tire_key</NODE_ID>
-				<ANIM_NAME>rr_tire_key</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation LH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>WHEELS_C</NODE_ID>
-				<ANIM_NAME>c_tire_anim_LH</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Wheel Rotation RH-->
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<NODE_ID>WHEELS_C</NODE_ID>
-				<ANIM_NAME>c_tire_anim_RH</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE)</ANIM_CODE>
-				<ANIM_LENGTH>360</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- Body Gear Rotation-->
-			<UseTemplate Name="ASOBO_GEAR_Back_Tire_Template">
-				<ANIM_NAME>b_tire_key</ANIM_NAME>
-				<NODE_ID_STILL>LANDINGGEAR_Back_Wheel1_Still_Right</NODE_ID_STILL>
-				<NODE_ID_STILL_2>LANDINGGEAR_Back_Wheel2_Still_Right</NODE_ID_STILL_2>
-				<NODE_ID_STILL_3>LANDINGGEAR_Back_Wheel1_Still_Left</NODE_ID_STILL_3>
-				<NODE_ID_STILL_4>LANDINGGEAR_Back_Wheel2_Still_Left</NODE_ID_STILL_4>
-				<NO_STILL_BLURRED_TRANSITION/>
-			</UseTemplate>
+			<!-- TODO R WLG Anim needs swapping to r_tire_key -->
 			<!-- WIng Landing Gear Left Rotation-->
 			<UseTemplate Name="ASOBO_GEAR_Left_Tire_Template">
 				<ANIM_NAME>l_tire_key</ANIM_NAME>
@@ -159,6 +26,7 @@
 				<NODE_ID_STILL_2>LANDINGGEAR_Wing_Wheel2_Still_Left</NODE_ID_STILL_2>
 				<NO_STILL_BLURRED_TRANSITION/>
 			</UseTemplate>
+
 			<!-- WIng Landing Gear Right Rotation-->
 			<UseTemplate Name="ASOBO_GEAR_Right_Tire_Template">
 				<ANIM_NAME>r_tire_key</ANIM_NAME>
@@ -166,19 +34,17 @@
 				<NODE_ID_STILL_2>LANDINGGEAR_Wing_Wheel2_Still_Right</NODE_ID_STILL_2>
 				<NO_STILL_BLURRED_TRANSITION/>
 			</UseTemplate>
-			<!-- Compression -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear_comp</ANIM_NAME>
-				<ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent)</ANIM_CODE>
-			</UseTemplate>
+
 		</Component>
 
 		<Component ID="LANDING_GEAR_TILT">
+
             <!-- RH Wing Tilt-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>r_w_gear_tilt</ANIM_NAME>
                 <ANIM_CODE>(L:A32NX_GEAR_4_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
             </UseTemplate>
+
         </Component>
 	</Behaviors>
 </ModelInfo>
