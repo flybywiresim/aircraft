@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    hydraulic::flap_slat::{SolenoidStatus, ValveBlockController},
+    hydraulic::flap_slat::ValveBlockController,
     shared::{low_pass_filter::LowPassFilter, SectionPressure},
     simulation::UpdateContext,
 };
@@ -49,7 +49,7 @@ impl ValveBlock {
         sfcc: &impl ValveBlockController,
         pressure: &impl SectionPressure,
     ) {
-        self.update_current_max_speed(context, sfcc, pressure.pressure_downstream_priority_valve());
+        self.update_current_max_speed(context, pressure.pressure_downstream_priority_valve());
 
         self.update_speed(sfcc);
     }
@@ -67,11 +67,14 @@ impl ValveBlock {
 
         // NOTE: opposite commands between SFCCs are not modelled yet. Opposite requests aren't expected
         // in the current code.
-        let extend_request = sfcc_extend == SolenoidStatus::Energised;
+        let extend_request = sfcc_extend.is_energised();
+        let retract_request = sfcc_retract.is_energised();
 
-        let retract_request = sfcc_retract == SolenoidStatus::Energised;
-
-        self.speed = if extend_request {
+        // NOTE: sfcc_pob must be checked at the beginning of the if-statement to prevent any
+        // movement regardless of the solenoids configuration.
+        self.speed = if !sfcc_pob.is_energised() {
+            AngularVelocity::ZERO
+        } else if extend_request {
             max_speed
         } else if retract_request {
             -max_speed
@@ -81,11 +84,8 @@ impl ValveBlock {
             // otherwise the flaps/slats will start oscillating.
             let minimum_speed = max_speed * 0.18; // Low speed drive is 18% of high speed drive.
             let new_speed = self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION;
-            let pob_de_energised = sfcc_pob == SolenoidStatus::DeEnergised;
 
-            if pob_de_energised {
-                AngularVelocity::ZERO
-            } else if new_speed.abs() < minimum_speed {
+            if new_speed.abs() < minimum_speed {
                 self.speed
             } else {
                 new_speed
@@ -93,25 +93,10 @@ impl ValveBlock {
         };
     }
 
-    fn update_current_max_speed(
-        &mut self,
-        context: &UpdateContext,
-        sfcc: &impl ValveBlockController,
-        pressure: Pressure,
-    ) {
-        let sfcc_active = sfcc.get_pob_status() == SolenoidStatus::Energised;
-
-        // Final pressures are the current pressure or 0 if corresponding sfcc is offline
-        // This simulates a motor not responding to a failed or offline sfcc
-        let final_pressure = if !sfcc_active {
-            Pressure::ZERO
-        } else {
-            pressure
-        };
-
+    fn update_current_max_speed(&mut self, context: &UpdateContext, pressure: Pressure) {
         let theoretical_max_speed = AngularVelocity::new::<radian_per_second>(
             self.full_pressure_max_speed.get::<radian_per_second>()
-                * self.max_speed_factor_from_pressure(final_pressure),
+                * self.max_speed_factor_from_pressure(pressure),
         );
 
         // Final max speed filtered to simulate smooth movements
@@ -145,6 +130,7 @@ mod valve_block_tests {
 
     use crate::{
         assert_gt_lt,
+        hydraulic::flap_slat::{SecondarySurfaceSide, SolenoidStatus, WingTipBrakeController},
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, SimulationElementVisitor,
@@ -208,6 +194,11 @@ mod valve_block_tests {
 
         fn get_extend_status(&self) -> SolenoidStatus {
             self.extend_solenoid
+        }
+    }
+    impl WingTipBrakeController for TestSfcc {
+        fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+            SolenoidStatus::DeEnergised
         }
     }
 
@@ -371,6 +362,11 @@ mod valve_block_tests {
             .set_pob_solenoid(SolenoidStatus::DeEnergised)
             .set_extend_solenoid(SolenoidStatus::DeEnergised)
             .set_retract_solenoid(SolenoidStatus::Energised)
+            .run_waiting_for(Duration::from_millis(2000));
+        assert_eq!(test_bed.get_speed(), AngularVelocity::ZERO);
+
+        let test_bed = test_bed
+            .set_extend_solenoid(SolenoidStatus::Energised)
             .run_waiting_for(Duration::from_millis(2000));
         assert_eq!(test_bed.get_speed(), AngularVelocity::ZERO);
     }

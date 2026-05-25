@@ -2,7 +2,9 @@ use std::time::Duration;
 
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
-use systems::hydraulic::flap_slat::{SolenoidStatus, ValveBlockController};
+use systems::hydraulic::flap_slat::{
+    SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
+};
 use systems::shared::{
     AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
     LgciuWeightOnWheels, PositionPickoffUnit,
@@ -27,6 +29,10 @@ pub(super) struct SlatsChannel {
     slats_demanded_angle: Angle,
     slats_feedback_angle: Angle,
 
+    wtb_powered_by: ElectricalBusType,
+    wtb_is_powered: bool,
+    wtb_is_powered_delayed: DelayedFalseLogicGate,
+
     powered_by: ElectricalBusType,
     is_powered: bool,
     is_powered_delayed: DelayedFalseLogicGate,
@@ -42,6 +48,8 @@ pub(super) struct SlatsChannel {
 
     // OUTPUTS
     sap: [bool; 7],
+    left_wtb_solenoid: SolenoidStatus,
+    right_wtb_solenoid: SolenoidStatus,
 
     slat_alpha_lock_baulk_function_active: bool,
     slat_baulk_engaged: bool,
@@ -59,7 +67,12 @@ impl SlatsChannel {
     const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 7.6; //deg
     const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 8.5; //deg
 
-    pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
+    pub(super) fn new(
+        context: &mut InitContext,
+        num: u8,
+        powered_by: ElectricalBusType,
+        wtb_powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_actual_position_word_id: context
@@ -69,6 +82,11 @@ impl SlatsChannel {
 
             slats_demanded_angle: Angle::ZERO,
             slats_feedback_angle: Angle::ZERO,
+
+            wtb_powered_by,
+            wtb_is_powered: false,
+            wtb_is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
 
             powered_by,
             is_powered: false,
@@ -86,6 +104,8 @@ impl SlatsChannel {
 
             // Set `sap` to false to match power-off state
             sap: [false; 7],
+            left_wtb_solenoid: SolenoidStatus::DeEnergised,
+            right_wtb_solenoid: SolenoidStatus::DeEnergised,
 
             slat_alpha_lock_baulk_function_active: false,
             slat_baulk_engaged: false,
@@ -267,9 +287,10 @@ impl SlatsChannel {
         lgciu: &impl LgciuWeightOnWheels,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
+        self.wtb_is_powered_delayed
+            .update(context, self.wtb_is_powered);
 
         // NOTE: there is no power recovery function because not needed by the slat channel (yet)
-
         if !self.is_powered_delayed.output() {
             self.power_loss_reset();
         }
@@ -376,6 +397,18 @@ impl ValveBlockController for SlatsChannel {
         }
     }
 }
+impl WingTipBrakeController for SlatsChannel {
+    fn get_solenoid_status(&self, side: SecondarySurfaceSide) -> SolenoidStatus {
+        // TODO: this is a placeholder. Logic needs to be added to activate the WTB during faults.
+        if !self.wtb_is_powered_delayed.output() {
+            return SolenoidStatus::DeEnergised;
+        }
+        match side {
+            SecondarySurfaceSide::Left => self.left_wtb_solenoid,
+            SecondarySurfaceSide::Right => self.right_wtb_solenoid,
+        }
+    }
+}
 impl SimulationElement for SlatsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
@@ -384,6 +417,7 @@ impl SimulationElement for SlatsChannel {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
+        self.wtb_is_powered = buses.is_powered(self.wtb_powered_by);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

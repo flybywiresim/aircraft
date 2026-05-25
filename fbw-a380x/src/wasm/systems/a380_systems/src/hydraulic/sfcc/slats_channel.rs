@@ -1,5 +1,7 @@
 use systems::{
-    hydraulic::flap_slat::{SolenoidStatus, ValveBlockController},
+    hydraulic::flap_slat::{
+        SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
+    },
     shared::PositionPickoffUnit,
 };
 use uom::si::{angle::degree, f64::*};
@@ -90,5 +92,12 @@ impl ValveBlockController for SlatsChannel {
         } else {
             SolenoidStatus::DeEnergised
         }
+    }
+}
+impl WingTipBrakeController for SlatsChannel {
+    fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+        // TODO: need to connect the slats WTB to the electrical system.
+        // This is just a placeholder.
+        SolenoidStatus::DeEnergised
     }
 }

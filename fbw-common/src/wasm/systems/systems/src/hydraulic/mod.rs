@@ -51,6 +51,7 @@ pub mod reverser;
 pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
 pub mod valve_block;
+pub mod wing_tip_brake;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
