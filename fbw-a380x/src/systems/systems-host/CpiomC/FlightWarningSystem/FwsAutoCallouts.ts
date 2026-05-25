@@ -1,7 +1,6 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import {
-  NXLogicConfirmNode,
   NXLogicPulseNode,
   NXLogicMemoryNode,
   NXLogicTriggeredMonostableNode,
@@ -22,14 +21,12 @@ export class FwsAutoCallouts {
   private readonly phase10RowRopMtrig = new NXLogicTriggeredMonostableNode(4.5, false, true);
   public readonly brakeMaxBraking = Subject.create(false);
   // SET MAX REVERSE
-  private readonly setMaxReverseConf = new NXLogicConfirmNode(0.2);
   public readonly setMaxReverse = Subject.create(false);
 
   // KEEP MAX REVERSE
   private readonly keepMaxReverseMemory = new NXLogicMemoryNode(true);
   private readonly keepMaxReverseDownPulse = new NXLogicPulseNode(false);
   private readonly keepMaxReversePulse = new NXLogicPulseNode(true);
-  private readonly keepMaxReverseConfirm = new NXLogicConfirmNode(0.6);
   public readonly keepMaxReverse = Subject.create(false);
 
   // RUNWAY TOO SHORT
@@ -56,13 +53,10 @@ export class FwsAutoCallouts {
 
     // SET MAX REVERSE
     const maxReverseRequested = this.rowRopStatusWord.bitValueOr(12, false);
-    this.setMaxReverse.set(
-      this.setMaxReverseConf.write(maxReverseRequested, deltaTime) && rolloutOrBouncedLanding && !brakeMaxBraking,
-    ); //FIXME: Check reverser INOP
+    this.setMaxReverse.set(maxReverseRequested && rolloutOrBouncedLanding && !brakeMaxBraking); //FIXME: Check reverser INOP
 
     // KEEP MAX REVERSE.
-    const keepMaxReverse =
-      this.keepMaxReverseConfirm.write(this.rowRopStatusWord.bitValueOr(13, false), deltaTime) && !brakeMaxBraking; // TODO - Check reverser INOP
+    const keepMaxReverse = this.rowRopStatusWord.bitValueOr(13, false) && !brakeMaxBraking && rolloutOrBouncedLanding; // FIXME: Check reverser INOP
     this.keepMaxReverseMemory.write(
       this.keepMaxReversePulse.write(keepMaxReverse),
       this.keepMaxReverseDownPulse.write(keepMaxReverse) || maxReversePlayed,
