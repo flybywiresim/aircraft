@@ -32,7 +32,7 @@ function mapRunwayDesignator(designatorChar: RunwayDesignatorChar) {
   }
 }
 
-function getAirport(icao: string): Promise<RawAirport> {
+export function getAirport(icao: string): Promise<RawAirport> {
   icao = icao.toUpperCase();
   return new Promise((resolve, reject) => {
     if (icao.length !== 4) {

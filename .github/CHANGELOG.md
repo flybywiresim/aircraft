@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 
 ## 2020.15.0
 
