@@ -9,7 +9,7 @@ import {
   RateMultiplierKnob,
   UpdateValueCallback,
   useInteractionEvent,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
 declare const Utils; // this can also be replaced once /typings are available

@@ -12,7 +12,7 @@ import {
   usePersistentProperty,
   Units,
   GsxServiceStates,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import Slider from 'rc-slider';
 import {
   Card,

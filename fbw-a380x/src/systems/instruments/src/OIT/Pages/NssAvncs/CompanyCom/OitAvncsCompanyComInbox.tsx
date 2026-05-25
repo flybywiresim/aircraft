@@ -3,7 +3,7 @@
 
 import { ArraySubject, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 import { OitSimvars } from '../../../OitSimvarPublisher';
 import { AnsuOps } from '../../../System/AnsuOps';
 

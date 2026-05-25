@@ -134,6 +134,16 @@
 1. [A380X/FG] Fixed autopilot managed speed target not limited by characteristic speeds outside of approach - @BravoMike99 (bruno_pt99)
 1. [A32NX/EFB] Skip the departure change checklist in efb - @Lucas-IQ21 (Lucas)
 1. [A32NX/FWS] Add `GEAR NOT UPLOCKED` master caution - @FozzieHi (fozzie)
+1. [A32NX/MCDU] Fix NEW DEST not available in LAT REV on first flightplan waypoint - @BravoMike99 (bruno_pt99)
+1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
+1. [A32NX/FLIGHT MODEL] Updated flight model for MSFS 2024 - @donstim (donbikes)
+1. [A380X/FLIGHT MODEL] Fixes drag level for MSFS 2024 native version - @donstim (donbikes)
+1. [A380X/FUEL SYSTEM] Fixes unbalanced fuel transfer when transfer not active for all feed tanks - @donstim (donbikes)
+1. [A380X/MFD] Fix SURV page radio buttons not matching the actual state of the TCAS system - @heclak (Heclak)
+1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
+1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
+1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 
 ## 0.14.0
@@ -281,6 +291,7 @@
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
 1. [MISC] Prevent long sim freezes in some scenarios in MSFS 2024 - @Benjozork (Benjamin Dupont)
+1. [A380X/Flight Model] Flight Model update for MSFS 2024 - @donstim (donbikes)
 
 ## 0.13.0
 

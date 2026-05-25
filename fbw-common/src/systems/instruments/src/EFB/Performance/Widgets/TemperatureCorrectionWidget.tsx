@@ -12,7 +12,7 @@ import {
   ConfigWeatherMap,
   MathUtils,
   usePersistentSetting,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { getAirport } from '../Data/Runways';
