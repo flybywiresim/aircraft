@@ -1,6 +1,7 @@
 use super::hydraulic_motor::FlapSlatHydraulicMotor;
 use super::linear_actuator::Actuator;
 use crate::hydraulic::valve_block::ValveBlock;
+use crate::hydraulic::wing_tip_brake::WingTipBrake;
 use crate::shared::{interpolation, AverageExt, Clamp, PositionPickoffUnit, SectionPressure};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -54,11 +55,25 @@ pub enum SolenoidStatus {
     Energised,
     DeEnergised,
 }
+impl SolenoidStatus {
+    pub fn is_energised(self) -> bool {
+        self == SolenoidStatus::Energised
+    }
+}
+impl Default for SolenoidStatus {
+    fn default() -> Self {
+        SolenoidStatus::DeEnergised
+    }
+}
 
 pub trait ValveBlockController {
     fn get_pob_status(&self) -> SolenoidStatus;
     fn get_retract_status(&self) -> SolenoidStatus;
     fn get_extend_status(&self) -> SolenoidStatus;
+}
+
+pub trait WingTipBrakeController {
+    fn get_solenoid_status(&self, side: SecondarySurfaceSide) -> SolenoidStatus;
 }
 
 pub struct SecondarySurface {
@@ -225,6 +240,9 @@ pub struct FlapSlatAssembly {
     synchro_gear_ratio: Ratio,
     _surface_gear_ratio: Ratio, // NOTE: commented out for future use
 
+    left_wtb: WingTipBrake,
+    right_wtb: WingTipBrake,
+
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
 
@@ -272,6 +290,8 @@ impl FlapSlatAssembly {
             differential_gear_ratio,
             synchro_gear_ratio,
             _surface_gear_ratio,
+            left_wtb: WingTipBrake::new(context, id, SecondarySurfaceSide::Left),
+            right_wtb: WingTipBrake::new(context, id, SecondarySurfaceSide::Right),
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             left_valve_block: ValveBlock::new(
@@ -292,20 +312,32 @@ impl FlapSlatAssembly {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc_1: &impl ValveBlockController,
-        sfcc_2: &impl ValveBlockController,
-        left_pressure: &impl SectionPressure,
-        right_pressure: &impl SectionPressure,
+        sfcc_1: &(impl ValveBlockController + WingTipBrakeController),
+        sfcc_2: &(impl ValveBlockController + WingTipBrakeController),
+        hyd_motor_pressure: [&impl SectionPressure; 2],
+        left_wtb_pressure: [&impl SectionPressure; 2],
+        right_wtb_pressure: [&impl SectionPressure; 2],
     ) {
-        self.left_valve_block.update(context, sfcc_1, left_pressure);
+        self.left_wtb
+            .update(sfcc_1, sfcc_2, left_wtb_pressure[0], left_wtb_pressure[1]);
+        self.right_wtb
+            .update(sfcc_1, sfcc_2, right_wtb_pressure[0], right_wtb_pressure[1]);
+
+        self.left_valve_block
+            .update(context, sfcc_1, hyd_motor_pressure[0]);
         self.right_valve_block
-            .update(context, sfcc_2, right_pressure);
-        self.pcu_speed = self.left_valve_block.get_speed() + self.right_valve_block.get_speed();
+            .update(context, sfcc_2, hyd_motor_pressure[1]);
+
+        self.pcu_speed = if self.left_wtb.is_active() || self.right_wtb.is_active() {
+            AngularVelocity::ZERO
+        } else {
+            self.left_valve_block.get_speed() + self.right_valve_block.get_speed()
+        };
 
         self.update_motors_speed(
             context,
-            left_pressure.pressure_downstream_priority_valve(),
-            right_pressure.pressure_downstream_priority_valve(),
+            hyd_motor_pressure[0].pressure_downstream_priority_valve(),
+            hyd_motor_pressure[1].pressure_downstream_priority_valve(),
         );
 
         self.update_motors_flow(context);
@@ -418,6 +450,8 @@ impl SimulationElement for FlapSlatAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.left_surfaces.accept(visitor);
         self.right_surfaces.accept(visitor);
+        self.left_wtb.accept(visitor);
+        self.right_wtb.accept(visitor);
 
         visitor.visit(self);
     }
@@ -505,6 +539,7 @@ mod tests {
     struct TestSFCC {
         motor_angle_request: Option<Angle>,
         position_feedback: Angle,
+        wtb_solenoid: SolenoidStatus,
     }
     impl TestSFCC {
         const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
@@ -569,6 +604,11 @@ mod tests {
             }
         }
     }
+    impl WingTipBrakeController for TestSFCC {
+        fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+            self.wtb_solenoid
+        }
+    }
 
     struct TestAircraft {
         core_hydraulic_updater: MaxStepLoop,
@@ -613,8 +653,9 @@ mod tests {
                     &context.with_delta(cur_time_step),
                     &self.sfcc1,
                     &self.sfcc2,
-                    &self.left_motor_pressure,
-                    &self.right_motor_pressure,
+                    [&self.left_motor_pressure, &self.right_motor_pressure],
+                    [&self.left_motor_pressure, &self.right_motor_pressure],
+                    [&self.left_motor_pressure, &self.right_motor_pressure],
                 );
             }
         }
@@ -894,6 +935,10 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANIMATION_POSITION"));
         assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
         assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_APPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_APPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_WTB_ACTIVE"));
+        assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_WTB_ACTIVE"));
         assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
     }
 
