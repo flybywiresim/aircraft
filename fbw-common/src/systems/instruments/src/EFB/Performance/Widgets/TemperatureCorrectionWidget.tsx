@@ -161,6 +161,7 @@ export const TemperatureCorrectionWidget = () => {
     const parsedMetar: MetarParserType = parseMetar(ofpArrivingMetar);
     try {
       const airport = await getAirport(ofpArrivingAirport);
+      dispatch(setIcao(ofpArrivingAirport));
       dispatch(setFieldElevation(airport.altitude));
       dispatch(setTemperature(parsedMetar.temperature.celsius));
     } catch (e) {
