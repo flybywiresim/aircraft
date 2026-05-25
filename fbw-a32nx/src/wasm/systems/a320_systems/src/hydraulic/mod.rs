@@ -2255,16 +2255,36 @@ impl A320Hydraulic {
             context,
             self.slats_flaps_complex.flap_pcu(0),
             self.slats_flaps_complex.flap_pcu(1),
-            self.green_circuit.system_section(),
-            self.yellow_circuit.system_section(),
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
+            [
+                self.blue_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
+            [
+                self.blue_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
         );
 
         self.slat_system.update(
             context,
             self.slats_flaps_complex.slat_pcu(0),
             self.slats_flaps_complex.slat_pcu(1),
-            self.blue_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.blue_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.blue_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.blue_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
         );
 
         self.forward_cargo_door_controller.update(

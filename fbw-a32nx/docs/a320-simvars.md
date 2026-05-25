@@ -1197,6 +1197,13 @@
         - LEFT
         - RIGHT
 
+- A32NX_{side}_FLAPS_WTB_ACTIVE
+    - Boolean
+    - The WTB has been triggered and is holding the flaps in position
+    - Side
+        - LEFT
+        - RIGHT
+
 - A32NX_SLATS_IPPU_ANGLE
     - Degrees
     - The angle of the slats IPPU synchro
@@ -1208,6 +1215,13 @@
 - A32NX_{side}_SLATS_APPU_ANGLE
     - Degrees
     - The APPU synchro angle of the slats on the wing
+    - Side
+        - LEFT
+        - RIGHT
+
+- A32NX_{side}_SLATS_WTB_ACTIVE
+    - Degrees
+    - The WTB has been triggered and is holding the slats in position
     - Side
         - LEFT
         - RIGHT
