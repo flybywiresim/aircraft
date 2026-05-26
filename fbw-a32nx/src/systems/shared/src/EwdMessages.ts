@@ -254,6 +254,7 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['340007001', { group: 'NAV$9', text: ' IR 1+3 FAULT' }],
   ['340007002', { text: '\x1b<5m -ATT HDG SWTG......NORM' }],
   ['340003501', { group: 'NAV$9', text: ' ADR 2+3 FAULT' }],
+  ['340003502', { text: '\x1b<5m -AIR DATA SWTG.....NORM' }],
   ['340003503', { text: '\x1b<5m -ATC/XPDR.........SYS 1' }],
   ['340003504', { text: '\x1b<5m -ADR 2 P/B..........OFF' }],
   ['340003505', { text: '\x1b<5m -ADR 3 P/B..........OFF' }],
