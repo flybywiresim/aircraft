@@ -1411,11 +1411,11 @@ export class PseudoFWC {
   private readonly ir3NotAlignedPulse = new NXLogicPulseNode(true);
 
   private readonly ir1FaultConf = new NXLogicConfirmNode(0.5, true);
-  private readonly ir1FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
+  private readonly ir1FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
   private readonly ir2FaultConf = new NXLogicConfirmNode(0.5, true);
-  private readonly ir2FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
+  private readonly ir2FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
   private readonly ir3FaultConf = new NXLogicConfirmNode(0.5, true);
-  private readonly ir3FaultMtrig = new NXLogicTriggeredMonostableNode(10, true);
+  private readonly ir3FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
   private readonly ir3FaultFlipFlop = new NXLogicMemoryNode(false);
 
   private readonly ir3UsedLeft = Subject.create(false);
@@ -4402,7 +4402,7 @@ export class PseudoFWC {
       !(this.flightPhase110.get() || this.sdac00210Word.bitValue(20) || this.sdac00200Word.bitValue(18)) &&
         adr1Faulty &&
         adr2Faulty &&
-        !this.adr1and2and3FaultActive,
+        !this.adr1and2and3FaultActive.get(),
     );
     this.adr1and3FaultActive.set(
       !this.flightPhase110.get() &&
@@ -4434,7 +4434,7 @@ export class PseudoFWC {
         !this.adr1and2and3FaultActive.get(),
     );
 
-    this.adr3FaultFlipFlop.write(adr3Faulty && this.fwcFlightPhase.get() == 2, !ir3FaultDetected);
+    this.adr3FaultFlipFlop.write(adr3Faulty && this.fwcFlightPhase.get() == 2, !adr3Faulty);
 
     this.adr3FaultActive.set(
       adr3Faulty &&
