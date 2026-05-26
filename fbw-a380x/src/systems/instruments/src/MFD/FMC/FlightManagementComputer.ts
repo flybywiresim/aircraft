@@ -1098,7 +1098,7 @@ export class FlightManagementComputer implements FmcInterface {
       isResolvedOverride: isTypeIIMessage(message) ? message.isResolved : () => false,
     };
 
-    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
+    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText);
     if (exists !== -1) {
       this.fmsErrors.removeAt(exists);
     }

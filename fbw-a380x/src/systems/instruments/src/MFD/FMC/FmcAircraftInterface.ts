@@ -1764,7 +1764,7 @@ export class FmcAircraftInterface {
     }
     const plan = this.flightPlanService.get(planIndex);
     const cruiseFl = plan.performanceData.cruiseFlightLevel.get();
-    if (!cruiseFl) {
+    if (cruiseFl === null || cruiseFl === undefined) {
       return;
     }
 
@@ -1791,17 +1791,23 @@ export class FmcAircraftInterface {
 
   /**
    * Returns true if the constraint should be deleted under the "constraints above CRZ FL" rule.
-   * Per FCOM, this covers AT, AT OR ABOVE, AT OR BELOW with values >= CRZ FL, and WINDOW
-   * constraints whose upper bound (altitude1) is >= CRZ FL. Glide-slope/angle variants are not listed
-   * in the FCOM rule and are therefore left untouched.
+   * Covers AT (altitude1), AT OR ABOVE alt1 (altitude1), AT OR ABOVE alt2 (altitude2), and WINDOW
+   * constraints whose upper bound (altitude1) is >= CRZ FL.
+   *
+   * AT OR BELOW is intentionally excluded: its altitude1 is a ceiling (maximum altitude), not a floor.
+   * A ceiling above CRZ FL does not require the aircraft to fly above cruise, so the constraint
+   * remains meaningful for descent profile computation and must not be deleted.
+   *
+   * Glide-slope/angle variants are not listed in the FCOM rule and are left untouched.
    */
   private static isConstraintAboveOrAtCruise(constraint: AltitudeConstraint, cruiseAltFt: number): boolean {
     switch (constraint.altitudeDescriptor) {
       case AltitudeDescriptor.AtAlt1:
       case AltitudeDescriptor.AtOrAboveAlt1:
-      case AltitudeDescriptor.AtOrBelowAlt1:
       case AltitudeDescriptor.BetweenAlt1Alt2:
         return constraint.altitude1 !== undefined && constraint.altitude1 >= cruiseAltFt;
+      case AltitudeDescriptor.AtOrAboveAlt2:
+        return constraint.altitude2 !== undefined && constraint.altitude2 >= cruiseAltFt;
       default:
         return false;
     }

@@ -136,23 +136,35 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           const trans: ButtonMenuItem[] = [
             {
               label: 'NONE',
-              action: () =>
-                this.props.flightPlanInterface.setDepartureEnrouteTransition(
+              action: async () => {
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
-                ),
+                );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
+              },
             },
           ];
           flightPlan.originDeparture.enrouteTransitions.forEach((el) => {
             trans.push({
               label: el.ident,
-              action: () =>
-                this.props.flightPlanInterface.setDepartureEnrouteTransition(
+              action: async () => {
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   el.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
-                ),
+                );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
+              },
             });
           });
           this.transOptions.set(trans);

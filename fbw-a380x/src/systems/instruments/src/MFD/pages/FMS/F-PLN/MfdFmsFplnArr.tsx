@@ -318,6 +318,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   this.loadedFlightPlanIndex.get(),
                   isAltn,
                 );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
               },
             },
           ];
@@ -330,6 +335,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   this.loadedFlightPlanIndex.get(),
                   isAltn,
                 );
+                if (!isAltn) {
+                  this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                    this.loadedFlightPlanIndex.get(),
+                  );
+                }
               },
             });
           });
@@ -377,6 +387,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             );
             await this.props.flightPlanInterface.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
             await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+            if (!isAltn) {
+              this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(
+                this.loadedFlightPlanIndex.get(),
+              );
+            }
           },
         });
       });
