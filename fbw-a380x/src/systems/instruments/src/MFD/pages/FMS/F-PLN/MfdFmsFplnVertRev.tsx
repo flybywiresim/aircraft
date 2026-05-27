@@ -242,7 +242,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.availableWaypointsToLegIndex = [];
     this.availableWaypointsIdents = [];
     if (activeLegIndex !== undefined && plan !== null) {
-      for (let i = activeLegIndex; i < plan.legCount; i++) {
+      for (let i = activeLegIndex; i < plan.firstMissedApproachLegIndex; i++) {
         const leg = plan.maybeElementAt(i);
         if (isLeg(leg) && leg.isXF()) {
           this.availableWaypointsToLegIndex.push(i);
