@@ -115,6 +115,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
     this.subs.push(this.penaltyUri, this.displayPenalty, this.shouldShowTemporaryPageUris, this.displayTmpy);
 
+    // FIXME needed?
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
     this.subs.push(
