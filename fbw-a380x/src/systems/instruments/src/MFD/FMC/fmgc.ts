@@ -22,6 +22,7 @@ import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { FmcAircraftInterface } from './FmcAircraftInterface';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -343,8 +344,9 @@ export class FmgcDataService implements Fmgc {
     if (!this.flightPlanService.has(fpIndex)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.get(fpIndex).performanceData.climbSpeedLimitSpeed.get();
-    const speedLimitAltitude = this.flightPlanService.get(fpIndex).performanceData.climbSpeedLimitAltitude.get();
+    const performanceData = this.flightPlanService.get(fpIndex).performanceData;
+    const speedLimitSpeed = performanceData.climbSpeedLimitSpeed.get();
+    const speedLimitAltitude = performanceData.climbSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -358,8 +360,9 @@ export class FmgcDataService implements Fmgc {
     if (!this.flightPlanService.has(fpIndex)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.get(fpIndex).performanceData.descentSpeedLimitSpeed.get();
-    const speedLimitAltitude = this.flightPlanService.get(fpIndex).performanceData.descentSpeedLimitAltitude.get();
+    const performanceData = this.flightPlanService.get(fpIndex).performanceData;
+    const speedLimitSpeed = performanceData.descentSpeedLimitSpeed.get();
+    const speedLimitAltitude = performanceData.descentSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -440,7 +443,9 @@ export class FmgcDataService implements Fmgc {
 
   /** in hPa */
   getApproachQnh(): number {
-    return this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25;
+    return (
+      FmcAircraftInterface.convertQnhToHpa(this.flightPlanService.active.performanceData.approachQnh.get()) ?? 1013.25
+    );
   }
 
   /** in degrees celsius */

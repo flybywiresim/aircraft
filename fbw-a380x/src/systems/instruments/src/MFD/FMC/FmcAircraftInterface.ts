@@ -40,7 +40,7 @@ import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/Fms
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
+import { QnhFormat, RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FlightManagementComputer, FMS_CYCLE_TIME } from './FlightManagementComputer';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
@@ -273,8 +273,7 @@ export class FmcAircraftInterface {
       this.simVarV2Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v ?? NaN), true),
       this.simVarVrSpeed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v ?? NaN), true),
       this.simVarDestinationQnh.sub((v) => {
-        const qnhInHpa = v !== null ? (v > 100 ? v : UnitType.HPA.convertFrom(v, UnitType.IN_HG)) : 0;
-        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhInHpa);
+        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', FmcAircraftInterface.convertQnhToHpa(v) ?? 0);
       }, true),
       this.simVarMda.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v ?? 0), true),
       this.simVarDh.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v), true),
@@ -2177,5 +2176,14 @@ export class FmcAircraftInterface {
         pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
       }
     }
+  }
+
+  public static convertQnhToHpa(qnh: number | null): number | null {
+    if (qnh === null) {
+      return null;
+    }
+    return qnh > QnhFormat.minHpaValue && qnh <= QnhFormat.maxHpaValue
+      ? qnh
+      : UnitType.HPA.convertFrom(qnh, UnitType.IN_HG);
   }
 }
