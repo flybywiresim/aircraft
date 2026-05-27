@@ -145,7 +145,7 @@
 1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Fixed TMPY being generated upon accessing lateral or vertical revision pages - @BravoMike99 (bruno_pt99)
-1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the lateral & vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Alternate flightplan can be loaded on the lateral & vertical revision pages - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

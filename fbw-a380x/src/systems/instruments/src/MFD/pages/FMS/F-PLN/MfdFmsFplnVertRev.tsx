@@ -283,7 +283,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     leg: ReadonlyFlightPlanLeg,
     flightPlan: ReadonlyFlightPlan,
   ): boolean {
-    return isConstraintRevisionAllowed(leg) && legIndex >= flightPlan.activeLegIndex;
+    return (
+      isConstraintRevisionAllowed(leg) &&
+      legIndex >= flightPlan.activeLegIndex &&
+      legIndex < flightPlan.firstMissedApproachLegIndex
+    );
   }
 
   private updateConstraints() {
