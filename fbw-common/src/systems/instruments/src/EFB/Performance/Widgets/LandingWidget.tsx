@@ -15,6 +15,7 @@ import {
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
+  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -71,7 +72,7 @@ export const LandingWidget = () => {
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+  const [metarSource] = usePersistentSetting('CONFIG_METAR_SRC');
 
   const { usingMetric } = Units;
 
@@ -777,8 +778,8 @@ export const LandingWidget = () => {
                       value={temperatureUnit}
                       className="w-20 rounded-l-none"
                       options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
+                        { value: 'C', displayValue: '°C' },
+                        { value: 'F', displayValue: '°F' },
                       ]}
                       onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
                     />

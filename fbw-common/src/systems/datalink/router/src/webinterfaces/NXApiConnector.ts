@@ -116,7 +116,7 @@ export class NXApiConnector {
   }
 
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
+    const storedMetarSrc = NXDataStore.getSetting('CONFIG_METAR_SRC').get();
 
     return Metar.get(icao, ConfigWeatherMap[storedMetarSrc])
       .then((data) => {
