@@ -15,7 +15,7 @@ use crate::navigation::adirs::{
     InertialReferenceBusOutputs, InertialReferenceDiscreteOutput, IrDiscreteInputs,
     IrDiscreteOutputs,
 };
-use crate::navigation::adirs::{AdiruNumber, AdrAnalogInputs, AirDataModulePowerProvider};
+use crate::navigation::adirs::{AdrAnalogInputs, AirDataModulePowerProvider};
 use crate::shared::{
     arinc429::Arinc429Word,
     logic_nodes::{ConfirmationNode, MonostableTriggerNode},
@@ -47,8 +47,8 @@ impl Display for OutputDataType {
     }
 }
 
-fn output_data_id(data_type: OutputDataType, number: AdiruNumber, name: &str) -> String {
-    format!("ADIRS_{}_{}_{}", data_type, number as usize, name)
+fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> String {
+    format!("ADIRS_{}_{}_{}", data_type, number, name)
 }
 
 #[derive(Default)]
@@ -95,7 +95,7 @@ pub struct AirDataInertialReferenceUnit<AdrRuntime> {
 
     // TODO replace with pin prog
     #[allow(unused)]
-    num: AdiruNumber,
+    num: usize,
 
     // Power
     primary_is_powered: bool,
@@ -425,14 +425,14 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
 
     pub fn new(
         context: &mut InitContext,
-        num: AdiruNumber,
+        num: usize,
         programming: AirDataInertialReferenceUnitProgramming,
     ) -> Self {
         let is_powered = context.has_engines_running();
 
         let mut result = Self {
-            adr_failure: Failure::new(FailureType::Adr(num.into())),
-            ir_failure: Failure::new(FailureType::Ir(num.into())),
+            adr_failure: Failure::new(FailureType::Adr(num)),
+            ir_failure: Failure::new(FailureType::Ir(num)),
 
             num,
 

@@ -6,7 +6,7 @@ use crate::navigation::adirs::{
         AngleOfAttackVane, PitotTube, PressureTube, StaticPort, TemperatureProbe,
         TotalAirTemperatureProbe, WindVane,
     },
-    AdiruNumber, AdrAnalogInput, AdrAnalogInputs, AirDataModulePowerProvider,
+    AdrAnalogInput, AdrAnalogInputs, AirDataModulePowerProvider,
 };
 use crate::simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext};
 
@@ -35,14 +35,14 @@ pub struct AirDataModuleAirDataSensorsComplex {
     analog_input_data: AdrAnalogInputs,
 }
 impl AirDataModuleAirDataSensorsComplex {
-    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
             pitot_tube: PitotTube::new(context, num),
 
             left_static_port: StaticPort::new(context, num),
             right_static_port: StaticPort::new(context, num),
 
-            pressure_tube: if num == AdiruNumber::Three {
+            pressure_tube: if num == 3 {
                 Some(PressureTube::new())
             } else {
                 None
@@ -50,7 +50,7 @@ impl AirDataModuleAirDataSensorsComplex {
 
             aoa_probe: AngleOfAttackVane::new(context, num),
 
-            tat_probe: if num == AdiruNumber::Three {
+            tat_probe: if num == 3 {
                 None
             } else {
                 Some(TotalAirTemperatureProbe::new(context))
@@ -59,13 +59,13 @@ impl AirDataModuleAirDataSensorsComplex {
             adm_1: AirDataModule::new(context, AirDataModuleInstallationPosition::TotalPressure),
             adm_2: AirDataModule::new(
                 context,
-                if num == AdiruNumber::Three {
+                if num == 3 {
                     AirDataModuleInstallationPosition::AverageStaticPressure
                 } else {
                     AirDataModuleInstallationPosition::LeftStaticPressure
                 },
             ),
-            adm_3: if num == AdiruNumber::Three {
+            adm_3: if num == 3 {
                 None
             } else {
                 Some(AirDataModule::new(

@@ -7,43 +7,6 @@ use uom::si::f64::*;
 pub mod air_data_sensors;
 pub mod hw_block3_adiru;
 
-#[derive(Clone, Copy, PartialEq, Debug, Eq, Hash)]
-pub enum AdiruNumber {
-    One = 1,
-    Two,
-    Three,
-}
-impl Iterator for AdiruNumber {
-    type Item = Self;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            Self::One => Some(Self::Two),
-            Self::Two => Some(Self::Three),
-            Self::Three => None,
-        }
-    }
-}
-impl From<usize> for AdiruNumber {
-    fn from(value: usize) -> Self {
-        match value {
-            1 => Self::One,
-            2 => Self::Two,
-            3 => Self::Three,
-            i => panic!("Cannot convert from {} to AdiruNumber.", i),
-        }
-    }
-}
-impl From<AdiruNumber> for usize {
-    fn from(value: AdiruNumber) -> Self {
-        match value {
-            AdiruNumber::One => 1,
-            AdiruNumber::Two => 2,
-            AdiruNumber::Three => 3,
-        }
-    }
-}
-
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AirDataAttHdgSwitchingKnobPosition {
     Norm,

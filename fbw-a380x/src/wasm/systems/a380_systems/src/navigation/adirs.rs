@@ -12,7 +12,7 @@ use systems::navigation::adirs::hw_block3_adiru::adiru::{
 use systems::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
 use systems::navigation::adirs::hw_block3_adiru::AdiruElectricalHarness;
 use systems::navigation::adirs::{
-    AdiruNumber, AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
+    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceBusOutput,
     AirDataReferenceDiscreteOutput, InertialReferenceBusOutput, InertialReferenceDiscreteOutput,
     IrDiscreteInputs, ModeSelectorPosition,
 };
@@ -52,25 +52,13 @@ impl A380AirDataInertialReferenceSystem {
         );
 
         Self {
-            adiru_1: AirDataInertialReferenceUnit::new(
-                context,
-                AdiruNumber::One,
-                adirs_programming.clone(),
-            ),
-            adiru_2: AirDataInertialReferenceUnit::new(
-                context,
-                AdiruNumber::Two,
-                adirs_programming.clone(),
-            ),
-            adiru_3: AirDataInertialReferenceUnit::new(
-                context,
-                AdiruNumber::Three,
-                adirs_programming.clone(),
-            ),
+            adiru_1: AirDataInertialReferenceUnit::new(context, 1, adirs_programming.clone()),
+            adiru_2: AirDataInertialReferenceUnit::new(context, 2, adirs_programming.clone()),
+            adiru_3: AirDataInertialReferenceUnit::new(context, 3, adirs_programming.clone()),
 
-            sensor_complex_1: IntegratedAirDataSensorsComplex::new(context, AdiruNumber::One),
-            sensor_complex_2: IntegratedAirDataSensorsComplex::new(context, AdiruNumber::Two),
-            sensor_complex_3: IntegratedAirDataSensorsComplex::new(context, AdiruNumber::Three),
+            sensor_complex_1: IntegratedAirDataSensorsComplex::new(context, 1),
+            sensor_complex_2: IntegratedAirDataSensorsComplex::new(context, 2),
+            sensor_complex_3: IntegratedAirDataSensorsComplex::new(context, 3),
         }
     }
 
@@ -80,7 +68,7 @@ impl A380AirDataInertialReferenceSystem {
         electrical_harness: &A380AdirsElectricalHarness,
         fcu: &impl FlightControlUnitBusOutput,
     ) {
-        AdiruNumber::One.into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             // For the ADR input:
             // Nr. | Input 1 | Input 2
             // ----|---------|--------
@@ -89,16 +77,18 @@ impl A380AirDataInertialReferenceSystem {
             // 3   | ADR 1   | ADR 2
 
             let (adiru_own, adr_1, adr_2) = match adiru_num {
-                AdiruNumber::One => (&mut self.adiru_1, &self.adiru_3, &self.adiru_2),
-                AdiruNumber::Two => (&mut self.adiru_2, &self.adiru_3, &self.adiru_1),
-                AdiruNumber::Three => (&mut self.adiru_3, &self.adiru_1, &self.adiru_2),
+                1 => (&mut self.adiru_1, &self.adiru_3, &self.adiru_2),
+                2 => (&mut self.adiru_2, &self.adiru_3, &self.adiru_1),
+                3 => (&mut self.adiru_3, &self.adiru_1, &self.adiru_2),
+                _ => panic!("Impossible Installation position encountered"),
             };
 
             let adiru_harness = electrical_harness.get_adiru_electrical_harness(adiru_num);
             let sensor_complex = match adiru_num {
-                AdiruNumber::One => &mut self.sensor_complex_1,
-                AdiruNumber::Two => &mut self.sensor_complex_2,
-                AdiruNumber::Three => &mut self.sensor_complex_3,
+                1 => &mut self.sensor_complex_1,
+                2 => &mut self.sensor_complex_2,
+                3 => &mut self.sensor_complex_3,
+                _ => panic!("Impossible Installation position encountered"),
             };
 
             sensor_complex.update(context, electrical_harness);
@@ -119,93 +109,91 @@ impl A380AirDataInertialReferenceSystem {
         });
     }
 }
-impl Index<AdiruNumber> for A380AirDataInertialReferenceSystem {
+impl Index<usize> for A380AirDataInertialReferenceSystem {
     type Output = AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>;
 
-    fn index(&self, num: AdiruNumber) -> &Self::Output {
+    fn index(&self, num: usize) -> &Self::Output {
         match num {
-            AdiruNumber::One => &self.adiru_1,
-            AdiruNumber::Two => &self.adiru_2,
-            AdiruNumber::Three => &self.adiru_3,
+            1 => &self.adiru_1,
+            2 => &self.adiru_2,
+            3 => &self.adiru_3,
+            _ => panic!("Invalid ADIRU Index {num}"),
         }
     }
 }
-impl IndexMut<AdiruNumber> for A380AirDataInertialReferenceSystem {
-    fn index_mut(&mut self, num: AdiruNumber) -> &mut Self::Output {
+impl IndexMut<usize> for A380AirDataInertialReferenceSystem {
+    fn index_mut(&mut self, num: usize) -> &mut Self::Output {
         match num {
-            AdiruNumber::One => &mut self.adiru_1,
-            AdiruNumber::Two => &mut self.adiru_2,
-            AdiruNumber::Three => &mut self.adiru_3,
+            1 => &mut self.adiru_1,
+            2 => &mut self.adiru_2,
+            3 => &mut self.adiru_3,
+            _ => panic!("Invalid ADIRU Index {num}"),
         }
     }
 }
 // Implement legacy discrete outputs to satisfy trait bounds
 impl AdirsDiscreteOutputs for A380AirDataInertialReferenceSystem {
     fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
-            .low_speed_warning_1
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_1
     }
 
     fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
-            .low_speed_warning_2
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_2
     }
 
     fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
-            .low_speed_warning_3
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_3
     }
 
     fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
-        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number.into()])
-            .low_speed_warning_4
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_4
     }
 }
 impl AdirsMeasurementOutputs for A380AirDataInertialReferenceSystem {
     fn is_fully_aligned(&self, adiru_number: usize) -> bool {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number])
             .discrete_word_1
             .get_bit(13)
     }
     fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ppos_latitude
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_latitude
     }
     fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ppos_longitude
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_longitude
     }
     fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).magnetic_heading
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).magnetic_heading
     }
     fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).true_heading
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).true_heading
     }
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).inertial_vertical_speed
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).inertial_vertical_speed
     }
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).standard_altitude
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).standard_altitude
     }
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).corrected_angle_of_attack
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).corrected_angle_of_attack
     }
     fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).computed_airspeed
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).computed_airspeed
     }
 }
 impl AdirsToAirCondInterface for A380AirDataInertialReferenceSystem {
     fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        InertialReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).ground_speed
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ground_speed
     }
     fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()]).true_airspeed
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).true_airspeed
     }
     fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
-        let word = AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
-            .baro_correction_1_hpa;
+        let word =
+            AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).baro_correction_1_hpa;
         Arinc429Word::new(Pressure::new::<hectopascal>(word.value()), word.ssm())
     }
     fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number.into()])
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number])
             .corrected_average_static_pressure
     }
 }
@@ -277,21 +265,21 @@ impl A380AdirsElectricalHarness {
                 && self.dc_ess_powered
                 && self.air_data_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::CaptOn3;
 
-        AdiruNumber::One.into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_before_adirus(context, &mut adirs[adiru_num]);
         });
     }
 
     pub fn update_after_adirus(&mut self, adirs: &A380AirDataInertialReferenceSystem) {
-        AdiruNumber::One.into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             let adiru = &adirs[adiru_num];
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_after_adirus(adiru);
         });
     }
 
-    fn get_adiru_electrical_harness(&self, num: AdiruNumber) -> &A380AdiruElectricalHarness {
+    fn get_adiru_electrical_harness(&self, num: usize) -> &A380AdiruElectricalHarness {
         &self[num]
     }
 
@@ -300,14 +288,15 @@ impl A380AdirsElectricalHarness {
         powered_1: bool,
         powered_2: bool,
         powered_3: bool,
-        num: AdiruNumber,
+        num: usize,
     ) -> bool {
         let (is_1_powered, is_3_powered) = self.switching_relay_logic(powered_1, powered_3);
 
         match num {
-            AdiruNumber::One => is_1_powered,
-            AdiruNumber::Two => powered_2,
-            AdiruNumber::Three => is_3_powered,
+            1 => is_1_powered,
+            2 => powered_2,
+            3 => is_3_powered,
+            _ => panic!("Invalid ADIRU Index {num}"),
         }
     }
 
@@ -328,7 +317,7 @@ impl A380AdirsElectricalHarness {
     }
 }
 impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
-    fn isp_dc_powered(&self, num: AdiruNumber) -> bool {
+    fn isp_dc_powered(&self, num: usize) -> bool {
         self.probe_supply_logic(
             self.dc_ess_powered,
             self.dc_2_powered,
@@ -337,7 +326,7 @@ impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
         )
     }
 
-    fn isp_ac_powered(&self, num: AdiruNumber) -> bool {
+    fn isp_ac_powered(&self, num: usize) -> bool {
         self.probe_supply_logic(
             self.ac_ess_shed_powered,
             self.ac_4_powered,
@@ -346,7 +335,7 @@ impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
         )
     }
 
-    fn mfp_powered(&self, num: AdiruNumber) -> bool {
+    fn mfp_powered(&self, num: usize) -> bool {
         self.probe_supply_logic(
             self.ac_ess_powered,
             self.ac_4_powered,
@@ -355,7 +344,7 @@ impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
         )
     }
 
-    fn ssp_powered(&self, num: AdiruNumber) -> bool {
+    fn ssp_powered(&self, num: usize) -> bool {
         self.probe_supply_logic(
             self.ac_ess_shed_powered,
             self.ac_4_powered,
@@ -364,23 +353,25 @@ impl IntegratedProbesPowerProvider for A380AdirsElectricalHarness {
         )
     }
 }
-impl Index<AdiruNumber> for A380AdirsElectricalHarness {
+impl Index<usize> for A380AdirsElectricalHarness {
     type Output = A380AdiruElectricalHarness;
 
-    fn index(&self, num: AdiruNumber) -> &Self::Output {
+    fn index(&self, num: usize) -> &Self::Output {
         match num {
-            AdiruNumber::One => &self.adiru_1_electrical_harness,
-            AdiruNumber::Two => &self.adiru_2_electrical_harness,
-            AdiruNumber::Three => &self.adiru_3_electrical_harness,
+            1 => &self.adiru_1_electrical_harness,
+            2 => &self.adiru_2_electrical_harness,
+            3 => &self.adiru_3_electrical_harness,
+            _ => panic!("Invalid ADIRU Index {num}"),
         }
     }
 }
-impl IndexMut<AdiruNumber> for A380AdirsElectricalHarness {
-    fn index_mut(&mut self, num: AdiruNumber) -> &mut Self::Output {
+impl IndexMut<usize> for A380AdirsElectricalHarness {
+    fn index_mut(&mut self, num: usize) -> &mut Self::Output {
         match num {
-            AdiruNumber::One => &mut self.adiru_1_electrical_harness,
-            AdiruNumber::Two => &mut self.adiru_2_electrical_harness,
-            AdiruNumber::Three => &mut self.adiru_3_electrical_harness,
+            1 => &mut self.adiru_1_electrical_harness,
+            2 => &mut self.adiru_2_electrical_harness,
+            3 => &mut self.adiru_3_electrical_harness,
+            _ => panic!("Invalid ADIRU Index {num}"),
         }
     }
 }

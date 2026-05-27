@@ -4,19 +4,19 @@ use crate::navigation::adirs::{
         IntegratedStaticProbeInstallationPosition, MultifunctionProbe, MultifunctionProbeBusOutput,
         SideslipAngleProbe, SideslipAngleProbeBusOutput,
     },
-    AdiruNumber, AdrAnalogInput, AdrAnalogInputs,
+    AdrAnalogInput, AdrAnalogInputs,
 };
 use crate::simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext};
 
 pub trait IntegratedProbesPowerProvider {
-    fn isp_dc_powered(&self, num: AdiruNumber) -> bool;
-    fn isp_ac_powered(&self, num: AdiruNumber) -> bool;
-    fn mfp_powered(&self, num: AdiruNumber) -> bool;
-    fn ssp_powered(&self, num: AdiruNumber) -> bool;
+    fn isp_dc_powered(&self, num: usize) -> bool;
+    fn isp_ac_powered(&self, num: usize) -> bool;
+    fn mfp_powered(&self, num: usize) -> bool;
+    fn ssp_powered(&self, num: usize) -> bool;
 }
 
 pub struct IntegratedAirDataSensorsComplex {
-    num: AdiruNumber,
+    num: usize,
 
     mfp: MultifunctionProbe,
 
@@ -28,7 +28,7 @@ pub struct IntegratedAirDataSensorsComplex {
     analog_input_data: AdrAnalogInputs,
 }
 impl IntegratedAirDataSensorsComplex {
-    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
             num,
 

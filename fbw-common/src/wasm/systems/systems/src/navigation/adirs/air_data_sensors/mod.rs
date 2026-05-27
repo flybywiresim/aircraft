@@ -5,7 +5,6 @@ use uom::si::{
 
 use crate::{
     failures::{Failure, FailureType},
-    navigation::adirs::AdiruNumber,
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         VariableIdentifier,
@@ -35,9 +34,9 @@ impl PitotTube {
     const DYNAMIC_PRESSURE_ID: &str = "DYNAMIC PRESSURE";
     const AMBIENT_PRESSURE_ID: &str = "AMBIENT PRESSURE";
 
-    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
-            pitot_blockage: Failure::new(FailureType::PitotBlockage(num.into())),
+            pitot_blockage: Failure::new(FailureType::PitotBlockage(num)),
 
             dynamic_pressure: Pressure::default(),
             static_pressure: Pressure::default(),
@@ -82,9 +81,9 @@ pub struct StaticPort {
 impl StaticPort {
     const AMBIENT_PRESSURE_ID: &str = "AMBIENT PRESSURE";
 
-    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
-            static_blockage: Failure::new(FailureType::StaticBlockage(num.into())),
+            static_blockage: Failure::new(FailureType::StaticBlockage(num)),
 
             static_pressure: Pressure::default(),
             static_pressure_id: context.get_identifier(Self::AMBIENT_PRESSURE_ID.to_owned()),
@@ -149,9 +148,9 @@ pub struct AngleOfAttackVane {
 impl AngleOfAttackVane {
     const ANGLE_OF_ATTACK_ID: &str = "INCIDENCE ALPHA";
 
-    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
-            stuck_aoa: Failure::new(FailureType::AoaProbeStuck(num.into())),
+            stuck_aoa: Failure::new(FailureType::AoaProbeStuck(num)),
 
             angle_of_attack: Angle::default(),
             angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK_ID.to_owned()),
