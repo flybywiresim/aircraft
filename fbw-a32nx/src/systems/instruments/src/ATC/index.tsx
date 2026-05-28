@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSimVar, useSplitSimVar, useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useSplitSimVar, useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk-react';
 import { TcasComputer } from '@tcas/index';
 import { render } from '@instruments/common/index';
 

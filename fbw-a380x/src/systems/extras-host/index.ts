@@ -19,13 +19,14 @@ import {
   PilotSeatManager,
   TelexCheck,
   PilotSeatPublisher,
+  MsfsVersionPopupMonitor,
 } from '@flybywiresim/fbw-sdk';
 
-import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
+import { PushbuttonCheck } from './modules/pushbutton_check/PushbuttonCheck';
 import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
-import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
+import { LightSync } from './modules/light_sync/LightSync';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
@@ -64,6 +65,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clock = new Clock(this.bus);
+
+  private readonly msfsVersionPopup = new MsfsVersionPopupMonitor(this.bus, 'A380X');
 
   private readonly notificationManager: NotificationManager;
 

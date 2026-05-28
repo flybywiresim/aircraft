@@ -10,8 +10,8 @@ import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-c
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
-import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBusProvider } from './shared/FcuBusProvider';
+import { FgBusProvider } from './shared/FgBusProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';

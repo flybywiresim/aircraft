@@ -13,7 +13,7 @@ import {
   usePersistentSetting,
   NXDataStoreSettings,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
@@ -26,7 +26,7 @@ import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src'
 
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-  const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+  const [metarSource, setMetarSource] = usePersistentSetting('CONFIG_METAR_SRC');
   const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
   const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
@@ -159,7 +159,7 @@ export const AtsuAocPage = () => {
     if (type === 'ATIS') {
       setAtisSource(source);
     } else if (type === 'METAR') {
-      setMetarSource(source);
+      setMetarSource(source as any);
     } else if (type === 'TAF') {
       setTafSource(source);
     }
