@@ -543,6 +543,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private athrMode = 0;
 
+  private isAutoBrkChange = false;
+
   private cellRef = FSComponent.createRef<SVGGElement>();
 
   private flexTemp = 0;
@@ -624,33 +626,45 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         break;
       case 7:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">SPEED</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 8:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">MACH</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 9:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR MCT</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 10:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR CLB</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 11:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR LVR</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 12:
         text = '<text  class="FontMediumSmaller MiddleAlign Green" x="341" y="35.6">THR IDLE</text>';
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
+        this.isAutoBrkChange
+          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
+          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
       case 13:
         this.displayModeChangedPath(true);
@@ -716,6 +730,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     }
 
     this.cellRef.instance.innerHTML = text;
+
+    this.isAutoBrkChange = false;
   }
 
   onAfterRender(node: VNode): void {
@@ -760,6 +776,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
+        this.isAutoBrkChange = true;
         this.setText();
       });
   }
@@ -2170,7 +2187,7 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
         this.decMode = mode;
         this.isShown = false;
         this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
       });
 
     sub
@@ -2252,7 +2269,7 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .handle((mode) => {
         this.decMode = mode;
         if (this.decMode !== 2) {
-          this.displayModeChangedPath();
+          this.displayModeChangedPath(true);
           this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         } else {
           this.isShown = false;
@@ -2266,13 +2283,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((fd) => {
         this.fd1Active = fd;
-        if (fd || this.fd2Active) {
-          this.displayModeChangedPath();
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         this.getText();
       });
 
@@ -2297,13 +2309,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((fd) => {
         this.fd2Active = fd;
-        if (fd || this.fd1Active) {
-          this.displayModeChangedPath();
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         this.getText();
       });
   }
