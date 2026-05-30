@@ -18,7 +18,7 @@ export class CDUPerformancePage {
   private static _timer: number | undefined = undefined;
   private static _lastPhase: FmgcFlightPhase | undefined = undefined;
 
-  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, _phase = undefined) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active, _phase = undefined) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
       mcdu.efisInterfaces.L.setSecRelatedPageOpen(
         forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
@@ -269,7 +269,7 @@ export class CDUPerformancePage {
     };
 
     // eng out acceleration altitude
-    const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
+    const engOutAcc = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
       if (mcdu.trySetEngineOutAcceleration(value, forPlan)) {
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
@@ -411,12 +411,28 @@ export class CDUPerformancePage {
       };
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     const titleCell = `${titlePrefix}TAKE\xa0OFF\xa0RWY\xa0{green}${runway.padStart(3, '\xa0')}{end}\xa0\xa0\xa0\xa0[color]${titleColor}`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['\xa0V1\xa0\xa0FLP RETR', ''],
-      [v1 + v1Check + '\xa0F=' + flpRetrCell, ''],
+      ['\xa0V1\xa0\xa0FLP RETR', eoClrTitle],
+      [v1 + v1Check + '\xa0F=' + flpRetrCell, eoClrText],
       ['\xa0VR\xa0\xa0SLT RETR', 'TO SHIFT\xa0'],
       [vR + vRCheck + '\xa0S=' + sltRetrCell, toShiftCell],
       ['\xa0V2\xa0\xa0\xa0\xa0\xa0CLEAN', 'FLAPS/THS'],
@@ -424,7 +440,7 @@ export class CDUPerformancePage {
       ['TRANS ALT', 'FLEX TO TEMP'],
       [`{cyan}${transAltCell}{end}`, flexTakeOffTempCell],
       ['THR\xa0RED/ACC', 'ENG\xa0OUT\xa0ACC'],
-      [`{${altitudeColour}}${thrRedAcc}{end}`, `{${altitudeColour}}${engOut}{end}`],
+      [`{${altitudeColour}}${thrRedAcc}{end}`, `{${altitudeColour}}${engOutAcc}{end}`],
       ['\xa0UPLINK[color]inop', next],
       ['<TO DATA[color]inop', nextPhase],
     ]);
@@ -620,12 +636,28 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
     };
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CLB{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE'],
-      [`${actModeCell}[color]green`],
+      ['ACT MODE', eoClrTitle],
+      [`${actModeCell}[color]green`, eoClrText],
       ['CI'],
       [costIndexCell, predToCell, predToLabel],
       ['MANAGED', toDistLabel, toUtcLabel],
@@ -814,12 +846,28 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowDESPage(mcdu, forPlan);
     };
 
+    let destEfobEoClrTitle: string;
+    let destEfobEoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      destEfobEoClrTitle = '{amber}EO\xa0{end}';
+      destEfobEoClrText = '{amber}CLR*{end}';
+    } else {
+      destEfobEoClrTitle = 'DEST EFOB';
+      destEfobEoClrText = destEfobCell;
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CRZ{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
-      [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
+      ['ACT MODE', destEfobEoClrTitle, mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
+      [`${actModeCell}[color]green`, destEfobEoClrText, destTimeCell],
       ['CI', stepWaypoint],
       [costIndexCell, toReasonCell],
       ['MANAGED', toDistLabel, toUtcLabel],
@@ -998,12 +1046,28 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
     };
 
+    let destEfobEoClrTitle: string;
+    let destEfobEoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      destEfobEoClrTitle = '{amber}EO\xa0{end}';
+      destEfobEoClrText = '{amber}CLR*{end}';
+    } else {
+      destEfobEoClrTitle = 'DEST EFOB';
+      destEfobEoClrText = destEfobCell;
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}DES{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
-      [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
+      ['ACT MODE', destEfobEoClrTitle, timeLabel],
+      [`${actModeCell}[color]green`, destEfobEoClrText, destTimeCell],
       ['CI'],
       [costIndexCell, predToCell, predToLabel],
       ['MANAGED', toDistLabel, toUtcLabel],
@@ -1233,6 +1297,22 @@ export class CDUPerformancePage {
       titleCell += '\xa0'.repeat(24 - 10);
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[3] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[3] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     mcdu.setTemplate([
       /* t  */ [titleCell],
       /* 1l */ ['QNH'],
@@ -1244,8 +1324,8 @@ export class CDUPerformancePage {
         `{cyan}${magWindHeadingCell}°/${magWindSpeedCell}{end}\xa0\xa0S=${sltRetrCell}`,
         radioCell + '[color]cyan',
       ],
-      /* 4l */ ['TRANS ALT'],
-      /* 4L */ [`{cyan}${transAltCell}{end}${'\xa0'.repeat(5)}F=${flpRetrCell}`],
+      /* 4l */ ['TRANS ALT', eoClrTitle],
+      /* 4L */ [`{cyan}${transAltCell}{end}${'\xa0'.repeat(5)}F=${flpRetrCell}`, eoClrText],
       /* 5l */ ['VAPP\xa0\xa0\xa0VLS', 'LDG CONF\xa0'],
       /* 5L */ [
         `${vappCell}${'\xa0'.repeat(4)}${vlsCell}`,
@@ -1379,10 +1459,26 @@ export class CDUPerformancePage {
       };
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[3] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[3] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '\xa0\xa0\xa0';
+      eoClrText = '\xa0\xa0\xa0\xa0';
+    }
+
     mcdu.setTemplate([
       [`{${titleColor}}\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0GO\xa0AROUND\xa0\xa0\xa0\xa0\xa0\xa0{end}`],
-      ['', '', '\xa0\xa0\xa0\xa0\xa0FLP\xa0RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
-      ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0F=${flpRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`],
+      ['', '', `\xa0\xa0\xa0\xa0\xa0FLP\xa0RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${eoClrTitle}`],
+      ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0F=${flpRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${eoClrText}`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0SLT RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
       ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0S=${sltRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0CLEAN\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],

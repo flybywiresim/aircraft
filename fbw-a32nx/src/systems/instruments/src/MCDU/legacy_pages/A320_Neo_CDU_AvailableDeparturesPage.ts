@@ -47,9 +47,7 @@ export class CDUAvailableDeparturesPage {
     const selectedTransition = targetPlan.departureEnrouteTransition;
 
     const eoSidIdent =
-      selectedRunway && sidSelection
-        ? targetPlan.departureRunwayTransitionSegment?.getEngineOutIdent() ?? 'NONE'
-        : undefined;
+      selectedRunway && sidSelection ? targetPlan.engineOutDepartureSegment?.procedureIdent ?? 'NONE' : undefined;
 
     const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (

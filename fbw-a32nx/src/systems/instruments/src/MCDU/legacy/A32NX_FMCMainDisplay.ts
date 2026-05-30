@@ -67,6 +67,8 @@ import {
   ClockEvents,
   ConsumerSubject,
   Vec2Math,
+  ConsumerValue,
+  Accessible,
 } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -97,12 +99,21 @@ import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
+import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
+import { FmsModule } from '@fmgc/modules/FmsModule';
+import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
+
+  private readonly modules: FmsModule[] = [];
+
+  private isInitialised = false;
 
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
@@ -128,6 +139,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private subscriptions: Subscription[] = [];
 
   public _deltaTime = 0;
+
+  public readonly isEngineOutCondition: Accessible<boolean> = ConsumerValue.create(
+    this.sub.on('fms_engine_out_active'),
+    false,
+  );
 
   /** Declaration of every variable used (NOT initialization) */
   private readonly maximumAllowedCruiseFlightLevel = 390;
@@ -329,10 +345,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
-  private readonly sub = this.bus.getSubscriber<ClockEvents>();
-
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
   private readonly simTime = ConsumerSubject.create(this.sub.on('simTime'), 0);
+
+  public readonly simDuration = 0;
+
+  private lastHiFreqUpdateTime = 0;
 
   /** Paused if ETT is expired or does not exist */
   private readonly ettCheckSub = this.sub.on('simTime').onlyAfter(1000).handle(this.checkEttExpired.bind(this), true);
@@ -343,6 +361,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     FMCMainDisplay.DEBUG_INSTANCE = this;
     this.currFlightPlanService.createFlightPlans();
     this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
+
+    this.addModule(new EngineOutMonitor(this.bus));
+  }
+
+  protected addModule(module: FmsModule) {
+    if (this.isInitialised) {
+      module.init(this);
+    }
+
+    this.modules.push(module);
   }
 
   public get flightPhaseManager() {
@@ -370,14 +398,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   protected Init() {
     this.initVariables();
 
+    this.sub.on('activeSimDurationHiFreq').handle(this.onUpdateHiFreq.bind(this));
+
+    for (const module of this.modules) {
+      module.init(this);
+    }
+
     this.A32NXCore = new A32NX_Core();
     this.A32NXCore.init();
 
     this.dataManager = new DataManager(this.bus, this);
 
     this.efisInterfaces = {
-      L: new EfisInterface('L', this.currFlightPlanService),
-      R: new EfisInterface('R', this.currFlightPlanService),
+      L: new EfisInterface(this.bus, 'L', this.currFlightPlanService),
+      R: new EfisInterface(this.bus, 'R', this.currFlightPlanService),
     };
     this.guidanceController = new GuidanceController(
       this.bus,
@@ -464,6 +498,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // FIXME move ATSU out of FMS. It can only communicate with the FMS by ARINC429 bus.
     this.atsu = new FmsClient(this, this.flightPlanService);
     this.atsu.init();
+
+    this.isInitialised = true;
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -628,6 +664,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setRequest('FMGC');
     }
 
+    for (let i = 0; i < this.modules.length; i++) {
+      this.modules[i].onUpdate(deltaTime);
+    }
+
     updateComponents(deltaTime);
 
     this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
@@ -682,6 +722,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
 
     this.atsu?.onUpdate();
+  }
+
+  private onUpdateHiFreq(simDuration: number): void {
+    (this.simDuration as number) = simDuration;
+    const deltaTime = this.lastHiFreqUpdateTime > 0 ? simDuration - this.lastHiFreqUpdateTime : 0;
+    this.lastHiFreqUpdateTime = simDuration;
+
+    for (let i = 0; i < this.modules.length; i++) {
+      this.modules[i].onUpdateHiFreq(deltaTime);
+    }
   }
 
   protected onFmPowerStateChanged(newState) {
@@ -1165,7 +1215,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         this.removeMessageFromQueue(NXSystemMessages.setHoldSpeed.text);
       }
 
-      const engineOut = !this.isAllEngineOn();
+      const engineOut = this.isEngineOutCondition.get();
 
       switch (this.flightPhaseManager.phase) {
         case FmgcFlightPhase.Preflight: {
@@ -1188,7 +1238,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           break;
         }
         case FmgcFlightPhase.Climb: {
-          let speed = this.managedSpeedClimb;
+          let speed = this.isEngineOutCondition.get()
+            ? SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number')
+            : this.managedSpeedClimb;
 
           if (
             this.climbSpeedLimit !== undefined &&
@@ -5951,5 +6003,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (forPlan === FlightPlanIndex.Active) {
       this.ettCheckSub.pause();
     }
+  }
+
+  public clearEngineOutCondition(): void {
+    this.bus.getPublisher<EngineOutControlEvents>().pub('fms_engine_out_clear', undefined, false, false);
   }
 }

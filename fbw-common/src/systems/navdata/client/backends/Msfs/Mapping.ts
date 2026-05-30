@@ -884,6 +884,9 @@ export class MsfsMapping {
     for (const sid of departures) {
       for (const sidTrans of sid.runwayTransitions) {
         const eoSidCandidates = eoSidsByRunway.get(sidTrans.ident);
+        if (!eoSidCandidates) {
+          continue;
+        }
 
         let bestEoSid: Departure | undefined;
         let bestEoBranchIndex = -1;
@@ -896,12 +899,13 @@ export class MsfsMapping {
               const sid = sidTrans.legs[i];
               const eo = eoTrans.legs[i];
               if (
-                sid.type === eo.type &&
-                sid.waypoint?.databaseId === eo.waypoint?.databaseId &&
-                sid.arcCentreFix?.databaseId === eo.arcCentreFix?.databaseId
+                sid.type !== eo.type ||
+                sid.waypoint?.databaseId !== eo.waypoint?.databaseId ||
+                sid.arcCentreFix?.databaseId !== eo.arcCentreFix?.databaseId
               ) {
-                branchIndex = i;
+                break;
               }
+              branchIndex = i;
             }
 
             if (branchIndex >= 1 && branchIndex > bestEoBranchIndex) {
