@@ -146,6 +146,7 @@
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
+1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
 1. [A380X/MFD] Fixed TMPY being generated upon accessing lateral or vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan can be loaded on the lateral & vertical revision pages - @BravoMike99 (bruno_pt99)
 
