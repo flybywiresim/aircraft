@@ -227,6 +227,7 @@ export class AircraftGithubVersionChecker {
     const branchName = (KnowBranchNames as any)[versionInfo.branch] || versionInfo.branch;
 
     if (branchName === KnowBranchNames.rel) {
+      // The major version indicates FS2020 or FS2024
       const latestRelease = this.releaseInfo.find((r) => semVerMajor(r.name) === versionInfo.major);
 
       // Check if main version is outdated
