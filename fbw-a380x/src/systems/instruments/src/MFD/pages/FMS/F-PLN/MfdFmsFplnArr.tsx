@@ -9,10 +9,10 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
+import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
 import { getApproachName } from '../../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';

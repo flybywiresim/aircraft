@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { DatabaseIdent } from '@flybywiresim/fbw-sdk';
 import { ConfirmationDialog } from '../../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
@@ -15,7 +15,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDataba
 
 import './MfdFmsDataStatus.scss';
 import { FuelPenaltyPercentFormat } from '../../common/DataEntryFormats';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 

@@ -17,11 +17,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { getDisplayIndex } from './PFD';
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {

@@ -14,7 +14,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 

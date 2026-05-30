@@ -9,8 +9,8 @@ import {
 import { ArincEventBus, FailuresConsumer, FmsDataPublisher } from '@flybywiresim/fbw-sdk';
 import { SD } from './SD';
 import { SDSimvarPublisher } from './SDSimvarPublisher';
-import { AdirsValueProvider } from 'instruments/src/MsfsAvionicsCommon/AdirsValueProvider';
-import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
+import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
