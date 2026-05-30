@@ -1,2 +1,1 @@
-export * from './PopupEvents';
-export * from './PopupInstrument';
+export * from './PopupFsInstrument';

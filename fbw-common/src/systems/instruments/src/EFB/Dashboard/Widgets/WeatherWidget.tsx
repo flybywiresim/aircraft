@@ -12,7 +12,8 @@ import {
   useInterval,
   usePersistentNumberProperty,
   usePersistentProperty,
-} from '@flybywiresim/fbw-sdk';
+  usePersistentSetting,
+} from '@flybywiresim/fbw-sdk-react';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -82,7 +83,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
   const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const dispatch = useAppDispatch();
   const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+  const [metarSource] = usePersistentSetting('CONFIG_METAR_SRC');
   const [metarError, setErrorMetar] = useState('');
   const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
   const source = metarSource;

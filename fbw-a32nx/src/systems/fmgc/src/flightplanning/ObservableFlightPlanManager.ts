@@ -1,4 +1,4 @@
-import { EventBus, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, ReadonlyLifecycle, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -107,5 +107,11 @@ export class ObservableFlightPlanManager implements Subscription {
     for (const sub of this.subscriptions) {
       sub.destroy();
     }
+  }
+
+  /** @inheritdoc */
+  public withLifecycle(lifecycle: ReadonlyLifecycle): this {
+    lifecycle.register(this);
+    return this;
   }
 }

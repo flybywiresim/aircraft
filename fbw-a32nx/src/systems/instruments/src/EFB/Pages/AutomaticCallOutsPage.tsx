@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk-react';
 import { pathify, SettingGroup, SettingItem, SettingsPage, t, Toggle } from '@flybywiresim/flypad';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '../../../../shared/src/AutoCallOuts';
 

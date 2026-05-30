@@ -39,22 +39,6 @@ class A380X_Clock extends BaseInstrument {
 
     this.hEventPublisher.startPublish();
 
-    this.simVarPublisher.subscribe('ltsTest');
-    this.simVarPublisher.subscribe('dcEssIsPowered');
-    this.simVarPublisher.subscribe('dcHot1IsPowered');
-    this.simVarPublisher.subscribe('absTime');
-
-    this.simVarPublisher.subscribe('timeOfDay');
-
-    this.simVarPublisher.subscribe('currentUTC');
-    this.simVarPublisher.subscribe('dayOfMonth');
-    this.simVarPublisher.subscribe('monthOfYear');
-    this.simVarPublisher.subscribe('year');
-
-    this.simVarPublisher.subscribe('elapsedKnobPos');
-
-    this.simVarPublisher.subscribe('dc2IsPowered');
-
     FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
 
     // Remove "instrument didn't load" text

@@ -11,8 +11,8 @@ import {
   Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { TransponderEvents } from 'instruments/src/RMP/Data/TransponderPublisher';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { TransponderEvents } from '../../Data/TransponderPublisher';
+import { RmpMessageControlEvents } from '../../Systems/RmpMessageManager';
 
 // FIXME make all the data pausable when the page isn't active
 

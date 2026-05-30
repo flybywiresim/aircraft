@@ -560,6 +560,36 @@ export class MathUtils {
   }
 
   /**
+   * Round a number up to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static ceil(value: number, quantum = 1): number {
+    return Math.ceil(value / quantum) * quantum;
+  }
+
+  /**
+   * Round a number down to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static floor(value: number, quantum = 1): number {
+    return Math.floor(value / quantum) * quantum;
+  }
+
+  /**
+   * Truncate number toward zero with a specified quantum.
+   * @param value The number to truncate.
+   * @param quantum The quantum to truncate to, defaults to 1.
+   * @returns The truncated number.
+   */
+  public static trunc(value: number, quantum = 1): number {
+    return Math.trunc(value / quantum) * quantum;
+  }
+
+  /**
    * Bilinear interpolation on a table
    * @param table
    * @param i Value on row axis

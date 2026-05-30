@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 
 import { Triangle } from '@instruments/common/Shapes';
 import Valve from '@instruments/common/Valve';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 interface CondHotAirProps {
   x: number;
