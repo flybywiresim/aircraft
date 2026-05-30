@@ -213,7 +213,7 @@ export class AircraftGithubVersionChecker {
    */
   private static async initialize(aircraft: string) {
     this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
-    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'master');
+    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'fs2020-master');
     this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
     this.buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
   }
