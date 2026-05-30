@@ -146,6 +146,8 @@
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
+1. [A32NX/FMS] Added full support for EOSIDs (engine out SID) - @tracernz (Mike)
+1. [A32NX/FMS] Improved engine out detection logic and added MCDU page EO CLR - @tracernz (Mike)
 
 ## 0.14.0
 
