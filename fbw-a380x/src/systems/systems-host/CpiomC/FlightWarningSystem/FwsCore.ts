@@ -1601,6 +1601,12 @@ export class FwsCore {
     this.dc1BusPowered,
   );
 
+  public readonly btvFaultCondition = MappedSubject.create(
+    ([btvLost, oansFailed]) => btvLost && !oansFailed,
+    this.btvLost,
+    this.oansFailed,
+  );
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);

@@ -3621,7 +3621,7 @@ export class FwsAbnormalSensed {
     320800014: {
       // BTV FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7],
-      simVarIsActive: this.fws.btvLost,
+      simVarIsActive: this.fws.btvFaultCondition,
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 2,
