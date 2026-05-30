@@ -52,6 +52,7 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  LifecycleComponent,
   MappedSubject,
   MapSubject,
   NumberFormatter,
@@ -76,7 +77,7 @@ export interface OansProps extends ComponentProps {
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-export class OansControlPanel extends DisplayComponent<OansProps> {
+export class OansControlPanel extends LifecycleComponent<OansProps> {
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
@@ -347,6 +348,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.oancDisabled.sub((v) => {
         if (v) {
           this.unloadCurrentAirport();
+          this.clearRunwayInfo();
         }
         SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
       }, true),
@@ -668,7 +670,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       (this.manualAirportSelection === true && this.simTimeVar.get() - this.manualAirportSelectionTime < 600) ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
-      this.oansResetPulled.get()
+      this.oancDisabled.get()
     ) {
       return;
     }
@@ -724,8 +726,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   render(): VNode {
     return (
-      <>
-        <div style={{ display: this.props.isVisible.map((v) => (v ? 'inherit' : 'none')) }}>
+      <div
+        style={{ display: this.oancDisabled.map((v) => (v ? 'none' : 'inherit')).withLifecycle(this.defaultLifecycle) }}
+      >
+        <div
+          style={{
+            display: this.props.isVisible.map((v) => (v ? 'inherit' : 'none')).withLifecycle(this.defaultLifecycle),
+          }}
+        >
           <IconButton
             ref={this.closePanelButtonRef}
             onClick={() => this.props.togglePanel()}
@@ -733,7 +741,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             containerStyle="z-index: 10; width: 49px; height: 45px; position: absolute; right: 2px; top: 768px;"
           />
         </div>
-        <div style={{ display: this.props.isVisible.map((v) => (v ? 'none' : 'inherit')) }}>
+        <div
+          style={{
+            display: this.props.isVisible.map((v) => (v ? 'none' : 'inherit')).withLifecycle(this.defaultLifecycle),
+          }}
+        >
           <IconButton
             ref={this.closePanelButtonRef}
             onClick={() => this.props.togglePanel()}
@@ -819,13 +831,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div ref={this.mapDataMainRef} class="oans-cp-map-data-main">
                     <div class="oans-cp-map-data-main-2">
                       <Button
-                        label={this.crossExistsForEntity.map((e) => (e ? 'DEL CROSS' : 'ADD CROSS'))}
+                        label={this.crossExistsForEntity
+                          .map((e) => (e ? 'DEL CROSS' : 'ADD CROSS'))
+                          .withLifecycle(this.defaultLifecycle)}
                         onClick={() => this.handleCrossButton()}
                         buttonStyle="flex: 1"
                         disabled={this.entityIsNotSelected}
                       />
                       <Button
-                        label={this.flagExistsForEntity.map((e) => (e ? 'DEL FLAG' : 'ADD FLAG'))}
+                        label={this.flagExistsForEntity
+                          .map((e) => (e ? 'DEL FLAG' : 'ADD FLAG'))
+                          .withLifecycle(this.defaultLifecycle)}
                         onClick={() => this.handleFlagButton()}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
                         disabled={this.entityIsNotSelected}
@@ -839,7 +855,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div class="oans-cp-map-data-main-center">
                       <Button
-                        label={this.selectedEntityString.map((s) => `CENTER MAP ON ${s}`)}
+                        label={this.selectedEntityString
+                          .map((s) => `CENTER MAP ON ${s}`)
+                          .withLifecycle(this.defaultLifecycle)}
                         onClick={() => {
                           if (this.selectedEntityPosition) {
                             this.props.bus
@@ -905,9 +923,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <div
                       class="oans-cp-map-data-btv-rwy-length"
                       style={{
-                        visibility: this.fmsLandingRunwayVisibility.map((it) =>
-                          it === 'hidden' ? 'inherit' : 'hidden',
-                        ),
+                        visibility: this.fmsLandingRunwayVisibility
+                          .map((it) => (it === 'hidden' ? 'inherit' : 'hidden'))
+                          .withLifecycle(this.defaultLifecycle),
                       }}
                     >
                       <div class="mfd-label amber" style="margin-right: 10px;">
@@ -933,9 +951,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         }}
                         freeTextAllowed={false}
                         numberOfDigitsForInputField={7}
-                        alignLabels={this.store.airportSearchMode.map((it) =>
-                          it === ControlPanelAirportSearchMode.City ? 'flex-start' : 'center',
-                        )}
+                        alignLabels={this.store.airportSearchMode
+                          .map((it) => (it === ControlPanelAirportSearchMode.City ? 'flex-start' : 'center'))
+                          .withLifecycle(this.defaultLifecycle)}
                         idPrefix="oanc-search-airport"
                         hEventConsumer={this.hEventConsumer}
                         interactionMode={this.interactionMode}
@@ -965,25 +983,31 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div id="ArptSelMiddle" class="oans-cp-arpt-sel-middle">
                     <div class="oans-cp-arpt-sel-middle-1">
                       <span class="mfd-value">
-                        {this.store.selectedAirport.map((it) => it?.name?.substring(0, 18).toUpperCase() ?? '')}
+                        {this.store.selectedAirport
+                          .map((it) => it?.name?.substring(0, 18).toUpperCase() ?? '')
+                          .withLifecycle(this.defaultLifecycle)}
                       </span>
                       <span class="mfd-value">
-                        {this.store.selectedAirport.map((it) => {
-                          if (!it) {
-                            return '';
-                          }
+                        {this.store.selectedAirport
+                          .map((it) => {
+                            if (!it) {
+                              return '';
+                            }
 
-                          return `${it.idarpt}       ${it.iata}`;
-                        })}
+                            return `${it.idarpt}       ${it.iata}`;
+                          })
+                          .withLifecycle(this.defaultLifecycle)}
                       </span>
                       <span class="mfd-value">
-                        {this.store.selectedAirport.map((it) => {
-                          if (!it) {
-                            return '';
-                          }
+                        {this.store.selectedAirport
+                          .map((it) => {
+                            if (!it) {
+                              return '';
+                            }
 
-                          return `${ControlPanelUtils.LAT_FORMATTER(it.coordinates.lat)}/${ControlPanelUtils.LONG_FORMATTER(it.coordinates.lon)}`;
-                        })}
+                            return `${ControlPanelUtils.LAT_FORMATTER(it.coordinates.lat)}/${ControlPanelUtils.LONG_FORMATTER(it.coordinates.lon)}`;
+                          })
+                          .withLifecycle(this.defaultLifecycle)}
                       </span>
                       <span class="mfd-label bigger" style={{ display: this.setPlanModeDisplay }}>
                         SET PLAN MODE
@@ -1001,36 +1025,38 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   </div>
                   <div class="oans-cp-arpt-sel-fms">
                     <Button
-                      label={this.fmsDataStore.origin.map((it) => it ?? 'ORIGIN')}
+                      label={this.fmsDataStore.origin.map((it) => it ?? 'ORIGIN').withLifecycle(this.defaultLifecycle)}
                       onClick={() => {
                         const airport = this.fmsDataStore.origin.get();
                         if (airport) {
                           this.handleSelectAirport(airport);
                         }
                       }}
-                      disabled={this.fmsDataStore.origin.map((it) => !it)}
+                      disabled={this.fmsDataStore.origin.map((it) => !it).withLifecycle(this.defaultLifecycle)}
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.destination.map((it) => it ?? 'DEST')}
+                      label={this.fmsDataStore.destination
+                        .map((it) => it ?? 'DEST')
+                        .withLifecycle(this.defaultLifecycle)}
                       onClick={() => {
                         const airport = this.fmsDataStore.destination.get();
                         if (airport) {
                           this.handleSelectAirport(airport);
                         }
                       }}
-                      disabled={this.fmsDataStore.destination.map((it) => !it)}
+                      disabled={this.fmsDataStore.destination.map((it) => !it).withLifecycle(this.defaultLifecycle)}
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.alternate.map((it) => it ?? 'ALTN')}
+                      label={this.fmsDataStore.alternate.map((it) => it ?? 'ALTN').withLifecycle(this.defaultLifecycle)}
                       onClick={() => {
                         const airport = this.fmsDataStore.alternate.get();
                         if (airport) {
                           this.handleSelectAirport(airport);
                         }
                       }}
-                      disabled={this.fmsDataStore.alternate.map((it) => !it)}
+                      disabled={this.fmsDataStore.alternate.map((it) => !it).withLifecycle(this.defaultLifecycle)}
                       buttonStyle="width: 100px;"
                     />
                   </div>
@@ -1070,7 +1096,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             </TopTabNavigator>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 }
