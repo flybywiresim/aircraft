@@ -414,10 +414,8 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   bool commonConditions = irAvailable < 2 || adrAvailable < 2 || raAvailable < 1 || fwsAudioFunctionAvailable == 0;
 
   rowLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.oansFailed;
-  ropLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.oansFailed ||
-            discreteInputs.oansPposLost;
-  btvLost =
-      commonConditions || ldgPerfAffectedBtvLost || ldgDistAffectedBtvLost || discreteInputs.oansFailed || discreteInputs.oansPposLost;
+  ropLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.oansFailed;
+  btvLost = commonConditions || ldgPerfAffectedBtvLost || ldgDistAffectedBtvLost || discreteInputs.oansFailed;
 
   // Misc. LDG DIST/LDG PERF effects
   ldgDistAffectedMisc = discreteInputs.antiskidAvailable == false;
