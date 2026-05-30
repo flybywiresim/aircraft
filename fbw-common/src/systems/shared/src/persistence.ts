@@ -18,6 +18,8 @@ export interface NXDataStoreSettings {
 
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
 
+  CONFIG_METAR_SRC: 'MSFS' | 'NOAA' | 'PILOTEDGE' | 'VATSIM';
+  
   CONFIG_PILOT_SEAT: PilotSeatConfig;
 
   CONFIG_USING_METRIC_UNIT: boolean;
@@ -33,6 +35,7 @@ export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
+    CONFIG_METAR_SRC: 'MSFS',
     CONFIG_PILOT_SEAT: PilotSeatConfig.Left,
     CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',
