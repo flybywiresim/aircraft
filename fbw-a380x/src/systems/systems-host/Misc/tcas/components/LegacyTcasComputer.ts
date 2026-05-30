@@ -36,9 +36,10 @@ import {
   UpDownAdvisoryStatus,
   TCAS_CONST,
 } from '../lib/TcasConstants';
-import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
+import { LegacySoundManager } from '../../LegacySoundManager';
 import { ClockEvents, ConsumerSubject, EventBus, GameStateProvider, Instrument, Wait } from '@microsoft/msfs-sdk';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+// FIXME should not import from instruments
+import { MfdSurvEvents } from '../../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
   ID: string;

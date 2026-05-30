@@ -26,7 +26,7 @@ import { LsManager } from './Managers/LsManager';
 import { FcuPublisher } from './Publishers/FcuPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { OverheadPublisher } from '../MsfsAvionicsCommon/providers/OverheadPublisher';
-import { OutputBusManager } from 'instruments/src/FCU/Managers/OutputBusManager';
+import { OutputBusManager } from './Managers/OutputBusManager';
 
 import './style.scss';
 

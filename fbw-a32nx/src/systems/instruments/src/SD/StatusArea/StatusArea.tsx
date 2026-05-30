@@ -14,7 +14,7 @@ import {
   NXUnits,
   useUpdate,
   getSupplier,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { Text } from '../Text/Text';
 
 export const StatusArea = () => {

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk-react';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';

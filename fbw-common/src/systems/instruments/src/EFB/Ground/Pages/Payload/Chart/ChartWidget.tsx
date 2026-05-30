@@ -8,7 +8,7 @@ import {
   PayloadChartLimits,
   AirframePerformanceEnvelope,
   usePersistentSetting,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { CanvasConst } from './Constants';
 
