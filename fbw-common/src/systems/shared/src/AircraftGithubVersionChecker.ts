@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
@@ -36,14 +36,12 @@ export interface VersionInfoData {
 export enum KnowBranchNames {
   rel = 'Stable',
   dev = 'Development',
-  exp = 'Experimental',
 }
 
 export enum FbwBuildEdition {
   Unknown = 0,
   Stable,
   Development,
-  Experimental,
 }
 
 /**
@@ -56,8 +54,6 @@ export class AircraftGithubVersionChecker {
   private static releaseInfo: ReleaseInfo[];
 
   private static newestCommit: CommitInfo;
-
-  private static newestExpCommit: CommitInfo;
 
   private static buildInfo?: BuildInfo;
 
@@ -83,7 +79,7 @@ export class AircraftGithubVersionChecker {
     await this.initialize(aircraft);
 
     // assert all version info is available
-    if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
+    if (!(this.buildInfo && this.releaseInfo && this.newestCommit)) {
       console.error('Not all version information available. Skipping version check.');
       return false;
     }
@@ -188,8 +184,6 @@ export class AircraftGithubVersionChecker {
           return FbwBuildEdition.Stable;
         case KnowBranchNames.dev:
           return FbwBuildEdition.Development;
-        case KnowBranchNames.exp:
-          return FbwBuildEdition.Experimental;
       }
     } catch (e) {
       console.warn('Failed to fetch edition', e);
@@ -213,8 +207,7 @@ export class AircraftGithubVersionChecker {
    */
   private static async initialize(aircraft: string) {
     this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
-    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'master');
-    this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
+    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'fs2020-master');
     this.buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
   }
 
@@ -237,7 +230,7 @@ export class AircraftGithubVersionChecker {
     }
 
     // If the user's version is equal or newer than the latest release then check if
-    // the edition is Development or Experimental and if the commit is older than
+    // the edition is Development and if the commit is older than
     // {maxAge} days after the latest release to show notification
 
     const maxAge = 3;
@@ -249,15 +242,6 @@ export class AircraftGithubVersionChecker {
       this.addDays(timestampAircraft, maxAge) < this.newestCommit.timestamp
     ) {
       this.showNotification(versionInfo, timestampAircraft, branchName, this.newestCommit);
-      return true;
-    }
-
-    if (
-      branchName === KnowBranchNames.exp &&
-      versionInfo.commit !== this.newestExpCommit.shortSha &&
-      this.addDays(timestampAircraft, maxAge) < this.newestExpCommit.timestamp
-    ) {
-      this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
       return true;
     }
 
