@@ -57,8 +57,6 @@ export class AircraftGithubVersionChecker {
 
   private static newestCommit: CommitInfo;
 
-  private static newestExpCommit: CommitInfo;
-
   private static buildInfo?: BuildInfo;
 
   /** Promises awaiting fetching of the build info. */
@@ -83,7 +81,7 @@ export class AircraftGithubVersionChecker {
     await this.initialize(aircraft);
 
     // assert all version info is available
-    if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
+    if (!(this.buildInfo && this.releaseInfo && this.newestCommit)) {
       console.error('Not all version information available. Skipping version check.');
       return false;
     }
@@ -214,7 +212,6 @@ export class AircraftGithubVersionChecker {
   private static async initialize(aircraft: string) {
     this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
     this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'fs2020-master');
-    this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
     this.buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
   }
 
@@ -249,15 +246,6 @@ export class AircraftGithubVersionChecker {
       this.addDays(timestampAircraft, maxAge) < this.newestCommit.timestamp
     ) {
       this.showNotification(versionInfo, timestampAircraft, branchName, this.newestCommit);
-      return true;
-    }
-
-    if (
-      branchName === KnowBranchNames.exp &&
-      versionInfo.commit !== this.newestExpCommit.shortSha &&
-      this.addDays(timestampAircraft, maxAge) < this.newestExpCommit.timestamp
-    ) {
-      this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
       return true;
     }
 
