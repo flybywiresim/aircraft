@@ -1,4 +1,4 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,13 +13,12 @@ import {
 import { FwsCore } from './FwsCore';
 
 interface EwdMemoItem {
-  flightPhaseInhib: number[];
+  flightPhaseInhib?: number[];
   /** warning is active */
   simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
   memoInhibit: () => boolean;
-  leftSide?: boolean;
 }
 
 export interface EwdMemoDict {
@@ -289,18 +288,8 @@ export class FwsMemos {
     // ATA 24
     '241000001': {
       // ELEC EXT PWR
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8],
-      simVarIsActive: this.fws.extPwrConnected,
-      whichCodeToReturn: () => [
-        [
-          this.fws.engine1Running.get(),
-          this.fws.engine2Running.get(),
-          this.fws.engine3Running.get(),
-          this.fws.engine4Running.get(),
-        ].filter(Boolean).length > 1
-          ? 0
-          : 1,
-      ],
+      simVarIsActive: this.fws.extPwrMemo,
+      whichCodeToReturn: () => [this.fws.twoOrMoreEnginesRunning ? 0 : 1],
       codesToReturn: ['241000001', '241000002'],
       memoInhibit: () => false,
     },
@@ -374,18 +363,8 @@ export class FwsMemos {
     // ATA 32
     '322000001': {
       // N/W STEER DISC
-      flightPhaseInhib: [3, 4, 5, 7, 8, 9, 9, 10],
-      simVarIsActive: this.fws.nwSteeringDisc,
-      whichCodeToReturn: () => [
-        [
-          this.fws.engine1Running.get(),
-          this.fws.engine2Running.get(),
-          this.fws.engine3Running.get(),
-          this.fws.engine4Running.get(),
-        ].filter(Boolean).length > 1
-          ? 0
-          : 1,
-      ],
+      simVarIsActive: this.fws.nwSteeringDiscMemo,
+      whichCodeToReturn: () => [this.fws.twoOrMoreEnginesRunning ? 0 : 1],
       codesToReturn: ['322000001', '322000002'],
       memoInhibit: () => false,
     },
@@ -399,7 +378,6 @@ export class FwsMemos {
     },
     '333000001': {
       // STROBE LIGHT OFF
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: MappedSubject.create(
         ([strobeLightsOn, flightPhase]) => strobeLightsOn === 2 && flightPhase === 8,
         this.fws.strobeLightsOn,
@@ -579,7 +557,7 @@ export class FwsMemos {
     '460000001': {
       // COMPANY MSG
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.compMesgCount.map((c) => c > 0),
+      simVarIsActive: this.fws.companyMessageMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['460000001'],
       memoInhibit: () => false,
@@ -627,7 +605,6 @@ export class FwsMemos {
         '000001013',
       ],
       memoInhibit: () => false,
-      leftSide: true,
     },
     '0000020': {
       // LANDING MEMO
@@ -660,7 +637,6 @@ export class FwsMemos {
         '000002011',
       ],
       memoInhibit: () => false,
-      leftSide: true,
     },
   };
 

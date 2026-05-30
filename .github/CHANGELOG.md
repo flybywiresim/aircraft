@@ -146,6 +146,7 @@
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
+1. [A380X/FWS] Play triple click on touchdown if BTV lost below 200 feet - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
