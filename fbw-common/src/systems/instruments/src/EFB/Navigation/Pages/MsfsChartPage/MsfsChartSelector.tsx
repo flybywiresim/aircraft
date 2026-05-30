@@ -17,8 +17,8 @@ import {
   setBoundingBox,
   MsfsChartTabTypeToIndex,
 } from '../../../Store/features/navigationPage';
-import { BuiltInChartProvider } from '@microsoft/msfs-sdk';
-import { MsfsChartData, MsfsChartUtils } from './MsfsChartUtils';
+import { BuiltInChartProvider, RunwayIdentifier } from '@microsoft/msfs-sdk';
+import { MsfsChartData, MsfsChartUtils, runwayDesignatorPriority } from './MsfsChartUtils';
 import { navigationTabs } from '../../Navigation';
 
 interface MsfsChartSelectorProps {
@@ -29,6 +29,8 @@ interface MsfsChartSelectorProps {
 }
 
 type RunwayOrganizedChart = {
+  /** null means multiple runways */
+  runway: RunwayIdentifier | null;
   name: string;
   charts: MsfsChartData<BuiltInChartProvider>[];
 };
@@ -43,7 +45,8 @@ let currentOpId = 0;
 
 export const MsfsChartSelector = ({ selectedTab, loading, provider, tab }: MsfsChartSelectorProps) => {
   const NO_RUNWAY_NAME = 'Multiple Runways';
-  const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
+
+  const [runwaySet, setRunwaySet] = useState<(RunwayIdentifier | null)[]>([]);
   const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChart[]>([]);
 
   const dispatch = useAppDispatch();
@@ -53,18 +56,27 @@ export const MsfsChartSelector = ({ selectedTab, loading, provider, tab }: MsfsC
   const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
   useEffect(() => {
-    const runwayNumbers = new Set<string>();
+    const runwayNumbers: (RunwayIdentifier | null)[] = [];
+    let isSomeMultipleRunway = false;
 
     if (selectedTab.bundleRunways) {
       selectedTab.charts.forEach((chart) => {
-        if (chart.runways.length !== 0) {
-          for (const runway of chart.runways) {
-            runwayNumbers.add(runway);
+        if (chart.runways.length === 1) {
+          if (
+            !runwayNumbers.some(
+              (r) => r && r.number === chart.runways[0].number && r.designator === chart.runways[0].designator,
+            )
+          ) {
+            runwayNumbers.push(chart.runways[0]);
           }
         } else {
-          runwayNumbers.add(NO_RUNWAY_NAME);
+          isSomeMultipleRunway = true;
         }
       });
+    }
+
+    if (isSomeMultipleRunway) {
+      runwayNumbers.push(null);
     }
 
     setRunwaySet(runwayNumbers);
@@ -77,18 +89,34 @@ export const MsfsChartSelector = ({ selectedTab, loading, provider, tab }: MsfsC
       runwaySet.forEach((runway) => {
         const charts = selectedTab.charts.filter(
           (chart) =>
-            (chart.runways.length === 1 && chart.runways[0] === runway) ||
-            (chart.runways.length !== 1 && runway === NO_RUNWAY_NAME),
+            (chart.runways.length === 1 &&
+              runway &&
+              chart.runways[0].number === runway.number &&
+              chart.runways[0].designator === runway.designator) ||
+            (chart.runways.length !== 1 && runway === null),
         );
         if (charts.length) {
           organizedRunwayCharts.push({
-            name: runway,
+            runway,
+            name: runway === null ? NO_RUNWAY_NAME : `RW${runway.number.padStart(2, '0')}${runway.designator}`,
             charts,
           });
         }
       });
 
-      organizedRunwayCharts.sort((a, b) => a.name.localeCompare(b.name));
+      organizedRunwayCharts.sort((a, b) => {
+        // Put multi-runway charts at the end. Should only occur once in the array so this is safe.
+        if (a.runway === null) {
+          return 1;
+        }
+        if (b.runway === null) {
+          return -1;
+        }
+        if (a.runway.number === b.runway.number) {
+          return runwayDesignatorPriority[a.runway.designator] - runwayDesignatorPriority[b.runway.designator];
+        }
+        return a.runway.number.localeCompare(b.runway.number);
+      });
 
       setOrganizedCharts(organizedRunwayCharts);
     } else {
@@ -202,8 +230,16 @@ export const MsfsChartSelector = ({ selectedTab, loading, provider, tab }: MsfsC
                   </div>
                   <div className="m-2 flex flex-col">
                     <span>{chart.name}</span>
-                    <span className="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
-                      {chart.type.toUpperCase()}
+                    <span>
+                      <span className="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
+                        {chart.type.toUpperCase()}
+                      </span>
+                      {chart.runways.length > 1 &&
+                        chart.runways.map((rw) => (
+                          <span className="ml-1 mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
+                            {`RW${rw.number.padStart(2, '0')}${rw.designator}`}
+                          </span>
+                        ))}
                     </span>
                   </div>
                 </div>

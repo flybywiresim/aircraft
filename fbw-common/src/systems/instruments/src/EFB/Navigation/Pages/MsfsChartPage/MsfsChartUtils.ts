@@ -1,7 +1,14 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { BuiltInChartProvider, ChartsClient, FaaChartType, ICAO, LidoChartType } from '@microsoft/msfs-sdk';
+import {
+  BuiltInChartProvider,
+  ChartsClient,
+  FaaChartType,
+  ICAO,
+  LidoChartType,
+  RunwayIdentifier,
+} from '@microsoft/msfs-sdk';
 import { MsfsChartCategory } from '../../../Store/features/navigationPage';
 
 export interface MsfsChartPage {
@@ -15,7 +22,7 @@ export interface MsfsChartData<T extends BuiltInChartProvider.Faa | BuiltInChart
   guid: string;
   name: string;
   type: T extends BuiltInChartProvider.Faa ? FaaChartType : T extends BuiltInChartProvider.Lido ? LidoChartType : never;
-  runways: string[];
+  runways: RunwayIdentifier[];
 }
 
 const faaCategoryMap: Record<string, MsfsChartCategory> = {
@@ -48,6 +55,13 @@ const lidoCategoryMap: Record<string, MsfsChartCategory> = {
   [LidoChartType.Vac]: 'APPR',
 };
 
+export const runwayDesignatorPriority: Record<string, number> = {
+  L: 0,
+  C: 1,
+  R: 2,
+  T: 3,
+};
+
 export class MsfsChartUtils {
   public static async getChartsForAirport<T extends MsfsProviders>(
     airportIcao: string,
@@ -78,7 +92,13 @@ export class MsfsChartUtils {
           guid: chart.guid,
           name: chart.name,
           type: chart.type as MsfsChartData<T>['type'],
-          runways: chart.runways.map((r) => `RW${r.number.padStart(2, '0')}${r.designator}`),
+          runways: chart.runways
+            .slice()
+            .sort((a, b) =>
+              a.number === b.number
+                ? runwayDesignatorPriority[a.designator] - runwayDesignatorPriority[b.designator]
+                : a.number.localeCompare(b.number),
+            ),
         });
       }
     }
