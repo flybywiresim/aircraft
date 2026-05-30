@@ -44,6 +44,8 @@ export class EfisVectors {
     SimVarValueType.Enum,
   );
 
+  private readonly eoSidVectorCache: PathVector[] = [];
+
   constructor(
     private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
@@ -81,6 +83,7 @@ export class EfisVectors {
         this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary + i - 1, side, true);
       }
 
+      // TODO why is this using different path vectors to the transmit calls
       const activeFlightPlanVectors =
         this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
 
@@ -128,6 +131,7 @@ export class EfisVectors {
           this.transmit(null, EfisVectorsGroup.DASHED, side);
           this.transmit(null, EfisVectorsGroup.MISSED, side);
           this.transmit(null, EfisVectorsGroup.ALTERNATE, side);
+          this.transmit(null, EfisVectorsGroup.ACTIVE_EOSID, side);
           break;
         case FlightPlanIndex.Temporary:
           this.transmit(null, EfisVectorsGroup.TEMPORARY, side);
@@ -184,6 +188,7 @@ export class EfisVectors {
             EfisVectorsGroup.ACTIVE,
             EfisVectorsGroup.MISSED,
             EfisVectorsGroup.ALTERNATE,
+            EfisVectorsGroup.ACTIVE_EOSID,
           );
           this.transmit(null, EfisVectorsGroup.DASHED, side);
         } else {
@@ -194,6 +199,7 @@ export class EfisVectors {
             EfisVectorsGroup.DASHED,
             EfisVectorsGroup.MISSED,
             EfisVectorsGroup.ALTERNATE,
+            EfisVectorsGroup.ACTIVE_EOSID,
           );
         }
         break;
@@ -217,6 +223,7 @@ export class EfisVectors {
     mainGroup: EfisVectorsGroup,
     missedApproachGroup = mainGroup,
     alternateGroup = mainGroup,
+    eosidGroup?: EfisVectorsGroup,
   ) {
     const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
     const isPlanMode = mode === EfisNdMode.PLAN;
@@ -230,6 +237,10 @@ export class EfisVectors {
 
       if (alternateGroup !== mainGroup) {
         this.transmit(null, alternateGroup, side);
+      }
+
+      if (eosidGroup) {
+        this.transmit(null, eosidGroup, side);
       }
 
       return;
@@ -257,6 +268,13 @@ export class EfisVectors {
       }
     } else if (missedApproachGroup !== mainGroup) {
       this.transmit(null, missedApproachGroup, side);
+    }
+
+    const transmitEosid = eosidGroup && this.efisInterfaces[side].shouldTransmitEosid(plan.index, isPlanMode);
+    if (transmitEosid) {
+      this.transmit(FlightPlanUtils.getEngineOutVectorsInFlightPlan(plan, this.eoSidVectorCache), eosidGroup, side);
+    } else if (eosidGroup) {
+      this.transmit(null, eosidGroup, side);
     }
 
     this.transmit(vectors, mainGroup, side);

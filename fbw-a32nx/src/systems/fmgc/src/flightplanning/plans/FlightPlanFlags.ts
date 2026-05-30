@@ -28,4 +28,8 @@ export enum FlightPlanFlags {
    * Indicates that the flight plan was modified after initial creation (relevant for SEC flight plans).
    */
   ModifiedAfterCreation = 1 << 5,
+  /**
+   * Indicates that the flight plan was created for an engine out condition.
+   */
+  EngineOutSid = 1 << 6,
 }

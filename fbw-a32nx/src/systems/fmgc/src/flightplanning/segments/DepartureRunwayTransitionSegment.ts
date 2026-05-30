@@ -4,13 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import {
-  Departure,
-  DepartureRunwayTransition,
-  LegType,
-  ProcedureTransition,
-  WaypointConstraintType,
-} from '@flybywiresim/fbw-sdk';
+import { DepartureRunwayTransition, LegType, ProcedureTransition, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
@@ -24,14 +18,6 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
 
   get procedure(): DepartureRunwayTransition | undefined {
     return this.departureRunwayTransition;
-  }
-
-  public getEngineOutIdent(): string | undefined {
-    return this.departureRunwayTransition?.engineOutDeparture?.ident;
-  }
-
-  public getEngineOutDeparture(): Departure | undefined {
-    return this.departureRunwayTransition?.engineOutDeparture;
   }
 
   private departureRunwayTransition: DepartureRunwayTransition | undefined = undefined;
@@ -50,6 +36,11 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
       this.departureRunwayTransition = undefined;
     }
 
+    this.flightPlan.engineOutDepartureSegment.setProcedure(
+      this.departureRunwayTransition?.engineOutDeparture,
+      runwayIdent,
+    );
+
     if (!skipUpdateLegs) {
       const legs =
         this.departureRunwayTransition?.legs.map((it) =>
@@ -59,7 +50,11 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
       const firstDepartureRunwayTransitionLeg = legs[0];
 
       // Add an IF at the start if first leg of the transition is an FX
-      if (firstDepartureRunwayTransitionLeg?.isFX() && !firstDepartureRunwayTransitionLeg.isRunway()) {
+      if (
+        firstDepartureRunwayTransitionLeg?.isFX() &&
+        !firstDepartureRunwayTransitionLeg.isRunway() &&
+        firstDepartureRunwayTransitionLeg.definition.waypoint
+      ) {
         const newLeg = FlightPlanLeg.fromEnrouteFix(
           this,
           firstDepartureRunwayTransitionLeg.definition.waypoint,

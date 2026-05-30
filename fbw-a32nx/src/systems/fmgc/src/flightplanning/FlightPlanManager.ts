@@ -278,6 +278,8 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       newPlan.flags |= FlightPlanFlags.CopiedFromActive;
     } else if (from >= FlightPlanIndex.FirstSecondary && to >= FlightPlanIndex.FirstSecondary) {
       newPlan.flags = fromPlan.flags;
+    } else if (from === FlightPlanIndex.Temporary) {
+      newPlan.flags |= fromPlan.flags & FlightPlanFlags.EngineOutSid;
     }
 
     if (this.has(to)) {

@@ -101,7 +101,7 @@ export class EngineOutMonitor extends FmsModule {
 
     this.sub.on('fms_engine_out_clear').handle(() => {
       this.engineOutCondition.set(false);
-      // this.fms?.flightPlanService.tryEraseEngineOutSid();
+      this.fms?.flightPlanService.tryEraseEngineOutSid();
     });
   }
 
@@ -114,9 +114,9 @@ export class EngineOutMonitor extends FmsModule {
 
   private async onEngineOut(): Promise<void> {
     const flightPhase = this.flightPhase.get();
-    const eoSidReady = false;
+    let eoSidReady = false;
     if (flightPhase === FmgcFlightPhase.Takeoff || flightPhase === FmgcFlightPhase.Climb) {
-      // eoSidReady = (await this.fms?.flightPlanService.tryActivateEngineOutSid()) ?? false;
+      eoSidReady = (await this.fms?.flightPlanService.tryActivateEngineOutSid()) ?? false;
     }
 
     this.publisher.pub(

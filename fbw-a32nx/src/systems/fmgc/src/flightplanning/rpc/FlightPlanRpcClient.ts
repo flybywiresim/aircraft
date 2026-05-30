@@ -586,4 +586,14 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   insertWindUplink(planIndex: number): Promise<void> {
     return this.callFunctionViaRpc('insertWindUplink', planIndex);
   }
+
+  /** @inheritdoc */
+  public tryActivateEngineOutSid(): Promise<boolean> {
+    return this.callFunctionViaRpc('tryActivateEngineOutSid');
+  }
+
+  /** @inheritdoc */
+  public tryEraseEngineOutSid(): Promise<boolean> {
+    return this.callFunctionViaRpc('tryActivateEngineOutSid');
+  }
 }
