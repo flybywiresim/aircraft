@@ -6,7 +6,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import { AtcType } from '@flybywiresim/api-client';
-import { useSimVar, useInterval, useSplitSimVar, usePersistentSetting, ConfigWeatherMap } from '@flybywiresim/fbw-sdk';
+import {
+  useSimVar,
+  useInterval,
+  useSplitSimVar,
+  usePersistentSetting,
+  ConfigWeatherMap,
+} from '@flybywiresim/fbw-sdk-react';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';

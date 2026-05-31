@@ -10,7 +10,7 @@ import {
   useInterval,
   usePersistentNumberProperty,
   usePersistentProperty,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';

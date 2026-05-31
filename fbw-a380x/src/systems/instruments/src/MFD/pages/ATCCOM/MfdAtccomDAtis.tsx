@@ -4,11 +4,11 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomDAtis.scss';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
-import { DAtisBlock } from 'instruments/src/MFD/pages/ATCCOM/DAtisBlock';
+import { AtccomMfdPageProps } from '../../MFD';
+import { DAtisBlock } from './DAtisBlock';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
 import { AtccomFooter } from './MfdAtccomFooter';
 
 interface MfdAtccomDAtisProps extends AtccomMfdPageProps {}
@@ -51,14 +51,13 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
           <div class="mfd-atccom-datis-footer">
             <Button
               label="PRINT<br/>ALL"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 190px;"
               containerStyle="position:absolute; top: 3px; right:190px"
             />
             <Button
               label="UPDATE<br/>ALL"
-              disabled={Subject.create(false)}
               onClick={() => {
                 this.props.atcService.updateAllAtis();
               }}

@@ -1,13 +1,13 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomMsgRecord.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { MessageElement } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElement';
-import { MessageRecordNav } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageRecordNav';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { MessageElement } from './Elements/MessageElement';
+import { MessageRecordNav } from './Elements/MessageRecordNav';
 
 interface MfdAtccomMsgRecordAllProps extends AbstractMfdPageProps {}
 
@@ -61,20 +61,10 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
           </div>
           <div class="mfd-atccom-msg-record-footer">
             <div>
-              <Button
-                label="ERASE ALL"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="ERASE ALL" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
             <div style="position:absolute; top: 0px; right:0px">
-              <Button
-                label="PRINT"
-                disabled={Subject.create(false)}
-                onClick={() => {}}
-                buttonStyle="width: 190px; height:64px;"
-              />
+              <Button label="PRINT" onClick={() => {}} buttonStyle="width: 190px; height:64px;" />
             </div>
           </div>
         </div>
@@ -94,7 +84,12 @@ export class MfdAtccomMsgRecordAll extends DisplayComponent<MfdAtccomMsgRecordAl
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

@@ -4,7 +4,7 @@ import { testFlightPlanService } from './test/TestFlightPlanService';
 import { NavigationDatabaseService } from './NavigationDatabaseService';
 import { FlightPlanIndex } from './FlightPlanManager';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';

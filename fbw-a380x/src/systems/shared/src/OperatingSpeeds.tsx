@@ -11,7 +11,8 @@ import { Feet, Knots } from 'msfs-geo';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
-import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+// FIXME should not import from instruments
+import { ADIRS } from '../../instruments/src/MFD/shared/Adirs';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {
@@ -429,8 +430,9 @@ export class A380OperatingSpeeds {
    * @param fPos flaps position
    * @param fmgcFlightPhase sic
    * @param v2Speed V2 speed entered in FMS
-   * @param aoa Angle of attack in degrees. Should be low pass filtered
+   * @param altitude Altitude in feet (baro)
    * @param wind wind speed
+   * @param ignoreSpoilers if true, ignores spoilers position for Vls calculation
    */
   constructor(
     m: number,

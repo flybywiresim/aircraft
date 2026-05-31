@@ -198,14 +198,14 @@ export class NXApiConnector {
   }
 
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedMetarSrc = NXDataStore.getSetting('CONFIG_METAR_SRC');
+    const storedMetarSrc = NXDataStore.getSetting('CONFIG_METAR_SRC').get();
 
-    return NXApiConnector.receiveMetarFromSource(icao, storedMetarSrc.get(), message);
+    return NXApiConnector.receiveMetarFromSource(icao, storedMetarSrc, message);
   }
 
   public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedTafSrc = NXDataStore.getSetting('CONFIG_TAF_SRC');
-    return Taf.get(icao, storedTafSrc.get())
+    const storedTafSrc = NXDataStore.getSetting('CONFIG_TAF_SRC').get();
+    return Taf.get(icao, storedTafSrc)
       .then((data) => {
         let taf = data.taf;
         if (!taf || taf === undefined || taf === '') {

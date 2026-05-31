@@ -1,15 +1,16 @@
 // Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import './MfdAtccomDAtis.scss';
+
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdAtccomDAtis.scss';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomMfdPageProps } from '../../MFD';
 import { AtccomFooter } from './MfdAtccomFooter';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { AtisType } from '@datalink/common';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 
@@ -258,13 +259,12 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           <div class="mfd-atccom-datis-footer">
             <Button
               label="RETURN<br />TO LIST"
-              disabled={Subject.create(false)}
               onClick={() => this.props.mfd.uiService.navigateTo('atccom/d-atis/list')}
               buttonStyle="width: 190px; height:62px"
             />
             <Button
               label="PRINT"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 190px; height:62px"
               containerStyle="position:absolute; top:2px; right:0px"

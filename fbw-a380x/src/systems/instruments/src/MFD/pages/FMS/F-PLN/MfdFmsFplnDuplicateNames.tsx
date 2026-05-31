@@ -8,11 +8,11 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../../common/ActivePageTitleBar';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
 import { DatabaseItem, isFix, isIlsNavaid, isNdbNavaid, isVhfNavaid } from '@flybywiresim/fbw-sdk';
 
 import './MfdFmsFpln.scss';
@@ -78,7 +78,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
     );
     this.subs.push(
       this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
+        this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive),
       ),
     );
 

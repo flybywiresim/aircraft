@@ -14,7 +14,7 @@ import {
   NXDataStoreSettings,
   useSimVar,
   ConfigWeatherMap,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
@@ -29,8 +29,7 @@ export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentSetting('CONFIG_ATIS_SRC');
   const [metarSource, setMetarSource] = usePersistentSetting('CONFIG_METAR_SRC');
   const [tafSource, setTafSource] = usePersistentSetting('CONFIG_TAF_SRC');
-
-  const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS');
+  const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
   const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
@@ -178,7 +177,7 @@ export const AtsuAocPage = () => {
     if (type === 'ATIS') {
       setAtisSource(source);
     } else if (type === 'METAR') {
-      setMetarSource(source);
+      setMetarSource(source as any);
     } else if (type === 'TAF') {
       setTafSource(source);
     }

@@ -2,22 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { AtccomMfdPageProps } from '../../MFD';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 
 export class AtccomFooter extends DisplayComponent<AtccomMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
   private readonly buttonRef = FSComponent.createRef<Button>();
-
-  private readonly buttonText = Subject.create<VNode>(
-    <span>
-      CLEAR
-      <br />
-      INFO
-    </span>,
-  );
 
   private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -65,7 +57,13 @@ export class AtccomFooter extends DisplayComponent<AtccomMfdPageProps> {
         <Button
           ref={this.buttonRef}
           buttonStyle="width: 100px;"
-          label={this.buttonText}
+          label={
+            <span>
+              CLEAR
+              <br />
+              INFO
+            </span>
+          }
           onClick={() => {
             if (this.messageToBeCleared.get()) {
               this.props.atcService.clearLatestAtcErrorMessage();

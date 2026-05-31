@@ -4,7 +4,7 @@
 
 import React, { FC, useState, useEffect, memo } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { MathUtils, useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';

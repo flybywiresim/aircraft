@@ -1,6 +1,8 @@
 //  Copyright (c) 2024-2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import './pages/common/style.scss';
+
 import {
   ClockEvents,
   ComponentProps,
@@ -16,25 +18,24 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, EfisSide, Waypoint } from '@flybywiresim/fbw-sdk';
 
-import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
-import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
-import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
-import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
+import { MfdMsgList } from './pages/FMS/MfdMsgList';
+import { ActiveUriInformation, MfdUiService } from './pages/common/MfdUiService';
+import { MfdFmsFplnDuplicateNames } from './pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
+import { headerForSystem, pageForUrl } from './MfdPageDirectory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
-import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
+import { MfdFmsPageNotAvail } from './pages/FMS/MfdFmsPageNotAvail';
 
-import './pages/common/style.scss';
-import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -46,6 +47,7 @@ export interface AbstractMfdPageProps extends ComponentProps {
   bus: EventBus;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   fmcService: FmcServiceInterface;
+  flightPlanInterface: FlightPlanInterface;
 }
 
 export interface AtccomMfdPageProps extends ComponentProps {
@@ -64,9 +66,11 @@ interface MfdComponentProps extends ComponentProps {
 
 // TODO integrate in fmgc's DisplayInterface
 export interface MfdDisplayInterface {
+  side: EfisSide;
+
   get uiService(): MfdUiService;
 
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
 
   interactionMode: Subscribable<InteractionMode>;
 
@@ -80,6 +84,8 @@ export class MfdComponent
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+
+  side: EfisSide = this.props.captOrFo === 'CAPT' ? 'L' : 'R';
 
   #uiService = new MfdUiService(this.props.captOrFo, this.props.bus);
 
@@ -149,14 +155,14 @@ export class MfdComponent
    * Called when a flight plan uplink is in progress
    */
   onUplinkInProgress() {
-    this.props.fmcService.master?.onUplinkInProgress();
+    this.props.fmcService.master.onUplinkInProgress();
   }
 
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone(intoPlan: FlightPlanIndex) {
-    this.props.fmcService.master?.onUplinkDone(intoPlan);
+  onUplinkDone(fltPlnReceived: boolean) {
+    this.props.fmcService.master.onUplinkDone(fltPlnReceived);
   }
 
   /**
@@ -167,7 +173,7 @@ export class MfdComponent
    * @param errorType the message to show
    */
   showFmsErrorMessage(errorType: FmsErrorType) {
-    this.props.fmcService.master?.showFmsErrorMessage(errorType);
+    this.props.fmcService.master.showFmsErrorMessage(errorType);
   }
 
   /**
@@ -206,7 +212,7 @@ export class MfdComponent
    * @param waypoint the waypoint to look for
    */
   async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
-    return this.props.fmcService.master?.isWaypointInUse(waypoint) ?? false;
+    return this.props.fmcService.master.isWaypointInUse(waypoint) ?? false;
   }
 
   public async onAfterRender(node: VNode): Promise<void> {
@@ -227,12 +233,14 @@ export class MfdComponent
         .getSubscriber<HEvent>()
         .on('hEvent')
         .handle((eventName) => {
-          this.props.fmcService.master?.acInterface.onEvent(eventName);
+          this.props.fmcService.master.acInterface.onEvent(eventName);
 
           if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
             const key = eventName.substring(13);
 
-            this.props.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', key, false);
+            this.props.bus
+              .getPublisher<InternalKccuKeyEvent>()
+              .pub('kccuKeyEvent', [this.props.captOrFo === 'CAPT' ? 'L' : 'R', key]);
 
             switch (key) {
               case 'DIR':
@@ -267,7 +275,7 @@ export class MfdComponent
               case 'ND': // Move cursor to ND
                 break;
               case 'CLRINFO':
-                this.props.fmcService.master?.clearLatestFmsErrorMessage();
+                this.props.fmcService.master.clearLatestFmsErrorMessage();
                 break;
               default:
                 break;

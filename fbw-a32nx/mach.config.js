@@ -37,10 +37,11 @@ module.exports = {
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('OANC'),
     msfsAvionicsInstrument('PFD'),
+    msfsAvionicsInstrument('popup'),
+    msfsAvionicsInstrument('RTPI'),
 
     reactInstrument('SD'),
     reactInstrument('DCDU'),
-    reactInstrument('RTPI'),
     reactInstrument('RMP'),
     reactInstrument('ISIS'),
     reactInstrument('BAT'),

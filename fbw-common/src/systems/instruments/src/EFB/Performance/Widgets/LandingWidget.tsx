@@ -12,7 +12,7 @@ import {
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
@@ -199,7 +199,7 @@ export const LandingWidget = () => {
           pressure: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
     }
   };
@@ -248,7 +248,7 @@ export const LandingWidget = () => {
       }
 
       dispatch(setLandingValues(values));
-    } catch (err) {
+    } catch (_err) {
       showModal(
         <PromptModal
           title={t('Performance.Landing.MetarErrorDialogTitle')}
@@ -757,8 +757,8 @@ export const LandingWidget = () => {
                       value={temperatureUnit}
                       className="w-20 rounded-l-none"
                       options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
+                        { value: 'C', displayValue: '°C' },
+                        { value: 'F', displayValue: '°F' },
                       ]}
                       onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
                     />

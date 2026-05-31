@@ -15,7 +15,7 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { getAirportMagVar, getRunways } from '../Data/Runways';
@@ -262,7 +262,7 @@ export const TakeoffWidget = () => {
           qnh: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
     }
   };
@@ -866,8 +866,8 @@ export const TakeoffWidget = () => {
                         value={temperatureUnit}
                         className="w-20 rounded-l-none"
                         options={[
-                          { value: 'C', displayValue: 'C' },
-                          { value: 'F', displayValue: 'F' },
+                          { value: 'C', displayValue: '°C' },
+                          { value: 'F', displayValue: '°F' },
                         ]}
                         onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
                       />
