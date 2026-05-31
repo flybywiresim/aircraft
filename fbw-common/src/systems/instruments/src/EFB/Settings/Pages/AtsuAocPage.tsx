@@ -9,7 +9,6 @@ import {
   usePersistentProperty,
   SENTRY_CONSENT_KEY,
   SentryConsentState,
-  isMsfs2024,
   usePersistentSetting,
   NXDataStoreSettings,
   useSimVar,
@@ -121,10 +120,7 @@ export const AtsuAocPage = () => {
   const atisSourceButtons = createWeatherSourceButtons(CONFIG_ATIS_WEATHER_SOURCES);
   const metarSourceButtons = createWeatherSourceButtons(CONFIG_METAR_WEATHER_SOURCES);
 
-  let tafSourceButtons = createWeatherSourceButtons(CONFIG_TAF_WEATHER_SOURCES);
-  if (!isMsfs2024()) {
-    tafSourceButtons = tafSourceButtons.slice(1);
-  }
+  const tafSourceButtons = createWeatherSourceButtons(CONFIG_TAF_WEATHER_SOURCES);
 
   const acarsProviderButtons = [
     { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
