@@ -83,7 +83,7 @@ export const TemperatureCorrectionWidget = () => {
     let parsedMetar: MetarParserType | undefined = undefined;
 
     // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
+    if (metarSource === ConfigWeatherMap.MSFS) {
       let metar: MsfsMetar;
       try {
         metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
