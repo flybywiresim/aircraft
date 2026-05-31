@@ -98,7 +98,6 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -2888,7 +2887,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public trySetV1Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.v1.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2907,12 +2907,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV1Speed = undefined;
     }
 
-    this.setV1Speed(v, forPlan);
+    plan.setPerformanceData('v1', v);
     return true;
   }
 
   public trySetVRSpeed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.vr.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2931,12 +2932,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedVRSpeed = undefined;
     }
 
-    this.setVrSpeed(v, forPlan);
+    plan.setPerformanceData('vr', v);
     return true;
   }
 
   public trySetV2Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    const hasV2 = plan?.performanceData.v2.get() !== null;
+    if (this.isVspeedUpdateNotAllowed(plan, hasV2 ? plan.performanceData.v2.get() : null, s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2955,7 +2958,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV2Speed = undefined;
     }
 
-    this.setV2Speed(v, forPlan);
+    plan.setPerformanceData('v2', v);
     return true;
   }
 
@@ -3316,6 +3319,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public setPerfTOFlexTemp(s: string, forPlan: FlightPlanIndex): boolean {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.flexTakeoffTemperature.get())) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('flexTakeoffTemperature', null, forPlan);
       return true;
@@ -4185,6 +4194,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public trySetFlapsTHS(s: string, forPlan: FlightPlanIndex): boolean {
     const plan = this.getFlightPlan(forPlan);
+
+    if (
+      this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.takeoffFlaps.get()) ||
+      this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.trimmableHorizontalStabilizer.get())
+    ) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
 
     if (s === Keypad.clrValue) {
       this.setTakeoffFlaps(null, forPlan);
@@ -6029,6 +6046,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       forPlan === FlightPlanIndex.Active &&
       (this.unconfirmedV1Speed || this.unconfirmedVRSpeed || this.unconfirmedV2Speed || !this._toFlexChecked) &&
       this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff
+    );
+  }
+
+  private isVspeedUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null, input: string) {
+    return input === Keypad.clrValue || this.isTakeoffFieldUpdateNotAllowed(flightplan, currentValue);
+  }
+
+  private isTakeoffFieldUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null) {
+    // Don't allow if beyond takeoff phase and the value already exists.
+    return (
+      !flightplan ||
+      (flightplan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        currentValue !== null)
     );
   }
 }
