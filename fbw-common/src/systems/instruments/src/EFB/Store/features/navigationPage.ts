@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ChartCategory, LocalChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk-react';
@@ -8,18 +8,29 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Chart } from 'navigraph/charts';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
+import { BuiltInChartProvider } from '@microsoft/msfs-sdk';
+import { MsfsChartData, MsfsChartPage, MsfsProviders } from '../../Navigation/Pages/MsfsChartPage/MsfsChartUtils';
 
 type ThemedChart = {
   light: string;
   dark: string;
 };
 
+type UnthemedChart = {
+  light: string;
+  dark?: undefined;
+};
+
 export enum ChartProvider {
+  FAA = 'FAA',
+  LIDO = 'LIDO',
   NAVIGRAPH = 'NAVIGRAPH',
   LOCAL_FILES = 'LOCAL_FILES',
 }
 
 export enum NavigationTab {
+  FAA = 'FAA',
+  LIDO = 'LIDO',
   NAVIGRAPH = 'NAVIGRAPH',
   LOCAL_FILES = 'LOCAL_FILES',
   PINNED_CHARTS = 'PINNED_CHARTS',
@@ -38,19 +49,27 @@ export type PinnedChart = {
   provider: ChartProvider;
   pagesViewable: number;
   boundingBox?: Chart['bounding_boxes'];
-  chartLinks?: { light: string; dark: string };
+  chartLinks?: { light: string; dark?: string };
   pageIndex: number;
 };
 
-export const ChartTabTypeIndices: readonly ChartCategory[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
+export const NavigraphChartTabTypeIndices: readonly ChartCategory[] = ['STAR', 'APP', 'TAXI', 'SID', 'REF'];
+export const MsfsChartTabTypeIndices: readonly MsfsChartCategory[] = ['SID', 'STAR', 'APPR', 'ARPT'];
 export const LocalChartTabTypeIndices: readonly LocalChartCategory[] = ['IMAGE', 'PDF', 'BOTH'];
 
-export const ChartTabTypeToIndex: Record<ChartCategory, number> = {
+export const NavigraphChartTabTypeToIndex: Record<ChartCategory, number> = {
   STAR: 0,
   APP: 1,
   TAXI: 2,
   SID: 3,
   REF: 4,
+};
+
+export const MsfsChartTabTypeToIndex: Record<MsfsChartCategory, number> = {
+  SID: 0,
+  STAR: 1,
+  APPR: 2,
+  ARPT: 3,
 };
 
 export const LocalChartCategoryToIndex: Record<LocalChartCategory, number> = {
@@ -70,10 +89,18 @@ type ProviderTabInfo<C> = {
   };
   chartName: ThemedChart;
   chartId: string;
-  chartLinks: ThemedChart;
+  chartLinks: ThemedChart | UnthemedChart;
   pagesViewable: number;
   currentPage: number;
   chartPosition: { positionX: number; positionY: number; scale: number };
+  currentChartPages?: unknown[];
+};
+
+export type MsfsChartCategory = 'SID' | 'STAR' | 'APPR' | 'ARPT';
+
+export type MsfsProviderTabInfo<T extends MsfsProviders> = ProviderTabInfo<MsfsChartCategory> & {
+  availableCharts: Record<MsfsChartCategory, readonly MsfsChartData<T>[]>;
+  currentChartPages?: MsfsChartPage[];
 };
 
 type NavigraphProviderTabInfo = ProviderTabInfo<ChartCategory> & {
@@ -84,7 +111,9 @@ type LocalFilesTabInfo = ProviderTabInfo<LocalChartCategory>;
 
 interface InitialChartState {
   selectedNavigationTabIndex: number;
-  usingDarkTheme: boolean;
+  usingLightTheme: boolean;
+  [NavigationTab.FAA]: MsfsProviderTabInfo<BuiltInChartProvider.Faa>;
+  [NavigationTab.LIDO]: MsfsProviderTabInfo<BuiltInChartProvider.Lido>;
   [NavigationTab.NAVIGRAPH]: NavigraphProviderTabInfo;
   [NavigationTab.LOCAL_FILES]: LocalFilesTabInfo;
   [NavigationTab.PINNED_CHARTS]: {
@@ -103,7 +132,73 @@ interface InitialChartState {
 
 const initialState: InitialChartState = {
   selectedNavigationTabIndex: 0,
-  usingDarkTheme: true,
+  usingLightTheme: true,
+  [NavigationTab.FAA]: {
+    availableCharts: {
+      SID: [],
+      STAR: [],
+      APPR: [],
+      ARPT: [],
+    },
+    chartRotation: 0,
+    searchQuery: '',
+    selectedTabType: 'SID',
+    isFullScreen: false,
+    chartDimensions: {
+      width: 0,
+      height: 0,
+    },
+    chartName: {
+      light: '',
+      dark: '',
+    },
+    chartId: '',
+    chartLinks: {
+      light: '',
+      dark: '',
+    },
+    pagesViewable: 1,
+    currentPage: 1,
+    chartPosition: {
+      positionX: 0,
+      positionY: 0,
+      scale: 1,
+    },
+    currentChartPages: undefined,
+  },
+  [NavigationTab.LIDO]: {
+    availableCharts: {
+      SID: [],
+      STAR: [],
+      APPR: [],
+      ARPT: [],
+    },
+    chartRotation: 0,
+    searchQuery: '',
+    selectedTabType: 'SID',
+    isFullScreen: false,
+    chartDimensions: {
+      width: 0,
+      height: 0,
+    },
+    chartName: {
+      light: '',
+      dark: '',
+    },
+    chartId: '',
+    chartLinks: {
+      light: '',
+      dark: '',
+    },
+    pagesViewable: 1,
+    currentPage: 1,
+    chartPosition: {
+      positionX: 0,
+      positionY: 0,
+      scale: 1,
+    },
+    currentChartPages: undefined,
+  },
   [NavigationTab.NAVIGRAPH]: {
     availableCharts: {
       STAR: [],
@@ -174,7 +269,7 @@ const initialState: InitialChartState = {
   boundingBox: undefined,
   pagesViewable: 1,
   pinnedCharts: [],
-  provider: undefined as any,
+  provider: ChartProvider.LIDO,
 };
 
 export const navigationTabSlice = createSlice({
@@ -184,8 +279,8 @@ export const navigationTabSlice = createSlice({
     setSelectedNavigationTabIndex: (state, action: PayloadAction<number>) => {
       state.selectedNavigationTabIndex = action.payload;
     },
-    setUsingDarkTheme: (state, action: PayloadAction<boolean>) => {
-      state.usingDarkTheme = action.payload;
+    setUsingLightTheme: (state, action: PayloadAction<boolean>) => {
+      state.usingLightTheme = action.payload;
     },
     setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
       state.planeInFocus = action.payload;
@@ -237,7 +332,7 @@ export const isChartPinned = (chartId: string): boolean =>
   (store.getState() as RootState).navigationTab.pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chartId);
 
 export const {
-  setUsingDarkTheme,
+  setUsingLightTheme,
   setBoundingBox,
   setProvider,
   addPinnedChart,

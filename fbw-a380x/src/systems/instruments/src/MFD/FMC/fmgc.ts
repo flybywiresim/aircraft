@@ -23,6 +23,7 @@ import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { qnhToMillibar } from '../shared/QnhUtils';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -445,7 +446,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in hPa */
   getApproachQnh(): number {
-    return this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25;
+    return qnhToMillibar(this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25);
   }
 
   /** in degrees celsius */

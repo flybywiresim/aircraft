@@ -141,6 +141,12 @@
 1. [A380X/FUEL SYSTEM] Fixes unbalanced fuel transfer when transfer not active for all feed tanks - @donstim (donbikes)
 1. [A380X/MFD] Fix SURV page radio buttons not matching the actual state of the TCAS system - @heclak (Heclak)
 1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
+1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
+1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
+1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
+1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
+1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
 1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99).
