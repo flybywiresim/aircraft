@@ -116,11 +116,12 @@ export class CDUPerformancePage {
     const isActiveOrCopyOfActiveAndAfterTakeoff =
       targetPlan.isActiveOrCopiedFromActive() && mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const phaseDependantFieldsColor = isActiveOrCopyOfActiveAndAfterTakeoff ? 'green' : 'cyan';
+    const phaseDependentFieldColorWithTag = `{${phaseDependantFieldsColor}}`;
 
     if (isActivePlan && mcdu.unconfirmedV1Speed) {
       v1Check = `{small}{cyan}${('' + mcdu.unconfirmedV1Speed).padEnd(3)}{end}{end}`;
     } else if (targetPlan.performanceData.v1.get()) {
-      v1 = `{${phaseDependantFieldsColor}}${('' + targetPlan.performanceData.v1.get()).padEnd(3)}{end}`;
+      v1 = `${phaseDependentFieldColorWithTag}${('' + targetPlan.performanceData.v1.get()).padEnd(3)}{end}`;
     }
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
       if (isActivePlan && value === '') {
@@ -144,7 +145,7 @@ export class CDUPerformancePage {
     if (isActivePlan && mcdu.unconfirmedVRSpeed) {
       vRCheck = `{small}{cyan}${('' + mcdu.unconfirmedVRSpeed).padEnd(3)}{end}{end}`;
     } else if (targetPlan.performanceData.vr.get()) {
-      vR = `{${phaseDependantFieldsColor}}${('' + targetPlan.performanceData.vr.get()).padEnd(3)}{end}`;
+      vR = `${phaseDependentFieldColorWithTag}${('' + targetPlan.performanceData.vr.get()).padEnd(3)}{end}`;
     }
     mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
       if (isActivePlan && value === '') {
@@ -168,7 +169,7 @@ export class CDUPerformancePage {
     if (isActivePlan && mcdu.unconfirmedV2Speed) {
       v2Check = `{small}{cyan}${('' + mcdu.unconfirmedV2Speed).padEnd(3)}{end}{end}`;
     } else if (targetPlan.performanceData.v2.get()) {
-      v2 = `{${phaseDependantFieldsColor}}${('' + targetPlan.performanceData.v2.get()).padEnd(3)}{end}`;
+      v2 = `${phaseDependentFieldColorWithTag}${('' + targetPlan.performanceData.v2.get()).padEnd(3)}{end}`;
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
       if (isActivePlan && value === '') {
@@ -274,7 +275,6 @@ export class CDUPerformancePage {
     }
 
     // flaps / trim horizontal stabilizer
-    let flapsThs = '[]/[\xa0\xa0\xa0][color]cyan';
     // The following line uses a special Javascript concept that is signed
     // zeroes. In Javascript -0 is strictly equal to 0, so for most cases we
     // don't care about that difference. But here, we use that fact to show
@@ -290,11 +290,12 @@ export class CDUPerformancePage {
           ? `UP${Math.abs(ths).toFixed(1)}`
           : `DN${Math.abs(ths).toFixed(1)}`
         : '';
-    const flapsExists = targetPlan.performanceData.takeoffFlaps.get() !== null;
-    const flaps = flapsExists ? targetPlan.performanceData.takeoffFlaps.get() : '[]';
-    const thsText = formattedThs ? formattedThs : '[\xa0\xa0\xa0]';
-    const flapsOrThsExists = ths !== null || flapsExists;
-    flapsThs = `${flaps}/${thsText}[color]${flapsOrThsExists ? phaseDependantFieldsColor : 'cyan'}`;
+    const flaps = targetPlan.performanceData.takeoffFlaps.get();
+    // Only enforce phase disabled color, i.e.g green if the value is not set.
+    const flapsText = `${flaps !== null ? phaseDependentFieldColorWithTag : '{cyan}'}${flaps !== null ? flaps : '[]'}/{end}`;
+    const thsText = `${formattedThs ? phaseDependentFieldColorWithTag : '{cyan}'}${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}{end}`;
+
+    const flapsThs = `${flapsText}${thsText}`;
     mcdu.onRightInput[2] = (value, scratchpadCallback) => {
       if (mcdu.trySetFlapsTHS(value, forPlan)) {
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);

@@ -4195,17 +4195,27 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public trySetFlapsTHS(s: string, forPlan: FlightPlanIndex): boolean {
     const plan = this.getFlightPlan(forPlan);
 
-    if (
-      this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.takeoffFlaps.get()) ||
-      this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.trimmableHorizontalStabilizer.get())
-    ) {
+    const thsModificationNotAllowed = this.isTakeoffFieldUpdateNotAllowed(
+      plan,
+      plan?.performanceData.trimmableHorizontalStabilizer.get(),
+    );
+    const flapsModificationNotAllowed = this.isTakeoffFieldUpdateNotAllowed(
+      plan,
+      plan?.performanceData.takeoffFlaps.get(),
+    );
+
+    if (thsModificationNotAllowed && flapsModificationNotAllowed) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
 
     if (s === Keypad.clrValue) {
-      this.setTakeoffFlaps(null, forPlan);
-      this.setTakeoffTrim(null, forPlan);
+      if (!flapsModificationNotAllowed) {
+        this.setTakeoffFlaps(null, forPlan);
+      }
+      if (!thsModificationNotAllowed) {
+        this.setTakeoffTrim(null, forPlan);
+      }
       this.tryCheckToData();
       return true;
     }
@@ -4264,12 +4274,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (newFlaps !== null) {
+      if (flapsModificationNotAllowed) {
+        this.setScratchpadMessage(newThs !== null ? NXSystemMessages.formatError : NXSystemMessages.notAllowed);
+        return false;
+      }
       if (plan.performanceData.takeoffFlaps.get() !== null) {
         this.tryCheckToData();
       }
       this.setTakeoffFlaps(newFlaps, forPlan);
     }
     if (newThs !== null) {
+      if (thsModificationNotAllowed) {
+        this.setScratchpadMessage(newFlaps !== null ? NXSystemMessages.formatError : NXSystemMessages.notAllowed);
+        return false;
+      }
       if (plan.performanceData.trimmableHorizontalStabilizer.get() !== null) {
         this.tryCheckToData();
       }
