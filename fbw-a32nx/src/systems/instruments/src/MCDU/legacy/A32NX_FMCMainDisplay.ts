@@ -2172,8 +2172,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Any tropopause altitude from 1,000 ft up to 60,000 ft is able to be entered
-   * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+   * Any tropopause altitude from 10,000 ft up to 60,000 ft is able to be entered
+   * @param {string} tropo Format: FLNNN or NNNNN.  Entry is rounded to the nearest 10 ft. NNN is assumed as flight level.
    * @param {number} forPlan the flight plan index to set tropopause for
    * @return {boolean} Whether tropopause could be set or not
    */
