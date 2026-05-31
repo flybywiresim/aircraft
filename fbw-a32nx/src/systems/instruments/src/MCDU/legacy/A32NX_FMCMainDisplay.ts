@@ -5995,4 +5995,38 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   isCostIndexModificationDisabled(plan: FlightPlan): boolean {
     return plan.isActiveOrCopiedFromActive() && this.getFlightPhase() >= FmgcFlightPhase.Descent;
   }
+
+  confirmTakeoffData(): void {
+    const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
+    if (!plan) {
+      return;
+    }
+    this.setV1Speed(
+      this.unconfirmedV1Speed !== undefined ? this.unconfirmedV1Speed : plan.performanceData.v1.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setVrSpeed(
+      this.unconfirmedVRSpeed !== undefined ? this.unconfirmedVRSpeed : plan.performanceData.vr.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setV2Speed(
+      this.unconfirmedV2Speed !== undefined ? this.unconfirmedV2Speed : plan.performanceData.v2.get(),
+      FlightPlanIndex.Active,
+    );
+    this.unconfirmedV1Speed = undefined;
+    this.unconfirmedVRSpeed = undefined;
+    this.unconfirmedV2Speed = undefined;
+    this._toFlexChecked = true;
+  }
+
+  shouldShowConfirmTakeoffData(forPlan: FlightPlanIndex): boolean {
+    if (forPlan !== FlightPlanIndex.Active || !this.flightPlanService.hasActive) {
+      return false;
+    }
+    return (
+      forPlan === FlightPlanIndex.Active &&
+      (this.unconfirmedV1Speed || this.unconfirmedVRSpeed || this.unconfirmedV2Speed || !this._toFlexChecked) &&
+      this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff
+    );
+  }
 }

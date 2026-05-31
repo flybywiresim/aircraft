@@ -227,6 +227,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
   isCostIndexModificationDisabled(plan: FlightPlan): boolean;
+  confirmTakeoffData(): void;
+  shouldShowConfirmTakeoffData(forPlan: FlightPlanIndex): boolean;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
