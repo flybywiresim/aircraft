@@ -96,7 +96,7 @@ export const TemperatureCorrectionWidget = () => {
       }
     } else {
       try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
+        const response = await FbwApiMetar.get(icao, metarSource);
         if (!response.metar) {
           throw new Error('No METAR available');
         }
