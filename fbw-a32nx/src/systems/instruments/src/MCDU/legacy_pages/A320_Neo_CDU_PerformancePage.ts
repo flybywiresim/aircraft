@@ -290,10 +290,11 @@ export class CDUPerformancePage {
           ? `UP${Math.abs(ths).toFixed(1)}`
           : `DN${Math.abs(ths).toFixed(1)}`
         : '';
-    const flaps =
-      targetPlan.performanceData.takeoffFlaps.get() !== null ? targetPlan.performanceData.takeoffFlaps.get() : '[]';
+    const flapsExists = targetPlan.performanceData.takeoffFlaps.get() !== null;
+    const flaps = flapsExists ? targetPlan.performanceData.takeoffFlaps.get() : '[]';
     const thsText = formattedThs ? formattedThs : '[\xa0\xa0\xa0]';
-    flapsThs = `${flaps}/${thsText}[color]${phaseDependantFieldsColor}`;
+    const flapsOrThsExists = ths !== null || flapsExists;
+    flapsThs = `${flaps}/${thsText}[color]${flapsOrThsExists ? phaseDependantFieldsColor : 'cyan'}`;
     mcdu.onRightInput[2] = (value, scratchpadCallback) => {
       if (mcdu.trySetFlapsTHS(value, forPlan)) {
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
@@ -307,9 +308,9 @@ export class CDUPerformancePage {
     const flex = targetPlan.performanceData.flexTakeoffTemperature.get();
     if (flex !== null && Number.isFinite(flex)) {
       if (mcdu._toFlexChecked) {
-        flexTakeOffTempCell = `${flex.toFixed(0)}°[color]cyan`;
+        flexTakeOffTempCell = `${flex.toFixed(0)}°[color]${phaseDependantFieldsColor}`;
       } else {
-        flexTakeOffTempCell = `{small}${flex.toFixed(0)}{end}${flexTakeOffTempCell}[color]${phaseDependantFieldsColor}`;
+        flexTakeOffTempCell = `{small}${flex.toFixed(0)}{end}${flexTakeOffTempCell}[color]cyan`;
       }
     }
     mcdu.onRightInput[3] = (value, scratchpadCallback) => {
