@@ -58,7 +58,7 @@ export class CDUInitPage {
       fromText = origin.ident;
       fromColor = fromToDisabled ? Column.green : Column.cyan;
     } else if (!fromToDisabled) {
-      fromText = isForPrimary ? '____' : '[\xa0\xa0\xa0\xa0]';
+      fromText = isForPrimary ? '____' : '[\xa0\xa0]';
       fromColor = isForPrimary ? Column.amber : Column.cyan;
     }
 
@@ -82,7 +82,7 @@ export class CDUInitPage {
       toText = '/' + dest.ident;
       toColor = fromToDisabled ? Column.green : Column.cyan;
     } else if (!fromToDisabled) {
-      toText = isForPrimary ? '/____' : '/[\xa0\xa0\xa0\xa0]';
+      toText = isForPrimary ? '/____' : '/[\xa0\xa0]';
       toColor = isForPrimary ? Column.amber : Column.cyan;
     }
 
@@ -118,7 +118,7 @@ export class CDUInitPage {
     // If an active SimBrief OFP matches the FP, hide the request option
     // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
     if (
-      fromToDisabled ||
+      (isForPrimary && fromToDisabled) ||
       (dest &&
         origin &&
         (mcdu.simbriefOfpState !== SimbriefOfpState.Loaded ||
@@ -156,10 +156,10 @@ export class CDUInitPage {
     let cruiseTempSeparatorColor = Column.white;
     let cruiseTempSize = Column.big;
 
-    // CRZ FL is amber if, active or copy of active before descent phase and missing.
     if (dest) {
       altDest.update(altnAirport ? altnAirport.ident : 'NONE', Column.cyan);
       if (planCruiseLevel === null) {
+        // CRZ FL is amber if, active or copy of active before descent phase and missing.
         if (isActiveOrCopiedFromActive) {
           if (flightPhase < FmgcFlightPhase.Descent) {
             cruiseFlColor = Column.amber;
@@ -177,6 +177,7 @@ export class CDUInitPage {
         cruiseFlColor = Column.cyan;
       }
 
+      // Cruise temp is dashed starting in the cruise phase.
       if (!isActiveOrCopiedFromActive || flightPhase < FmgcFlightPhase.Cruise) {
         if (planCruiseLevel === null) {
           cruiseTempCell = cruiseFlightLevelMandatoryMissing ? '___°' : '[\xa0]°';
