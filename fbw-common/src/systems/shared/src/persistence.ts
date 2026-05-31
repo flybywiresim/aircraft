@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
-import { ConfigWeatherMap } from './config';
+import { ConfigAtisSource, ConfigMetarSource, ConfigTafSource, ConfigWeatherMap } from './config';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
@@ -15,9 +15,9 @@ export interface NXDataStoreSettings {
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
   ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
-  CONFIG_METAR_SRC: ConfigWeatherMap;
-  CONFIG_ATIS_SRC: ConfigWeatherMap;
-  CONFIG_TAF_SRC: ConfigWeatherMap;
+  CONFIG_METAR_SRC: ConfigMetarSource;
+  CONFIG_ATIS_SRC: ConfigAtisSource;
+  CONFIG_TAF_SRC: ConfigTafSource;
   CONFIG_USING_METRIC_UNIT: boolean;
 }
 
@@ -31,7 +31,7 @@ export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
     CONFIG_METAR_SRC: ConfigWeatherMap.MSFS,
-    CONFIG_ATIS_SRC: ConfigWeatherMap.MSFS,
+    CONFIG_ATIS_SRC: ConfigWeatherMap.IVAO,
     CONFIG_TAF_SRC: ConfigWeatherMap.NOAA,
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     CONFIG_USING_METRIC_UNIT: true,

@@ -3,7 +3,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Atis, Metar, Taf, Telex, AircraftStatus } from '@flybywiresim/api-client';
-import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ConfigAtisSource, ConfigMetarSource, ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   AtsuMessage,
@@ -30,7 +30,7 @@ export class NXApiConnector {
 
   private static async receiveMetarFromSource(
     icao: string,
-    source: ConfigWeatherMap,
+    source: ConfigMetarSource,
     message: WeatherMessage,
   ): Promise<AtsuStatusCodes> {
     if (source === ConfigWeatherMap.BEYONDATC) {
@@ -59,15 +59,15 @@ export class NXApiConnector {
 
   private static async receiveAtisFromSource(
     icao: string,
-    source: string,
+    source: ConfigAtisSource,
     type: AtisType,
     message: AtisMessage,
   ): Promise<AtsuStatusCodes> {
-    if (source === 'BEYONDATC') {
+    if (source === ConfigWeatherMap.BEYONDATC) {
       return BeyondATCConnector.receiveAtis(icao, message);
     }
 
-    if (source === 'SAI') {
+    if (source === ConfigWeatherMap.SAI) {
       return SayIntentionsConnector.receiveAtis(icao, message);
     }
 

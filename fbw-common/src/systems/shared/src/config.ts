@@ -9,3 +9,39 @@ export enum ConfigWeatherMap {
   BEYONDATC = 'BEYONDATC',
   SAI = 'SAI',
 }
+
+export const CONFIG_ATIS_WEATHER_SOURCES = [
+  ConfigWeatherMap.FAA,
+  ConfigWeatherMap.IVAO,
+  ConfigWeatherMap.PILOTEDGE,
+  ConfigWeatherMap.VATSIM,
+  ConfigWeatherMap.BEYONDATC,
+  ConfigWeatherMap.SAI,
+] as const;
+
+export const CONFIG_METAR_WEATHER_SOURCES = [
+  ConfigWeatherMap.MSFS,
+  ConfigWeatherMap.NOAA,
+  ConfigWeatherMap.PILOTEDGE,
+  ConfigWeatherMap.VATSIM,
+  ConfigWeatherMap.BEYONDATC,
+  ConfigWeatherMap.SAI,
+] as const;
+
+export const CONFIG_TAF_WEATHER_SOURCES = [ConfigWeatherMap.MSFS, ConfigWeatherMap.NOAA] as const;
+
+export type ConfigAtisSource = (typeof CONFIG_ATIS_WEATHER_SOURCES)[number];
+export type ConfigSelectableAtisSource = (typeof CONFIG_ATIS_WEATHER_SOURCES)[number];
+export type ConfigMetarSource = (typeof CONFIG_METAR_WEATHER_SOURCES)[number];
+export type ConfigTafSource = (typeof CONFIG_TAF_WEATHER_SOURCES)[number];
+
+export const CONFIG_WEATHER_SOURCE_LABELS: Record<ConfigWeatherMap, string> = {
+  [ConfigWeatherMap.FAA]: 'FAA (US)',
+  [ConfigWeatherMap.IVAO]: 'IVAO',
+  [ConfigWeatherMap.MSFS]: 'MSFS',
+  [ConfigWeatherMap.NOAA]: 'NOAA',
+  [ConfigWeatherMap.PILOTEDGE]: 'PilotEdge',
+  [ConfigWeatherMap.VATSIM]: 'VATSIM',
+  [ConfigWeatherMap.BEYONDATC]: 'BeyondATC',
+  [ConfigWeatherMap.SAI]: 'SayIntentions.AI',
+};

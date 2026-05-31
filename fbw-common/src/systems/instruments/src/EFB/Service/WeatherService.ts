@@ -52,14 +52,10 @@ export const fetchRawMetarBySource = async (icao: string): Promise<string> => {
     return msfsMetar.metarString;
   }
 
-  if (source in ConfigWeatherMap) {
-    const response = await FbwApiMetar.get(icao, source);
-    if (!response.metar) {
-      throw new Error('No METAR available');
-    }
-
-    return response.metar;
+  const response = await FbwApiMetar.get(icao, source);
+  if (!response.metar) {
+    throw new Error('No METAR available');
   }
 
-  throw new Error(`No METAR provider available for ${source}`);
+  return response.metar;
 };

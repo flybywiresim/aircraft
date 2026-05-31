@@ -18,9 +18,6 @@ interface SayIntentionsResponse {
   airports?: SayIntentionsAirport[];
 }
 
-/**
- * Connector for SayIntentions.AI weather API
- */
 export class SayIntentionsConnector {
   private static readonly BASE_URL = 'https://apipri.sayintentions.ai/sapi/getWX';
 
