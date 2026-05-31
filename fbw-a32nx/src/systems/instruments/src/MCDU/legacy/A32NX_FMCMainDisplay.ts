@@ -2172,7 +2172,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Any tropopause altitude up to 60,000 ft is able to be entered
+   * Any tropopause altitude from 1,000 ft up to 60,000 ft is able to be entered
    * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
    * @param {number} forPlan the flight plan index to set tropopause for
    * @return {boolean} Whether tropopause could be set or not
@@ -2189,14 +2189,27 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-      this.setScratchpadMessage(NXSystemMessages.formatError);
-      return false;
+    let value: number;
+    // Accept up to NNNNN
+    const feetMatch = tropo.match(/(^\d{1,5}$)/g);
+    if (!feetMatch) {
+      // Accept FLNN or FLNNN
+      const flMatch = tropo.match(/^FL(\d{2,3})$/g);
+      if (!flMatch) {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+      } else {
+        value = parseInt(flMatch[0].substring(2));
+      }
+    } else {
+      value = parseInt(tropo);
     }
 
-    const value = parseInt(tropo);
+    if (value >= 100 && value < 1000) {
+      value *= 100;
+    }
 
-    if (isFinite(value) && value >= 0 && value <= 60000) {
+    if (value >= 10000 && value <= 60000) {
       this.currFlightPlanService.setPerformanceData('pilotTropopause', Math.round(value / 10) * 10, forPlan);
       return true;
     }
