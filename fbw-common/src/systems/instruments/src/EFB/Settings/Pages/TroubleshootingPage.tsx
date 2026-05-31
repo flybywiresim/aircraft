@@ -49,7 +49,6 @@ export const TroubleshootingPage = () => {
         MSFS2024: {isMsfs2024() ? 'True\n' : 'False\n'}
         NavData Dates: {navDates + '\n'}
         Navigraph NavData: {naviInstalled ? 'True\n' : 'False\n'}
-        ACARS: {acarsStateInfo() + '\n'}
         {fileHashMismatches.length > 0
           ? fileHashMismatches.map(
               (m) => `File tampered: ${m.vfsPath}; expected ${m.expectedHash}, actual ${m.actualHash}\n`,
