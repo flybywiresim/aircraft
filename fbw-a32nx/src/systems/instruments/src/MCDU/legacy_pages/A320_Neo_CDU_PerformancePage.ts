@@ -291,9 +291,9 @@ export class CDUPerformancePage {
           : `DN${Math.abs(ths).toFixed(1)}`
         : '';
     const flaps = targetPlan.performanceData.takeoffFlaps.get();
-    // Only enforce phase disabled color, i.e.g green if the value is not set.
-    const flapsText = `${flaps !== null ? phaseDependentFieldColorWithTag : '{cyan}'}${flaps !== null ? flaps : '[]'}/{end}`;
-    const thsText = `${formattedThs ? phaseDependentFieldColorWithTag : '{cyan}'}${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}{end}`;
+    const flapsOrThsExist = flaps !== null || ths !== null;
+    const flapsText = `${flaps !== null ? flaps : isActiveOrCopyOfActiveAndAfterTakeoff && ths !== null ? '\xa0' : '[]'}/`; // TODO to confirm in FFS how it looks when only THS is set during takeoff. Assuming similar behaviour to THS.
+    const thsText = `${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff && flaps !== null ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}[color]${flapsOrThsExist ? phaseDependantFieldsColor : 'cyan'}}`;
 
     const flapsThs = `${flapsText}${thsText}`;
     mcdu.onRightInput[2] = (value, scratchpadCallback) => {
