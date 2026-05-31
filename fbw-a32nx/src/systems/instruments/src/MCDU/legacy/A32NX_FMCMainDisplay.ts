@@ -2731,7 +2731,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
       await this.flightPlanService.temporaryInsert();
 
-      this.checkCostIndex(oldCostIndex); //FIXME: This is bogus?...
+      this.checkCostIndex(oldCostIndex); //FIXME: Should trigger message by FMS event.
 
       if (oldDestination !== undefined) {
         this.checkDestination(oldDestination);
