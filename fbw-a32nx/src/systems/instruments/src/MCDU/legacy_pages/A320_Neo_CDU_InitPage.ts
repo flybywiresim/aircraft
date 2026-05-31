@@ -3,7 +3,7 @@
 
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
-import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
+import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUAvailableFlightPlanPage } from './A320_Neo_CDU_AvailableFlightPlanPage';
 import { CDUIRSInit } from './A320_Neo_CDU_IRSInit';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
@@ -134,7 +134,7 @@ export class CDUInitPage {
     let costIndexText = '---';
     let costIndexColor = Column.white;
     if (costIndex !== null) {
-      costIndexText = costIndex.toString();
+      costIndexText = costIndex.toFixed(0);
       costIndexColor = ciModificationDisabled ? Column.green : Column.cyan;
     } else {
       if (!ciModificationDisabled && dest) {
@@ -143,7 +143,13 @@ export class CDUInitPage {
       }
     }
     mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-      mcdu.tryUpdateCostIndex(value, forPlan) ? CDUInitPage.ShowPage1(mcdu, forPlan) : scratchpadCallback();
+      mcdu.tryUpdateCostIndex(value, forPlan).then((result) => {
+        if (result) {
+          CDUInitPage.ShowPage1(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
@@ -205,7 +211,7 @@ export class CDUInitPage {
       cruiseFlTempSeparator.updateAttributes(cruiseTempSeparatorColor, cruiseTempSize);
     }
 
-    // CRZ FL / FLX TEMP
+    // CRZ FL / TEMP
     mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
       if (mcdu.setCruiseFlightLevelAndTemperature(value, forPlan)) {
         CDUInitPage.ShowPage1(mcdu, forPlan);
@@ -344,17 +350,13 @@ export class CDUInitPage {
     }
 
     mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
-      try {
-        mcdu.trySetGroundTemp(scratchpadValue, forPlan);
-        CDUInitPage.ShowPage1(mcdu, forPlan);
-      } catch (msg) {
-        if (msg instanceof McduMessage) {
-          mcdu.setScratchpadMessage(msg);
-          scratchpadCallback();
+      mcdu.trySetGroundTemp(scratchpadValue, forPlan).then((result) => {
+        if (result) {
+          CDUInitPage.ShowPage1(mcdu, forPlan);
         } else {
-          throw msg;
+          scratchpadCallback();
         }
-      }
+      });
     };
 
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {

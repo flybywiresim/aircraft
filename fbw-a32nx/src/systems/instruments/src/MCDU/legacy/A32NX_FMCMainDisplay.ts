@@ -2145,7 +2145,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return false;
   }
 
-  public tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean {
+  public async tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
 
     if (plan && plan.destinationAirport !== undefined) {
@@ -2160,7 +2160,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             return true;
           } else {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-            return false;
           }
         } else {
           this.setScratchpadMessage(NXSystemMessages.formatError);
@@ -4507,26 +4506,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       );
   }
 
-  public trySetGroundTemp(scratchpadValue: string, forPlan: number) {
+  public async trySetGroundTemp(scratchpadValue: string, forPlan: number): Promise<boolean> {
     // TODO check if this condition is still applicable in SEC
 
     const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
     if (plan && plan.destinationAirport !== undefined) {
       if (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
-        throw NXSystemMessages.notAllowed;
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        return false;
       }
 
       if (scratchpadValue === Keypad.clrValue) {
         this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
-        return;
+        return true;
       }
 
       if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
-        throw NXSystemMessages.formatError;
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
       }
 
       this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
     }
+    return true;
   }
 
   public isNavModeEngaged() {

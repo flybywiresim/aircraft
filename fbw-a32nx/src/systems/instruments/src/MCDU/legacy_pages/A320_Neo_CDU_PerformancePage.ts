@@ -537,11 +537,13 @@ export class CDUPerformancePage {
     );
 
     mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
-      } else {
-        scratchpadCallback();
-      }
+      mcdu.tryUpdateCostIndex(value, forPlan).then((result) => {
+        if (result) {
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     if (canClickManagedSpeed) {
@@ -694,11 +696,13 @@ export class CDUPerformancePage {
     }
 
     mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-        CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
-      } else {
-        scratchpadCallback();
-      }
+      mcdu.tryUpdateCostIndex(value, forPlan).then((result) => {
+        if (result) {
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
@@ -942,11 +946,13 @@ export class CDUPerformancePage {
     }
 
     mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-      if (mcdu.tryUpdateCostIndex(value, forPlan)) {
-        CDUPerformancePage.ShowDESPage(mcdu, forPlan);
-      } else {
-        scratchpadCallback();
-      }
+      mcdu.tryUpdateCostIndex(value, forPlan).then((result) => {
+        if (result) {
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     if (showManagedSpeed) {

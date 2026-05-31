@@ -140,7 +140,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   tryUpdateAltDestination(altDestIdent: string, forPlan: FlightPlanIndex): Promise<boolean>;
   tryUpdateTropo(tropo: string, forPlan: FlightPlanIndex): boolean;
   tryUpdateFromTo(fromTo: string, forPlan: FlightPlanIndex, callback?: typeof EmptyCallback.Boolean): void;
-  trySetGroundTemp(scratchpadValue: string, forPlan: FlightPlanIndex): void;
+  trySetGroundTemp(scratchpadValue: string, forPlan: number): Promise<boolean>;
   goToFuelPredPage(forPlan: FlightPlanIndex): void;
   trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean;
   tryFuelPlanning(forPlan: FlightPlanIndex): boolean;
@@ -181,7 +181,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDestinationTransitionLevel(): number | undefined;
   getNavModeSpeedConstraint(): number;
   trySetPreSelectedClimbSpeed(s: string, forPlan: FlightPlanIndex): boolean;
-  tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean;
+  tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): Promise<boolean>;
   trySetPerfClbPredToAltitude(value: string, cruiseLevel: number | null): boolean;
   trySetPreSelectedCruiseSpeed(s: string, forPlan: FlightPlanIndex): boolean;
   trySetPerfDesPredToAltitude(value: string): boolean;
