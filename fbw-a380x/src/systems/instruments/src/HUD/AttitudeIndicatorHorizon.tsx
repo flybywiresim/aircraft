@@ -614,9 +614,7 @@ class PitchScale extends DisplayComponent<{
   }
 
   private MoveThreeDegreeMark() {
-    // FIXME slope data from the FMS only available or updated when navaid page is displayed. Using sim data instead
-    let lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
-    lsSlope === 0 ? (lsSlope = 3) : (lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees')));
+    const lsSlope = parseFloat(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
     const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
       calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
@@ -629,17 +627,18 @@ class PitchScale extends DisplayComponent<{
     const fpaTxt = this.selectedFpa.get() % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
 
     if (
-      this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK ||
-      this.activeVerticalModeSub.get() === VerticalMode.GS_CPT ||
-      this.activeVerticalModeSub.get() === VerticalMode.LAND ||
-      this.gsArmed === true
+      (this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK ||
+        this.activeVerticalModeSub.get() === VerticalMode.GS_CPT ||
+        this.activeVerticalModeSub.get() === VerticalMode.LAND ||
+        this.gsArmed === true) &&
+      lsSlope !== 0
     ) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (lsSlope / 5) * FIVE_DEG} h -80  M 713,${512 + (lsSlope / 5) * FIVE_DEG} h 80  `,
       );
       this.threeDegTxtRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG + 6.5}`);
-      this.threeDegTxtRef.instance.textContent = `-${lsSlope}.0°`;
+      this.threeDegTxtRef.instance.textContent = `-${lsSlope.toFixed(1)}°`;
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
       this.threeDegTxtBgRef.instance.style.display = `block`;
