@@ -1,5 +1,7 @@
-use super::linear_actuator::Actuator;
-use crate::{shared::low_pass_filter::LowPassFilter, simulation::UpdateContext};
+use crate::{
+    hydraulic::linear_actuator::Actuator, shared::low_pass_filter::LowPassFilter,
+    simulation::UpdateContext,
+};
 
 use uom::si::{
     angular_velocity::revolution_per_minute,
