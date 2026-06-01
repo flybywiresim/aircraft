@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -7,7 +7,7 @@
     <Component ID="DOOR_ANIMATIONS_COCKPIT">
             <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />
     </Component>
-    
+
     <Template Name="FBW_A380X_Components_Door">
         <Component ID="ANIM_DOOR_#DOOR_ID#" Node="ANIM_DOOR_#DOOR_ID#_CLICK">
             <UseTemplate Name="ASOBO_GT_Anim_Code">
