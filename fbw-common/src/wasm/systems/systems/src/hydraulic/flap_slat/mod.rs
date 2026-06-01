@@ -404,12 +404,12 @@ impl FlapSlatAssembly {
 
         let left_motor_speed = self.pcu_speed
             * left_torque_ratio.get::<ratio>()
-            * (self.differential_gear_ratio.get::<ratio>());
+            * self.differential_gear_ratio.get::<ratio>();
         self.left_motor.update_speed(context, left_motor_speed);
 
         let right_motor_speed = self.pcu_speed
             * right_torque_ratio.get::<ratio>()
-            * (self.differential_gear_ratio.get::<ratio>());
+            * self.differential_gear_ratio.get::<ratio>();
         self.right_motor.update_speed(context, right_motor_speed);
     }
 
