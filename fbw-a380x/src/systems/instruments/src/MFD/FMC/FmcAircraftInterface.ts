@@ -1131,8 +1131,9 @@ export class FmcAircraftInterface {
           );
       const vMax = this.speedVmax.get();
       // Select the most limiting characteristic speed between speed target, VLS and current flap configuration. Limit by vmax.
-      Vtap = Math.min(Math.max(this.managedSpeedTarget, Math.max(vls, limitingCharacteristicSpeed ?? 0)), vMax - 5);
-      if (Vtap === vls) {
+      Vtap = MathUtils.clamp(this.managedSpeedTarget, limitingCharacteristicSpeed ?? 0, vMax - 5);
+      if (Vtap < vls) {
+        Vtap = vls;
         limitedByVls = true;
       }
     }
