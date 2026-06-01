@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 <ModelInfo>
 	<LODS>
-		<LOD minSize="0" ModelFile="../../Part_Exterior_Gear_Nose/model/A380_GEAR_NOSE.gltf"/>
+		<LOD minSize="167" ModelFile="../../Part_Exterior_Gear_Nose/model/A380_GEAR_NOSE.gltf"/>
+		<LOD minSize="1" ModelFile="../../Part_Exterior_Gear_Nose/model/A380_GEAR_NOSE_LOD01.gltf"/>
 	</LODS>
 	<Behaviors>
 		<IncludeBase RelativeFile="A380_Gear_Nose_Behavior.xml"/>
