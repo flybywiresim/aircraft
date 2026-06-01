@@ -160,7 +160,7 @@ export class AirspeedIndicator extends DisplayComponent<{
           {/* Outline */}
           <path id="SpeedTapeOutlineRight" class="NormalStroke White" d={this.outlinePath} />
           <VerticalTape
-            tapeValue={this.spdValue}
+            tapeValue={this.spdValue.map((value) => MathUtils.round(value, 1e-2))}
             lowerLimit={30}
             upperLimit={660}
             valueSpacing={ValueSpacing}
@@ -269,116 +269,81 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
-  private lowerRef = FSComponent.createRef<SVGGElement>();
+  private readonly leftMainGearCompressed = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('leftMainGearCompressed'),
+    false,
+  );
 
-  private offTapeRef = FSComponent.createRef<SVGGElement>();
+  private readonly rightMainGearCompressed = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('rightMainGearCompressed'),
+    false,
+  );
 
-  private offTapeFailedRef = FSComponent.createRef<SVGGElement>();
+  private readonly onGround = MappedSubject.create(
+    ([leftMainGearCompressed, rightMainGearCompressed]) => leftMainGearCompressed || rightMainGearCompressed,
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+  );
 
-  private decelRef = FSComponent.createRef<SVGTextElement>();
+  private readonly airSpeedWord = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('speedAr').withArinc429Precision(2),
+  );
 
-  private readonly spdLimFlagVisible = Subject.create(false);
+  private readonly spdInvalid = MappedSubject.create(
+    ([word, onGround]) => word.isFailureWarning() || (word.isNoComputedData() && !onGround),
+    this.airSpeedWord,
+    this.onGround,
+  );
 
-  private onGround = true;
+  private readonly spdValue = MappedSubject.create(
+    ([word, onGround]) => {
+      const value = word.valueOr(0);
 
-  private leftMainGearCompressed = true;
-
-  private rightMainGearCompressed = true;
-
-  private airSpeed = Arinc429Word.empty();
-
-  private setOutline(): void {
-    let airspeedValue: number;
-    if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
-      airspeedValue = NaN;
-    } else if (this.airSpeed.isNoComputedData()) {
-      airspeedValue = 30;
-    } else {
-      airspeedValue = this.airSpeed.value;
-    }
-    if (Number.isNaN(airspeedValue)) {
-      this.offTapeRef.instance.classList.add('HiddenElement');
-      this.offTapeFailedRef.instance.classList.remove('HiddenElement');
-    } else {
-      this.offTapeRef.instance.classList.remove('HiddenElement');
-      this.offTapeFailedRef.instance.classList.add('HiddenElement');
-
-      const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
-      const showLower = clampedSpeed > 72;
-
-      if (showLower) {
-        this.lowerRef.instance.setAttribute('visibility', 'visible');
+      if (word.isNoComputedData() && onGround) {
+        return 30;
       } else {
-        this.lowerRef.instance.setAttribute('visibility', 'hidden');
+        return value;
       }
-    }
-  }
+    },
+    this.airSpeedWord,
+    this.onGround,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private readonly facToUse = ConsumerSubject.create(this.props.bus.getSubscriber<Arinc429Values>().on('facToUse'), 0);
 
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
+  private readonly spdLimFlagVisible = this.facToUse.map((facToUse) => facToUse === 0);
 
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.onGround = this.rightMainGearCompressed || g;
-        this.setOutline();
-      });
+  private readonly decelActive = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('autoBrakeDecel'),
+    false,
+  );
 
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.onGround = this.leftMainGearCompressed || g;
-        this.setOutline();
-      });
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((speed) => {
-        this.airSpeed = speed;
-        this.setOutline();
-      });
-
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((a) => {
-        if (a) {
-          this.decelRef.instance.style.visibility = 'visible';
-        } else {
-          this.decelRef.instance.style.visibility = 'hidden';
-        }
-      });
-
-    sub
-      .on('facToUse')
-      .whenChanged()
-      .handle((a) => {
-        if (a === 0) {
-          this.spdLimFlagVisible.set(true);
-        } else {
-          this.spdLimFlagVisible.set(false);
-        }
-      });
-  }
+  private readonly lowerLineVisible = MappedSubject.create(
+    ([spdInvalid, spdValue]) => {
+      const clampedSpeed = Math.max(Math.min(spdValue, 660), 30);
+      return clampedSpeed > 72 && !spdInvalid;
+    },
+    this.spdInvalid,
+    this.spdValue,
+  );
 
   render(): VNode {
     return (
       <>
-        <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
+        <g id="OfftapeFailedGroup" visibility={this.spdInvalid.map((invalid) => (invalid ? 'inherit' : 'hidden'))}>
           <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058 38.086h21.859" />
           <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 123.56h21.859" />
         </g>
-        <g id="SpeedOfftapeGroup" ref={this.offTapeRef}>
+        <g id="SpeedOfftapeGroup" visibility={this.spdInvalid.map((invalid) => (invalid ? 'hidden' : 'inherit'))}>
           <path id="SpeedTapeOutlineUpper" class="NormalStroke White" d="m1.9058 38.086h21.859" />
           <SpeedTarget bus={this.props.bus} />
-          <text id="AutoBrkDecel" ref={this.decelRef} class="FontMedium EndAlign Green" x="20.53927" y="129.06996">
+          <text
+            id="AutoBrkDecel"
+            visibility={this.decelActive.map((decel) => (decel ? 'inherit' : 'hidden'))}
+            class="FontMedium EndAlign Green"
+            x="20.53927"
+            y="129.06996"
+          >
             DECEL
           </text>
           <path
@@ -386,7 +351,12 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
             d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z"
           />
           <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-          <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
+          <path
+            id="SpeedTapeOutlineLower"
+            visibility={this.lowerLineVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+            class="NormalStroke White"
+            d="m1.9058 123.56h21.859"
+          />
           <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdLimFlagVisible}>
             <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red">
               SPD
@@ -478,227 +448,170 @@ class SpeedTrendArrow extends DisplayComponent<{
 }
 
 class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private vlsPath = Subject.create<string>('');
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private vlsVisbility = Subject.create<string>('hidden');
+  private readonly vAlphaProt = Arinc429LocalVarConsumerSubject.create(this.sub.on('vAlphaProt'));
 
-  private vAlphaProt = new Arinc429Word(0);
+  private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('vStallWarn'));
 
-  private vStallWarn = new Arinc429Word(0);
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private airSpeed = new Arinc429Word(0);
+  private readonly vls = Arinc429LocalVarConsumerSubject.create(this.sub.on('vLs'));
 
-  private vls = new Arinc429Word(0);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1'));
 
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+  private readonly normalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
 
-  private setVlsPath() {
-    if (this.vls.isNormalOperation()) {
-      this.vlsVisbility.set('visible');
-
-      const normalLawActive =
-        this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
-
-      const VLsPos = ((this.airSpeed.value - this.vls.value) * DistanceSpacing) / ValueSpacing + 80.818;
+  private vlsPath = MappedSubject.create(
+    ([airSpeed, vls, vAlphaProt, vStallWarn, normalLawActive]) => {
+      const VLsPos = ((airSpeed.value - vls.value) * DistanceSpacing) / ValueSpacing + 80.818;
       const offset =
-        ((this.vls.value - (normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0))) *
-          DistanceSpacing) /
+        ((vls.value - (normalLawActive ? vAlphaProt.valueOr(0) : vStallWarn.valueOr(0))) * DistanceSpacing) /
         ValueSpacing;
 
-      this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
-    } else {
-      this.vlsVisbility.set('hidden');
-    }
-  }
+      return `m19.031 ${MathUtils.round(VLsPos, 1e-2)}h 1.9748v${MathUtils.round(offset, 1e-2)}`;
+    },
+    this.airSpeed,
+    this.vls,
+    this.vAlphaProt,
+    this.vStallWarn,
+    this.normalLawActive,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private vlsVisible = MappedSubject.create(
+    ([vls, vAlphaProt, vStallWarn, normalLawActive]) => {
+      const lowerBorder = normalLawActive ? vAlphaProt : vStallWarn;
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
-
-    sub
-      .on('vAlphaProt')
-      .withArinc429Precision(2)
-      .handle((a) => {
-        this.vAlphaProt = a;
-        this.setVlsPath();
-      });
-
-    sub
-      .on('vStallWarn')
-      .withArinc429Precision(2)
-      .handle((a) => {
-        this.vStallWarn = a;
-        this.setVlsPath();
-      });
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setVlsPath();
-      });
-
-    sub
-      .on('vLs')
-      .withArinc429Precision(2)
-      .handle((vls) => {
-        this.vls = vls;
-        this.setVlsPath();
-      });
-
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setVlsPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setVlsPath();
-    });
-  }
+      return (
+        !(vls.isNoComputedData() || vls.isFailureWarning()) &&
+        !(lowerBorder.isNoComputedData() || lowerBorder.isFailureWarning()) &&
+        vls.value - lowerBorder.value > 0
+      );
+    },
+    this.vls,
+    this.vAlphaProt,
+    this.vStallWarn,
+    this.normalLawActive,
+  );
 
   render(): VNode {
-    return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} visibility={this.vlsVisbility} />;
+    return (
+      <path
+        id="VLsIndicator"
+        class="NormalStroke Amber"
+        d={this.vlsPath}
+        visibility={this.vlsVisible.map((visible) => (visible ? 'inherit' : ' hidden'))}
+      />
+    );
   }
 }
 
 class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private VAlimIndicator = FSComponent.createRef<SVGPathElement>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private airSpeed = new Arinc429Word(0);
+  private readonly vAlphaMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('vAlphaMax'));
 
-  private vAlphaLim = new Arinc429Word(0);
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1'));
 
-  private setAlphaLimBarPath() {
-    const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
-    if (
-      this.vAlphaLim.value - this.airSpeed.value < -DisplayRange ||
-      this.vAlphaLim.isFailureWarning() ||
-      this.vAlphaLim.isNoComputedData() ||
-      !normalLawActive
-    ) {
-      this.VAlimIndicator.instance.style.visibility = 'hidden';
-    } else {
-      this.VAlimIndicator.instance.style.visibility = 'inherit';
+  private readonly normalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
 
-      const delta = this.airSpeed.value - DisplayRange - this.vAlphaLim.value;
+  private vAlphaMaxPath = MappedSubject.create(
+    ([airSpeed, vAlphaMax]) => {
+      const delta = airSpeed.value - DisplayRange - vAlphaMax.value;
       const offset = (delta * DistanceSpacing) / ValueSpacing;
+      this;
 
-      this.VAlimIndicator.instance.setAttribute('d', `m19.031 123.56h3.425v${offset}h-3.425z`);
-    }
-  }
+      return `m19.031 123.56h3.425v${MathUtils.round(offset, 1e-2)}h-3.425z`;
+    },
+    this.airSpeed,
+    this.vAlphaMax,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setAlphaLimBarPath();
-      });
-
-    sub.on('vAlphaMax').handle((al) => {
-      this.vAlphaLim = al;
-      this.setAlphaLimBarPath();
-    });
-
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setAlphaLimBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setAlphaLimBarPath();
-    });
-  }
+  private vAlphaMaxHidden = MappedSubject.create(
+    ([airSpeed, vAlphaMax, normalLawActive]) =>
+      vAlphaMax.value - airSpeed.value < -DisplayRange ||
+      vAlphaMax.isFailureWarning() ||
+      vAlphaMax.isNoComputedData() ||
+      !normalLawActive,
+    this.airSpeed,
+    this.vAlphaMax,
+    this.normalLawActive,
+  );
 
   render(): VNode {
-    return <path ref={this.VAlimIndicator} id="VAlimIndicator" class="Fill Red" />;
+    return (
+      <path
+        d={this.vAlphaMaxPath}
+        visibility={this.vAlphaMaxHidden.map((hidden) => (hidden ? 'hidden' : 'inherit'))}
+        id="VAlimIndicator"
+        class="Fill Red"
+      />
+    );
   }
 }
 
 class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private VAprotIndicator = FSComponent.createRef<SVGPathElement>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private airSpeed = new Arinc429Word(0);
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private vAlphaProt = new Arinc429Word(0);
+  private readonly vAlphaProt = Arinc429LocalVarConsumerSubject.create(this.sub.on('vAlphaProt'));
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1'));
 
-  private setAlphaProtBarPath() {
-    const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
-    if (
-      this.airSpeed.value - this.vAlphaProt.value > DisplayRange ||
-      this.vAlphaProt.isFailureWarning() ||
-      this.vAlphaProt.isNoComputedData() ||
-      !normalLawActive
-    ) {
-      this.VAprotIndicator.instance.style.visibility = 'hidden';
-    } else {
-      this.VAprotIndicator.instance.style.visibility = 'inherit';
+  private readonly normalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
 
-      const delta = Math.max(this.airSpeed.value - this.vAlphaProt.value, -DisplayRange);
+  private vAlphaProtOffset = MappedSubject.create(
+    ([airSpeed, vAlphaProt]) => {
+      const delta = Math.max(airSpeed.value - vAlphaProt.value, -DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
 
-      this.VAprotIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-    }
-  }
+      return `transform:translate3d(0px, ${MathUtils.round(offset, 1e-2)}px, 0px)`;
+    },
+    this.airSpeed,
+    this.vAlphaProt,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setAlphaProtBarPath();
-      });
-
-    sub
-      .on('vAlphaProt')
-      .withArinc429Precision(2)
-      .handle((word) => {
-        this.vAlphaProt = word;
-        this.setAlphaProtBarPath();
-      });
-
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setAlphaProtBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setAlphaProtBarPath();
-    });
-  }
+  private vAlphaProtHidden = MappedSubject.create(
+    ([airSpeed, vAlphaProt, normalLawActive]) =>
+      airSpeed.value - vAlphaProt.value > DisplayRange ||
+      vAlphaProt.isFailureWarning() ||
+      vAlphaProt.isNoComputedData() ||
+      !normalLawActive,
+    this.airSpeed,
+    this.vAlphaProt,
+    this.normalLawActive,
+  );
 
   render(): VNode {
     return (
       <path
         id="VAlphaProtBarberpole"
-        ref={this.VAprotIndicator}
+        style={this.vAlphaProtOffset}
+        visibility={this.vAlphaProtHidden.map((hidden) => (hidden ? 'hidden' : 'inherit'))}
         class="BarAmber"
         // eslint-disable-next-line max-len
         d="m19.031 169.9v-1.4111h2.9213v1.4111zm2.9213-2.923v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm1.9748-4.3341h0.94654v1.4111h-2.9213v-1.4111z"
@@ -708,52 +621,35 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private VMaxIndicator = FSComponent.createRef<SVGPathElement>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private airSpeed = new Arinc429Word(0);
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private vMax = new Arinc429Word(0);
+  private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('vMax'));
 
-  private setVMaxBarPath() {
-    if (this.airSpeed.value - this.vMax.value < -DisplayRange || !this.vMax.isNormalOperation()) {
-      this.VMaxIndicator.instance.style.visibility = 'hidden';
-    } else {
-      this.VMaxIndicator.instance.style.visibility = 'inherit';
-
-      const delta = Math.min(this.airSpeed.value - this.vMax.value, DisplayRange);
+  private vMaxOffset = MappedSubject.create(
+    ([airSpeed, vMax]) => {
+      const delta = Math.min(airSpeed.value - vMax.value, DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
 
-      this.VMaxIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-    }
-  }
+      return `transform:translate3d(0px, ${MathUtils.round(offset, 1e-2)}px, 0px)`;
+    },
+    this.airSpeed,
+    this.vMax,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setVMaxBarPath();
-      });
-
-    sub
-      .on('vMax')
-      .withArinc429Precision(2)
-      .handle((v) => {
-        this.vMax = v;
-        this.setVMaxBarPath();
-      });
-  }
+  private vMaxHidden = MappedSubject.create(
+    ([airSpeed, vMax]) => airSpeed.value - vMax.value < -DisplayRange || !vMax.isNormalOperation(),
+    this.airSpeed,
+    this.vMax,
+  );
 
   render(): VNode {
     return (
       <path
         id="OverspeedBarberpole"
-        ref={this.VMaxIndicator}
+        style={this.vMaxOffset}
+        visibility={this.vMaxHidden.map((hidden) => (hidden ? 'hidden' : 'inherit'))}
         class="BarRed"
         // eslint-disable-next-line max-len
         d="m22.053-2.2648v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
@@ -763,73 +659,51 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private VStallWarnIndicator = FSComponent.createRef<SVGPathElement>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private airSpeed = new Arinc429Word(0);
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private vStallWarn = new Arinc429Word(0);
+  private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('vStallWarn'));
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1'));
 
-  private setVStallWarnBarPath() {
-    const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
-    if (
-      this.airSpeed.value - this.vStallWarn.value > DisplayRange ||
-      this.vStallWarn.isFailureWarning() ||
-      this.vStallWarn.isNoComputedData() ||
-      normalLawActive
-    ) {
-      this.VStallWarnIndicator.instance.style.visibility = 'hidden';
-    } else {
-      this.VStallWarnIndicator.instance.style.visibility = 'inherit';
+  private readonly normalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
 
-      const delta = Math.max(this.airSpeed.value - this.vStallWarn.value, -DisplayRange);
+  private vStallWarnOffset = MappedSubject.create(
+    ([airSpeed, vStallWarn]) => {
+      const delta = Math.max(airSpeed.value - vStallWarn.value, -DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
 
-      this.VStallWarnIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-    }
-  }
+      return `transform:translate3d(0px, ${MathUtils.round(offset, 1e-2)}px, 0px)`;
+    },
+    this.airSpeed,
+    this.vStallWarn,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.airSpeed = s;
-        this.setVStallWarnBarPath();
-      });
-
-    sub
-      .on('vStallWarn')
-      .withArinc429Precision(2)
-      .handle((v) => {
-        this.vStallWarn = v;
-        this.setVStallWarnBarPath();
-      });
-
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setVStallWarnBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setVStallWarnBarPath();
-    });
-  }
+  private vStallWarnHidden = MappedSubject.create(
+    ([airSpeed, vStallWarn, normalLawActive]) =>
+      airSpeed.value - vStallWarn.value > DisplayRange ||
+      vStallWarn.isFailureWarning() ||
+      vStallWarn.isNoComputedData() ||
+      normalLawActive,
+    this.airSpeed,
+    this.vStallWarn,
+    this.normalLawActive,
+  );
 
   render(): VNode {
     return (
       <path
         id="StallWarnBarberpole"
-        ref={this.VStallWarnIndicator}
+        style={this.vStallWarnOffset}
+        visibility={this.vStallWarnHidden.map((hidden) => (hidden ? 'hidden' : 'inherit'))}
         class="BarRed"
         // eslint-disable-next-line max-len
         d="m22.053 85.835v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.419h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.419h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
@@ -1185,12 +1059,12 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private machStatus = MappedSubject.create(
     ([mach, machHysteresis, onGround]) => {
-      if ((!mach.isFailureWarning() && !machHysteresis) || (mach.isFailureWarning() && onGround)) {
-        return 1;
-      } else if (mach.isFailureWarning()) {
+      if ((mach.isFailureWarning() || mach.isNoComputedData()) && !onGround) {
         return 2;
-      } else {
+      } else if (!(mach.isFailureWarning() || mach.isNoComputedData()) && machHysteresis) {
         return 3;
+      } else {
+        return 1;
       }
     },
     this.mach,
@@ -1237,52 +1111,46 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
   private vProtBug = FSComponent.createRef<SVGGElement>();
 
-  private fcdcWord1 = new Arinc429Word(0);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
-  private Vmax = new Arinc429Word(0);
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1'));
 
-  private handleVProtBugDisplay() {
-    const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
-    const offset = (-(this.Vmax.value + 6) * DistanceSpacing) / ValueSpacing;
+  private readonly normalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
 
-    const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
+  private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('vMax'));
 
-    if (showVProt && isNormalLawActive) {
-      this.vProtBug.instance.style.display = 'block';
-      this.vProtBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-    } else {
-      this.vProtBug.instance.style.display = 'none';
-    }
-  }
+  private vProtOffset = MappedSubject.create(([vMax]) => {
+    const offset = (-(vMax.value + 6) * DistanceSpacing) / ValueSpacing;
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+    return `transform:translate3d(0px, ${MathUtils.round(offset, 1e-2)}px, 0px)`;
+  }, this.vMax);
 
-    sub
-      .on('vMax')
-      .whenChanged()
-      .handle((vm) => {
-        this.Vmax = vm;
+  private vProtVisible = MappedSubject.create(
+    ([vMax, normalLawActive]) => {
+      const showVProt = vMax.value > 240 && vMax.isNormalOperation();
 
-        this.handleVProtBugDisplay();
-      });
-
-    sub
-      .on('fcdcDiscreteWord1')
-      .whenChanged()
-      .handle((word) => {
-        this.fcdcWord1 = word;
-
-        this.handleVProtBugDisplay();
-      });
-  }
+      return showVProt && normalLawActive;
+    },
+    this.vMax,
+    this.normalLawActive,
+  );
 
   render(): VNode {
     return (
-      <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
+      <g
+        id="SpeedProtSymbol"
+        style={this.vProtOffset}
+        visibility={this.vProtVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+      >
         <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
       </g>
