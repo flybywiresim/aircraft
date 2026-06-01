@@ -51,11 +51,11 @@ export interface Arinc429Values {
   vAlphaProt: Arinc429Word;
   vStallWarn: Arinc429Word;
   vMax: Arinc429Word;
-  vFeNext: Arinc429Word;
+  vFeNext: number;
   vCTrend: number;
-  vMan: Arinc429Word;
-  v4: Arinc429Word;
-  v3: Arinc429Word;
+  vMan: number;
+  v4: number;
+  v3: number;
   vLs: Arinc429Word;
   estimatedBeta: Arinc429Word;
   betaTarget: Arinc429Word;
@@ -419,15 +419,15 @@ export class ArincValueProvider implements Instrument {
 
     subscriber.on('fac1VFeNextRaw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('vFeNext', new Arinc429Word(word));
+        publisher.pub('vFeNext', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('vFeNext', new Arinc429Word(0));
+        publisher.pub('vFeNext', 0);
       }
     });
 
     subscriber.on('fac2VFeNextRaw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('vFeNext', new Arinc429Word(word));
+        publisher.pub('vFeNext', word);
       }
     });
 
@@ -447,43 +447,43 @@ export class ArincValueProvider implements Instrument {
 
     subscriber.on('fac1VManRaw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('vMan', new Arinc429Word(word));
+        publisher.pub('vMan', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('vMan', new Arinc429Word(0));
+        publisher.pub('vMan', 0);
       }
     });
 
     subscriber.on('fac2VManRaw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('vMan', new Arinc429Word(word));
+        publisher.pub('vMan', word);
       }
     });
 
     subscriber.on('fac1V4Raw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('v4', new Arinc429Word(word));
+        publisher.pub('v4', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('v4', new Arinc429Word(0));
+        publisher.pub('v4', 0);
       }
     });
 
     subscriber.on('fac2V4Raw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('v4', new Arinc429Word(word));
+        publisher.pub('v4', word);
       }
     });
 
     subscriber.on('fac1V3Raw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('v3', new Arinc429Word(word));
+        publisher.pub('v3', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('v3', new Arinc429Word(0));
+        publisher.pub('v3', 0);
       }
     });
 
     subscriber.on('fac2V3Raw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('v3', new Arinc429Word(word));
+        publisher.pub('v3', word);
       }
     });
 
