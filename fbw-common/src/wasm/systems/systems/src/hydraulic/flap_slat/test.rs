@@ -850,3 +850,57 @@ fn flap_slat_assembly_slows_down_approaching_req_pos_while_retracting() {
         );
     }
 }
+
+#[test]
+fn flap_slat_wtb_stops_movement() {
+    let mut test_bed = test_bed();
+
+    let flap_position_request = Angle::new::<degree>(20.);
+    test_bed = test_bed
+        .set_angle_request(Some(flap_position_request))
+        .set_hyd_pressure(Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI))
+        .run_waiting_for(Duration::from_millis(2000));
+    assert_gt_lt!(
+        test_bed.flap_slat_speed(),
+        test_bed.get_max_pcu_speed(),
+        AngularVelocity::new::<radian_per_second>(0.01)
+    );
+
+    test_bed = test_bed
+        .set_wtb_solenoid(0, SolenoidStatus::Energised)
+        .set_wtb_solenoid(1, SolenoidStatus::DeEnergised)
+        .run_waiting_for(Duration::from_millis(100));
+    assert_eq!(test_bed.flap_slat_speed(), AngularVelocity::ZERO);
+
+    test_bed = test_bed
+        .set_wtb_solenoid(0, SolenoidStatus::DeEnergised)
+        .set_wtb_solenoid(1, SolenoidStatus::DeEnergised)
+        .run_waiting_for(Duration::from_millis(100));
+    assert_gt_lt!(
+        test_bed.flap_slat_speed(),
+        test_bed.get_max_pcu_speed(),
+        AngularVelocity::new::<radian_per_second>(0.01)
+    );
+
+    test_bed = test_bed
+        .set_wtb_solenoid(0, SolenoidStatus::DeEnergised)
+        .set_wtb_solenoid(1, SolenoidStatus::Energised)
+        .run_waiting_for(Duration::from_millis(100));
+    assert_eq!(test_bed.flap_slat_speed(), AngularVelocity::ZERO);
+
+    test_bed = test_bed
+        .set_wtb_solenoid(0, SolenoidStatus::DeEnergised)
+        .set_wtb_solenoid(1, SolenoidStatus::DeEnergised)
+        .run_waiting_for(Duration::from_millis(100));
+    assert_gt_lt!(
+        test_bed.flap_slat_speed(),
+        test_bed.get_max_pcu_speed(),
+        AngularVelocity::new::<radian_per_second>(0.01)
+    );
+
+    test_bed = test_bed
+        .set_wtb_solenoid(0, SolenoidStatus::Energised)
+        .set_wtb_solenoid(1, SolenoidStatus::Energised)
+        .run_waiting_for(Duration::from_millis(100));
+    assert_eq!(test_bed.flap_slat_speed(), AngularVelocity::ZERO);
+}
