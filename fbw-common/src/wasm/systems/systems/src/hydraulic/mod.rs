@@ -41,7 +41,6 @@ pub mod command_sensor_unit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
-pub mod hydraulic_motor;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
@@ -50,8 +49,6 @@ pub mod pushback;
 pub mod reverser;
 pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
-pub mod valve_block;
-pub mod wing_tip_brake;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
