@@ -1958,6 +1958,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     } else {
       text1 = '';
       text2 = '';
+      modeChangedPath = '';
       this.isShown = false;
     }
 
@@ -2283,7 +2284,7 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((fd) => {
         this.fd1Active = fd;
-        this.displayModeChangedPath();
+        fd ? this.displayModeChangedPath() : this.displayModeChangedPath(true);
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         this.getText();
       });
@@ -2309,7 +2310,7 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((fd) => {
         this.fd2Active = fd;
-        this.displayModeChangedPath();
+        fd ? this.displayModeChangedPath() : this.displayModeChangedPath(true);
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
         this.getText();
       });
