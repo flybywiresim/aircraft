@@ -234,15 +234,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
           </text>
         </FlashOneHertz>
 
-        <VSpeedTcas
-          bus={this.props.bus}
-          upRaActive={this.upResolutionAdvisoryActive}
-          downRaActive={this.downResolutionAdvisoryActive}
-          combinedControl={this.combinedControl}
-          vsUpperLimit={this.upperVsLimit}
-          vsLowerLimit={this.lowerVsLimit}
-        />
-
         <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasInvalid}>
           <text class="FontMedium Amber EndAlign" x="141.5" y="100">
             T
@@ -262,6 +253,14 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
           id="VerticalSpeedGroup"
           visibility={this.vsFlagVisible.map((flagVisible) => (flagVisible ? 'hidden' : 'visible'))}
         >
+          <VSpeedTcas
+            bus={this.props.bus}
+            upRaActive={this.upResolutionAdvisoryActive}
+            downRaActive={this.downResolutionAdvisoryActive}
+            combinedControl={this.combinedControl}
+            vsUpperLimit={this.upperVsLimit}
+            vsLowerLimit={this.lowerVsLimit}
+          />
           <g class="Fill White">
             <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
             <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
@@ -330,7 +329,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
       const path = `m${centerX - dxBorder} ${centerY + (dxBorder / dxFull) * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
 
       this.pathSub.set(path);
-    });
+    }, true);
 
     this.props.needleColour.sub((colour) => {
       this.indicatorRef.instance.setAttribute('class', `HugeStroke ${colour}`);
@@ -378,7 +377,7 @@ class VSpeedText extends DisplayComponent<{
       const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
       this.vsTextRef.instance.textContent = text;
       this.groupRef.instance.style.transform = `translate3d(0px, ${textOffset}px, 0px)`;
-    });
+    }, true);
 
     this.props.textColour.sub((colour) => {
       const className = `FontSmallest MiddleAlign ${colour}`;
