@@ -3,9 +3,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 <ModelInfo>
 	<LODS>
-		<LOD minSize="3" ModelFile="../../Part_Interior_Cabin/model/A380_CABIN_LOD00.gltf"/>
-		<LOD minSize="2" ModelFile="../../Part_Interior_Cabin/model/A380_CABIN_LOD01.gltf"/>
-		<LOD minSize="1" ModelFile="../../Part_Interior_Cabin/model/A380_CABIN_LOD02.gltf"/>
+		<LOD minSize="0" ModelFile="../../Part_Interior_Cabin/model/A380_CABIN_LOD02.gltf"/>
 	</LODS>
 	<Behaviors>
 		<IncludeBase RelativeFile="A380_Cabin_Behavior.xml"/>
