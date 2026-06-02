@@ -2,16 +2,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  ConsumerSubject,
-  EventBus,
-  GameStateProvider,
-  Instrument,
-  MappedSubject,
-  SimVarValueType,
-  Subject,
-  Wait,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, MappedSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { GroundSupportEvents, MsfsElectricsEvents, MsfsFlightModelEvents, MsfsMiscEvents } from '@flybywiresim/fbw-sdk';
 
 export class GPUManagement implements Instrument {
@@ -36,13 +27,6 @@ export class GPUManagement implements Instrument {
 
   private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
-  // state 2 is cockpit, state 3 is external
-  private readonly isIngame = MappedSubject.create(
-    ([gameState, cameraState]) => gameState === GameState.ingame && (cameraState === 2 || cameraState === 3),
-    GameStateProvider.get(),
-    this.cameraState,
-  );
-
   private initialIngameFrame: boolean;
   constructor(
     private readonly bus: EventBus,
@@ -61,17 +45,15 @@ export class GPUManagement implements Instrument {
   }
 
   public init(): void {
-    Wait.awaitSubscribable(this.isIngame, (state) => state, true).then(() => {
-      this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
-      this.gpuHookedUp.sub((v) => this.setEXTpower(v));
-      this.groundVelocity.sub((v) => {
-        // disable ext power when aircraft starts moving
-        if (v > 0.3 && this.anyGPUAvail()) {
-          this.toggleGPU();
-        }
-      });
-      this.initialIngameFrame = true;
+    this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
+    this.gpuHookedUp.sub((v) => this.setEXTpower(v));
+    this.groundVelocity.sub((v) => {
+      // disable ext power when aircraft starts moving
+      if (v > 0.3 && this.anyGPUAvail()) {
+        this.toggleGPU();
+      }
     });
+    this.initialIngameFrame = true;
   }
 
   public onUpdate(): void {
