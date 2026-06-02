@@ -217,6 +217,7 @@
     "All": "All",
     "Altn": "Altn",
     "ExitFullscreenMode": "Exit Fullscreen Mode",
+    "FailedToGetCharts": "Failed to get charts for airport!",
     "From": "From",
     "LoadingImage": "Loading Image",
     "LoadingImageFailed": "Loading Image failed",
@@ -231,6 +232,10 @@
       "Pdf": "Pdf",
       "Retry": "Retry",
       "Title": "Local Files"
+    },
+    "Msfs": {
+      "Faa": "FAA",
+      "Lido": "LIDO"
     },
     "Navigraph": {
       "AirportDoesNotExist": "Airport Does Not Exist",
