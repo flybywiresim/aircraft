@@ -68,6 +68,8 @@ class OitInstrument implements FsInstrument {
   }
 
   public doInit(): void {
+    RegisterViewListener('JS_LISTENER_FACILITY', () => console.log('JS_LISTENER_FACILITY registered.'), true);
+
     this.backplane.init();
 
     const oit = document.getElementById('OIT_CONTENT');
