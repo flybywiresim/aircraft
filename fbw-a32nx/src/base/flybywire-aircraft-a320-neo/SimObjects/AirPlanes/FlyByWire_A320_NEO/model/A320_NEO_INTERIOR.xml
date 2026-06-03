@@ -221,7 +221,6 @@
                 </UseTemplate>
         </Component>
 
-
         <Component ID="HUD_SCREEN_FRAME_R" Node="HUD_SCREEN_FRAME_R">
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>HUD_SCREEN_FRAME_R</NODE_ID>
@@ -231,6 +230,19 @@
                 <ANIM_LAG>40</ANIM_LAG>
             </UseTemplate>
         </Component>
+
+        <Component ID="HUD_R_COVER" Node="HUD_R_COVER">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A320_Neo_HUD_R_POS)</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="HUD_L_COVER" Node="HUD_L_COVER">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A320_Neo_HUD_L_POS)</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
         <!-- This attachment file is overriden by FS2Crew to attach their objects to the plane. Do not use for anything else! -->
         <IncludeBase RelativeFile="..\model.aic\aicopilot_fbw_A320.xml"/>
 
