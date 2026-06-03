@@ -848,10 +848,6 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       (valid) => this.chosenTargetSpeed.setConsumer(sub.on(valid ? 'pfdSelectedSpeed' : 'fcuSelectedAirspeed')),
       true,
     );
-
-    sub.on('realTime').handle(() => {
-      this.airSpeedWord.get();
-    });
   }
 
   render(): VNode {
