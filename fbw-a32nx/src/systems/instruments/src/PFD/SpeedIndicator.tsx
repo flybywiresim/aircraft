@@ -980,6 +980,12 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
+enum MachNumberStatus {
+  Flagged,
+  Visible,
+  Hidden,
+}
+
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
 
@@ -1006,11 +1012,11 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   private machStatus = MappedSubject.create(
     ([mach, machHysteresis, onGround]) => {
       if ((mach.isFailureWarning() || mach.isNoComputedData()) && !onGround) {
-        return 2;
+        return MachNumberStatus.Flagged;
       } else if (!(mach.isFailureWarning() || mach.isNoComputedData()) && machHysteresis) {
-        return 3;
+        return MachNumberStatus.Visible;
       } else {
-        return 1;
+        return MachNumberStatus.Hidden;
       }
     },
     this.mach,
@@ -1036,7 +1042,11 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <>
-        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.machStatus.map((status) => status === 2)}>
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={9}
+          visible={this.machStatus.map((status) => status === MachNumberStatus.Flagged)}
+        >
           <text id="MachFailText" class="FontLargest StartAlign Red" x="5.4257932" y="136.88908">
             MACH
           </text>
@@ -1044,7 +1054,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
         <text
           id="CurrentMachText"
-          visibility={this.machStatus.map((status) => (status !== 3 ? 'hidden' : 'inherit'))}
+          visibility={this.machStatus.map((status) => (status !== MachNumberStatus.Visible ? 'hidden' : 'inherit'))}
           class="FontLargest StartAlign Green"
           x="5.566751"
           y="137.03004"
