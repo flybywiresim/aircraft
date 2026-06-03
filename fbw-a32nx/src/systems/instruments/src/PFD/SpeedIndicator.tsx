@@ -12,6 +12,7 @@ import {
   MathUtils,
   Subject,
   VNode,
+  ToggleableClassNameRecord,
 } from '@microsoft/msfs-sdk';
 import {
   ArincEventBus,
@@ -839,6 +840,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     this.airSpeedWord,
   );
 
+  private readonly speedTargetTextClassRecord: ToggleableClassNameRecord = {
+    FontSmallest: true,
+    EndAlign: true,
+    Magenta: this.isSpeedManaged,
+    Cyan: this.isSpeedManaged.map((managed) => !managed),
+  };
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -855,9 +863,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       <>
         <text
           id="SelectedSpeedLowerText"
-          class={this.isSpeedManaged
-            .map((managed) => (managed ? 'Magenta' : 'Cyan'))
-            .map((className) => `FontSmallest EndAlign ${className}`)}
+          class={this.speedTargetTextClassRecord}
           visibility={this.lowerTextVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
           x="24.078989"
           y="128.27917"
@@ -866,9 +872,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         </text>
         <text
           id="SelectedSpeedUpperText"
-          class={this.isSpeedManaged
-            .map((managed) => (managed ? 'Magenta' : 'Cyan'))
-            .map((className) => `FontSmallest EndAlign ${className}`)}
+          class={this.speedTargetTextClassRecord}
           visibility={this.upperTextVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
           x="24.113895"
           y="36.670692"
@@ -882,9 +886,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         </FlashOneHertz>
 
         <path
-          class={this.isSpeedManaged
-            .map((managed) => (managed ? 'Magenta' : 'Cyan'))
-            .map((className) => `NormalStroke CornerRound ${className}`)}
+          class={{
+            NormalStroke: true,
+            CornerRound: true,
+            Magenta: this.isSpeedManaged,
+            Cyan: this.isSpeedManaged.map((managed) => !managed),
+          }}
           visibility={this.triangleVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
           style={this.transform}
           d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512"
