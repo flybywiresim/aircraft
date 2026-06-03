@@ -37,17 +37,20 @@ const DisplayRange = 42;
 const getSpeedTapeOffset = (speed: number): number => (-speed * DistanceSpacing) / ValueSpacing;
 
 class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
-  private flightPhase = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('fwcFlightPhase'), 0);
+  private readonly flightPhase = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('fwcFlightPhase'),
+    0,
+  );
 
-  private v1Speed = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('v1'), 0);
+  private readonly v1Speed = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('v1'), 0);
 
-  private visibilitySub = MappedSubject.create(
+  private readonly visibilitySub = MappedSubject.create(
     ([v1Speed, flightPhase]) => (flightPhase <= 4 && v1Speed !== 0 ? 'inherit' : 'hidden'),
     this.v1Speed,
     this.flightPhase,
   );
 
-  private offsetSub = this.v1Speed.map((v1) => `transform:translate3d(0px, ${getSpeedTapeOffset(v1)}px, 0px)`);
+  private readonly offsetSub = this.v1Speed.map((v1) => `transform:translate3d(0px, ${getSpeedTapeOffset(v1)}px, 0px)`);
 
   render(): VNode {
     return (
@@ -62,17 +65,20 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
-  private flightPhase = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('fwcFlightPhase'), 0);
+  private readonly flightPhase = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('fwcFlightPhase'),
+    0,
+  );
 
-  private vrSpeed = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('vr'), 0);
+  private readonly vrSpeed = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('vr'), 0);
 
-  private visibilitySub = MappedSubject.create(
+  private readonly visibilitySub = MappedSubject.create(
     ([vrSpeed, flightPhase]) => (flightPhase <= 4 && vrSpeed !== 0 ? 'inherit' : 'hidden'),
     this.vrSpeed,
     this.flightPhase,
   );
 
-  private offsetSub = this.vrSpeed.map((v1) => `transform:translate3d(0px, ${getSpeedTapeOffset(v1)}px, 0px)`);
+  private readonly offsetSub = this.vrSpeed.map((v1) => `transform:translate3d(0px, ${getSpeedTapeOffset(v1)}px, 0px)`);
 
   render(): VNode {
     return (
@@ -376,25 +382,25 @@ class SpeedTrendArrow extends DisplayComponent<{
 }> {
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & ClockEvents>();
 
-  private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('vCTrend').atFrequency(10));
+  private readonly vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('vCTrend').atFrequency(10));
 
-  private vCTrendInvalid = this.vCTrendWord.map((input) => {
+  private readonly vCTrendInvalid = this.vCTrendWord.map((input) => {
     return input.isFailureWarning() || input.isNoComputedData();
   });
 
-  private vCTrendRateLimit = new RateLimiter(12, -12);
+  private readonly vCTrendRateLimit = new RateLimiter(12, -12);
 
-  private vCTrendRateLimited = Subject.create(0);
+  private readonly vCTrendRateLimited = Subject.create(0);
 
-  private vCTrendSign = this.vCTrendRateLimited.map((input) => {
+  private readonly vCTrendSign = this.vCTrendRateLimited.map((input) => {
     return input > 0;
   });
 
-  private offset = this.vCTrendRateLimited.map((value) => (-value * DistanceSpacing) / ValueSpacing);
+  private readonly offset = this.vCTrendRateLimited.map((value) => (-value * DistanceSpacing) / ValueSpacing);
 
-  private offsetString = this.offset.map((offset) => `m15.455 80.823v${offset.toFixed(3)}`);
+  private readonly offsetString = this.offset.map((offset) => `m15.455 80.823v${offset.toFixed(3)}`);
 
-  private pathString = MappedSubject.create(
+  private readonly pathString = MappedSubject.create(
     ([vCTrendSign, offset]) => {
       const neutralPos = 80.823;
       if (vCTrendSign) {
@@ -407,9 +413,9 @@ class SpeedTrendArrow extends DisplayComponent<{
     this.offset,
   );
 
-  private vCTrendHysteresis = Subject.create(false);
+  private readonly vCTrendHysteresis = Subject.create(false);
 
-  private vCTrendVisible = MappedSubject.create(
+  private readonly vCTrendVisible = MappedSubject.create(
     ([vCTrendInvalid, vCTrendHysteresis]) => {
       return !vCTrendInvalid && vCTrendHysteresis;
     },
@@ -468,7 +474,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fcdc2DiscreteWord1,
   );
 
-  private vlsPath = MappedSubject.create(
+  private readonly vlsPath = MappedSubject.create(
     ([airSpeed, vls, vAlphaProt, vStallWarn, normalLawActive]) => {
       const VLsPos = ((airSpeed.value - vls.value) * DistanceSpacing) / ValueSpacing + 80.818;
       const offset =
@@ -484,7 +490,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.normalLawActive,
   );
 
-  private vlsVisible = MappedSubject.create(
+  private readonly vlsVisible = MappedSubject.create(
     ([vls, vAlphaProt, vStallWarn, normalLawActive]) => {
       const lowerBorder = normalLawActive ? vAlphaProt : vStallWarn;
 
@@ -530,7 +536,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fcdc2DiscreteWord1,
   );
 
-  private vAlphaMaxPath = MappedSubject.create(
+  private readonly vAlphaMaxPath = MappedSubject.create(
     ([airSpeed, vAlphaMax]) => {
       const delta = airSpeed.value - DisplayRange - vAlphaMax.value;
       const offset = (delta * DistanceSpacing) / ValueSpacing;
@@ -542,7 +548,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.vAlphaMax,
   );
 
-  private vAlphaMaxHidden = MappedSubject.create(
+  private readonly vAlphaMaxHidden = MappedSubject.create(
     ([airSpeed, vAlphaMax, normalLawActive]) =>
       vAlphaMax.value - airSpeed.value < -DisplayRange ||
       vAlphaMax.isFailureWarning() ||
@@ -583,7 +589,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fcdc2DiscreteWord1,
   );
 
-  private vAlphaProtOffset = MappedSubject.create(
+  private readonly vAlphaProtOffset = MappedSubject.create(
     ([airSpeed, vAlphaProt]) => {
       const delta = Math.max(airSpeed.value - vAlphaProt.value, -DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
@@ -594,7 +600,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.vAlphaProt,
   );
 
-  private vAlphaProtHidden = MappedSubject.create(
+  private readonly vAlphaProtHidden = MappedSubject.create(
     ([airSpeed, vAlphaProt, normalLawActive]) =>
       airSpeed.value - vAlphaProt.value > DisplayRange ||
       vAlphaProt.isFailureWarning() ||
@@ -626,7 +632,7 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('vMax'));
 
-  private vMaxOffset = MappedSubject.create(
+  private readonly vMaxOffset = MappedSubject.create(
     ([airSpeed, vMax]) => {
       const delta = Math.min(airSpeed.value - vMax.value, DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
@@ -637,7 +643,7 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.vMax,
   );
 
-  private vMaxHidden = MappedSubject.create(
+  private readonly vMaxHidden = MappedSubject.create(
     ([airSpeed, vMax]) => airSpeed.value - vMax.value < -DisplayRange || !vMax.isNormalOperation(),
     this.airSpeed,
     this.vMax,
@@ -675,7 +681,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fcdc2DiscreteWord1,
   );
 
-  private vStallWarnOffset = MappedSubject.create(
+  private readonly vStallWarnOffset = MappedSubject.create(
     ([airSpeed, vStallWarn]) => {
       const delta = Math.max(airSpeed.value - vStallWarn.value, -DisplayRange);
       const offset = (delta * DistanceSpacing) / ValueSpacing;
@@ -686,7 +692,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
     this.vStallWarn,
   );
 
-  private vStallWarnHidden = MappedSubject.create(
+  private readonly vStallWarnHidden = MappedSubject.create(
     ([airSpeed, vStallWarn, normalLawActive]) =>
       airSpeed.value - vStallWarn.value > DisplayRange ||
       vStallWarn.isFailureWarning() ||
@@ -894,31 +900,31 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
-  private currentSpeed = Subject.create(Arinc429Word.empty());
+  private readonly currentSpeed = Subject.create(Arinc429Word.empty());
 
-  private speedMarginHigh = Subject.create(Arinc429Word.empty());
+  private readonly speedMarginHigh = Subject.create(Arinc429Word.empty());
 
-  private speedMarginLow = Subject.create(Arinc429Word.empty());
+  private readonly speedMarginLow = Subject.create(Arinc429Word.empty());
 
-  private upperSpeedMarginVisibility = MappedSubject.create(
+  private readonly upperSpeedMarginVisibility = MappedSubject.create(
     ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
     this.currentSpeed,
     this.speedMarginHigh,
   );
 
-  private lowerSpeedMarginVisibility = MappedSubject.create(
+  private readonly lowerSpeedMarginVisibility = MappedSubject.create(
     ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
     this.currentSpeed,
     this.speedMarginLow,
   );
 
-  private upperMarginTransform = MappedSubject.create(
+  private readonly upperMarginTransform = MappedSubject.create(
     ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
     this.currentSpeed,
     this.speedMarginHigh,
   );
 
-  private lowerMarginTransform = MappedSubject.create(
+  private readonly lowerMarginTransform = MappedSubject.create(
     ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
     this.currentSpeed,
     this.speedMarginLow,
@@ -991,7 +997,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly mach = Arinc429LocalVarConsumerSubject.create(this.sub.on('mach'), Arinc429Register.empty().rawWord);
 
-  private machHysteresis = Subject.create(false);
+  private readonly machHysteresis = Subject.create(false);
 
   private readonly leftMainGearCompressed = ConsumerSubject.create(
     this.props.bus.getSubscriber<PFDSimvars>().on('leftMainGearCompressed'),
@@ -1009,7 +1015,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
     this.rightMainGearCompressed,
   );
 
-  private machStatus = MappedSubject.create(
+  private readonly machStatus = MappedSubject.create(
     ([mach, machHysteresis, onGround]) => {
       if ((mach.isFailureWarning() || mach.isNoComputedData()) && !onGround) {
         return MachNumberStatus.Flagged;
@@ -1069,7 +1075,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-  private vProtBug = FSComponent.createRef<SVGGElement>();
+  private readonly vProtBug = FSComponent.createRef<SVGGElement>();
 
   private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1'));
 
