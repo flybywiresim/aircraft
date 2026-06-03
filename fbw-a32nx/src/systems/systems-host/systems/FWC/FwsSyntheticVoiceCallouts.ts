@@ -179,6 +179,15 @@ export class FwsAutoCallouts {
   private anyHeightThresholdBelow400Met = false;
   private anyActiveHeightThresholdBelow400Met = false;
 
+  private readonly intermediateAudioPulse = new NXLogicPulseNode();
+  private readonly below400FeetPulse = new NXLogicPulseNode();
+
+  private readonly intermediateCalloutMemoryNode = new NXLogicMemoryNode(true);
+  private readonly intermediateCalloutBelow400FeetMtrig = new NXLogicTriggeredMonostableNode(11, true, true);
+  private readonly intermediateCalloutBelow50FeetMtrig = new NXLogicTriggeredMonostableNode(4, true, true);
+  public readonly intermediateCalloutHeight = Subject.create<number | null>(null);
+
+  private climbingOrOnGround = false;
   private heightCallOutInhibition1 = false;
   private heightCallOutInhibition2 = false;
   private heightCallOutInhibition3 = false;
@@ -308,6 +317,9 @@ export class FwsAutoCallouts {
 
     this.computeThresholds(height, deltaTime);
 
+    const autoCalloutPlayed = this.fws.getAutoCalloutPlayed();
+    const intermediateCalloutPlayed = this.fws.getIntermediateCalloutPlayed();
+
     this.radioAltimeterCalloutLogic(
       deltaTime,
       height,
@@ -321,6 +333,8 @@ export class FwsAutoCallouts {
       engine2NotRunning,
       tla1Reverse,
       tla2Reverse,
+      autoCalloutPlayed,
+      intermediateCalloutPlayed,
     );
   }
 
@@ -434,9 +448,9 @@ export class FwsAutoCallouts {
     const heightIncreased = height !== null && this.previousHeight !== null && filteredHeight > this.previousHeight;
     const heightLessThan3Feet = height !== null && height <= 3;
     const radioHeightNotDecreasing = this.heightNotDecreasingConfirmNode.write(heightIncreased, deltaTime);
-    const climbingOrOnGround = heightLessThan3Feet || heightIncreased;
-    this.heightCallOutInhibition1 = climbingOrOnGround || this.minimumGenerated || this.gpwsActive;
-    this.heightCallOutInhibition2 = climbingOrOnGround || this.minimumGenerated;
+    this.climbingOrOnGround = heightLessThan3Feet || heightIncreased;
+    this.heightCallOutInhibition1 = this.climbingOrOnGround || this.minimumGenerated || this.gpwsActive;
+    this.heightCallOutInhibition2 = this.climbingOrOnGround || this.minimumGenerated;
     this.heightCallOutInhibition3 = heightLessThan3Feet || radioHeightNotDecreasing || this.minimumGenerated;
     this.previousHeight = filteredHeight;
   }
@@ -481,6 +495,8 @@ export class FwsAutoCallouts {
     engine2NotRunning: boolean,
     tla1Reverse: boolean,
     tla2Reverse: boolean,
+    autoCalloutPlayed: boolean,
+    intermediateCalloutPlayed: boolean,
   ): void {
     // 2500
     const height = raValue ?? 0;
@@ -807,5 +823,37 @@ export class FwsAutoCallouts {
       twentyFeetThresholdActive ||
       tenFeetThresholdActive ||
       fiveFeetThresholdActive;
+
+    const intermeidateMemoryNode = this.intermediateCalloutMemoryNode.write(
+      this.gpwsActive || this.climbingOrOnGround || this.heightAbove410Feet,
+      this.anyActiveHeightThresholdBelow400Met || autoCalloutPlayed,
+    );
+    const intermediatePulse = this.intermediateAudioPulse.write(intermediateCalloutPlayed);
+    const below400FeetPulse = this.below400FeetPulse.write(this.anyHeightThresholdBelow400Met);
+
+    const startIntermediatePulses = intermediatePulse || below400FeetPulse;
+
+    const fourSecondsBelowFiftyFeetMtrig = this.intermediateCalloutBelow50FeetMtrig.write(
+      !this.heightAbove50Feet && startIntermediatePulses,
+      deltaTime,
+    );
+
+    const elevenSecondsBelowFourHundredFeetMtrig = this.intermediateCalloutBelow400FeetMtrig.write(
+      startIntermediatePulses && this.heightAbove50Feet,
+      deltaTime,
+    );
+
+    this.intermediateCalloutHeight.set(
+      !(
+        intermeidateMemoryNode ||
+        fourSecondsBelowFiftyFeetMtrig ||
+        elevenSecondsBelowFourHundredFeetMtrig ||
+        this.minimumGenerated
+      ) &&
+        !this.autoCalloutInhibit &&
+        !this.inhibitCalloutDueToRetard
+        ? raValue
+        : null,
+    );
   }
 }
