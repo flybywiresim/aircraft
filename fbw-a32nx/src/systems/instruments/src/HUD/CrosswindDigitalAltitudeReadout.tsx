@@ -13,11 +13,17 @@ import {
   HEvent,
   ClockEvents,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FcuBus } from './shared/FcuBusProvider';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { A32NXFwcBusEvents } from '../../../shared/src/publishers/A32NXFwcBusPublisher';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -71,9 +77,28 @@ interface CrosswindDigitalAltitudeReadoutProps {
 export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindDigitalAltitudeReadoutProps> {
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly altitude = Arinc429RegisterSubject.createEmpty();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
-  private baroMode = new Arinc429Word(0);
+  private readonly fwcWord126 = Arinc429LocalVarConsumerSubject.create(
+    this.props.bus.getSubscriber<A32NXFwcBusEvents>().on('a32nx_fwc_discrete_word_126_1'),
+  );
+
+  private readonly flashingOrPulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false),
+    this.fwcWord126,
+  );
+
+  private readonly pulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && !fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
+
+  private readonly flashing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -103,7 +128,7 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
     // FIXME clean this up.. should be handled by an IE in the XML
 
@@ -149,15 +174,6 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
     });
 
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
-    sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
-
-    sub
-      .on('fcuEisDiscreteWord2') //baromode
-      .whenChanged()
-      .handle((m) => {
-        this.baroMode = m;
-      });
   }
 
   render(): VNode {
@@ -223,7 +239,15 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
           style="display: none"
           d="m563.593 347.093h20.122m-20.122 -7.197h20.122"
         />
-        <path id="CrosswindAltReadoutOutline" class="NormalStroke Green" d="m500.438 324.432h93.5v38.25h-93.5z" />
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.flashingOrPulsing}
+          className1={this.flashing.map((flashing) => (flashing ? 'Green' : 'Green'))}
+          className2={this.pulsing.map((pulsing) => (pulsing ? 'Green' : 'HiddenElement'))}
+        >
+          <path id="CrosswindAltReadoutOutline" class="NormalStroke Green" d="m500.438 324.432h93.5v38.25h-93.5z" />
+        </FlashOneHertz>
 
         <g id="CrosswindAltNegativeText" class="FontNormal EndAlign" visibility={this.isNegativeSub}>
           <text class="Green" x="516.447845" y="331.31702475">

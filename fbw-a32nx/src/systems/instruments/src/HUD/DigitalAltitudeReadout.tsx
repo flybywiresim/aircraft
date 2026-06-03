@@ -22,6 +22,7 @@ import {
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import { A32NXFwcBusEvents } from '../../../shared/src/publishers/A32NXFwcBusPublisher';
 
 const TensDigits = (value: number) => {
@@ -234,11 +235,19 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
           style="display: none"
           d="m563.593 347.093h20.122m-20.122 -7.197h20.122"
         />
-        <path
-          id="AltReadoutOutline"
-          class="NormalStroke Green"
-          d="m500.438 324.432h55.658v-11.352h37.675v60.83h-37.675v-11.352h-55.658"
-        />
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.flashingOrPulsing}
+          className1={this.flashing.map((flashing) => (flashing ? 'Green' : 'Green'))}
+          className2={this.pulsing.map((pulsing) => (pulsing ? 'Green' : 'HiddenElement'))}
+        >
+          <path
+            id="AltReadoutOutline"
+            class="NormalStroke Green"
+            d="m500.438 324.432h55.658v-11.352h37.675v60.83h-37.675v-11.352h-55.658"
+          />
+        </FlashOneHertz>
 
         <g id="AltNegativeText" class="FontLargest EndAlign" visibility={this.isNegativeSub}>
           <text class="Green" x="516.447845" y="331.31702475">
