@@ -92,7 +92,10 @@ interface FwsSyntheticVoice extends FwsAural {
 interface FwsAuralWarning extends FwsAural {
   /** The LocalVar which triggers the playback. Not prefixed by L: here. Either localVarName or wwiseEventName has to be defined. */
   localVarName?: string;
-  /** The Wwise event which triggers the playback. Either localVarName or wwiseEventName has to be defined. */
+
+  /**
+   * @deprecated The Wwise event which triggers the playback. Either localVarName or wwiseEventName has to be defined. Use localVarName instead.
+   */
   wwiseEventName?: string;
 
   type: FwsAuralWarningType.AuralWarning | FwsAuralWarningType.SingleChime;
@@ -101,10 +104,13 @@ interface FwsAuralWarning extends FwsAural {
 interface FwsAural {
   /** Sounds are queued based on type and priority (highest priority = gets queued first within same type) */
   priority?: number;
+
+  /** The type of aural warning. */
   type: FwsAuralWarningType;
   /** Length of audio in seconds, if non-repetitive */
   length?: number;
 
+  /** Whether the sound should be played continuously unless explicitly stopped. */
   continuous?: boolean;
 }
 
@@ -516,6 +522,7 @@ export class FwsSoundManager {
   private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
   private intermediateSoundKeys: string[] = [];
+  private intermediatePlaying = false;
   public intermediateGenerated = false;
 
   public hundredAboveEmitted = false;
@@ -681,12 +688,12 @@ export class FwsSoundManager {
     } else {
       // Intermediate audio is in progress, select the next sound for the intermediate callout.
       selectedSoundKey = this.intermediateSoundKeys[0];
+      if (selectedSoundKey) {
+        this.intermediatePlaying = true;
+      }
     }
 
     if (selectedSoundKey) {
-      if (this.intermediateGenerated && this.intermediateSoundKeys.includes(selectedSoundKey)) {
-        this.intermediateGenerated = true;
-      }
       this.playSound(selectedSoundKey);
       return selectedSoundKey;
     }
@@ -704,7 +711,7 @@ export class FwsSoundManager {
 
   onUpdate(deltaTime: number) {
     // Enforce one cycle delay before repeating
-    if (!this.intermediateGenerated && this.repeatNextCycleSound) {
+    if (!this.intermediatePlaying && this.repeatNextCycleSound) {
       const soundKey = this.repeatNextCycleSound;
       this.repeatNextCycleSound = null;
       this.playSound(soundKey);
@@ -724,21 +731,26 @@ export class FwsSoundManager {
           if (currentSound.localVarName) {
             SimVar.SetSimVarValue(`L:${currentSound.localVarName}`, SimVarValueType.Bool, false);
           }
-        } else {
+        } else if (!this.intermediatePlaying) {
           FwsSoundManager.AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR.set(FwsSyntheticVoiceAural.None);
           this.setFwsSynthethicVoiceOutputs(currentSound.id, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
 
-        if (this.intermediateGenerated) {
+        if (this.intermediatePlaying) {
           this.intermediateSoundKeys.splice(this.intermediateSoundKeys.indexOf(playingSoundKey!), 1);
           if (this.intermediateSoundKeys.length === 0) {
             this.intermediateGenerated = false;
+            this.intermediatePlaying = false;
+            FwsSoundManager.AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR.set(FwsSyntheticVoiceAural.None);
+          } else {
+            // Buffer the subsequent intermediate straight away to avoid cycle delays.
+            this.selectAndPlayMostImportantSound(deltaTime);
           }
         }
 
-        if (!this.intermediateGenerated) {
+        if (!this.intermediatePlaying) {
           if (!isAuralWarning) {
             // Enforce one cycle delay before repeating the sound if applicable, otherwise sim won't interrupt the sound.
             if (
