@@ -15,7 +15,7 @@ import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { PseudoFWC } from './PseudoFWC';
 
-export class FwsAutoCallouts {
+export class FwsSyntheticVoiceCallouts {
   private autoCalloutInhibit = false;
 
   public autoCallOutPins = A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS;
@@ -318,7 +318,7 @@ export class FwsAutoCallouts {
     this.computeThresholds(height, deltaTime);
 
     const autoCalloutPlayed = this.fws.getAutoCalloutPlayed();
-    const intermediateCalloutPlayed = this.fws.getIntermediateCalloutPlayed();
+    const intermediateGenerated = this.fws.getIntermediateCalloutGenerated();
 
     this.radioAltimeterCalloutLogic(
       deltaTime,
@@ -334,7 +334,7 @@ export class FwsAutoCallouts {
       tla1Reverse,
       tla2Reverse,
       autoCalloutPlayed,
-      intermediateCalloutPlayed,
+      intermediateGenerated,
     );
   }
 
@@ -496,7 +496,7 @@ export class FwsAutoCallouts {
     tla1Reverse: boolean,
     tla2Reverse: boolean,
     autoCalloutPlayed: boolean,
-    intermediateCalloutPlayed: boolean,
+    intermediateGenerated: boolean,
   ): void {
     // 2500
     const height = raValue ?? 0;
@@ -828,7 +828,7 @@ export class FwsAutoCallouts {
       this.gpwsActive || this.climbingOrOnGround || this.heightAbove410Feet,
       this.anyActiveHeightThresholdBelow400Met || autoCalloutPlayed,
     );
-    const intermediatePulse = this.intermediateAudioPulse.write(intermediateCalloutPlayed);
+    const intermediatePulse = this.intermediateAudioPulse.write(intermediateGenerated);
     const below400FeetPulse = this.below400FeetPulse.write(this.anyHeightThresholdBelow400Met);
 
     const startIntermediatePulses = intermediatePulse || below400FeetPulse;

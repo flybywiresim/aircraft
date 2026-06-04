@@ -266,7 +266,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
 
   intermediate_400: {
     id: FwsSyntheticVoiceAural.FourHundredIntermediate,
-    length: 0.29,
+    length: 0.28,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
@@ -279,7 +279,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
 
   intermediate_300: {
     id: FwsSyntheticVoiceAural.ThreeHundredIntermediate,
-    length: 0.26,
+    length: 0.25,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
@@ -292,7 +292,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
 
   intermediate_200: {
     id: FwsSyntheticVoiceAural.TwoHundredIntermediate,
-    length: 0.23,
+    length: 0.22,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
@@ -305,31 +305,31 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
 
   intermediate_100: {
     id: FwsSyntheticVoiceAural.OneHundredIntermediate,
-    length: 0.23,
+    length: 0.22,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
   hundred_and: {
     id: FwsSyntheticVoiceAural.HundredAnd,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.45,
+    length: 0.44,
   },
 
   alt_90: {
     id: FwsSyntheticVoiceAural.Ninety,
-    length: 0.5,
+    length: 0.47,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
   alt_80: {
     id: FwsSyntheticVoiceAural.Eighty,
-    length: 0.4,
+    length: 0.39,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
   alt_70: {
     id: FwsSyntheticVoiceAural.Seventy,
-    length: 0.54,
+    length: 0.53,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
@@ -374,7 +374,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
   alt_19: {
     id: FwsSyntheticVoiceAural.Nineteen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.8,
+    length: 0.83,
   },
   alt_18: {
     id: FwsSyntheticVoiceAural.Eighteen,
@@ -385,43 +385,43 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
   alt_17: {
     id: FwsSyntheticVoiceAural.Seventeen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.8,
+    length: 0.81,
   },
 
   alt_16: {
     id: FwsSyntheticVoiceAural.Sixteen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.8,
+    length: 0.76,
   },
 
   alt_15: {
     id: FwsSyntheticVoiceAural.Fifteen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.7,
+    length: 0.71,
   },
 
   alt_14: {
     id: FwsSyntheticVoiceAural.Fourteen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.8,
+    length: 0.77,
   },
 
   alt_13: {
     id: FwsSyntheticVoiceAural.Thirteen,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.7,
+    length: 0.73,
   },
 
   alt_12: {
     id: FwsSyntheticVoiceAural.Twelve,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.6,
+    length: 0.58,
   },
 
   alt_11: {
     id: FwsSyntheticVoiceAural.Eleven,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.7,
+    length: 0.66,
   },
 
   alt_10: {
@@ -441,7 +441,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
   alt_9: {
     id: FwsSyntheticVoiceAural.Nine,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.45,
+    length: 0.44,
   },
 
   alt_8: {
@@ -453,7 +453,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
   alt_7: {
     id: FwsSyntheticVoiceAural.Seven,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.4,
+    length: 0.54,
   },
 
   alt_6: {
@@ -472,23 +472,23 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
   alt_4: {
     id: FwsSyntheticVoiceAural.Four,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.4,
+    length: 0.48,
   },
 
   alt_3: {
     id: FwsSyntheticVoiceAural.Three,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.45,
+    length: 0.44,
   },
   alt_2: {
     id: FwsSyntheticVoiceAural.Two,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.4,
+    length: 0.44,
   },
   alt_1: {
     id: FwsSyntheticVoiceAural.One,
     type: FwsAuralWarningType.SyntheticVoice,
-    length: 0.4,
+    length: 0.34,
   },
 };
 
@@ -496,7 +496,7 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
 // It should also be possible to play a sythenthic voice and aural warning simultaneously
 export class FwsSoundManager {
   private static readonly AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR = RegisteredSimVar.create(
-    'L:A32NX_FWS_AUDIO_SYNTHETIC_VOICE',
+    'L:1:A32NX_FWS_AUDIO_SYNTHETIC_VOICE',
     SimVarValueType.Enum,
   );
   private readonly soundQueue = new Set<keyof typeof FwsAuralsList>();
@@ -516,14 +516,13 @@ export class FwsSoundManager {
   private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
   private intermediateSoundKeys: string[] = [];
-  private intermediateAudioInProgress = false;
+  public intermediateGenerated = false;
 
   public hundredAboveEmitted = false;
   public minimumEmitted = false;
   public pitchEmitted = false;
   public speedEmitted = false;
   public autoCalloutEmitted = false;
-  public intermediateCalloutEmitted = false;
 
   constructor(
     private bus: EventBus,
@@ -630,6 +629,7 @@ export class FwsSoundManager {
         Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
       }
     } else {
+      console.log(`Playing synthetic voice sound ${soundKey}`);
       FwsSoundManager.AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR.set(sound.id);
       if (sound.periodicWithPause !== undefined) {
         this.soundToRepeat = soundKey;
@@ -653,7 +653,7 @@ export class FwsSoundManager {
     }
 
     let selectedSoundKey: keyof typeof FwsAuralsList | null = null;
-    if (!this.intermediateAudioInProgress) {
+    if (!this.intermediateGenerated) {
       if (this.soundToRepeatDelay !== null && this.soundToRepeat !== null) {
         this.soundToRepeatDelay -= deltaTime / 1_000;
         if (this.soundToRepeatDelay <= 0) {
@@ -684,8 +684,8 @@ export class FwsSoundManager {
     }
 
     if (selectedSoundKey) {
-      if (!this.intermediateAudioInProgress && this.intermediateSoundKeys.includes(selectedSoundKey)) {
-        this.intermediateCalloutEmitted = true;
+      if (this.intermediateGenerated && this.intermediateSoundKeys.includes(selectedSoundKey)) {
+        this.intermediateGenerated = true;
       }
       this.playSound(selectedSoundKey);
       return selectedSoundKey;
@@ -704,7 +704,7 @@ export class FwsSoundManager {
 
   onUpdate(deltaTime: number) {
     // Enforce one cycle delay before repeating
-    if (!this.intermediateAudioInProgress && this.repeatNextCycleSound) {
+    if (!this.intermediateGenerated && this.repeatNextCycleSound) {
       const soundKey = this.repeatNextCycleSound;
       this.repeatNextCycleSound = null;
       this.playSound(soundKey);
@@ -731,14 +731,14 @@ export class FwsSoundManager {
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
 
-        if (this.intermediateAudioInProgress) {
+        if (this.intermediateGenerated) {
           this.intermediateSoundKeys.splice(this.intermediateSoundKeys.indexOf(playingSoundKey!), 1);
           if (this.intermediateSoundKeys.length === 0) {
-            this.intermediateAudioInProgress = false;
+            this.intermediateGenerated = false;
           }
         }
 
-        if (!this.intermediateAudioInProgress) {
+        if (!this.intermediateGenerated) {
           if (!isAuralWarning) {
             // Enforce one cycle delay before repeating the sound if applicable, otherwise sim won't interrupt the sound.
             if (
@@ -788,13 +788,16 @@ export class FwsSoundManager {
   }
 
   public generateIntermediateCallout(height: number | null) {
-    if (height === null || height > 410 || this.intermediateAudioInProgress) {
+    console.log(`Generating intermediate callout for height ${height}`);
+    if (height === null || height > 410 || this.intermediateGenerated) {
       return;
     }
 
     const heightRounded = Math.round(height);
 
     if (heightRounded >= 100) {
+      this.intermediateGenerated = true;
+      console.log(`Generating intermediate callout for height ${heightRounded}`);
       // Abv 100 feet. Round to nearest 10 foot to get the closest callout.
       const tens = Math.trunc(heightRounded % 100);
       const hundredSingle = Math.trunc(heightRounded / 100);
@@ -813,7 +816,9 @@ export class FwsSoundManager {
         this.intermediateSoundKeys.push(`alt_${tensToPlay}`);
       }
     } else {
+      console.log(`Generating intermediate callout for height ${heightRounded}`);
       if (heightRounded >= 20) {
+        this.intermediateGenerated = true;
         const tens = Math.trunc(heightRounded / 10) * 10;
         this.intermediateSoundKeys.push(`alt_${tens}`);
         const single = Math.trunc(heightRounded % 10);
@@ -821,6 +826,7 @@ export class FwsSoundManager {
           this.intermediateSoundKeys.push(`alt_${single}`);
         }
       } else if (heightRounded > 0) {
+        this.intermediateGenerated = true;
         this.intermediateSoundKeys.push(`alt_${heightRounded}`);
       }
     }

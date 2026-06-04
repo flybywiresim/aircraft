@@ -51,7 +51,7 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 
 export const DEFAULT_MONITOR_TIME = 0.3;
 import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
-import { FwsAutoCallouts } from './FwsSyntheticVoiceCallouts';
+import { FwsSyntheticVoiceCallouts } from './FwsSyntheticVoiceCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -1731,7 +1731,9 @@ export class PseudoFWC {
   private readonly configPortableDevices = Subject.create(false);
 
   /** RA & Minimums callouts */
-  private readonly callouts: FwsAutoCallouts;
+  private readonly callouts: FwsSyntheticVoiceCallouts;
+
+  private readonly raTest = Subject.create<number | null>(0);
 
   constructor(
     private readonly bus: EventBus,
@@ -1775,7 +1777,7 @@ export class PseudoFWC {
     }, true);
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
-    this.callouts = new FwsAutoCallouts(this);
+    this.callouts = new FwsSyntheticVoiceCallouts(this);
   }
 
   init(): void {
@@ -1967,6 +1969,10 @@ export class PseudoFWC {
     this.callouts.intermediateCalloutHeight.sub((v) => {
       this.soundManager.generateIntermediateCallout(v);
     });
+
+    this.raTest.sub((v) => {
+      this.soundManager.generateIntermediateCallout(v);
+    });
   }
 
   public getMinimumEmitted() {
@@ -1989,8 +1995,8 @@ export class PseudoFWC {
     return this.soundManager.autoCalloutEmitted;
   }
 
-  public getIntermediateCalloutPlayed() {
-    return this.soundManager.intermediateCalloutEmitted;
+  public getIntermediateCalloutGenerated() {
+    return this.soundManager.intermediateGenerated;
   }
 
   private registerKeyEvents() {
@@ -2254,6 +2260,8 @@ export class PseudoFWC {
     this.processEcpButtons(deltaTime);
 
     this.flightPhaseEndedPulseNode.write(false);
+
+    this.raTest.set(SimVar.GetSimVarValue('L:A32NX_RA_CALLOUT_TEST', 'number'));
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
