@@ -84,9 +84,6 @@ interface FwsSyntheticVoice extends FwsAural {
 
   /** If this is set, this sound is repeated for the specified number of times */
   repeatFor?: number;
-
-  /** If this is set, this sound is repeated periodically with the specified pause in seconds */
-  periodicWithPause?: number;
 }
 
 interface FwsAuralWarning extends FwsAural {
@@ -112,6 +109,9 @@ interface FwsAural {
 
   /** Whether the sound should be played continuously unless explicitly stopped. */
   continuous?: boolean;
+
+  /** If this is set, this sound is repeated periodically with the specified pause in seconds */
+  periodicWithPause?: number;
 }
 
 export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> = {
@@ -638,14 +638,15 @@ export class FwsSoundManager {
     } else {
       console.log(`Playing synthetic voice sound ${soundKey}`);
       FwsSoundManager.AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR.set(sound.id);
-      if (sound.periodicWithPause !== undefined) {
-        this.soundToRepeat = soundKey;
-        this.soundToRepeatDelay = sound.periodicWithPause;
-      }
       if (this.numberOfTimesToRepeatSound === null && !sound.continuous) {
         this.numberOfTimesToRepeatSound = sound.repeatFor ? sound.repeatFor - 1 : null; // Subtract one for subsequent plays
       }
       this.setFwsSynthethicVoiceOutputs(sound.id, true);
+    }
+
+    if (sound.periodicWithPause !== undefined) {
+      this.soundToRepeat = soundKey;
+      this.soundToRepeatDelay = sound.periodicWithPause;
     }
 
     this.currentSoundPlaying = soundKey;
