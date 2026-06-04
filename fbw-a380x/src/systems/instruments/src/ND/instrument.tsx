@@ -138,25 +138,25 @@ class NDInstrument implements FsInstrument {
 
   private readonly eraseFlagIndex = Subject.create<number | null>(null);
 
-  private oansContextMenuItems = Subject.create(this.getOansContextMenu(false, false));
+  private readonly oansContextMenuItems = Subject.create(this.getOansContextMenu(false, false));
 
-  private contextMenuRef = FSComponent.createRef<ContextMenu>();
+  private readonly contextMenuRef = FSComponent.createRef<ContextMenu>();
 
-  private contextMenuOpened = Subject.create<boolean>(false);
+  private readonly contextMenuOpened = Subject.create<boolean>(false);
 
-  private contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 });
+  private readonly contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 });
 
-  private mouseCursorRef = FSComponent.createRef<MouseCursor>();
+  private readonly mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private efisNdMode = EfisNdMode.ARC;
 
   private efisCpRange: A380EfisNdRangeValue = 10;
 
-  private oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
+  private readonly oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
 
-  private cursorVisible = Subject.create<boolean>(true);
+  private readonly cursorVisible = Subject.create<boolean>(true);
 
   private readonly oansNotAvailable = ConsumerSubject.create(null, true);
 
@@ -398,10 +398,12 @@ class NDInstrument implements FsInstrument {
 
   private updateNdOansVisibility() {
     if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: true }, true, false);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: true }, false, false);
       this.oansShown.set(true);
     } else {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: false }, true, false);
+      this.bus
+        .getPublisher<OansControlEvents>()
+        .pub('nd_show_oans', { side: this.efisSide, show: false }, false, false);
       this.oansShown.set(false);
     }
   }

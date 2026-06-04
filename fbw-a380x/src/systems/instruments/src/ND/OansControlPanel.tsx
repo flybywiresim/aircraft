@@ -342,8 +342,7 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
           this.mapDataMainRef.instance.style.display = v ? 'block' : 'none';
           this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
         }
-        SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
-        this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, false, false);
       }, true),
       this.oancDisabled.sub((v) => {
         if (v) {
