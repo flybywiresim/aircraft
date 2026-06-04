@@ -100,7 +100,7 @@ interface FwsAuralWarning extends FwsAural {
 
 interface FwsAural {
   /** Sounds are queued based on type and priority (highest priority = gets queued first within same type) */
-  priority: number;
+  priority?: number;
   type: FwsAuralWarningType;
   /** Length of audio in seconds, if non-repetitive */
   length?: number;
@@ -263,24 +263,82 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
     priority: 5,
     type: FwsAuralWarningType.SyntheticVoice,
   },
+
+  intermediate_400: {
+    id: FwsSyntheticVoiceAural.FourHundredIntermediate,
+    length: 0.29,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
   alt_300: {
     id: FwsSyntheticVoiceAural.ThreeHundred,
     length: 0.6,
     priority: 6,
     type: FwsAuralWarningType.SyntheticVoice,
   },
+
+  intermediate_300: {
+    id: FwsSyntheticVoiceAural.ThreeHundredIntermediate,
+    length: 0.26,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
   alt_200: {
     id: FwsSyntheticVoiceAural.TwoHundred,
     length: 0.6,
     priority: 7,
     type: FwsAuralWarningType.SyntheticVoice,
   },
+
+  intermediate_200: {
+    id: FwsSyntheticVoiceAural.TwoHundredIntermediate,
+    length: 0.23,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
   alt_100: {
     id: FwsSyntheticVoiceAural.OneHundred,
     length: 0.6,
     priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
+
+  intermediate_100: {
+    id: FwsSyntheticVoiceAural.OneHundredIntermediate,
+    length: 0.23,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
+  hundred_and: {
+    id: FwsSyntheticVoiceAural.HundredAnd,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.45,
+  },
+
+  alt_90: {
+    id: FwsSyntheticVoiceAural.Ninety,
+    length: 0.5,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
+  alt_80: {
+    id: FwsSyntheticVoiceAural.Eighty,
+    length: 0.4,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
+  alt_70: {
+    id: FwsSyntheticVoiceAural.Seventy,
+    length: 0.54,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
+  alt_60: {
+    id: FwsSyntheticVoiceAural.Sixty,
+    length: 0.5,
+    type: FwsAuralWarningType.SyntheticVoice,
+  },
+
   alt_50: {
     id: FwsSyntheticVoiceAural.Fifty,
     length: 0.4,
@@ -313,6 +371,59 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
+  alt_19: {
+    id: FwsSyntheticVoiceAural.Nineteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.8,
+  },
+  alt_18: {
+    id: FwsSyntheticVoiceAural.Eighteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.7,
+  },
+
+  alt_17: {
+    id: FwsSyntheticVoiceAural.Seventeen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.8,
+  },
+
+  alt_16: {
+    id: FwsSyntheticVoiceAural.Sixteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.8,
+  },
+
+  alt_15: {
+    id: FwsSyntheticVoiceAural.Fifteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.7,
+  },
+
+  alt_14: {
+    id: FwsSyntheticVoiceAural.Fourteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.8,
+  },
+
+  alt_13: {
+    id: FwsSyntheticVoiceAural.Thirteen,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.7,
+  },
+
+  alt_12: {
+    id: FwsSyntheticVoiceAural.Twelve,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.6,
+  },
+
+  alt_11: {
+    id: FwsSyntheticVoiceAural.Eleven,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.7,
+  },
+
   alt_10: {
     id: FwsSyntheticVoiceAural.Ten,
     length: 0.3,
@@ -327,11 +438,57 @@ export const FwsAuralsList: Record<string, FwsAuralWarning | FwsSyntheticVoice> 
     type: FwsAuralWarningType.SyntheticVoice,
   },
 
+  alt_9: {
+    id: FwsSyntheticVoiceAural.Nine,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.45,
+  },
+
+  alt_8: {
+    id: FwsSyntheticVoiceAural.Eight,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.4,
+  },
+
+  alt_7: {
+    id: FwsSyntheticVoiceAural.Seven,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.4,
+  },
+
+  alt_6: {
+    id: FwsSyntheticVoiceAural.Six,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.53,
+  },
+
   alt_5: {
     id: FwsSyntheticVoiceAural.Five,
     length: 0.3,
     priority: 14,
     type: FwsAuralWarningType.SyntheticVoice,
+  },
+
+  alt_4: {
+    id: FwsSyntheticVoiceAural.Four,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.4,
+  },
+
+  alt_3: {
+    id: FwsSyntheticVoiceAural.Three,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.45,
+  },
+  alt_2: {
+    id: FwsSyntheticVoiceAural.Two,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.4,
+  },
+  alt_1: {
+    id: FwsSyntheticVoiceAural.One,
+    type: FwsAuralWarningType.SyntheticVoice,
+    length: 0.4,
   },
 };
 
@@ -515,7 +672,8 @@ export class FwsSoundManager {
         if (
           selectedSoundKey === null ||
           s.type > FwsAuralsList[selectedSoundKey].type ||
-          (s.type === FwsAuralsList[selectedSoundKey].type && s.priority > FwsAuralsList[selectedSoundKey].priority)
+          (s.type === FwsAuralsList[selectedSoundKey].type &&
+            (s.priority ?? 0) > (FwsAuralsList[selectedSoundKey].priority ?? 0))
         ) {
           selectedSoundKey = sk;
         }
@@ -604,7 +762,8 @@ export class FwsSoundManager {
               const s = FwsAuralsList[sk];
               if (
                 s &&
-                (s.type > currentSound.type || (s.type === currentSound.type && s.priority > currentSound.priority))
+                (s.type > currentSound.type ||
+                  (s.type === currentSound.type && (s.priority ?? 0) > (currentSound.priority ?? 0)))
               ) {
                 shouldInterrupt = true;
               }
@@ -629,40 +788,40 @@ export class FwsSoundManager {
   }
 
   public generateIntermediateCallout(height: number | null) {
-    if (height === null || height > 400 || this.intermediateAudioInProgress) {
+    if (height === null || height > 410 || this.intermediateAudioInProgress) {
       return;
     }
 
-    if (height >= 100) {
+    const heightRounded = Math.round(height);
+
+    if (heightRounded >= 100) {
       // Abv 100 feet. Round to nearest 10 foot to get the closest callout.
-      const tens = Math.trunc(height % 100);
-      const hundredSingle = Math.trunc(height / 100);
+      const tens = Math.trunc(heightRounded % 100);
+      const hundredSingle = Math.trunc(heightRounded / 100);
       const tensRounded = Math.trunc(tens / 10) * 10;
-      const reminderToAdd = Math.trunc(height % 10) >= 5 ? 10 : 0;
+      const reminderToAdd = Math.trunc(heightRounded % 10) >= 5 ? 10 : 0;
       const calloutHeightToPlay = hundredSingle * 100 + tensRounded + reminderToAdd;
       if (calloutHeightToPlay % 100 === 0) {
         // We can play the whole callout.
-        const calloutKey = `alt_${calloutHeightToPlay}` as keyof typeof FwsAuralsList;
-        this.intermediateSoundKeys.push(calloutKey);
+        this.intermediateSoundKeys.push(`alt_${calloutHeightToPlay}`);
       } else {
         // Build the hundred and callout.
-        const hundredSingleToPlay = Math.trunc(calloutHeightToPlay / 100);
+        const hundredToPlay = Math.trunc(calloutHeightToPlay / 100) * 100;
         const tensToPlay = calloutHeightToPlay % 100;
-        // TODO setup the keys
-        this.intermediateSoundKeys.push(`alt_${hundredSingleToPlay}` as keyof typeof FwsAuralsList);
-        this.intermediateSoundKeys.push('alt_hundred_and');
-        this.intermediateSoundKeys.push(`alt_${tensToPlay}` as keyof typeof FwsAuralsList);
+        this.intermediateSoundKeys.push(`intermediate_${hundredToPlay}`);
+        this.intermediateSoundKeys.push('hundred_and');
+        this.intermediateSoundKeys.push(`alt_${tensToPlay}`);
       }
     } else {
-      if (height >= 20) {
-        const tens = Math.trunc(height / 10) * 10;
-        this.intermediateSoundKeys.push(`alt_${tens}` as keyof typeof FwsAuralsList);
-        const single = Math.trunc(height % 10);
+      if (heightRounded >= 20) {
+        const tens = Math.trunc(heightRounded / 10) * 10;
+        this.intermediateSoundKeys.push(`alt_${tens}`);
+        const single = Math.trunc(heightRounded % 10);
         if (single > 0) {
-          this.intermediateSoundKeys.push(`alt_${single}` as keyof typeof FwsAuralsList);
+          this.intermediateSoundKeys.push(`alt_${single}`);
         }
-      } else {
-        this.intermediateSoundKeys.push(`alt_${height}` as keyof typeof FwsAuralsList);
+      } else if (heightRounded > 0) {
+        this.intermediateSoundKeys.push(`alt_${heightRounded}`);
       }
     }
   }
