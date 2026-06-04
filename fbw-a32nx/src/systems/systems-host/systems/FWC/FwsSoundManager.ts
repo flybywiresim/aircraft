@@ -75,8 +75,8 @@ export enum FwsSyntheticVoiceAural {
   Three,
   Two,
   One,
-  Zero,
   Retard,
+  BankBank, // Unused
 }
 
 interface FwsSyntheticVoice extends FwsAural {
@@ -521,7 +521,7 @@ export class FwsSoundManager {
   private soundToRepeatDelay: number | null = null;
   private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
-  private intermediateSoundKeys: string[] = [];
+  private readonly intermediateSoundKeys: string[] = [];
   private intermediatePlaying = false;
   public intermediateGenerated = false;
 
