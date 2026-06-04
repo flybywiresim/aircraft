@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -120,7 +119,7 @@ interface A32NXDisplayManagementBaseEvents {
   a32nx_dmc_ir_3_pitch_angle_right: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXDisplayManagementIndexedEvents = {
   [P in keyof Pick<

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 export class SimVarCache {
   private simVarCache: { [key: string]: number | null };
 
@@ -6,7 +5,7 @@ export class SimVarCache {
     this.simVarCache = {};
   }
 
-  getCachedSimVar(_simvar: string, _unit, force: boolean = false): number {
+  getCachedSimVar(_simvar: string, _unit: string, force: boolean = false): number {
     const key: string = `${_simvar}:${_unit}`;
     if (this.simVarCache[key] !== null && !force) {
       return this.simVarCache[key];
@@ -28,7 +27,7 @@ export class LocalSimVar<T> {
 
   constructor(
     public simvar: string,
-    public unit,
+    public unit: string,
   ) {
     this.localVar = SimVar.GetSimVarValue(this.simvar, this.unit);
   }

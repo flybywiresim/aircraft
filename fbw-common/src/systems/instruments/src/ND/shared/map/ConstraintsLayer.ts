@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -18,6 +17,10 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -33,6 +36,10 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;

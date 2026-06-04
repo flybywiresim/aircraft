@@ -6,7 +6,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { Fix, Airway } from '@flybywiresim/fbw-sdk';
+import { Airway, CoRouteFix, Fix } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates, distanceTo } from 'msfs-geo';
 
@@ -14,7 +14,6 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 

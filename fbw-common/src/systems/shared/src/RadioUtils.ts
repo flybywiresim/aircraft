@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -88,7 +87,10 @@ export class RadioUtils {
   };
 
   private static channelsCache = ObjectUtils.fromEntries(
-    Object.keys(RadioUtils.CHANNEL_TYPES).map((type) => [type, [...RadioUtils.CHANNEL_TYPES[type].channels]]),
+    Object.keys(RadioUtils.CHANNEL_TYPES).map((type) => [
+      type,
+      [...RadioUtils.CHANNEL_TYPES[type as RadioChannelType].channels],
+    ]),
   ) as Record<RadioChannelType, ChannelParameters['channels']>;
 
   /**
@@ -134,12 +136,14 @@ export class RadioUtils {
    * @returns A formatted string, with bits in groups of 4, separated by `separator`.
    */
   public static debugFormatArincBcdData(value: number, separator = '|'): string {
-    return value
-      .toString(2)
-      .padStart(20, '0')
-      .match(/.{1,4}/g)
-      .join(separator)
-      .slice(1);
+    return (
+      value
+        .toString(2)
+        .padStart(20, '0')
+        .match(/.{1,4}/g)
+        ?.join(separator)
+        .slice(1) ?? 'ERROR'
+    );
   }
 
   /**

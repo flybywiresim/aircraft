@@ -2,13 +2,12 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { McduServerClient, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from './A32NX_FMCMainDisplay';
 import { recallMessageById } from '@fmgc/components';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { NXNotifManager } from '@shared/NxNotif';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
-import { McduServerClient } from '@simbridge/index';
 import { ScratchpadDataLink, ScratchpadDisplay } from './A320_Neo_CDU_Scratchpad';
 import { CDUMenuPage } from '../legacy_pages/A320_Neo_CDU_MenuPage';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';

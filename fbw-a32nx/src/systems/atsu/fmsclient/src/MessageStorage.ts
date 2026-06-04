@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -72,7 +71,7 @@ export class MessageStorage {
       reports.forEach((message) => {
         const enhancedMessage = Conversion.messageDataToMessage(message) as AtisMessage;
         if (this.atisReports.has(enhancedMessage.Reports[0].airport)) {
-          this.atisReports.get(enhancedMessage.Reports[0].airport).push(enhancedMessage);
+          this.atisReports.get(enhancedMessage.Reports[0].airport)?.push(enhancedMessage);
         } else {
           this.atisReports.set(enhancedMessage.Reports[0].airport, [enhancedMessage]);
         }

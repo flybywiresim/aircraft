@@ -1,6 +1,5 @@
-// @ts-strict-ignore
 export class BitFlags {
-  flags: number[];
+  flags!: number[];
 
   static f64View = new Float64Array(1);
 

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -25,6 +24,10 @@ export class TrafficLayer implements MapLayer<NdTraffic> {
 
   paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number) {
     for (const intruder of this.data) {
+      if (intruder.posX === undefined || intruder.posY === undefined) {
+        continue;
+      }
+
       const x = intruder.posX;
       const y = intruder.posY;
       const rx = x + mapWidth / 2;
@@ -36,6 +39,10 @@ export class TrafficLayer implements MapLayer<NdTraffic> {
 
   paintColorLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number) {
     for (const intruder of this.data) {
+      if (intruder.posX === undefined || intruder.posY === undefined) {
+        continue;
+      }
+
       const x = intruder.posX;
       const y = intruder.posY;
       const rx = x + mapWidth / 2;
@@ -52,7 +59,7 @@ export class TrafficLayer implements MapLayer<NdTraffic> {
     y: number,
     intruder: NdTraffic,
   ) {
-    let color;
+    let color: string;
     switch (intruder.intrusionLevel) {
       case TaRaIntrusion.TRAFFIC:
         // paint intruder symbol
@@ -72,7 +79,7 @@ export class TrafficLayer implements MapLayer<NdTraffic> {
         this.paintRaIntruder(context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);
         break;
       default:
-        break;
+        return;
     }
     // paint vertical speed arrow (-/+ 500 fpm)
     this.paintVertArrow(intruder.vertSpeed, context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);

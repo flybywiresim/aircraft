@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 import { Coordinates } from 'msfs-geo';
@@ -9,17 +8,19 @@ export function wordWrap(text: string, maxLength: number) {
   let length = 0;
 
   const words = text.match(/[-.:*@_A-Z0-9]+|\[\s+\]|\n/g);
-  for (const word of words) {
-    if (length + word.length >= maxLength || word === '\n') {
-      result.push(line.join(' ').toUpperCase());
-      line = [];
-      length = 0;
-      if (word === '\n') {
-        continue;
+  if (words) {
+    for (const word of words) {
+      if (length + word.length >= maxLength || word === '\n') {
+        result.push(line.join(' ').toUpperCase());
+        line = [];
+        length = 0;
+        if (word === '\n') {
+          continue;
+        }
       }
+      length += word.length + 1;
+      line.push(word);
     }
-    length += word.length + 1;
-    line.push(word);
   }
 
   if (line.length > 0) {

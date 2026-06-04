@@ -1,21 +1,20 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from 'msfs-geo';
 
 export class MapParameters {
-  public centerCoordinates: Coordinates;
+  public centerCoordinates: Coordinates = { lat: NaN, long: NaN };
 
-  public mapUpTrueDeg: number;
+  public mapUpTrueDeg = 0;
 
-  public nmToPx: number;
+  public nmToPx = 1;
 
-  public mToPx: number;
+  public mToPx = 1;
 
-  public nmRadius: number;
+  public nmRadius?: number;
 
-  public centerYBias: number;
+  public centerYBias = 0;
 
   public version = 0;
 

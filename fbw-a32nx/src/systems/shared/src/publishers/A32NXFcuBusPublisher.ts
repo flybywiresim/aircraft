@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -214,7 +213,7 @@ interface A32NXFcuBusBaseEvents {
   a32nx_fcu_discrete_word_2: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXFcuBusIndexedEvents = {
   [P in keyof Pick<A32NXFcuBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A32NXFcuBusBaseEvents[P];

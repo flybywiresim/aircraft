@@ -1,9 +1,7 @@
-// @ts-strict-ignore
 import {
   BackplanePublisher,
   EventBus,
   EventSubscriber,
-  Publisher,
   SimVarDefinition,
   SimVarPublisher,
   SimVarValueType,
@@ -67,18 +65,17 @@ export interface PowerSupplyBusTypes {
 }
 
 export class PowerSupplyBusses implements BackplanePublisher {
-  private simVarPublisher: PowerSupplySimvarPublisher = null;
+  private simVarPublisher: PowerSupplySimvarPublisher;
 
-  private subscriber: EventSubscriber<PowerSupplySimvars> = null;
+  private subscriber?: EventSubscriber<PowerSupplySimvars>;
 
-  private publisher: Publisher<PowerSupplyBusTypes> = null;
+  private publisher = this.bus.getPublisher<PowerSupplyBusTypes>();
 
   constructor(private readonly bus: EventBus) {
     this.simVarPublisher = new PowerSupplySimvarPublisher(this.bus);
   }
 
   private initialize(): void {
-    this.publisher = this.bus.getPublisher<PowerSupplyBusTypes>();
     this.subscriber = this.bus.getSubscriber<PowerSupplySimvars>();
 
     this.subscriber

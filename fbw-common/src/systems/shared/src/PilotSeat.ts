@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,14 +11,7 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-
-export enum PilotSeatConfig {
-  Auto = 'Auto',
-  Left = 'Left',
-  Right = 'Right',
-}
-
-export const DefaultPilotSeatConfig = PilotSeatConfig.Left;
+import { PilotSeatConfig } from './PilotSeatTypes';
 
 export enum PilotSeat {
   Left,
@@ -45,11 +37,7 @@ export class PilotSeatManager implements Instrument {
   constructor(private readonly flightDeckBounds: FlightDeckBounds) {}
 
   public init(): void {
-    NXDataStore.getAndSubscribeLegacy(
-      'CONFIG_PILOT_SEAT',
-      (_, config: PilotSeatConfig) => (this.configSeat = config),
-      DefaultPilotSeatConfig,
-    );
+    NXDataStore.getSetting('CONFIG_PILOT_SEAT').sub((v) => (this.configSeat = v), true);
 
     this.actualSeat.sub((v) => SimVar.SetSimVarValue('L:FBW_PILOT_SEAT', SimVarValueType.Enum, v), true);
     this.inFlightDeck.sub((v) => SimVar.SetSimVarValue('L:FBW_IN_FLIGHT_DECK', SimVarValueType.Bool, v), true);

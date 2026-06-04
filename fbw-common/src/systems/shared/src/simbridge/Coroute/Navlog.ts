@@ -1,5 +1,5 @@
-import { Fix } from './Fix';
+import { CoRouteFix } from './CoRouteFix';
 
 export class Navlog {
-  fix: Fix[] = [];
+  fix: CoRouteFix[] = [];
 }

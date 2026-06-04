@@ -20,9 +20,9 @@ import { AudioPage } from './Pages/AudioPage';
 import { FlyPadPage } from './Pages/FlyPadPage';
 import { ThirdPartyOptionsPage } from './Pages/ThirdPartyOptionsPage';
 
-export type ButtonType = {
+export type ButtonType<T = string> = {
   name: string;
-  setting: string;
+  setting: T;
 };
 
 interface SelectionTabsProps {

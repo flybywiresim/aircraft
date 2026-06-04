@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -20,15 +19,15 @@ export class NXUnits {
     return NXUnits.metricWeightVal.get();
   }
 
-  static userToKg(value) {
+  static userToKg(value: number): number {
     return NXUnits.metricWeight ? value : value / 2.204625;
   }
 
-  static kgToUser(value) {
+  static kgToUser(value: number): number {
     return NXUnits.metricWeight ? value : value * 2.204625;
   }
 
-  static poundsToUser(value) {
+  static poundsToUser(value: number): number {
     return NXUnits.metricWeight ? value / 2.204625 : value;
   }
 
@@ -41,7 +40,7 @@ export class NXUnits {
    * @param value {number} in unit Meters
    * @returns {number} in metric or ft
    */
-  static mToUser(value) {
+  static mToUser(value: number): number {
     return NXUnits.metricWeight ? value : value * 3.28084;
   }
 

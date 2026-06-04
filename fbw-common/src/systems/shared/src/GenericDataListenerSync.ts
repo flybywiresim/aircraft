@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 interface GenericDataListener extends ViewListener.ViewListener {
   onDataReceived(key: string, callback: (data: any) => void): void;
   send(key: string, data: any): void;
@@ -21,7 +20,7 @@ export class GenericDataListenerSync {
 
   private dataPackageQueue: any[];
 
-  private topic: string;
+  private topic?: string;
 
   private isRunning: boolean;
 
@@ -29,7 +28,7 @@ export class GenericDataListenerSync {
 
   private lastEventSynced = -1;
 
-  private recvEventCb: (topic: string, data: any) => void;
+  private recvEventCb?: (topic: string, data: any) => void;
 
   constructor(recvEventCb?: (topic: string, data: any) => void, topic?: string) {
     this.topic = topic;
@@ -72,7 +71,7 @@ export class GenericDataListenerSync {
       syncDataPackage.data.forEach((data) => {
         if (data.topic === this.topic) {
           try {
-            this.recvEventCb(data.topic, data.data !== undefined ? data.data : undefined);
+            this.recvEventCb?.(data.topic, data.data !== undefined ? data.data : undefined);
           } catch (e) {
             console.error(e);
             if (e instanceof Error) {

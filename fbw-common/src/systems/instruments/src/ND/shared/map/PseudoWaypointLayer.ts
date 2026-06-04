@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -37,9 +36,9 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
 
   private groundSpeed = Arinc429Register.empty();
 
-  private headingWord = Arinc429ConsumerSubject.create(null);
+  private headingWord = Arinc429ConsumerSubject.create(undefined);
 
-  private trackWord = Arinc429ConsumerSubject.create(null);
+  private trackWord = Arinc429ConsumerSubject.create(undefined);
 
   constructor(readonly bus: EventBus) {
     const sub = this.bus.getSubscriber<NDSimvars & GenericDisplayManagementEvents>();
@@ -119,6 +118,10 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     rotate?: number,
   ) {
+    if (symbol.typePwp === undefined) {
+      return;
+    }
+
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;
 

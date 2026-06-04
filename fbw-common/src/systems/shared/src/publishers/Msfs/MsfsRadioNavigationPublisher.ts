@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import {
   EventBus,
   IndexedEventType,
@@ -13,7 +12,7 @@ interface MsfsRadioNavigationBaseEvents {
   msfs_radio_height: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type MsfsRadioNavigationIndexedEvents = {
   [P in keyof Pick<

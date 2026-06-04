@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 /*
  * This file contains various nodes that can be used for logical processing. Systems like the FWC may use them to
  * accurately implement their functionality.
@@ -175,37 +174,26 @@ export class NXLogicMemoryNode {
  *
  */
 export class NXLogicClockNode {
+  public timer = 0;
+
+  public flag = false;
+
+  public output = 0;
+
   /**
    * @param from Starting time (in seconds)
    * @param to End time (in seconds)
    * @param inc Increment time (in seconds)
    * @param dir Direction of increment (UP/DOWN)
    */
+  constructor(
+    public from: number,
+    public to: number,
+    public inc = 1,
+    public dir = 'DN',
+  ) {}
 
-  from: number;
-
-  to: number;
-
-  inc: number;
-
-  dir: string;
-
-  timer: number;
-
-  flag: boolean;
-
-  output: number;
-
-  constructor(from, to, inc = 1, dir = 'DN') {
-    this.from = from;
-    this.to = to;
-    this.inc = inc;
-    this.dir = dir;
-    this.output = 0;
-    this.flag = false;
-  }
-
-  write(value, deltaTime) {
+  write(value: boolean, deltaTime: number) {
     if (!value) {
       this.timer = 0;
       this.flag = false;
@@ -258,7 +246,7 @@ export class NXLogicPulseNode {
  * If the input value is between the two thresholds, it outputs the same as the previous output.
  */
 export class NxHysterisNode {
-  private output: boolean;
+  private output = false;
 
   constructor(
     private upperTreshold: number,

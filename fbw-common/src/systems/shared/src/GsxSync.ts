@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -265,7 +264,7 @@ abstract class GsxSync implements Instrument {
   protected isExtPowerAvail(): boolean {
     let state = false;
     for (let index = 1; index <= this.numberOfGPUs; index++) {
-      state ||= this.extPowerAvailStates.get(index).get();
+      state ||= this.extPowerAvailStates.get(index)?.get() ?? false;
     }
     return state;
   }

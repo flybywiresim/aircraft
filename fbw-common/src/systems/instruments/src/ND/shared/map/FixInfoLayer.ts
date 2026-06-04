@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -9,7 +8,7 @@ import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';
 
 const FIX_INFO_DASHES = [15, 12];
-const NO_DASHES = [];
+const NO_DASHES: number[] = [];
 
 export class FixInfoLayer implements MapLayer<NdSymbol> {
   data: NdSymbol[] = [];
@@ -21,6 +20,10 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;
@@ -59,6 +62,10 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     mapParameters: MapParameters,
   ) {
     for (const symbol of this.data) {
+      if (symbol.location === null) {
+        continue;
+      }
+
       const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
       const rx = x + mapWidth / 2;
       const ry = y + mapHeight / 2;

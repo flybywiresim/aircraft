@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -6,10 +5,17 @@ import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 import { ClientState } from './ClientState';
 
-type coRouteCall<T extends CoRouteDto | CoRouteDto[]> = {
-  success: boolean;
+type CoRouteCallSuccessResult<T extends CoRouteDto | CoRouteDto[]> = {
+  success: true;
   data: T;
 };
+
+type CoRouteCallFailedResult = {
+  success: false;
+  data: null;
+};
+
+type CoRouteCallResult<T extends CoRouteDto | CoRouteDto[]> = CoRouteCallSuccessResult<T> | CoRouteCallFailedResult;
 
 /**
  * Class responsible for retrieving data related to company routes from SimBridge
@@ -20,7 +26,7 @@ export class CompanyRoute {
    * @param route The routename in question
    * @returns Returns the CoRoute DTO
    */
-  public static async getCoRoute(route: String): Promise<coRouteCall<CoRouteDto>> {
+  public static async getCoRoute(route: String): Promise<CoRouteCallResult<CoRouteDto>> {
     if (!ClientState.getInstance().isConnected()) {
       throw new Error('SimBridge is not connected.');
     }
@@ -47,7 +53,7 @@ export class CompanyRoute {
    * @param dest the destination
    * @returns Returns a list of CoRoute DTOs
    */
-  public static async getRouteList(origin: String, dest: String): Promise<coRouteCall<CoRouteDto[]>> {
+  public static async getRouteList(origin: String, dest: String): Promise<CoRouteCallResult<CoRouteDto[]>> {
     if (!ClientState.getInstance().isConnected()) {
       throw new Error('SimBridge is not connected.');
     }
