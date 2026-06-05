@@ -20,11 +20,11 @@ import {
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { LagFilter, RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET, WindMode, HudElems } from './HUDUtils';
+import { LagFilter, RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { getDisplayIndex } from './HUD';
+import { WindMode, HudElems } from './HUDUtils';
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { AutoThrustMode } from '../../../shared/autopilot';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -1698,14 +1698,11 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
   private machTextSub = Subject.create('');
 
   private failedRef = FSComponent.createRef<SVGTextElement>();
 
   private showMach = false;
-
-  private lsVisible = false;
 
   private decMode = 0;
 
@@ -1718,22 +1715,14 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    this.sub
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+    sub
       .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.decMode = value;
       });
-
-    this.sub
-      .on(isCaptainSide ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((value) => {
-        this.lsVisible = value;
-      });
-
-    this.sub.on('machAr').handle((mach) => {
+    sub.on('machAr').handle((mach) => {
       if (!mach.isNormalOperation() && !this.onGround) {
         this.machTextSub.set('');
         this.failedRef.instance.style.display = 'inline';
@@ -1741,7 +1730,7 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
       }
       this.failedRef.instance.style.display = 'none';
       const machPermille = Math.round(mach.valueOr(0) * 1000);
-      if (this.decMode !== 2 && !this.lsVisible) {
+      if (this.decMode !== 2) {
         if (this.showMach && machPermille < 450) {
           this.showMach = false;
           this.machTextSub.set('');
@@ -1751,12 +1740,12 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
       } else {
         this.showMach = false;
       }
-      if (this.showMach && !this.lsVisible) {
+      if (this.showMach) {
         this.machTextSub.set(`.${machPermille}`);
       }
     });
 
-    this.sub
+    sub
       .on('leftMainGearCompressed')
       .whenChanged()
       .handle((g) => {
@@ -1764,7 +1753,7 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
         this.onGround = this.rightMainGearCompressed || g;
       });
 
-    this.sub
+    sub
       .on('rightMainGearCompressed')
       .whenChanged()
       .handle((g) => {
