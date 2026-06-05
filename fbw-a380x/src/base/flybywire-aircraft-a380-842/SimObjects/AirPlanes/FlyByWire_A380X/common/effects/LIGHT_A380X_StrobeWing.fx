@@ -12,7 +12,7 @@ Delay=0.0, 0.0
 Bounce=0.0
 Light=1
 No Interpolate=1
-Rate=1.0, 1.0
+Rate=0.75, 0.75
 X Emitter Velocity=0.0, 0.0
 Y Emitter Velocity=0.0, 0.0
 Z Emitter Velocity=0.0, 0.0
@@ -76,11 +76,11 @@ ScatDir=0.0
 
 [Emitter.1]
 Lifetime=0.0, 0.0
-Delay=0.10, 0.10
+Delay=0.20, 0.20
 Bounce=0.0
 Light=1
 No Interpolate=1
-Rate=1.00, 1.00
+Rate=0.75, 0.75
 X Emitter Velocity=0.0, 0.0
 Y Emitter Velocity=0.0, 0.0
 Z Emitter Velocity=0.0, 0.0
