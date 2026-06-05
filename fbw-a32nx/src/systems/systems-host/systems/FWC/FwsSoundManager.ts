@@ -636,7 +636,6 @@ export class FwsSoundManager {
         Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
       }
     } else {
-      console.log(`Playing synthetic voice sound ${soundKey}`);
       FwsSoundManager.AUDIO_SYNTHETIC_VOICE_REGISTERED_SIM_VAR.set(sound.id);
       if (this.numberOfTimesToRepeatSound === null && !sound.continuous) {
         this.numberOfTimesToRepeatSound = sound.repeatFor ? sound.repeatFor - 1 : null; // Subtract one for subsequent plays
@@ -801,24 +800,20 @@ export class FwsSoundManager {
   }
 
   public generateIntermediateCallout(height: number | null) {
-    console.log(`Generating intermediate callout for height ${height}`);
     if (height === null || height > 410 || this.intermediateGenerated) {
       return;
     }
 
     const heightRounded = Math.round(height);
-
     if (heightRounded >= 100) {
+      //Round to nearest 10 foot to get the closest callout.
       this.intermediateGenerated = true;
-      console.log(`Generating intermediate callout for height ${heightRounded}`);
-      // Abv 100 feet. Round to nearest 10 foot to get the closest callout.
       const tens = Math.trunc(heightRounded % 100);
       const hundredSingle = Math.trunc(heightRounded / 100);
       const tensRounded = Math.trunc(tens / 10) * 10;
       const reminderToAdd = Math.trunc(heightRounded % 10) >= 5 ? 10 : 0;
       const calloutHeightToPlay = hundredSingle * 100 + tensRounded + reminderToAdd;
       if (calloutHeightToPlay % 100 === 0) {
-        // We can play the whole callout.
         this.intermediateSoundKeys.push(`alt_${calloutHeightToPlay}`);
       } else {
         // Build the hundred and callout.
@@ -829,7 +824,6 @@ export class FwsSoundManager {
         this.intermediateSoundKeys.push(`alt_${tensToPlay}`);
       }
     } else {
-      console.log(`Generating intermediate callout for height ${heightRounded}`);
       if (heightRounded >= 20) {
         this.intermediateGenerated = true;
         const tens = Math.trunc(heightRounded / 10) * 10;
