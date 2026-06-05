@@ -22,7 +22,6 @@ export class MsfsConnector {
 
   public static async receiveMsfsTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     let report: string | undefined;
-    // TODO MSFS 2020 does not deliver TAF
     try {
       const taf: { tafString: string; icao: string } = await Coherent.call('GET_TAF_BY_IDENT', icao);
       if (taf.tafString && taf.icao === icao) {
