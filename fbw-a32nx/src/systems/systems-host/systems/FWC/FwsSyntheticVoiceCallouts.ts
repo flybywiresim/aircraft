@@ -179,7 +179,7 @@ export class FwsSyntheticVoiceCallouts {
   private anyHeightThresholdBelow400Met = false;
   private anyActiveHeightThresholdBelow400Met = false;
 
-  private readonly intermediateAudioPulse = new NXLogicPulseNode();
+  private readonly intermediateGeneratedPulse = new NXLogicPulseNode();
   private readonly below400FeetPulse = new NXLogicPulseNode();
 
   private readonly intermediateCalloutMemoryNode = new NXLogicMemoryNode(true);
@@ -245,7 +245,7 @@ export class FwsSyntheticVoiceCallouts {
   /** Auto Flight Callouts */
 
   // PITCH PITCH Auto Callout
-  public readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
+  private readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
 
   public readonly pitchPitchActive = Subject.create(false);
 
@@ -811,7 +811,6 @@ export class FwsSyntheticVoiceCallouts {
     this.fiveThresholdAndNoAudioInhibitPreviousCycle = fiveThresholdAndNoAudioInhibit;
     this.fiveAudio.set(fiveThresholdAndNoInhibitRisingEdge);
     this.fiveMtrigPreviousCycle = this.fiveMtrigNode.write(fiveThresholdAndNoInhibitRisingEdge, deltaTime);
-    // TODO intermediate callouts
     this.anyActiveHeightThresholdBelow400Met =
       fourHundredFeetThresholdAndActive ||
       threeHundredFeetThresholdAndActive ||
@@ -828,7 +827,7 @@ export class FwsSyntheticVoiceCallouts {
       this.gpwsActive || this.climbingOrOnGround || this.heightAbove410Feet,
       this.anyActiveHeightThresholdBelow400Met || autoCalloutPlayed,
     );
-    const intermediatePulse = this.intermediateAudioPulse.write(intermediateGenerated);
+    const intermediatePulse = this.intermediateGeneratedPulse.write(intermediateGenerated);
     const below400FeetPulse = this.below400FeetPulse.write(this.anyHeightThresholdBelow400Met);
 
     const startIntermediatePulses = intermediatePulse || below400FeetPulse;
@@ -844,12 +843,10 @@ export class FwsSyntheticVoiceCallouts {
     );
 
     this.intermediateCalloutHeight.set(
-      !(
-        intermeidateMemoryNode ||
-        fourSecondsBelowFiftyFeetMtrig ||
-        elevenSecondsBelowFourHundredFeetMtrig ||
-        this.minimumGenerated
-      ) &&
+      !intermeidateMemoryNode &&
+        !fourSecondsBelowFiftyFeetMtrig &&
+        !elevenSecondsBelowFourHundredFeetMtrig &&
+        !this.minimumGenerated &&
         !this.autoCalloutInhibit &&
         !this.inhibitCalloutDueToRetard
         ? raValue

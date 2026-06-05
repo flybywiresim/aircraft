@@ -1733,8 +1733,6 @@ export class PseudoFWC {
   /** RA & Minimums callouts */
   private readonly callouts: FwsSyntheticVoiceCallouts;
 
-  private readonly raTest = Subject.create<number | null>(0);
-
   constructor(
     private readonly bus: EventBus,
     private readonly soundManager: FwsSoundManager,
@@ -1967,10 +1965,6 @@ export class PseudoFWC {
     });
 
     this.callouts.intermediateCalloutHeight.sub((v) => {
-      this.soundManager.generateIntermediateCallout(v);
-    });
-
-    this.raTest.sub((v) => {
       this.soundManager.generateIntermediateCallout(v);
     });
   }
@@ -2260,8 +2254,6 @@ export class PseudoFWC {
     this.processEcpButtons(deltaTime);
 
     this.flightPhaseEndedPulseNode.write(false);
-
-    this.raTest.set(SimVar.GetSimVarValue('L:A32NX_RA_CALLOUT_TEST', 'number'));
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
