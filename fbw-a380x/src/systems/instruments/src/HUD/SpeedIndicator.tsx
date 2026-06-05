@@ -1768,13 +1768,13 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
         <text
           ref={this.failedRef}
           id="MachFailText"
-          class="Blink9Seconds FontLargest StartAlign Green"
+          class="Blink9Seconds FontLarge StartAlign Green"
           x="5.4257932"
           y="136.88908"
         >
           MACH
         </text>
-        <text id="CurrentMachText" class="FontLarge StartAlign Green" x="150" y="770">
+        <text id="CurrentMachText" class="FontLarge StartAlign Green" x="150" y="767">
           {this.machTextSub}
         </text>
       </>

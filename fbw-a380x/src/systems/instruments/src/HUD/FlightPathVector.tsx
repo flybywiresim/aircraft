@@ -154,11 +154,11 @@ export class FlightPathVector extends DisplayComponent<{
     this.ap1Active.get() || this.ap2Active.get()
       ? this.birdPath.instance.setAttribute(
           'd',
-          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 592 512 h 35 m 13 -13 v -12z m 13 13 h 35',
         )
       : this.birdPath.instance.setAttribute(
           'd',
-          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35',
         );
   }
 

@@ -47,7 +47,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
           graduationPoints.push(
             <g ref={tickRef} transform={`translate(0 ${offset})`}>
               <path class="NormalStroke Green" d="m85.354 362.469h-12.65" />
-              <text class="FontIntermediate MiddleAlign Green" x="42.6075" y="372.255">
+              <text class="FontMedium MiddleAlign Green" x="42.6075" y="372.255">
                 {text}
               </text>
             </g>,

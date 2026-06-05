@@ -217,7 +217,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(115 300)">
+      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(115 320)">
         <text id="ILSIdent" class="Green FontSmallest  AlignLeft" x="15" y="490">
           {this.identText}
         </text>
@@ -816,7 +816,7 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text class="FontSmallest Green StartAlign" ref={this.lsTitle} x="130" y="768">
+      <text class="FontSmallest Green StartAlign" ref={this.lsTitle} x="130" y="788">
         ILS
       </text>
     );
