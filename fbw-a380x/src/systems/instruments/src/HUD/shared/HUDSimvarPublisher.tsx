@@ -181,7 +181,6 @@ export interface HUDSimvars {
   fm2TransLvlRaw: number;
   lgciuDiscreteWord1Raw: number;
   slatPosLeft: number;
-  trimPosition: number;
   cgPercent: number;
   spoilersCommanded: number;
   spoilersArmed: boolean;
@@ -372,7 +371,6 @@ export enum HUDVars {
   fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
-  trimPosition = 'ELEVATOR TRIM POSITION',
   cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
@@ -564,7 +562,6 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['fm2TransLvlRaw', { name: HUDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
     ['lgciuDiscreteWord1Raw', { name: HUDVars.lgciuDiscreteWord1Raw, type: SimVarValueType.Number }],
     ['slatPosLeft', { name: HUDVars.slatPosLeft, type: SimVarValueType.Number }],
-    ['trimPosition', { name: HUDVars.trimPosition, type: SimVarValueType.Number }],
     ['cgPercent', { name: HUDVars.cgPercent, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: HUDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: HUDVars.spoilersArmed, type: SimVarValueType.Bool }],
