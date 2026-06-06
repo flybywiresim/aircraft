@@ -6030,7 +6030,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns true if is disabled, false otherwise.
    */
   isCostIndexModificationDisabled(plan: FlightPlan): boolean {
-    return plan.isActiveOrCopiedFromActive() && this.getFlightPhase() >= FmgcFlightPhase.Descent;
+    return (
+      plan.performanceData.costIndex.get() !== null &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.getFlightPhase() >= FmgcFlightPhase.Descent
+    );
   }
 
   confirmTakeoffData(): void {

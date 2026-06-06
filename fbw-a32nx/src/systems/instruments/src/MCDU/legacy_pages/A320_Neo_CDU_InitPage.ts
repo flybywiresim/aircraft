@@ -49,7 +49,8 @@ export class CDUInitPage {
     const dest = plan.destinationAirport;
     const isActiveOrCopiedFromActive = plan.isActiveOrCopiedFromActive();
     const flightPhase = mcdu.flightPhaseManager.phase;
-    const fromToDisabled = isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Preflight;
+    const fromToDisabled =
+      isActiveOrCopiedFromActive && flightPhase > FmgcFlightPhase.Preflight && plan.destinationAirport !== undefined;
 
     // City pair is diplayed as green after preflight.
     let fromText = '----';
@@ -62,13 +63,16 @@ export class CDUInitPage {
       fromColor = isForPrimary ? Column.amber : Column.cyan;
     }
 
-    let coRouteText = '----------';
-    let coRouteColor = Column.white;
+    let coRouteText = '';
+    let coRouteColor = Column.cyan;
     const coRouteNumber = mcdu.coRoute.routeNumber;
     if (coRouteNumber) {
       coRouteText = coRouteNumber;
       coRouteColor = fromToDisabled ? Column.green : Column.cyan;
-    } else if (!fromToDisabled && !dest) {
+    } else if (fromToDisabled) {
+      coRouteText = '----------';
+      coRouteColor = Column.white;
+    } else if (!dest) {
       coRouteText = isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]';
       coRouteColor = isForPrimary ? Column.amber : Column.cyan;
     }

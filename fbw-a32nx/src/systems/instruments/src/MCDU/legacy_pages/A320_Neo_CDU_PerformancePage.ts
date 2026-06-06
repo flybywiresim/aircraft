@@ -293,7 +293,7 @@ export class CDUPerformancePage {
     const flaps = targetPlan.performanceData.takeoffFlaps.get();
     const flapsOrThsExist = flaps !== null || ths !== null;
     const flapsText = `${flaps !== null ? flaps : isActiveOrCopyOfActiveAndAfterTakeoff && ths !== null ? '\xa0' : '[]'}/`; // TODO to confirm in FFS how it looks when only THS is set during takeoff. Assuming similar behaviour to THS.
-    const thsText = `${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff && flaps !== null ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}[color]${flapsOrThsExist ? phaseDependantFieldsColor : 'cyan'}}`;
+    const thsText = `${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff && flaps !== null ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}[color]${flapsOrThsExist ? phaseDependantFieldsColor : 'cyan'}`;
 
     const flapsThs = `${flapsText}${thsText}`;
     mcdu.onRightInput[2] = (value, scratchpadCallback) => {
@@ -1512,7 +1512,7 @@ export class CDUPerformancePage {
       if (costIndex !== null) {
         costIndexCell = `${costIndex.toFixed(0)}[color]${mcdu.isCostIndexModificationDisabled(plan) ? 'green' : 'cyan'}`;
       } else {
-        costIndexCell = plan.isActive() ? '___[color]amber' : '[\xa0][color]cyan';
+        costIndexCell = plan.isActiveOrCopiedFromActive() ? '___[color]amber' : '[\xa0][color]cyan';
       }
     }
 
