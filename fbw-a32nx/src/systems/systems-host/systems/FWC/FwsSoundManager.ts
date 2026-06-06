@@ -808,11 +808,9 @@ export class FwsSoundManager {
     if (heightRounded >= 100) {
       //Round to nearest 10 foot to get the closest callout.
       this.intermediateGenerated = true;
-      const tens = Math.trunc(heightRounded % 100);
+      const tens = Math.trunc((heightRounded % 100) / 10) * 10;
       const hundredSingle = Math.trunc(heightRounded / 100);
-      const tensRounded = Math.trunc(tens / 10) * 10;
-      const reminderToAdd = Math.trunc(heightRounded % 10) >= 5 ? 10 : 0;
-      const calloutHeightToPlay = hundredSingle * 100 + tensRounded + reminderToAdd;
+      const calloutHeightToPlay = hundredSingle * 100 + tens;
       if (calloutHeightToPlay % 100 === 0) {
         this.intermediateSoundKeys.push(`alt_${calloutHeightToPlay}`);
       } else {
