@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::hydraulic::sfcc::SlatFlapControlComputer;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{
@@ -44,10 +45,11 @@ pub(super) struct FlapsChannel {
     kts_100: Velocity,
     kts_210: Velocity,
 
+    opp_wtb_armed: bool,
+    own_wtb_armed: bool,
+
     // OUTPUTS
     fap: [bool; 7],
-    left_wtb_solenoid: SolenoidStatus,
-    right_wtb_solenoid: SolenoidStatus,
 
     flap_auto_command_active: bool,
     flap_auto_command_engaged: bool,
@@ -89,6 +91,9 @@ impl FlapsChannel {
                 .starting_as(false),
             recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
+            opp_wtb_armed: true,
+            own_wtb_armed: true, // NOTE: when upowered, the default is true. True is 0V.
+
             csu_monitor: CSUMonitor::new(context),
 
             conf1_flaps: Angle::new::<degree>(Self::FLAP_CONF1_FPPU_ANGLE),
@@ -98,8 +103,6 @@ impl FlapsChannel {
 
             // Set `fap` to false to match power-off state
             fap: [false; 7],
-            left_wtb_solenoid: SolenoidStatus::DeEnergised,
-            right_wtb_solenoid: SolenoidStatus::DeEnergised,
 
             flap_auto_command_active: false,
             flap_auto_command_engaged: false,
@@ -304,6 +307,8 @@ impl FlapsChannel {
     }
 
     fn powerup_reset(&mut self, adirs: &impl AdirsMeasurementOutputs) {
+        self.own_wtb_armed = false;
+
         // Auto Command restart
         if self.csu_monitor.get_last_valid_detent() != CSU::Conf1 {
             self.flap_auto_command_active = false;
@@ -418,6 +423,7 @@ impl FlapsChannel {
         self.flap_auto_command_active = false;
         self.flap_auto_command_engaged = false;
         self.flap_auto_command_angle = Angle::ZERO;
+        self.own_wtb_armed = true;
     }
 
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
@@ -439,6 +445,7 @@ impl FlapsChannel {
         context: &UpdateContext,
         flaps_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
+        opp_sfcc: &SlatFlapControlComputer,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
         self.wtb_is_powered_delayed
@@ -455,6 +462,7 @@ impl FlapsChannel {
         }
 
         self.csu_monitor.update(context);
+        self.opp_wtb_armed = opp_sfcc.flaps_channel.is_wtb_armed();
         self.flaps_demanded_angle = self.generate_flap_angle(adirs);
 
         self.flaps_feedback_angle = flaps_feedback.fppu_angle();
@@ -482,6 +490,10 @@ impl FlapsChannel {
 
     pub(super) fn get_flap_auto_command_engaged(&self) -> bool {
         self.flap_auto_command_engaged
+    }
+
+    pub(super) fn is_wtb_armed(&self) -> bool {
+        return self.own_wtb_armed;
     }
 
     #[cfg(test)]
@@ -561,15 +573,18 @@ impl ValveBlockController for FlapsChannel {
     }
 }
 impl WingTipBrakeController for FlapsChannel {
-    fn get_solenoid_status(&self, side: SecondarySurfaceSide) -> SolenoidStatus {
+    fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
         // TODO: this is a placeholder. Logic needs to be added to activate the WTB during faults.
         if !self.wtb_is_powered_delayed.output() {
             return SolenoidStatus::DeEnergised;
         }
-        match side {
-            SecondarySurfaceSide::Left => self.left_wtb_solenoid,
-            SecondarySurfaceSide::Right => self.right_wtb_solenoid,
+
+        let wtb_triggered = self.own_wtb_armed && self.opp_wtb_armed;
+
+        if wtb_triggered {
+            return SolenoidStatus::Energised;
         }
+        return SolenoidStatus::DeEnergised;
     }
 }
 impl SimulationElement for FlapsChannel {

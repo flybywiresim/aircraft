@@ -710,6 +710,14 @@ impl A320FlapsTestBed {
         self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(6))
     }
 
+    fn get_slat_wtb_armed(&self, idx: usize) -> bool {
+        self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.is_wtb_armed())
+    }
+
+    fn get_flap_wtb_armed(&self, idx: usize) -> bool {
+        self.query(|a| a.slat_flap_complex.sfcc[idx].flaps_channel.is_wtb_armed())
+    }
+
     fn get_is_approaching_position(&self, demanded_angle: Angle, feedback_angle: Angle) -> bool {
         SlatFlapControlComputerMisc::in_positioning_threshold_range(demanded_angle, feedback_angle)
     }
@@ -3649,4 +3657,35 @@ fn flaps_autocommand_different_adiru_speeds() {
 
     test_bed = test_bed.set_adiru_airspeed(2, Some(220.)).run_one_tick();
     assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+}
+
+#[test]
+fn wtb_arm_test() {
+    // Only SFCC1 powered
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_2_bus_power(false)
+        .run_for_some_time();
+    assert!(test_bed.get_flap_wtb_armed(1));
+    assert!(test_bed.get_slat_wtb_armed(1));
+
+    test_bed = test_bed.set_dc_2_bus_power(true).run_for_some_time();
+    assert!(!test_bed.get_flap_wtb_armed(1));
+    assert!(!test_bed.get_slat_wtb_armed(1));
+
+    // Only SFCC2 powered
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(false)
+        .run_for_some_time();
+    assert!(test_bed.get_flap_wtb_armed(0));
+    assert!(test_bed.get_slat_wtb_armed(0));
+
+    test_bed = test_bed.set_dc_ess_bus_power(true).run_for_some_time();
+    assert!(!test_bed.get_flap_wtb_armed(0));
+    assert!(!test_bed.get_slat_wtb_armed(0));
 }

@@ -95,7 +95,7 @@ impl ValveBlockController for FlapsChannel {
     }
 }
 impl WingTipBrakeController for FlapsChannel {
-    fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+    fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
         // TODO: need to connect the slats WTB to the electrical system.
         // This is just a placeholder.
         SolenoidStatus::DeEnergised
