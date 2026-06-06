@@ -1673,8 +1673,8 @@ export class FwsCore {
   public readonly ir2Fault = Subject.create(false);
   public readonly ir3Fault = Subject.create(false);
 
-  private readonly ir3UsedLeft = Subject.create(false);
-  private readonly ir3UsedRight = Subject.create(false);
+  private ir3UsedLeft = false;
+  private ir3UsedRight = false;
 
   public readonly twoIrFault = MappedSubject.create(
     (irf) => irf.filter((v) => v === true).length >= 2,
@@ -4329,8 +4329,8 @@ export class FwsCore {
     this.adr3UsedRight.set(adrKnob === 2);
     const attKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
     this.attKnob.set(attKnob);
-    this.ir3UsedLeft.set(attKnob === 0); //FIXME: Should come from the CDS.
-    this.ir3UsedRight.set(attKnob === 2);
+    this.ir3UsedLeft = attKnob === 0; //FIXME: Should come from the CDS.
+    this.ir3UsedRight = attKnob === 2;
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
@@ -4873,9 +4873,8 @@ export class FwsCore {
       (adr3Fault &&
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
         this.adr3UsedLeft.get());
-    const oneLeftUsedIrInop =
-      (this.ir1Fault.get() && !this.ir3UsedLeft.get()) || (this.ir3Fault.get() && this.ir3UsedLeft.get());
-    const leftIrFaultyOrInAlign = this.ir3UsedLeft.get()
+    const oneLeftUsedIrInop = (this.ir1Fault.get() && !this.ir3UsedLeft) || (this.ir3Fault.get() && this.ir3UsedLeft);
+    const leftIrFaultyOrInAlign = this.ir3UsedLeft
       ? this.ir3Fault.get() || this.ir3Align.get()
       : this.ir1Fault.get() || this.ir1Align.get();
 
@@ -4895,8 +4894,8 @@ export class FwsCore {
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
         this.adr3UsedRight.get());
     const oneUsedRightIrInop =
-      (this.ir2Fault.get() && !this.ir3UsedRight.get()) || (this.ir3Fault.get() && this.ir3UsedRight.get());
-    const rightIrFaultyOrInAlign = this.ir3UsedRight.get()
+      (this.ir2Fault.get() && !this.ir3UsedRight) || (this.ir3Fault.get() && this.ir3UsedRight);
+    const rightIrFaultyOrInAlign = this.ir3UsedRight
       ? this.ir3Fault.get() || this.ir3Align.get()
       : this.ir2Fault.get() || this.ir2Align.get();
 

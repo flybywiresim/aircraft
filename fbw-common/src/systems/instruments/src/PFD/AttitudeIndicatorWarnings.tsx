@@ -9,6 +9,7 @@ interface AttitudeIndicatorWarningsProps {
 }
 
 export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicatorWarningsProps> {
+  //FIXME: Allow split logic per aircraft.
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
 
   private readonly maxReverseActive = Subject.create(false);
@@ -92,6 +93,7 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
+              // FIXME: We should recieve the condition as from  dmc/cds so we can split it per aircraft
               ([maxReverse, maxRmB, wetTooShort, tooShort, stall]) =>
                 (maxReverse || maxRmB) && !wetTooShort && !tooShort && !stall,
               this.maxReverseActive,

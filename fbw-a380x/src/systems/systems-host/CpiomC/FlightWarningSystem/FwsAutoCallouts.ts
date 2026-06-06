@@ -57,11 +57,12 @@ export class FwsAutoCallouts {
 
     // KEEP MAX REVERSE.
     const keepMaxReverse = this.rowRopStatusWord.bitValueOr(13, false) && !brakeMaxBraking && rolloutOrBouncedLanding; // FIXME: Check reverser INOP
-    this.keepMaxReverseMemory.write(
-      this.keepMaxReversePulse.write(keepMaxReverse),
-      this.keepMaxReverseDownPulse.write(keepMaxReverse) || maxReversePlayed,
+    this.keepMaxReverse.set(
+      this.keepMaxReverseMemory.write(
+        this.keepMaxReversePulse.write(keepMaxReverse),
+        this.keepMaxReverseDownPulse.write(keepMaxReverse) || maxReversePlayed,
+      ),
     );
-    this.keepMaxReverse.set(keepMaxReverse);
 
     // RUNWAY TOO SHORT
     this.runwayTooShort.set(flightPhase >= 8 && flightPhase <= 10 && this.rowRopStatusWord.bitValueOr(15, false));
