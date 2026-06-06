@@ -19,7 +19,6 @@ import {
   CONFIG_ATIS_WEATHER_SOURCES,
   CONFIG_METAR_WEATHER_SOURCES,
   CONFIG_TAF_WEATHER_SOURCES,
-  CONFIG_WEATHER_SOURCE_LABELS,
 } from '@flybywiresim/fbw-sdk-react';
 
 import { toast } from 'react-toastify';
@@ -30,6 +29,17 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SettingItem, SettingsPage } from '../Settings';
 import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
+
+const CONFIG_WEATHER_SOURCE_LABELS: Record<ConfigWeatherMap, string> = {
+  [ConfigWeatherMap.FAA]: 'FAA (US)',
+  [ConfigWeatherMap.IVAO]: 'IVAO',
+  [ConfigWeatherMap.MSFS]: 'MSFS',
+  [ConfigWeatherMap.NOAA]: 'NOAA',
+  [ConfigWeatherMap.PILOTEDGE]: 'PilotEdge',
+  [ConfigWeatherMap.VATSIM]: 'VATSIM',
+  [ConfigWeatherMap.BEYONDATC]: 'BeyondATC',
+  [ConfigWeatherMap.SAI]: 'SayIntentions.AI',
+};
 
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentSetting('CONFIG_ATIS_SRC');

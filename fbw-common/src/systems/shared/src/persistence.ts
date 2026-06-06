@@ -12,13 +12,13 @@ type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
-  EFB_UI_THEME: 'blue' | 'dark' | 'light';
-  CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
-  ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
+  ACARS_PROVIDER: 'BATC' | 'HOPPIE' | 'NONE' | 'SAI';
   CONFIG_METAR_SRC: ConfigMetarSource;
   CONFIG_ATIS_SRC: ConfigAtisSource;
   CONFIG_TAF_SRC: ConfigTafSource;
+  CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
   CONFIG_USING_METRIC_UNIT: boolean;
+  EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
 
 export type LegacyDataStoreSettingKey<k extends string = string> = k &
