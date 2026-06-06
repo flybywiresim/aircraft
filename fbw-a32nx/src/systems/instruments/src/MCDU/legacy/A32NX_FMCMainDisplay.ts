@@ -1238,9 +1238,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           break;
         }
         case FmgcFlightPhase.Climb: {
-          let speed = engineOut
-            ? SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number')
-            : this.managedSpeedClimb;
+          let speed = engineOut ? SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number') : this.managedSpeedClimb;
 
           if (
             this.climbSpeedLimit !== undefined &&
