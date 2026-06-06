@@ -202,6 +202,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
       }
     });
 
+    sub.on('vectorsActiveEosid').handle((data: PathVector[]) => {
+      this.vectors[EfisVectorsGroup.ACTIVE_EOSID].length = 0;
+      if (data) {
+        this.vectors[EfisVectorsGroup.ACTIVE_EOSID].push(...data);
+      }
+    });
+
     sub.on('vectorsDashed').handle((data: PathVector[]) => {
       this.vectors[EfisVectorsGroup.DASHED].length = 0;
       if (data) {
@@ -465,6 +472,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     switch (group) {
       case EfisVectorsGroup.ACTIVE:
         context.strokeStyle = '#0f0';
+        context.setLineDash(NO_DASHES);
+        break;
+      case EfisVectorsGroup.ACTIVE_EOSID:
+        context.strokeStyle = '#ffff00';
         context.setLineDash(NO_DASHES);
         break;
       case EfisVectorsGroup.DASHED:

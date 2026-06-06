@@ -152,12 +152,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   private efisInterfaces = {
     L: new EfisInterface(
+      this.bus,
       'L',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,
       A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS,
     ),
     R: new EfisInterface(
+      this.bus,
       'R',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,

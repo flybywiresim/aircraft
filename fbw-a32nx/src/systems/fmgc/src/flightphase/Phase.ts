@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429Register, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
-import { Accessible } from '@microsoft/msfs-sdk';
+import { Accessible, ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import {
   FmgcFlightPhase,
@@ -13,9 +13,14 @@ import {
   isOnGround,
   conditionTakeOff,
 } from '@shared/flightphase';
+import { EngineOutEvents } from '../events/EngineOutEvents';
+import { NavigationEvents } from '../navigation/Navigation';
 
 export abstract class Phase {
-  constructor(protected readonly pressureAltitude: Accessible<number | null>) {}
+  constructor(
+    protected readonly bus: EventBus,
+    protected readonly pressureAltitude: Accessible<number | null>,
+  ) {}
   // eslint-disable-next-line no-empty-function
   init(): void {
     /* prototype function */
@@ -49,6 +54,14 @@ export class TakeOffPhase extends Phase {
 
   readonly fmEoAccelerationAltitude = Arinc429Register.empty();
 
+  private readonly sub = this.bus.getSubscriber<EngineOutEvents & NavigationEvents>();
+
+  private readonly isEngineOutCondition = ConsumerValue.create(this.sub.on('fms_engine_out_active'), false);
+
+  private readonly baroCorrectedAlt = ConsumerValue.create(this.sub.on('fms_nav_baro_corrected_altitude'), null);
+
+  private readonly cas = ConsumerValue.create(this.sub.on('fms_nav_computed_airspeed'), null);
+
   init() {
     this.nextPhase = FmgcFlightPhase.Climb;
     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
@@ -64,12 +77,22 @@ export class TakeOffPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    const engineOut = !isAnEngineOn();
-    const aboveAccelHeight =
-      Simplane.getAltitude() > (engineOut ? this.accelerationAltitudeMslEo : this.accelerationAltitudeMsl); //FIXME add Speed > Gdot if EO mode active
-    if (aboveAccelHeight) {
-      return true;
+    const engineOut = this.isEngineOutCondition.get();
+    const baroAlti = this.baroCorrectedAlt.get();
+
+    if (baroAlti !== null) {
+      if (engineOut) {
+        const gd = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', SimVarValueType.Number);
+        const cas = this.cas.get();
+
+        if (cas >= gd && baroAlti > this.accelerationAltitudeMslEo) {
+          return true;
+        }
+      } else {
+        return baroAlti > this.accelerationAltitudeMsl;
+      }
     }
+
     const verticalMode = getAutopilotVerticalMode();
 
     return (

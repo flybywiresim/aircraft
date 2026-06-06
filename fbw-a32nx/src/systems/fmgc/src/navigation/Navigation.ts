@@ -54,8 +54,15 @@ export interface SelectedNavaid {
 export interface NavigationEvents {
   /** The selected pressure altitude in feet, or null if invalid/NCD. */
   fms_nav_pressure_altitude: number | null;
+  /** The selected baro corrected altitude in feet, or null if invalid/NCD. */
+  fms_nav_baro_corrected_altitude: number | null;
+
+  /** The selected computed airspeed in knots, or null if invalid/NCD. */
+  fms_nav_computed_airspeed: number | null;
+
   /** Whether GPS primary is in use. */
   fms_nav_gps_primary: boolean;
+
   /** The selected wind direction in [0, 359.9], or null if invaliid/NCD */
   fms_nav_wind_direction: number | null;
   /** The selected wind speed in knots, or null if invalid/NCD */
@@ -87,21 +94,21 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_RA_${i + 1}_RADIO_ALTITUDE`,
   );
 
-  private baroAltitude: number | null = null;
+  private readonly baroAltitude = Subject.create<number | null>(null);
 
   private static readonly baroAltitudeVars = Array.from(
     { length: 3 },
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_1`,
   );
 
-  private pressureAltitude = Subject.create<number | null>(null);
+  private readonly pressureAltitude = Subject.create<number | null>(null);
 
   private static readonly pressureAltitudeVars = Array.from(
     { length: 3 },
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`,
   );
 
-  private computedAirspeed: number | null = null;
+  private readonly computedAirspeed = Subject.create<number | null>(null);
 
   private static readonly computedAirspeedVars = Array.from(
     { length: 3 },
@@ -171,6 +178,10 @@ export class Navigation implements NavigationProvider {
     this.navaidTuner.init();
 
     this.pressureAltitude.sub((v) => this.publisher.pub('fms_nav_pressure_altitude', v, false, true), true);
+    this.baroAltitude.sub((v) => this.publisher.pub('fms_nav_baro_corrected_altitude', v, false, true), true);
+
+    this.computedAirspeed.sub((v) => this.publisher.pub('fms_nav_computed_airspeed', v, false, true), true);
+
     this._accuracyHigh.sub((v) => {
       SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', v);
       SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', v);
@@ -251,10 +262,10 @@ export class Navigation implements NavigationProvider {
   }
 
   private updateAirData(): void {
-    this.baroAltitude = this.getAdiruValue(Navigation.baroAltitudeVars);
+    this.baroAltitude.set(this.getAdiruValue(Navigation.baroAltitudeVars));
     this.pressureAltitude.set(this.getAdiruValue(Navigation.pressureAltitudeVars));
 
-    this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
+    this.computedAirspeed.set(this.getAdiruValue(Navigation.computedAirspeedVars));
     this.trueAirspeed = this.getAdiruValue(Navigation.trueAirspeedVars);
     this.staticAirTemperature = this.getAdiruValue(Navigation.staticAirTemperatureVars);
   }
@@ -305,7 +316,7 @@ export class Navigation implements NavigationProvider {
   }
 
   public getBaroCorrectedAltitude(): number | null {
-    return this.baroAltitude;
+    return this.baroAltitude.get();
   }
 
   public getEpe(): number {
@@ -330,7 +341,7 @@ export class Navigation implements NavigationProvider {
   }
 
   public getComputedAirspeed(): number | null {
-    return this.computedAirspeed;
+    return this.computedAirspeed.get();
   }
 
   public getTrueAirspeed(): number | null {

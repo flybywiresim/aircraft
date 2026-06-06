@@ -27,6 +27,7 @@ import {
   NdPwpSymbolTypeFlags,
   SectionCode,
   MagVar,
+  TurnDirection,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -279,6 +280,7 @@ export class EfisSymbols<T extends number> {
       this.nearbyWaypointMonitor.setRadius(nearbyRadius);
     }
 
+    // TODO need to update when active leg index changes
     if (
       !mrpChanged &&
       !trueHeadingChanged &&
@@ -583,6 +585,49 @@ export class EfisSymbols<T extends number> {
 
           for (const symbol of symbols) {
             upsertSymbol(symbol);
+          }
+        }
+      }
+    }
+
+    // EOSID
+    const eoSidLegs =
+      this.flightPhase.get() < FmgcFlightPhase.Climb &&
+      this.flightPlanService.active.engineOutDepartureSegment &&
+      this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
+      range < 160 &&
+      this.efisInterface.shouldTransmitEosid(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
+        ? this.flightPlanService.active.engineOutDepartureSegment.allLegs
+        : undefined;
+
+    if (eoSidLegs) {
+      for (const leg of eoSidLegs) {
+        if (leg.isDiscontinuity === false) {
+          const term = leg.terminationWaypoint();
+          if (term && this.isWithinEditArea(term.location, mapReferencePoint, mapOrientation, editArea)) {
+            const isCourseReversal =
+              leg.type === LegType.HA || leg.type === LegType.HF || leg.type === LegType.HM || leg.type === LegType.PI;
+
+            if (isCourseReversal) {
+              upsertSymbol({
+                databaseId: term.databaseId,
+                ident: term.ident,
+                location: term.location,
+                type:
+                  NdSymbolTypeFlags.FlightPlan |
+                  (leg.definition.turnDirection === TurnDirection.Left
+                    ? NdSymbolTypeFlags.CourseReversalLeft
+                    : NdSymbolTypeFlags.CourseReversalRight),
+                direction: MagVar.getLegTrueCourse(leg.definition),
+              });
+            } else {
+              upsertSymbol({
+                databaseId: term.databaseId,
+                ident: term.ident,
+                location: term.location,
+                type: NdSymbolTypeFlags.FlightPlan,
+              });
+            }
           }
         }
       }
