@@ -2226,7 +2226,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
     if (
       !plan ||
-      (plan.isActiveOrCopiedFromActive() && this.getFlightPhase() >= FmgcFlightPhase.Takeoff) ||
+      (plan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        plan.destinationAirport !== undefined) ||
       fromTo === Keypad.clrValue
     ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
