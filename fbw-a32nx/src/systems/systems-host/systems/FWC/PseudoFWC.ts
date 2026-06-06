@@ -51,7 +51,7 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 
 export const DEFAULT_MONITOR_TIME = 0.3;
 import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
-import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { FwsSyntheticVoiceCallouts } from './FwsSyntheticVoiceCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -1731,7 +1731,7 @@ export class PseudoFWC {
   private readonly configPortableDevices = Subject.create(false);
 
   /** RA & Minimums callouts */
-  private readonly autoCallouts: FwsAutoCallouts;
+  private readonly callouts: FwsSyntheticVoiceCallouts;
 
   constructor(
     private readonly bus: EventBus,
@@ -1775,7 +1775,7 @@ export class PseudoFWC {
     }, true);
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
-    this.autoCallouts = new FwsAutoCallouts(this);
+    this.callouts = new FwsSyntheticVoiceCallouts(this);
   }
 
   init(): void {
@@ -1812,12 +1812,9 @@ export class PseudoFWC {
 
     this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
 
-    this.autoCallouts.pitchPitchActive.sub(
-      (active) => this.soundManager.handleSoundCondition('pitchPitch', active),
-      true,
-    );
+    this.callouts.pitchPitchActive.sub((active) => this.soundManager.handleSoundCondition('pitchPitch', active), true);
 
-    this.autoCallouts.lowEnergyWarningActive.sub(
+    this.callouts.lowEnergyWarningActive.sub(
       (active) => this.soundManager.handleSoundCondition('speedSpeedSpeed', active),
       true,
     );
@@ -1884,87 +1881,91 @@ export class PseudoFWC {
     // Radio altimeter callouts
     NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
-      (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallouts.autoCallOutPins = Number(v)),
+      (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.callouts.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),
     );
-    this.autoCallouts.twoThousandFiveHundredAudio.sub((v) => {
+    this.callouts.twoThousandFiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2500', v);
     });
-    this.autoCallouts.twentyFiveHundredAudio.sub((v) => {
+    this.callouts.twentyFiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2500b', v);
     });
-    this.autoCallouts.twoThousandAudio.sub((v) => {
+    this.callouts.twoThousandAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2000', v);
     });
-    this.autoCallouts.oneThousandAudio.sub((v) => {
+    this.callouts.oneThousandAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_1000', v);
     });
-    this.autoCallouts.fiveHundredAudio.sub((v) => {
+    this.callouts.fiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_500', v);
     });
-    this.autoCallouts.fourHundredAudio.sub((v) => {
+    this.callouts.fourHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_400', v);
     });
-    this.autoCallouts.threeHundredAudio.sub((v) => {
+    this.callouts.threeHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_300', v);
     });
-    this.autoCallouts.twoHundredAudio.sub((v) => {
+    this.callouts.twoHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_200', v);
     });
-    this.autoCallouts.oneHundredAudio.sub((v) => {
+    this.callouts.oneHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_100', v);
     });
-    this.autoCallouts.fiftyAudio.sub((v) => {
+    this.callouts.fiftyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_50', v);
     });
-    this.autoCallouts.fortyAudio.sub((v) => {
+    this.callouts.fortyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_40', v);
     });
-    this.autoCallouts.thirtyAudio.sub((v) => {
+    this.callouts.thirtyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_30', v);
     });
-    this.autoCallouts.twentyAudio.sub((v) => {
+    this.callouts.twentyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_20', v);
     });
 
-    this.autoCallouts.twentyRetardAudio.sub((v) => {
+    this.callouts.twentyRetardAudio.sub((v) => {
       if (v) {
         this.soundManager.enqueueSound('alt_twenty_retard'); //FIXME This should all be in a single audio sample.
         this.soundManager.enqueueSound('retard');
       }
     });
 
-    this.autoCallouts.tenAudio.sub((v) => {
+    this.callouts.tenAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_10', v);
     });
 
-    this.autoCallouts.tenRetardAudio.sub((v) => {
+    this.callouts.tenRetardAudio.sub((v) => {
       if (v) {
         this.soundManager.enqueueSound('alt_ten_retard'); //FIXME This should all be in a single audio sample.
         this.soundManager.enqueueSound('retard');
       }
     });
 
-    this.autoCallouts.retardAudio.sub((v) => {
+    this.callouts.retardAudio.sub((v) => {
       this.soundManager.handleSoundCondition('retard_continuous', v);
     });
 
-    this.autoCallouts.fiveAudio.sub((v) => {
+    this.callouts.fiveAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_5', v);
     });
 
-    this.autoCallouts.hundredAboveAudio.sub((v) => {
+    this.callouts.hundredAboveAudio.sub((v) => {
       if (!v) {
         this.soundManager.hundredAboveEmitted = false;
       }
       this.soundManager.handleSoundCondition('hundred_above', v);
     });
 
-    this.autoCallouts.minimumAudio.sub((v) => {
+    this.callouts.minimumAudio.sub((v) => {
       if (!v) {
         this.soundManager.minimumEmitted = false;
       }
       this.soundManager.handleSoundCondition('minimums', v);
+    });
+
+    this.callouts.intermediateCalloutHeight.sub((v) => {
+      this.soundManager.generateIntermediateCallout(v);
     });
   }
 
@@ -1982,6 +1983,14 @@ export class PseudoFWC {
 
   public getSpeedSpeedGenerated() {
     return this.soundManager.speedEmitted;
+  }
+
+  public getAutoCalloutPlayed() {
+    return this.soundManager.autoCalloutEmitted;
+  }
+
+  public getIntermediateCalloutGenerated() {
+    return this.soundManager.intermediateGenerated;
   }
 
   private registerKeyEvents() {
@@ -2589,7 +2598,7 @@ export class PseudoFWC {
       (onGroundCount > 1 && eitherRaInvalid);
     const onGround = this.onGroundConf.write(this.onGroundImmediate, deltaTime);
     this.aircraftOnGround.set(onGround);
-    this.autoCallouts.update(deltaTime);
+    this.callouts.update(deltaTime);
     // AP OFF Voluntary
     const anyApEngaged: boolean =
       SimVar.GetSimVarValue('L:A32NX_FMGC_1_AP_ENGAGED', SimVarValueType.Bool) ||
