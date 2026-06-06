@@ -117,11 +117,8 @@ export const AtsuAocPage = () => {
       setAtisSource(ConfigWeatherMap.FAA);
       setMetarSource(ConfigWeatherMap.MSFS);
     }
-
     if (provider == 'NONE') {
       AcarsConnector.deactivateAcars();
-      setMetarSource(ConfigWeatherMap.MSFS);
-      setAtisSource(ConfigWeatherMap.FAA);
     } else {
       AcarsConnector.activateAcars();
     }
@@ -172,18 +169,12 @@ export const AtsuAocPage = () => {
     }
   };
 
-  const restartAcars = (updateSource: () => void) => {
-    AcarsConnector.deactivateAcars();
-    updateSource();
-    AcarsConnector.activateAcars();
-  };
-
   const handleAtisSource = (source: ConfigAtisSource) => {
-    restartAcars(() => setAtisSource(source));
+    setAtisSource(source);
   };
 
   const handleMetarSource = (source: ConfigMetarSource) => {
-    restartAcars(() => setMetarSource(source));
+    setMetarSource(source);
   };
 
   const handleTafSource = (source: ConfigTafSource) => {
