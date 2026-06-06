@@ -53,6 +53,8 @@ class ThrottleAxisMapping {
   void onEventThrottleIncreaseSmall();
   void onEventThrottleDecrease();
   void onEventThrottleDecreaseSmall();
+  void onEventNextDetent();
+  void onEventPrevDetent();
   void onEventThrottleSet_10();
   void onEventThrottleSet_20();
   void onEventThrottleSet_30();
@@ -100,6 +102,7 @@ class ThrottleAxisMapping {
   void setCurrentValue(double value);
 
   void setThrottlePercent(double value);
+  void setThrustLeverAngle(double tla);
   void increaseThrottleBy(double value);
   void decreaseThrottleBy(double value);
 

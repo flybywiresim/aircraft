@@ -761,6 +761,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR, "THROTTLE_DECR", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_INCR_SMALL, "THROTTLE_INCR_SMALL", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR_SMALL, "THROTTLE_DECR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DETENT_NEXT, "THROTTLE_DETENT_NEXT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DETENT_PREV, "THROTTLE_DETENT_PREV", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_10, "THROTTLE_10", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_20, "THROTTLE_20", true);
@@ -2676,6 +2678,28 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       throttleAxis[3]->onEventThrottleDecreaseSmall();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_DECR_SMALL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE_DETENT_NEXT: {
+      throttleAxis[0]->onEventNextDetent();
+      throttleAxis[1]->onEventNextDetent();
+      throttleAxis[2]->onEventNextDetent();
+      throttleAxis[3]->onEventNextDetent();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE_DETENT_NEXT" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE_DETENT_PREV: {
+      throttleAxis[0]->onEventPrevDetent();
+      throttleAxis[1]->onEventPrevDetent();
+      throttleAxis[2]->onEventPrevDetent();
+      throttleAxis[3]->onEventPrevDetent();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE_DETENT_PREV" << std::endl;
       }
       break;
     }

@@ -192,6 +192,34 @@ void ThrottleAxisMapping::onEventThrottleDecreaseSmall() {
   decreaseThrottleBy(incrementSmall);
 }
 
+void ThrottleAxisMapping::onEventNextDetent() {
+  if (currentTLA < TLA_REVERSE_IDLE && useReverseOnAxis && hasReverser) {
+    setThrustLeverAngle(TLA_REVERSE_IDLE);
+  } else if (currentTLA < TLA_IDLE) {
+    setThrustLeverAngle(TLA_IDLE);
+  } else if (currentTLA < TLA_CLIMB) {
+    setThrustLeverAngle(TLA_CLIMB);
+  } else if (currentTLA < TLA_FLEX_MCT) {
+    setThrustLeverAngle(TLA_FLEX_MCT);
+  } else if (currentTLA < TLA_TOGA && useTogaOnAxis) {
+    setThrustLeverAngle(TLA_TOGA);
+  }
+}
+
+void ThrottleAxisMapping::onEventPrevDetent() {
+  if (currentTLA > TLA_FLEX_MCT) {
+    setThrustLeverAngle(TLA_FLEX_MCT);
+  } else if (currentTLA > TLA_CLIMB) {
+    setThrustLeverAngle(TLA_CLIMB);
+  } else if (currentTLA > TLA_IDLE) {
+    setThrustLeverAngle(TLA_IDLE);
+  } else if (currentTLA > TLA_REVERSE_IDLE && useReverseOnAxis && hasReverser) {
+    setThrustLeverAngle(TLA_REVERSE_IDLE);
+  } else if (currentTLA > TLA_REVERSE && useReverseOnAxis && hasReverser) {
+    setThrustLeverAngle(TLA_REVERSE);
+  }
+}
+
 void ThrottleAxisMapping::onEventThrottleSet_10() {
   setThrottlePercent(10.0);
 }
@@ -244,6 +272,10 @@ void ThrottleAxisMapping::onEventReverseHold(bool isButtonHold) {
 
 void ThrottleAxisMapping::setThrottlePercent(double value) {
   setCurrentValue(idleValue + (value * (fabs(idleValue - 1) / 100.0)));
+}
+
+void ThrottleAxisMapping::setThrustLeverAngle(double tla) {
+  setCurrentValue(thrustLeverAngleMapping.getInverse(tla));
 }
 
 void ThrottleAxisMapping::setCurrentValue(double value) {
