@@ -35,9 +35,9 @@ impl WingTipBrake {
         pressure_2: &impl SectionPressure,
     ) {
         let minimum_hydraulic_pressure = Pressure::new::<bar>(Self::MIN_PRESSURE_TO_CLAMP_BAR);
-        let piston_1_clamping = sfcc_1.get_solenoid_status(self.side).is_energised()
+        let piston_1_clamping = sfcc_1.get_wtb_status(self.side).is_energised()
             && pressure_1.pressure_downstream_leak_valve() >= minimum_hydraulic_pressure;
-        let piston_2_clamping = sfcc_2.get_solenoid_status(self.side).is_energised()
+        let piston_2_clamping = sfcc_2.get_wtb_status(self.side).is_energised()
             && pressure_2.pressure_downstream_leak_valve() >= minimum_hydraulic_pressure;
         self.is_active = piston_1_clamping || piston_2_clamping
     }
@@ -126,7 +126,7 @@ mod wing_tip_brake_tests {
         }
     }
     impl WingTipBrakeController for TestSfcc {
-        fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+        fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
             self.wtb_solenoid
         }
     }

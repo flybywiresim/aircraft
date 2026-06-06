@@ -79,7 +79,7 @@ pub trait ValveBlockController {
 }
 
 pub trait WingTipBrakeController {
-    fn get_solenoid_status(&self, side: SecondarySurfaceSide) -> SolenoidStatus;
+    fn get_wtb_status(&self, side: SecondarySurfaceSide) -> SolenoidStatus;
 }
 
 pub struct SecondarySurface {

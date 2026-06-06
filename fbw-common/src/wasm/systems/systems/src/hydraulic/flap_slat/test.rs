@@ -162,7 +162,7 @@ impl ValveBlockController for TestSFCC {
     }
 }
 impl WingTipBrakeController for TestSFCC {
-    fn get_solenoid_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+    fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
         self.wtb_solenoid
     }
 }

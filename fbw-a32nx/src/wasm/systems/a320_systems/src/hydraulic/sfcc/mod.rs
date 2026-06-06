@@ -104,12 +104,14 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
         lgciu: &impl LgciuWeightOnWheels,
+        opp_sfcc: &SlatFlapControlComputer, // NOTE: maybe in the future it's better to change `opp_sfcc` into a trait.
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
-        self.flaps_channel.update(context, flaps_feedback, adirs);
+        self.flaps_channel
+            .update(context, flaps_feedback, adirs, opp_sfcc);
         self.slats_channel
-            .update(context, slats_feedback, adirs, lgciu);
+            .update(context, slats_feedback, adirs, lgciu, opp_sfcc);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
@@ -128,19 +130,19 @@ impl SlatFlapControlComputer {
         let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
         let slat_wtb_engaged = self
             .slats_channel
-            .get_solenoid_status(SecondarySurfaceSide::Left)
+            .get_wtb_status(SecondarySurfaceSide::Left)
             .is_energised()
             && self
                 .slats_channel
-                .get_solenoid_status(SecondarySurfaceSide::Left)
+                .get_wtb_status(SecondarySurfaceSide::Left)
                 .is_energised();
         let flap_wtb_engaged = self
             .flaps_channel
-            .get_solenoid_status(SecondarySurfaceSide::Left)
+            .get_wtb_status(SecondarySurfaceSide::Left)
             .is_energised()
             && self
                 .slats_channel
-                .get_solenoid_status(SecondarySurfaceSide::Left)
+                .get_wtb_status(SecondarySurfaceSide::Left)
                 .is_energised();
         let slat_fault = slat_wtb_engaged; // TODO: additional criteria need to be added.
         let flap_fault = flap_wtb_engaged; // TODO: additional criteria need to be added.
@@ -184,19 +186,19 @@ impl SlatFlapControlComputer {
         let fppu_slats_angle = self.slats_channel.get_feedback_angle();
         let slat_wtb_engaged = self
             .slats_channel
-            .get_solenoid_status(SecondarySurfaceSide::Left)
+            .get_wtb_status(SecondarySurfaceSide::Left)
             .is_energised()
             && self
                 .slats_channel
-                .get_solenoid_status(SecondarySurfaceSide::Left)
+                .get_wtb_status(SecondarySurfaceSide::Left)
                 .is_energised();
         let flap_wtb_engaged = self
             .flaps_channel
-            .get_solenoid_status(SecondarySurfaceSide::Left)
+            .get_wtb_status(SecondarySurfaceSide::Left)
             .is_energised()
             && self
                 .slats_channel
-                .get_solenoid_status(SecondarySurfaceSide::Left)
+                .get_wtb_status(SecondarySurfaceSide::Left)
                 .is_energised();
         let slat_fault = slat_wtb_engaged; // TODO: additional criteria need to be added.
         let flap_fault = flap_wtb_engaged; // TODO: additional criteria need to be added.
@@ -364,8 +366,23 @@ impl SlatFlapComplex {
         lgciu1: &impl LgciuWeightOnWheels,
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs, lgciu1);
-        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs, lgciu2);
+        let [sfcc_1, sfcc_2] = &mut self.sfcc;
+        sfcc_1.update(
+            context,
+            flaps_feedback,
+            slats_feedback,
+            adirs,
+            lgciu1,
+            &sfcc_2,
+        );
+        sfcc_2.update(
+            context,
+            flaps_feedback,
+            slats_feedback,
+            adirs,
+            lgciu2,
+            &sfcc_1,
+        );
     }
 
     pub fn flap_pcu(&self, idx: usize) -> &(impl ValveBlockController + WingTipBrakeController) {
