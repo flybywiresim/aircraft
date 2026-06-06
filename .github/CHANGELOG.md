@@ -147,6 +147,7 @@
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
 1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
+1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 
 ## 0.14.0
 
