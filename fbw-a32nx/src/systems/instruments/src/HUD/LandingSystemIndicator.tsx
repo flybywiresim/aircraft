@@ -679,6 +679,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   render(): VNode {
     return (
       <g id="GlideSlopeSymbolsGroup" ref={this.LSGsRef}>
+        <path id="GsGroupMask" d="m 261 126 h 30 v 151 h-30 z" class="BlackkFill" />
         <path class={{ Green: true, Fill: true }} d="m287.122 200.167v3.78h-21.082v-3.78z" />
         <path class="NormalStroke Green" d="m276.775 126.463a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
         <path class="NormalStroke Green" d="m276.775 164.26a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
