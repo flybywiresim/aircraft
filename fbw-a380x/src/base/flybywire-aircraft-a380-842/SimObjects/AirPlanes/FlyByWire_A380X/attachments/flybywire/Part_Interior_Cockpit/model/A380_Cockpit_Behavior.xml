@@ -5474,6 +5474,52 @@
             </UseTemplate>
         </Component>
 
+        <!-- HIDE SIDESTICK -->
+
+        <Component ID="x0_YOKE_LEFT" Node="x0_YOKE_LEFT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_CPT_SIDESTICK_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="x0_YOKE_LEFT_STUB" Node="x0_YOKE_LEFT_STUB">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_CPT_SIDESTICK_HIDDEN, bool) 1 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="YOKE_LEFT_CLICK" Node="YOKE_LEFT_CLICK">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>YOKE_LEFT_CLICK</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.SIDESTICK_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CPT_SIDESTICK_HIDDEN, bool) ! (&gt;L:A380X_CPT_SIDESTICK_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="x0_YOKE_RIGHT" Node="x0_YOKE_RIGHT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_FO_SIDESTICK_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="x0_YOKE_RIGHT_STUB" Node="x0_YOKE_RIGHT_STUB">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_FO_SIDESTICK_HIDDEN, bool) 1 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="YOKE_RIGHT_CLICK" Node="YOKE_RIGHT_CLICK">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>YOKE_RIGHT_CLICK</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.SIDESTICK_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_FO_SIDESTICK_HIDDEN, bool) ! (&gt;L:A380X_FO_SIDESTICK_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
 		<Component ID="A380_ICING_INDICATOR">
 			<!-- ICING STATE -->
 			<UseTemplate Name="ASOBO_GT_Anim">
