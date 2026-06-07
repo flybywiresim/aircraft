@@ -51,6 +51,9 @@ pub(super) struct FlapsChannel {
     // OUTPUTS
     fap: [bool; 7],
 
+    missing_cas_data: bool,
+    missing_aoa_data: bool,
+
     flap_auto_command_active: bool,
     flap_auto_command_engaged: bool,
     flap_auto_command_angle: Angle,
@@ -103,6 +106,9 @@ impl FlapsChannel {
 
             // Set `fap` to false to match power-off state
             fap: [false; 7],
+
+            missing_cas_data: false,
+            missing_aoa_data: false,
 
             flap_auto_command_active: false,
             flap_auto_command_engaged: false,
@@ -308,6 +314,8 @@ impl FlapsChannel {
 
     fn powerup_reset(&mut self, adirs: &impl AdirsMeasurementOutputs) {
         self.own_wtb_armed = false;
+        self.missing_cas_data = true;
+        self.missing_aoa_data = true;
 
         // Auto Command restart
         if self.csu_monitor.get_last_valid_detent() != CSU::Conf1 {
@@ -389,6 +397,7 @@ impl FlapsChannel {
                         ) =>
                 {
                     // TODO: implement startup inhibition
+                    self.own_wtb_armed = true;
                     self.flap_auto_command_angle = self.flaps_feedback_angle
                 }
                 // If at least one CAS > 100 and < 210 and flaps between 0 and 1+F, keep position
@@ -400,6 +409,7 @@ impl FlapsChannel {
                         ) =>
                 {
                     // TODO: implement startup inhibition
+                    self.own_wtb_armed = true;
                     self.flap_auto_command_angle = self.flaps_feedback_angle
                 }
                 (_, Some(cas2))
@@ -410,6 +420,7 @@ impl FlapsChannel {
                         ) =>
                 {
                     // TODO: implement startup inhibition
+                    self.own_wtb_armed = true;
                     self.flap_auto_command_angle = self.flaps_feedback_angle
                 }
                 (None, None) => self.flap_auto_command_angle = self.conf1f_flaps,
@@ -424,6 +435,8 @@ impl FlapsChannel {
         self.flap_auto_command_engaged = false;
         self.flap_auto_command_angle = Angle::ZERO;
         self.own_wtb_armed = true;
+        self.missing_cas_data = false;
+        self.missing_aoa_data = false;
     }
 
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
@@ -463,6 +476,10 @@ impl FlapsChannel {
 
         self.csu_monitor.update(context);
         self.opp_wtb_armed = opp_sfcc.flaps_channel.is_wtb_armed();
+        self.missing_cas_data = !adirs.computed_airspeed(1).is_normal_operation()
+            && !adirs.computed_airspeed(2).is_normal_operation();
+        self.missing_aoa_data = !adirs.angle_of_attack(1).is_normal_operation()
+            && !adirs.angle_of_attack(2).is_normal_operation();
         self.flaps_demanded_angle = self.generate_flap_angle(adirs);
 
         self.flaps_feedback_angle = flaps_feedback.fppu_angle();
@@ -490,6 +507,14 @@ impl FlapsChannel {
 
     pub(super) fn get_flap_auto_command_engaged(&self) -> bool {
         self.flap_auto_command_engaged
+    }
+
+    pub(super) fn missing_adiru_data(&self) -> bool {
+        return self.missing_cas_data || self.missing_aoa_data;
+    }
+
+    pub(super) fn wtb_power_lost(&self) -> bool {
+        return !self.wtb_is_powered_delayed.output();
     }
 
     pub(super) fn is_wtb_armed(&self) -> bool {

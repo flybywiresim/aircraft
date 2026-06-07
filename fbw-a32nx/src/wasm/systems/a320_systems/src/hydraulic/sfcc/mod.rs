@@ -53,6 +53,7 @@ impl From<u8> for FlapsConf {
 
 struct SlatFlapControlComputer {
     config_index_id: VariableIdentifier,
+    slat_flap_component_status_word_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
 
@@ -81,6 +82,8 @@ impl SlatFlapControlComputer {
     ) -> Self {
         Self {
             config_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
+            slat_flap_component_status_word_id: context
+                .get_identifier(format!("SFCC_{num}_SLAT_FLAP_COMPONENT_STATUS_WORD")),
             slat_flap_system_status_word_id: context
                 .get_identifier(format!("SFCC_{num}_SLAT_FLAP_SYSTEM_STATUS_WORD")),
             slat_flap_actual_position_word_id: context
@@ -114,8 +117,44 @@ impl SlatFlapControlComputer {
             .update(context, slats_feedback, adirs, lgciu, opp_sfcc);
     }
 
+    fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
+        if !self.is_powered_delayed.output() {
+            return Arinc429Word::default();
+        }
+
+        let slat_missing_adiru_data = self.slats_channel.missing_adiru_data();
+        let slat_wtb_power_loss = self.slats_channel.wtb_power_lost();
+        let flap_missing_adiru_data = self.flaps_channel.missing_adiru_data();
+        let flap_wtb_power_loss = self.flaps_channel.wtb_power_lost();
+        let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+
+        // label 045
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        word.set_bit(11, true);
+        word.set_bit(12, false);
+        word.set_bit(13, false);
+        word.set_bit(14, false);
+        word.set_bit(15, slat_missing_adiru_data);
+        word.set_bit(16, false);
+        word.set_bit(17, false);
+        word.set_bit(18, slat_wtb_power_loss);
+        word.set_bit(19, false);
+        word.set_bit(20, true);
+        word.set_bit(21, false);
+        word.set_bit(22, false);
+        word.set_bit(23, false);
+        word.set_bit(24, flap_missing_adiru_data);
+        word.set_bit(25, false);
+        word.set_bit(26, false);
+        word.set_bit(27, flap_wtb_power_loss);
+        word.set_bit(28, false);
+        word.set_bit(29, flap_auto_command_engaged);
+
+        word
+    }
+
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        // Label 046
         if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
@@ -322,6 +361,10 @@ impl SimulationElement for SlatFlapControlComputer {
             writer.write(&self.config_index_id, config as u8);
         }
 
+        writer.write(
+            &self.slat_flap_component_status_word_id,
+            self.slat_flap_component_status_word(),
+        );
         writer.write(
             &self.slat_flap_system_status_word_id,
             self.slat_flap_system_status_word(),
