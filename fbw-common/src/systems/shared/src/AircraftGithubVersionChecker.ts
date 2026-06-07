@@ -1,12 +1,12 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
-import Compare from 'semver/functions/compare';
+import semVerCompare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { PopUpDialog } from '@flybywiresim/fbw-sdk';
+import semVerMajor from 'semver/functions/major';
 
 /**
  * Contains the ${aircraft}_build_info.json file's information in a structured way.
@@ -57,8 +57,6 @@ export class AircraftGithubVersionChecker {
 
   private static newestCommit: CommitInfo;
 
-  private static newestExpCommit: CommitInfo;
-
   private static buildInfo?: BuildInfo;
 
   /** Promises awaiting fetching of the build info. */
@@ -83,7 +81,7 @@ export class AircraftGithubVersionChecker {
     await this.initialize(aircraft);
 
     // assert all version info is available
-    if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
+    if (!(this.buildInfo && this.releaseInfo && this.newestCommit)) {
       console.error('Not all version information available. Skipping version check.');
       return false;
     }
@@ -183,7 +181,7 @@ export class AircraftGithubVersionChecker {
     try {
       const buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
       const versionInfo = AircraftGithubVersionChecker.getVersionInfo(aircraft, buildInfo.version);
-      switch (KnowBranchNames[versionInfo.branch]) {
+      switch ((KnowBranchNames as any)[versionInfo.branch]) {
         case KnowBranchNames.rel:
           return FbwBuildEdition.Stable;
         case KnowBranchNames.dev:
@@ -213,8 +211,7 @@ export class AircraftGithubVersionChecker {
    */
   private static async initialize(aircraft: string) {
     this.releaseInfo = await GitVersions.getReleases('flybywiresim', aircraft, false, 0, 1);
-    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'master');
-    this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'experimental');
+    this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', aircraft, 'fs2020-master');
     this.buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
   }
 
@@ -227,18 +224,29 @@ export class AircraftGithubVersionChecker {
    */
   private static checkOutdated(versionInfo: VersionInfoData): boolean {
     // Set branchName to the long versions of the aircraft edition names
-    const branchName = KnowBranchNames[versionInfo.branch] || versionInfo.branch;
+    const branchName = (KnowBranchNames as any)[versionInfo.branch] || versionInfo.branch;
 
-    // Check if main version is outdated
-    if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
-      console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
-      this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
-      return true;
+    if (branchName === KnowBranchNames.rel) {
+      // The major version indicates FS2020 or FS2024
+      const latestRelease = this.releaseInfo.find((r) => semVerMajor(r.name) === versionInfo.major);
+
+      // Check if main version is outdated
+      if (latestRelease && semVerCompare(versionInfo.version, latestRelease.name) < 0) {
+        console.log(`New version available: ${versionInfo.version} ==> ${latestRelease.name}`);
+        this.showVersionPopup('', versionInfo.version, latestRelease.name);
+        return true;
+      }
+
+      return false;
     }
 
     // If the user's version is equal or newer than the latest release then check if
     // the edition is Development or Experimental and if the commit is older than
     // {maxAge} days after the latest release to show notification
+
+    if (!this.buildInfo || this.buildInfo.sha === 'unknown') {
+      return false;
+    }
 
     const maxAge = 3;
     const timestampAircraft: Date = new Date(this.buildInfo.built);
@@ -252,15 +260,6 @@ export class AircraftGithubVersionChecker {
       return true;
     }
 
-    if (
-      branchName === KnowBranchNames.exp &&
-      versionInfo.commit !== this.newestExpCommit.shortSha &&
-      this.addDays(timestampAircraft, maxAge) < this.newestExpCommit.timestamp
-    ) {
-      this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
-      return true;
-    }
-
     return false;
   }
 
@@ -271,7 +270,7 @@ export class AircraftGithubVersionChecker {
    * @param days
    * @private
    */
-  private static addDays(date: Date, days): Date {
+  private static addDays(date: Date, days: number): Date {
     const result = new Date(date);
     result.setDate(date.getDate() + days);
     return result;
@@ -306,7 +305,7 @@ export class AircraftGithubVersionChecker {
    * @param releaseVersion
    * @private
    */
-  private static showVersionPopup(branchName, currentVersion, releaseVersion) {
+  private static showVersionPopup(branchName: string, currentVersion: string, releaseVersion: string) {
     // TODO: Make translation work - move translation from EFB to shared
     const dialog = new PopUpDialog();
     dialog.showInformation(
