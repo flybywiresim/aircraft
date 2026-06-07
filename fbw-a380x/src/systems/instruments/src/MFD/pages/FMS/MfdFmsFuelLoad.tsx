@@ -17,18 +17,18 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   CostIndexFormat,
   PaxNbrFormat,
   PercentageFormat,
   TimeHHMMFormat,
   WeightFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+} from '../common/DataEntryFormats';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import {
   maxAltnFuel,
   maxBlockFuel,
@@ -42,12 +42,12 @@ import {
   minZfw,
   minZfwCg,
 } from '@shared/PerformanceConstants';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FmsPage } from '../common/FmsPage';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { getEtaFromUtcOrPresent, hhmmFormatter } from '../../shared/utils';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { CostIndexMode } from '../../FMC/fmgc';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';

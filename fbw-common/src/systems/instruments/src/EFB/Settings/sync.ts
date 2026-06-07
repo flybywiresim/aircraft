@@ -6,7 +6,7 @@ import {
   LegacyDataStoreSettingKey,
   NXDataStore,
   NXDataStoreSettings,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface BaseSyncedSettingDefinition {

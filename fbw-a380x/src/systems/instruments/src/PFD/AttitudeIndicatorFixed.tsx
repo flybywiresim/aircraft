@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from './PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';

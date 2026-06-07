@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { useInteractionEvents } from '@flybywiresim/fbw-sdk';
+import { useInteractionEvents } from '@flybywiresim/fbw-sdk-react';
 import { Checkerboard } from './Checkerboard';
 
 type ButtonProps = {

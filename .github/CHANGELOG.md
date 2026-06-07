@@ -10,6 +10,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
+## 2020.16.0
+
 ## 2020.15.0
 
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
@@ -138,6 +140,7 @@
 1. [A32NX/ELEC] Fixed some electrical systems powering up erroneously on load which may have caused spurious FWS warnings - @FozzieHi (fozzie)
 1. [A380X/MFD] Fix SURV page radio buttons not matching the actual state of the TCAS system - @heclak (Heclak)
 1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
+1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
 
