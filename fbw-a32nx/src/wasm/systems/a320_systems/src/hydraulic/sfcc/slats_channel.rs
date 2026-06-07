@@ -54,6 +54,9 @@ pub(super) struct SlatsChannel {
     // OUTPUTS
     sap: [bool; 7],
 
+    missing_cas_data: bool,
+    missing_aoa_data: bool,
+
     slat_alpha_lock_baulk_function_active: bool,
     slat_baulk_engaged: bool,
     slat_alpha_lock_engaged: bool,
@@ -111,6 +114,9 @@ impl SlatsChannel {
 
             // Set `sap` to false to match power-off state
             sap: [false; 7],
+
+            missing_cas_data: false,
+            missing_aoa_data: false,
 
             slat_alpha_lock_baulk_function_active: false,
             slat_baulk_engaged: false,
@@ -256,6 +262,8 @@ impl SlatsChannel {
         // NOTE: the slat alpha lock and baulk functions are recomputed by the
         // respective functions. There is no need for powerup reset.
         self.own_wtb_armed = false;
+        self.missing_cas_data = true;
+        self.missing_aoa_data = true;
     }
 
     fn power_loss_reset(&mut self) {
@@ -263,6 +271,8 @@ impl SlatsChannel {
         self.slat_baulk_engaged = false;
         self.slat_alpha_lock_engaged = false;
         self.own_wtb_armed = true;
+        self.missing_cas_data = false;
+        self.missing_aoa_data = false;
     }
 
     fn generate_slat_angle(
@@ -315,6 +325,10 @@ impl SlatsChannel {
 
         self.csu_monitor.update(context);
         self.opp_wtb_armed = opp_sfcc.slats_channel.is_wtb_armed();
+        self.missing_cas_data = !adirs.computed_airspeed(1).is_normal_operation()
+            && !adirs.computed_airspeed(2).is_normal_operation();
+        self.missing_aoa_data = !adirs.angle_of_attack(1).is_normal_operation()
+            && !adirs.angle_of_attack(2).is_normal_operation();
         self.slats_demanded_angle = self.generate_slat_angle(adirs, lgciu);
 
         self.slats_feedback_angle = slats_feedback.fppu_angle();
@@ -338,6 +352,14 @@ impl SlatsChannel {
 
     pub(super) fn get_slat_alpha_lock_engaged(&self) -> bool {
         self.slat_alpha_lock_engaged
+    }
+
+    pub(super) fn missing_adiru_data(&self) -> bool {
+        return self.missing_cas_data || self.missing_aoa_data;
+    }
+
+    pub(super) fn wtb_power_lost(&self) -> bool {
+        return !self.wtb_is_powered_delayed.output();
     }
 
     pub(super) fn is_wtb_armed(&self) -> bool {
