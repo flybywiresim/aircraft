@@ -91,9 +91,6 @@ export class AircraftGithubVersionChecker {
       const versionInfo = this.getVersionInfo(aircraft, this.buildInfo.version);
       if (this.checkOutdated(versionInfo, bus)) {
         this.setOutdatedVersionFlag(true);
-        console.log(`Aircraft ${aircraft} - version outdated`);
-      } else {
-        console.log(`Aircraft ${aircraft} - version ok`);
       }
       this.versionChecked = true;
     } catch (error) {
@@ -234,7 +231,6 @@ export class AircraftGithubVersionChecker {
 
       // Check if main version is outdated
       if (latestRelease && semVerCompare(versionInfo.version, latestRelease.name) < 0) {
-        console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
         this.showVersionPopup(bus, 'stable', versionInfo.version, latestRelease.name);
         return true;
       }
