@@ -289,11 +289,11 @@ export class CDUPerformancePage {
         ? ths >= 0 && !Object.is(ths, -0)
           ? `UP${Math.abs(ths).toFixed(1)}`
           : `DN${Math.abs(ths).toFixed(1)}`
-        : '';
+        : null;
     const flaps = targetPlan.performanceData.takeoffFlaps.get();
     const flapsOrThsExist = flaps !== null || ths !== null;
     const flapsText = `${flaps !== null ? flaps : isActiveOrCopyOfActiveAndAfterTakeoff && ths !== null ? '\xa0' : '[]'}/`; // TODO to confirm in FFS how it looks when only THS is set during takeoff. Assuming similar behaviour to THS.
-    const thsText = `${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff && flaps !== null ? '\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}[color]${flapsOrThsExist ? phaseDependantFieldsColor : 'cyan'}`;
+    const thsText = `${formattedThs ? formattedThs : isActiveOrCopyOfActiveAndAfterTakeoff && flaps !== null ? '\xa0\xa0\xa0\xa0\xa0' : '[\xa0\xa0\xa0]'}[color]${flapsOrThsExist ? phaseDependantFieldsColor : 'cyan'}`;
 
     const flapsThs = `${flapsText}${thsText}`;
     mcdu.onRightInput[2] = (value, scratchpadCallback) => {
