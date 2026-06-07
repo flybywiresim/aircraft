@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 <ModelInfo>
 	<LODS>
-		<LOD minSize="0" ModelFile="../../Part_Exterior_Gear_Body/model/A380_GEAR_BODY.gltf"/>
+		<LOD minSize="0" ModelFile="../../Part_Exterior_Gear_Body_RH/model/A380_GEAR_BODY_RH_LOD00.gltf"/>
 	</LODS>
 	<Behaviors>
 		<Include ModelBehaviorFile="Asobo\Common.xml"/>
@@ -17,7 +17,6 @@
 				<ANIM_NAME>l_b_gear</ANIM_NAME>
 				<ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:1, Percent) 0.5 * +</ANIM_CODE>
 			</UseTemplate>
-
 			<!-- RH Body Gear -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>r_b_gear</ANIM_NAME>
@@ -31,7 +30,6 @@
 				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
 				<ANIM_LENGTH>1</ANIM_LENGTH>
 			</UseTemplate>
-
 			<!-- rear right Steering -->
 			<UseTemplate Name="ASOBO_GT_Anim_Code">
 				<NODE_ID>right_bws</NODE_ID>
@@ -39,7 +37,6 @@
 				<ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_POSITION)</ANIM_CODE>
 				<ANIM_LENGTH>1</ANIM_LENGTH>
 			</UseTemplate>
-
 			<!-- Wheel Rotation REAR LEFT LH-->
 			<UseTemplate Name="ASOBO_GT_Anim_Code">
 				<NODE_ID>ll_tire_key</NODE_ID>
@@ -47,7 +44,6 @@
 				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
 				<ANIM_LENGTH>360</ANIM_LENGTH>
 			</UseTemplate>
-
 			<!-- Wheel Rotation REAR LEFT RH-->
 			<UseTemplate Name="ASOBO_GT_Anim_Code">
 				<NODE_ID>lr_tire_key</NODE_ID>
@@ -55,7 +51,6 @@
 				<ANIM_CODE>(L:A32NX_LEFT_BODY_WHEEL_STEERING_RIGHT_ANIM_ANGLE)</ANIM_CODE>
 				<ANIM_LENGTH>360</ANIM_LENGTH>
 			</UseTemplate>
-
 			<!-- Wheel Rotation REAR RIGHT LH-->
 			<UseTemplate Name="ASOBO_GT_Anim_Code">
 				<NODE_ID>rl_tire_key</NODE_ID>
@@ -63,7 +58,6 @@
 				<ANIM_CODE>(L:A32NX_RIGHT_BODY_WHEEL_STEERING_LEFT_ANIM_ANGLE)</ANIM_CODE>
 				<ANIM_LENGTH>360</ANIM_LENGTH>
 			</UseTemplate>
-
 			<!-- Wheel Rotation REAR RIGHT RH-->
 			<UseTemplate Name="ASOBO_GT_Anim_Code">
 				<NODE_ID>rr_tire_key</NODE_ID>
