@@ -546,6 +546,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   private declutterMode = 0;
   private flightPhase = 0;
   private onGround = true;
+  private noseWheelOnGround = true;
   private hasLoc = false;
   private visibilityAirSub = Subject.create('none');
   private visibilityGroundSub = Subject.create('none');
@@ -565,7 +566,14 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
+    this.subscriptions.push(
+      this.sub
+        .on('noseGearCompressed')
+        .whenChanged()
+        .handle((value) => {
+          this.noseWheelOnGround = value;
+        }),
+    );
     this.subscriptions.push(
       this.sub
         .on('leftMainGearCompressed')
@@ -603,7 +611,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
         .whenChanged()
         .handle((lm) => {
           this.lateralMode = lm;
-          if (this.onGround) {
+          if (this.noseWheelOnGround) {
             if (this.isActive()) {
               this.visibilityGroundSub.set('block');
               this.visibilityAirSub.set('none');
@@ -625,7 +633,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
         .handle((value) => {
           this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
           this.declutterMode = value;
-          if (this.onGround) {
+          if (this.noseWheelOnGround) {
             if (this.isActive()) {
               this.visibilityGroundSub.set('block');
               this.visibilityAirSub.set('none');
