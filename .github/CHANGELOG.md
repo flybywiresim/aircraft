@@ -11,7 +11,6 @@
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
 ## 2024.2.0
-
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
 1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
@@ -44,10 +43,10 @@
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
+1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
 
 ## 2024.1.0
 
-1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
 1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
 1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
