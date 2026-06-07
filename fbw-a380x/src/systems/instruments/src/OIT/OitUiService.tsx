@@ -92,6 +92,13 @@ export class OitUiService {
     this.activeUri.set(parsedUri);
   }
 
+  public resetFltOpsSession(): void {
+    this.navigationStack = ['flt-ops'];
+    this.navigationForwardStack = [];
+    this.activeUri.set(this.parseUri('flt-ops'));
+    this.fltOpsLoginScreenVisible.set(true);
+  }
+
   /*
    * Whether one can navigate back
    */
