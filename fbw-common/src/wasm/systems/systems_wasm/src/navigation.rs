@@ -57,7 +57,7 @@ pub fn navigation(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
 
             match boarding_rate {
                 BoardingRate::Instant | BoardingRate::Fast => boarding_started_by_user,
-                _ => false,
+                BoardingRate::Real => false,
             }
             .into()
         },

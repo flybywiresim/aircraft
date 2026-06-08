@@ -48,7 +48,7 @@ impl Display for OutputDataType {
 }
 
 fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> String {
-    format!("ADIRS_{}_{}_{}", data_type, number, name)
+    format!("ADIRS_{data_type}_{number}_{name}")
 }
 
 #[derive(Default)]
@@ -94,7 +94,7 @@ pub struct AirDataInertialReferenceUnit<AdrRuntime> {
     ir_failure: Failure,
 
     // TODO replace with pin prog
-    #[allow(unused)]
+    #[expect(unused)]
     num: usize,
 
     // Power
@@ -138,7 +138,7 @@ pub struct AirDataInertialReferenceUnit<AdrRuntime> {
 
     ir_measurement_inputs: IrSimulatorData,
 
-    // Nonvalatile Programming
+    // Nonvolatile Programming
     adiru_programming: AirDataInertialReferenceUnitProgramming,
 
     // ADR Output Lvars

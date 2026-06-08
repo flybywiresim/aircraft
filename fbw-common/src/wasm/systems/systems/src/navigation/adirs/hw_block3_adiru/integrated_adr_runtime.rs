@@ -212,7 +212,7 @@ impl IntegratedAirDataReferenceRuntime {
         &mut self,
         context: &UpdateContext,
         discrete_inputs: &AdrDiscreteInputs,
-        #[allow(unused)] analog_inputs: &AdrAnalogInputs, // TODO this is used for the OAT probe analog inputs, which are not implemented
+        #[expect(unused)] analog_inputs: &AdrAnalogInputs, // TODO this is used for the OAT probe analog inputs, which are not implemented
         fcu: &impl FlightControlUnitBusOutput,
         mfp: &impl MultifunctionProbeBusOutput,
         isp_left: &impl IntegratedStaticProbeBusOutput,

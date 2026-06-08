@@ -644,28 +644,28 @@ impl AdmAirDataReferenceRuntime {
     fn compute_discrete_word_1(&self, discrete_word_1: &mut Arinc429Word<u32>) {
         let mut discrete_word = AdrDiscrete1Flags::default();
 
-        // FIXME implement icing detector heat
-        // FIXME implement pitot heat
+        // TODO implement icing detector heat
+        // TODO implement pitot heat
 
         if self.internal_fault_detected || self.sensor_fault_detected {
             discrete_word |= AdrDiscrete1Flags::ADR_STATUS_FAIL;
         }
 
-        // FIXME implement right static heat
-        // FIXME implement left static heat
-        // FIXME implement TAT heat
-        // FIXME implement NO1 AOA sensor heat
-        // FIXME implement NO2 AOA sensor heat
+        // TODO implement right static heat
+        // TODO implement left static heat
+        // TODO implement TAT heat
+        // TODO implement NO1 AOA sensor heat
+        // TODO implement NO2 AOA sensor heat
 
         if self.overspeed_active {
             discrete_word |= AdrDiscrete1Flags::OVERSPEED_WARNING;
         }
 
-        // FIXME implement AOA average/unique status
-        // FIXME implement VMO/MMO bits 1-4
-        // FIXME implement alternate SSEC A/B
-        // FIXME implement baro port A
-        // FIXME implement zero mach ssec
+        // TODO implement AOA average/unique status
+        // TODO implement VMO/MMO bits 1-4
+        // TODO implement alternate SSEC A/B
+        // TODO implement baro port A
+        // TODO implement zero mach ssec
 
         discrete_word_1.set(
             discrete_word.bits(),
