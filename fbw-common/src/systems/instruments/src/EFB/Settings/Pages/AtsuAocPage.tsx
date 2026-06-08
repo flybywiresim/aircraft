@@ -55,15 +55,6 @@ export const AtsuAocPage = () => {
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-  useEffect(() => {
-    if (isUnavailableAcarsWeatherSource(atisSource)) {
-      setAtisSource(ConfigWeatherMap.FAA);
-    }
-    if (isUnavailableAcarsWeatherSource(metarSource)) {
-      setMetarSource(ConfigWeatherMap.MSFS);
-    }
-  }, []);
-
   const isUnavailableAcarsWeatherSource = (source: ConfigAtisSource | ConfigMetarSource) =>
     (source === ConfigWeatherMap.SAI && acarsProvider !== 'SAI') ||
     (source === ConfigWeatherMap.BEYONDATC && acarsProvider !== 'BATC');

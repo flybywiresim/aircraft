@@ -2,7 +2,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   CpdlcMessage,
@@ -104,6 +104,9 @@ export class AcarsConnector {
       ) {
         console.log('Could not connect to ACARS after 5 minutes, giving up');
         NXDataStore.getSetting('ACARS_PROVIDER').set('NONE');
+        NXDataStore.getSetting('CONFIG_ATIS_SRC').set(ConfigWeatherMap.VATSIM);
+        NXDataStore.getSetting('CONFIG_METAR_SRC').set(ConfigWeatherMap.MSFS);
+
         AcarsConnector.stopActivation();
       }
     } finally {
