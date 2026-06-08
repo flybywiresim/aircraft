@@ -1264,7 +1264,7 @@ mod adr {
             test_bed.assert_adr_data_valid(false);
 
             test_bed.run_with_delta(
-                AirDataInertialReferenceUnit::<T>::ADR_AVERAGE_STARTUP_TIME_MILLIS
+                AirDataInertialReferenceUnit::<T>::ADR_AVERAGE_STARTUP_TIME
                     + Duration::from_secs(1),
             );
 
@@ -1757,7 +1757,7 @@ mod ir {
             test_bed.run_with_delta(Duration::from_secs(0));
 
             test_bed.run_with_delta(
-                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME
                     + InertialReferenceRuntime::COARSE_ALIGN_QUICK_DURATION
                     + Duration::from_secs(2),
             );
@@ -1824,8 +1824,7 @@ mod ir {
         let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
             .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
         test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
-                + Duration::from_secs(1),
+            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME + Duration::from_secs(1),
         );
         test_bed = test_bed.body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1));
         test_bed.run();
@@ -1844,8 +1843,7 @@ mod ir {
             let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
                 .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
             test_bed.run_with_delta(
-                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
-                    + Duration::from_secs(1),
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME + Duration::from_secs(1),
             );
             test_bed = test_bed
                 .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
@@ -1905,8 +1903,7 @@ mod ir {
 
         // Run for startup duration to begin alignment
         test_bed.run_with_delta(
-            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
-                + Duration::from_secs(1),
+            AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME + Duration::from_secs(1),
         );
         test_bed
     }
@@ -1993,8 +1990,7 @@ mod ir {
             let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
                 .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
             test_bed.run_with_delta(
-                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME_MILLIS
-                    + Duration::from_secs(1),
+                AirDataInertialReferenceUnit::<T>::IR_AVERAGE_STARTUP_TIME + Duration::from_secs(1),
             );
 
             while test_bed.is_align_discrete_set() {

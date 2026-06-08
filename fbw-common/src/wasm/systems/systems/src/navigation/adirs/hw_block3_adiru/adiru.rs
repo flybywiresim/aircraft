@@ -411,14 +411,14 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
     const LONGITUDE: &'static str = "LONGITUDE";
     const MAINT_WORD: &'static str = "MAINT_WORD";
 
-    pub(super) const ADR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
-    pub(super) const IR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
+    pub(super) const ADR_AVERAGE_STARTUP_TIME: Duration = Duration::from_secs(3);
+    pub(super) const IR_AVERAGE_STARTUP_TIME: Duration = Duration::from_secs(3);
     pub(super) const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
     pub(super) const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
     pub(super) const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
 
-    pub(super) const POWER_DOWN_DURATION: u64 = 15_000;
+    pub(super) const POWER_DOWN_DURATION: Duration = Duration::from_secs(15);
 
     pub(super) const BACKUP_SUPPLY_TEST_START_TIME: Duration = Duration::from_millis(10500);
     pub(super) const BACKUP_SUPPLY_TEST_DURATION: Duration = Duration::from_millis(5500);
@@ -457,9 +457,7 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
             } else {
                 Self::MAXIMUM_POWER_HOLDOVER
             },
-            power_down_confirm: ConfirmationNode::new_rising(Duration::from_millis(
-                Self::POWER_DOWN_DURATION,
-            )),
+            power_down_confirm: ConfirmationNode::new_rising(Self::POWER_DOWN_DURATION),
             on_battery_power: false,
             dc_failure: false,
             startup_begin_confirm: ConfirmationNode::new_rising(
@@ -469,12 +467,12 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
                 Self::BACKUP_SUPPLY_TEST_DURATION,
             ),
             adr_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
-                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
+                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() - 1.,
+                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() + 1.,
             )),
             ir_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
-                Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
+                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() - 1.,
+                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() + 1.,
             )),
 
             ir_fault_remaining_flash_time: Duration::ZERO,
@@ -704,10 +702,9 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
         };
 
         // Update so that the ADIRU starts fully powered down in C/D
-        result.power_down_confirm.update(
-            !is_powered,
-            Duration::from_millis(Self::POWER_DOWN_DURATION),
-        );
+        result
+            .power_down_confirm
+            .update(!is_powered, Self::POWER_DOWN_DURATION);
 
         result
     }

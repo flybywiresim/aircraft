@@ -456,7 +456,7 @@ pub(crate) struct A380AdiruElectricalHarness {
     ir_excess_motion_inhibit_id: VariableIdentifier,
 }
 impl A380AdiruElectricalHarness {
-    const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_secs(300);
+    const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_mins(5);
 
     pub fn new(context: &mut InitContext, num: usize) -> Self {
         let is_powered = context.has_engines_running();
