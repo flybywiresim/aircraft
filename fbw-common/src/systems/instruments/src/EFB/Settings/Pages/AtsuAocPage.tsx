@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   usePersistentProperty,
