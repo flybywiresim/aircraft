@@ -217,6 +217,7 @@ declare global {
         radarCoverage: number;
         runways: RawRunway[];
         towered: boolean;
+        altitude: number;
         __Type: 'JS_FacilityAirport';
     }
 
