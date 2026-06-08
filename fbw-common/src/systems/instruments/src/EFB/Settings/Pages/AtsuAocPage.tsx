@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import {
   usePersistentProperty,
@@ -54,6 +54,15 @@ export const AtsuAocPage = () => {
   const [acarsState] = useSimVar('L:A32NX_ACARS_ACTIVE', 'boolean', 1000);
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+
+  useEffect(() => {
+    if (isUnavailableAcarsWeatherSource(atisSource)) {
+      setAtisSource(ConfigWeatherMap.FAA);
+    }
+    if (isUnavailableAcarsWeatherSource(metarSource)) {
+      setMetarSource(ConfigWeatherMap.MSFS);
+    }
+  }, []);
 
   const isUnavailableAcarsWeatherSource = (source: ConfigAtisSource | ConfigMetarSource) =>
     (source === ConfigWeatherMap.SAI && acarsProvider !== 'SAI') ||
