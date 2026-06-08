@@ -27,13 +27,13 @@ use systems::simulation::{
 use uom::si::{f64::*, pressure::hectopascal};
 
 pub struct A320AirDataInertialReferenceSystem {
-    pub adiru_1: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
-    pub adiru_2: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
-    pub adiru_3: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
+    adiru_1: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
+    adiru_2: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
+    adiru_3: AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime>,
 
-    pub sensor_complex_1: AirDataModuleAirDataSensorsComplex,
-    pub sensor_complex_2: AirDataModuleAirDataSensorsComplex,
-    pub sensor_complex_3: AirDataModuleAirDataSensorsComplex,
+    sensor_complex_1: AirDataModuleAirDataSensorsComplex,
+    sensor_complex_2: AirDataModuleAirDataSensorsComplex,
+    sensor_complex_3: AirDataModuleAirDataSensorsComplex,
 }
 impl A320AirDataInertialReferenceSystem {
     pub fn new(context: &mut InitContext) -> Self {
@@ -221,9 +221,9 @@ pub(crate) struct A320AdirsElectricalHarness {
     mech_horn_id: VariableIdentifier,
     relay_delay_on_close_mech_call: ConfirmationNode,
 
-    pub adiru_1_electrical_harness: A320AdiruElectricalHarness,
-    pub adiru_2_electrical_harness: A320AdiruElectricalHarness,
-    pub adiru_3_electrical_harness: A320AdiruElectricalHarness,
+    adiru_1_electrical_harness: A320AdiruElectricalHarness,
+    adiru_2_electrical_harness: A320AdiruElectricalHarness,
+    adiru_3_electrical_harness: A320AdiruElectricalHarness,
 }
 impl A320AdirsElectricalHarness {
     const ADIRS_ON_BAT_NAME: &'static str = "OVHD_ADIRS_ON_BAT_IS_ILLUMINATED";

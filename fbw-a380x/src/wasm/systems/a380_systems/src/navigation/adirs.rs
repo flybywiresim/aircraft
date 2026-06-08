@@ -29,13 +29,13 @@ use uom::si::f64::*;
 use uom::si::pressure::hectopascal;
 
 pub struct A380AirDataInertialReferenceSystem {
-    pub adiru_1: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
-    pub adiru_2: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
-    pub adiru_3: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
+    adiru_1: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
+    adiru_2: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
+    adiru_3: AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime>,
 
-    pub sensor_complex_1: IntegratedAirDataSensorsComplex,
-    pub sensor_complex_2: IntegratedAirDataSensorsComplex,
-    pub sensor_complex_3: IntegratedAirDataSensorsComplex,
+    sensor_complex_1: IntegratedAirDataSensorsComplex,
+    sensor_complex_2: IntegratedAirDataSensorsComplex,
+    sensor_complex_3: IntegratedAirDataSensorsComplex,
 }
 impl A380AirDataInertialReferenceSystem {
     pub fn new(context: &mut InitContext) -> Self {
@@ -212,9 +212,9 @@ impl SimulationElement for A380AirDataInertialReferenceSystem {
 }
 
 pub(crate) struct A380AdirsElectricalHarness {
-    pub adiru_1_electrical_harness: A380AdiruElectricalHarness,
-    pub adiru_2_electrical_harness: A380AdiruElectricalHarness,
-    pub adiru_3_electrical_harness: A380AdiruElectricalHarness,
+    adiru_1_electrical_harness: A380AdiruElectricalHarness,
+    adiru_2_electrical_harness: A380AdiruElectricalHarness,
+    adiru_3_electrical_harness: A380AdiruElectricalHarness,
 
     // Powersupply relay logic
     probes_1_3_switching_relay_closed: bool,
