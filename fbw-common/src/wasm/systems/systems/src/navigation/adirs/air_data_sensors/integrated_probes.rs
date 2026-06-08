@@ -61,7 +61,7 @@ impl MultifunctionProbe {
         Self {
             failure: Failure::new(FailureType::Mfp(number)),
 
-            is_powered: false,
+            is_powered,
             power_holdover: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
                 Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
@@ -303,8 +303,8 @@ impl IntegratedStaticProbe {
                 },
             ),
 
-            dc_is_powered: false,
-            ac_is_powered: false,
+            dc_is_powered: is_powered,
+            ac_is_powered: is_powered,
             power_holdover: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
                 Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
@@ -531,7 +531,7 @@ impl SideslipAngleProbe {
         Self {
             failure: Failure::new(FailureType::Ssa(number)),
 
-            is_powered: false,
+            is_powered,
             power_holdover: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
                 Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),

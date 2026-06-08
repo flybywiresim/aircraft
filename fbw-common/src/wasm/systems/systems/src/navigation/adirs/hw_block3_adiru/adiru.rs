@@ -436,8 +436,8 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
 
             num,
 
-            primary_is_powered: false,
-            backup_is_powered: false,
+            primary_is_powered: is_powered,
+            backup_is_powered: is_powered,
 
             primary_power_holdover: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),

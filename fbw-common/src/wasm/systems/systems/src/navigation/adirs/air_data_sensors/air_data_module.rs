@@ -61,7 +61,7 @@ impl AirDataModule {
     ) -> Self {
         let is_powered = context.has_engines_running();
         Self {
-            is_powered: false,
+            is_powered,
             power_holdover: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
                 Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
