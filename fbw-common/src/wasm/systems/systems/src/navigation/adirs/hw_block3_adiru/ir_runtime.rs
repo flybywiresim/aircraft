@@ -532,23 +532,6 @@ impl InertialReferenceRuntime {
                         || longitude >= (-90. + hysteresis_sign * 2.5)))))
     }
 
-    //fn update_fault_flash_duration(
-    //    &mut self,
-    //    context: &UpdateContext,
-    //    overhead: &AirDataInertialReferenceSystemOverheadPanel,
-    //) {
-    //    if self.alignment_starting(overhead.mode_of(self.number)) {
-    //        self.ir_fault_flash_duration = Some(Self::IR_FAULT_FLASH_DURATION);
-    //    } else if let Some(flash_duration) = self.ir_fault_flash_duration {
-    //        let remaining = subtract_delta_from_duration(context, flash_duration);
-    //        self.ir_fault_flash_duration = if remaining > Duration::from_secs(0) {
-    //            Some(remaining)
-    //        } else {
-    //            None
-    //        };
-    //    }
-    //}
-
     fn can_align(&self) -> bool {
         self.measurement_inputs.latitude.abs().get::<degree>() <= Self::MAX_LATITUDE_FOR_ALIGNMENT
     }
