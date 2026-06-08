@@ -16,12 +16,16 @@ using namespace mINI;
 void FlightDataRecorder::initialize() {
   // create local variables
   idIsEnabled = std::make_unique<LocalVariable>("A32NX_FDR_ENABLED");
+  idMaximumFileCount = std::make_unique<LocalVariable>("A32NX_FDR_MAXIMUM_NUMBER_OF_FILES");
+  idMaximumSampleCounter = std::make_unique<LocalVariable>("A32NX_FDR_MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE");
 
   // load configuration
   loadConfiguration();
 
   // print configuration
   std::cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << idIsEnabled->get() << std::endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles           = " << idMaximumFileCount->get() << std::endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfEntriesPerFile  = " << idMaximumSampleCounter->get() << std::endl;
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
@@ -121,6 +125,7 @@ void FlightDataRecorder::terminate() {
     fileStream->close();
     fileStream.reset();
   }
+  writeConfiguration();
 }
 
 void FlightDataRecorder::loadConfiguration() {
@@ -129,21 +134,32 @@ void FlightDataRecorder::loadConfiguration() {
   INIFile iniFile(CONFIGURATION_FILEPATH);
   if (!iniFile.read(iniStructure)) {
     // file does not exist yet -> store the default configuration in a file
+    iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = "true";
     iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = "15";
     iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] = "864000";
     iniFile.write(iniStructure, true);
   }
 
   // read basic configuration
-  maximumSampleCounter = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000);
-  maximumFileCount = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_FILES", 15);
+  idIsEnabled->set(INITypeConversion::getBoolean(iniStructure, "FLIGHT_DATA_RECORDER", "ENABLED", true));
+  idMaximumFileCount->set(INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_FILES", 15));
+  idMaximumSampleCounter->set(
+      INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000));
+}
 
-  if (maximumSampleCounter <= 0) {
-    maximumSampleCounter = 864000;
-  }
-  if (maximumFileCount <= 0) {
-    maximumFileCount = 15;
-  }
+void FlightDataRecorder::writeConfiguration() {
+  // create ini file
+  INIFile iniFile(CONFIGURATION_FILEPATH);
+
+  // create structure
+  INIStructure iniStructure;
+  iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = idIsEnabled->get() == 1 ? "true" : "false";
+  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = std::to_string(static_cast<int>(idMaximumFileCount->get()));
+  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] =
+      std::to_string(static_cast<int>(idMaximumSampleCounter->get()));
+
+  // write file
+  iniFile.write(iniStructure, true);
 }
 
 void FlightDataRecorder::manageFlightDataRecorderFiles() {
@@ -151,7 +167,7 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
   sampleCounter++;
 
   // check if file is considered full
-  if (sampleCounter >= maximumSampleCounter) {
+  if (sampleCounter >= idMaximumSampleCounter->get()) {
     // close file and delete
     if (fileStream) {
       fileStream->close();
@@ -218,7 +234,7 @@ void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
   std::sort(files.begin(), files.end(), std::greater<>());
 
   // remove older files
-  while (files.size() > maximumFileCount) {
+  while (files.size() > idMaximumFileCount->get()) {
     bool result = remove(("\\work\\" + files.back()).c_str());
     files.pop_back();
   }
