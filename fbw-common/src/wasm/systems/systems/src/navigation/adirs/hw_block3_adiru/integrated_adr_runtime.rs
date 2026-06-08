@@ -192,12 +192,12 @@ impl AdrRuntimeTemplate for IntegratedAirDataReferenceRuntime {
     }
 }
 impl IntegratedAirDataReferenceRuntime {
-    pub(super) const MINIMUM_TAS: f64 = 60.;
-    pub(super) const MINIMUM_CAS: f64 = 30.;
-    pub(super) const MINIMUM_MACH: f64 = 0.1;
-    pub(super) const MINIMUM_CAS_FOR_AOA: f64 = 60.;
-    pub(super) const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
-    pub(super) const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
+    const MINIMUM_TAS: f64 = 60.;
+    const MINIMUM_CAS: f64 = 30.;
+    const MINIMUM_MACH: f64 = 0.1;
+    const MINIMUM_CAS_FOR_AOA: f64 = 60.;
+    const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
+    const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
 
     // 1 second filter
     const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);

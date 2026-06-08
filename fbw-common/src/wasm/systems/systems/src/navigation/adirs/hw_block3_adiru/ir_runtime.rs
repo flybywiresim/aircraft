@@ -799,14 +799,7 @@ impl InertialReferenceRuntime {
 
         bus.drift_angle.set(
             if ground_speed_above_minimum_threshold {
-                let diff = self.measurement_inputs.track - self.measurement_inputs.heading;
-                if diff > Angle::new::<degree>(180.) {
-                    diff - Angle::new::<degree>(360.)
-                } else if diff < Angle::new::<degree>(-180.) {
-                    diff + Angle::new::<degree>(360.)
-                } else {
-                    diff
-                }
+                (self.measurement_inputs.track - self.measurement_inputs.heading).normalised_180()
             } else {
                 Angle::new::<degree>(0.)
             },
