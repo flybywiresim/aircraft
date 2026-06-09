@@ -70,22 +70,12 @@ export class FlightPlanSynchronization {
   }
 
   private static findDestinationWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
-    for (let idx = flightPlan.activeLegIndex; idx < flightPlan.firstMissedApproachLegIndex; idx++) {
-      const leg = flightPlan.maybeElementAt(idx);
-
-      // Note that the destination leg index must not necessarily be an airport or a runway, just the last leg of the flight plan (excluding missed approach legs)
-      if (leg?.isDiscontinuity === false && idx === flightPlan.destinationLegIndex) {
-        // TODO connect to VNAV
-        return {
-          ident: leg.ident,
-          altitude: 0,
-          utc: -1,
-        };
-      }
-      idx += 1;
-    }
-
-    return { ident: '', altitude: 0, utc: 0 };
+    return {
+      // FIXME everything, but would destinationAirport be enough?
+      ident: flightPlan.destinationAirport?.ident ?? '',
+      altitude: 0,
+      utc: -1,
+    };
   }
 
   constructor(
@@ -106,7 +96,15 @@ export class FlightPlanSynchronization {
         const destination = FlightPlanSynchronization.findDestinationWaypoint(activeFlightPlan);
 
         if (origin) {
-          if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {
+          if (
+            origin.ident !== this.originIdent ||
+            (destination.ident !== this.destination.ident && destination.ident === '' && this.destination.ident !== '')
+          ) {
+            this.originIdent = origin.ident;
+            this.destination = destination;
+            console.log(
+              `[FlightPlanSynchronization] Origin or destination changed. Origin: ${this.originIdent}, Destination: ${this.destination.ident}`,
+            );
             // new route entered -> reset ATIS updater
             this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
           }
@@ -135,6 +133,6 @@ export class FlightPlanSynchronization {
           }
         }
       }
-    }, 1000);
+    }, 10000);
   }
 }
