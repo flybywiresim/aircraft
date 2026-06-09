@@ -12,6 +12,8 @@
 
 ## 2024.2.0
 
+1. [A380X/FWS] Add NAV UNRELIABLE AIRSPEED INDICATION procedure - @matze-tech (matze2346)
+
 ## 2024.1.0
 
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)

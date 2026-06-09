@@ -165,6 +165,8 @@ export class FwsCore {
     this.sub.on('a380x_ois_fws_debug_data_enabled'),
     false,
   );
+
+  public readonly gpsPositionAlt = RegisteredSimVar.create('GPS POSITION ALT', SimVarValueType.Feet);
   public readonly debugDataToOis: DebugDataTableRow[] = [
     { label: 'FWS Flight Phase', value: '' },
     { label: 'Startup Completed', value: '' },
@@ -694,6 +696,12 @@ export class FwsCore {
   public readonly rollOutFault = Subject.create(false);
 
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
+
+  public readonly apEngaged = RegisteredSimVar.createBoolean('L:A32NX_AUTOPILOT_ACTIVE');
+  public readonly apOff = Subject.create(false);
+  public readonly fd1Active = RegisteredSimVar.createBoolean('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1');
+  public readonly fd2Active = RegisteredSimVar.createBoolean('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2');
+  public readonly fdOff = Subject.create(false);
 
   public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
@@ -1419,6 +1427,18 @@ export class FwsCore {
 
   private readonly flightPhase1112 = this.flightPhase.map((v) => v >= 11);
 
+  public readonly gpsAltBelow10k = Subject.create(false);
+
+  public readonly gpsAltAbove10k = Subject.create(false);
+
+  public readonly gpsAltBelow25k = Subject.create(false);
+
+  public readonly gpsAltAbove25k = Subject.create(false);
+
+  public readonly beforeThrustReduction = Subject.create(false);
+
+  public readonly afterThrustReduction = Subject.create(false);
+
   private readonly flightPhase12Or1112 = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.flightPhase1Or2,
@@ -1611,6 +1631,11 @@ export class FwsCore {
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
+
+  public readonly adr1PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON');
+  public readonly adr2PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON');
+  public readonly adr3PbOn = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON');
+  public readonly allAdrPbsOff = Subject.create(false);
 
   public readonly ir1Align = Subject.create(false);
   public readonly adiru1ModeSelector = Subject.create(0);
@@ -2037,6 +2062,12 @@ export class FwsCore {
 
   public readonly allThrottleIdle = Subject.create(false);
 
+  public readonly allThrottleToga = Subject.create(false);
+
+  public readonly allThrottleMct = Subject.create(false);
+
+  public readonly allThrottleClb = Subject.create(false);
+
   public readonly allEngineSwitchOff = Subject.create(false);
 
   public readonly autoThrustStatus = Subject.create(0);
@@ -2250,6 +2281,7 @@ export class FwsCore {
   public readonly limitations = new FwsLimitations(this);
   public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
   public ewdAbnormal: EwdAbnormalDict;
+  public allEwdDeferredProcs: EwdAbnormalDict;
   public allSuppressableItems: FwsSuppressableItemDict;
   private readonly failureActivationTime = new Map<keyof FwsSuppressableItemDict, number>();
 
@@ -2264,6 +2296,11 @@ export class FwsCore {
       {},
       this.abnormalSensed.ewdAbnormalSensed,
       this.abnormalNonSensed.ewdAbnormalNonSensed,
+    );
+    this.allEwdDeferredProcs = Object.assign(
+      {},
+      this.abnormalSensed.ewdDeferredProcs,
+      this.abnormalNonSensed.ewdDeferredProcs,
     );
     this.allSuppressableItems = Object.assign(
       {},
@@ -2782,6 +2819,15 @@ export class FwsCore {
     // Update flight phases
     this.flightPhases.update(deltaTime);
 
+    const gpsAlt = this.gpsPositionAlt.get() ?? 0;
+    this.gpsAltBelow10k.set(gpsAlt < 10000);
+    this.gpsAltAbove10k.set(gpsAlt >= 10000);
+    this.gpsAltBelow25k.set(gpsAlt < 25000);
+    this.gpsAltAbove25k.set(gpsAlt >= 25000);
+
+    this.beforeThrustReduction.set(this.flightPhase.get() <= 7);
+    this.afterThrustReduction.set(this.flightPhase.get() > 7);
+
     // Play sounds
     this.soundManager.onUpdate(deltaTime);
 
@@ -3007,6 +3053,32 @@ export class FwsCore {
         this.throttle2Position.get() < 1 &&
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
+    );
+    this.allThrottleToga.set(
+      this.throttle1Position.get() >= 45 &&
+        this.throttle2Position.get() >= 45 &&
+        this.throttle3Position.get() >= 45 &&
+        this.throttle4Position.get() >= 45,
+    );
+    this.allThrottleMct.set(
+      this.throttle1Position.get() >= 35 &&
+        this.throttle1Position.get() < 45 &&
+        this.throttle2Position.get() >= 35 &&
+        this.throttle2Position.get() < 45 &&
+        this.throttle3Position.get() >= 35 &&
+        this.throttle3Position.get() < 45 &&
+        this.throttle4Position.get() >= 35 &&
+        this.throttle4Position.get() < 45,
+    );
+    this.allThrottleClb.set(
+      this.throttle1Position.get() >= 25 &&
+        this.throttle1Position.get() < 35 &&
+        this.throttle2Position.get() >= 25 &&
+        this.throttle2Position.get() < 35 &&
+        this.throttle3Position.get() >= 25 &&
+        this.throttle3Position.get() < 35 &&
+        this.throttle4Position.get() >= 25 &&
+        this.throttle4Position.get() < 35,
     );
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
@@ -3302,6 +3374,8 @@ export class FwsCore {
     // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
+    this.allAdrPbsOff.set(!this.adr1PbOn.get() && !this.adr2PbOn.get() && !this.adr3PbOn.get());
+
     // TODO use GPS alt if ADRs not available
     this.adrPressureAltitude.set(
       !adr1PressureAltitude.isInvalid()
@@ -3469,7 +3543,10 @@ export class FwsCore {
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
     // AP OFF
-    const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
+    const apEngaged = this.apEngaged.get();
+    this.apOff.set(!apEngaged);
+    this.fdOff.set(!this.fd1Active.get() && !this.fd2Active.get());
+
     this.autoPilotDisengagedInstantPulse.write(apEngaged);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
@@ -5379,7 +5456,10 @@ export class FwsCore {
 
     // Abnormal sensed procedures
     const ewdAbnormalEntries: [string, EwdAbnormalItem][] = Object.entries(this.ewdAbnormal);
-    const ewdDeferredEntries = Object.entries(this.abnormalSensed.ewdDeferredProcs);
+    const ewdDeferredEntries = [
+      ...Object.entries(this.abnormalSensed.ewdDeferredProcs),
+      ...Object.entries(this.abnormalNonSensed.ewdDeferredProcs),
+    ];
     this.abnormalUpdatedItems.clear();
     this.deferredUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
@@ -5449,11 +5529,10 @@ export class FwsCore {
             itemsToShow: itemsToShow,
             itemsTimeStamp: itemsTimer,
           });
-
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
             if (
               EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
-              this.abnormalSensed.ewdDeferredProcs[deferredKey]
+              deferredValue.simVarIsActive.get()
             ) {
               const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
@@ -5588,13 +5667,13 @@ export class FwsCore {
     // Update deferred procedures
     this.activeDeferredProceduresList.get().forEach((value, key) => {
       const proc = EcamDeferredProcedures[key];
-      const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
+      const itemsChecked = this.allEwdDeferredProcs[key]
         .whichItemsChecked()
         .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow();
-      const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
+      const itemsToShow = this.allEwdDeferredProcs[key].whichItemsToShow();
+      const itemsActive = this.allEwdDeferredProcs[key].whichItemsActive
         ? value.procedureActivated
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
+          ? this.allEwdDeferredProcs[key].whichItemsActive!()
           : Array(itemsChecked.length).fill(false)
         : Array(itemsChecked.length).fill(value.procedureActivated);
 
@@ -5629,8 +5708,11 @@ export class FwsCore {
     // Retrieve all active deferred procedure keys, delete inactive
     const deferredProcedureKeys: string[] = [];
     allFailureKeys.forEach((failureKey) => {
-      for (const [deferredKey, _] of ewdDeferredEntries) {
-        if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey)) {
+      for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
+        if (
+          EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey) &&
+          deferredValue.simVarIsActive.get()
+        ) {
           deferredProcedureKeys.push(deferredKey);
         }
       }

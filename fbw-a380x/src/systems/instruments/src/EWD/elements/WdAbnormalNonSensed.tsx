@@ -164,11 +164,11 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
           sensed: item.sensed,
           checked: false,
           text: text.substring(0, 39),
-          style: ChecklistLineStyle.ChecklistItem,
+          style: item.style ?? ChecklistLineStyle.ChecklistItem,
           firstLine: false,
           lastLine: index === abn.items.length - 1,
           originalItemIndex: index + 1,
-          inactive: true,
+          inactive: !this.checklistActivated.get(),
         });
       });
     }
