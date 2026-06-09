@@ -25,7 +25,7 @@ import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { FgBus } from './shared/FgBusProvider';
 import { FcuBus } from './shared/FcuBusProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
-import { WindMode, HudElems, FIVE_DEG, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
+import { WindMode, HudElems, FIVE_DEG, XWIND_TO_AIR_REF_OFFSET, LagFilter, RateLimiter } from './HUDUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 42.5;
@@ -398,7 +398,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
               </g>
               <VAlphaLimBar bus={this.props.bus} />
               <SpeedTrendArrow
-                mode={'normal'}
                 airspeed={this.speedSub}
                 instrument={this.props.instrument}
                 bus={this.props.bus}
@@ -445,7 +444,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
             </g>
             <VAlphaLimBar bus={this.props.bus} />
             <SpeedTrendArrow
-              mode={'normal'}
               airspeed={this.speedSub}
               instrument={this.props.instrument}
               bus={this.props.bus}
@@ -457,8 +455,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
           </g>
 
           <g id="decelSpeedTrend" transform="translate(50 0)" display={this.sDecelVis}>
-            <SpeedTrendArrow
-              mode={'decel'}
+            <DecelSpeedTrendArrow
               airspeed={this.speedSub}
               instrument={this.props.instrument}
               bus={this.props.bus}
@@ -803,7 +800,7 @@ class DecelMode extends DisplayComponent<{
   private yOffset = Subject.create(0);
 
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
-  private readonly decelTapeVis = ConsumerSubject.create(this.sub.on('autoBrakeDecel').whenChanged(), false);
+  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive').whenChanged(), false);
 
   private setPath(mode: number) {
     switch (mode) {
@@ -835,11 +832,11 @@ class DecelMode extends DisplayComponent<{
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.subscriptions.push(this.autoBrakeMode, this.decelTapeVis);
+    this.subscriptions.push(this.autoBrakeMode, this.autoBrakeActive);
 
     this.subscriptions.push(this.autoBrakeMode.sub((mode) => this.setPath(mode)));
     this.subscriptions.push(
-      this.decelTapeVis.sub((vis) => {
+      this.autoBrakeActive.sub((vis) => {
         vis
           ? (this.decelRef.instance.style.visibility = 'visible')
           : (this.decelRef.instance.style.visibility = 'hidden');
@@ -856,18 +853,114 @@ class DecelMode extends DisplayComponent<{
   }
 }
 
+class DecelSpeedTrendArrow extends DisplayComponent<{
+  airspeed: Subscribable<number>;
+  instrument: BaseInstrument;
+  bus: ArincEventBus;
+  valueSpacing: number;
+  distanceSpacing: number;
+}> {
+  private decelArrowBase = Subject.create<string>('');
+
+  private decelArrowRange = Subject.create<string>('');
+
+  private decelRefElement = FSComponent.createRef<SVGGElement>();
+
+  private decelRefElement2 = FSComponent.createRef<SVGGElement>();
+
+  private refElement = FSComponent.createRef<SVGGElement>();
+
+  private arrowBaseRef = FSComponent.createRef<SVGPathElement>();
+
+  private arrowHeadRef = FSComponent.createRef<SVGPathElement>();
+
+  private arrowText = FSComponent.createRef<SVGTextElement>();
+
+  private offset = Subject.create<string>('');
+
+  private pathString = Subject.create<string>('');
+
+  private lagFilter = new LagFilter(1.6);
+
+  private airspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
+
+  private previousAirspeed = 0;
+
+  private multiplier = 0.55;
+
+  private autoBrakeActive = false;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<ClockEvents & HUDSimvars>();
+
+    sub.on('autoBrakeActive').handle((value) => {
+      this.autoBrakeActive = value;
+    });
+
+    sub.on('realTime').handle((_t) => {
+      const { deltaTime } = this.props.instrument;
+      const clamped = Math.max(this.props.airspeed.get(), 1);
+      const airspeedAcc = ((clamped - this.previousAirspeed) / deltaTime) * 1000;
+      this.previousAirspeed = clamped;
+
+      let filteredAirspeedAcc = this.lagFilter.step(airspeedAcc, deltaTime / 1000);
+      filteredAirspeedAcc = this.airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000);
+
+      const targetSpeed = filteredAirspeedAcc * 10;
+
+      if (!this.autoBrakeActive) {
+        this.refElement.instance.style.visibility = 'hidden';
+      } else {
+        this.refElement.instance.style.visibility = 'visible';
+        let pathString;
+
+        const offset = Math.min(
+          Math.abs(targetSpeed * DistanceSpacing * this.multiplier) / ValueSpacing,
+          (DisplayRange * DistanceSpacing) / ValueSpacing,
+        );
+        if (airspeedAcc < 0) {
+          pathString = `m65.684  ${neutralPos + offset} l 5.326 -10.458 M 65.684 ${neutralPos + offset} l -5.326 -10.458`;
+          this.offset.set(`m65.684 ${neutralPos} v ${offset.toFixed(10)}`);
+        } else {
+          pathString = '';
+          this.offset.set(`m65.684 ${neutralPos} v 0`);
+        }
+
+        this.pathString.set(pathString);
+
+        this.decelArrowBase.set(`m57.184 ${neutralPos} h 17`);
+        this.decelArrowRange.set(`m57.184 514.25 h 17`);
+      }
+    });
+  }
+
+  render(): VNode | null {
+    return (
+      <g id="SpeedTrendArrow" ref={this.refElement}>
+        <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Green" d={this.offset} />
+        <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Green" d={this.pathString} />
+
+        <path id="SpeedTrendArrowBase" ref={this.decelRefElement} class="NormalStroke Green" d={this.decelArrowBase} />
+        <path
+          id="SpeedTrendArrowHead"
+          ref={this.decelRefElement2}
+          class="NormalStroke Green"
+          d={this.decelArrowRange}
+        />
+      </g>
+    );
+  }
+}
+
 class SpeedTrendArrow extends DisplayComponent<{
   airspeed: Subscribable<number>;
   instrument: BaseInstrument;
   bus: ArincEventBus;
   valueSpacing: number;
   distanceSpacing: number;
-  mode: string;
 }> {
-  private decelArrowBase = Subject.create<string>('');
-  private decelArrowRange = Subject.create<string>('');
-  private decelRefElement = FSComponent.createRef<SVGGElement>();
-
   private refElement = FSComponent.createRef<SVGGElement>();
 
   private arrowBaseRef = FSComponent.createRef<SVGPathElement>();
@@ -894,8 +987,6 @@ class SpeedTrendArrow extends DisplayComponent<{
     } else {
       this.refElement.instance.style.visibility = 'visible';
       let pathString;
-      let decelArrowBase;
-      let decelArrowRange;
       const sign = Math.sign(this.vCTrend.value);
 
       const offset =
@@ -905,10 +996,7 @@ class SpeedTrendArrow extends DisplayComponent<{
           Math.abs((-this.vCTrend.value * this.props.distanceSpacing) / this.props.valueSpacing),
         );
 
-      if (
-        Math.abs(offset) < (DisplayRange * this.props.distanceSpacing) / this.props.valueSpacing + 3 ||
-        this.props.mode === 'decel'
-      ) {
+      if (Math.abs(offset) < (DisplayRange * this.props.distanceSpacing) / this.props.valueSpacing + 3) {
         if (sign > 0) {
           pathString = `m65.684  ${neutralPos + offset} l -5.326 10.458 M 65.684 ${neutralPos + offset}l 5.326 10.458`;
         } else {
@@ -921,13 +1009,6 @@ class SpeedTrendArrow extends DisplayComponent<{
       this.offset.set(`m65.684 ${neutralPos}v${offset.toFixed(10)}`);
 
       this.pathString.set(pathString);
-
-      if (this.props.mode === 'decel') {
-        decelArrowBase = `m57.184 ${neutralPos} h 17`;
-        decelArrowRange = `m57.184 514.25 h 17`;
-        this.decelArrowBase.set(decelArrowBase);
-        this.decelArrowRange.set(decelArrowRange);
-      }
     }
   }
 
@@ -951,9 +1032,6 @@ class SpeedTrendArrow extends DisplayComponent<{
       <g id="SpeedTrendArrow" ref={this.refElement}>
         <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Green" d={this.offset} />
         <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Green" d={this.pathString} />
-
-        <path id="SpeedTrendArrowBase" ref={this.decelRefElement} class="NormalStroke Green" d={this.decelArrowBase} />
-        <path id="SpeedTrendArrowHead" ref={this.decelRefElement} class="NormalStroke Green" d={this.decelArrowRange} />
       </g>
     );
   }
