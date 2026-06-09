@@ -4338,13 +4338,16 @@ export class PseudoFWC {
     const ir3FaultSignal = this.sdac00411Word.bitValue(28);
 
     this.ir1FaultConf.write(ir1FaultSignal, deltaTime);
-    const ir1FaultDetected = this.ir1FaultConf.read() || this.ir1FaultMtrig.write(this.ir1FaultConf.read(), deltaTime);
+    this.ir1FaultMtrig.write(this.ir1FaultConf.read(), deltaTime);
+    const ir1FaultDetected = this.ir1FaultConf.read() || this.ir1FaultMtrig.read();
 
     this.ir2FaultConf.write(ir2FaultSignal, deltaTime);
-    const ir2FaultDetected = this.ir2FaultConf.read() || this.ir2FaultMtrig.write(this.ir2FaultConf.read(), deltaTime);
+    this.ir2FaultMtrig.write(this.ir2FaultConf.read(), deltaTime);
+    const ir2FaultDetected = this.ir2FaultConf.read() || this.ir2FaultMtrig.read();
 
     this.ir3FaultConf.write(ir3FaultSignal, deltaTime);
-    const ir3FaultDetected = this.ir3FaultConf.read() || this.ir3FaultMtrig.write(this.ir3FaultConf.read(), deltaTime);
+    this.ir3FaultMtrig.write(this.ir3FaultConf.read(), deltaTime);
+    const ir3FaultDetected = this.ir3FaultConf.read() || this.ir3FaultMtrig.read();
     this.ir3FaultFlipFlop.write(ir3FaultDetected && this.fwcFlightPhase.get() == 2, !ir3FaultDetected);
 
     this.ir3UsedLeft.set(
