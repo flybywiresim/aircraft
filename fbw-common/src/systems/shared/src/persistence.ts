@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+import { ConfigAtisSource, ConfigMetarSource, ConfigTafSource, ConfigWeatherMap } from './config';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
@@ -11,13 +12,13 @@ type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
-  ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
-
-  EFB_UI_THEME: 'blue' | 'dark' | 'light';
-
+  ACARS_PROVIDER: 'BATC' | 'HOPPIE' | 'NONE' | 'SAI';
+  CONFIG_METAR_SRC: ConfigMetarSource;
+  CONFIG_ATIS_SRC: ConfigAtisSource;
+  CONFIG_TAF_SRC: ConfigTafSource;
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
-
   CONFIG_USING_METRIC_UNIT: boolean;
+  EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
 
 export type LegacyDataStoreSettingKey<k extends string = string> = k &
@@ -29,6 +30,9 @@ export type LegacyDataStoreSettingKey<k extends string = string> = k &
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
+    CONFIG_METAR_SRC: ConfigWeatherMap.MSFS,
+    CONFIG_ATIS_SRC: ConfigWeatherMap.IVAO,
+    CONFIG_TAF_SRC: ConfigWeatherMap.NOAA,
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',

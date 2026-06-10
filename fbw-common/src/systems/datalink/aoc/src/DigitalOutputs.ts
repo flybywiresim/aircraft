@@ -7,6 +7,7 @@ import { AtcAocRouterMessages } from '../../router/src';
 import {
   AtisType,
   AtsuMessage,
+  AtsuMessageSerializationFormat,
   AtsuMessageType,
   AtsuStatusCodes,
   FreetextMessage,
@@ -152,8 +153,9 @@ export class DigitalOutputs {
     this.publisher.pub('aocSystemStatus', status, true, false);
   }
 
+  // FIXME when sending the object via the event bus, the prototype is lost, so AtsuMessage methods are not available anymores
   public sendPrintMessage(message: AtsuMessage): void {
-    this.publisher.pub('aocPrintMessage', message, true, false);
+    this.publisher.pub('aocPrintMessage', message.serialize(AtsuMessageSerializationFormat.Printer), true, false);
   }
 
   public deleteMessage(uid: number): void {
