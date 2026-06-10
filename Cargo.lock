@@ -739,7 +739,7 @@ dependencies = [
 [[package]]
 name = "msfs"
 version = "0.2.0"
-source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#c49d7044c35521169d88d5b2651cdfed305f7b56"
+source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#53d6c9dd96fc131dbe490eaa7ae3b46c498a8e3c"
 dependencies = [
  "bindgen",
  "cc",
@@ -752,7 +752,7 @@ dependencies = [
 [[package]]
 name = "msfs_derive"
 version = "0.3.0"
-source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#c49d7044c35521169d88d5b2651cdfed305f7b56"
+source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#53d6c9dd96fc131dbe490eaa7ae3b46c498a8e3c"
 dependencies = [
  "quote",
  "syn 2.0.114",
@@ -761,7 +761,7 @@ dependencies = [
 [[package]]
 name = "msfs_sdk"
 version = "0.2.0"
-source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#c49d7044c35521169d88d5b2651cdfed305f7b56"
+source = "git+https://github.com/Saschl/msfs-rs?branch=msfs2024-sasch#53d6c9dd96fc131dbe490eaa7ae3b46c498a8e3c"
 
 [[package]]
 name = "nalgebra"

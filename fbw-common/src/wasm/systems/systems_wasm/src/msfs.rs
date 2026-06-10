@@ -11,8 +11,6 @@ pub(crate) mod legacy {
 
     pub fn trigger_key_event(_event_id: ID32, _value: UINT32) {}
 
-    pub fn fs_events_trigger_key_event(_event_id: ID32, _value0: UINT32, _value1: UINT32) {}
-
     pub fn trigger_key_event_ex1(
         _event_id: ID32,
         _value0: UINT32,
@@ -128,4 +126,10 @@ pub(crate) mod vars {
             self.value.set(value);
         }
     }
+}
+
+pub(crate) mod events {
+    use msfs::sys::{ID32, UINT32};
+
+    pub fn fs_events_trigger_key_event(_event_id: ID32, _value0: UINT32, _value1: UINT32) {}
 }

@@ -1,12 +1,8 @@
 #[cfg(not(target_arch = "wasm32"))]
-use crate::msfs::{
-    legacy::fs_events_trigger_key_event, legacy::trigger_key_event, legacy::trigger_key_event_ex1,
-};
+use crate::msfs::{events::fs_events_trigger_key_event, legacy::trigger_key_event};
 
 #[cfg(target_arch = "wasm32")]
-use msfs::{
-    legacy::fs_events_trigger_key_event, legacy::trigger_key_event, legacy::trigger_key_event_ex1,
-};
+use msfs::{events::fs_events_trigger_key_event, legacy::trigger_key_event};
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::sys::{
