@@ -6,6 +6,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use num_traits::Zero;
 use uom::si::{angular_velocity::radian_per_second, f64::*, pressure::psi, ratio::ratio};
 use uom::typenum::P2;
 use uom::ConstZero;
@@ -69,10 +70,11 @@ impl ValveBlock {
         // in the current code.
         let extend_request = sfcc_extend.is_energised();
         let retract_request = sfcc_retract.is_energised();
+        let pob_enabled = sfcc_pob.is_energised();
 
-        // NOTE: sfcc_pob must be checked at the beginning of the if-statement to prevent any
+        // NOTE: pob_enabled must be checked at the beginning of the if-statement to prevent any
         // movement regardless of the solenoids configuration.
-        self.speed = if !sfcc_pob.is_energised() {
+        self.speed = if !pob_enabled {
             AngularVelocity::ZERO
         } else if extend_request {
             max_speed
@@ -99,8 +101,13 @@ impl ValveBlock {
                 * self.max_speed_factor_from_pressure(pressure),
         );
 
+        // This is to prevent hovering of speed around 1e-10.
+        // It can make the test `flaps_and_slats_declare_moving` fail.
+        if theoretical_max_speed.is_zero() {
+            self.current_max_speed.reset(AngularVelocity::ZERO);
+        }
         // Final max speed filtered to simulate smooth movements
-        if !context.aircraft_preset_quick_mode() {
+        else if !context.aircraft_preset_quick_mode() {
             self.current_max_speed
                 .update(context.delta(), theoretical_max_speed);
         } else {
