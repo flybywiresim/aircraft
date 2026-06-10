@@ -761,7 +761,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       if (isValid) {
-        this.props.flightPlanInterface.addOrUpdateCruiseStep(legIndex, altitude, this.loadedFlightPlanIndex.get());
+        const planIndex = this.loadedFlightPlanIndex.get();
+        this.props.flightPlanInterface
+          .addOrUpdateCruiseStep(legIndex, altitude, planIndex)
+          .then(() => {
+            this.props.fmcService.master?.acInterface.deleteConstraintsAboveCruiseLevel(planIndex);
+          })
+          .catch((e) => console.error('[VertRev] Failed to add cruise step:', e));
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
