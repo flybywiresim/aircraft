@@ -61,15 +61,15 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly laptopPowered = ConsumerSubject.create(
-    this.sub.on(this.props.captOrFo === 'CAPT' ? 'laptopCaptPowered' : 'laptopFoPowered'),
+  private readonly laptopHealthy = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'laptopCaptHealthy' : 'laptopFoHealthy'),
     false,
   );
 
   private readonly hideContent = MappedSubject.create(
-    ([mode, powered]) => mode === 'nss-avncs' || !powered,
+    ([mode, healthy]) => mode === 'nss-avncs' || !healthy,
     this.props.avncsOrFltOps,
-    this.laptopPowered,
+    this.laptopHealthy,
   );
 
   private readonly hideContainer = this.props.avncsOrFltOps.map((mode) => mode === 'nss-avncs');
@@ -87,7 +87,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
     super.onAfterRender(node);
 
     this.overlaySub = MappedSubject.create(
-      ([uri, displayFailed, displayPowered, laptopPowered, operationMode]) => {
+      ([uri, displayFailed, displayPowered, laptopHealthy, operationMode]) => {
         // Activate EFB overlay if on charts or flt-folder page
         SimVar.SetSimVarValue(
           this.showChartsSimvar,
@@ -96,7 +96,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
             operationMode === 'flt-ops' &&
             !displayFailed &&
             displayPowered &&
-            laptopPowered,
+            laptopHealthy,
         );
         SimVar.SetSimVarValue(
           this.showOfpSimvar,
@@ -105,13 +105,13 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
             operationMode === 'flt-ops' &&
             !displayFailed &&
             displayPowered &&
-            laptopPowered,
+            laptopHealthy,
         );
       },
       this.uiService.activeUri,
       this.props.displayUnitRef.instance.failed,
       this.props.displayUnitRef.instance.powered,
-      this.laptopPowered,
+      this.laptopHealthy,
       this.props.avncsOrFltOps,
     );
 
@@ -119,8 +119,13 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
       this.uiService.activeUri.sub((uri) => {
         this.activeUriChanged(uri);
       }),
+      this.laptopHealthy.sub((healthy) => {
+        if (!healthy) {
+          this.uiService.resetFltOpsSession();
+        }
+      }, true),
       this.overlaySub,
-      this.laptopPowered,
+      this.laptopHealthy,
       this.hideContent,
       this.hideContainer,
     );
