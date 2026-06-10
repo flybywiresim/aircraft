@@ -155,6 +155,10 @@ impl SecondarySurface {
         }
     }
 
+    pub fn get_max_synchro_angle(&self) -> Angle {
+        self.max_synchro_angle
+    }
+
     pub fn get_surface_ratio(&self) -> f64 {
         // TODO: at the moment all the percentages in the array are identical.
         // No asymmetries simulated.
@@ -244,7 +248,6 @@ pub struct FlapSlatAssembly {
     pcu_speed: AngularVelocity,
     differential_gear_ratio: Ratio,
     synchro_gear_ratio: Ratio,
-    _surface_gear_ratio: Ratio, // NOTE: commented out for future use
 
     left_wtb: WingTipBrake,
     right_wtb: WingTipBrake,
@@ -262,7 +265,7 @@ impl FlapSlatAssembly {
     /// * `full_pressure_max_speed` : the max speed of the PCU with 2 motors
     /// * `synchro_gear_ratio` : PPU gear ratio (PPU input : synchro)
     /// * `differential_gear_ratio` : Differential gear ratio (Motor rev : TS rev)
-    /// * `surface_gear_ratio` : Geared Rotary Actuator (GRA) gear ratio (input_TS : output_pinion). UNUSED
+    /// * `surface_gear_ratio` : Geared Rotary Actuator (GRA) gear ratio (input_TS : output_pinion). REMOVED
     ///
     /// TS = Torque Shaft
     pub fn new(
@@ -274,10 +277,11 @@ impl FlapSlatAssembly {
         full_pressure_max_speed: AngularVelocity,
         synchro_gear_ratio: Ratio,
         differential_gear_ratio: Ratio,
-        _surface_gear_ratio: Ratio,
-        max_synchro_angle: Angle,
         circuit_target_pressure: Pressure,
     ) -> Self {
+        // NOTE: it is assumed left_surfaces.max_synchro_angle == right_surfaces.max_synchro_angle
+        // assert! avoided to prevent panics
+        let max_synchro_angle = left_surfaces.max_synchro_angle.clone();
         Self {
             ippu_id: context.get_identifier(format!("{id}_IPPU_ANGLE",)),
             fppu_id: context.get_identifier(format!("{id}_FPPU_ANGLE",)),
@@ -295,7 +299,6 @@ impl FlapSlatAssembly {
             pcu_speed: AngularVelocity::ZERO,
             differential_gear_ratio,
             synchro_gear_ratio,
-            _surface_gear_ratio,
             left_wtb: WingTipBrake::new(context, id, SecondarySurfaceSide::Left),
             right_wtb: WingTipBrake::new(context, id, SecondarySurfaceSide::Right),
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
@@ -334,6 +337,8 @@ impl FlapSlatAssembly {
         self.right_valve_block
             .update(context, sfcc_2, hyd_motor_pressure[1]);
 
+        // NOTE: maybe the WTB should be applied on the secondary surface instead of the PCU.
+        // This will enable blocking one side of the shaft only.
         self.pcu_speed = if self.left_wtb.is_active() || self.right_wtb.is_active() {
             AngularVelocity::ZERO
         } else {

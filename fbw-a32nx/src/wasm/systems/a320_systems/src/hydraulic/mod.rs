@@ -1784,8 +1784,6 @@ impl A320Hydraulic {
                 AngularVelocity::new::<revolution_per_minute>(391.1),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Angle::new::<degree>(251.97),
                 Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
@@ -1797,8 +1795,6 @@ impl A320Hydraulic {
                 AngularVelocity::new::<revolution_per_minute>(391.1),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Angle::new::<degree>(334.16),
                 Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
