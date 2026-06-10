@@ -16,7 +16,7 @@ export class CduRtaPage {
     mcdu: LegacyFmsPageInterface,
     waypoint: FlightPlanLeg,
     index: number,
-    verticalWaypoint: VerticalWaypointPrediction,
+    verticalWaypoint: VerticalWaypointPrediction | undefined,
     forplan: FlightPlanIndex,
   ): void {
     mcdu.clearDisplay();

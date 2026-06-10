@@ -13,6 +13,11 @@
 ## 2024.2.0
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
+1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
+
 
 ## 2024.1.0
 
