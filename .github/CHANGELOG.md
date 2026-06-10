@@ -10,6 +10,10 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
+## 2024.2.0
+
+1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
+
 ## 2024.1.0
 
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)

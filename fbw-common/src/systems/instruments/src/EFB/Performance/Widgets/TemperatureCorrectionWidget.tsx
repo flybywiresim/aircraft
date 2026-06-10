@@ -83,7 +83,7 @@ export const TemperatureCorrectionWidget = () => {
     let parsedMetar: MetarParserType | undefined = undefined;
 
     // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
+    if (metarSource === ConfigWeatherMap.MSFS) {
       let metar: MsfsMetar;
       try {
         metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
@@ -96,7 +96,7 @@ export const TemperatureCorrectionWidget = () => {
       }
     } else {
       try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
+        const response = await FbwApiMetar.get(icao, metarSource);
         if (!response.metar) {
           throw new Error('No METAR available');
         }

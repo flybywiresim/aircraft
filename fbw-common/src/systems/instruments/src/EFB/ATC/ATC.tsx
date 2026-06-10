@@ -6,7 +6,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import { AtcType } from '@flybywiresim/api-client';
-import { useSimVar, useInterval, useSplitSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
+import {
+  useSimVar,
+  useInterval,
+  useSplitSimVar,
+  usePersistentSetting,
+  ConfigWeatherMap,
+} from '@flybywiresim/fbw-sdk-react';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
@@ -81,7 +87,7 @@ export const ATC = () => {
   const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
   const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 10_000);
   const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 10_000);
-  const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+  const [atisSource] = usePersistentSetting('CONFIG_ATIS_SRC');
   const [atcDataPending, setAtcDataPending] = useState(true);
 
   const [controllerTypeFilter, setControllerTypeFilter] = useState<AtcType | undefined>(undefined);
@@ -210,10 +216,10 @@ export const ATC = () => {
       <div className="relative mb-2 flex flex-row items-center justify-between">
         <h1 className="font-bold">
           {t('AirTrafficControl.Title')}
-          {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` (${atisSource})`}
+          {(atisSource === ConfigWeatherMap.IVAO || atisSource === ConfigWeatherMap.VATSIM) && ` (${atisSource})`}
         </h1>
       </div>
-      {atisSource === 'IVAO' || atisSource === 'VATSIM' ? (
+      {atisSource === ConfigWeatherMap.IVAO || atisSource === ConfigWeatherMap.VATSIM ? (
         <div className="mt-4 h-content-section-reduced w-full">
           <div className="relative space-y-4">
             <div className="flex flex-row items-center space-x-3">
