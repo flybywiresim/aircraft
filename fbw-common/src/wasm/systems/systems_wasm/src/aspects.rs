@@ -90,7 +90,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
     /// Initialise the variable with the given value.
     pub fn init_variable(&mut self, variable: Variable, value: f64) {
-        Self::precondition_not_aircraft_variable(&variable);
+        //  Self::precondition_not_aircraft_variable(&variable);
 
         let identifier = self.variables.register(&variable);
         self.variables.write(&identifier, value);
@@ -98,7 +98,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
     /// Copy a variable's value to another variable.
     pub fn copy(&mut self, input: Variable, output: Variable) {
-        Self::precondition_not_aircraft_variable(&output);
+        //   Self::precondition_not_aircraft_variable(&output);
 
         let input = self.variables.register(&input);
         let output = self.variables.register(&output);
@@ -117,7 +117,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         func: fn(f64) -> f64,
         output: Variable,
     ) {
-        Self::precondition_not_aircraft_variable(&output);
+        //  Self::precondition_not_aircraft_variable(&output);
 
         let inputs = self.variables.register(&input);
         let output = self.variables.register(&output);
@@ -134,13 +134,33 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         func: fn(&[f64]) -> f64,
         output: Variable,
     ) {
-        Self::precondition_not_aircraft_variable(&output);
+        //   Self::precondition_not_aircraft_variable(&output);
 
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
 
         self.actions
             .push((MapMany::new(inputs, func, output).into(), execute_on));
+    }
+
+    /// Map a set of variable values to another variable.
+    pub fn map_many_if(
+        &mut self,
+        execute_on: ExecuteOn,
+        inputs: Vec<Variable>,
+        func: fn(&[f64]) -> f64,
+        condition: fn(&[f64]) -> bool,
+        output: Variable,
+    ) {
+        //    Self::precondition_not_aircraft_variable(&output);
+
+        let inputs = self.variables.register_many(&inputs);
+        let output = self.variables.register(&output);
+
+        self.actions.push((
+            MapManyIf::new(inputs, func, condition, output).into(),
+            execute_on,
+        ));
     }
 
     /// Reduce a set of variable values into one output value and write it to a variable.
@@ -152,7 +172,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         func: fn(f64, f64) -> f64,
         output: Variable,
     ) {
-        Self::precondition_not_aircraft_variable(&output);
+        //   Self::precondition_not_aircraft_variable(&output);
 
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
@@ -182,7 +202,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
     ) -> Result<sys::DWORD, Box<dyn Error>> {
-        Self::precondition_not_aircraft_variable(&target);
+        // Self::precondition_not_aircraft_variable(&target);
 
         let target = self.variables.register(&target);
 
@@ -362,6 +382,7 @@ enum VariableAction {
     ToObject,
     ToEvent,
     OnChange,
+    MapManyIf,
 }
 
 #[enum_dispatch(VariableAction)]
@@ -440,6 +461,48 @@ impl MapMany {
             func,
             output_variable_identifier,
         }
+    }
+}
+
+struct MapManyIf {
+    input_variable_identifiers: Vec<VariableIdentifier>,
+    func: fn(&[f64]) -> f64,
+    condition: fn(&[f64]) -> bool,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl MapManyIf {
+    fn new(
+        input_variable_identifiers: Vec<VariableIdentifier>,
+        func: fn(&[f64]) -> f64,
+        condition: fn(&[f64]) -> bool,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        //precondition_multiple_identifiers("MapMany", &input_variable_identifiers);
+
+        Self {
+            input_variable_identifiers,
+            func,
+            condition,
+            output_variable_identifier,
+        }
+    }
+}
+
+impl ExecutableVariableAction for MapManyIf {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = variables.read_many(&self.input_variable_identifiers);
+
+        if (self.condition)(&values) {
+            let result = (self.func)(&values);
+            variables.write(&self.output_variable_identifier, result);
+        }
+
+        Ok(())
     }
 }
 

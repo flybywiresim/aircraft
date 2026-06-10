@@ -498,8 +498,8 @@ impl SimulationElement for Pax {
     }
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pax_id, self.pax);
-        writer.write(&self.pax_target_id, self.pax_target);
-        writer.write(&self.payload_id, self.payload.get::<pound>());
+        //writer.write(&self.pax_target_id, self.pax_target);
+        // writer.write(&self.payload_id, self.payload.get::<pound>());
     }
 }
 
@@ -1013,6 +1013,7 @@ pub struct BoardingInputs {
 
     developer_state: Rc<Cell<i8>>,
     is_boarding: bool,
+    is_boarding_write_pending: Cell<bool>,
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
 }
@@ -1030,6 +1031,7 @@ impl BoardingInputs {
 
             developer_state,
             is_boarding: false,
+            is_boarding_write_pending: Cell::new(false),
             board_rate: BoardingRate::Instant,
             per_pax_weight,
         }
@@ -1048,7 +1050,10 @@ impl BoardingInputs {
     }
 
     pub fn stop_boarding(&mut self) {
-        self.is_boarding = false;
+        if self.is_boarding {
+            self.is_boarding = false;
+            self.is_boarding_write_pending.set(true);
+        }
     }
 
     pub fn per_pax_weight(&self) -> Mass {
@@ -1066,11 +1071,14 @@ impl SimulationElement for BoardingInputs {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.is_boarding_id, self.is_boarding);
-        writer.write(
+        if self.is_boarding_write_pending.get() {
+            writer.write(&self.is_boarding_id, self.is_boarding);
+            self.is_boarding_write_pending.set(false);
+        }
+        /*   writer.write(
             &self.per_pax_weight_id,
             self.per_pax_weight().get::<kilogram>(),
-        );
+        ); */
     }
 }
 
