@@ -2020,8 +2020,6 @@ impl A380Hydraulic {
                 AngularVelocity::new::<revolution_per_minute>(210.6),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Angle::new::<degree>(338.99),
                 Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
@@ -2033,8 +2031,6 @@ impl A380Hydraulic {
                 AngularVelocity::new::<revolution_per_minute>(240.7),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Angle::new::<degree>(327.39),
                 Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),

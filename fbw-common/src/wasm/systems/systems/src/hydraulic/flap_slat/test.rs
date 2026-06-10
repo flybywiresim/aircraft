@@ -50,8 +50,6 @@ fn flap_system_factory(context: &mut InitContext) -> FlapSlatAssembly {
         AngularVelocity::new::<revolution_per_minute>(391.1),
         Ratio::new::<ratio>(140.),
         Ratio::new::<ratio>(16.632),
-        Ratio::new::<ratio>(314.98),
-        Angle::new::<degree>(251.97),
         Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
     )
 }
