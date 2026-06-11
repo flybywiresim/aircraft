@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
-import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { BitFlags, DateTimeFormatter } from '@microsoft/msfs-sdk';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -73,3 +75,12 @@ export const fixInfoUri = 'fms/active/f-pln-fix-info';
 export const dirToUri = 'fms/active/f-pln-direct-to';
 
 export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
+
+export function isConstraintRevisionAllowed(leg: ReadonlyFlightPlanElement) {
+  return (
+    leg instanceof FlightPlanLeg &&
+    !leg.isRunway() &&
+    leg.isXF() &&
+    !BitFlags.isAny(leg.flags, FlightPlanLegFlags.DirectToTurningPoint)
+  );
+}

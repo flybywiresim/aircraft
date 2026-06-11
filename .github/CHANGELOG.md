@@ -14,6 +14,8 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [A380X/MFD] Fixed TMPY being generated upon accessing lateral or vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Alternate flightplan can be loaded on the lateral & vertical revision pages - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
