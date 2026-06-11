@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use crate::hydraulic::sfcc::SlatFlapControlComputer;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
+use systems::failures::{Failure, FailureType};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{
     SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
@@ -47,6 +48,8 @@ pub(super) struct FlapsChannel {
 
     opp_wtb_armed: bool,
     own_wtb_armed: bool,
+
+    wtb_solenoid_failure: Failure,
 
     // OUTPUTS
     fap: [bool; 7],
@@ -103,6 +106,8 @@ impl FlapsChannel {
             conf1f_flaps: Angle::new::<degree>(Self::FLAP_CONF1F_FPPU_ANGLE),
             kts_100: Velocity::new::<knot>(Self::KNOTS_100),
             kts_210: Velocity::new::<knot>(Self::KNOTS_210),
+
+            wtb_solenoid_failure: Failure::new(FailureType::FlapWtb),
 
             // Set `fap` to false to match power-off state
             fap: [false; 7],
@@ -521,6 +526,10 @@ impl FlapsChannel {
         return self.own_wtb_armed;
     }
 
+    pub(super) fn is_wtb_failed(&self) -> bool {
+        self.wtb_solenoid_failure.is_active()
+    }
+
     #[cfg(test)]
     pub fn get_fap(&self, idx: usize) -> bool {
         self.fap[idx]
@@ -600,7 +609,7 @@ impl ValveBlockController for FlapsChannel {
 impl WingTipBrakeController for FlapsChannel {
     fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
         // TODO: this is a placeholder. Logic needs to be added to activate the WTB during faults.
-        if !self.wtb_is_powered_delayed.output() {
+        if !self.wtb_is_powered_delayed.output() || self.is_wtb_failed() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -615,6 +624,8 @@ impl WingTipBrakeController for FlapsChannel {
 impl SimulationElement for FlapsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
+        self.wtb_solenoid_failure.accept(visitor);
+
         visitor.visit(self);
     }
 
