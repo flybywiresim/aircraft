@@ -1,12 +1,13 @@
-// @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
-import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { PopupControlEvents, PopupUuid } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import semVerCompare from 'semver/functions/compare';
+import semVerMajor from 'semver/functions/major';
 
 /**
  * Contains the ${aircraft}_build_info.json file's information in a structured way.
@@ -72,9 +73,7 @@ export class AircraftGithubVersionChecker {
    *
    * @returns true if the aircraft version has been checked, false if no check has been commenced.
    */
-  public static async checkVersion(aircraft: string): Promise<boolean> {
-    console.log(`Checking aircraft version for A/C project: ${aircraft}`);
-
+  public static async checkVersion(aircraft: string, bus: EventBus): Promise<boolean> {
     // reset previous check data
     this.versionChecked = false;
     this.setOutdatedVersionFlag(false);
@@ -90,11 +89,8 @@ export class AircraftGithubVersionChecker {
 
     try {
       const versionInfo = this.getVersionInfo(aircraft, this.buildInfo.version);
-      if (this.checkOutdated(versionInfo)) {
+      if (this.checkOutdated(versionInfo, bus)) {
         this.setOutdatedVersionFlag(true);
-        console.log(`Aircraft ${aircraft} - version outdated`);
-      } else {
-        console.log(`Aircraft ${aircraft} - version ok`);
       }
       this.versionChecked = true;
     } catch (error) {
@@ -183,7 +179,7 @@ export class AircraftGithubVersionChecker {
     try {
       const buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
       const versionInfo = AircraftGithubVersionChecker.getVersionInfo(aircraft, buildInfo.version);
-      switch (KnowBranchNames[versionInfo.branch]) {
+      switch ((KnowBranchNames as any)[versionInfo.branch]) {
         case KnowBranchNames.rel:
           return FbwBuildEdition.Stable;
         case KnowBranchNames.dev:
@@ -225,20 +221,30 @@ export class AircraftGithubVersionChecker {
    * @returns true if the version is outdated, false otherwise.
    * @private
    */
-  private static checkOutdated(versionInfo: VersionInfoData): boolean {
+  private static checkOutdated(versionInfo: VersionInfoData, bus: EventBus): boolean {
     // Set branchName to the long versions of the aircraft edition names
-    const branchName = KnowBranchNames[versionInfo.branch] || versionInfo.branch;
+    const branchName = (KnowBranchNames as any)[versionInfo.branch] || versionInfo.branch;
 
-    // Check if main version is outdated
-    if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
-      console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
-      this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
-      return true;
+    if (branchName === KnowBranchNames.rel) {
+      // The major version indicates FS2020 or FS2024
+      const latestRelease = this.releaseInfo.find((r) => semVerMajor(r.name) === versionInfo.major);
+
+      // Check if main version is outdated
+      if (latestRelease && semVerCompare(versionInfo.version, latestRelease.name) < 0) {
+        this.showVersionPopup(bus, 'stable', versionInfo.version, latestRelease.name);
+        return true;
+      }
+
+      return false;
     }
 
     // If the user's version is equal or newer than the latest release then check if
     // the edition is Development or Experimental and if the commit is older than
     // {maxAge} days after the latest release to show notification
+
+    if (!this.buildInfo || this.buildInfo.sha === 'unknown') {
+      return false;
+    }
 
     const maxAge = 3;
     const timestampAircraft: Date = new Date(this.buildInfo.built);
@@ -248,7 +254,7 @@ export class AircraftGithubVersionChecker {
       versionInfo.commit !== this.newestCommit.shortSha &&
       this.addDays(timestampAircraft, maxAge) < this.newestCommit.timestamp
     ) {
-      this.showNotification(versionInfo, timestampAircraft, branchName, this.newestCommit);
+      this.showNotification(bus, versionInfo, timestampAircraft, branchName, this.newestCommit);
       return true;
     }
 
@@ -257,7 +263,7 @@ export class AircraftGithubVersionChecker {
       versionInfo.commit !== this.newestExpCommit.shortSha &&
       this.addDays(timestampAircraft, maxAge) < this.newestExpCommit.timestamp
     ) {
-      this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
+      this.showNotification(bus, versionInfo, timestampAircraft, branchName, this.newestExpCommit);
       return true;
     }
 
@@ -271,7 +277,7 @@ export class AircraftGithubVersionChecker {
    * @param days
    * @private
    */
-  private static addDays(date: Date, days): Date {
+  private static addDays(date: Date, days: number): Date {
     const result = new Date(date);
     result.setDate(date.getDate() + days);
     return result;
@@ -287,6 +293,7 @@ export class AircraftGithubVersionChecker {
    * @private
    */
   private static showNotification(
+    bus: EventBus,
     versionInfo: VersionInfoData,
     timestampAircraft: Date,
     branchName: string,
@@ -294,8 +301,7 @@ export class AircraftGithubVersionChecker {
   ) {
     const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
     const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${commitInfo.shortSha} (${commitInfo.timestamp.toUTCString()})`;
-    console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
-    this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
+    this.showVersionPopup(bus, branchName, currentVersionStr, releaseVersionStr);
   }
 
   /**
@@ -306,22 +312,20 @@ export class AircraftGithubVersionChecker {
    * @param releaseVersion
    * @private
    */
-  private static showVersionPopup(branchName, currentVersion, releaseVersion) {
+  private static showVersionPopup(bus: EventBus, branchName: string, currentVersion: string, releaseVersion: string) {
     // TODO: Make translation work - move translation from EFB to shared
-    const dialog = new PopUpDialog();
-    dialog.showInformation(
-      'New Version Available',
-      `<div style="font-size: 120%; text-align: left;">
-                        You are using the ${branchName} edition with version: <br>
-                        <strong>${currentVersion}</strong><br><br>
+    const publisher = bus.getPublisher<PopupControlEvents>();
 
-                        Latest ${branchName} version is <br>
-                        <strong>${releaseVersion}</strong><br/><br/>
-
-                        Please update your aircraft using the FlyByWire Installer.
-                    </div>`,
-      'normal',
-      () => {},
+    publisher.pub(
+      'popup_enqueue_popup',
+      {
+        uuid: PopupUuid.VersionOutdated,
+        title: 'New Version Available',
+        message: `You are using the outdated ${branchName} edition ${currentVersion}, please update to the latest ${releaseVersion} using the FlyByWire Installer.`,
+        timeout: 5_000,
+      },
+      true,
+      false,
     );
   }
 
