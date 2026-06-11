@@ -122,8 +122,10 @@ impl SlatFlapControlComputer {
             return Arinc429Word::default();
         }
 
+        let slat_wtb_failed = self.slats_channel.is_wtb_failed();
         let slat_missing_adiru_data = self.slats_channel.missing_adiru_data();
         let slat_wtb_power_loss = self.slats_channel.wtb_power_lost();
+        let flap_wtb_failed = self.flaps_channel.is_wtb_failed();
         let flap_missing_adiru_data = self.flaps_channel.missing_adiru_data();
         let flap_wtb_power_loss = self.flaps_channel.wtb_power_lost();
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
@@ -132,7 +134,7 @@ impl SlatFlapControlComputer {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
-        word.set_bit(12, false);
+        word.set_bit(12, slat_wtb_failed);
         word.set_bit(13, false);
         word.set_bit(14, false);
         word.set_bit(15, slat_missing_adiru_data);
@@ -141,7 +143,7 @@ impl SlatFlapControlComputer {
         word.set_bit(18, slat_wtb_power_loss);
         word.set_bit(19, false);
         word.set_bit(20, true);
-        word.set_bit(21, false);
+        word.set_bit(21, flap_wtb_failed);
         word.set_bit(22, false);
         word.set_bit(23, false);
         word.set_bit(24, flap_missing_adiru_data);

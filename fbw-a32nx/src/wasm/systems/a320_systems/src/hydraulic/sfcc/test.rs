@@ -5,6 +5,7 @@ use ntest::assert_about_eq;
 use std::{panic::Location, time::Duration};
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+    failures::FailureType,
     hydraulic::flap_slat::SolenoidStatus,
     shared::PotentialOrigin,
     simulation::{
@@ -756,6 +757,16 @@ impl A320FlapsTestBed {
 
     fn get_flap_wtb_armed(&self, idx: usize) -> bool {
         self.query(|a| a.slat_flap_complex.sfcc[idx].flaps_channel.is_wtb_armed())
+    }
+
+    fn fail_flap_wtb(mut self) -> Self {
+        self.fail(FailureType::FlapWtb);
+        self
+    }
+
+    fn fail_slat_wtb(mut self) -> Self {
+        self.fail(FailureType::SlatWtb);
+        self
     }
 
     fn get_is_approaching_position(&self, demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -3926,4 +3937,54 @@ fn component_status_word_wtb_power_test() {
     assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
     assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
     assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+}
+
+#[test]
+fn wtb_failure_test() {
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(true)
+        .set_dc_2_bus_power(true)
+        .set_dc_hot_1_bus_power(true)
+        .set_dc_hot_2_bus_power(true)
+        .set_indicated_airspeed(0.)
+        .set_adiru_airspeed(1, None)
+        .set_adiru_angle_of_attack(1, None)
+        .set_adiru_airspeed(2, Some(156.0))
+        .set_adiru_angle_of_attack(2, Some(1.2))
+        .run_for_some_time();
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(21));
+
+    test_bed = test_bed.fail_flap_wtb().run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(21));
+
+    test_bed = test_bed.fail_slat_wtb().run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(21));
 }

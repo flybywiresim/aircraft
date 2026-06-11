@@ -830,6 +830,10 @@ export class PseudoFWC {
 
   private readonly elac2HydConfirmNodeOutput = Subject.create(false);
 
+  private readonly flapTipBrkFaultCondition = Subject.create(false);
+
+  private readonly slatTipBrkFaultCondition = Subject.create(false);
+
   private readonly fcdc1FaultCondition = Subject.create(false);
 
   private readonly fcdc12FaultCondition = Subject.create(false);
@@ -3420,6 +3424,40 @@ export class PseudoFWC {
       !(fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false)),
     );
 
+    // SFCC - Wing Tip Brakes
+    const sfcc1ComponentStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD');
+    const sfcc1SystemStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    const sfcc2ComponentStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD');
+    const sfcc2SystemStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
+
+    // SLAT TIP BRAKE FAULT
+    const SSLTDNV1 = !sfcc1SystemStatusWord.bitValue(28);
+    const SSWTBSF1 = sfcc1ComponentStatusWord.bitValue(12);
+    const SSWPFT1 = sfcc1ComponentStatusWord.bitValue(18);
+
+    const SSLTDNV2 = !sfcc2SystemStatusWord.bitValue(28);
+    const SSWTBSF2 = sfcc2ComponentStatusWord.bitValue(12);
+    const SSWPFT2 = sfcc2ComponentStatusWord.bitValue(18);
+
+    // TODO: should be `DC BAT BUS FAULT` || `DC EMER CONFIG` || `ELEC EMER`, but the first two don't exist yet.
+    const sfcc1SlatWtbFault = !SSLTDNV1 && (SSWTBSF1 || SSWPFT1) && !this.elecEmergency.get();
+    const sfcc2SlatWtbFault = !SSLTDNV2 && (SSWTBSF2 || SSWPFT2) && !this.elecEmergency.get();
+    this.slatTipBrkFaultCondition.set(sfcc1SlatWtbFault || sfcc2SlatWtbFault);
+
+    // FLAP TIP BRAKE FAULT
+    const SFLPDNV1 = !sfcc1SystemStatusWord.bitValue(29);
+    const SFWTBSF1 = sfcc1ComponentStatusWord.bitValue(21);
+    const SFWPFT1 = sfcc1ComponentStatusWord.bitValue(27);
+
+    const SFLPDNV2 = !sfcc2SystemStatusWord.bitValue(29);
+    const SFWTBSF2 = sfcc2ComponentStatusWord.bitValue(21);
+    const SFWPFT2 = sfcc2ComponentStatusWord.bitValue(27);
+
+    // TODO: should be `DC BAT BUS FAULT` || `DC EMER CONFIG` || `ELEC EMER`, but the first two don't exist yet.
+    const sfcc1FlapWtbFault = !SFLPDNV1 && (SFWTBSF1 || SFWPFT1) && !this.elecEmergency.get();
+    const sfcc2FlapWtbFault = !SFLPDNV2 && (SFWTBSF2 || SFWPFT2) && !this.elecEmergency.get();
+    this.flapTipBrkFaultCondition.set(sfcc1FlapWtbFault || sfcc2FlapWtbFault);
+
     // FCDC 1+2 FAULT computation
     const SFCDC1FT =
       fcdc1DiscreteWord1.isFailureWarning() &&
@@ -5953,6 +5991,28 @@ export class PseudoFWC {
       codesToReturn: ['270050201'],
       memoInhibit: () => false,
       failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2700550: {
+      // SLAT TIP BRK FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.slatTipBrkFaultCondition,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['270055001'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2700560: {
+      // FLAP TIP BRK FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.flapTipBrkFaultCondition,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['270056001'],
+      memoInhibit: () => false,
+      failure: 1,
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },

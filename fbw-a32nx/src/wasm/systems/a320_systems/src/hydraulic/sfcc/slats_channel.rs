@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use crate::hydraulic::sfcc::SlatFlapControlComputer;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
+use systems::failures::{Failure, FailureType};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{
     SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
@@ -50,6 +51,8 @@ pub(super) struct SlatsChannel {
 
     opp_wtb_armed: bool,
     own_wtb_armed: bool,
+
+    wtb_solenoid_failure: Failure,
 
     // OUTPUTS
     sap: [bool; 7],
@@ -111,6 +114,8 @@ impl SlatsChannel {
             own_wtb_armed: true, // NOTE: when upowered, the default is true. True is 0V.
 
             csu_monitor: CSUMonitor::new(context),
+
+            wtb_solenoid_failure: Failure::new(FailureType::SlatWtb),
 
             // Set `sap` to false to match power-off state
             sap: [false; 7],
@@ -366,6 +371,10 @@ impl SlatsChannel {
         return self.own_wtb_armed;
     }
 
+    pub(super) fn is_wtb_failed(&self) -> bool {
+        self.wtb_solenoid_failure.is_active()
+    }
+
     #[cfg(test)]
     pub fn get_sap(&self, idx: usize) -> bool {
         self.sap[idx]
@@ -445,7 +454,7 @@ impl ValveBlockController for SlatsChannel {
 impl WingTipBrakeController for SlatsChannel {
     fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
         // TODO: this is a placeholder. Logic needs to be added to activate the WTB during faults.
-        if !self.wtb_is_powered_delayed.output() {
+        if !self.wtb_is_powered_delayed.output() || self.is_wtb_failed() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -460,6 +469,7 @@ impl WingTipBrakeController for SlatsChannel {
 impl SimulationElement for SlatsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
+        self.wtb_solenoid_failure.accept(visitor);
         visitor.visit(self);
     }
 
