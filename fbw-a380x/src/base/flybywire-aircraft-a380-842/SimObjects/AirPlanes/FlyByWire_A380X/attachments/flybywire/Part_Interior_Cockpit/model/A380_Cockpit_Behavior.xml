@@ -3,7 +3,7 @@
 <!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
-<ModelInfo version="1.1">
+<ModelInfo>
 	<Behaviors>
         <Include Path="A380X\id_definitions.xml" />
 

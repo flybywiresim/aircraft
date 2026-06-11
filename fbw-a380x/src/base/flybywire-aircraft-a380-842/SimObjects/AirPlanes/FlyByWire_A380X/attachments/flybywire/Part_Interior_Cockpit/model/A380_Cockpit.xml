@@ -3,11 +3,12 @@
 <!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
-<ModelInfo version="1.1">
+<ModelInfo>
 	<LODS>
 		<LOD minSize="3" ModelFile="..\..\Part_Interior_Cockpit\model\A380_COCKPIT_LOD00.gltf"/>
 		<LOD minSize="2" ModelFile="..\..\Part_Interior_Cockpit\model\A380_COCKPIT_LOD01.gltf"/>
 		<LOD minSize="1" ModelFile="..\..\Part_Interior_Cockpit\model\A380_COCKPIT_LOD02.gltf"/>
+		<LOD minSize="0" ModelFile="..\..\Part_Interior_Cockpit\model\A380_COCKPIT_LOD03.gltf"/>
 	</LODS>
 	<Behaviors>
 		<IncludeBase RelativeFile="A380_Cockpit_Behavior.xml"/>
