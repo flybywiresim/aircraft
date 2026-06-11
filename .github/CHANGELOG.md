@@ -12,6 +12,9 @@
 
 ## 2024.2.0
 
+1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
+1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+
 ## 2024.1.0
 
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
