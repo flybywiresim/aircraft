@@ -7,7 +7,6 @@ const path = require('path');
 const PR_NUMBER = process.env.PR_NUMBER || 'unknown';
 const PR_TITLE = process.env.PR_TITLE || 'Untitled PR';
 const PR_BODY = process.env.PR_BODY || 'No description provided.';
-const TEXTURE_QUALITY = process.env.TEXTURE_QUALITY || '4k';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'flybywiresim/aircraft';
 const QA_CONFIG_URL = process.env.QA_CONFIG_URL || 'https://flybywirecdn.com/installer/qa-config/pull-requests.json';
 const PUBLISHER_KEY = process.env.PUBLISHER_KEY || 'flybywiresim';
@@ -39,16 +38,15 @@ function fetchUrl(url) {
   });
 }
 
-function createTrack(addonKey, prNumber, prTitle, prBody, textureQuality) {
+function createTrack(addonKey, prNumber, prTitle, prBody) {
   const addonPrefix = addonKey.split('-')[0];
-  const textureQualitySuffix = addonKey.startsWith('a380x') ? `-${textureQuality}` : '';
-  const trackKey = `${addonPrefix}-pr-${prNumber}${textureQualitySuffix}`;
-  const trackName = `PR #${prNumber} ${addonKey.startsWith('a380x') ? `(${textureQuality.toUpperCase()})` : ''} | ${prTitle}`;
+  const trackKey = `${addonPrefix}-pr-${prNumber}`;
+  const trackName = `PR #${prNumber} | ${prTitle}`;
   const description = `## [${prTitle} #${prNumber}](https://github.com/${GITHUB_REPO}/pull/${prNumber})\n\n${prBody}`;
   const addon = addonKey.includes('a32nx') ? 'a32nx' : addonKey.includes('a380x') ? 'a380x' : addonKey;
   const simulator = addonKey.includes('fs2024') ? 'msfs2024' : addonKey.includes('fs2020') ? 'msfs2020' : '';
 
-  const baseUrl = `https://flybywirecdn.com/addons/${simulator}/${addon}/pr-${prNumber}${textureQualitySuffix}`;
+  const baseUrl = `https://flybywirecdn.com/addons/${simulator}/${addon}/pr-${prNumber}`;
 
   return {
     name: trackName,
@@ -131,7 +129,7 @@ async function main() {
       console.log(`Processing addon: ${addonKey}`);
 
       const addon = findOrCreateAddon(publisher, addonKey);
-      const track = createTrack(addonKey, PR_NUMBER, PR_TITLE, PR_BODY, TEXTURE_QUALITY);
+      const track = createTrack(addonKey, PR_NUMBER, PR_TITLE, PR_BODY);
 
       addOrUpdateTrack(addon, track);
     }
