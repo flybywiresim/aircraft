@@ -66,6 +66,8 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_alt: Length,
     cabin_vertical_speed: Velocity,
     cabin_filtered_vertical_speed: LowPassFilter<Velocity>,
+    cabin_delta_p_rate: f64,
+    previous_cabin_delta_p: Option<f64>,
     cabin_target_vs: Velocity,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
@@ -77,6 +79,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
+    low_diff_pressure_warning: bool,
 
     is_active: bool,
     is_initialised: bool,
@@ -143,6 +146,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             cabin_filtered_vertical_speed: LowPassFilter::new(
                 Self::VERTICAL_SPEED_FILTER_TIME_CONSTANT,
             ),
+            cabin_delta_p_rate: 0.,
+            previous_cabin_delta_p: None,
             cabin_target_vs: Velocity::default(),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
@@ -154,6 +159,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
+            low_diff_pressure_warning: false,
 
             is_active: false,
             is_initialised: false,
@@ -209,6 +215,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.cabin_alt = new_cabin_alt;
         self.reference_pressure = new_reference_pressure;
         self.departure_elevation = self.calculate_departure_elevation();
+        self.update_cabin_delta_p_rate(context);
 
         if !self.has_fault() {
             self.outflow_valve_controller.update(
@@ -246,6 +253,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             ));
         }
 
+        self.update_low_diff_pressure_warning();
         self.is_in_man_mode = press_overhead.is_in_man_mode();
         self.is_active = is_active;
     }
@@ -573,11 +581,50 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     pub fn is_low_diff_pressure(&self) -> bool {
-        // Only emit the signal if delta pressure information is valid
-        self.cabin_delta_p() < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
-            && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1500.))
-            && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
+        self.low_diff_pressure_warning
+    }
+
+    fn update_cabin_delta_p_rate(&mut self, context: &UpdateContext) {
+        let delta_seconds = context.delta_as_secs_f64();
+        let cabin_delta_p_psi = self.cabin_delta_p().get::<psi>();
+        self.cabin_delta_p_rate = if delta_seconds > 0. {
+            self.previous_cabin_delta_p
+                .map(|previous| (cabin_delta_p_psi - previous) / delta_seconds)
+                .unwrap_or(0.)
+        } else {
+            0.
+        };
+        self.previous_cabin_delta_p = Some(cabin_delta_p_psi);
+    }
+
+    fn update_low_diff_pressure_warning(&mut self) {
+        let in_descent = !matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::DescentInternal(_))
+        );
+        let delta_p_psi = self.cabin_delta_p().get::<psi>();
+        let delta_p_rate = self.cabin_delta_p_rate;
+
+        let time_to_delta_p_zero_secs = delta_p_psi / -delta_p_rate;
+
+        let cabin_vs_fpm = self.cabin_vertical_speed().get::<foot_per_minute>();
+        let cabin_alt_diff_ft = (self.cabin_alt - self.landing_elevation).get::<foot>();
+        let time_to_cabin_landing_secs = cabin_alt_diff_ft / -cabin_vs_fpm * 60.;
+
+        let altitude_above_landing_ft =
+            (self.exterior_flight_altitude - self.landing_elevation).get::<foot>();
+
+        let activation_condition = time_to_delta_p_zero_secs < 90.
+            && time_to_delta_p_zero_secs < time_to_cabin_landing_secs + 30.
+            && altitude_above_landing_ft > 3000.
             && self.adirs_data_is_valid
+            && in_descent;
+
+        if activation_condition && altitude_above_landing_ft > 3000. {
+            self.low_diff_pressure_warning = true;
+        } else if !activation_condition {
+            self.low_diff_pressure_warning = false;
+        }
     }
 
     fn cabin_delta_p_out(&self) -> Pressure {
@@ -2084,5 +2131,91 @@ mod tests {
         test_bed.run_with_vertical_speed();
 
         assert!(test_bed.query(|a| a.is_climb()));
+    }
+
+    #[test]
+    fn low_diff_pressure_triggers_in_descent() {
+        let mut test_bed = test_bed();
+
+        test_bed.command(|a| {
+            a.cpc.pressure_schedule_manager =
+                Some(PressureScheduleManager::DescentInternal(PressureSchedule {
+                    timer: Duration::from_secs(0),
+                    pressure_schedule: DescentInternal,
+                }));
+            a.cpc.adirs_data_is_valid = true;
+            a.cpc.landing_elevation = Length::new::<foot>(0.);
+            a.cpc.exterior_flight_altitude = Length::new::<foot>(4000.);
+            a.cpc.cabin_alt = Length::new::<foot>(6000.);
+            a.cpc
+                .cabin_filtered_vertical_speed
+                .reset(Velocity::new::<foot_per_minute>(-1000.));
+            a.cpc.cabin_pressure = Pressure::new::<psi>(11.);
+            a.cpc.exterior_pressure.reset(Pressure::new::<psi>(10.));
+            a.cpc.cabin_delta_p_rate = -0.02;
+            a.cpc.low_diff_pressure_warning = false;
+            a.cpc.update_low_diff_pressure_warning();
+        });
+
+        assert!(test_bed.query(|a| a.cpc.is_low_diff_pressure()));
+    }
+
+    #[test]
+    fn low_diff_pressure_remains_below_3000_ft() {
+        let mut test_bed = test_bed();
+
+        test_bed.command(|a| {
+            a.cpc.pressure_schedule_manager =
+                Some(PressureScheduleManager::DescentInternal(PressureSchedule {
+                    timer: Duration::from_secs(0),
+                    pressure_schedule: DescentInternal,
+                }));
+            a.cpc.adirs_data_is_valid = true;
+            a.cpc.landing_elevation = Length::new::<foot>(0.);
+            a.cpc.exterior_flight_altitude = Length::new::<foot>(4000.);
+            a.cpc.cabin_alt = Length::new::<foot>(6000.);
+            a.cpc
+                .cabin_filtered_vertical_speed
+                .reset(Velocity::new::<foot_per_minute>(-1000.));
+            a.cpc.cabin_pressure = Pressure::new::<psi>(11.);
+            a.cpc.exterior_pressure.reset(Pressure::new::<psi>(10.));
+            a.cpc.cabin_delta_p_rate = -0.02;
+            a.cpc.low_diff_pressure_warning = false;
+            a.cpc.update_low_diff_pressure_warning();
+        });
+
+        test_bed.command(|a| {
+            a.cpc.exterior_flight_altitude = Length::new::<foot>(2500.);
+            a.cpc.update_low_diff_pressure_warning();
+        });
+
+        assert!(test_bed.query(|a| a.cpc.is_low_diff_pressure()));
+    }
+
+    #[test]
+    fn low_diff_pressure_rejected_when_time_to_zero_is_too_long() {
+        let mut test_bed = test_bed();
+
+        test_bed.command(|a| {
+            a.cpc.pressure_schedule_manager =
+                Some(PressureScheduleManager::DescentInternal(PressureSchedule {
+                    timer: Duration::from_secs(0),
+                    pressure_schedule: DescentInternal,
+                }));
+            a.cpc.adirs_data_is_valid = true;
+            a.cpc.landing_elevation = Length::new::<foot>(0.);
+            a.cpc.exterior_flight_altitude = Length::new::<foot>(4000.);
+            a.cpc.cabin_alt = Length::new::<foot>(6000.);
+            a.cpc
+                .cabin_filtered_vertical_speed
+                .reset(Velocity::new::<foot_per_minute>(-1000.));
+            a.cpc.cabin_pressure = Pressure::new::<psi>(11.);
+            a.cpc.exterior_pressure.reset(Pressure::new::<psi>(10.));
+            a.cpc.cabin_delta_p_rate = -0.005;
+            a.cpc.low_diff_pressure_warning = false;
+            a.cpc.update_low_diff_pressure_warning();
+        });
+
+        assert!(!test_bed.query(|a| a.cpc.is_low_diff_pressure()));
     }
 }
