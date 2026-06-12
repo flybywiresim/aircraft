@@ -403,16 +403,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
   idFmNavCaptureCondition = std::make_unique<LocalVariable>("A32NX_FM1_NAV_CAPTURE_CONDITION");
 
-  idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
-  idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
-  idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
   idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
-  idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasRaType = std::make_unique<LocalVariable>("A32NX_TCAS_RA_TYPE");
-  idTcasRaRateToMaintain = std::make_unique<LocalVariable>("A32NX_TCAS_RA_RATE_TO_MAINTAIN");
-  idTcasRaUpAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_UP_ADVISORY_STATUS");
-  idTcasRaDownAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_DOWN_ADVISORY_STATUS");
-  idTcasSensitivityLevel = std::make_unique<LocalVariable>("A32NX_TCAS_SENSITIVITY");
+  idTcasModeWord = std::make_unique<LocalVariable>("A32NX_TCAS_MODE_WORD");
+  idTcasVerticalAdvisoryWord = std::make_unique<LocalVariable>("A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD");
 
   idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -1351,37 +1344,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updateTcas() {
-  uint8_t mode = 0;
-  if (idTcasMode->get() == 0) {
-    mode = 0;
-  } else if (idTcasTaOnly->get()) {
-    mode = 0b0010;
-  } else {
-    mode = 0b0011;
-  }
-
-  tcasBusOutputs.sensitivity_level.SSM = Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.sensitivity_level.Data = static_cast<float>(((idTcasMode->get() == 0 ? 1 : 0) << 24) | (mode << 25));
-
-  auto rateToMaintain = idTcasRaRateToMaintain->get();
-  uint8_t uintRateToMaintain = static_cast<uint8_t>(std::abs(rateToMaintain) / 100) & 0b00111111;
-  uint8_t combinedControl = 0;
-  if (idTcasState->get() < 2) {
-    combinedControl = 0;
-  } else if (idTcasRaCorrective->get() == 1) {
-    combinedControl = rateToMaintain > 0 ? 4 : 5;
-  } else if (idTcasRaCorrective->get() == 0) {
-    combinedControl = 6;
-  }
-  uint8_t verticalControl = static_cast<uint8_t>(idTcasRaType->get()) & 0b00000111;
-  uint8_t upAdvisory = static_cast<uint8_t>(idTcasRaUpAdvStatus->get()) & 0b00000111;
-  uint8_t downAdvisory = static_cast<uint8_t>(idTcasRaDownAdvStatus->get()) & 0b00000111;
-
-  tcasBusOutputs.vertical_resolution_advisory.SSM =
-      idTcasMode->get() < 2 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.vertical_resolution_advisory.Data =
-      static_cast<float>((uintRateToMaintain << 10) | (rateToMaintain < 0 ? 1u << 16 : 0) | (combinedControl << 17) |
-                         (verticalControl << 20) | (upAdvisory << 23) | (downAdvisory << 26));
+  tcasBusOutputs.sensitivity_level = Arinc429Utils::fromSimVar(idTcasModeWord->get());
+  tcasBusOutputs.vertical_resolution_advisory =Arinc429Utils::fromSimVar(idTcasVerticalAdvisoryWord->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataTcas(tcasBusOutputs);

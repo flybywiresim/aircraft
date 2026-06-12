@@ -217,6 +217,7 @@
     "All": "All",
     "Altn": "Altn",
     "ExitFullscreenMode": "Exit Fullscreen Mode",
+    "FailedToGetCharts": "Failed to get charts for airport!",
     "From": "From",
     "LoadingImage": "Loading Image",
     "LoadingImageFailed": "Loading Image failed",
@@ -231,6 +232,10 @@
       "Pdf": "Pdf",
       "Retry": "Retry",
       "Title": "Local Files"
+    },
+    "Msfs": {
+      "Faa": "FAA",
+      "Lido": "LIDO"
     },
     "Navigraph": {
       "AirportDoesNotExist": "Airport Does Not Exist",
@@ -614,8 +619,8 @@
       "HoppieProvider": "ACARS Provider",
       "AcarsProviderNone": "None",
       "AcarsProviderHoppie": "Hoppie",
-      "AcarsProviderBatc": "BATC",
-      "AcarsProviderSai": "SAI",
+      "AcarsProviderBatc": "BeyondATC",
+      "AcarsProviderSai": "SayIntentions.AI",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
@@ -729,6 +734,7 @@
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
       "GsxPowerEnabled": "GSX External Power Synchronization",
+      "OansUseMsfsData": "Use MSFS OANS airport data",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
