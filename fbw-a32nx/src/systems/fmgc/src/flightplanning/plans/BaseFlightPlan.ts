@@ -1002,15 +1002,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param databaseId the approach databaseId or `undefined` for NONE
    */
   async setApproach(databaseId: string | undefined) {
-    const currentApproach = this.approachSegment.procedure;
-
-    if (currentApproach?.databaseId !== databaseId) {
-      this.performanceData.approachRadioMinimum.set(null);
-      this.performanceData.approachBaroMinimum.set(null);
-    }
-
     await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
-
     await this.flushOperationQueue();
     this.incrementVersion();
   }
