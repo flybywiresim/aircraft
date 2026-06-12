@@ -95,9 +95,9 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/${{ contains(github.event.workflow_run.name, 'FS2024') && 'msfs2024' || 'msfs2020' }}/a380x/pr-${{ steps.pr.outputs.number }}-4k
+          CDN_BUCKET_DESTINATION: addons/${{ contains(github.event.workflow_run.name, 'FS2024') && 'msfs2024' || 'msfs2020' }}/a380x/pr-${{ steps.pr.outputs.number }}
         run: |
-          ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x-4k $CDN_BUCKET_DESTINATION
+          ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x $CDN_BUCKET_DESTINATION
       - name: Lock QA config
         if: steps.artifacts.outputs.found == 'true'
         run: ./scripts/acquire_lock.sh installer/qa-config/.lock
@@ -108,7 +108,6 @@ jobs:
           PR_TITLE: ${{ steps.pr.outputs.title }}
           PR_BODY: ${{ steps.pr.outputs.body }}
           ADDON_KEYS: ${{ contains(github.event.workflow_run.name, 'FS2024') && 'a32nx-msfs2024,a380x-msfs2024' || 'a32nx-msfs2020,a380x-msfs2020' }}
-          TEXTURE_QUALITY: 4k
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
           CDN_BUCKET_DESTINATION: installer/qa-config/
