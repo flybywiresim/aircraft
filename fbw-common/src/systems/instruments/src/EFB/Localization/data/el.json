@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Ύψος Επιτάχυνσης (ft)",
       "EngineOutAccelerationHeight": "Ύψος Επιτάχυνσης Εξερχόμενου Κινητήρα (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Μονάδα ISIS Baro",
       "IsisMetricAltitude": "Μετρικό Υψόμετρο ISIS",
       "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
