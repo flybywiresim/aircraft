@@ -14,6 +14,7 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [FMS] Automatically delete minimums when the approach is changed - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
