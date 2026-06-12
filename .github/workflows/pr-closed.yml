@@ -16,12 +16,6 @@ jobs:
         with:
           ignore_sha: true
           workflow_id: "pr-build.yml"
-
-      - name: Cancel PR build (8K)
-        uses: styfle/cancel-workflow-action@0.12.1
-        with:
-          ignore_sha: true
-          workflow_id: "pr-build-8k.yml"
   remove-from-qa-config:
     name: Remove PR from QA Config
     runs-on: ubuntu-latest
@@ -64,22 +58,18 @@ jobs:
         env:
           R2_BUCKET: flybywiresim
           CDN_BUCKET_DESTINATION_A32NX: addons/msfs2024/a32nx/pr-${{ github.event.pull_request.number }}
-          CDN_BUCKET_DESTINATION_A380X_4K: addons/msfs2024/a380x/pr-${{ github.event.pull_request.number }}-4k
-          CDN_BUCKET_DESTINATION_A380X_8K: addons/msfs2024/a380x/pr-${{ github.event.pull_request.number }}-8k
+          CDN_BUCKET_DESTINATION_A380X: addons/msfs2024/a380x/pr-${{ github.event.pull_request.number }}
         run: |
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
-          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
-          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_8K || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X || true
       - name: Remove PR files from CloudFlare CDN (FS2020)
         env:
           R2_BUCKET: flybywiresim
           CDN_BUCKET_DESTINATION_A32NX: addons/msfs2020/a32nx/pr-${{ github.event.pull_request.number }}
-          CDN_BUCKET_DESTINATION_A380X_4K: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}-4k
-          CDN_BUCKET_DESTINATION_A380X_8K: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}-8k
+          CDN_BUCKET_DESTINATION_A380X: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}
         run: |
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
-          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
-          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_8K || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X || true
       - name: Release QA config lock
         if: always()
         run: ./scripts/release_lock.sh installer/qa-config/.lock
