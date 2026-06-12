@@ -371,9 +371,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     await this.deleteAlternateFlightPlan();
   }
 
-  async setApproach(databaseId: string | undefined) {
+  override async setApproach(databaseId: string | undefined) {
     const currentApproachDatabaseId = this.approachSegment.procedure?.databaseId;
-    super.setApproach(databaseId);
+    await super.setApproach(databaseId);
     if (currentApproachDatabaseId !== databaseId) {
       this.setPerformanceData('approachBaroMinimum', null);
       this.setPerformanceData('approachRadioMinimum', null);
