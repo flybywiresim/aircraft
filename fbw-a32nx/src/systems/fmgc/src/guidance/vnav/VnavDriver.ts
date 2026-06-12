@@ -612,17 +612,21 @@ export class VnavDriver implements GuidanceComponent {
       return false;
     }
     const activeLeg = this.flightPlanService.active?.activeLeg;
-    if (isLeg(activeLeg) && !activeLeg.isVectors() && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
-      // If we are on a vectors leg or hold without exit toggled, we don't want to trigger the message.
+    // Don't trigger the message if we are flying a hold.
+    if (isLeg(activeLeg) && (activeLeg.type !== LegType.HM || activeLeg.holdImmExit)) {
       const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
       if (lastLegIndexBeforeDiscontinuity !== null) {
-        const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
-        if (vnavPrediction) {
-          return vnavPrediction.secondsFromPresent < 30;
-        } else {
-          // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
-          if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
-            return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+        const lastLeg = this.flightPlanService.active.maybeElementAt(lastLegIndexBeforeDiscontinuity);
+        // Only trigger the message if the leg before discontinuity is not a vector leg.
+        if (isLeg(lastLeg) && !lastLeg.isVectors()) {
+          const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
+          if (vnavPrediction) {
+            return vnavPrediction.secondsFromPresent < 30;
+          } else {
+            // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+            if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
+              return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+            }
           }
         }
       }

@@ -5,7 +5,6 @@
 
 import {
   ClockEvents,
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -311,8 +310,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
   private readonly altFlagVisible = this.altitude.map((v) => !v.isNormalOperation() && !v.isFunctionalTest());
 
-  private readonly tcasFailed = ConsumerSubject.create(null, false);
-
   private fcuSelectedAlt = new Arinc429Word(0);
 
   private altConstraint = new Arinc429Word(0);
@@ -329,8 +326,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & FgBus & FcuBus>();
-
-    this.tcasFailed.setConsumer(sub.on('tcasFail'));
 
     sub
       .on('fmgcDiscreteWord1')
@@ -377,20 +372,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             </text>
           </FlashOneHertz>
         </g>
-        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasFailed}>
-          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
-            T
-          </text>
-          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
-            C
-          </text>
-          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
-            A
-          </text>
-          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
-            S
-          </text>
-        </FlashOneHertz>
         <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.isCheckAltVisible}>
           <g
             id="CheckAltWarning"
