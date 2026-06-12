@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 $font-size-small: 14px;
 $font-size-medium: 16px;
 $font-size-large: 17px;
@@ -9,10 +17,13 @@ $font-size-title: 24px;
 $display-white: #ffffff;
 $display-grey: #787878;
 $display-amber: #e68000;
+$display-dark-grey: #868a9c;
+$display-light-grey: #c4c6cf;
 $display-cyan: #00ffff;
 $display-green: #00ff00;
 $display-magenta: #ff94ff;
 $display-red: #ff0000;
 $display-yellow: #ffff00;
+$display-dark-blue: rgb(12, 102, 247);
 
 $display-background: #040404;
