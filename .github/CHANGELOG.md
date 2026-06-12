@@ -14,6 +14,9 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [ADIRS] Add computerized ADIRS simulation - @lukecologne (luke)
+1. [ADIRS] Add basic simulation of air data sensors - @lukecologne (luke)
+1. [ADIRS] Add simulation of ADIRS power supplies - @lukecologne (luke)
 
 ## 2024.1.0
 

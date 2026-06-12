@@ -686,6 +686,8 @@ export class PseudoFWC {
 
   private readonly elecEmergency = Subject.create(false);
 
+  private readonly elecEmergencyFor280Seconds = new NXLogicConfirmNode(280, true);
+
   private readonly elecEmerConfigWarning = Subject.create(false);
 
   private readonly elecEmerBusTieOffGen1ResetMemoryNode = new NXLogicMemoryNode(false);
@@ -1344,6 +1346,18 @@ export class PseudoFWC {
 
   private readonly adr3Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_3'));
 
+  private readonly adr1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_discrete_word_1_1'),
+  );
+
+  private readonly adr2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_discrete_word_1_2'),
+  );
+
+  private readonly adr3DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_adr_discrete_word_1_3'),
+  );
+
   private readonly adr123CasAbove220Kts = Subject.create(false);
 
   private readonly computedAirSpeedToNearest2 = this.adr1Cas.map((it) => Math.round(it.value / 2) * 2);
@@ -1395,6 +1409,41 @@ export class PseudoFWC {
   private readonly ir1NotAlignedPulse = new NXLogicPulseNode(true);
   private readonly ir2NotAlignedPulse = new NXLogicPulseNode(true);
   private readonly ir3NotAlignedPulse = new NXLogicPulseNode(true);
+
+  private readonly ir1FaultConf = new NXLogicConfirmNode(0.5, true);
+  private readonly ir1FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
+  private readonly ir2FaultConf = new NXLogicConfirmNode(0.5, true);
+  private readonly ir2FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
+  private readonly ir3FaultConf = new NXLogicConfirmNode(0.5, true);
+  private readonly ir3FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
+  private readonly ir3FaultFlipFlop = new NXLogicMemoryNode(false);
+
+  private readonly ir3UsedLeft = Subject.create(false);
+  private readonly ir3Used = Subject.create(false);
+
+  private readonly ir1FaultActive = Subject.create(false);
+  private readonly ir2FaultActive = Subject.create(false);
+  private readonly ir3FaultActive = Subject.create(false);
+  private readonly ir1and2FaultActive = Subject.create(false);
+  private readonly ir1and3FaultActive = Subject.create(false);
+  private readonly ir2and3FaultActive = Subject.create(false);
+
+  private readonly adr3FaultFlipFlop = new NXLogicMemoryNode(false);
+  private readonly adr3UsedLeft = Subject.create(false);
+  private readonly adr3UsedRight = Subject.create(false);
+  private readonly adr3Used = MappedSubject.create(
+    ([adr3UsedLeft, adr3UsedRight]) => adr3UsedLeft || adr3UsedRight,
+    this.adr3UsedLeft,
+    this.adr3UsedRight,
+  );
+
+  private readonly adr1FaultActive = Subject.create(false);
+  private readonly adr2FaultActive = Subject.create(false);
+  private readonly adr3FaultActive = Subject.create(false);
+  private readonly adr1and2FaultActive = Subject.create(false);
+  private readonly adr1and3FaultActive = Subject.create(false);
+  private readonly adr2and3FaultActive = Subject.create(false);
+  private readonly adr1and2and3FaultActive = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -3280,6 +3329,7 @@ export class PseudoFWC {
         (this.sdac05201Word.bitValue(14) || this.genApuInop.get() || !this.sdac03701Word.bitValue(19))) ||
         (this.sdac00201Word.bitValue(20) && this.sdac00210Word.bitValue(20)),
     );
+    this.elecEmergencyFor280Seconds.write(this.elecEmergency.get(), deltaTime);
 
     /* OTHER STUFF */
 
@@ -4177,7 +4227,7 @@ export class PseudoFWC {
     );
     this.elecEmerGen12Reset.set(!(this.elecEmerGen1ResetMemoryNode.read() && this.elecEmerGen2ResetMemoryNode.read()));
 
-    /* NAV logic */
+    /* ATA34 - NAV logic */
     const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
     const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
     const dmcLIsQnh = dmcLQnhBit && !dmcLStdBit;
@@ -4280,6 +4330,121 @@ export class PseudoFWC {
     this.xpdrStbyWarning.set(
       this.xpdrStbyConfirmNode.write(this.sdac00100Word.bitValue(24) && this.sdac00100Word.bitValue(25), deltaTime) &&
         !this.flightPhase12910.get(),
+    );
+
+    // TODO should come from the SDAC
+    const ir1FaultSignal = this.sdac00401Word.bitValue(28);
+    const ir2FaultSignal = this.sdac00410Word.bitValue(28);
+    const ir3FaultSignal = this.sdac00411Word.bitValue(28);
+
+    this.ir1FaultConf.write(ir1FaultSignal, deltaTime);
+    this.ir1FaultMtrig.write(this.ir1FaultConf.read(), deltaTime);
+    const ir1FaultDetected = this.ir1FaultConf.read() || this.ir1FaultMtrig.read();
+
+    this.ir2FaultConf.write(ir2FaultSignal, deltaTime);
+    this.ir2FaultMtrig.write(this.ir2FaultConf.read(), deltaTime);
+    const ir2FaultDetected = this.ir2FaultConf.read() || this.ir2FaultMtrig.read();
+
+    this.ir3FaultConf.write(ir3FaultSignal, deltaTime);
+    this.ir3FaultMtrig.write(this.ir3FaultConf.read(), deltaTime);
+    const ir3FaultDetected = this.ir3FaultConf.read() || this.ir3FaultMtrig.read();
+    this.ir3FaultFlipFlop.write(ir3FaultDetected && this.fwcFlightPhase.get() == 2, !ir3FaultDetected);
+
+    this.ir3UsedLeft.set(
+      this.dmcLeftDiscreteWord6.get().bitValueOr(11, false) && this.dmcLeftDiscreteWord6.get().bitValueOr(12, false),
+    );
+
+    this.ir3Used.set(
+      (this.dmcLeftDiscreteWord6.get().bitValueOr(11, false) &&
+        this.dmcLeftDiscreteWord6.get().bitValueOr(12, false)) ||
+        (this.dmcRightDiscreteWord6.get().bitValueOr(11, false) &&
+          this.dmcRightDiscreteWord6.get().bitValueOr(12, false)),
+    );
+
+    this.ir1and2FaultActive.set(ir1FaultDetected && ir2FaultDetected);
+    this.ir2and3FaultActive.set(ir2FaultDetected && ir3FaultDetected && !this.elecEmergencyFor280Seconds.read());
+    this.ir1and3FaultActive.set(ir1FaultDetected && ir3FaultDetected && !this.elecEmergencyFor280Seconds.read());
+
+    this.ir1FaultActive.set(ir1FaultDetected && !(this.ir1and2FaultActive.get() || this.ir1and3FaultActive.get()));
+    this.ir2FaultActive.set(
+      ir2FaultDetected &&
+        !(this.ir1and2FaultActive.get() || this.ir2and3FaultActive.get()) &&
+        !this.elecEmergencyFor280Seconds.read(),
+    );
+    this.ir3FaultActive.set(
+      ir3FaultDetected &&
+        !(this.ir2and3FaultActive.get() || this.ir1and3FaultActive.get()) &&
+        !this.elecEmergencyFor280Seconds.read() &&
+        (this.ir3FaultFlipFlop.read() || this.ir3Used.get() || this.fwcFlightPhase.get() != 3),
+    );
+
+    this.adr3UsedLeft.set(
+      this.dmcLeftDiscreteWord6.get().bitValueOr(13, false) && this.dmcLeftDiscreteWord6.get().bitValueOr(14, false),
+    );
+    this.adr3UsedRight.set(
+      this.dmcRightDiscreteWord6.get().bitValueOr(13, false) && this.dmcRightDiscreteWord6.get().bitValueOr(14, false),
+    );
+
+    const adr1Faulty = this.adr1DiscreteWord1.get().bitValueOr(13, true);
+    const adr2Faulty =
+      this.adr2DiscreteWord1.get().bitValueOr(13, true) &&
+      (this.adr2PressureAlt.get().isInvalid() || this.adr2PressureAlt.get().isNoComputedData());
+    const adr3Faulty =
+      this.adr3DiscreteWord1.get().bitValueOr(13, true) &&
+      (this.adr3PressureAlt.get().isInvalid() || this.adr3PressureAlt.get().isNoComputedData());
+
+    const adr1and2and3Faulty = adr1Faulty && adr2Faulty && adr3Faulty;
+
+    this.adr1and2and3FaultActive.set(
+      !(this.sdac00200Word.bitValue(18) && this.sdac00210Word.bitValue(20) && this.sdac00201Word.bitValue(20)) &&
+        adr1and2and3Faulty &&
+        !this.flightPhase110.get(),
+    );
+
+    this.adr1and2FaultActive.set(
+      !(this.flightPhase110.get() || this.sdac00210Word.bitValue(20) || this.sdac00200Word.bitValue(18)) &&
+        adr1Faulty &&
+        adr2Faulty &&
+        !this.adr1and2and3FaultActive.get(),
+    );
+    this.adr1and3FaultActive.set(
+      !this.flightPhase110.get() &&
+        adr1Faulty &&
+        adr3Faulty &&
+        !this.adr1and2and3FaultActive.get() &&
+        !this.elecEmergency.get(),
+    );
+    this.adr2and3FaultActive.set(
+      !this.flightPhase110.get() &&
+        adr2Faulty &&
+        adr3Faulty &&
+        !this.adr1and2and3FaultActive.get() &&
+        !this.elecEmergency.get(),
+    );
+
+    this.adr1FaultActive.set(
+      adr1Faulty &&
+        !(this.adr1and3FaultActive.get() || this.adr1and2FaultActive.get()) &&
+        !(this.flightPhase110.get() || this.sdac00200Word.bitValue(18)) &&
+        !this.adr1and2and3FaultActive.get(),
+    );
+
+    this.adr2FaultActive.set(
+      adr2Faulty &&
+        !(this.adr1and2FaultActive.get() || this.adr2and3FaultActive.get()) &&
+        !this.flightPhase110.get() &&
+        !this.sdac00210Word.bitValue(20) &&
+        !this.adr1and2and3FaultActive.get(),
+    );
+
+    this.adr3FaultFlipFlop.write(adr3Faulty && this.fwcFlightPhase.get() == 2, !adr3Faulty);
+
+    this.adr3FaultActive.set(
+      adr3Faulty &&
+        (this.adr3FaultFlipFlop.read() || this.adr3Used.get() || this.fwcFlightPhase.get() != 3) &&
+        !(this.adr1and3FaultActive.get() || this.adr2and3FaultActive.get()) &&
+        !this.adr1and2and3FaultActive.get() &&
+        !(this.flightPhase110.get() || this.sdac00201Word.bitValue(20)),
     );
 
     // ALT ALERT
@@ -6604,6 +6769,209 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.WHEEL,
+      side: 'LEFT',
+    },
+    3400010: {
+      // ADR 1 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr1FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        !this.adr3Used.get() ? 1 : null,
+        this.adr1DiscreteWord1.get().isNormalOperation() ? 2 : null,
+      ],
+      codesToReturn: ['340001001', '340001002', '340001003'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400020: {
+      // ADR 2 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr2FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        !this.adr3Used.get() ? 1 : null,
+        this.adr2DiscreteWord1.get().isNormalOperation() ? 2 : null,
+        3,
+      ],
+      codesToReturn: ['340002001', '340002002', '340002003', '340002004'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400025: {
+      // ADR 1+2 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr1and2FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        !this.adr3UsedLeft.get() ? 1 : null,
+        this.adr1DiscreteWord1.get().isNormalOperation() ? 2 : null,
+        this.adr2DiscreteWord1.get().isNormalOperation() ? 3 : null,
+      ],
+      codesToReturn: ['340002501', '340002502', '340002503', '340002504'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400030: {
+      // ADR 1+3 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr1and3FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        this.adr3Used.get() ? 1 : null,
+        null,
+        this.adr1DiscreteWord1.get().isNormalOperation() ? 3 : null,
+        this.adr3DiscreteWord1.get().isNormalOperation() ? 4 : null,
+      ],
+      codesToReturn: ['340003001', '340003002', '340003003', '340003004', '340003005'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400035: {
+      // ADR 2+3 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr2and3FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        this.adr3Used.get() ? 1 : null,
+        null,
+        this.adr2DiscreteWord1.get().isNormalOperation() ? 3 : null,
+        this.adr3DiscreteWord1.get().isNormalOperation() ? 4 : null,
+      ],
+      codesToReturn: ['340003501', '340003502', '340003503', '340003504', '340003505'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400040: {
+      // ADR 3 FAULT
+      flightPhaseInhib: [1, 4, 5, 7, 8, 10],
+      simVarIsActive: this.adr3FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        this.adr3DiscreteWord1.get().isNormalOperation() ? 1 : null,
+        this.adr3Used.get() ? 2 : null,
+      ],
+      codesToReturn: ['340004001', '340004002', '340004003'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400045: {
+      // ADR 1+2+3 FAULT
+      flightPhaseInhib: [1, 4, 8, 10],
+      simVarIsActive: this.adr1and2and3FaultActive,
+      whichCodeToReturn: () => [
+        0,
+        null,
+        null,
+        3,
+        null,
+        null,
+        this.adr1DiscreteWord1.get().isNormalOperation() ||
+        this.adr2DiscreteWord1.get().isNormalOperation() ||
+        this.adr3DiscreteWord1.get().isNormalOperation()
+          ? 6
+          : null,
+        7,
+        null,
+        null,
+        10,
+        11,
+      ],
+      codesToReturn: [
+        '340004501',
+        '340004502',
+        '340004503',
+        '340004504',
+        '340004505',
+        '340004506',
+        '340004507',
+        '340004508',
+        '340004509',
+        '340004510',
+        '340004511',
+        '340004512',
+      ],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400050: {
+      // IR 1 FAULT
+      flightPhaseInhib: [4, 5, 7, 8],
+      simVarIsActive: this.ir1FaultActive,
+      whichCodeToReturn: () => [0, !this.ir3Used.get() ? 1 : null, null],
+      codesToReturn: ['340005001', '340005002', '340005003'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400060: {
+      // IR 2 FAULT
+      flightPhaseInhib: [4, 5, 7, 8],
+      simVarIsActive: this.ir2FaultActive,
+      whichCodeToReturn: () => [0, !this.ir3Used.get() ? 1 : null, null],
+      codesToReturn: ['340006001', '340006002', '340006003'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400065: {
+      // IR 1+2 FAULT
+      flightPhaseInhib: [4, 7],
+      simVarIsActive: this.ir1and2FaultActive,
+      whichCodeToReturn: () => [0, !this.ir3UsedLeft.get() ? 1 : null],
+      codesToReturn: ['340006501', '340006502'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400070: {
+      // IR 1+3 FAULT
+      flightPhaseInhib: [4, 8],
+      simVarIsActive: this.ir1and3FaultActive,
+      whichCodeToReturn: () => [0, this.ir3Used.get() ? 1 : null],
+      codesToReturn: ['340007001', '340007002'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400075: {
+      // IR 2+3 FAULT
+      flightPhaseInhib: [4, 8],
+      simVarIsActive: this.ir2and3FaultActive,
+      whichCodeToReturn: () => [0, this.ir3Used.get() ? 1 : null],
+      codesToReturn: ['340007501', '340007502'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    3400080: {
+      // IR 3 FAULT
+      flightPhaseInhib: [4, 5, 7, 8],
+      simVarIsActive: this.ir3FaultActive,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['340008001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
       side: 'LEFT',
     },
     3400140: {
