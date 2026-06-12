@@ -7,9 +7,14 @@ mod fuel;
 mod msfs;
 
 #[cfg(not(target_arch = "wasm32"))]
-use crate::msfs::legacy::{AircraftVariable, NamedVariable};
+use crate::msfs::legacy::NamedVariable;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::msfs::vars::AircraftVariableApi;
 #[cfg(target_arch = "wasm32")]
-use ::msfs::legacy::{AircraftVariable, NamedVariable};
+use ::msfs::legacy::NamedVariable;
+#[cfg(target_arch = "wasm32")]
+use ::msfs::vars::AircraftVariableApi;
+
 use fuel::fuel_pumps;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -22,7 +27,7 @@ use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
-    sys, MSFSEvent,
+    sys, MSFS2024SystemEvent,
 };
 use failures::Failures;
 use rustc_hash::FxHashMap;
@@ -218,12 +223,12 @@ impl MsfsHandler {
 
     pub fn handle<T: Aircraft>(
         &mut self,
-        event: MSFSEvent,
+        event: MSFS2024SystemEvent,
         simulation: &mut Simulation<T>,
         sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn Error>> {
         match event {
-            MSFSEvent::PreDraw(_) => {
+            MSFS2024SystemEvent::Update(_) => {
                 if !self.time.is_pausing() {
                     let delta_time = self.time.take();
                     self.pre_tick(sim_connect, delta_time)?;
@@ -233,7 +238,7 @@ impl MsfsHandler {
                     self.post_tick(sim_connect)?;
                 }
             }
-            MSFSEvent::SimConnect(message) => match message {
+            MSFS2024SystemEvent::SimConnect(message) => match message {
                 SimConnectRecv::SimObjectData(data) if data.id() == SimulationTime::REQUEST_ID => {
                     self.time
                         .increment(data.into::<SimulationTime>(sim_connect).unwrap());
@@ -402,13 +407,15 @@ impl From<&Variable> for VariableValue {
         match value {
             Variable::Aircraft(name, units, index, ..) => {
                 let index = *index;
-                VariableValue::Aircraft(match AircraftVariable::from(name, units, index) {
-                    Ok(aircraft_variable) => aircraft_variable,
-                    Err(error) => panic!(
-                        "Error while trying to create aircraft variable named '{}': {}",
-                        name, error
-                    ),
-                })
+                VariableValue::Aircraft(
+                    match AircraftVariableApi::from(name, units, index.try_into().unwrap()) {
+                        Ok(aircraft_variable) => aircraft_variable,
+                        Err(error) => panic!(
+                            "Error while trying to create aircraft variable named '{}': {}",
+                            name, error
+                        ),
+                    },
+                )
             }
             Variable::Named(name, ..) => VariableValue::Named(NamedVariable::from(name)),
             Variable::Aspect(..) => VariableValue::Aspect(0.),
@@ -457,7 +464,7 @@ impl From<&VariableIdentifier> for VariableType {
 }
 
 pub enum VariableValue {
-    Aircraft(AircraftVariable),
+    Aircraft(AircraftVariableApi),
     Named(NamedVariable),
     Aspect(f64),
 }
@@ -473,7 +480,7 @@ impl VariableValue {
 
     fn write(&mut self, value: f64) {
         match self {
-            Self::Aircraft(_) => panic!("Cannot write to an aircraft variable."),
+            Self::Aircraft(underlying) => underlying.set(value),
             Self::Named(underlying) => underlying.set_value(value),
             Self::Aspect(underlying) => *underlying = value,
         }
