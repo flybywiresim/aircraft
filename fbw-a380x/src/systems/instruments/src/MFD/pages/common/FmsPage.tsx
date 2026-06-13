@@ -1,8 +1,8 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   ConsumerSubject,
-  DisplayComponent,
   FSComponent,
+  LifecycleComponent,
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
@@ -36,7 +36,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
-export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
+export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends LifecycleComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 

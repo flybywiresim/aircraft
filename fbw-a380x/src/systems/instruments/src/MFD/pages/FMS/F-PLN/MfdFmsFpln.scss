@@ -9,6 +9,7 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
 }
 
 .mfd-fms-yellow-text {
@@ -20,6 +21,7 @@
 }
 
 .mfd-fms-fpln-line-secondary > div > .mfd-fms-fpln-line-annotation,
+.mfd-fms-fpln-line-secondary > .mfd-fms-fpln-line-rnp-hold-spd-annotation,
 .mfd-fms-fpln-line-secondary > div > .mfd-fms-fpln-line-ident,
 .mfd-fms-fpln-line-secondary > .mfd-fms-fpln-label-small,
 .mfd-fms-fpln-line-secondary > .mfd-fms-fpln-label-small-clickable {
@@ -27,6 +29,7 @@
 }
 
 .mfd-fms-fpln-line-temporary > div > .mfd-fms-fpln-line-annotation,
+.mfd-fms-fpln-line-temporary > .mfd-fms-fpln-line-rnp-hold-spd-annotation,
 .mfd-fms-fpln-line-temporary > div > .mfd-fms-fpln-line-ident,
 .mfd-fms-fpln-line-temporary > .mfd-fms-fpln-label-small,
 .mfd-fms-fpln-line-temporary > .mfd-fms-fpln-label-small-clickable,
@@ -34,7 +37,6 @@
   color: $display-yellow;
 }
 
-.mfd-fms-fpln-line-altn > div > .mfd-fms-fpln-line-annotation,
 .mfd-fms-fpln-line-altn > div > .mfd-fms-fpln-line-ident,
 .mfd-fms-fpln-line-altn > .mfd-fms-fpln-label-small,
 .mfd-fms-fpln-line-altn > .mfd-fms-fpln-label-small-clickable,
@@ -53,9 +55,20 @@
 
 .mfd-fms-fpln-line-annotation {
   height: 32px;
-  text-align: right;
-  font-size: 22px;
+  font-size: 24px;
   color: $display-white;
+  text-align: end;
+  margin-right: 20px;
+}
+
+.mfd-fms-fpln-line-rnp-hold-spd-annotation {
+  position: absolute;
+  top: 1px;
+  left: 215px;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+  text-align: start;
 }
 
 .mfd-fms-fpln-line-ident {

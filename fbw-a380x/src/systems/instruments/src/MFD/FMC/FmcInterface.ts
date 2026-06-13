@@ -301,6 +301,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   clearCheckSpeedModeMessage(): void;
 
+  /**
+   * Indicates whether the true heading reference has been manually selected by the pilot.
+   */
+  isTrueRefActive(): boolean;
+
   reset(): void;
 
   /** Clean up all subscriptions */

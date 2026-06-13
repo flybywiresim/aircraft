@@ -149,9 +149,9 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#fmgc;
   }
 
-  private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
+  private readonly fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
-  private efisInterfaces = {
+  private readonly efisInterfaces = {
     L: new EfisInterface(
       'L',
       this.flightPlanInterface,
@@ -231,7 +231,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   // TODO make private, and access methods through FmcInterface
-  public acInterface!: FmcAircraftInterface;
+  public readonly acInterface!: FmcAircraftInterface;
 
   public revisedLegIndex = Subject.create<number | null>(null);
 
@@ -457,6 +457,10 @@ export class FlightManagementComputer implements FmcInterface {
     }, 15000);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
+  }
+
+  isTrueRefActive(): boolean {
+    return this.acInterface.istrueRefActive();
   }
 
   destroy() {
