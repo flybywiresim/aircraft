@@ -38,9 +38,9 @@ function fetchUrl(url) {
   });
 }
 
-function updateTrackInfo(track, prNumber, prTitle, prBody) {
+function updateTrackInfo(addonKey, track, prNumber, prTitle, prBody) {
   const addonPrefix = track.key.split('-pr-')[0];
-  const trackName = `PR #${prNumber} ${addonPrefix.startsWith('a380x') ? `(${track.key.includes('8k') ? '8K' : '4K'})` : ''} | ${prTitle}`;
+  const trackName = `PR #${prNumber} ${addonPrefix.startsWith('a380x') && addonKey.includes('fs2020') ? `(${track.key.includes('8k') ? '8K' : '4K'})` : ''} | ${prTitle}`;
   const description = `## [${prTitle} #${prNumber}](https://github.com/${GITHUB_REPO}/pull/${prNumber})\n\n${prBody}`;
 
   track.name = trackName;
@@ -90,13 +90,17 @@ async function main() {
       if (addonKey.startsWith('a32nx')) {
         trackKeysToUpdate.push(`a32nx-pr-${PR_NUMBER}`);
       } else if (addonKey.startsWith('a380x')) {
-        trackKeysToUpdate.push(`a380x-pr-${PR_NUMBER}-4k`, `a380x-pr-${PR_NUMBER}-8k`);
+        if (addonKey.includes('fs2024')) {
+          trackKeysToUpdate.push(`a380x-pr-${PR_NUMBER}`);
+        } else {
+          trackKeysToUpdate.push(`a380x-pr-${PR_NUMBER}-4k`, `a380x-pr-${PR_NUMBER}-8k`);
+        }
       }
 
       for (const trackKey of trackKeysToUpdate) {
         const track = addon.tracks.find((t) => t.key === trackKey);
         if (track) {
-          updateTrackInfo(track, PR_NUMBER, PR_TITLE, PR_BODY);
+          updateTrackInfo(addonKey, track, PR_NUMBER, PR_TITLE, PR_BODY);
           console.log(`Updated track: ${track.key}`);
           updatedAnyTracks = true;
         }
