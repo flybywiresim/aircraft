@@ -1,4 +1,4 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -365,8 +365,8 @@ export class FwsMemos {
     // 32 LANDING GEAR
     320000001: {
       // AUTO BRK OFF
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
-      simVarIsActive: this.fws.autoBrakeOff,
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoBrakeOffMemoAndAudio,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
       memoInhibit: () => false,

@@ -73,6 +73,9 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
    * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
    */
   limitationsPfd?: (checked: boolean[]) => (string | null)[];
+
+  /** If true, is not used to display on the EWD */
+  nonProcedureKey?: boolean;
 }
 
 export interface EwdAbnormalDict {
@@ -3691,6 +3694,19 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Wheel,
       cancel: true,
     },
+    320000001: {
+      // AUTO BRK OFF Master Caution light
+      simVarIsActive: this.fws.autoBrakeOffMasterCautionLight,
+      failure: 2,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      flightPhaseInhib: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.None,
+      monitorConfirmTime: 0,
+      nonProcedureKey: true,
+    },
+
     // ATA 34 - NAVIGATION
     340800001: {
       // ADR 1 FAULT

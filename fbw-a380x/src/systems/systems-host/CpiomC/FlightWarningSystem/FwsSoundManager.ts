@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -36,6 +36,12 @@ interface FwsAural {
   periodicWithPause?: number;
   continuous?: boolean;
 }
+
+export interface FwsAudioOutputSignals {
+  keepMaxReverse: boolean;
+}
+
+const KEEP_MAX_REVERSE_OUTPUT_VAR = 'L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE';
 
 export const FwsAuralsList: Record<string, FwsAural> = {
   continuousRepetitiveChime: {
@@ -78,13 +84,6 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
-  autoBrakeOff: {
-    localVarName: 'A32NX_AUDIO_AUTOBRAKE_OFF',
-    length: 1.5,
-    priority: 2,
-    type: FwsAuralWarningType.SyntheticVoice,
-    continuous: false,
-  },
   runwayTooShort: {
     localVarName: 'A32NX_AUDIO_ROW_RWY_TOO_SHORT',
     length: 1.6,
@@ -93,23 +92,30 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   keepMaxReverse: {
-    localVarName: 'A32NX_AUDIO_ROP_KEEP_MAX_REVERSE',
+    localVarName: KEEP_MAX_REVERSE_OUTPUT_VAR,
     length: 1.4,
-    priority: 4,
+    priority: 18,
+    type: FwsAuralWarningType.SyntheticVoice,
+    continuous: false,
+  },
+  autoBrakeOff: {
+    localVarName: 'A32NX_AUDIO_AUTOBRAKE_OFF',
+    length: 1.5,
+    priority: 17,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
   setMaxReverse: {
     localVarName: 'A32NX_AUDIO_ROW_SET_MAX_REVERSE',
     length: 1.62,
-    priority: 4,
+    priority: 19,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
   },
   brakeMaxBraking: {
     localVarName: 'A32NX_AUDIO_ROP_MAX_BRAKING',
     length: 3.1,
-    priority: 4,
+    priority: 20,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: true,
   },
@@ -137,32 +143,32 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   minimums: {
     wwiseEventName: 'aural_minimumnew',
     length: 0.67,
-    priority: 2,
+    priority: 15,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   hundred_above: {
     wwiseEventName: 'aural_100above',
     length: 0.72,
-    priority: 2,
+    priority: 16,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard: {
     wwiseEventName: 'new_retard',
     length: 0.9,
     periodicWithPause: 0.2,
-    priority: 2,
+    priority: 22,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2500: {
     wwiseEventName: 'new_2500',
     length: 1.1,
-    priority: 2,
+    priority: 0,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2500b: {
     wwiseEventName: 'new_2_500',
     length: 1.047,
-    priority: 2,
+    priority: 1,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2000: {
@@ -174,97 +180,97 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   alt_1000: {
     wwiseEventName: 'new_1000',
     length: 0.9,
-    priority: 2,
+    priority: 3,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_500: {
     wwiseEventName: 'new_500',
     length: 0.6,
-    priority: 2,
+    priority: 4,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_400: {
     wwiseEventName: 'new_400',
     length: 0.6,
-    priority: 2,
+    priority: 5,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_300: {
     wwiseEventName: 'new_300',
     length: 0.6,
-    priority: 2,
+    priority: 6,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_200: {
     wwiseEventName: 'new_200',
     length: 0.6,
-    priority: 2,
+    priority: 7,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_100: {
     wwiseEventName: 'new_100',
     length: 0.6,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_90: {
     wwiseEventName: '90_380',
     length: 0.4,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_80: {
     wwiseEventName: '80_380',
     length: 0.4,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_70: {
     wwiseEventName: '70_380',
     length: 0.4,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_60: {
     wwiseEventName: '60_380',
     length: 0.4,
-    priority: 2,
+    priority: 8,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_50: {
     wwiseEventName: '50_380',
     length: 0.4,
-    priority: 2,
+    priority: 9,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_40: {
     wwiseEventName: '40_380',
     length: 0.4,
-    priority: 2,
+    priority: 10,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_30: {
     wwiseEventName: '30_380',
     length: 0.4,
-    priority: 2,
+    priority: 11,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_20: {
     wwiseEventName: '20_380',
     length: 0.4,
-    priority: 2,
+    priority: 12,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_10: {
     wwiseEventName: '10_380',
     length: 0.3,
-    priority: 2,
+    priority: 13,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_5: {
     wwiseEventName: '5_380',
     length: 0.3,
-    priority: 2,
+    priority: 14,
     type: FwsAuralWarningType.SyntheticVoice,
   },
 };
@@ -280,6 +286,10 @@ export class FwsSoundManager {
 
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
+
+  private readonly soundOutputs: FwsAudioOutputSignals = {
+    keepMaxReverse: false,
+  };
 
   constructor(
     private readonly bus: EventBus,
@@ -322,15 +332,16 @@ export class FwsSoundManager {
   }
 
   private stopCurrentSound() {
-    // Only LVar sounds which are continuous can be stopped
-    if (
-      this.currentSoundPlaying &&
-      FwsAuralsList[this.currentSoundPlaying].localVarName &&
-      FwsAuralsList[this.currentSoundPlaying]?.continuous
-    ) {
-      SimVar.SetSimVarValue(`L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`, SimVarValueType.Bool, false);
+    if (this.currentSoundPlaying) {
+      const sound = FwsAuralsList[this.currentSoundPlaying];
+      // Only LVar sounds which are continuous can be stopped
+      if (!sound.localVarName || !sound.continuous) {
+        return;
+      }
+      SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
       this.currentSoundPlaying = null;
       this.currentSoundPlayTimeRemaining = 0;
+      this.setAudioOutputSignals(sound.localVarName, false);
     }
   }
 
@@ -359,6 +370,7 @@ export class FwsSoundManager {
 
     if (sound.localVarName) {
       SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, true);
+      this.setAudioOutputSignals(sound.localVarName, true);
     } else if (sound.wwiseEventName) {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
@@ -417,13 +429,11 @@ export class FwsSoundManager {
         // Wait for sound to be finished
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
       } else {
+        const sound = FwsAuralsList[this.currentSoundPlaying];
         // Sound finishes in this cycle
-        if (FwsAuralsList[this.currentSoundPlaying].localVarName) {
-          SimVar.SetSimVarValue(
-            `L:${FwsAuralsList[this.currentSoundPlaying].localVarName}`,
-            SimVarValueType.Bool,
-            false,
-          );
+        if (sound.localVarName) {
+          SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
+          this.setAudioOutputSignals(sound.localVarName, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
@@ -457,5 +467,15 @@ export class FwsSoundManager {
       // Play next sound
       this.selectAndPlayMostImportantSound();
     }
+  }
+
+  private setAudioOutputSignals(localVarName: string, value: boolean) {
+    if (localVarName === KEEP_MAX_REVERSE_OUTPUT_VAR) {
+      this.soundOutputs.keepMaxReverse = value;
+    }
+  }
+
+  public getKeepMaxReversePlayed(): boolean {
+    return this.soundOutputs.keepMaxReverse;
   }
 }
