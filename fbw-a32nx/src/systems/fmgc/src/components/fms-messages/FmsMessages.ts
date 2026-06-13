@@ -30,6 +30,8 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { FMMessageTriggers } from './FmMessages';
 import { ClockIsTakeoffTime } from './ClockIsTakeoffTime';
 import { LateralDiscontinuityAhead } from './LateralDiscontinuityAhead';
+import { AreaRnpIs } from './AreaRnpIs';
+import { ProcedureRnpIs } from './ProcedureRnpIs';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -52,11 +54,13 @@ export class FmsMessages implements FmgcComponent {
   };
 
   private messageSelectors: FMMessageSelector[] = [
+    new AreaRnpIs(this.bus),
     new ClockIsTakeoffTime(),
     new GpsPrimary(this.bus),
     new GpsPrimaryLost(this.bus),
     new MapPartlyDisplayedLeft(),
     new MapPartlyDisplayedRight(),
+    new ProcedureRnpIs(this.bus),
     new TurnAreaExceedanceLeft(),
     new TurnAreaExceedanceRight(),
     new TuneNavaidLeft(),

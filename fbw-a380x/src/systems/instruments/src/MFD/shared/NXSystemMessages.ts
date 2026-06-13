@@ -78,6 +78,7 @@ export class ATCCOMMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
+  AreaRnpIs: new TypeIIMessage('AREA RNP IS XX.XX', true, 'XX.XX'),
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
   crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
@@ -119,6 +120,7 @@ export const NXSystemMessages = {
   sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
   lrcInUse: new TypeIMessage('LRC MODE IN USE'),
   lateralDiscontinuityAhead: new TypeIIMessage('LATERAL DISCONTINUITY AHEAD', true),
+  procedureRnpIs: new TypeIIMessage('PROC RNP IS XX.XX', true, 'XX.XX'),
 };
 
 export const NXFictionalMessages = {

@@ -70,6 +70,7 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { RequiredNavigationPerformanceEvents } from '@fmgc/events/RequiredNavigationPerformanceEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -411,6 +412,27 @@ export class FlightManagementComputer implements FmcInterface {
           this.exitEngineOut();
         }
       }),
+
+      this.bus
+        .getSubscriber<RequiredNavigationPerformanceEvents>()
+        .on('area_rnp_is')
+        .handle((v) => {
+          if (v !== undefined) {
+            this.addMessageToQueue(NXSystemMessages.AreaRnpIs.getModifiedMessage(v.toFixed(2)));
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.AreaRnpIs.text);
+          }
+        }),
+      this.bus
+        .getSubscriber<RequiredNavigationPerformanceEvents>()
+        .on('procedure_rnp_is')
+        .handle((v) => {
+          if (v !== undefined) {
+            this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(v.toFixed(2)));
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs.text);
+          }
+        }),
     );
 
     let lastUpdateTime = Date.now();
