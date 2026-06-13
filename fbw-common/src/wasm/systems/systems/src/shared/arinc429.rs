@@ -1,4 +1,4 @@
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Arinc429Word<T: Copy> {
     value: T,
     ssm: SignStatus,

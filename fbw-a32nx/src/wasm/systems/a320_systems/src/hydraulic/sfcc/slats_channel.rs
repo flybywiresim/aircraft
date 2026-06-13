@@ -1,11 +1,15 @@
 use std::time::Duration;
 
+use crate::hydraulic::sfcc::SlatFlapControlComputer;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
+use systems::failures::{Failure, FailureType};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
-use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
+use systems::hydraulic::flap_slat::{
+    SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
+};
 use systems::shared::{
-    AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
-    LgciuWeightOnWheels, PositionPickoffUnit,
+    AdirsMeasurementOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, ElectricalBusType,
+    ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -27,6 +31,11 @@ pub(super) struct SlatsChannel {
     slats_demanded_angle: Angle,
     slats_feedback_angle: Angle,
 
+    wtb_powered_by: ElectricalBusType,
+    wtb_is_powered: bool,
+    wtb_is_powered_delayed: DelayedFalseLogicGate,
+    recovered_power_pulse: DelayedPulseTrueLogicGate,
+
     powered_by: ElectricalBusType,
     is_powered: bool,
     is_powered_delayed: DelayedFalseLogicGate,
@@ -40,8 +49,16 @@ pub(super) struct SlatsChannel {
     slat_alpha_lock_low_aoa: Angle,
     slat_alpha_lock_high_aoa: Angle,
 
+    opp_wtb_armed: bool,
+    own_wtb_armed: bool,
+
+    wtb_solenoid_failure: Failure,
+
     // OUTPUTS
     sap: [bool; 7],
+
+    missing_cas_data: bool,
+    missing_aoa_data: bool,
 
     slat_alpha_lock_baulk_function_active: bool,
     slat_baulk_engaged: bool,
@@ -59,7 +76,12 @@ impl SlatsChannel {
     const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 7.6; //deg
     const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 8.5; //deg
 
-    pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
+    pub(super) fn new(
+        context: &mut InitContext,
+        num: u8,
+        powered_by: ElectricalBusType,
+        wtb_powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_actual_position_word_id: context
@@ -70,10 +92,16 @@ impl SlatsChannel {
             slats_demanded_angle: Angle::ZERO,
             slats_feedback_angle: Angle::ZERO,
 
+            wtb_powered_by,
+            wtb_is_powered: false,
+            wtb_is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
+
             powered_by,
             is_powered: false,
             is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
                 .starting_as(false),
+            recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
             kts_60: Velocity::new::<knot>(Self::SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS),
             conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
@@ -82,10 +110,18 @@ impl SlatsChannel {
             slat_alpha_lock_low_aoa: Angle::new::<degree>(Self::SLAT_LOCK_LOW_ALPHA_DEGREES),
             slat_alpha_lock_high_aoa: Angle::new::<degree>(Self::SLAT_LOCK_HIGH_ALPHA_DEGREES),
 
+            opp_wtb_armed: true,
+            own_wtb_armed: true, // NOTE: when upowered, the default is true. True is 0V.
+
             csu_monitor: CSUMonitor::new(context),
+
+            wtb_solenoid_failure: Failure::new(FailureType::SlatWtb),
 
             // Set `sap` to false to match power-off state
             sap: [false; 7],
+
+            missing_cas_data: false,
+            missing_aoa_data: false,
 
             slat_alpha_lock_baulk_function_active: false,
             slat_baulk_engaged: false,
@@ -227,10 +263,21 @@ impl SlatsChannel {
         };
     }
 
+    fn powerup_reset(&mut self) {
+        // NOTE: the slat alpha lock and baulk functions are recomputed by the
+        // respective functions. There is no need for powerup reset.
+        self.own_wtb_armed = false;
+        self.missing_cas_data = true;
+        self.missing_aoa_data = true;
+    }
+
     fn power_loss_reset(&mut self) {
         self.slat_alpha_lock_baulk_function_active = false;
         self.slat_baulk_engaged = false;
         self.slat_alpha_lock_engaged = false;
+        self.own_wtb_armed = true;
+        self.missing_cas_data = false;
+        self.missing_aoa_data = false;
     }
 
     fn generate_slat_angle(
@@ -265,19 +312,31 @@ impl SlatsChannel {
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
         lgciu: &impl LgciuWeightOnWheels,
+        opp_sfcc: &SlatFlapControlComputer,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
+        self.wtb_is_powered_delayed
+            .update(context, self.wtb_is_powered);
+        self.recovered_power_pulse
+            .update(context, self.is_powered_delayed.output());
 
-        // NOTE: there is no power recovery function because not needed by the slat channel (yet)
+        if self.recovered_power_pulse.output() {
+            self.powerup_reset();
+        }
 
         if !self.is_powered_delayed.output() {
             self.power_loss_reset();
         }
 
         self.csu_monitor.update(context);
+        self.opp_wtb_armed = opp_sfcc.slats_channel.is_wtb_armed();
+        self.missing_cas_data = !adirs.computed_airspeed(1).is_normal_operation()
+            && !adirs.computed_airspeed(2).is_normal_operation();
+        self.missing_aoa_data = !adirs.angle_of_attack(1).is_normal_operation()
+            && !adirs.angle_of_attack(2).is_normal_operation();
         self.slats_demanded_angle = self.generate_slat_angle(adirs, lgciu);
 
-        self.slats_feedback_angle = slats_feedback.angle();
+        self.slats_feedback_angle = slats_feedback.fppu_angle();
         self.sap_update();
     }
 
@@ -298,6 +357,22 @@ impl SlatsChannel {
 
     pub(super) fn get_slat_alpha_lock_engaged(&self) -> bool {
         self.slat_alpha_lock_engaged
+    }
+
+    pub(super) fn missing_adiru_data(&self) -> bool {
+        return self.missing_cas_data || self.missing_aoa_data;
+    }
+
+    pub(super) fn wtb_power_lost(&self) -> bool {
+        return !self.wtb_is_powered_delayed.output();
+    }
+
+    pub(super) fn is_wtb_armed(&self) -> bool {
+        return self.own_wtb_armed;
+    }
+
+    pub(super) fn is_wtb_failed(&self) -> bool {
+        self.wtb_solenoid_failure.is_active()
     }
 
     #[cfg(test)]
@@ -324,7 +399,7 @@ impl SlatsChannel {
 // When the POB (Pressure OFF Brake) solenoid is energised, then the hydraulic motors are allowed to move.
 // When the POB solenoid is de-energised (due to SFCC command or no SFCC power), then the hydraulic motors
 // are held in position and can't move.
-impl ValveBlock for SlatsChannel {
+impl ValveBlockController for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
         if !self.is_powered_delayed.output() {
             return SolenoidStatus::DeEnergised;
@@ -340,9 +415,9 @@ impl ValveBlock for SlatsChannel {
         }
     }
 
-    fn get_command_status(&self) -> Option<ChannelCommand> {
+    fn get_retract_status(&self) -> SolenoidStatus {
         if !self.is_powered_delayed.output() {
-            return None;
+            return SolenoidStatus::DeEnergised;
         }
 
         let demanded_angle = self.get_demanded_angle();
@@ -351,23 +426,56 @@ impl ValveBlock for SlatsChannel {
             demanded_angle,
             feedback_angle,
         );
-        if in_target_position {
-            None
-        } else if demanded_angle > feedback_angle {
-            Some(ChannelCommand::Extend)
+        if feedback_angle > demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
         } else {
-            Some(ChannelCommand::Retract)
+            SolenoidStatus::DeEnergised
         }
+    }
+
+    fn get_extend_status(&self) -> SolenoidStatus {
+        if !self.is_powered_delayed.output() {
+            return SolenoidStatus::DeEnergised;
+        }
+
+        let demanded_angle = self.get_demanded_angle();
+        let feedback_angle = self.get_feedback_angle();
+        let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
+        );
+        if feedback_angle < demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
+        } else {
+            SolenoidStatus::DeEnergised
+        }
+    }
+}
+impl WingTipBrakeController for SlatsChannel {
+    fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+        // TODO: this is a placeholder. Logic needs to be added to activate the WTB during faults.
+        if !self.wtb_is_powered_delayed.output() || self.is_wtb_failed() {
+            return SolenoidStatus::DeEnergised;
+        }
+
+        let wtb_triggered = self.own_wtb_armed && self.opp_wtb_armed;
+
+        if wtb_triggered {
+            return SolenoidStatus::Energised;
+        }
+        return SolenoidStatus::DeEnergised;
     }
 }
 impl SimulationElement for SlatsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
+        self.wtb_solenoid_failure.accept(visitor);
         visitor.visit(self);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
+        self.wtb_is_powered = buses.is_powered(self.wtb_powered_by);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

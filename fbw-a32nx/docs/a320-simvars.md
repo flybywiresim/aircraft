@@ -1190,6 +1190,20 @@
     - Degrees
     - The angle of the flaps FPPU synchro
 
+- A32NX_{side}_FLAPS_APPU_ANGLE
+    - Degrees
+    - The APPU synchro angle of the flaps on the wing
+    - Side
+        - LEFT
+        - RIGHT
+
+- A32NX_{side}_FLAPS_WTB_ACTIVE
+    - Boolean
+    - The WTB has been triggered and is holding the flaps in position
+    - Side
+        - LEFT
+        - RIGHT
+
 - A32NX_SLATS_IPPU_ANGLE
     - Degrees
     - The angle of the slats IPPU synchro
@@ -1197,6 +1211,20 @@
 - A32NX_SLATS_FPPU_ANGLE
     - Degrees
     - The angle of the slats FPPU synchro
+
+- A32NX_{side}_SLATS_APPU_ANGLE
+    - Degrees
+    - The APPU synchro angle of the slats on the wing
+    - Side
+        - LEFT
+        - RIGHT
+
+- A32NX_{side}_SLATS_WTB_ACTIVE
+    - Degrees
+    - The WTB has been triggered and is holding the slats in position
+    - Side
+        - LEFT
+        - RIGHT
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean
@@ -3504,9 +3532,35 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Flaps / Slats (ATA 27)
 
+- A32NX_SFCC_{number}_SLAT_FLAP_COMPONENT_STATUS_WORD
+    - {number} is 1 or 2
+    - Slat/Flap component status discrete word of the SFCC bus output (label 045)
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Slat Data Valid                   |
+      | 12  | Slat WTB Solenoid Fail            |
+      | 13  | Spare                             |
+      | 14  | Slat Half Speed                   |
+      | 15  | Slat Channel no ADIRU Data        |
+      | 16  | Flap LH Attachment Sensor Fail    |
+      | 17  | Slat no x-link                    |
+      | 18  | Slat WTB Power Loss               |
+      | 19  | Flap RH Attachment Sensor Fail    |
+      | 20  | Flap Data Valid                   |
+      | 21  | Flap WTB Solenoid Fail            |
+      | 22  | Flap Attachment Sensor Fail       |
+      | 23  | Flap Half Speed                   |
+      | 24  | Flap Channel no ADIRU Data        |
+      | 25  | Flap Channel no LGCIU Data        |
+      | 26  | Flap no x-link                    |
+      | 27  | Flap WTB Power Loss               |
+      | 28  | Flap Auto-retract Failed          |
+      | 29  | Flap Auto-retract Engaged         |
+
 - A32NX_SFCC_{number}_SLAT_FLAP_SYSTEM_STATUS_WORD
     - {number} is 1 or 2
-    - Slat/Flap system status discrete word of the SFCC bus output
+    - Slat/Flap system status discrete word of the SFCC bus output (label 046)
     - Arinc429<Discrete>
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
@@ -3532,7 +3586,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
     - {number} is 1 or 2
-    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Slat/Flap actual position discrete word of the SFCC bus output (label 047)
     - Arinc429<Discrete>
     - | Bit |                Description               |
       |:---:|:----------------------------------------:|

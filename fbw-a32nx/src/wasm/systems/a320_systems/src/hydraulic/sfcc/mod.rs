@@ -3,7 +3,9 @@ use std::time::Duration;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::CSU;
-use systems::hydraulic::flap_slat::ValveBlock;
+use systems::hydraulic::flap_slat::{
+    SecondarySurfaceSide, ValveBlockController, WingTipBrakeController,
+};
 use systems::shared::{
     AdirsMeasurementOutputs, ConsumePower, DelayedFalseLogicGate, ElectricalBusType,
     ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
@@ -51,6 +53,7 @@ impl From<u8> for FlapsConf {
 
 struct SlatFlapControlComputer {
     config_index_id: VariableIdentifier,
+    slat_flap_component_status_word_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
 
@@ -71,9 +74,16 @@ impl SlatFlapControlComputer {
     const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
     const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W Cumulative for the whole SFCC
 
-    fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
+    fn new(
+        context: &mut InitContext,
+        num: u8,
+        powered_by: ElectricalBusType,
+        wtb_powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             config_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
+            slat_flap_component_status_word_id: context
+                .get_identifier(format!("SFCC_{num}_SLAT_FLAP_COMPONENT_STATUS_WORD")),
             slat_flap_system_status_word_id: context
                 .get_identifier(format!("SFCC_{num}_SLAT_FLAP_SYSTEM_STATUS_WORD")),
             slat_flap_actual_position_word_id: context
@@ -85,8 +95,8 @@ impl SlatFlapControlComputer {
             is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
                 .starting_as(false),
 
-            flaps_channel: FlapsChannel::new(context, num, powered_by),
-            slats_channel: SlatsChannel::new(context, num, powered_by),
+            flaps_channel: FlapsChannel::new(context, num, powered_by, wtb_powered_by),
+            slats_channel: SlatsChannel::new(context, num, powered_by, wtb_powered_by),
         }
     }
 
@@ -97,16 +107,56 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
         lgciu: &impl LgciuWeightOnWheels,
+        opp_sfcc: &SlatFlapControlComputer, // NOTE: maybe in the future it's better to change `opp_sfcc` into a trait.
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
-        self.flaps_channel.update(context, flaps_feedback, adirs);
+        self.flaps_channel
+            .update(context, flaps_feedback, adirs, opp_sfcc);
         self.slats_channel
-            .update(context, slats_feedback, adirs, lgciu);
+            .update(context, slats_feedback, adirs, lgciu, opp_sfcc);
+    }
+
+    fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
+        if !self.is_powered_delayed.output() {
+            return Arinc429Word::default();
+        }
+
+        let slat_wtb_failed = self.slats_channel.is_wtb_failed();
+        let slat_missing_adiru_data = self.slats_channel.missing_adiru_data();
+        let slat_wtb_power_loss = self.slats_channel.wtb_power_lost();
+        let flap_wtb_failed = self.flaps_channel.is_wtb_failed();
+        let flap_missing_adiru_data = self.flaps_channel.missing_adiru_data();
+        let flap_wtb_power_loss = self.flaps_channel.wtb_power_lost();
+        let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+
+        // label 045
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        word.set_bit(11, true);
+        word.set_bit(12, slat_wtb_failed);
+        word.set_bit(13, false);
+        word.set_bit(14, false);
+        word.set_bit(15, slat_missing_adiru_data);
+        word.set_bit(16, false);
+        word.set_bit(17, false);
+        word.set_bit(18, slat_wtb_power_loss);
+        word.set_bit(19, false);
+        word.set_bit(20, true);
+        word.set_bit(21, flap_wtb_failed);
+        word.set_bit(22, false);
+        word.set_bit(23, false);
+        word.set_bit(24, flap_missing_adiru_data);
+        word.set_bit(25, false);
+        word.set_bit(26, false);
+        word.set_bit(27, flap_wtb_power_loss);
+        word.set_bit(28, false);
+        word.set_bit(29, flap_auto_command_engaged);
+
+        word
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        // Label 046
         if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
@@ -119,16 +169,34 @@ impl SlatFlapControlComputer {
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
         let slat_baulk_engaged = self.slats_channel.get_slat_baulk_engaged();
         let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
+        let slat_wtb_engaged = self
+            .slats_channel
+            .get_wtb_status(SecondarySurfaceSide::Left)
+            .is_energised()
+            && self
+                .slats_channel
+                .get_wtb_status(SecondarySurfaceSide::Left)
+                .is_energised();
+        let flap_wtb_engaged = self
+            .flaps_channel
+            .get_wtb_status(SecondarySurfaceSide::Left)
+            .is_energised()
+            && self
+                .slats_channel
+                .get_wtb_status(SecondarySurfaceSide::Left)
+                .is_energised();
+        let slat_fault = slat_wtb_engaged; // TODO: additional criteria need to be added.
+        let flap_fault = flap_wtb_engaged; // TODO: additional criteria need to be added.
 
         // label 046
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
-        word.set_bit(11, false);
-        word.set_bit(12, false);
+        word.set_bit(11, slat_fault);
+        word.set_bit(12, flap_fault);
         word.set_bit(13, false);
         word.set_bit(14, false);
-        word.set_bit(15, false);
-        word.set_bit(16, false);
+        word.set_bit(15, slat_wtb_engaged);
+        word.set_bit(16, flap_wtb_engaged);
         word.set_bit(17, current_detent == CSU::Conf0);
         word.set_bit(18, current_detent == CSU::Conf1);
         word.set_bit(19, current_detent == CSU::Conf2);
@@ -157,6 +225,26 @@ impl SlatFlapControlComputer {
 
         let fppu_flaps_angle = self.flaps_channel.get_feedback_angle();
         let fppu_slats_angle = self.slats_channel.get_feedback_angle();
+        let slat_wtb_engaged = self
+            .slats_channel
+            .get_wtb_status(SecondarySurfaceSide::Left)
+            .is_energised()
+            && self
+                .slats_channel
+                .get_wtb_status(SecondarySurfaceSide::Left)
+                .is_energised();
+        let flap_wtb_engaged = self
+            .flaps_channel
+            .get_wtb_status(SecondarySurfaceSide::Left)
+            .is_energised()
+            && self
+                .slats_channel
+                .get_wtb_status(SecondarySurfaceSide::Left)
+                .is_energised();
+        let slat_fault = slat_wtb_engaged; // TODO: additional criteria need to be added.
+        let flap_fault = flap_wtb_engaged; // TODO: additional criteria need to be added.
+
+        // label 047
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
@@ -180,8 +268,8 @@ impl SlatFlapControlComputer {
             fppu_slats_angle > Angle::new::<degree>(327.4)
                 && fppu_slats_angle < Angle::new::<degree>(337.),
         );
-        word.set_bit(16, false);
-        word.set_bit(17, false);
+        word.set_bit(16, slat_wtb_engaged);
+        word.set_bit(17, slat_fault);
         word.set_bit(18, true);
         word.set_bit(
             19,
@@ -208,8 +296,8 @@ impl SlatFlapControlComputer {
             fppu_flaps_angle > Angle::new::<degree>(250.)
                 && fppu_flaps_angle < Angle::new::<degree>(254.),
         );
-        word.set_bit(24, false);
-        word.set_bit(25, false);
+        word.set_bit(24, flap_wtb_engaged);
+        word.set_bit(25, flap_fault);
         word.set_bit(26, false);
         word.set_bit(27, false);
         word.set_bit(28, false);
@@ -276,6 +364,10 @@ impl SimulationElement for SlatFlapControlComputer {
         }
 
         writer.write(
+            &self.slat_flap_component_status_word_id,
+            self.slat_flap_component_status_word(),
+        );
+        writer.write(
             &self.slat_flap_system_status_word_id,
             self.slat_flap_system_status_word(),
         );
@@ -294,8 +386,18 @@ impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: [
-                SlatFlapControlComputer::new(context, 1, ElectricalBusType::DirectCurrentEssential),
-                SlatFlapControlComputer::new(context, 2, ElectricalBusType::DirectCurrent(2)),
+                SlatFlapControlComputer::new(
+                    context,
+                    1,
+                    ElectricalBusType::DirectCurrentEssential,
+                    ElectricalBusType::DirectCurrentHot(1),
+                ),
+                SlatFlapControlComputer::new(
+                    context,
+                    2,
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::DirectCurrentHot(2),
+                ),
             ],
         }
     }
@@ -309,15 +411,30 @@ impl SlatFlapComplex {
         lgciu1: &impl LgciuWeightOnWheels,
         lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs, lgciu1);
-        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs, lgciu2);
+        let [sfcc_1, sfcc_2] = &mut self.sfcc;
+        sfcc_1.update(
+            context,
+            flaps_feedback,
+            slats_feedback,
+            adirs,
+            lgciu1,
+            &sfcc_2,
+        );
+        sfcc_2.update(
+            context,
+            flaps_feedback,
+            slats_feedback,
+            adirs,
+            lgciu2,
+            &sfcc_1,
+        );
     }
 
-    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn flap_pcu(&self, idx: usize) -> &(impl ValveBlockController + WingTipBrakeController) {
         &self.sfcc[idx].flaps_channel
     }
 
-    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn slat_pcu(&self, idx: usize) -> &(impl ValveBlockController + WingTipBrakeController) {
         &self.sfcc[idx].slats_channel
     }
 }
