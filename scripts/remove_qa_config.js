@@ -43,7 +43,7 @@ function removeTracksForPr(addon, prNumber) {
   if (addon.key.startsWith('a32nx')) {
     trackKeysToRemove.push(`a32nx-pr-${prNumber}`);
   } else if (addon.key.startsWith('a380x')) {
-    trackKeysToRemove.push(`a380x-pr-${prNumber}`);
+    trackKeysToRemove.push(`a380x-pr-${prNumber}-4k`, `a380x-pr-${prNumber}-8k`);
   }
 
   addon.tracks = addon.tracks.filter((track) => !trackKeysToRemove.includes(track.key));
