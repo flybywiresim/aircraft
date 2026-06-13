@@ -66,10 +66,12 @@ jobs:
         env:
           R2_BUCKET: flybywiresim
           CDN_BUCKET_DESTINATION_A32NX: addons/msfs2020/a32nx/pr-${{ github.event.pull_request.number }}
-          CDN_BUCKET_DESTINATION_A380X: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}
+          CDN_BUCKET_DESTINATION_A380X_4K: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}-4k
+          CDN_BUCKET_DESTINATION_A380X_8K: addons/msfs2020/a380x/pr-${{ github.event.pull_request.number }}-8k
         run: |
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
-          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_8K || true
       - name: Release QA config lock
         if: always()
         run: ./scripts/release_lock.sh installer/qa-config/.lock
