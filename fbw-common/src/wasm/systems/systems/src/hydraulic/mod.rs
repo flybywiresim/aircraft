@@ -1019,6 +1019,7 @@ impl HydraulicCircuit {
         system_accumulator_precharge: Pressure,
         system_accumulator_volume: Volume,
     ) -> Self {
+        // FIXME no runtime panics please!
         assert!(number_of_pump_sections > 0);
 
         let mut pump_sections: Vec<Section> = Vec::new();
@@ -3232,11 +3233,13 @@ impl SimulationElement for HydraulicValve {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use crate::simulation::test::{
         ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
     };
     use crate::simulation::InitContext;
-    use ntest::assert_about_eq;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
@@ -3342,7 +3345,10 @@ mod tests {
         let volume_taken =
             test_bed.command_element(|e| e.try_take_volume(Volume::new::<gallon>(10.)));
 
-        assert!(volume_taken.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME_GAL);
+        assert_eq!(
+            volume_taken.get::<gallon>(),
+            5. - Reservoir::MIN_USABLE_VOLUME_GAL
+        );
     }
 
     #[test]
@@ -3351,8 +3357,8 @@ mod tests {
             LeakMeasurementValve::new(ElectricalBusType::DirectCurrentEssential)
         }));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure == Pressure::new::<psi>(0.)));
-        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+        test_bed.query_element(|e| assert_eq!(e.downstream_pressure, Pressure::new::<psi>(0.)));
+        test_bed.query_element(|e| assert_eq!(e.upstream_pressure, Pressure::new::<psi>(0.)));
     }
 
     #[test]
@@ -3361,8 +3367,8 @@ mod tests {
             PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() == Pressure::new::<psi>(0.)));
-        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+        test_bed.query_element(|e| assert_eq!(e.downstream_pressure(), Pressure::new::<psi>(0.)));
+        test_bed.query_element(|e| assert_eq!(e.upstream_pressure, Pressure::new::<psi>(0.)));
     }
 
     #[test]
@@ -3377,7 +3383,8 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(2800.)));
+        test_bed
+            .query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(2800.)));
     }
 
     #[test]
@@ -3392,8 +3399,9 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(1500.)));
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(500.)));
+        test_bed
+            .query_element(|e| assert_le!(e.downstream_pressure(), Pressure::new::<psi>(1500.)));
+        test_bed.query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(500.)));
     }
 
     #[test]
@@ -3408,8 +3416,8 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(50.)));
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(0.)));
+        test_bed.query_element(|e| assert_le!(e.downstream_pressure(), Pressure::new::<psi>(50.)));
+        test_bed.query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(0.)));
     }
 
     #[test]
@@ -3451,7 +3459,7 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
-        assert!(volume_after_leak_gallon < 4.5);
+        assert_lt!(volume_after_leak_gallon, 4.5);
     }
 
     #[test]
@@ -3474,7 +3482,7 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
-        assert!(volume_after_leak_gallon == 0.);
+        assert_eq!(volume_after_leak_gallon, 0.);
     }
 
     #[test]

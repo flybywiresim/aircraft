@@ -376,6 +376,8 @@ impl SimulationElement for ReverserAssembly {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use uom::si::electric_potential::volt;
 
     use crate::electrical::test::TestElectricitySource;
@@ -587,7 +589,7 @@ mod tests {
         test_bed.command(|a| a.set_dc_elec_power(false));
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+        assert_eq!(test_bed.query(|a| a.reverser_position().get::<ratio>()), 0.);
     }
 
     #[test]
@@ -597,8 +599,14 @@ mod tests {
         test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) <= 50.);
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= -50.);
+        assert_le!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            50.
+        );
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            -50.
+        );
     }
 
     #[test]
@@ -611,8 +619,14 @@ mod tests {
         test_bed.command(|a| a.set_isolation_valve(false));
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) <= 50.);
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= -50.);
+        assert_le!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            50.
+        );
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            -50.
+        );
     }
 
     #[test]
@@ -625,7 +639,10 @@ mod tests {
         test_bed.command(|a| a.set_isolation_valve(false));
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            2800.
+        );
     }
 
     #[test]
@@ -641,8 +658,11 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            2800.
+        );
+        assert_eq!(test_bed.query(|a| a.reverser_position().get::<ratio>()), 0.);
     }
 
     #[test]
@@ -658,8 +678,11 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1000));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            2800.
+        );
+        assert_eq!(test_bed.query(|a| a.reverser_position().get::<ratio>()), 0.);
     }
 
     #[test]
@@ -675,12 +698,21 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1500));
 
-        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.3);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()),
+            2800.
+        );
+        assert_ge!(
+            test_bed.query(|a| a.reverser_position().get::<ratio>()),
+            0.3
+        );
 
         test_bed.run_with_delta(Duration::from_millis(2000));
 
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.98);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_position().get::<ratio>()),
+            0.98
+        );
     }
 
     #[test]
@@ -695,17 +727,26 @@ mod tests {
         test_bed.command(|a| a.set_lock_reverser(false));
 
         test_bed.run_with_delta(Duration::from_millis(2500));
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.97);
+        assert_ge!(
+            test_bed.query(|a| a.reverser_position().get::<ratio>()),
+            0.97
+        );
 
         test_bed.command(|a| a.set_lock_reverser(true));
         test_bed.command(|a| a.set_deploy_reverser(false));
 
         test_bed.run_with_delta(Duration::from_millis(1000));
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) <= 0.9);
+        assert_le!(
+            test_bed.query(|a| a.reverser_position().get::<ratio>()),
+            0.9
+        );
         assert!(test_bed.query(|a| !a.reverser_is_locked()));
 
         test_bed.run_with_delta(Duration::from_millis(2000));
-        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) <= 0.01);
+        assert_le!(
+            test_bed.query(|a| a.reverser_position().get::<ratio>()),
+            0.01
+        );
         assert!(test_bed.query(|a| a.reverser_is_locked()));
     }
 }

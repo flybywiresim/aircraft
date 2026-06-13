@@ -1093,6 +1093,7 @@ impl ControllerSignal<OutflowValveSignal> for ResidualPressureController {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use more_asserts::*;
     use ntest::assert_about_eq;
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
@@ -2125,7 +2126,7 @@ mod tests {
                 .then()
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.));
 
-            assert!(test_bed.initial_pressure() > test_bed.cabin_pressure());
+            assert_gt!(test_bed.initial_pressure(), test_bed.cabin_pressure());
         }
 
         #[test]
@@ -2155,15 +2156,24 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed.iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert_gt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed.iterate(11);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert_gt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
         }
 
         #[test]
@@ -2174,18 +2184,27 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed.iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert_gt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed.command_on_ground(false);
             test_bed = test_bed
                 .indicated_airspeed_of(Velocity::new::<knot>(101.))
                 .iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2193,22 +2212,34 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed.iterate(61);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+            assert_gt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
         }
 
         #[test]
         fn outflow_valve_closes_when_ditching_pb_is_on() {
             let mut test_bed = test_bed().iterate(50);
 
-            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(1.));
+            assert_gt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(1.)
+            );
 
             test_bed = test_bed.command_ditching_pb_on().iterate(10);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(1.)
+            );
         }
 
         #[test]
@@ -2219,12 +2250,21 @@ mod tests {
                 .set_on_ground()
                 .iterate(54);
 
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
 
             test_bed = test_bed.command_ditching_pb_on().iterate(5);
 
-            assert!(test_bed.outflow_valve_open_amount() <= Ratio::new::<percent>(99.));
-            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
+            assert_le!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(99.)
+            );
+            assert_lt!(
+                test_bed.outflow_valve_open_amount(),
+                Ratio::new::<percent>(1.)
+            );
         }
 
         #[test]
@@ -2348,7 +2388,10 @@ mod tests {
         fn aircraft_vs_starts_at_0() {
             let test_bed = test_bed().set_on_ground().iterate(300);
 
-            assert!((test_bed.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(1.));
+            assert_lt!(
+                (test_bed.cabin_vs()).abs(),
+                Velocity::new::<foot_per_minute>(1.)
+            );
         }
 
         #[test]
@@ -2394,7 +2437,7 @@ mod tests {
                 (test_bed.cabin_delta_p() - Pressure::new::<psi>(0.1)).abs()
                     < Pressure::new::<psi>(0.01)
             );
-            assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(10.));
+            assert_lt!(test_bed.cabin_vs(), Velocity::new::<foot_per_minute>(10.));
         }
 
         #[test]
@@ -2405,7 +2448,7 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(900.))
                 .iterate_with_delta(200, Duration::from_millis(100));
 
-            assert!(test_bed.cabin_vs() > Velocity::default());
+            assert_gt!(test_bed.cabin_vs(), Velocity::default());
         }
 
         #[test]
@@ -2424,32 +2467,47 @@ mod tests {
                 .and()
                 .iterate(10);
 
-            assert!(test_bed.cabin_vs() > test_bed.initial_cabin_vs());
+            assert_gt!(test_bed.cabin_vs(), test_bed.initial_cabin_vs());
         }
 
         #[test]
         fn cabin_vs_changes_to_cruise() {
             let test_bed = test_bed_in_cruise().iterate_with_delta(200, Duration::from_millis(100));
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(10.)
+            );
         }
 
         #[test]
         fn cabin_vs_maintains_stability_in_cruise() {
             let mut test_bed = test_bed_in_cruise().iterate(400);
 
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(1.)
+            );
 
             test_bed = test_bed.iterate(200);
 
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(1.)
+            );
 
             test_bed = test_bed.iterate(3000);
 
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(1.)
+            );
 
             test_bed = test_bed.iterate(10000);
 
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(1.)
+            );
         }
 
         #[test]
@@ -2458,8 +2516,8 @@ mod tests {
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
                 .iterate(45);
 
-            assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(-750.));
-            assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(0.));
+            assert_gt!(test_bed.cabin_vs(), Velocity::new::<foot_per_minute>(-750.));
+            assert_lt!(test_bed.cabin_vs(), Velocity::new::<foot_per_minute>(0.));
         }
 
         #[test]
@@ -2489,7 +2547,7 @@ mod tests {
                 .vertical_speed_of(Velocity::default())
                 .iterate(10);
 
-            assert!(test_bed.cabin_delta_p() < Pressure::new::<psi>(8.06));
+            assert_lt!(test_bed.cabin_delta_p(), Pressure::new::<psi>(8.06));
         }
 
         #[test]
@@ -2554,7 +2612,7 @@ mod tests {
                 .command_man_vs_switch_position(0)
                 .iterate(10);
 
-            assert!(test_bed.cabin_vs() > test_bed.initial_cabin_vs());
+            assert_gt!(test_bed.cabin_vs(), test_bed.initial_cabin_vs());
         }
 
         #[test]
@@ -2568,7 +2626,7 @@ mod tests {
                 .command_packs_on_off(true)
                 .iterate(10);
 
-            assert!(test_bed.cabin_pressure() > test_bed.initial_pressure());
+            assert_gt!(test_bed.cabin_pressure(), test_bed.initial_pressure());
         }
 
         #[test]
@@ -2586,7 +2644,7 @@ mod tests {
                 .memorize_cabin_pressure()
                 .iterate(50);
 
-            assert!(test_bed.cabin_pressure() < test_bed.initial_pressure());
+            assert_lt!(test_bed.cabin_pressure(), test_bed.initial_pressure());
         }
 
         #[test]
@@ -2666,7 +2724,7 @@ mod tests {
                 )
                 .iterate(2);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+            assert_gt!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
@@ -2683,7 +2741,7 @@ mod tests {
                 )
                 .iterate(2);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+            assert_gt!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
@@ -2700,7 +2758,7 @@ mod tests {
                 )
                 .iterate(2);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+            assert_gt!(test_bed.safety_valve_open_amount(), Ratio::default());
 
             test_bed = test_bed
                 .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
@@ -2721,7 +2779,7 @@ mod tests {
                 .command_open_door()
                 .iterate(100);
 
-            assert!(test_bed.cabin_pressure() < test_bed.initial_pressure());
+            assert_lt!(test_bed.cabin_pressure(), test_bed.initial_pressure());
             assert_about_eq!(
                 test_bed.cabin_pressure().get::<psi>(),
                 InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(10000.))
@@ -2795,20 +2853,26 @@ mod tests {
 
             test_bed = test_bed.iterate(10);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+            assert_gt!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
         fn cabin_decompresses_when_failure() {
             let mut test_bed = test_bed_in_cruise().iterate(10);
 
-            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
+            assert_lt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(10.)
+            );
 
             test_bed.fail(FailureType::RapidDecompression);
 
             test_bed = test_bed.iterate(10);
 
-            assert!(test_bed.cabin_vs().abs() > Velocity::new::<foot_per_minute>(100.));
+            assert_gt!(
+                test_bed.cabin_vs().abs(),
+                Velocity::new::<foot_per_minute>(100.)
+            );
         }
 
         mod cabin_pressure_controller_tests {
@@ -3026,7 +3090,10 @@ mod tests {
             .set_takeoff_power()
             .iterate_with_delta(200, Duration::from_millis(100));
 
-        assert!(test_bed.cabin_air_in().abs() < MassRate::new::<kilogram_per_second>(0.1));
+        assert_lt!(
+            test_bed.cabin_air_in().abs(),
+            MassRate::new::<kilogram_per_second>(0.1)
+        );
     }
 
     #[test]

@@ -563,7 +563,7 @@ mod tests {
             a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
         }));
 
-        assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
+        test_bed.query(|a| assert_eq!(a.gcu.valve_position_command(), Ratio::new::<ratio>(0.)));
     }
 
     #[test]

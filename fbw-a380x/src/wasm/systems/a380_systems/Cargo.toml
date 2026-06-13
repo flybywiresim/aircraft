@@ -17,6 +17,7 @@ systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 enum-map = "2.7"
 
 [dev-dependencies]
+more-asserts.workspace = true
 ntest.workspace = true
 rstest.workspace = true
 rand_pcg = "0.9.0"

@@ -932,9 +932,11 @@ impl From<Delta> for Time {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::SimulationElement;
-    use ntest::assert_about_eq;
 
     use uom::si::{f64::*, velocity::foot_per_second};
 
@@ -1188,8 +1190,14 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()) > 0.);
-        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) > 0.);
+        assert_gt!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_gt!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
         assert_about_eq!(
             test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
             0.
@@ -1223,7 +1231,13 @@ mod tests {
             test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
             0.
         );
-        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) < 0.);
-        assert!(test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()) < 0.);
+        assert_lt!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_lt!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            0.
+        );
     }
 }

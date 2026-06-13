@@ -56,22 +56,24 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use more_asserts::*;
     use ntest::assert_about_eq;
+
+    use super::*;
 
     use uom::si::{acceleration::meter_per_second_squared, f64::*};
 
     #[test]
     fn filter_init_f64() {
         let low_pass = LowPassFilter::<f64>::new(Duration::from_secs_f64(0.5));
-        assert!(low_pass.output() == 0.);
+        assert_eq!(low_pass.output(), 0.);
     }
 
     #[test]
     fn filter_init_uom() {
         let low_pass = LowPassFilter::<Acceleration>::new(Duration::from_secs_f64(0.5));
 
-        assert!(low_pass.output().get::<meter_per_second_squared>() == 0.);
+        assert_eq!(low_pass.output().get::<meter_per_second_squared>(), 0.);
     }
 
     #[test]
@@ -79,7 +81,7 @@ mod tests {
         let mut low_pass = LowPassFilter::<f64>::new(Duration::from_secs(1));
 
         low_pass.update(Duration::from_secs_f64(0.5), 1.);
-        assert!(low_pass.output() > 0.);
+        assert_gt!(low_pass.output(), 0.);
 
         assert_about_eq!(
             low_pass.update(Duration::from_secs_f64(0.5), 1.),

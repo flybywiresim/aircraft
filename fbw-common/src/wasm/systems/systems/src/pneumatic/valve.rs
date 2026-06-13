@@ -607,6 +607,9 @@ impl PneumaticExhaust {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::{
         electrical::Electricity,
@@ -625,8 +628,6 @@ mod tests {
         velocity::knot,
         volume::cubic_meter,
     };
-
-    use ntest::assert_about_eq;
 
     struct TestPneumaticValveSignal {
         target_open_amount: Ratio,
@@ -770,13 +771,22 @@ mod tests {
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
         connector.update_move_fluid(&context, &mut from, &mut to);
 
-        assert!(from.pressure() < Pressure::new::<psi>(28.));
-        assert!(from.temperature() < ThermodynamicTemperature::new::<degree_celsius>(15.));
+        assert_lt!(from.pressure(), Pressure::new::<psi>(28.));
+        assert_lt!(
+            from.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
 
-        assert!(to.pressure() > Pressure::new::<psi>(14.));
-        assert!(to.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+        assert_gt!(to.pressure(), Pressure::new::<psi>(14.));
+        assert_gt!(
+            to.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
 
-        assert!(connector.fluid_flow() > MassRate::new::<kilogram_per_second>(0.));
+        assert_gt!(
+            connector.fluid_flow(),
+            MassRate::new::<kilogram_per_second>(0.)
+        );
     }
 
     #[test]
@@ -805,8 +815,8 @@ mod tests {
 
         valve.update_move_fluid(&context, &mut from, &mut to);
 
-        assert!(from.pressure() < Pressure::new::<psi>(28.));
-        assert!(to.pressure() > Pressure::new::<psi>(14.));
+        assert_lt!(from.pressure(), Pressure::new::<psi>(28.));
+        assert_gt!(to.pressure(), Pressure::new::<psi>(14.));
     }
 
     #[test]
@@ -914,7 +924,7 @@ mod tests {
         let context = context(Duration::from_millis(50), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() > 0.);
+        assert_gt!(exhaust.fluid_flow().get::<kilogram_per_second>(), 0.);
 
         for _ in 1..1500 {
             exhaust.update_move_fluid(&context, &mut container);
@@ -936,7 +946,7 @@ mod tests {
         let context = context(Duration::from_millis(150), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() > 0.);
+        assert_gt!(exhaust.fluid_flow().get::<kilogram_per_second>(), 0.);
 
         for _ in 1..50 {
             exhaust.update_move_fluid(&context, &mut container);
@@ -958,11 +968,11 @@ mod tests {
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() == 0.);
+        assert_eq!(exhaust.fluid_flow().get::<kilogram_per_second>(), 0.);
 
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
-            assert!(exhaust.fluid_flow().get::<kilogram_per_second>() == 0.);
+            assert_eq!(exhaust.fluid_flow().get::<kilogram_per_second>(), 0.);
         }
 
         container.set_pressure(Pressure::new::<psi>(90.));
@@ -971,7 +981,7 @@ mod tests {
             exhaust.update_move_fluid(&context, &mut container);
         }
 
-        assert!(container.pressure <= Pressure::new::<psi>(70.));
-        assert!(container.pressure >= Pressure::new::<psi>(69.));
+        assert_le!(container.pressure, Pressure::new::<psi>(70.));
+        assert_ge!(container.pressure, Pressure::new::<psi>(69.));
     }
 }

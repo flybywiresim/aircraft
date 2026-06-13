@@ -354,6 +354,7 @@ impl A380WingLiftModifier {
 }
 impl Default for A380WingLiftModifier {
     fn default() -> Self {
+        // FIXME no runtime asserts or panics please!
         assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
 
         Self {
@@ -600,6 +601,7 @@ mod tests {
     use systems::simulation::test::ReadByName;
     use uom::si::{angle::degree, velocity::knot};
 
+    use more_asserts::*;
     use ntest::assert_about_eq;
 
     struct TestSurfacesPositions {
@@ -983,7 +985,8 @@ mod tests {
                 + node4_mass.get::<kilogram>()
                 <= 0.1
         );
-        assert!(node1_mass.get::<kilogram>() >= 3000. && node1_mass.get::<kilogram>() <= 3100.);
+        assert_ge!(node1_mass.get::<kilogram>(), 3000.);
+        assert_le!(node1_mass.get::<kilogram>(), 3100.);
 
         test_bed.command(|a| a.set_fuel(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(3000.)));
 
@@ -1012,7 +1015,8 @@ mod tests {
                 + node4_mass.get::<kilogram>()
                 <= 0.1
         );
-        assert!(node1_mass.get::<kilogram>() >= 6000. && node1_mass.get::<kilogram>() <= 6200.);
+        assert_ge!(node1_mass.get::<kilogram>(), 6000.);
+        assert_le!(node1_mass.get::<kilogram>(), 6200.);
     }
 
     #[test]
@@ -1071,7 +1075,8 @@ mod tests {
                 + node4_mass.get::<kilogram>()
                 <= 0.1
         );
-        assert!(node2_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
+        assert_ge!(node2_mass.get::<kilogram>(), 3000.);
+        assert_le!(node2_mass.get::<kilogram>(), 3100.);
 
         test_bed.command(|a| a.set_fuel(A380FuelTankType::FeedOne, Mass::new::<kilogram>(3000.)));
 
@@ -1101,7 +1106,8 @@ mod tests {
                 + node4_mass.get::<kilogram>()
                 <= 0.1
         );
-        assert!(node2_mass.get::<kilogram>() >= 6000. && node1_mass.get::<kilogram>() <= 6200.);
+        assert_ge!(node2_mass.get::<kilogram>(), 6000.);
+        assert_le!(node1_mass.get::<kilogram>(), 6200.);
     }
 
     #[test]
@@ -1160,7 +1166,8 @@ mod tests {
                 + node4_mass.get::<kilogram>()
                 <= 0.1
         );
-        assert!(node3_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
+        assert_ge!(node3_mass.get::<kilogram>(), 3000.);
+        assert_le!(node2_mass.get::<kilogram>(), 3100.);
     }
 
     #[test]
@@ -1171,11 +1178,11 @@ mod tests {
 
         let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., 0.]));
 
-        assert!(anim_angles[0] == Angle::default());
-        assert!(anim_angles[1] == Angle::default());
-        assert!(anim_angles[2] == Angle::default());
-        assert!(anim_angles[3] == Angle::default());
-        assert!(anim_angles[4] == Angle::default());
+        assert_eq!(anim_angles[0], Angle::default());
+        assert_eq!(anim_angles[1], Angle::default());
+        assert_eq!(anim_angles[2], Angle::default());
+        assert_eq!(anim_angles[3], Angle::default());
+        assert_eq!(anim_angles[4], Angle::default());
     }
 
     #[test]
@@ -1186,11 +1193,12 @@ mod tests {
 
         let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., 1.]));
 
-        assert!(anim_angles[0] == Angle::default());
-        assert!(anim_angles[1] == Angle::default());
-        assert!(anim_angles[2] == Angle::default());
-        assert!(anim_angles[3] == Angle::default());
-        assert!(anim_angles[4].get::<degree>() >= 44. && anim_angles[4].get::<degree>() <= 46.);
+        assert_eq!(anim_angles[0], Angle::default());
+        assert_eq!(anim_angles[1], Angle::default());
+        assert_eq!(anim_angles[2], Angle::default());
+        assert_eq!(anim_angles[3], Angle::default());
+        assert_ge!(anim_angles[4].get::<degree>(), 44.);
+        assert_le!(anim_angles[4].get::<degree>(), 46.);
     }
 
     #[test]
@@ -1201,11 +1209,12 @@ mod tests {
 
         let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., -1.]));
 
-        assert!(anim_angles[0] == Angle::default());
-        assert!(anim_angles[1] == Angle::default());
-        assert!(anim_angles[2] == Angle::default());
-        assert!(anim_angles[3] == Angle::default());
-        assert!(anim_angles[4].get::<degree>() >= -46. && anim_angles[4].get::<degree>() <= -44.);
+        assert_eq!(anim_angles[0], Angle::default());
+        assert_eq!(anim_angles[1], Angle::default());
+        assert_eq!(anim_angles[2], Angle::default());
+        assert_eq!(anim_angles[3], Angle::default());
+        assert_ge!(anim_angles[4].get::<degree>(), -46.);
+        assert_le!(anim_angles[4].get::<degree>(), -44.);
     }
 
     #[test]
@@ -1221,7 +1230,8 @@ mod tests {
             Angle::default().get::<degree>(),
             1.0e-3
         );
-        assert!(anim_angles[1].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
+        assert_ge!(anim_angles[1].get::<degree>(), 44.);
+        assert_le!(anim_angles[0].get::<degree>(), 46.);
         assert_about_eq!(
             anim_angles[2].get::<degree>(),
             Angle::default().get::<degree>(),
@@ -1247,8 +1257,9 @@ mod tests {
 
         let anim_angles = test_bed.query_element(|e| e.animation_angles([0., -1., -1., -1., -1.]));
 
-        assert!(anim_angles[0] == Angle::default());
-        assert!(anim_angles[1].get::<degree>() <= -44. && anim_angles[1].get::<degree>() >= -46.);
+        assert_eq!(anim_angles[0], Angle::default());
+        assert_le!(anim_angles[1].get::<degree>(), -44.);
+        assert_ge!(anim_angles[1].get::<degree>(), -46.);
         assert_about_eq!(
             anim_angles[2].get::<degree>(),
             Angle::default().get::<degree>(),
@@ -1274,8 +1285,8 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
 
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
+        assert_lt!(test_bed.current_total_lift().get::<newton>() / 9.8, 1000.);
+        assert_gt!(test_bed.current_total_lift().get::<newton>() / 9.8, -1000.);
     }
 
     #[test]
@@ -1287,8 +1298,8 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
 
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
+        assert_lt!(test_bed.current_total_lift().get::<newton>() / 9.8, 1000.);
+        assert_gt!(test_bed.current_total_lift().get::<newton>() / 9.8, -1000.);
     }
 
     #[test]
@@ -1510,7 +1521,10 @@ mod tests {
             outboard_angle_right.get::<degree>(),
         );
 
-        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() > 5.);
+        assert_gt!(
+            outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>(),
+            5.
+        );
     }
 
     #[test]
@@ -1545,6 +1559,9 @@ mod tests {
             outboard_angle_right.get::<degree>(),
         );
 
-        assert!(outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>() < 5.);
+        assert_lt!(
+            outboard_angle_right.get::<degree>() - outboard_angle_left.get::<degree>(),
+            5.
+        );
     }
 }
