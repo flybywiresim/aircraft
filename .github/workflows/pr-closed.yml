@@ -11,11 +11,21 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Cancel PR build
+      - name: Cancel PR build (MSFS2024)
         uses: styfle/cancel-workflow-action@0.12.1
         with:
           ignore_sha: true
-          workflow_id: "pr-build.yml"
+          workflow_id: "pr-build-fs2024.yml"
+      - name: Cancel PR build (MSFS2020 4K)
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          ignore_sha: true
+          workflow_id: "pr-build-fs2020.yml"
+      - name: Cancel PR build (MSFS2020 8K)
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          ignore_sha: true
+          workflow_id: "pr-build-fs2020-8k.yml"
   remove-from-qa-config:
     name: Remove PR from QA Config
     runs-on: ubuntu-latest

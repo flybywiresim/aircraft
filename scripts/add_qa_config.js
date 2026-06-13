@@ -41,7 +41,7 @@ function fetchUrl(url) {
 
 function createTrack(addonKey, prNumber, prTitle, prBody, textureQuality) {
   const addonPrefix = addonKey.split('-')[0];
-  const textureQualitySuffix = addonKey.startsWith('a380x') ? `-${textureQuality}` : '';
+  const textureQualitySuffix = addonKey.startsWith('a380x') && addonKey.includes('fs2020') ? `-${textureQuality}` : '';
   const trackKey = `${addonPrefix}-pr-${prNumber}${textureQualitySuffix}`;
   const trackName = `PR #${prNumber} ${addonKey.startsWith('a380x') ? `(${textureQuality.toUpperCase()})` : ''} | ${prTitle}`;
   const description = `## [${prTitle} #${prNumber}](https://github.com/${GITHUB_REPO}/pull/${prNumber})\n\n${prBody}`;
