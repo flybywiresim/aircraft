@@ -14,6 +14,9 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [FMS] Added AREA RNP IS and PROCEDURE RNP IS fms messages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Display leg RNP on F-PLN page if present in the navigation database - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed F-PLN page crashing when alternate flightplan contained a hold - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 

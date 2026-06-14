@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2026 FlyByWire Simulations
+// Copyright (c) 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,7 +12,7 @@ import { RequiredNavigationPerformanceEvents } from '../../events/RequiredNaviga
 export class AreaRnpIs implements FMMessageSelector {
   public readonly message: FMMessage = { ...FMMessageTypes.AreaRnpIs };
 
-  private readonly onAreaRnpIs = ConsumerSubject.create(
+  private readonly pilotRnpGreaterThanArea = ConsumerSubject.create(
     this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('pilot_rnp_greater_than_area_rnp'),
     undefined,
   );
@@ -20,7 +20,7 @@ export class AreaRnpIs implements FMMessageSelector {
   private areaRnpIs = false;
 
   constructor(readonly bus: EventBus) {
-    this.onAreaRnpIs.sub((v) => {
+    this.pilotRnpGreaterThanArea.sub((v) => {
       this.stateChanged = true;
       this.areaRnpIs = v !== undefined;
       if (v !== undefined) {
