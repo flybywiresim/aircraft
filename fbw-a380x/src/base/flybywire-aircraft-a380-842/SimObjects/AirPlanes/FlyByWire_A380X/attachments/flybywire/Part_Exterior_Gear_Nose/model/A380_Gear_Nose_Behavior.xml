@@ -1,0 +1,45 @@
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+	<Include ModelBehaviorFile="Asobo\Common.xml"/>
+	<Component ID="Gear_Nose">
+
+		<!-- Nose Landing Gear -->
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_NAME>c_gear</ANIM_NAME>
+			<ANIM_CODE>(L:A32NX_GEAR_CENTER_POSITION)</ANIM_CODE>
+		</UseTemplate>
+
+		<!-- Steering -->
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<NODE_ID>c_wheel</NODE_ID>
+			<ANIM_NAME>c_wheel</ANIM_NAME>
+			<ANIM_CODE>(L:A32NX_NOSE_WHEEL_POSITION)</ANIM_CODE>
+			<ANIM_LENGTH>1</ANIM_LENGTH>
+		</UseTemplate>
+
+		<!-- Wheel Rotation LH-->
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<NODE_ID>WHEELS_C</NODE_ID>
+			<ANIM_NAME>c_tire_anim_LH</ANIM_NAME>
+			<ANIM_CODE>(L:A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE)</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+		</UseTemplate>
+
+		<!-- Wheel Rotation RH-->
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<NODE_ID>WHEELS_C</NODE_ID>
+			<ANIM_NAME>c_tire_anim_RH</ANIM_NAME>
+			<ANIM_CODE>(L:A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+		</UseTemplate>
+
+		<!-- Compression -->
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_NAME>c_gear_comp</ANIM_NAME>
+			<ANIM_CODE>(A:CONTACT POINT COMPRESSION:0, Percent)</ANIM_CODE>
+		</UseTemplate>
+
+	</Component>
+</ModelBehaviors>

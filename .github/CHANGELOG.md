@@ -14,6 +14,24 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [A380X] Update aircraft to MSFS2024 native modular aircraft - @heclak (Heclak)
+1. [A380X/MODEL] Performance optimization of 3d model with reduced draw calls - @heclak (Heclak)
+1. [A380X/MODEL] VRAM usage reduction with texture optimization and use of mipmaps for lower spec systems - @heclak (Heclak)
+1. [A380X/MODEL] Add new cabinless variant added for better performance on low spec systems - @heclak (Heclak)
+1. [A380X/MODEL] Add parallax windows on cabinless variant based on cabin layout - @heclak (Heclak)
+1. [A380X/MODEL] Update windshield texture to be cleaner - @heclak (Heclak)
+1. [A380X/MODEL] Update windshield to use 2024 rain and wiper effects - @heclak (Heclak)
+1. [A380X/MODEL] Add window heating elements to front windshield - @heclak (Heclak)
+1. [A380X/MODEL] Fix right KCCU SEC PLAN button not working - @heclak (Heclak)
+1. [A380X/LIGHTS] Fix beacon and strobe light timing and pattern to match references - @heclak (Heclak)
+1. [A380X/LIGHTS] Update cockpit with new MIP lighting - @heclak (Heclak), @Repsol2k
+1. [A380X/LIGHTS] Update external lighting positioning and brightness - @heclak (Heclak)
+1. [A380X/LIGHTS] Add taxi cam wing light fx - @heclak (Heclak)
+1. [A380X/MODEL] Add window plugs to windows - @heclak (Heclak)
+1. [A380X/MODEL] Add ability to hide the sidestick for better visibility of the OIT - @heclak (Heclak)
+1. [A380X/LIGHTS] Add cockpit reading lights - @heclak (Heclak)
+1. [A380X/MODEL] Add ability to hide sidestick for better view of OIT - @heclak (Heclak)
+1. [A380X] Fix aircraft rolling off the taxiway in ready screen when using a runway start - @heclak (Heclak)
 
 ## 2024.1.0
 

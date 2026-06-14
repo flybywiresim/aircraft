@@ -126,21 +126,12 @@ export default new TaskOfTasks('all', [
                 new TaskOfTasks(
                     'ci-build',
                     [
-                        new ExecTask('copy-base-files (8K)', [
+                        new ExecTask('copy-base-files', [
                             'npm run build-a380x:link-base-files',
                             'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:link-large-files-texture-8k',
                             // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
-                        ]),
-                        new ExecTask('copy-base-files (4K)', [
-                            'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles fbw-a380x',
-                            'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:link-large-files-texture-4k',
-                            // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
+                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/',
                         ]),
                     ],
                     false,
@@ -148,23 +139,13 @@ export default new TaskOfTasks('all', [
                 new TaskOfTasks(
                     'local-build',
                     [
-                        new ExecTask('copy-base-files (8K)', [
+                        new ExecTask('copy-base-files', [
                             'npm run build-a380x:copy-base-files',
                             'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:copy-large-files',
-                            'npm run build-a380x:copy-large-files-texture-8k',
                             'npm run chunkLargeFiles fbw-a380x',
                             // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
-                        ]),
-                        new ExecTask('copy-base-files (4K)', [
-                            'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles fbw-a380x',
-                            'npm run build-a380x:copy-large-files',
-                            'npm run build-a380x:copy-large-files-texture-4k',
-                            'npm run chunkLargeFiles fbw-a380x',
-                            // temporary until folder exists
-                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
+                            'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/',
                         ]),
                     ],
                     false,
@@ -206,12 +187,12 @@ export default new TaskOfTasks('all', [
                     'Cargo.lock',
                     'Cargo.toml',
                     'fbw-a380x/src/wasm/systems',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/systems.wasm',
                 ]),
                 new ExecTask('systems-fbw', 'npm run build-a380x:fbw', [
                     'fbw-common/src/wasm/fbw_common',
                     'fbw-a380x/src/wasm/fbw_a380',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fbw.wasm',
                 ]),
                 new ExecTask(
                     'systems-terronnd',
@@ -219,7 +200,7 @@ export default new TaskOfTasks('all', [
                     [
                         'fbw-common/src/wasm/terronnd',
                         'fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm',
-                        'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm',
+                        'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/terronnd.wasm',
                     ],
                 ),
                 new ExecTask('cpp-wasm-cmake', 'npm run build:cpp-wasm-cmake', [
@@ -228,8 +209,8 @@ export default new TaskOfTasks('all', [
                     'fbw-common/src/wasm/fadec_common',
                     'fbw-a380x/src/wasm/extra-backend-a380x',
                     'fbw-a380x/src/wasm/fadec_a380x',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/extra-backend-a380x.wasm',
-                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec-a380x.wasm',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/extra-backend-a380x.wasm',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fadec-a380x.wasm',
                 ]),
             ],
             true,
