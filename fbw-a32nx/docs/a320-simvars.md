@@ -4786,7 +4786,18 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       Mode | Value
       --- | ---
       NONE | 0
+      MAN_TOGA | 1
+      MAN_FLEX | 3
+      MAN_MCT | 5
+      MAN_THR | 6
+      SPEED | 7
+      MACH | 8
+      THR_MCT | 9
+      THR_CLB | 10
+      THR_LVR | 11
+      THR_IDLE | 12
       A_FLOOR | 13
+      TOGA_LK | 14
 
 - A32NX_AUTOPILOT_SPEED_SELECTED
     - SPEED mode: 100 to 399 (knots)
@@ -4841,3 +4852,5 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       --- | ---
       NONE | 0
       LVR_CLB | 3
+      LVR_MCT | 4
+      LVR_ASYM | 5
