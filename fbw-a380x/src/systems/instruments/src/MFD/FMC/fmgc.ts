@@ -84,6 +84,8 @@ export class FmgcData {
 
   public readonly tripFuelAtPreflight = Subject.create<number | null>(null); // in tonnes
 
+  public readonly rememberedTakeoffWeight = Subject.create<number | null>(null);
+
   public readonly destEfobBelowMinInActive = Subject.create(false);
 
   /**

@@ -521,6 +521,13 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
+    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+      return this.fmgc.data.rememberedTakeoffWeight.get() ?? this.calculatePreflightTakeoffWeight(forPlan);
+    }
+    return this.calculatePreflightTakeoffWeight(forPlan);
+  }
+
+  private calculatePreflightTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
     const pd = this.flightPlanInterface.get(forPlan).performanceData;
     if (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan)) {
       // On ground, engines off
@@ -534,13 +541,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
       return null;
     }
-    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-      // In flight
-      // TOW: TOW = GW
-      return this.fmgc.getGrossWeightKg();
-    }
     // Preflight, engines on
-    // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
     const gw = this.fmgc.getGrossWeightKg();
     return gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
@@ -1201,6 +1202,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
+        pd.rememberedTakeoffWeight.set(this.calculatePreflightTakeoffWeight());
 
         this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
