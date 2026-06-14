@@ -56,19 +56,15 @@ impl fmt::Display for SecondarySurfaceType {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub enum SolenoidStatus {
     Energised,
+    #[default]
     DeEnergised,
 }
 impl SolenoidStatus {
     pub fn is_energised(self) -> bool {
         self == SolenoidStatus::Energised
-    }
-}
-impl Default for SolenoidStatus {
-    fn default() -> Self {
-        SolenoidStatus::DeEnergised
     }
 }
 
@@ -281,7 +277,7 @@ impl FlapSlatAssembly {
     ) -> Self {
         // NOTE: it is assumed left_surfaces.max_synchro_angle == right_surfaces.max_synchro_angle
         // assert! avoided to prevent panics
-        let max_synchro_angle = left_surfaces.max_synchro_angle.clone();
+        let max_synchro_angle = left_surfaces.max_synchro_angle;
         Self {
             ippu_id: context.get_identifier(format!("{id}_IPPU_ANGLE",)),
             fppu_id: context.get_identifier(format!("{id}_FPPU_ANGLE",)),
