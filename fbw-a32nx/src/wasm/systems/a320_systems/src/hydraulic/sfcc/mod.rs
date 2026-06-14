@@ -418,7 +418,7 @@ impl SlatFlapComplex {
             slats_feedback,
             adirs,
             lgciu1,
-            &sfcc_2,
+            sfcc_2,
         );
         sfcc_2.update(
             context,
@@ -426,7 +426,7 @@ impl SlatFlapComplex {
             slats_feedback,
             adirs,
             lgciu2,
-            &sfcc_1,
+            sfcc_1,
         );
     }
 

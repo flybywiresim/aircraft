@@ -360,15 +360,15 @@ impl SlatsChannel {
     }
 
     pub(super) fn missing_adiru_data(&self) -> bool {
-        return self.missing_cas_data || self.missing_aoa_data;
+        self.missing_cas_data || self.missing_aoa_data
     }
 
     pub(super) fn wtb_power_lost(&self) -> bool {
-        return !self.wtb_is_powered_delayed.output();
+        !self.wtb_is_powered_delayed.output()
     }
 
     pub(super) fn is_wtb_armed(&self) -> bool {
-        return self.own_wtb_armed;
+        self.own_wtb_armed
     }
 
     pub(super) fn is_wtb_failed(&self) -> bool {
@@ -463,7 +463,7 @@ impl WingTipBrakeController for SlatsChannel {
         if wtb_triggered {
             return SolenoidStatus::Energised;
         }
-        return SolenoidStatus::DeEnergised;
+        SolenoidStatus::DeEnergised
     }
 }
 impl SimulationElement for SlatsChannel {

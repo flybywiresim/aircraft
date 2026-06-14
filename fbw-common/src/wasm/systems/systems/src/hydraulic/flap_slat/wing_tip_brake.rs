@@ -182,7 +182,7 @@ mod wing_tip_brake_tests {
     impl WingTipBrakeTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|context| TestAircraft::new(context)),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             }
         }
 
