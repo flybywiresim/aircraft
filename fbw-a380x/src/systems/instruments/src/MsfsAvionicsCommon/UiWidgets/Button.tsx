@@ -32,7 +32,7 @@ export interface ButtonProps extends ComponentProps {
   visible?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
   highlighted?: Subscribable<boolean>;
-  buttonStyle?: string | Subscribable<string>;
+  buttonStyle?: string;
   containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;

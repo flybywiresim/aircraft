@@ -1,8 +1,10 @@
-import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+import { FSComponent, Subscription, Subject, VNode, LifecycleComponent } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from '../../MFD';
 import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 
-export class Footer extends DisplayComponent<AbstractMfdPageProps> {
+export class Footer extends LifecycleComponent<AbstractMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
@@ -10,9 +12,17 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
 
   private readonly buttonText = Subject.create('MSG\nLIST');
 
-  private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly messageText = Subject.create('');
+
+  private readonly messageBackgroundColor = Subject.create('none');
+
+  private readonly messageStyle = this.messageBackgroundColor
+    .map((color) => `background-color: ${color};`)
+    .withLifecycle(this.defaultLifecycle);
 
   private readonly messageToBeCleared = Subject.create<boolean>(false);
+
+  private readonly msgListDisabled = Subject.create<boolean>(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -21,24 +31,24 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
       this.subs.push(
         this.props.fmcService.master.fmsErrors.sub((_, __, ___, arr) => {
           const ind = arr.findIndex((el) => !el.cleared);
-
-          if (ind > -1 && this.messageRef.getOrDefault()) {
+          if (ind > -1) {
             this.messageToBeCleared.set(true);
-            this.messageRef.instance.textContent = arr[ind].messageText;
-
+            this.messageText.set(arr[ind].messageText);
             if (arr[ind].backgroundColor === 'white') {
-              this.messageRef.instance.style.backgroundColor = '#ffffff';
+              this.messageBackgroundColor.set('#ffffff');
             } else if (arr[ind].backgroundColor === 'cyan') {
-              this.messageRef.instance.style.backgroundColor = '#00ffff';
+              this.messageBackgroundColor.set('#00ffff');
             } else if (arr[ind].backgroundColor === 'amber') {
-              this.messageRef.instance.style.backgroundColor = '#e68000';
+              this.messageBackgroundColor.set('#e68000');
             }
             this.buttonText.set('CLEAR\nINFO');
+            this.msgListDisabled.set(false);
           } else {
             this.messageToBeCleared.set(false);
-            this.messageRef.instance.textContent = '';
-            this.messageRef.instance.style.backgroundColor = 'none';
+            this.messageText.set('');
+            this.messageBackgroundColor.set('none');
             this.buttonText.set('MSG\nLIST');
+            this.msgListDisabled.set(arr.length === 0);
           }
         }, true),
       );
@@ -66,9 +76,10 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
               this.props.mfd.openMessageList();
             }
           }}
+          disabled={this.msgListDisabled}
         />
         <div class="mfd-footer-message-area">
-          <span ref={this.messageRef} />
+          <span style={this.messageStyle}>{this.messageText}</span>
         </div>
       </div>
     );

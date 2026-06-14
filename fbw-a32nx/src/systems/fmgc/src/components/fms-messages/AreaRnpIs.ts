@@ -13,7 +13,7 @@ export class AreaRnpIs implements FMMessageSelector {
   public readonly message: FMMessage = { ...FMMessageTypes.AreaRnpIs };
 
   private readonly onAreaRnpIs = ConsumerSubject.create(
-    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('area_rnp_is'),
+    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('pilot_rnp_greater_than_area_rnp'),
     undefined,
   );
   private stateChanged = false;

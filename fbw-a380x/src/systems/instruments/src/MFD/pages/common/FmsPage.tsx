@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   ConsumerSubject,
@@ -215,7 +217,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedAlternateFlightPlan = null;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
         } else if (dueToEvent) {
-          // If sec has been deleted, navigate to equivelant active page and load the active or tmpy.
+          // If sec has been deleted, navigate to equivalent active page and load the active or tmpy.
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
           this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec1', 'active'));
           return;

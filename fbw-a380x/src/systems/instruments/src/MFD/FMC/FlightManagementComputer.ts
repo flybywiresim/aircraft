@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -415,22 +415,22 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.bus
         .getSubscriber<RequiredNavigationPerformanceEvents>()
-        .on('area_rnp_is')
+        .on('pilot_rnp_greater_than_area_rnp')
         .handle((v) => {
           if (v !== undefined) {
-            this.addMessageToQueue(NXSystemMessages.AreaRnpIs.getModifiedMessage(v.toFixed(2)));
+            this.addMessageToQueue(NXSystemMessages.areaRnpis.getModifiedMessage(v.toFixed(2)));
           } else {
-            this.removeMessageFromQueue(NXSystemMessages.AreaRnpIs.text);
+            this.removeMessageFromQueueByType(NXSystemMessages.areaRnpis);
           }
         }),
       this.bus
         .getSubscriber<RequiredNavigationPerformanceEvents>()
-        .on('procedure_rnp_is')
+        .on('pilot_rnp_greater_than_proc_rnp')
         .handle((v) => {
           if (v !== undefined) {
             this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(v.toFixed(2)));
           } else {
-            this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs.text);
+            this.removeMessageFromQueueByType(NXSystemMessages.procedureRnpIs);
           }
         }),
     );
@@ -1124,22 +1124,39 @@ export class FlightManagementComputer implements FmcInterface {
       isResolvedOverride: isTypeIIMessage(message) ? message.isResolved : () => false,
     };
 
-    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
+    const exists = this.findMessageIndexInQueue(message);
     if (exists !== -1) {
       this.fmsErrors.removeAt(exists);
     }
     this.fmsErrors.insert(msg, 0);
   }
 
-  /**
-   * Removes a message from the queue
+  /** Removes a message from the fms message queue by its text content.
+   * @deprecated Use removeMessageFromQueueByType instead.
    * @param value {String}
    */
   removeMessageFromQueue(value: string) {
-    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);
-    if (exists !== -1) {
-      this.fmsErrors.removeAt(exists);
+    const index = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);
+    if (index !== -1) {
+      this.fmsErrors.removeAt(index);
     }
+  }
+
+  removeMessageFromQueueByType(message: TypeIMessage | TypeIIMessage) {
+    const index = this.findMessageIndexInQueue(message);
+    if (index !== -1) {
+      this.fmsErrors.removeAt(index);
+    }
+  }
+
+  private findMessageIndexInQueue(message: TypeIMessage | TypeIIMessage): number {
+    return this.fmsErrors
+      .getArray()
+      .findIndex((el) =>
+        isTypeIIMessage(message)
+          ? el.messageText.includes(message.getTextExcludingReplace())
+          : el.messageText === message.text,
+      );
   }
 
   private updateMessageQueue() {
@@ -1384,7 +1401,7 @@ export class FlightManagementComputer implements FmcInterface {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
     if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
-      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+      this.removeMessageFromQueueByType(NXSystemMessages.checkSpeedMode);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }

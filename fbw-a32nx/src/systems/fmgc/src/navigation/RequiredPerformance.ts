@@ -43,11 +43,11 @@ export class RequiredPerformance {
     private flightPlanService: FlightPlanService,
   ) {
     this.areaRnpIs.sub((areaRnp) => {
-      this.rnpEventsPublisher.pub('area_rnp_is', areaRnp, false, false);
+      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
     });
 
     this.procedureRnpIs.sub((procedureRnp) => {
-      this.rnpEventsPublisher.pub('procedure_rnp_is', procedureRnp, false, false);
+      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_proc_rnp', procedureRnp, false, false);
     });
   }
 
@@ -57,7 +57,7 @@ export class RequiredPerformance {
     this.updateLDev();
   }
 
-  setPilotRnp(rnp: number | undefined): void {
+  setPilotRnp(rnp: number): void {
     this.manualRnp = true;
     this.setActiveRnp(rnp);
   }
@@ -123,17 +123,19 @@ export class RequiredPerformance {
       // Check if pilot rnp is greater than procedure rnp.
       const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : undefined;
       const leg = plan?.maybeElementAt(plan.activeLegIndex);
-      if (pilotRnp !== undefined && isLeg(leg) && leg.rnp !== undefined && pilotRnp > leg.rnp) {
-        this.procedureRnpIs.set(leg.rnp);
-      } else {
+      const legrnp = isLeg(leg) ? leg.rnp : undefined;
+      this.procedureRnpIs.set(pilotRnp !== undefined && legrnp !== undefined && pilotRnp > legrnp ? legrnp : undefined);
+      // Check if pilot rnp is greater than area rnp if no leg rnp exists.
+      if (legrnp === undefined) {
         this.procedureRnpIs.set(undefined);
-        // Check if pilot rnp is greater than area rnp.
         const areaRnp = rnpDefaults[this.flightPlanService.active.calculateActiveArea()];
         if (pilotRnp !== undefined && areaRnp !== undefined && pilotRnp > areaRnp) {
           this.areaRnpIs.set(areaRnp);
         } else {
           this.areaRnpIs.set(undefined);
         }
+      } else {
+        this.areaRnpIs.set(undefined);
       }
     }
   }

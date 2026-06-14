@@ -13,7 +13,7 @@ export class ProcedureRnpIs implements FMMessageSelector {
   public readonly message: FMMessage = { ...FMMessageTypes.ProcedureRnpIs };
 
   private readonly onProcedureRnpIs = ConsumerSubject.create(
-    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('procedure_rnp_is'),
+    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('pilot_rnp_greater_than_proc_rnp'),
     undefined,
   );
   private stateChanged = false;
