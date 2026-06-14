@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -58,6 +58,10 @@ export class TypeIIMessage extends McduMessage {
       onClear || this.onClear,
     );
   }
+
+  getTextExcludingReplace(): string {
+    return this.text.slice(0, this.text.indexOf(this.replace));
+  }
 }
 
 export class ATCCOMMessage extends McduMessage {
@@ -78,6 +82,7 @@ export class ATCCOMMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
+  areaRnpis: new TypeIIMessage('AREA RNP IS XX.XX', true, 'XX.XX'),
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
   crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
@@ -119,6 +124,7 @@ export const NXSystemMessages = {
   sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
   lrcInUse: new TypeIMessage('LRC MODE IN USE'),
   lateralDiscontinuityAhead: new TypeIIMessage('LATERAL DISCONTINUITY AHEAD', true),
+  procedureRnpIs: new TypeIIMessage('PROC RNP IS XX.XX', true, 'XX.XX'),
 };
 
 export const NXFictionalMessages = {

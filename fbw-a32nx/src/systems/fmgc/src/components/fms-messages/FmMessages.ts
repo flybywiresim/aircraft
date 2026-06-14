@@ -198,4 +198,18 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'Amber',
     clearable: true,
   },
+
+  AreaRnpIs: {
+    id: 23,
+    text: 'AREA RNP IS XX.XX',
+    color: 'Amber',
+    clearable: true,
+  },
+
+  ProcedureRnpIs: {
+    id: 24,
+    text: 'PROCEDURE RNP IS XX.XX',
+    color: 'Amber',
+    clearable: true,
+  },
 };

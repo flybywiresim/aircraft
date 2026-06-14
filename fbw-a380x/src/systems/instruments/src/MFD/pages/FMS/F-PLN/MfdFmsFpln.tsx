@@ -1,12 +1,13 @@
 ﻿// Copyright (c) 2024-2026 FlyByWire Simulations
 //
-// SPDX-License-Identifier: GPL-3.
+// SPDX-License-Identifier: GPL-3.0
 import {
   ArraySubject,
   ClockEvents,
   ComponentProps,
   DisplayComponent,
   FSComponent,
+  LifecycleComponent,
   MappedSubject,
   MathUtils,
   NodeReference,
@@ -69,7 +70,45 @@ export interface DerivedFplnLegData {
   distanceFromLastWpt: number | null;
 }
 
+enum FplnLineColor {
+  Active = '#00ff00',
+  Temporary = '#ffff00',
+  Secondary = '#ffffff',
+  Alternate = '#00ffff',
+}
+
+enum FplnLineFlags {
+  None = 0,
+  FirstLine = 1 << 0,
+  BeforeSpecial = 1 << 1,
+  AfterSpecial = 1 << 2,
+  BeforeActiveLeg = 1 << 3,
+  IsActiveLeg = 1 << 4,
+  LastLine = 1 << 5,
+}
+
+enum FplnLineType {
+  None,
+  Waypoint,
+  Special,
+  HoldHm,
+}
+
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
+  private static readonly endOfFlightPlan: FplnLineDisplayData = {
+    type: FplnLineType.Special,
+    originalLegIndex: null,
+    label: 'END OF F-PLN',
+  };
+
+  private static readonly noAlternateFlightPlan: FplnLineDisplayData = {
+    type: FplnLineType.Special,
+    originalLegIndex: null,
+    label: 'NO ALTN F-PLN',
+  };
+
+  private static readonly discontinuityLabel = 'DISCONTINUITY';
+
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );
@@ -80,13 +119,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     precision: 0.1,
   });
 
-  private readonly lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
+  private readonly lineColor = MappedSubject.create(
+    ([tmpy, sec]) => {
+      if (sec) {
+        return FplnLineColor.Secondary;
+      }
+      if (tmpy) {
+        return FplnLineColor.Temporary;
+      }
+      return FplnLineColor.Active;
+    },
+    this.tmpyActive,
+    this.secActive,
+  ).withLifecycle(this.defaultLifecycle);
 
   private readonly spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly displayEfobAndWind = Subject.create<boolean>(false);
-
-  private readonly trueTrackEnabled = Subject.create<boolean>(false);
 
   private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([
     {
@@ -116,8 +165,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly derivedFplnLegData: DerivedFplnLegData[] = [];
 
   private readonly linesDivRef = FSComponent.createRef<HTMLDivElement>();
-
-  private readonly tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly destButtonLabel = Subject.create<string>('');
 
@@ -199,20 +246,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     v === FmgcFlightPhase.Preflight || v === FmgcFlightPhase.Done ? 'TIME' : 'UTC',
   );
 
-  private readonly endOfFlightPlan: FplnLineDisplayData = {
-    type: FplnLineType.Special,
-    originalLegIndex: null,
-    label: 'END OF F-PLN',
-  };
-
-  private readonly noAlternateFlightPlan: FplnLineDisplayData = {
-    type: FplnLineType.Special,
-    originalLegIndex: null,
-    label: 'NO ALTN F-PLN',
-  };
-
-  private readonly discontinuityLabel = 'DISCONTINUITY';
-
   private emptyFlightPlanRendered = false;
 
   private readonly destEfobAmber = Subject.create(false);
@@ -261,7 +294,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
-
     this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex ?? null;
     this.lastRenderedFpVersion = this.loadedFlightPlan.version ?? null;
     this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
@@ -321,17 +353,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           holdSpeed: null,
           immExit: false,
           decelSequenced: false,
+          etaOrSecondsFromPresent: null,
+          efobPrediction: NaN,
         });
 
         this.lineData.push({
           type: FplnLineType.Special,
-          label: this.discontinuityLabel,
+          label: MfdFmsFpln.discontinuityLabel,
           originalLegIndex: null,
         });
 
-        this.lineData.push(this.endOfFlightPlan);
+        this.lineData.push(MfdFmsFpln.endOfFlightPlan);
 
-        this.lineData.push(this.noAlternateFlightPlan);
+        this.lineData.push(MfdFmsFpln.noAlternateFlightPlan);
         shouldOnlyUpdatePredictions = false;
         this.emptyFlightPlanRendered = true;
       } else {
@@ -374,9 +408,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         if (
           el instanceof FlightPlanLeg &&
-          index <
-            (this.loadedFlightPlan?.legCount ?? 0) +
-              (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateFlightPlan.legCount ?? 0)
+          index < (this.loadedFlightPlan?.legCount ?? 0) + (this.loadedAlternateFlightPlan?.legCount ?? 0)
         ) {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
@@ -415,6 +447,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       }
       lastDistanceFromStart = 0;
 
+      let lastLegRnp: number | null = null;
+
+      const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+      const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
+      const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
+      const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
+
       for (let i = 0; i < jointFlightPlan.length; i++) {
         const leg = jointFlightPlan[i];
         const isAltn = i >= (this.loadedFlightPlan.allLegs.length ?? 0);
@@ -437,15 +476,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             ident: pwp.mcduIdent ?? pwp.ident,
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
-            etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
+            etaOrSecondsFromPresent:
+              pwp.flightPlanInfo?.secondsFromPresent !== undefined
+                ? this.predictionTimestamp(pwp.flightPlanInfo.secondsFromPresent)
+                : null,
             transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude.get(),
             altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
-            hasAltitudeConstraint: false, // TODO
-            altitudeConstraint: null, // TODO
+            hasAltitudeConstraint: false,
+            altitudeConstraint: null,
             altitudeConstraintIsRespected: true,
             speedPrediction: pwp.flightPlanInfo?.speed ?? null,
             hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
-            speedConstraint: null, // TODO
+            speedConstraint: null,
             speedConstraintIsRespected: true,
             efobPrediction: Units.poundToKilogram(pred?.estimatedFuelOnBoard ?? NaN),
             windPrediction: pwp.flightPlanInfo?.windPrediction ?? null,
@@ -457,27 +499,29 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           this.lineData.push(data);
         }
 
+        const originalLegIndex = isAltn ? i - this.loadedFlightPlan.legCount : i;
         if (leg instanceof FlightPlanLeg) {
-          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
-          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
-          const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
-          const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
-          const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
+          const isHM = leg.type === LegType.HM;
           const isMissedApproachWaypoint = isAltn
             ? i >= firstMissedApproachLegIndex
             : i >= this.loadedFlightPlan.firstMissedApproachLegIndex;
-          const isHM = leg.type === LegType.HM;
+          const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
+          const isOrigin = this.loadedFlightPlan.originLegIndex === i && !isAltn;
           if (isHM) {
             const loadedFpIndex = this.loadedFlightPlanIndex.get();
             const holdData: FplnLineHoldDisplayData = {
               type: FplnLineType.HoldHm,
-              originalLegIndex: i,
+              originalLegIndex: originalLegIndex,
               isAltnWaypoint: isAltn,
               isMissedAppchWaypoint: isMissedApproachWaypoint,
               ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
               distFromLastWpt: leg.definition.length ?? null,
-              holdSpeed: this.props.fmcService.master?.acInterface.getLegHoldingSpeed(i, loadedFpIndex) ?? null,
-              immExit: this.loadedFlightPlan.legElementAt(i).holdImmExit,
+              holdSpeed: isAltn
+                ? null
+                : this.props.fmcService.master?.acInterface.getLegHoldingSpeed(originalLegIndex, loadedFpIndex) ?? null,
+              immExit: isAltn
+                ? this.loadedAlternateFlightPlan?.legElementAt(originalLegIndex).holdImmExit ?? false
+                : this.loadedFlightPlan.legElementAt(originalLegIndex).holdImmExit,
               decelSequenced:
                 loadedFpIndex === FlightPlanIndex.Active &&
                 i === this.loadedFlightPlan.activeLegIndex + 1 &&
@@ -488,30 +532,50 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           }
 
           const derivedData = this.derivedFplnLegData[i];
-          let annotation = '';
-          if (!isHM) {
-            // TODO check if necessary for HA and HF legs.
-            annotation = leg.annotation;
-          } else {
-            const inboundCrs = leg.modifiedHold?.inboundMagneticCourse ?? leg.defaultHold?.inboundMagneticCourse;
-            if (inboundCrs !== undefined) {
-              annotation = 'C' + inboundCrs.toFixed(0).padStart(3, '0') + '°\xa0\xa0';
+          let procedureAnnotation = '';
+          // Do not display annotation for the first leg of the alternate flight plan.
+          if (!isAltn || (isAltn && originalLegIndex !== this.loadedAlternateFlightPlan?.originLegIndex)) {
+            if (!isHM) {
+              // TODO check if necessary for HA and HF legs.
+              procedureAnnotation = leg.annotation;
+            } else {
+              const inboundCrs = leg.modifiedHold?.inboundMagneticCourse ?? leg.defaultHold?.inboundMagneticCourse;
+              if (inboundCrs !== undefined) {
+                procedureAnnotation = 'C' + inboundCrs.toFixed(0).padStart(3, '0') + '°\xa0\xa0';
+              }
             }
           }
 
+          // If last leg rnp is the same, display " else the LEG RNP XX.XX.
+          const rnpAnnotation =
+            leg.rnp !== undefined
+              ? leg.rnp === lastLegRnp
+                ? '"'.padStart(6, '\xa0')
+                : `LEG RNP  ${leg.rnp.toFixed(2)}`
+              : '';
+
+          leg.definition.turnDirection;
+
           const data: FplnLineWaypointDisplayData = {
             type: FplnLineType.Waypoint,
-            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
+            originalLegIndex: originalLegIndex,
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
             isActiveHoldFix: isHM && i === this.loadedFlightPlan.activeLegIndex,
             isMissedAppchWaypoint: isMissedApproachWaypoint,
             ident: leg.ident,
             overfly: leg.definition.overfly,
-            annotation: annotation,
-            etaOrSecondsFromPresent: this.predictionTimestamp(pred?.secondsFromPresent ?? 0),
+            annotation: procedureAnnotation,
+            rnpAnnotation: rnpAnnotation,
+            etaOrSecondsFromPresent: isOrigin
+              ? 0
+              : pred?.secondsFromPresent !== undefined
+                ? this.predictionTimestamp(pred.secondsFromPresent)
+                : null,
             transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
-            altitudePrediction: pred?.altitude ?? null,
+            altitudePrediction: isOrigin
+              ? this.loadedFlightPlan.originAirport?.location.alt ?? null
+              : pred?.altitude ?? null,
             hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
             altitudeConstraint: leg.altitudeConstraint ?? null,
             altitudeConstraintIsRespected: pred?.isAltitudeConstraintMet ?? true,
@@ -538,21 +602,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               label: 'TOO STEEP PATH',
             });
           }
+          lastLegRnp = leg.rnp ?? null;
         } else {
           const data: FplnLineSpecialDisplayData = {
             type: FplnLineType.Special,
-            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
-            label: this.discontinuityLabel,
+            originalLegIndex: originalLegIndex,
+            label: MfdFmsFpln.discontinuityLabel,
           };
           this.lineData.push(data);
+          lastLegRnp = null;
         }
 
         // Identify end of F-PLN
         if (i === this.loadedFlightPlan.allLegs.length - 1) {
-          this.lineData.push(this.endOfFlightPlan);
+          this.lineData.push(MfdFmsFpln.endOfFlightPlan);
 
           if (this.loadedAlternateFlightPlan?.allLegs.length === 0) {
-            this.lineData.push(this.noAlternateFlightPlan);
+            this.lineData.push(MfdFmsFpln.noAlternateFlightPlan);
           }
         }
 
@@ -565,6 +631,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     // Delete all lines only if re-render is neccessary.
     if (!shouldOnlyUpdatePredictions && this.linesDivRef.getOrDefault()) {
+      // TODO always a specific set of lines to reduce DOM re renders?
       while (this.linesDivRef.instance.firstChild) {
         this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
       }
@@ -619,6 +686,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         const clonedLineData = { ...lineData };
         this.renderedLineData[lineIndex].set(clonedLineData);
 
+        const trueTrackEnabled = this.props.fmcService.master.isTrueRefActive();
+
         if (
           !shouldOnlyUpdatePredictions &&
           this?.renderedLineData[lineIndex]?.get() !== null &&
@@ -639,21 +708,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               flags={Subject.create(flags)}
               displayEfobAndWind={this.displayEfobAndWind}
               weightUnit={this.weightUnit}
-              trueTrack={this.trueTrackEnabled}
-              globalLineColor={MappedSubject.create(
-                ([tmpy, sec]) => {
-                  if (sec) {
-                    return FplnLineColor.Secondary;
-                  }
-                  if (tmpy) {
-                    return FplnLineColor.Temporary;
-                  }
-                  return FplnLineColor.Active;
-                },
-                this.tmpyActive,
-                this.secActive,
-              )}
+              trueTrack={trueTrackEnabled}
+              globalLineColor={this.lineColor}
               revisionsMenuIsOpened={this.revisionsMenuOpened}
+              temporaryActive={this.tmpyActive}
               callbacks={{
                 speed: () => this.goToSpeedConstraint(drawIndex),
                 altitude: () => this.goToAltitudeConstraint(drawIndex),
@@ -773,17 +831,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
 
     this.subs.push(
-      this.tmpyActive.sub((val) => {
-        if (this.tmpyLineRef.getOrDefault()) {
-          if (val) {
-            this.lineColor.set(FplnLineColor.Temporary);
-            this.tmpyLineRef.instance.style.display = 'flex';
-          } else {
-            this.lineColor.set(FplnLineColor.Active);
-            this.tmpyLineRef.instance.style.display = 'none';
-          }
-        }
-
+      this.tmpyActive.sub((_) => {
         this.update(this.displayFplnFromLineIndex.get(), false);
         this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
       }, true),
@@ -796,11 +844,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.scrollToDest();
     }
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & InternalKccuKeyEvent>();
+    const sub = this.props.bus.getSubscriber<InternalKccuKeyEvent & ClockEvents>();
     this.subs.push(
       sub
         .on('realTime')
-        .atFrequency(0.5)
+        .atFrequency(1)
         .handle(() => {
           this.onNewData();
         }),
@@ -1052,7 +1100,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           </div>
           <div ref={this.linesDivRef} />
           <div style="flex-grow: 1" />
-          <div ref={this.tmpyLineRef} class="mfd-fms-fpln-line-erase-temporary">
+          <div
+            style={{
+              display: this.tmpyActive.map((active) => (active ? 'flex' : 'none')).withLifecycle(this.defaultLifecycle),
+            }}
+            class="mfd-fms-fpln-line-erase-temporary"
+          >
             <Button
               label={
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -1088,7 +1141,17 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <ConditionalComponent
               componentIfFalse={
                 <Button
-                  label={this.destButtonLabel}
+                  label={
+                    <span
+                      style={{
+                        color: this.lineColorIsTemporary
+                          .map((v) => (v ? FplnLineColor.Temporary : '#FFFFFF'))
+                          .withLifecycle(this.defaultLifecycle),
+                      }}
+                    >
+                      {this.destButtonLabel}
+                    </span>
+                  }
                   onClick={() => {
                     this.props.fmcService.master.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo(
@@ -1300,29 +1363,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 interface FplnLineCommonProps extends ComponentProps {
   openRevisionsMenuCallback: () => void;
 }
-enum FplnLineColor {
-  Active = '#00ff00',
-  Temporary = '#ffff00',
-  Secondary = '#ffffff',
-  Alternate = '#00ffff',
-}
-
-enum FplnLineFlags {
-  None = 0,
-  FirstLine = 1 << 0,
-  BeforeSpecial = 1 << 1,
-  AfterSpecial = 1 << 2,
-  BeforeActiveLeg = 1 << 3,
-  IsActiveLeg = 1 << 4,
-  LastLine = 1 << 5,
-}
-
-enum FplnLineType {
-  None,
-  Waypoint,
-  Special,
-  HoldHm,
-}
 
 interface FplnLineTypeDiscriminator {
   /*
@@ -1348,7 +1388,8 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   ident: string;
   overfly: boolean;
   annotation: string;
-  etaOrSecondsFromPresent: number; // timestamp, will be printed to HH:mm
+  rnpAnnotation?: string;
+  etaOrSecondsFromPresent: number | null; // timestamp, will be printed to HH:mm
   transitionAltitude: number | null;
   altitudePrediction: number | null;
   hasAltitudeConstraint: boolean;
@@ -1406,27 +1447,37 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
   flags: Subscribable<FplnLineFlags>;
   displayEfobAndWind: Subscribable<boolean>;
   weightUnit: Subscribable<SimpleUnit<UnitFamily.Weight>>;
-  trueTrack: Subscribable<boolean>;
+  trueTrack: boolean;
   globalLineColor: Subscribable<FplnLineColor>;
-  revisionsMenuIsOpened: Subject<boolean>;
+  revisionsMenuIsOpened: Subscribable<boolean>;
+  temporaryActive: Subscribable<boolean>;
   callbacks: lineConstraintsCallbacks;
 }
 
-class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
+class FplnLegLine extends LifecycleComponent<FplnLegLineProps> {
   // Make sure to collect all subscriptions here, so we can properly destroy them.
   private readonly subs = [] as Subscription[];
 
   private readonly selectedForRevision = Subject.create(false);
 
+  private readonly isAlternateOrMissedApproach = this.props.data
+    .map((data) => {
+      return data !== null && (isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint || data.isMissedAppchWaypoint);
+    })
+    .withLifecycle(this.defaultLifecycle);
+
   private readonly lineColor = MappedSubject.create(
-    ([color, data]) => {
-      if (data && (isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint || data.isMissedAppchWaypoint)) {
+    ([color, alternateOrMissed]) => {
+      if (color === FplnLineColor.Temporary) {
+        return FplnLineColor.Temporary;
+      }
+      if (alternateOrMissed) {
         return FplnLineColor.Alternate;
       }
       return color;
     },
     this.props.globalLineColor,
-    this.props.data,
+    this.isAlternateOrMissedApproach,
   );
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
@@ -1440,8 +1491,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   private readonly identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
 
   private readonly timeRef = FSComponent.createRef<HTMLDivElement>();
-  /** Only used for displaying HOLD SPD text */
-  private readonly timeAnnotation = Subject.create('');
+  /** Only used for displaying HOLD SPD text or LEG RNP */
+  private readonly holdSpdOrLegRnpAnnotation = Subject.create('');
   private readonly timeClickable = Subject.create(true);
 
   private readonly speedRef = FSComponent.createRef<HTMLDivElement>();
@@ -1471,10 +1522,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
   private readonly lineColorIsSecondary = this.lineColor.map((it) => it === FplnLineColor.Secondary);
-  private readonly lineColorIsAlternate = this.lineColor.map((it) => it === FplnLineColor.Alternate);
 
-  /** Used to display leg annotation. E.g. Hold inbound course, SID etc. */
+  private readonly isFirstLine = this.props.flags
+    .map((f) => (f & FplnLineFlags.FirstLine) === FplnLineFlags.FirstLine)
+    .withLifecycle(this.defaultLifecycle);
+
+  /** Used to display leg annotation. E.g. Hold inbound course, SID, LEG RNP etc. */
   private readonly annotationText = Subject.create('');
+
+  private readonly rnpAnnotationText = Subject.create('');
+
   private readonly timeText = Subject.create('');
 
   public onAfterRender(node: VNode): void {
@@ -1531,7 +1588,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.subs.push(this.lineColor, this.lineColorIsTemporary, this.lineColorIsSecondary, this.lineColorIsAlternate);
+    this.subs.push(this.lineColor, this.lineColorIsTemporary, this.lineColorIsSecondary);
 
     this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
     this.timeRef.getOrDefault()?.addEventListener('click', this.onTimeClickedHandler);
@@ -1558,7 +1615,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private resetLineTextAndClickableStyles(): void {
     this.annotationText.set('');
-    this.timeAnnotation.set('');
+    this.holdSpdOrLegRnpAnnotation.set('');
+    this.rnpAnnotationText.set('');
     this.timeText.set('');
     this.timeClickable.set(true);
     this.speedClickable.set(true);
@@ -1618,20 +1676,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         }
       }
 
-      // TODO: RNP info
       this.annotationText.set(data.annotation ?? '');
+      this.holdSpdOrLegRnpAnnotation.set(data.rnpAnnotation ?? '');
 
       // Format time to leg
       // TODO: Time constraint.
-      if (this.props.globalLineColor.get() === FplnLineColor.Active) {
-        if (data.etaOrSecondsFromPresent) {
-          const date = new Date(data.etaOrSecondsFromPresent);
-          this.timeText.set(
-            `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
-          );
-        } else {
-          this.timeText.set('--:--');
-        }
+      if (data.etaOrSecondsFromPresent !== null) {
+        const date = new Date(data.etaOrSecondsFromPresent);
+        this.timeText.set(
+          `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
+        );
       } else {
         this.timeText.set('--:--');
       }
@@ -1652,7 +1706,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack.get() ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack ? 'T' : ''}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
@@ -1693,7 +1747,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       this.identRef.instance.innerText = data.ident;
       this.altRef.instance.innerText = '';
       this.speedRef.instance.innerText = '';
-      this.timeAnnotation.set('SPD');
+      this.holdSpdOrLegRnpAnnotation.set('SPD');
       this.timeText.set(data.holdSpeed?.toFixed(0) ?? '');
 
       if (this.connectorRef.getOrDefault()) {
@@ -1789,7 +1843,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private formatAltitude(data: FplnLineWaypointDisplayData): VNode {
-    let altStr: VNode = <span>---</span>;
+    let altStr: VNode = <span>-----</span>;
     const previousRow = this.props.previousRow.get();
     if (data.altitudePrediction) {
       const isBelowTransAlt =
@@ -1925,22 +1979,20 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
   private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
     if (this.props.displayEfobAndWind.get()) {
-      return !Number.isNaN(data.efobPrediction) && this.props.globalLineColor.get() === FplnLineColor.Active ? (
+      const efobValid = !Number.isNaN(data.efobPrediction);
+      return (
         <span>
-          {(this.props.weightUnit.get().convertFrom(data.efobPrediction, UnitType.KILOGRAM) / 1000).toFixed(1)}
+          {efobValid
+            ? (this.props.weightUnit.get().convertFrom(data.efobPrediction, UnitType.KILOGRAM) / 1000).toFixed(1)
+            : '--.-'}
         </span>
-      ) : (
-        <span>--.-</span>
       );
     }
-    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatSpeed(data) : <span>---</span>;
+    return this.formatSpeed(data);
   }
 
   private windOrAlt(data: FplnLineWaypointDisplayData): VNode {
-    if (this.props.displayEfobAndWind.get()) {
-      return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatWind(data) : <span>---°/---</span>;
-    }
-    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>---</span>;
+    return this.props.displayEfobAndWind.get() ? this.formatWind(data) : this.formatAltitude(data);
   }
 
   private lineConnector(data: FplnLineWaypointDisplayData): VNode {
@@ -2007,59 +2059,75 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           'mfd-fms-fpln-line': true,
           'mfd-fms-fpln-line-temporary': this.lineColorIsTemporary,
           'mfd-fms-fpln-line-secondary': this.lineColorIsSecondary,
-          'mfd-fms-fpln-line-altn': this.lineColorIsAlternate,
+          'mfd-fms-fpln-line-altn': this.isAlternateOrMissedApproach,
         }}
-        style={`${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
+        style={`${this.isFirstLine.get() ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
       >
         <div style="width: 25%; display: flex; flex-direction: column;">
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div class="mfd-fms-fpln-line-annotation">{this.annotationText}</div>
+          {!this.isFirstLine.get() && (
+            <div
+              class={{
+                'mfd-fms-fpln-line-annotation': true,
+              }}
+            >
+              {this.annotationText}
+            </div>
           )}
-          <div ref={this.identRef} class="mfd-fms-fpln-line-ident" />
+          <div ref={this.identRef} class={{ 'mfd-fms-fpln-line-ident': true }} />
         </div>
-        <div class={{ 'mfd-fms-fpln-label-small': true, clickable: this.timeClickable }} style="width: 11.5%;">
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div class="mfd-fms-fpln-line-annotation">{this.timeAnnotation}</div>
+        <div
+          class={{ 'mfd-fms-fpln-label-small': true, clickable: this.timeClickable }}
+          style={`width: 11.5%; padding-top: ${this.isFirstLine.get() ? '0px' : '30px'};`}
+        >
+          {!this.isFirstLine.get() && (
+            <div
+              class={{
+                'mfd-fms-fpln-line-rnp-hold-spd-annotation': true,
+                'mfd-fms-fpln-line-annotation': true,
+              }}
+            >
+              {this.holdSpdOrLegRnpAnnotation}
+            </div>
           )}
           <div ref={this.timeRef} class="mfd-fms-fpln-leg-lower-row">
             {this.timeText}
           </div>
         </div>
         <div
-          class={{ 'mfd-fms-fpln-label-small': true, clickable: this.speedClickable }}
+          class={{
+            'mfd-fms-fpln-label-small': true,
+            clickable: this.speedClickable,
+          }}
           style="width: 15%; align-items: flex-start; padding-left: 40px;"
         >
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div class="mfd-fms-fpln-leg-upper-row" />
-          )}
+          {!this.isFirstLine.get() && <div class="mfd-fms-fpln-leg-upper-row" />}
           <div ref={this.speedRef} class="mfd-fms-fpln-leg-lower-row" />
         </div>
         <div
-          class={{ 'mfd-fms-fpln-label-small': true, clickable: this.altClickable }}
+          class={{
+            'mfd-fms-fpln-label-small': true,
+            clickable: this.altClickable,
+          }}
           style="width: 21%; align-items: flex-start; padding-left: 20px;"
         >
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div class="mfd-fms-fpln-leg-upper-row" />
-          )}
+          {!this.isFirstLine.get() && <div class="mfd-fms-fpln-leg-upper-row" />}
           <div ref={this.altRef} class="mfd-fms-fpln-leg-lower-row" />
         </div>
-        <div ref={this.connectorRef} class="mfd-fms-fpln-label-small" style="width: 30px; margin-right: 5px;" />
-        <div class="mfd-fms-fpln-label-small" style="width: 9%; align-items: flex-start;">
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div ref={this.trackRef} class="mfd-fms-fpln-leg-upper-row" />
-          )}
+        <div
+          ref={this.connectorRef}
+          class={{ 'mfd-fms-fpln-label-small': true }}
+          style="width: 30px; margin-right: 5px;"
+        />
+        <div class={{ 'mfd-fms-fpln-label-small': true }} style="width: 9%; align-items: flex-start;">
+          {!this.isFirstLine.get() && <div ref={this.trackRef} class="mfd-fms-fpln-leg-upper-row" />}
           <div class="mfd-fms-fpln-leg-lower-row" />
         </div>
-        <div class="mfd-fms-fpln-label-small" style="width: 6%; align-items: flex-end;">
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div ref={this.distRef} class="mfd-fms-fpln-leg-upper-row" />
-          )}
+        <div class={{ 'mfd-fms-fpln-label-small': true }} style="width: 6%; align-items: flex-end;">
+          {!this.isFirstLine.get() && <div ref={this.distRef} class="mfd-fms-fpln-leg-upper-row" />}
           <div class="mfd-fms-fpln-leg-lower-row" />
         </div>
-        <div class="mfd-fms-fpln-label-small" style="width: 8%; align-items: flex-end;">
-          {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div ref={this.fpaRef} class="mfd-fms-fpln-leg-upper-row" />
-          )}
+        <div class={{ 'mfd-fms-fpln-label-small': true }} style="width: 8%; align-items: flex-end;">
+          {!this.isFirstLine.get() && <div ref={this.fpaRef} class="mfd-fms-fpln-leg-upper-row" />}
           <div class="mfd-fms-fpln-leg-lower-row" />
         </div>
       </div>
@@ -2072,7 +2140,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       <div
         ref={this.identRef}
         class="mfd-fms-fpln-line mfd-fms-fpln-line-special"
-        style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'}`}
+        style={`font-size: 30px; ${this.isFirstLine.get() ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'}`}
       >
         {delimiter}
         <span style="margin: 0px 15px 0px 15px;">{data.label}</span>

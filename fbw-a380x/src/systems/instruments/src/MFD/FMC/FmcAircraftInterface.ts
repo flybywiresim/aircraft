@@ -242,6 +242,8 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
+  private readonly trueReference = RegisteredSimVar.createBoolean('L:A32NX_PUSH_TRUE_REF', SimVarValueType.Bool);
+
   constructor(
     private bus: EventBus,
     private fmc: FlightManagementComputer,
@@ -2259,5 +2261,9 @@ export class FmcAircraftInterface {
         pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
       }
     }
+  }
+
+  istrueRefActive(): boolean {
+    return this.trueReference.get();
   }
 }
