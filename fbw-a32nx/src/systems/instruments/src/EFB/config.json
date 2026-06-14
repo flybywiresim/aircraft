@@ -10,6 +10,7 @@
   ],
   "extraDeps": [
     "/fbw-common/src/systems/instruments/src/EFB",
+    "/fbw-a32nx/src/systems/failures/src",
     "/fbw-a32nx/src/systems/shared/src/performance"
   ]
 }
