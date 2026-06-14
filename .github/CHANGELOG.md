@@ -14,6 +14,7 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
 
 ## 2024.1.0
 
