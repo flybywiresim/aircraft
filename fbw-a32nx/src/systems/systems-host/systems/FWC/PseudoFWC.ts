@@ -310,6 +310,12 @@ export class PseudoFWC {
 
   private readonly sdac05201Word = Arinc429Register.empty();
 
+  private readonly sdac04501Word = Arinc429Register.empty();
+  private readonly sdac04510Word = Arinc429Register.empty();
+
+  private readonly sdac04601Word = Arinc429Register.empty();
+  private readonly sdac04610Word = Arinc429Register.empty();
+
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
   private readonly acsc1DiscreteWord1 = Arinc429Register.empty();
@@ -983,6 +989,26 @@ export class PseudoFWC {
   private readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
 
   private readonly groundSpoilerNotArmedWarning = Subject.create(false);
+
+  private readonly sfcc1ComponentStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD',
+    SimVarValueType.Number,
+  );
+
+  private readonly sfcc1SystemStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    SimVarValueType.Number,
+  );
+
+  private readonly sfcc2ComponentStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD',
+    SimVarValueType.Number,
+  );
+
+  private readonly sfcc2SystemStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    SimVarValueType.Number,
+  );
 
   /* FUEL */
 
@@ -2239,6 +2265,12 @@ export class PseudoFWC {
     this.sdac05201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
     this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
+
+    this.sdac04501Word.set(this.sfcc1ComponentStatusWord.get());
+    this.sdac04510Word.set(this.sfcc2ComponentStatusWord.get());
+
+    this.sdac04601Word.set(this.sfcc1SystemStatusWord.get());
+    this.sdac04610Word.set(this.sfcc2SystemStatusWord.get());
   }
 
   /**
@@ -3425,37 +3457,31 @@ export class PseudoFWC {
     );
 
     // SFCC - Wing Tip Brakes
-    const sfcc1ComponentStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD');
-    const sfcc1SystemStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
-    const sfcc2ComponentStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD');
-    const sfcc2SystemStatusWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // SLAT TIP BRAKE FAULT
-    const SSLTDNV1 = !sfcc1SystemStatusWord.bitValue(28);
-    const SSWTBSF1 = sfcc1ComponentStatusWord.bitValue(12);
-    const SSWPFT1 = sfcc1ComponentStatusWord.bitValue(18);
 
-    const SSLTDNV2 = !sfcc2SystemStatusWord.bitValue(28);
-    const SSWTBSF2 = sfcc2ComponentStatusWord.bitValue(12);
-    const SSWPFT2 = sfcc2ComponentStatusWord.bitValue(18);
-
-    // TODO: should be `DC BAT BUS FAULT` || `DC EMER CONFIG` || `ELEC EMER`, but the first two don't exist yet.
-    const sfcc1SlatWtbFault = !SSLTDNV1 && (SSWTBSF1 || SSWPFT1) && !this.elecEmergency.get();
-    const sfcc2SlatWtbFault = !SSLTDNV2 && (SSWTBSF2 || SSWPFT2) && !this.elecEmergency.get();
+    // TODO: Check ELEC DC faults
+    const sfcc1SlatWtbFault =
+      this.sdac04601Word.bitValueOr(28, false) &&
+      (this.sdac04501Word.bitValueOr(12, false) || this.sdac04501Word.bitValueOr(18, false)) &&
+      !this.elecEmergency.get();
+    const sfcc2SlatWtbFault =
+      this.sdac04610Word.bitValueOr(28, false) &&
+      (this.sdac04510Word.bitValueOr(12, false) || this.sdac04510Word.bitValueOr(18, false)) &&
+      !this.elecEmergency.get();
     this.slatTipBrkFaultCondition.set(sfcc1SlatWtbFault || sfcc2SlatWtbFault);
 
     // FLAP TIP BRAKE FAULT
-    const SFLPDNV1 = !sfcc1SystemStatusWord.bitValue(29);
-    const SFWTBSF1 = sfcc1ComponentStatusWord.bitValue(21);
-    const SFWPFT1 = sfcc1ComponentStatusWord.bitValue(27);
 
-    const SFLPDNV2 = !sfcc2SystemStatusWord.bitValue(29);
-    const SFWTBSF2 = sfcc2ComponentStatusWord.bitValue(21);
-    const SFWPFT2 = sfcc2ComponentStatusWord.bitValue(27);
-
-    // TODO: should be `DC BAT BUS FAULT` || `DC EMER CONFIG` || `ELEC EMER`, but the first two don't exist yet.
-    const sfcc1FlapWtbFault = !SFLPDNV1 && (SFWTBSF1 || SFWPFT1) && !this.elecEmergency.get();
-    const sfcc2FlapWtbFault = !SFLPDNV2 && (SFWTBSF2 || SFWPFT2) && !this.elecEmergency.get();
+    // TODO: Check ELEC DC faults
+    const sfcc1FlapWtbFault =
+      this.sdac04601Word.bitValueOr(29, false) &&
+      (this.sdac04501Word.bitValueOr(21, false) || this.sdac04501Word.bitValueOr(27, false)) &&
+      !this.elecEmergency.get();
+    const sfcc2FlapWtbFault =
+      this.sdac04610Word.bitValueOr(29, false) &&
+      (this.sdac04510Word.bitValueOr(21, false) || this.sdac04510Word.bitValueOr(27, false)) &&
+      !this.elecEmergency.get();
     this.flapTipBrkFaultCondition.set(sfcc1FlapWtbFault || sfcc2FlapWtbFault);
 
     // FCDC 1+2 FAULT computation
