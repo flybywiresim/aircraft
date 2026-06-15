@@ -1705,7 +1705,7 @@ class FplnLegLine extends LifecycleComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}${this.props.trueTrack ? 'T' : '°'}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
