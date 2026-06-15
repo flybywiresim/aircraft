@@ -354,7 +354,6 @@
                 </Component>
             </Component>
 
-            <!-- FIXME backlight missing -->
             <!-- OIT_L -->
             <Component ID="OITL">
                 <Component ID="SCREEN_OITL">
@@ -363,10 +362,14 @@
                         <POTENTIOMETER>@POT_EFIS_CS_OIT</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
+                    <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                        <NODE_ID>SCREEN_BACKLIGHT_DU_OITL</NODE_ID>
+                        <POTENTIOMETER>@POT_EFIS_CS_OIT</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) 5 *</EMISSIVE_CODE>
+                    </UseTemplate>
                 </Component>
             </Component>
 
-            <!-- FIXME backlight missing -->
             <!-- OIT_R -->
             <Component ID="OITR">
                 <Component ID="SCREEN_OITR">
@@ -374,6 +377,11 @@
                         <NODE_ID>SCREEN_OIT_RIGHT</NODE_ID>
                         <POTENTIOMETER>@POT_EFIS_FO_OIT</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    </UseTemplate>
+                    <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                        <NODE_ID>SCREEN_BACKLIGHT_DU_OITR</NODE_ID>
+                        <POTENTIOMETER>@POT_EFIS_FO_OIT</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) 5 *</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
             </Component>
