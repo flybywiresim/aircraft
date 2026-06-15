@@ -3,9 +3,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
@@ -18,7 +15,9 @@ import {
 import { ClockEvents, ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { LagFilter } from 'instruments/src/PFD/PFDUtils';
+import { FcuBus } from './FcuBusProvider';
+import { LagFilter } from '../PFDUtils';
+import { getDisplayIndex } from '../PFD';
 
 export interface Arinc429Values {
   pitchAr: Arinc429WordData;

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useEffect, useState } from 'react';
-import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk-react';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';

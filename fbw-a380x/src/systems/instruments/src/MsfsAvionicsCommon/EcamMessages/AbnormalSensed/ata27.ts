@@ -7,7 +7,7 @@ import {
   DeferredProcedure,
   DeferredProcedureType,
   FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter

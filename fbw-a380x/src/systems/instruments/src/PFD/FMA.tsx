@@ -16,7 +16,7 @@ import {
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
@@ -25,8 +25,8 @@ import {
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
-import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustModeMessage } from '@shared/autopilot';
 import { getDisplayIndex } from './PFD';
 

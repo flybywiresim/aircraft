@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+import { ConfigAtisSource, ConfigMetarSource, ConfigTafSource, ConfigWeatherMap } from './config';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
@@ -11,13 +12,13 @@ type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
-  ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
-
-  EFB_UI_THEME: 'blue' | 'dark' | 'light';
-
+  ACARS_PROVIDER: 'BATC' | 'HOPPIE' | 'NONE' | 'SAI';
+  CONFIG_METAR_SRC: ConfigMetarSource;
+  CONFIG_ATIS_SRC: ConfigAtisSource;
+  CONFIG_TAF_SRC: ConfigTafSource;
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
-
   CONFIG_USING_METRIC_UNIT: boolean;
+  EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
 
 export type LegacyDataStoreSettingKey<k extends string = string> = k &
@@ -29,6 +30,9 @@ export type LegacyDataStoreSettingKey<k extends string = string> = k &
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
+    CONFIG_METAR_SRC: ConfigWeatherMap.MSFS,
+    CONFIG_ATIS_SRC: ConfigWeatherMap.IVAO,
+    CONFIG_TAF_SRC: ConfigWeatherMap.NOAA,
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     CONFIG_USING_METRIC_UNIT: true,
     EFB_UI_THEME: 'blue',
@@ -108,7 +112,7 @@ export class NXDataStore {
     let parsed: DataStoreSettingValue;
     try {
       parsed = JSON.parse(rawValue);
-    } catch (e) {
+    } catch (_e) {
       let newValue: any;
 
       if (rawValue === '' || typeof NXDataStore.settingsDefaultValues[key] !== 'string') {
@@ -165,9 +169,7 @@ export class NXDataStore {
   public static getLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, defaultVal?: string): any {
     const val = NXDataStore.getRaw(key);
 
-    // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
-    // We could use SearchStoredData, but that spams the console with every key (somebody left their debug print in)
-    if (val === null || val.length === 0) {
+    if (val.length === 0) {
       return defaultVal;
     }
 
@@ -180,7 +182,9 @@ export class NXDataStore {
    * @returns a string, or the empty string if the value is not present
    */
   private static getRaw(key: string): string {
-    return GetStoredData(`${this.aircraftProjectPrefix}_${key}`);
+    // GetStoredData for a non-existing key returns '' on FS2020, or null on FS2024, and null on error for both.
+    // We don't care for the distinction so just return an empty string for any of those cases.
+    return GetStoredData(`${this.aircraftProjectPrefix}_${key}`) ?? '';
   }
 
   /**

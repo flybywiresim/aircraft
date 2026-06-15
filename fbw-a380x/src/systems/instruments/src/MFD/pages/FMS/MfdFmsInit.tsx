@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 import { ArraySubject, FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AirportFormat,
   CostIndexFormat,
@@ -14,15 +14,15 @@ import {
   LongAlphanumericFormat,
   TripWindFormat,
   TropoFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+} from '../common/DataEntryFormats';
+import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { FmsPage } from '../common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { secIndexPageUri, showReturnButtonUriExtra } from '../../shared/utils';
 
 import './MfdFmsInit.scss';

@@ -59,7 +59,7 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get destinationLeg(): ReadonlyFlightPlanElement | undefined;
 
-  get destinationLegIndex(): number;
+  get destinationLegIndex(): number | null;
 
   readonly availableDestinationRunways: Runway[];
 

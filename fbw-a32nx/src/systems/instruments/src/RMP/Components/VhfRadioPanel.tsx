@@ -10,7 +10,7 @@ import {
   Arinc429SignStatusMatrix,
   RadioUtils,
   useArinc429Var,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 

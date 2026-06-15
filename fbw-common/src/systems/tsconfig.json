@@ -7,17 +7,18 @@
         "name": "typescript-strict-plugin"
       }
     ],
-    "baseUrl": ".",
     "resolveJsonModule" : true,
+    "skipLibCheck": true,
     "typeRoots": [
       "../typings",
       "../../../node_modules/@types",
     ],
-    "moduleResolution": "node",
+    "types": ["*"], // could specify exactly which types for better perf
+    "moduleResolution": "bundler",
+    "module": "preserve",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "jsx": "react",
+    "incremental": false,
     "paths": {
       "@datalink/aoc": ["./datalink/aoc/src/index.ts"],
       "@datalink/atc": ["./datalink/atc/src/index.ts"],
@@ -26,6 +27,7 @@
       "@failures": ["./failures/src/index.ts"],
       "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"],
       "@flybywiresim/fbw-sdk": ["./index.ts"],
+      "@flybywiresim/fbw-sdk-react": ["./index-react.ts"],
       "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
       "@flybywiresim/oanc": ["./instruments/src/OANC/index.ts"],
       // FIXME no a32nx imports in fbw-common!

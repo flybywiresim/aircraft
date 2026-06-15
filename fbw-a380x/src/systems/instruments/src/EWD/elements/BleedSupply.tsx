@@ -9,8 +9,8 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { Arinc429Values } from '../shared/ArincValueProvider';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 
 interface BleedSupplyProps {
   bus: EventBus;

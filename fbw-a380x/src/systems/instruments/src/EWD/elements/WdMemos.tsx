@@ -8,8 +8,8 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { FormattedFwcText } from './FormattedFwcText';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdMemosProps {

@@ -17,9 +17,9 @@ import {
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
-import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
+import { FmcAircraftInterface } from './FmcAircraftInterface';
+import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from './fmgc';
+import { FmcInterface, FmcOperatingModes } from './FmcInterface';
 import {
   a380EfisRangeSettings,
   Airport,
@@ -45,17 +45,17 @@ import {
   NXSystemMessages,
   TypeIIMessage,
   TypeIMessage,
-} from 'instruments/src/MFD/shared/NXSystemMessages';
+} from '../shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { bearingTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { MfdDisplayInterface } from '../MFD';
+import { FmcIndex } from './FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
-import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { MfdUIData } from '../shared/MfdUIData';
+import { ActiveUriInformation } from '../pages/common/MfdUiService';
 import { A380FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A380FlightPlanPerformanceData';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
@@ -65,7 +65,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { VdAltitudeConstraint } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
@@ -1430,6 +1430,8 @@ export class FlightManagementComputer implements FmcInterface {
                 SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20)),
         );
 
+        this.acInterface.sfccAquisition();
+        this.acInterface.fgAquisition();
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -1674,6 +1676,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.wasReset = true;
     await this.flightPlanInterface.reset();
     this.fmgc.data.reset();
+    this.acInterface.invalidateManagedSpeed();
     this.initSimVars();
     this.deleteAllStoredWaypoints();
     this.clearLatestFmsErrorMessage();

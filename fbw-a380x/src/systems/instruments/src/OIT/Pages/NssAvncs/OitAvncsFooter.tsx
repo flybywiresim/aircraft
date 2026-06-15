@@ -2,10 +2,10 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
 interface OitAvncsFooterProps {
   readonly uiService: OitUiService;

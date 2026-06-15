@@ -9,21 +9,21 @@ import {
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { AirportFormat } from '../../common/DataEntryFormats';
 import { loadAirport, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 
 import './MfdFmsDataAirport.scss';
-import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 
 interface MfdFmsDataAirportProps extends AbstractMfdPageProps {}
 

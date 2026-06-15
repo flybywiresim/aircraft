@@ -286,12 +286,15 @@ export class FmsClient implements Instrument {
 
   public printAocAtis(data: any): void {
     const message = WeatherMessage.deserialize(data);
-    this.printMessage(message);
+    this.printMessage(message.serialize(AtsuMessageSerializationFormat.Printer));
   }
 
-  public printMessage(message: AtsuMessage): void {
-    const text = message.serialize(AtsuMessageSerializationFormat.Printer);
-    this.fms.printPage(text.split('\n'));
+  // TODO ugly but needed as atsumessage cannot be transfered via the event bus properly
+  public printMessage(message: string | AtsuMessage): void {
+    if (message instanceof AtsuMessage) {
+      message = message.serialize(AtsuMessageSerializationFormat.Printer);
+    }
+    this.fms.printPage(message.split('\n'));
   }
 
   public removeMessage(uid: number, aocMessage: boolean): void {

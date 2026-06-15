@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Triangle } from '@instruments/common/Shapes';
 import Valve from './Valve';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 interface BleedHotAirProps {
   x: number;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { SyncedSettingDefinition } from '@flybywiresim/flypad';
-import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS } from 'shared/src/AutoCallOuts';
+import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS } from '../../../shared/src/AutoCallOuts';
 
 export const a380xSyncedSettings: SyncedSettingDefinition[] = [
   {

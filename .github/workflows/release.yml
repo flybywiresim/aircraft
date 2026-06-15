@@ -32,10 +32,12 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable
-      PRE_RELEASE_ID: 66067814
+      PRE_RELEASE_TAG: assets/msfs2024/stable
+      PRE_RELEASE_ID: 313832879
       STANDALONE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable-a32nx
       AIRCRAFT_PROJECT_PREFIX: a32nx
@@ -108,7 +110,7 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/stable
+          CDN_BUCKET_DESTINATION: addons/msfs2024/a32nx/stable
         run: |
           ./scripts/cf-cdn.sh ./fbw-a32nx/out/build-modules $CDN_BUCKET_DESTINATION
       - name: Build Standalone Download files
@@ -172,8 +174,8 @@ jobs:
       contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable
-      PRE_RELEASE_ID: 66067814
+      PRE_RELEASE_TAG: assets/msfs2024/stable
+      PRE_RELEASE_ID: 313832879
       BUILD_DIR_NAME: stable-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-stable-8K.7z
@@ -270,7 +272,7 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a380x/stable-8k
+          CDN_BUCKET_DESTINATION: addons/msfs2024/a380x/stable-8k
         run: |
           ./scripts/cf-cdn.sh ./fbw-a380x/out/build-modules $CDN_BUCKET_DESTINATION
       - name: Build Standalone Download files
@@ -322,8 +324,8 @@ jobs:
       contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/stable
-      PRE_RELEASE_ID: 66067814
+      PRE_RELEASE_TAG: assets/msfs2024/stable
+      PRE_RELEASE_ID: 313832879
       BUILD_DIR_NAME: stable-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
       STANDALONE_ZIP_NAME: A380X-stable-4K.7z
@@ -417,7 +419,7 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a380x/stable-4k
+          CDN_BUCKET_DESTINATION: addons/msfs2024/a380x/stable-4k
         run: |
           ./scripts/cf-cdn.sh ./fbw-a380x/out/build-modules $CDN_BUCKET_DESTINATION
       - name: Build Standalone Download files
