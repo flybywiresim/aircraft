@@ -73,7 +73,10 @@ impl FireProtectionSystem {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            fire_detection_unit: FireDetectionUnit::new(context),
+            fire_detection_unit: FireDetectionUnit::new(
+                context,
+                ElectricalBusType::DirectCurrentEssential,
+            ),
             fire_extinguishing_system: FireExtinguishingSystem::new(context),
 
             fire_test_pushbutton_id: context
@@ -135,6 +138,9 @@ struct FireDetectionUnit {
     apu_fire_on_ground: bool,
     should_extinguish_apu_fire: DelayedTrueLogicGate,
 
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+
     // The FDU sends discrete signals to the overhead panel and arinc signals to the FWS
     // Fixme: We assume a discrete word is sent, validate with references
     discrete_word_id: VariableIdentifier,
@@ -144,7 +150,7 @@ struct FireDetectionUnit {
 impl FireDetectionUnit {
     const DELAY_APU_FIRE_EXTINGUISHING: Duration = Duration::from_secs(10);
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         let fire_detection_zones = [
             FireDetectionZone::Engine(1),
             FireDetectionZone::Engine(2),
@@ -179,6 +185,9 @@ impl FireDetectionUnit {
             should_extinguish_apu_fire: DelayedTrueLogicGate::new(
                 Self::DELAY_APU_FIRE_EXTINGUISHING,
             ),
+
+            powered_by,
+            is_powered: false,
 
             discrete_word_id: context.get_identifier("FIRE_FDU_DISCRETE_WORD".to_owned()),
             discrete_word: Arinc429Word::new(0, SignStatus::NoComputedData),
@@ -285,7 +294,10 @@ impl FireDetectionUnit {
     }
 
     fn update_discrete_word(&mut self) {
-        // TODO: Add electrical supply for FDU, when not powered it should return NCD
+        if !self.is_powered {
+            self.discrete_word = Arinc429Word::new(0, SignStatus::NoComputedData);
+            return;
+        }
         self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         // Fixme: The bit order is assumed as no references
@@ -358,6 +370,10 @@ impl SimulationElement for FireDetectionUnit {
         accept_iterable!(self.fire_detection_loop, visitor);
 
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
