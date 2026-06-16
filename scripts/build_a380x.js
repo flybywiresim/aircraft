@@ -31,7 +31,7 @@ const HASHED_FILES = [
   'html_ui/Pages/VCockpit/Instruments/A380X/ND/nd.js',
   'html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.js',
 
-  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/model/A380_COCKPIT.xml',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/model/A380_Cockpit.xml',
 
   'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fadec-a380x.wasm',
   'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fbw.wasm',
