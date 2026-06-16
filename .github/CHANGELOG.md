@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
+1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
 
 ## 2020.15.0
 
@@ -143,6 +144,8 @@
 1. [A380X/MFD] Fix SURV page radio buttons not matching the actual state of the TCAS system - @heclak (Heclak)
 1. [A380X/MFD] Fix TAKEOFF PERF page radio buttons not syncing correctly when both MFDs are used - @heclak (Heclak)
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
 
 ## 0.14.0
 

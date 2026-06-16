@@ -19,6 +19,7 @@ import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
 import { A32NXFwcBusPublisher } from '@shared/publishers/A32NXFwcBusPublisher';
+import { A32NXTcasBusPublisher } from '@shared/publishers/A32NXTcasBusPublisher';
 import { PseudoDmc } from './PseudoDmc';
 
 import './style.scss';
@@ -58,6 +59,7 @@ class A32NX_PFD extends BaseInstrument {
   private readonly fwcBusPublisher = new A32NXFwcBusPublisher(this.bus);
   private readonly elecSystemPublisher = new A32NXElectricalSystemPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
+  private readonly tcasBusPublisher = new A32NXTcasBusPublisher(this.bus);
 
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
@@ -87,6 +89,7 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
     this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
     this.backplane.addPublisher('IrBus', this.irBusPublisher);
+    this.backplane.addPublisher('TcasBus', this.tcasBusPublisher);
     this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
     this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
   }
