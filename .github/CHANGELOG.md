@@ -31,7 +31,6 @@
 1. [A380X/MODEL] Add window plugs to windows - @heclak (Heclak)
 1. [A380X/MODEL] Add ability to hide the sidestick for better visibility of the OIT - @heclak (Heclak)
 1. [A380X/LIGHTS] Add cockpit reading lights - @heclak (Heclak)
-1. [A380X/MODEL] Add ability to hide sidestick for better view of OIT - @heclak (Heclak)
 1. [A380X] Fix aircraft rolling off the taxiway in ready screen when using a runway start - @heclak (Heclak)
 1. [A380X/MODEL] Improve clickspots on throttle levers to make it easier to click on nearby objects - @heclak (Heclak)
 1. [A380X/MODEL] Fix OIT backlighting wrongly connected to MFD backlighting - @heclak (Heclak)
