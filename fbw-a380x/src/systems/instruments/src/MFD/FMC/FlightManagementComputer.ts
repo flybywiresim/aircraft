@@ -522,7 +522,8 @@ export class FlightManagementComputer implements FmcInterface {
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-      return this.fmgc.data.rememberedTakeoffWeight.get() ?? this.calculatePreflightTakeoffWeight(forPlan);
+      const latched = this.flightPlanInterface.get(forPlan).performanceData.rememberedTakeoffWeight?.get();
+      return latched !== undefined ? latched : this.calculatePreflightTakeoffWeight(forPlan);
     }
     return this.calculatePreflightTakeoffWeight(forPlan);
   }
@@ -1202,7 +1203,9 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
-        pd.rememberedTakeoffWeight.set(this.calculatePreflightTakeoffWeight());
+        this.flightPlanInterface.active.performanceData.rememberedTakeoffWeight?.set(
+          this.calculatePreflightTakeoffWeight(),
+        );
 
         this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
