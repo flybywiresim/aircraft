@@ -87,7 +87,7 @@ const execute = async () => {
         },
         {
           name: 'Liveries',
-          sourceDir: './SimObjects/AirPlanes/FlyByWire_A380X/common/liveries',
+          sourceDir: './SimObjects/AirPlanes/FlyByWire_A380X/liveries',
         },
         {
           name: 'Presets',
