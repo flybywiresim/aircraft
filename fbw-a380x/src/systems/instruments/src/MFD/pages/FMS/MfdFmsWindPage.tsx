@@ -13,9 +13,9 @@ import {
 } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from '../../MFD';
 import { FmsPage } from '../common/FmsPage';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Footer } from '../common/Footer';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { onEntryNotInList, showReturnButtonUriExtra } from '../../shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -35,7 +35,7 @@ import {
   WindEntry,
 } from '@fmgc/flightplanning/data/wind';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   FlightLevelFormat,
   TemperatureFormat,
@@ -49,8 +49,8 @@ import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
@@ -361,6 +361,16 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     fl === null ? 'hidden' : 'visible',
   );
 
+  private readonly draftWindsExist = Subject.create(false);
+
+  private readonly historyWindsDisabled = MappedSubject.create(
+    ([draft, hasTmpy]) => draft || hasTmpy,
+    this.draftWindsExist,
+    this.tmpyExists,
+  );
+
+  private readonly draftWindVisibility = this.draftWindsExist.map((exists) => (exists ? 'visible' : 'hidden'));
+
   protected onNewData(): void {
     this.updatePage();
   }
@@ -378,6 +388,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
     const subPage = this.selectedSubPage.get();
+    const hasTmpy = this.tmpyExists.get();
     if (subPage === WindSubPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
       const historyWinds = this.props.fmcService.master.getHistoryWinds(cruiseFlightLevel);
@@ -385,12 +396,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
         const windEntry = historyWinds[i];
         if (windEntry) {
-          hasNonEmptyWind = hasNonEmptyWind || !windEntry.isEmpty;
-          this.historyWindFlightLevels[i].set((windEntry.altitude / 100).toFixed(0).padStart(3, '0'));
           const windVector = windEntry.vector;
-          this.historyWindSpeeds[i].set(windEntry.isEmpty ? '\xa0---' : `/${formatWindMagnitude(windVector)}`);
-          this.historyWindDirections[i].set(windEntry.isEmpty ? '---' : formatWindTrueDegrees(windVector, false));
-          this.historyWindUnitsVisible[i].set(!windEntry.isEmpty);
+          hasNonEmptyWind = hasNonEmptyWind || windVector !== undefined;
+          this.historyWindFlightLevels[i].set((windEntry.altitude / 100).toFixed(0).padStart(3, '0'));
+          this.historyWindSpeeds[i].set(windVector === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`);
+          this.historyWindDirections[i].set(
+            windVector === undefined ? '---' : formatWindTrueDegrees(windVector, false),
+          );
+          this.historyWindUnitsVisible[i].set(windVector !== undefined);
           this.historyWindValidEntry[i].set(true);
           this.isHistoryWindCruiseFlightLevel[i].set(
             cruiseFlightLevel !== null && windEntry.altitude == cruiseFlightLevel * 100,
@@ -405,15 +418,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     } else if (subPage === WindSubPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
-      this.climbWindsDisabled.set(fp === undefined || this.tmpyExists.get());
+      this.climbWindsDisabled.set(fp === undefined || hasTmpy);
       this.climbWindsInactive.set(
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() != FmgcFlightPhase.Preflight,
       );
       if (fp) {
-        this.fillDisplayWindEntriesFromFlightPlan(
-          this.props.flightPlanInterface.getClimbWindEntries(loadedFlightPlanIndex),
-          this.climbWindDisplayEntries,
-        );
+        this.fillDisplayWindEntriesFromFlightPlan(fp.getClimbWindEntries(), this.climbWindDisplayEntries);
       } else {
         this.clearAllDisplayWindEntries(this.climbWindDisplayEntries);
       }
@@ -425,7 +435,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       );
     } else if (subPage === WindSubPageMenu.Cruise) {
       this.findSuitableCruiseLeg();
-      this.cruiseWindsDisabled.set(fp === undefined || this.tmpyExists.get() || this.availableWaypoints.length === 0);
+      this.cruiseWindsDisabled.set(fp === undefined || hasTmpy || this.availableWaypoints.length === 0);
       this.cruiseWindsInactive.set(
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() > FmgcFlightPhase.Cruise,
       );
@@ -456,28 +466,19 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     } else if (subPage === WindSubPageMenu.Descent) {
       this.transitionLevel.set(fp?.performanceData.transitionLevel.get() ?? null);
       this.arrivalElevation.set(fp?.destinationAirport?.location.alt ?? null);
-      this.descentWindsDisabled.set(fp === undefined || this.tmpyExists.get());
+      this.descentWindsDisabled.set(fp === undefined || hasTmpy);
       this.descentWindsInactive.set(
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Descent,
       );
       this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
       const hasAlternate = fp?.alternateDestinationAirport !== undefined;
-      const alternateWind = this.props.flightPlanInterface.getAlternateWind(loadedFlightPlanIndex);
-      if (!hasAlternate) {
-        this.alternateWindDirection.set(null);
-        this.alternateWindSpeed.set(null);
-      }
-      this.alternateWindDisabled.set(!hasAlternate || this.tmpyExists.get());
+      const alternateWind = fp?.getAlternateWind();
+      this.alternateWindDirection.set(alternateWind !== null ? extractWindDirectionFromVector(alternateWind!) : null);
+      this.alternateWindSpeed.set(alternateWind !== null ? extractWindSpeedFromVector(alternateWind!) : null);
+      this.alternateWindDisabled.set(!hasAlternate || hasTmpy);
       this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
-        this.fillDisplayWindEntriesFromFlightPlan(
-          this.props.flightPlanInterface.getDescentWindEntries(loadedFlightPlanIndex),
-          this.descentWindDisplayEntries,
-        );
-        if (hasAlternate && alternateWind !== null) {
-          this.alternateWindDirection.set(extractWindDirectionFromVector(alternateWind));
-          this.alternateWindSpeed.set(extractWindSpeedFromVector(alternateWind));
-        }
+        this.fillDisplayWindEntriesFromFlightPlan(fp.getDescentWindEntries(), this.descentWindDisplayEntries);
       } else {
         this.clearAllDisplayWindEntries(this.descentWindDisplayEntries);
       }
@@ -549,6 +550,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           this.updatePage();
         }
       }),
+      this.historyWindsDisabled,
     );
     this.automaticallySelectTab();
   }
@@ -673,8 +675,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         // Copy the flightplan entry to the display entry.
         const row = displayEntries[i];
         row.altitude = windEntry.altitude;
-        row.direction = extractWindDirectionFromVector(windEntry.vector);
-        row.speed = extractWindSpeedFromVector(windEntry.vector);
+        row.direction = windEntry.vector !== undefined ? extractWindDirectionFromVector(windEntry.vector) : null;
+        row.speed = windEntry.vector !== undefined ? extractWindSpeedFromVector(windEntry.vector) : null;
         row.enteredByPilot =
           (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) !==
           FlightPlanWindEntryFlags.InsertedFromHistory;
@@ -1012,6 +1014,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     }
   }
 
+  private confirmFlightPlanDraftWinds(insert: boolean) {
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    const fp = this.props.fmcService.master.flightPlanInterface.has(fpIndex)
+      ? this.props.fmcService.master.flightPlanInterface.get(fpIndex)
+      : null;
+    if (fp?.hasDraftWindEntries()) {
+      if (insert) {
+        fp?.insertDraftWindEntries();
+      } else {
+        fp?.deleteDraftWindEntries();
+      }
+    }
+  }
+
   public render(): VNode {
     return (
       <>
@@ -1081,7 +1097,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                   }
                   onClick={this.insertHistoryWind.bind(this)}
                   visible={this.historyWindButtonVisible}
-                  disabled={this.tmpyExists}
+                  disabled={this.historyWindsDisabled}
                 />
               </div>
             </TopTabNavigatorPage>
@@ -1122,6 +1138,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           value={this.displayedClimbWindAltitudes[value]}
                           canBeCleared={true}
                           enteredByPilot={this.displayedClimbWindAltitudeIsEnteredByPilot[value]}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                       <div
@@ -1155,6 +1172,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindSpeedFormat()}
                           value={this.displayedClimbWindSpeeds[value]}
                           canBeCleared={false}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                     </div>
@@ -1251,6 +1269,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindFlightLevelFormat()}
                           value={this.displayedCruiseWindFlightLevels[value]}
                           canBeCleared={true}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                       <div
@@ -1271,6 +1290,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           value={this.displayedCruiseWindDirections[value]}
                           canBeCleared={false}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1286,6 +1306,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           value={this.displayedCruiseWindSpeeds[value]}
                           canBeCleared={false}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                     </div>
@@ -1314,6 +1335,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                     dataEntryFormat={new FlightLevelFormat()}
                     canBeCleared={true}
                     value={this.cruiseTemperatureFlightLevel}
+                    tmpyActive={this.draftWindsExist}
                   ></InputField>
                   <InputField
                     alignText={'flex-start'}
@@ -1326,6 +1348,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                     dataEntryFormat={new TemperatureFormat()}
                     canBeCleared={true}
                     value={this.cruiseTemperature}
+                    tmpyActive={this.draftWindsExist}
                   ></InputField>
                 </div>
               </div>
@@ -1368,6 +1391,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindAltitudeFormat(this.transitionLevel, true, this.arrivalElevation)}
                           value={this.displayedDescentWindAltitudes[value]}
                           canBeCleared={true}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                       <div
@@ -1391,6 +1415,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedDescentWindDirections[value]}
                           canBeCleared={false}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1405,6 +1430,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindSpeedFormat()}
                           value={this.displayedDescentWindSpeeds[value]}
                           canBeCleared={false}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
                     </div>
@@ -1443,12 +1469,14 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                         value={this.alternateWindDirection}
                         canBeCleared={true}
                         disabled={this.alternateWindDisabled}
+                        tmpyActive={this.draftWindsExist}
                       ></InputField>
                       <InputField
                         containerStyle="height: 42px; width:115px;"
                         onModified={(v) => {
                           this.onAlternateWindModified(v, WindEntryData.Speed);
                         }}
+                        tmpyActive={this.draftWindsExist}
                         errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
@@ -1465,6 +1493,20 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           </TopTabNavigator>
           <div class="mfd-fms-wind-bottom-buttons-container">
             <Button
+              label={
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                  <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                    CANCEL
+                    <br />
+                    WIND
+                  </span>
+                  <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                </div>
+              }
+              onClick={() => this.confirmFlightPlanDraftWinds(false)}
+              visible={this.draftWindsExist}
+            />
+            <Button
               label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 61px; width:125px;"
@@ -1475,6 +1517,19 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               flightPlanIndex={this.loadedFlightPlanIndex}
               tmpyExists={this.tmpyExists}
               isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
+            />
+            <Button
+              onClick={() => this.confirmFlightPlanDraftWinds(true)}
+              label={
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                  <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                    INSERT
+                    <br />
+                    WIND
+                  </span>
+                  <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                </div>
+              }
             />
           </div>
         </div>

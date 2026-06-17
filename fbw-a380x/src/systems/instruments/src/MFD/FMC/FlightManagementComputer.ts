@@ -75,7 +75,7 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { HistoryWind } from '@fmgc/wind/HistoryWind';
-import { FlightPlanWindEntry, FlightPlanWindEntryFlags, HistoryWindEntry } from '@fmgc/flightplanning/data/wind';
+import { FlightPlanWindEntry, FlightPlanWindEntryFlags, WindEntry } from '@fmgc/flightplanning/data/wind';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { AtsuStatusCodes } from '@datalink/common';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '@providers/FmsAtsuBusPublisher';
@@ -1725,7 +1725,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.companyWindUplinkPending.set(
         this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get()) && this.#flightPlanService.hasTemporary,
       );
-      this.draftWindsExist.set(this.flightPlanInterface.hasDraftWinds());
+      this.draftWindsExist.set(this.flightPlanInterface.active.hasDraftWindEntries());
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
     }
@@ -1975,7 +1975,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<HistoryWindEntry>[] {
+  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry>[] {
     return this.historyWinds.getRecordedWinds(cruiseFlightLevel, false);
   }
 
@@ -1986,19 +1986,21 @@ export class FlightManagementComputer implements FmcInterface {
       this.flightPlanInterface.hasActive
     ) {
       const fp = this.flightPlanInterface.active;
-      const historyWinds = this.historyWinds
-        .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
-        .filter((entry) => entry.isEmpty === false);
-      if (historyWinds.length > 0) {
-        const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
-          return {
-            altitude: entry.altitude,
-            vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
-            flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-          };
-        });
-        fp.setPerformanceData('climbWindEntries', entries);
-        return true;
+      if (fp.hasDraftWindEntries()) {
+        const historyWinds = this.historyWinds
+          .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
+          .filter((entry) => entry.vector !== undefined);
+        if (historyWinds.length > 0) {
+          const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
+            return {
+              altitude: entry.altitude,
+              vector: Vec2Math.copy(entry.vector!, Vec2Math.create()),
+              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+            };
+          });
+          fp.setPerformanceData('climbWindEntries', entries);
+          return true;
+        }
       }
     }
     return false;
