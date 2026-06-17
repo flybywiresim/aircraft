@@ -1445,6 +1445,11 @@ export class PseudoFWC {
   private readonly adr2and3FaultActive = Subject.create(false);
   private readonly adr1and2and3FaultActive = Subject.create(false);
 
+  private readonly adrDisagreeFaultActive = Subject.create(false);
+
+  private readonly checkIrConfirm1 = new NXLogicConfirmNode(5, false);
+  private readonly irDisagreeFaultActive = Subject.create(false);
+
   /** ENGINE AND THROTTLE */
 
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), false);
@@ -4447,6 +4452,17 @@ export class PseudoFWC {
         !(this.flightPhase110.get() || this.sdac00201Word.bitValue(20)),
     );
 
+    // ADR DISAGREE
+    const checkAdc = fcdc1DiscreteWord3.bitValueOr(26, false) || fcdc2DiscreteWord3.bitValueOr(26, false);
+
+    this.adrDisagreeFaultActive.set(checkAdc && !this.adr1and2and3FaultActive.get());
+
+    // IR DISAGREE
+    const checkIr = fcdc1DiscreteWord2.bitValueOr(25, false) || fcdc2DiscreteWord2.bitValueOr(25, false);
+    this.checkIrConfirm1.write(checkIr, deltaTime);
+
+    this.irDisagreeFaultActive.set(checkIr || this.checkIrConfirm1.read());
+
     // ALT ALERT
     const fcuAlt = this.fcuSelectedAlt.get().value;
 
@@ -6959,6 +6975,28 @@ export class PseudoFWC {
       simVarIsActive: this.ra2Fault,
       whichCodeToReturn: () => [0],
       codesToReturn: ['340015001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3400254: {
+      // ADR DISAGREE
+      flightPhaseInhib: [3, 4, 5, 7],
+      simVarIsActive: this.adrDisagreeFaultActive,
+      whichCodeToReturn: () => [0, 1, 2, 3, null, 5, 6],
+      codesToReturn: ['340024501', '340024502', '340024503', '340024504', '340024505', '340024506', '340024507'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3400295: {
+      // IR DISAGREE
+      flightPhaseInhib: [3, 4, 5, 7],
+      simVarIsActive: this.irDisagreeFaultActive,
+      whichCodeToReturn: () => [0, 1, 2, 3, 4, 5],
+      codesToReturn: ['340029501', '340029502', '340029503', '340029504', '340029505', '340029506'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.NONE,
