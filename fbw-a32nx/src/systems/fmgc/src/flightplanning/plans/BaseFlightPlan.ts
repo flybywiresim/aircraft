@@ -62,7 +62,7 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Publisher, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -81,6 +81,7 @@ import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAi
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
+import { FlightPlanIndex } from '../FlightPlanManager';
 
 export interface FlightPlanContext {
   get syncClientID(): number;
@@ -99,13 +100,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private static readonly WindCache: PropagatedWindEntry[] = [];
 
+  protected draftCruiseWindEntriesExist = false;
+
+  protected readonly draftCruiseWindEntries: Map<number, WindEntry[]> | undefined;
+
   protected constructor(
     protected readonly context: FlightPlanContext,
     public readonly index: number,
     public readonly bus: EventBus,
     public readonly timeCreated?: number,
+    draftCruiseWindEntries?: Map<number, WindEntry[]>,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.draftCruiseWindEntries =
+      index !== FlightPlanIndex.Temporary && index !== FlightPlanIndex.Uplink ? draftCruiseWindEntries : undefined;
     this.wasModified = false;
   }
 
@@ -320,6 +328,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   get isDepartureProcedureActive(): boolean {
     return (
       this.departureSegment.procedure !== undefined &&
+      this.departureSegment.procedure !== null &&
       ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||
         this.isProcedureBeingFlownInSegment(this.departureSegment.procedure.ident, this.enrouteSegment)) // legs of departure are moved to enroute after direct
     );
@@ -2862,12 +2871,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return isLeg(this.maybeElementAt(index));
   }
 
-  propagateWindsAt(
-    atIndex: number,
-    result: PropagatedWindEntry[],
-    maxNumEntries: number,
-    draftCruiseWindEntriesMap?: Map<number, WindEntry[]>,
-  ): PropagatedWindEntry[] {
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[] {
     let numWindEntries = 0;
 
     for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
@@ -2877,7 +2881,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         continue;
       }
 
-      const draftCruiseWindEntries = draftCruiseWindEntriesMap?.get(i);
+      const draftCruiseWindEntries = this.draftCruiseWindEntries?.get(i);
 
       for (const windEntry of draftCruiseWindEntries ?? element.cruiseWindEntries) {
         let windPropagationType: PropagationType;
@@ -2931,6 +2935,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   ): Promise<void> {
     const leg = this.maybeElementAt(atIndex);
 
+    if (leg === undefined) {
+      console.error('[FMS/FPM] Tried to add a cruise wind entry at a non-existing leg at index', atIndex);
+      return;
+    }
+
     if (leg?.isDiscontinuity === true) {
       console.error('[FMS/FPM] Tried to add a cruise wind entry to a non-leg element');
       return;
@@ -2941,11 +2950,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
+    this.prepareCruiseWindDraftModification();
+
     const windEntries = draftCruiseWindEntriesMap?.get(atIndex) ?? leg.cruiseWindEntries;
 
     if (windEntries.some((e) => Math.round(e.altitude / 100) === Math.round(entry.altitude / 100))) {
       // Tried to add a cruise wind entry with the same altitude as an existing one. Editing the existing one instead
-      this.editCruiseWindEntry(atIndex, entry.altitude, entry, maxNumEntries, draftCruiseWindEntriesMap);
+      this.editCruiseWindEntry(atIndex, entry.altitude, entry, maxNumEntries);
     } else {
       windEntries.push(entry);
     }
@@ -2961,7 +2972,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   ): Promise<void> {
     const leg = this.maybeElementAt(atIndex);
 
-    if (leg?.isDiscontinuity === true) {
+    if (leg === undefined) {
+      console.error('[FMS/FPM] Tried to delete a cruise wind entry at a non-existing leg at index', atIndex);
+      return;
+    }
+
+    if (leg.isDiscontinuity === true) {
       console.error('[FMS/FPM] Tried to delete a cruise wind entry to a non-leg element');
       return;
     }
@@ -2991,14 +3007,18 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     altitude: number,
     newEntry: WindEntry,
     maxNumEntries: number,
-    draftCruiseWindEntriesMap?: Map<number, WindEntry[]>,
   ): Promise<void> {
     // FIXME there is some unverified logic here. For example, what happens when you edit an entry with a new altitude
     // and an entry already exists at the new altitude? For now, we just edit the old one instead.
 
     const leg = this.maybeElementAt(atIndex);
 
-    if (leg?.isDiscontinuity === true) {
+    if (leg === undefined) {
+      console.error('[FMS/FPM] Tried to edit a cruise wind entry at a non-existing leg at index', atIndex);
+      return;
+    }
+
+    if (leg.isDiscontinuity === true) {
       console.error('[FMS/FPM] Tried to edit a cruise wind entry to a non-leg element');
       return;
     }
@@ -3008,14 +3028,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
-    const existingEntries = this.propagateWindsAt(
-      atIndex,
-      BaseFlightPlan.WindCache,
-      maxNumEntries,
-      draftCruiseWindEntriesMap,
-    );
+    const existingEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache, maxNumEntries);
 
-    const legWindEntries = draftCruiseWindEntriesMap?.get(atIndex) ?? leg.cruiseWindEntries;
+    const legWindEntries = this.draftCruiseWindEntries?.get(atIndex) ?? leg.cruiseWindEntries;
 
     // Check if the entry we clicked on has one of the four available cruise levels
     const clickedEntry = existingEntries.find((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100));
@@ -3053,7 +3068,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         oldEntry!.vector = newEntry.vector;
 
-        if (draftCruiseWindEntriesMap === undefined) {
+        if (this.draftCruiseWindEntries === undefined) {
           this.syncCruiseWindChange(atIndex);
         }
       } else {
@@ -3062,7 +3077,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             `[FMS/FPM] 4) Propagated wind comes from a different leg. Adding ${debugFormatWindEntry(newEntry)}`,
           );
 
-        await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries, draftCruiseWindEntriesMap);
+        await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries);
       }
     } else {
       if (LnavConfig.VERBOSE_FPM_LOG) {
@@ -3075,18 +3090,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       // Delete all entries with the same altitude (FCOM)
       await Promise.all(
         this.allLegs
-          .map(
-            (l, i) =>
-              [
-                !isDiscontinuity(l) && this.hasCruiseWindEntryAt(l, altitude, draftCruiseWindEntriesMap?.get(i)),
-                i,
-              ] as const,
-          )
+          .map((l, i) => [!isDiscontinuity(l) && this.hasCruiseWindEntryAt(l, altitude, i), i] as const)
           .filter(([shouldDeleteCruiseWind, _]) => shouldDeleteCruiseWind)
           .map(([_, i]) => this.deleteCruiseWindEntry(i, altitude)),
       );
 
-      await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries, draftCruiseWindEntriesMap);
+      await this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries);
     }
 
     LnavConfig.VERBOSE_FPM_LOG && console.groupEnd();
@@ -3106,11 +3115,56 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return null;
   }
 
-  hasCruiseWindEntryAt(leg: FlightPlanLeg, altitude: number, draftWindEntries?: WindEntry[]): boolean {
-    if (draftWindEntries !== undefined) {
-      return draftWindEntries.some((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100));
+  hasCruiseWindEntryAt(leg: FlightPlanLeg, altitude: number, legIndex: number): boolean {
+    if (this.draftCruiseWindEntries !== undefined) {
+      return (
+        this.draftCruiseWindEntries
+          .get(legIndex)
+          ?.some((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100)) ?? false
+      );
     }
     return leg.hasCruiseWindEntryAt(altitude);
+  }
+
+  protected deleteCruiseDraftWindEntries(): void {
+    if (this.draftCruiseWindEntries !== undefined) {
+      this.draftCruiseWindEntries.clear();
+      this.draftCruiseWindEntriesExist = false;
+    }
+  }
+
+  private prepareCruiseWindDraftModification(): void {
+    if (
+      !this.draftCruiseWindEntries ||
+      this.index === FlightPlanIndex.Temporary ||
+      this.index === FlightPlanIndex.Uplink
+    ) {
+      return;
+    }
+
+    // Clone wind entries for the draft if they haven't been cloned yet
+    if (!this.draftCruiseWindEntriesExist) {
+      for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
+        const leg = this.maybeElementAt(i);
+        if (isLeg(leg)) {
+          const cruiseWindEntries = leg.cruiseWindEntries;
+          const legWindEntries: WindEntry[] = [];
+          for (let j = 0; j < cruiseWindEntries.length; j++) {
+            const cruiseWindEntry = cruiseWindEntries[j];
+            legWindEntries.push(BaseFlightPlan.cloneWindEntry(cruiseWindEntry));
+          }
+          this.draftCruiseWindEntries.set(i, legWindEntries);
+        }
+      }
+      this.draftCruiseWindEntriesExist = true;
+    }
+  }
+
+  protected static cloneWindEntry(entry: WindEntry): WindEntry {
+    return {
+      ...entry,
+      vector: entry.vector !== undefined ? Vec2Math.copy(entry.vector, Vec2Math.create()) : undefined,
+    };
   }
 }
 

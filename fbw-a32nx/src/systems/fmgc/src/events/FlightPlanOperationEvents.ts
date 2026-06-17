@@ -4,6 +4,6 @@ export interface FlightPlanOperationEvents {
   /** Event triggered when immediate exit is selected on the MCDU/MFD */
   fms_set_hold_immediate_exit: { index: FlightPlanIndex; exit: boolean };
 
-  /** Event triggered when the draft wind entries are automatically deleted from the flightplan. */
+  /** Event triggered when the draft wind entries are automatically deleted from the active flightplan due to TMPY creation. */
   fms_draft_winds_inserted: null;
 }

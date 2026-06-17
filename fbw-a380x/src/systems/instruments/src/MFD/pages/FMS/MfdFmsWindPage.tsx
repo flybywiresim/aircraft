@@ -440,9 +440,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           const wind = winds[i];
           this.cruiseWindDisplayEntries[i].altitude = wind.altitude / 100;
           this.cruiseWindDisplayEntries[i].direction =
-            wind.type !== PropagationType.Backward ? extractWindDirectionFromVector(wind.vector) : null;
+            wind.type !== PropagationType.Backward && wind.vector ? extractWindDirectionFromVector(wind.vector) : null;
           this.cruiseWindDisplayEntries[i].speed =
-            wind.type !== PropagationType.Backward ? extractWindSpeedFromVector(wind.vector) : null;
+            wind.type !== PropagationType.Backward && wind.vector ? extractWindSpeedFromVector(wind.vector) : null;
           this.cruiseWindDisplayEntries[i].speedOrDirectionIsPropagated = wind.type === PropagationType.Forward;
           this.cruiseWindDisplayEntries[i].isPropagated = wind.type !== PropagationType.Entry;
         }

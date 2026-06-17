@@ -2,16 +2,12 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface WindEntry {
-  vector: WindVector;
+  vector: WindVector | undefined;
   altitude: number;
 }
 
 export interface FlightPlanWindEntry extends WindEntry {
   flags: number;
-}
-
-export interface HistoryWindEntry extends WindEntry {
-  isEmpty?: boolean;
 }
 
 export type WindVector = Float64Array;

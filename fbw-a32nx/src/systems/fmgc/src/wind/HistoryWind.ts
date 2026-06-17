@@ -3,10 +3,10 @@
 import { ConsumerSubject, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { HistoryWindEntry } from '../flightplanning/data/wind';
 import { FlightPhaseManagerEvents } from '../flightphase';
 import { FmgcFlightPhase } from '../../../shared/src/flightphase';
 import { WindUtils } from '../guidance/vnav/wind/WindUtils';
+import { WindEntry } from '../flightplanning/data/wind';
 
 export class HistoryWind {
   private static readonly LOCALSTORAGE_KEY: string =
@@ -22,16 +22,16 @@ export class HistoryWind {
 
   private flightPhase = FmgcFlightPhase.Preflight;
 
-  private readonly defaultRecordedWind: HistoryWindEntry[] = [
-    { altitude: 5_000, vector: Vec2Math.create(), isEmpty: true },
-    { altitude: 15_000, vector: Vec2Math.create(), isEmpty: true },
-    { altitude: 25_000, vector: Vec2Math.create(), isEmpty: true },
+  private readonly defaultRecordedWind: WindEntry[] = [
+    { altitude: 5_000, vector: undefined },
+    { altitude: 15_000, vector: undefined },
+    { altitude: 25_000, vector: undefined },
   ];
-  private readonly recordedCruiseWind: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
+  private readonly recordedCruiseWind: WindEntry = { altitude: NaN, vector: Vec2Math.create() };
 
-  private readonly interpolationCache: HistoryWindEntry = { altitude: NaN, vector: Vec2Math.create(), isEmpty: false };
+  private readonly interpolationCache: WindEntry = { altitude: NaN, vector: Vec2Math.create() };
 
-  private readonly historyWinds: (HistoryWindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
+  private readonly historyWinds: (WindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
   constructor(
     private readonly bus: EventBus,
@@ -56,8 +56,10 @@ export class HistoryWind {
         const recordedAlt = windEntry.altitude;
 
         if (currentAltitude <= recordedAlt && this.previousAltitude > recordedAlt) {
+          if (windEntry.vector === undefined) {
+            windEntry.vector = Vec2Math.create();
+          }
           Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, windEntry.vector);
-          windEntry.isEmpty = false;
           this.historyWinds[i] = windEntry;
           requiresSync = true;
         }
@@ -89,7 +91,7 @@ export class HistoryWind {
 
     if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
       this.recordedCruiseWind.altitude = cruiseAltitude;
-      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector);
+      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector!);
       this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
     }
 
@@ -104,10 +106,10 @@ export class HistoryWind {
     this.syncToLocalStorage();
   }
 
-  public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<HistoryWindEntry>[] {
+  public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<WindEntry>[] {
     const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude - b.altitude);
     const interpolationSourceWinds = this.filterEmptyOnInterpolation
-      ? historyWinds.filter((entry) => entry.isEmpty !== true)
+      ? historyWinds.filter((entry) => entry.vector !== undefined)
       : historyWinds;
     const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
 
@@ -116,12 +118,12 @@ export class HistoryWind {
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
       interpolationSourceWinds.length >= 0 &&
       (!this.filterEmptyOnInterpolation || // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
-        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && !wind.isEmpty) &&
-          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && !wind.isEmpty)));
+        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && wind.vector !== undefined) &&
+          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && wind.vector !== undefined)));
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;
-      WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector);
+      WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector!);
       historyWinds.push(this.interpolationCache);
     } else if (
       this.filterEmptyOnInterpolation &&
@@ -130,8 +132,7 @@ export class HistoryWind {
     ) {
       historyWinds.push({
         altitude: cruiseAltitude,
-        vector: Vec2Math.create(),
-        isEmpty: true,
+        vector: undefined,
       });
     }
     return historyWinds.sort((a, b) => (sortAscending ? a.altitude - b.altitude : b.altitude - a.altitude));

@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
@@ -28,7 +28,7 @@ import { DestroyableComponent } from '../MsfsAvionicsCommon/DestroyableComponent
 import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
 import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
-import { CpiomData } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomPublisher';
+import { CpiomData } from '../MsfsAvionicsCommon/providers/CpiomPublisher';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars & CpiomData>();

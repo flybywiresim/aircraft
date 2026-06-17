@@ -69,6 +69,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     private readonly performanceDataInit: P,
     private readonly syncClientID: number,
     private readonly master: boolean,
+    private readonly flightplanDraftWindsEnabled = false,
   ) {
     const sub = bus.getSubscriber<FlightPlanEvents & ClockEvents>();
 
