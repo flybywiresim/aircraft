@@ -3,7 +3,8 @@
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { SimVarPublisher, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
+import { Coordinates } from 'msfs-geo';
 
 /**
  * Transmitted from FMS to OANS
@@ -17,6 +18,8 @@ export interface FmsOansData {
   oansSelectedLandingRunwayBearing: number;
   /** Identifier of exit selected for BTV through OANS. */
   oansSelectedExit: string | null;
+  /** If navigraph-less fallback is used, communicate setting of manual stopping distance selection */
+  oansManualStoppingDistance: number | null;
   /** (OANS -> ND) QFU to be displayed in flashing RWY AHEAD warning in ND */
   ndRwyAheadQfu: string;
   /** (OANS -> BTV) Arinc429: Requested stopping distance (through OANS), in meters. */
@@ -26,12 +29,10 @@ export interface FmsOansData {
   /** (OANS -> BTV) Arinc429: Distance to requested stopping distance, in meters. */
   oansRemainingDistToExit: number;
 
-  /** (OANS -> BTV) Projected position, i.e. aircraft position in airport local coordinates */
+  /** (OANS -> BTV) Projected position, i.e. aircraft position in airport local coordinates. Airport local coordinates, reference point from nav db. */
   oansAirportLocalCoordinates: Position;
-  /** (OANS -> BTV) Positions of threshold and opposite threshold after selection of runway. WGS-84. */
-  oansThresholdPositions: Position[];
-  /** (OANS -> BTV) Position of exit after selection of exit. WGS-84. */
-  oansExitPosition: Position;
+  /** (OANS -> BTV) Position of exit after selection of exit. WGS-84 coordinates. */
+  oansExitCoordinates: Coordinates;
 
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */
   btvRot: number;
@@ -39,8 +40,16 @@ export interface FmsOansData {
   btvTurnAroundIdleReverse: number;
   /** (BTV -> OANS) Arinc429: Estimated turnaround time, when using max. reverse during deceleration, in minutes. */
   btvTurnAroundMaxReverse: number;
+
   /** Message displayed at the top of the ND (instead of TRUE REF), e.g. BTV 08R/A13 */
   ndBtvMessage: string;
+
+  /** (ROPS) Detected landing airport by ROPS. */
+  ropsDetectedAirport: string | null;
+  /** (ROPS) Detected landing runway by ROPS. */
+  ropsDetectedRunway: string | null;
+  /** (ROPS) LDA of detected landing runway by ROPS. Can also be landing runway selected in FMS above 500ft RA.  */
+  ropsDetectedRunwayLda: number | null;
 }
 
 export enum FmsOansSimVars {

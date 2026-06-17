@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2022-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -554,8 +555,38 @@ export class MathUtils {
     return Math.round(value / quantum) * quantum;
   }
 
-  static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
+  public static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
+  /**
+   * Round a number up to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static ceil(value: number, quantum = 1): number {
+    return Math.ceil(value / quantum) * quantum;
+  }
+
+  /**
+   * Round a number down to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static floor(value: number, quantum = 1): number {
+    return Math.floor(value / quantum) * quantum;
+  }
+
+  /**
+   * Truncate number toward zero with a specified quantum.
+   * @param value The number to truncate.
+   * @param quantum The quantum to truncate to, defaults to 1.
+   * @returns The truncated number.
+   */
+  public static trunc(value: number, quantum = 1): number {
+    return Math.trunc(value / quantum) * quantum;
   }
 
   /**
@@ -649,5 +680,16 @@ export class MathUtils {
    */
   public static isCloseToLessThan(a: number, b: number, epsilon = 1e-4): boolean {
     return this.isCloseToNegative(a - b, epsilon);
+  }
+
+  public static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
   }
 }

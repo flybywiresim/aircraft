@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { useSimVar, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';

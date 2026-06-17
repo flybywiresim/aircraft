@@ -7,7 +7,7 @@ import { Baro } from './Baro';
 import { Heading } from './Heading';
 import { Speed } from './Speed';
 import { VerticalSpeed } from './VerticalSpeed';
-import { NdData } from 'instruments/src/FCU/Components/NdData';
+import { NdData } from './NdData';
 
 export interface FcuDisplayProps {
   readonly bus: EventBus;
@@ -30,8 +30,8 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
               </div>
             </div>
 
-            <Baro bus={this.props.bus} />
-            {/* FIXME need a second baro for FO side */}
+            <Baro bus={this.props.bus} index={1} />
+            <Baro bus={this.props.bus} index={2} />
 
             <NdData bus={this.props.bus} index={1} />
             <NdData bus={this.props.bus} index={2} />

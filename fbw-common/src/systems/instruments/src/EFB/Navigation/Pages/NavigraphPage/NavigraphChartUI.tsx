@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,7 +15,7 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { ChartViewer } from '../../Navigation';
 import { navigraphCharts } from '../../../../navigraph';
-import { ChartCategory } from '@flybywiresim/fbw-sdk';
+import { ChartCategory } from '@flybywiresim/fbw-sdk-react';
 
 export const NavigraphChartUI = () => {
   const dispatch = useAppDispatch();

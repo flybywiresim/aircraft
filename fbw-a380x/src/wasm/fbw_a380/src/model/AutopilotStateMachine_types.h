@@ -1,17 +1,6 @@
 #ifndef AutopilotStateMachine_types_h_
 #define AutopilotStateMachine_types_h_
 #include "rtwtypes.h"
-#ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
-#define DEFINED_TYPEDEF_FOR_ap_raw_time_
-
-struct ap_raw_time
-{
-  real_T dt;
-  real_T simulation_time;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
 #define DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
 
@@ -86,12 +75,112 @@ struct ap_raw_data
   real_T zeta_pos;
   real_T throttle_lever_1_pos;
   real_T throttle_lever_2_pos;
+  real_T throttle_lever_3_pos;
+  real_T throttle_lever_4_pos;
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  boolean_T is_engine_operative_3;
+  boolean_T is_engine_operative_4;
   real_T altimeter_setting_left_mbar;
   real_T altimeter_setting_right_mbar;
   real_T total_weight_kg;
+  boolean_T gear_is_extended;
+  boolean_T land_capability;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_data_
+#define DEFINED_TYPEDEF_FOR_ap_data_
+
+struct ap_data
+{
+  ap_lat_lon_alt aircraft_position;
+  real_T Theta_deg;
+  real_T Phi_deg;
+  real_T qk_deg_s;
+  real_T rk_deg_s;
+  real_T pk_deg_s;
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T V_mach;
+  real_T V_gnd_kn;
+  real_T alpha_deg;
+  real_T beta_deg;
+  real_T H_ft;
+  real_T H_ind_ft;
+  real_T H_radio_ft;
+  real_T H_dot_ft_min;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
+  real_T Psi_true_deg;
+  real_T ax_m_s2;
+  real_T ay_m_s2;
+  real_T az_m_s2;
+  real_T bx_m_s2;
+  real_T by_m_s2;
+  real_T bz_m_s2;
+  boolean_T nav_valid;
+  real_T nav_loc_deg;
+  real_T nav_gs_deg;
+  real_T nav_dme_valid;
+  real_T nav_dme_nmi;
+  boolean_T nav_loc_valid;
+  real_T nav_loc_magvar_deg;
+  real_T nav_loc_error_deg;
+  ap_lat_lon_alt nav_loc_position;
+  boolean_T nav_e_loc_valid;
+  real_T nav_e_loc_error_deg;
+  boolean_T nav_gs_valid;
+  real_T nav_gs_error_deg;
+  ap_lat_lon_alt nav_gs_position;
+  boolean_T nav_e_gs_valid;
+  real_T nav_e_gs_error_deg;
+  real_T flight_guidance_xtk_nmi;
+  real_T flight_guidance_tae_deg;
+  real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
+  real_T flight_phase;
+  real_T V2_kn;
+  real_T VAPP_kn;
+  real_T VLS_kn;
+  real_T VMAX_kn;
+  boolean_T is_flight_plan_available;
+  real_T altitude_constraint_ft;
+  real_T thrust_reduction_altitude;
+  real_T thrust_reduction_altitude_go_around;
+  real_T acceleration_altitude;
+  real_T acceleration_altitude_engine_out;
+  real_T acceleration_altitude_go_around;
+  real_T acceleration_altitude_go_around_engine_out;
+  real_T cruise_altitude;
+  real_T on_ground;
+  real_T zeta_deg;
+  real_T throttle_lever_1_pos;
+  real_T throttle_lever_2_pos;
+  real_T throttle_lever_3_pos;
+  real_T throttle_lever_4_pos;
+  real_T flaps_handle_index;
+  boolean_T is_engine_operative_1;
+  boolean_T is_engine_operative_2;
+  boolean_T is_engine_operative_3;
+  boolean_T is_engine_operative_4;
+  boolean_T altimeter_setting_changed;
+  real_T total_weight_kg;
+  boolean_T gear_is_extended;
+  boolean_T land_capability;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
+#define DEFINED_TYPEDEF_FOR_ap_raw_time_
+
+struct ap_raw_time
+{
+  real_T dt;
+  real_T simulation_time;
 };
 
 #endif
@@ -195,83 +284,6 @@ struct ap_lateral_condition
   boolean_T FLARE;
   boolean_T ROLL_OUT;
   boolean_T GA_TRACK;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_ap_data_
-#define DEFINED_TYPEDEF_FOR_ap_data_
-
-struct ap_data
-{
-  ap_lat_lon_alt aircraft_position;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T qk_deg_s;
-  real_T rk_deg_s;
-  real_T pk_deg_s;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T V_mach;
-  real_T V_gnd_kn;
-  real_T alpha_deg;
-  real_T beta_deg;
-  real_T H_ft;
-  real_T H_ind_ft;
-  real_T H_radio_ft;
-  real_T H_dot_ft_min;
-  real_T Psi_magnetic_deg;
-  real_T Psi_magnetic_track_deg;
-  real_T Psi_true_deg;
-  real_T ax_m_s2;
-  real_T ay_m_s2;
-  real_T az_m_s2;
-  real_T bx_m_s2;
-  real_T by_m_s2;
-  real_T bz_m_s2;
-  boolean_T nav_valid;
-  real_T nav_loc_deg;
-  real_T nav_gs_deg;
-  real_T nav_dme_valid;
-  real_T nav_dme_nmi;
-  boolean_T nav_loc_valid;
-  real_T nav_loc_magvar_deg;
-  real_T nav_loc_error_deg;
-  ap_lat_lon_alt nav_loc_position;
-  boolean_T nav_e_loc_valid;
-  real_T nav_e_loc_error_deg;
-  boolean_T nav_gs_valid;
-  real_T nav_gs_error_deg;
-  ap_lat_lon_alt nav_gs_position;
-  boolean_T nav_e_gs_valid;
-  real_T nav_e_gs_error_deg;
-  real_T flight_guidance_xtk_nmi;
-  real_T flight_guidance_tae_deg;
-  real_T flight_guidance_phi_deg;
-  real_T flight_guidance_phi_limit_deg;
-  real_T flight_phase;
-  real_T V2_kn;
-  real_T VAPP_kn;
-  real_T VLS_kn;
-  real_T VMAX_kn;
-  boolean_T is_flight_plan_available;
-  real_T altitude_constraint_ft;
-  real_T thrust_reduction_altitude;
-  real_T thrust_reduction_altitude_go_around;
-  real_T acceleration_altitude;
-  real_T acceleration_altitude_engine_out;
-  real_T acceleration_altitude_go_around;
-  real_T acceleration_altitude_go_around_engine_out;
-  real_T cruise_altitude;
-  real_T on_ground;
-  real_T zeta_deg;
-  real_T throttle_lever_1_pos;
-  real_T throttle_lever_2_pos;
-  real_T flaps_handle_index;
-  boolean_T is_engine_operative_1;
-  boolean_T is_engine_operative_2;
-  boolean_T altimeter_setting_changed;
-  real_T total_weight_kg;
 };
 
 #endif

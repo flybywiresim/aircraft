@@ -89,10 +89,10 @@ export class CDUDataIndexPage {
       ['<RUNWAYS[color]inop', 'RUNWAYS>[color]inop'],
       ['', 'STORED\xa0[color]inop'],
       ['<ROUTES[color]inop', 'ROUTES>[color]inop'],
-      ['\xa0ACTIVE F-PLAN[color]inop', ''],
-      ['<WINDS[color]inop'],
-      ['\xa0SEC F-PLAN[color]inop', ''],
-      ['<WINDS[color]inop'],
+      [],
+      [],
+      [],
+      [],
     ]);
 
     mcdu.onLeftInput[0] = () => {

@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk-react';
 
 // source language
 import en from './data/en.json';
@@ -136,7 +137,7 @@ let currentLanguageMap = defaultLanguage;
 
 // Listener to change the currently set language in the flyPad.
 const watchLanguageChanges = () => {
-  NXDataStore.getAndSubscribe(
+  NXDataStore.getAndSubscribeLegacy(
     'EFB_LANGUAGE',
     (_, value) => {
       currentEfbLanguage = value;

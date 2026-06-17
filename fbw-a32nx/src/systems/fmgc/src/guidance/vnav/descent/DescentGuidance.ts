@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -9,10 +10,12 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SpeedMargin } from './SpeedMargin';
 import { TodGuidance } from './TodGuidance';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 enum DescentVerticalGuidanceState {
   InvalidProfile,
@@ -102,13 +105,16 @@ export class DescentGuidance {
   private pathCaptureState: PathCaptureState = PathCaptureState.OffPath;
 
   constructor(
+    config: AircraftConfig,
+    bus: EventBus,
     private guidanceController: GuidanceController,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
   ) {
-    this.speedMargin = new SpeedMargin(this.observer);
+    this.speedMargin = new SpeedMargin(config, this.observer);
     this.todGuidance = new TodGuidance(
+      bus,
       this.aircraftToDescentProfileRelation,
       this.observer,
       this.atmosphericConditions,

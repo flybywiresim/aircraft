@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -10,10 +11,10 @@ import {
   SeatFlags,
   Units,
   usePersistentNumberProperty,
-  usePersistentProperty,
+  usePersistentSetting,
   useSeatFlags,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import {
   setPayloadImported,
   setDisplayPaxMainDeck,
@@ -650,7 +651,7 @@ export const A380Payload: React.FC<PayloadProps> = ({
     return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
   };
 
-  const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+  const [theme] = usePersistentSetting('EFB_UI_THEME');
   const getTheme = useCallback(
     (theme: string): [string, string, string] => {
       let base = '#fff';

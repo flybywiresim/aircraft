@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -10,8 +11,10 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { TodGuidance } from './TodGuidance';
 import { SpeedMargin } from './SpeedMargin';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 enum DescentVerticalGuidanceState {
   InvalidProfile,
@@ -53,13 +56,16 @@ export class LatchedDescentGuidance {
   private isInOverspeedCondition: boolean = false;
 
   constructor(
+    config: AircraftConfig,
+    bus: EventBus,
     private guidanceController: GuidanceController,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
   ) {
-    this.speedMargin = new SpeedMargin(this.observer);
+    this.speedMargin = new SpeedMargin(config, this.observer);
     this.todGuidance = new TodGuidance(
+      bus,
       this.aircraftToDescentProfileRelation,
       this.observer,
       this.atmosphericConditions,

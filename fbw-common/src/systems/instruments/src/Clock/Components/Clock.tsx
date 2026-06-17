@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ComponentProps, DisplayComponent, FSComponent, EventBus, VNode, Subject, HEvent } from '@microsoft/msfs-sdk';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 

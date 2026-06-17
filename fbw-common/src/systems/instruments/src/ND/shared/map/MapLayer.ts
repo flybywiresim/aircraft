@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MapParameters } from '../utils/MapParameters';
 
 export interface MapLayer<T> {

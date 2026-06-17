@@ -61,9 +61,6 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
-  // update failures handler
-  failuresConsumer.update();
-
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
@@ -109,10 +106,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   for (int i = 0; i < 2; i++) {
-    result &= updateFadec(i);
-  }
-
-  for (int i = 0; i < 2; i++) {
     result &= updateIls(i);
   }
 
@@ -123,6 +116,58 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateTcas();
 
   result &= updateFcu(calculatedSampleTime);
+
+  if (idSyncFoEfisEnabled->get()) {
+    const auto& fcuBusOutput = fcu.getBusOutputs();
+    bool isLeftStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 28, false);
+    bool isRightStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 28, false);
+    bool isLeftQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 29, false);
+    bool isRightQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 29, false);
+
+    if (simConnectInterface.wasLastBaroInputRightSide()) {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_right_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_right_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (!isLeftStd && isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
+        std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
+      } else if (!isLeftQnh && isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
+      }
+    } else {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_left_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_left_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (isLeftStd && !isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
+        std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
+      } else if (isLeftQnh && !isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
+      }
+    }
+  }
 
   result &= updateFcuShim();
 
@@ -356,17 +401,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
   idFmRnavAppSelected = std::make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+  idFmNavCaptureCondition = std::make_unique<LocalVariable>("A32NX_FM1_NAV_CAPTURE_CONDITION");
 
-  idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
-  idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
-  idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
   idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
-  idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasRaType = std::make_unique<LocalVariable>("A32NX_TCAS_RA_TYPE");
-  idTcasRaRateToMaintain = std::make_unique<LocalVariable>("A32NX_TCAS_RA_RATE_TO_MAINTAIN");
-  idTcasRaUpAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_UP_ADVISORY_STATUS");
-  idTcasRaDownAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_DOWN_ADVISORY_STATUS");
-  idTcasSensitivityLevel = std::make_unique<LocalVariable>("A32NX_TCAS_SENSITIVITY");
+  idTcasModeWord = std::make_unique<LocalVariable>("A32NX_TCAS_MODE_WORD");
+  idTcasVerticalAdvisoryWord = std::make_unique<LocalVariable>("A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD");
 
   idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -408,7 +447,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydraulicYellowPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
 
   flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
-  flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
+  flapsPosition = std::make_unique<LocalVariable>("A32NX_FLAPS_IPPU_ANGLE");
 
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
@@ -451,13 +490,17 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_1");
     idLgciuDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
     idLgciuDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
+    idLgciuDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_4");
   }
 
-  idSfccSlatFlapComponentStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
-  idSfccSlatFlapSystemStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
-  idSfccSlatFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-  idSfccSlatActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
-  idSfccFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+    idSfccSlatFlapComponentStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_COMPONENT_STATUS_WORD");
+    idSfccSlatFlapSystemStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_SYSTEM_STATUS_WORD");
+    idSfccSlatFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_ACTUAL_POSITION_WORD");
+    idSfccSlatActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_ACTUAL_POSITION_WORD");
+    idSfccFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_FLAP_ACTUAL_POSITION_WORD");
+  }
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -829,6 +872,7 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
 
+    idEcuStatusWord3[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_STATUS_WORD_3");
     idEcuMaintenanceWord6[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_MAINTENANCE_WORD_6");
   }
 }
@@ -1193,8 +1237,7 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
   lgciuBusOutputs[lgciuIndex].discrete_word_1 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord1[lgciuIndex]->get());
   lgciuBusOutputs[lgciuIndex].discrete_word_2 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord2[lgciuIndex]->get());
   lgciuBusOutputs[lgciuIndex].discrete_word_3 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord3[lgciuIndex]->get());
-  lgciuBusOutputs[lgciuIndex].discrete_word_4.SSM = Arinc429SignStatus::NormalOperation;
-  lgciuBusOutputs[lgciuIndex].discrete_word_4.Data = 0;
+  lgciuBusOutputs[lgciuIndex].discrete_word_4 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord4[lgciuIndex]->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataLgciu(lgciuBusOutputs[lgciuIndex], lgciuIndex);
@@ -1204,30 +1247,15 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
 }
 
 bool FlyByWireInterface::updateSfcc(int sfccIndex) {
-  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord->get());
+  sfccBusOutputs[sfccIndex].slat_flap_component_status_word =
+      Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord[sfccIndex]->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);
-  }
-
-  return true;
-}
-
-bool FlyByWireInterface::updateFadec(int fadecIndex) {
-  fadecBusOutputs[fadecIndex].selected_tla_deg.SSM = Arinc429SignStatus::NormalOperation;
-  fadecBusOutputs[fadecIndex].selected_tla_deg.Data = fadecIndex == 0 ? thrustLeverAngle_1->get() : thrustLeverAngle_2->get();
-
-  double flexTemp = idFmgcFlexTemperature->get();
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.SSM =
-      flexTemp > 0 ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.Data = flexTemp;
-
-  if (clientDataEnabled) {
-    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
   }
 
   return true;
@@ -1316,37 +1344,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updateTcas() {
-  uint8_t mode = 0;
-  if (idTcasMode->get() == 0) {
-    mode = 0;
-  } else if (idTcasTaOnly->get()) {
-    mode = 0b0010;
-  } else {
-    mode = 0b0011;
-  }
-
-  tcasBusOutputs.sensitivity_level.SSM = Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.sensitivity_level.Data = static_cast<float>(((idTcasMode->get() == 0 ? 1 : 0) << 24) | (mode << 25));
-
-  auto rateToMaintain = idTcasRaRateToMaintain->get();
-  uint8_t uintRateToMaintain = static_cast<uint8_t>(std::abs(rateToMaintain) / 100) & 0b00111111;
-  uint8_t combinedControl = 0;
-  if (idTcasState->get() < 2) {
-    combinedControl = 0;
-  } else if (idTcasRaCorrective->get() == 1) {
-    combinedControl = rateToMaintain > 0 ? 4 : 5;
-  } else if (idTcasRaCorrective->get() == 0) {
-    combinedControl = 6;
-  }
-  uint8_t verticalControl = static_cast<uint8_t>(idTcasRaType->get()) & 0b00000111;
-  uint8_t upAdvisory = static_cast<uint8_t>(idTcasRaUpAdvStatus->get()) & 0b00000111;
-  uint8_t downAdvisory = static_cast<uint8_t>(idTcasRaDownAdvStatus->get()) & 0b00000111;
-
-  tcasBusOutputs.vertical_resolution_advisory.SSM =
-      idTcasMode->get() < 2 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.vertical_resolution_advisory.Data =
-      static_cast<float>((uintRateToMaintain << 10) | (rateToMaintain < 0 ? 1u << 16 : 0) | (combinedControl << 17) |
-                         (verticalControl << 20) | (upAdvisory << 23) | (downAdvisory << 26));
+  tcasBusOutputs.sensitivity_level = Arinc429Utils::fromSimVar(idTcasModeWord->get());
+  tcasBusOutputs.vertical_resolution_advisory = Arinc429Utils::fromSimVar(idTcasVerticalAdvisoryWord->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataTcas(tcasBusOutputs);
@@ -1791,7 +1790,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = std::abs(idFmCrossTrackError->get()) < 1;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = idFmNavCaptureCondition->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFmPhiCommand->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFmCrossTrackError->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFmTrackAngleError->get();
@@ -1890,7 +1889,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
 
   // Set the stick lock var (for sounds) and inst. disc. discretes, after both FMGCs have updated
   if (fmgcIndex == 1) {
-    idStickLockActive->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
+    idStickLockActive->set(fmgcsDiscreteOutputs[0].stick_rudder_lock || fmgcsDiscreteOutputs[1].stick_rudder_lock);
 
     idApInstinctiveDisconnect->set(ap_instinctive_disc);
     idAthrInstinctiveDisconnect->set(athr_instinctive_disc);
@@ -2024,13 +2023,39 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   }
 
   int athrMode = 0;
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 11, false)) {
+    athrMode = 1;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 13, false)) {
+    athrMode = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && !atActive) {
+    athrMode = 5;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && !atActive) {
+    athrMode = 6;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 19, false)) {
+    athrMode = 7;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 20, false)) {
+    athrMode = 8;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && atActive) {
+    athrMode = 9;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 14, false)) {
+    athrMode = 10;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && atActive) {
+    athrMode = 11;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 16, false)) {
+    athrMode = 12;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
     athrMode = 13;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 18, false)) {
+    athrMode = 14;
   }
 
   int athrModeMessage = 0;
   if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 22, false)) {
     athrModeMessage = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 23, false)) {
+    athrModeMessage = 4;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 21, false)) {
+    athrModeMessage = 5;
   }
 
   // Autoland warning
@@ -2355,10 +2380,14 @@ bool FlyByWireInterface::updateFcuShim() {
   if (simData.ap_fd_1_active != fd1Active) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1, SIMCONNECT_GROUP_PRIORITY_STANDARD);
   }
-  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
-  SimOutputAltimeter altiOutput = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
-  simConnectInterface.sendData(altiOutput, false);
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_right_hpa, 1013) * 16, 2);
+  SimOutputAltimeter stdOutputLeft = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
+  simConnectInterface.sendData(stdOutputLeft, 1);
+  SimOutputAltimeter stdOutputRight = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 28, true)};
+  simConnectInterface.sendData(stdOutputRight, 2);
   idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true),
                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 29, false)));
 
@@ -2675,7 +2704,12 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
     fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
 
+  idEcuStatusWord3[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_status_word_3));
   idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
+
+  if (fmgcDisabled != -1) {
+    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
+  }
 
   // write output to sim (only after both FADECs have been updated) -------------------------------------------------
   if (fadecIndex == 1) {
@@ -2728,7 +2762,7 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
   // determine if change is needed
-  if (simData.kohlsmanSettingStd_3 == 0) {
+  if (simData.kohlsmanSettingStd_4 == 0) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }

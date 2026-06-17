@@ -967,19 +967,6 @@ mod tests {
         volume::{cubic_meter, gallon},
     };
 
-    struct TestPneumaticValveSignal {
-        target_open_amount: Ratio,
-    }
-    impl PneumaticValveSignal for TestPneumaticValveSignal {
-        fn new(target_open_amount: Ratio) -> Self {
-            Self { target_open_amount }
-        }
-
-        fn target_open_amount(&self) -> Ratio {
-            self.target_open_amount
-        }
-    }
-
     pub struct ConstantPressureController {
         target_pressure: Pressure,
     }
@@ -1043,7 +1030,7 @@ mod tests {
             Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
             altitude,
-            altitude,
+            InternationalStandardAtmosphere::pressure_at_altitude(altitude),
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),

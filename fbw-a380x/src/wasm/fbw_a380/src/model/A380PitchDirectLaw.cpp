@@ -31,23 +31,23 @@ void A380PitchDirectLaw::reset(void)
 void A380PitchDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_eta_pos, real_T *rty_Out_eta_deg,
   real_T *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up)
 {
-  real_T rtb_Gain;
+  real_T u0;
   *rty_Out_eta_trim_dot_deg_s = A380PitchDirectLaw_rtP.Constant_Value;
   *rty_Out_eta_trim_limit_up = A380PitchDirectLaw_rtP.Constant2_Value;
   *rty_Out_eta_trim_limit_lo = A380PitchDirectLaw_rtP.Constant3_Value;
-  rtb_Gain = A380PitchDirectLaw_rtP.Gain_Gain * *rtu_In_delta_eta_pos;
   if (!A380PitchDirectLaw_DWork.pY_not_empty) {
     A380PitchDirectLaw_DWork.pY = A380PitchDirectLaw_rtP.RateLimitereta_InitialCondition;
     A380PitchDirectLaw_DWork.pY_not_empty = true;
   }
 
-  if (rtb_Gain > A380PitchDirectLaw_rtP.Saturation_UpperSat) {
-    rtb_Gain = A380PitchDirectLaw_rtP.Saturation_UpperSat;
-  } else if (rtb_Gain < A380PitchDirectLaw_rtP.Saturation_LowerSat) {
-    rtb_Gain = A380PitchDirectLaw_rtP.Saturation_LowerSat;
+  u0 = A380PitchDirectLaw_rtP.Gain_Gain * *rtu_In_delta_eta_pos;
+  if (u0 > A380PitchDirectLaw_rtP.Saturation_UpperSat) {
+    u0 = A380PitchDirectLaw_rtP.Saturation_UpperSat;
+  } else if (u0 < A380PitchDirectLaw_rtP.Saturation_LowerSat) {
+    u0 = A380PitchDirectLaw_rtP.Saturation_LowerSat;
   }
 
-  A380PitchDirectLaw_DWork.pY += std::fmax(std::fmin(rtb_Gain - A380PitchDirectLaw_DWork.pY, std::abs
+  A380PitchDirectLaw_DWork.pY += std::fmax(std::fmin(u0 - A380PitchDirectLaw_DWork.pY, std::abs
     (A380PitchDirectLaw_rtP.RateLimitereta_up) * *rtu_In_time_dt), -std::abs(A380PitchDirectLaw_rtP.RateLimitereta_lo) *
     *rtu_In_time_dt);
   *rty_Out_eta_deg = A380PitchDirectLaw_DWork.pY;

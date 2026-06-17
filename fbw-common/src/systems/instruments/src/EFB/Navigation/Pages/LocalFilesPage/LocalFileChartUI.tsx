@@ -1,10 +1,11 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@flybywiresim/fbw-sdk';
+import { Viewer } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../../Localization/translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
@@ -117,7 +118,7 @@ export const LocalFileChartUI = () => {
           }
         });
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Error encountered while fetching resources.');
     }
 

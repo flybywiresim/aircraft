@@ -96,15 +96,10 @@ struct FanAirValveSignal {
     target_open_amount: Ratio,
 }
 
-struct PackFlowValveSignal {
-    target_open_amount: Ratio,
-}
-
 valve_signal_implementation!(HighPressureValveSignal);
 valve_signal_implementation!(PressureRegulatingValveSignal);
 valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
-valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A380Pneumatic {
     physics_updater: MaxStepLoop,
@@ -378,7 +373,7 @@ impl PackFlowValveState for A380Pneumatic {
     // fcv_id: 1, 2, 3 or 4
     fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
         let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-        if fcv_id % 2 == 0 {
+        if fcv_id.is_multiple_of(2) {
             self.packs[id].right_pack_flow_valve_is_open()
         } else {
             self.packs[id].left_pack_flow_valve_is_open()
@@ -386,7 +381,7 @@ impl PackFlowValveState for A380Pneumatic {
     }
     fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
         let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-        if fcv_id % 2 == 0 {
+        if fcv_id.is_multiple_of(2) {
             self.packs[id].right_pack_flow_valve_air_flow()
         } else {
             self.packs[id].left_pack_flow_valve_air_flow()
@@ -394,7 +389,7 @@ impl PackFlowValveState for A380Pneumatic {
     }
     fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
         let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-        if fcv_id % 2 == 0 {
+        if fcv_id.is_multiple_of(2) {
             self.packs[id].right_pack_flow_valve_inlet_pressure()
         } else {
             self.packs[id].left_pack_flow_valve_inlet_pressure()

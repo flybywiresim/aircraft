@@ -180,7 +180,7 @@ export class AudioControlManager implements Instrument {
       );
     }
 
-    NXDataStore.getAndSubscribe('FO_SYNC_EFIS_ENABLED', (_, v) => (this.isSyncEnabled = v === '1'), '0');
+    NXDataStore.getAndSubscribeLegacy('FO_SYNC_EFIS_ENABLED', (_, v) => (this.isSyncEnabled = v === '1'), '0');
   }
 
   // TODO only two tx can be active at a time

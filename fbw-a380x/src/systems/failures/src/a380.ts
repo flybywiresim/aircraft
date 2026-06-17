@@ -55,6 +55,7 @@ export const A380Failure = Object.freeze({
   CpcsApp3: 21048,
   CpcsApp4: 21049,
 
+  Rollout: 22001,
   FmcA: 22100,
   FmcB: 22101,
   FmcC: 22102,
@@ -174,6 +175,11 @@ export const A380Failure = Object.freeze({
   Transponder1: 34003,
   Transponder2: 34004,
 
+  Terr1: 34005,
+  Terr2: 34006,
+  Gpws1: 34007,
+  Gpws2: 34008,
+
   NssAnsu1: 46001,
   NssAnsu2: 46002,
   FltOpsAnsu: 46003,
@@ -238,6 +244,7 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [22, A380Failure.FmcA, 'FMC-A'],
   [22, A380Failure.FmcB, 'FMC-B'],
   [22, A380Failure.FmcC, 'FMC-C'],
+  [22, A380Failure.Rollout, 'ROLLOUT'],
 
   [23, A380Failure.AudioManagementUnit1, 'AMU 1'],
   [23, A380Failure.AudioManagementUnit2, 'AMU 2'],
@@ -347,6 +354,10 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [34, A380Failure.RadioAntennaDirectCoupling1, 'RA SYS A Direct Coupling'],
   [34, A380Failure.RadioAntennaDirectCoupling2, 'RA SYS B Direct Coupling'],
   [34, A380Failure.RadioAntennaDirectCoupling3, 'RA SYS C Direct Coupling'],
+  [34, A380Failure.Terr1, 'TERR 1'],
+  [34, A380Failure.Terr2, 'TERR 2'],
+  [34, A380Failure.Gpws1, 'GPWS 1'],
+  [34, A380Failure.Gpws2, 'GPWS 2'],
   [34, A380Failure.Transponder1, 'XPDR 1'],
   [34, A380Failure.Transponder2, 'XPDR 2'],
 

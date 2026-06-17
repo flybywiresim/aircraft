@@ -1,14 +1,8 @@
-import {
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  NodeReference,
-  Subject,
-  Subscribable,
-  VNode,
-} from '@microsoft/msfs-sdk';
+// @ts-strict-ignore
+import { DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -56,10 +50,14 @@ const TenThousandsDigit = (value: number) => {
 };
 
 interface DigitalAltitudeReadoutProps {
-  bus: EventBus;
+  bus: ArincEventBus;
 }
 
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private mda = 0;
 
   private isNegativeSub = Subject.create('hidden');
@@ -96,7 +94,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         this.colorSub.set(color);
       });
 
-    sub.on('altitudeAr').handle((altitude) => {
+    this.altitude.sub((altitude) => {
       const isNegative = altitude.value < 0;
       this.isNegativeSub.set(isNegative ? 'visible' : 'hidden');
 
@@ -138,7 +136,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
       const showThousandsZero = TenThousandsValue !== 0;
 
       this.showThousandsZeroSub.set(showThousandsZero);
-    });
+    }, true);
   }
 
   render(): VNode {

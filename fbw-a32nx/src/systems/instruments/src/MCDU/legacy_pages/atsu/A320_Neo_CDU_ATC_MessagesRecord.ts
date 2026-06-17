@@ -1,8 +1,13 @@
+// @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcMessagesRecord {
   static TranslateCpdlcResponse(response) {
@@ -131,7 +136,7 @@ export class CDUAtcMessagesRecord {
             mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID, false);
             CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
           } else {
-            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);
+            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, null);
           }
         }
       };
@@ -156,5 +161,7 @@ export class CDUAtcMessagesRecord {
     mcdu.onLeftInput[5] = () => {
       CDUAtcMenu.ShowPage(mcdu);
     };
+
+    setKeyNotActiveLskActions(mcdu);
   }
 }

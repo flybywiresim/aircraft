@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
 import { CDUSelectedNavaids } from './A320_Neo_CDU_SelectedNavaids';

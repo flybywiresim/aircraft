@@ -1,0 +1,3 @@
+[*.{js,jsx,ts,tsx}]
+indent_size = 4
+tab_width = 4

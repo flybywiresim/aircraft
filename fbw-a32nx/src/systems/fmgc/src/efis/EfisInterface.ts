@@ -24,12 +24,14 @@ export class EfisInterface {
   static readonly A32NX_NUM_LEGS_ON_FPLN_PAGE = 5;
 
   constructor(
-    private side: EfisSide,
-    private flightPlanService: FlightPlanService,
+    private readonly side: EfisSide,
+    private readonly flightPlanService: FlightPlanService,
     private numLegOnFplnPage = EfisInterface.A32NX_NUM_LEGS_ON_FPLN_PAGE,
+    public readonly numSecondaryFlightPlans: number = 1,
   ) {}
 
-  private isSecRelatedPageOpen: boolean = false;
+  /** Index of secondary flight plan for which related page is open. Null if no related page for any secondary flight plan is open.  */
+  private secRelatedPageOpenIndex: number | null = null;
 
   readonly planCentre: PlanCentre = {
     fpIndex: 0,
@@ -59,9 +61,9 @@ export class EfisInterface {
     this.version++;
   }
 
-  setSecRelatedPageOpen(open: boolean): void {
-    if (this.isSecRelatedPageOpen !== open) {
-      this.isSecRelatedPageOpen = open;
+  setSecRelatedPageOpen(secIndex: number | null): void {
+    if (this.secRelatedPageOpenIndex !== secIndex) {
+      this.secRelatedPageOpenIndex = secIndex;
       this.version++;
     }
   }
@@ -74,15 +76,15 @@ export class EfisInterface {
     // Don't increment version here, the real one takes a bit of time to update as well
   }
 
-  shouldTransmitSecondary(): boolean {
-    return this.isSecRelatedPageOpen;
+  shouldTransmitSecondary(secondaryIndex: number = 1): boolean {
+    return this.secRelatedPageOpenIndex === secondaryIndex;
+  }
+
+  shouldTransmitAnySecondary(): boolean {
+    return this.secRelatedPageOpenIndex !== null;
   }
 
   shouldTransmitMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan) {
       return false;
@@ -110,10 +112,6 @@ export class EfisInterface {
   }
 
   shouldTransmitAlternate(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan || !plan.alternateFlightPlan) {
       return false;
@@ -137,10 +135,6 @@ export class EfisInterface {
   }
 
   shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan || !plan.alternateFlightPlan) {
       return false;

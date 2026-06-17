@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAocMessagesSent } from './A320_Neo_CDU_AOC_MessagesSent';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -42,22 +43,6 @@ class A32NX_Clock extends BaseInstrument {
     super.connectedCallback();
 
     this.hEventPublisher.startPublish();
-
-    this.simVarPublisher.subscribe('ltsTest');
-    this.simVarPublisher.subscribe('dcEssIsPowered');
-    this.simVarPublisher.subscribe('dcHot1IsPowered');
-    this.simVarPublisher.subscribe('absTime');
-
-    this.simVarPublisher.subscribe('timeOfDay');
-
-    this.simVarPublisher.subscribe('currentUTC');
-    this.simVarPublisher.subscribe('dayOfMonth');
-    this.simVarPublisher.subscribe('monthOfYear');
-    this.simVarPublisher.subscribe('year');
-
-    this.simVarPublisher.subscribe('elapsedKnobPos');
-
-    this.simVarPublisher.subscribe('dc2IsPowered');
 
     FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
 

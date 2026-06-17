@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useArinc429Var, Arinc429Word, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, Arinc429Word, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';

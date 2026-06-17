@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBrief 데이터 불러오기",
       "TT": {
         "IncreaseFontSize": "글씨 크게",
+        "NextLoadsheetSection": "다음 Loadsheet 섹션",
+        "PreviousLoadsheetSection": "이전 Loadsheet 섹션",
         "ReduceFontSize": "글씨 작게"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Simbrief에서 정보를 사용할 수 없거나 섹션이 활성화되지 않았습니다.",
       "YouHaveNotYetImportedAnySimBriefData": "SimBrief 데이터를 불러오지 않았습니다."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "데이터",
     "Landing": {
+      "Airport": "공항",
       "AirportIcao": "공항 ICAO",
       "ApproachSpeed": "접근 속도",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "초기화",
       "DropDownNo": "아니오",
       "DropDownYes": "예",
+      "EnterManually": "수동 입력",
       "FillDataFrom": "다음 데이터에서 가져오기",
       "FlapsConfiguration": "플랩 설정",
+      "LandingWeight": "착륙 중량",
       "Low": "최저",
       "MaximumManual": "최대 수동",
       "Medium": "보통",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "최대착륙중량 초과",
       "Qnh": "QNH",
       "ReverseThrust": "역추진 추력",
+      "Runway": "활주로",
       "RunwayAltitude": "활주로 고도",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "활주로 상태",
@@ -316,6 +322,8 @@
         "MediumPoor": "나쁨 (2)",
         "Poor": "매우 나쁨 (1)"
       },
+      "RunwayElevation": "활주로 고도",
+      "RunwayElevationUnit": "피트 AMSL",
       "RunwayHeading": "활주로 방향",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "활주로 LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "무게",
+      "Wind": "바람",
       "WindDirection": "풍향",
       "WindDirectionUnit": "°",
       "WindMagnitude": "풍속",
@@ -395,7 +404,9 @@
         "Wet": "젖음"
       },
       "RunwayElevation": "활주로 고도",
-      "RunwayElevationUnit": "피트",
+      "RunwayElevationUnit": "ft",
+      "RunwayHeading": "활주로 방향",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "피트",
       "RunwayLengthUnitMeter": "미터",
       "RunwaySlope": "활주로 경사",
@@ -556,6 +567,8 @@
       "AlignAdirs": "ADIRS 즉시 정렬",
       "AutoBrightness": "자동 밝기 켜기/끄기",
       "Brightness": "flyPad 밝기 조절",
+      "CabinAutoBrightness": "자동 객실 조명 켜기/끄기",
+      "CabinLighting": "객실 조명 설정",
       "FinishBoarding": "탑승 즉시 완료",
       "OnScreenKeyboard": "온스크린 키보드 켜기/끄기",
       "PauseAtTod": "하강 시작 시점(ToD)에서 일시정지 사용 또는 사용안함",
@@ -567,8 +580,6 @@
     },
     "Title": "빠른 설정"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "정보"
@@ -585,7 +596,7 @@
       "Select": "선택",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
-      "WeightUnit": "무게 단위"
+      "WeightUnit": "미국 단위"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC 출처",
@@ -631,11 +642,11 @@
     "Real": "실제",
     "Realism": {
       "AdirsAlignTime": "ADIRS 정렬 시간",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "단계별 고도 자동 상승",
       "AutofillChecklists": "체크리스트 자동 완성",
       "BoardingTime": "승객 탑승 시간",
       "DmcSelfTestTime": "DMC 자체 점검 시간",
-      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
+      "EclSoftKeys": "EWD 전자 체크리스트용 소프트 키 표시",
       "FirstOfficerAvatar": "부기장 아바타 표시",
       "HomeCockpitMode": "실내 조종석 모드",
       "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
@@ -651,11 +662,10 @@
       "Active": "활성",
       "Auto": "자동",
       "Both": "동기화",
+      "CabinAutoBrightness": "자동 객실 조명",
+      "CabinManualBrightness": "객실 조명 밝기",
       "Calibrate": "보정",
-      "Captain": "기장",
-      "CockpitSeatUsedToControl": "조종에 사용할 좌석",
       "ConesEnabled": "안전콘",
-      "Copilot": "부기장",
       "DefaultBarometerUnit": "기본 기압 단위",
       "DynamicRegistrationDecal": "다이나믹 등록 데칼",
       "EnableSimBridge": "SimBridge 연결 활성화 (5분동안 연결 실패 시 자동으로 비활성화)",
@@ -667,6 +677,7 @@
       "Left": "왼쪽",
       "LoadOnly": "불러오기 전용",
       "None": "없음",
+      "OansPerformanceMode": "OANS 성능 모드(사용하지 않을 경우 공항 지도 로딩 안함)",
       "Off": "끄기",
       "PilotSeat": "조종할 좌석",
       "Right": "오른쪽",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraph 계정 연결",
         "SubscriptionStatus": {
           "None": "없음",
+          "Standard": "Navigraph 스탠다드",
           "Unknown": "알 수 없음",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBrief 사용자 아이디 덮어쓰기",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBrief 사용자 이름이나 조종사 아이디를 제대로 입력했는지 확인해주세요.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet 탐색",
       "TT": {
         "OverrideSimBriefUserID": "연결된 Navigraph 계정 대신 사용할 대체 SimBrief 사용자 ID"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA 축"
     },
     "Title": "설정",
+    "Troubleshooting": {
+      "Title": "문제 해결"
+    },
     "Unrealistic": "비현실적",
     "flyPad": {
       "AutoBrightness": "자동 밝기",
@@ -743,7 +759,6 @@
       "Blue": "블루",
       "Brightness": "밝기",
       "Dark": "다크",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "언어",
       "Light": "라이트",
       "Local": "현지",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC 및 현지 시간"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "4월",
     "Aug": "8월",

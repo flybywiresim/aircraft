@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { formatEwdMessages } from '@shared/EwdMessages';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
 
@@ -90,20 +91,14 @@ export class LowerRightDisplay extends DisplayComponent<LowerRightDisplayProps> 
       .atFrequency(2)
       .handle((_t) => {
         this.message.set(
-          [
-            EWDMessages[this.line1],
-            EWDMessages[this.line2],
-            EWDMessages[this.line3],
-            EWDMessages[this.line4],
-            EWDMessages[this.line5],
-            EWDMessages[this.line6],
-            EWDMessages[this.line7],
-          ].join('\r'),
+          formatEwdMessages([this.line1, this.line2, this.line3, this.line4, this.line5, this.line6, this.line7]).join(
+            '\r',
+          ),
         );
       });
   }
 
   render(): VNode {
-    return <FormattedFwcText message={this.message} x={520} y={554} />;
+    return <FormattedFwcText bus={this.props.bus} message={this.message} x={520} y={554} />;
   }
 }

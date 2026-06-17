@@ -1,9 +1,11 @@
+// @ts-strict-ignore
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import {
   AtisMessage,
   AtisType,
   AtsuMessage,
+  AtsuMessageSerializationFormat,
   AtsuMessageType,
   AtsuStatusCodes,
   CpdlcMessage,
@@ -173,8 +175,10 @@ export class DigitalOutputs {
     this.publisher.pub('atcMessageModify', message, true, false);
   }
 
+  // FIXME when sending the object via the event bus, the prototype is lost, so AtsuMessage methods are not available anymores
+  // String works, but we should find a better way to do this
   public sendPrintMessage(message: AtsuMessage): void {
-    this.publisher.pub('atcPrintMessage', message, true, false);
+    this.publisher.pub('atcPrintMessage', message.serialize(AtsuMessageSerializationFormat.Printer), true, false);
   }
 
   public sendActiveAtisAutoUpdates(icaos: string[]): void {

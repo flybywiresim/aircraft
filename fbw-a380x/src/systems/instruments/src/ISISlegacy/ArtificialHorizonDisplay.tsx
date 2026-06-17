@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 import { AltitudeIndicator } from './AltitudeIndicator';
 import { LandingSystem } from './LandingSystem';
@@ -20,7 +20,7 @@ type ArtificialHorizonDisplayProps = {
 };
 
 export const ArtificialHorizonDisplay: React.FC<ArtificialHorizonDisplayProps> = ({ indicatedAirspeed, bugs }) => {
-  const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
+  const [alt] = useSimVar('INDICATED ALTITUDE:3', 'feet');
   const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
   return (

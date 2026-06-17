@@ -1,19 +1,21 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429Word, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Accessible } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import {
   FmgcFlightPhase,
   getAutopilotVerticalMode,
-  isAllEngineOn,
   isAnEngineOn,
   isOnGround,
   conditionTakeOff,
 } from '@shared/flightphase';
 
 export abstract class Phase {
+  constructor(protected readonly pressureAltitude: Accessible<number | null>) {}
   // eslint-disable-next-line no-empty-function
   init(): void {
     /* prototype function */
@@ -43,22 +45,43 @@ export class TakeOffPhase extends Phase {
 
   accelerationAltitudeMslEo: number;
 
+  readonly fmAccelerationAltitude = Arinc429Register.empty();
+
+  readonly fmEoAccelerationAltitude = Arinc429Register.empty();
+
   init() {
     this.nextPhase = FmgcFlightPhase.Climb;
     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
 
-    const accAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
-    this.accelerationAltitudeMsl = accAlt.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+    this.fmAccelerationAltitude.setFromSimVar('L:A32NX_FM1_ACC_ALT');
+    this.accelerationAltitudeMsl = this.fmAccelerationAltitude.valueOr(
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
-    const eoAccAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT');
-    this.accelerationAltitudeMslEo = eoAccAlt.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+    this.fmEoAccelerationAltitude.setFromSimVar('L:A32NX_FM1_EO_ACC_ALT');
+    this.accelerationAltitudeMslEo = this.fmEoAccelerationAltitude.valueOr(
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    return Simplane.getAltitude() > (isAllEngineOn() ? this.accelerationAltitudeMsl : this.accelerationAltitudeMslEo);
+    const engineOut = !isAnEngineOn();
+    const aboveAccelHeight =
+      Simplane.getAltitude() > (engineOut ? this.accelerationAltitudeMslEo : this.accelerationAltitudeMsl); //FIXME add Speed > Gdot if EO mode active
+    if (aboveAccelHeight) {
+      return true;
+    }
+    const verticalMode = getAutopilotVerticalMode();
+
+    return (
+      verticalMode === VerticalMode.VS ||
+      verticalMode === VerticalMode.FPA ||
+      verticalMode === VerticalMode.ALT ||
+      verticalMode === VerticalMode.ALT_CPT ||
+      verticalMode === VerticalMode.ALT_CST ||
+      verticalMode === VerticalMode.ALT_CST_CPT ||
+      verticalMode === VerticalMode.OP_CLB ||
+      verticalMode === VerticalMode.CLB
+    );
   }
 }
 
@@ -68,8 +91,13 @@ export class ClimbPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
+    const pressureAltitude = this.pressureAltitude.get();
+    if (pressureAltitude === null) {
+      return;
+    }
+
     const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
-    const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const fl = Math.round(pressureAltitude / 100);
 
     // If no cruise alt has been entered, cruiseFl is 0. We don't want to switch to cruise phase in that case
     return cruiseFl > 0 && fl >= cruiseFl;
@@ -93,11 +121,12 @@ export class DescentPhase extends Phase {
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const pressureAltitude = this.pressureAltitude.get();
+    const fl = pressureAltitude === null ? null : Math.round(pressureAltitude / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
     const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
-    if (fl === cruiseFl && fcuSelFl === fl) {
+    if (fl !== null && fl === cruiseFl && fcuSelFl === fl) {
       this.nextPhase = FmgcFlightPhase.Cruise;
       return true;
     }

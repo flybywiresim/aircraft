@@ -13,6 +13,30 @@ export interface JS_ICAO {
   ident: string;
 }
 
+/** FS2024 only. */
+export interface JS_ICAO {
+  __Type: 'JS_ICAO';
+  type: string;
+  region: string;
+  airport: string;
+  ident: string;
+}
+
+/** FS2024 only. */
+export interface JS_RunwayIdentifier {
+  __Type: 'JS_RunwayIdentifier';
+  number: string;
+  designator: string;
+}
+
+/** FS2024 only. */
+export interface JS_ApproachIdentifier {
+  __Type: 'JS_ApproachIdentifier';
+  runway: JS_RunwayIdentifier;
+  type: string;
+  suffix: string;
+}
+
 export interface JS_Approach {
   __Type: 'JS_Approach';
   /** multiple approach identifier */
@@ -104,6 +128,8 @@ export interface JS_FacilityAirport {
   icao: string;
   /** The MSFS database identifier in object form; MSFS2024 only. */
   icaoStruct?: JS_ICAO;
+  /** airport refernce point altitude in metres */
+  altitude: number;
   /** airport reference point latitude */
   lat: number;
   /** airport reference point longitude */
@@ -133,6 +159,8 @@ export interface JS_FacilityIntersection {
   city: string;
   /** msfs database identifier */
   icao: string;
+  /** The MSFS database identifier in object form; MSFS2024 only. */
+  icaoStruct?: JS_ICAO;
   /** facility latitude */
   lat: number;
   /** facility longitude */
@@ -162,6 +190,8 @@ export interface JS_FacilityNDB {
   freqMHz: number;
   /** msfs database identifier */
   icao: string;
+  /** The MSFS database identifier in object form; MSFS2024 only. */
+  icaoStruct?: JS_ICAO;
   /** facility latitude */
   lat: number;
   /** facility longitude */
@@ -229,6 +259,8 @@ export interface JS_FacilityVOR {
   freqMHz: number;
   /** msfs database identifier */
   icao: string;
+  /** The MSFS database identifier in object form; MSFS2024 only. */
+  icaoStruct?: JS_ICAO;
   /** facility latitude */
   lat: number;
   /** facility longitude */
@@ -446,8 +478,11 @@ export interface JS_HoldingPattern {
 
 export enum AirportClass {
   Unknown = 0,
-  Normal = 1,
-  SoftUnknown = 2, // TODO no idea but is "soft" according to waypoint.js
+  /**
+   * Concrete, asphalt, hard turf, bituminous, brick, macadam or tarmac.
+   */
+  HardSurfaceWithRunways = 1,
+  SoftSurfaceWithRunways = 2,
   Seaplane = 3,
   Heliport = 4,
   Private = 5,
@@ -703,6 +738,57 @@ export enum VorType {
 }
 
 /** FS2024 only. */
+export interface JS_FlightPlanRoute {
+  __Type: 'JS_FlightPlanRoute';
+  departureAirport: JS_ICAO;
+  departureRunway: JS_RunwayIdentifier;
+  departure: string;
+  departureTransition: string;
+  departureVfrPattern: JS_FlightPlanRouteVfrPatternProcedure;
+  destinationAirport: JS_ICAO;
+  destinationRunway: JS_RunwayIdentifier;
+  arrival: string;
+  arrivalTransition: string;
+  approach: JS_ApproachIdentifier;
+  approachTransition: string;
+  approachVfrPattern: JS_FlightPlanRouteVfrPatternProcedure;
+  enroute: JS_EnrouteLeg[];
+  isVfr: boolean;
+  cruiseAltitude: JS_FlightAltitude;
+}
+
+export interface JS_FlightAltitude {
+  __Type: 'JS_FlightAltitude';
+  altitude: number;
+  isFlightLevel: boolean;
+}
+
+export interface JS_FlightPlanRouteVfrPatternProcedure {
+  __Type: 'JS_VfrPatternProcedure';
+  type: string;
+  distance: number;
+  altitude: number;
+  isLeftTraffic: boolean;
+}
+
+/** FS2024 only. */
+export interface JS_EnrouteLeg {
+  __Type: 'JS_EnrouteLeg';
+  isPpos: boolean;
+  fixIcao: JS_ICAO;
+  hasLatLon: boolean;
+  lat: number;
+  lon: number;
+  hasPointBearingDistance: boolean;
+  referenceIcao: JS_ICAO;
+  bearing: number;
+  distance: number;
+  altitude: null;
+  name: string;
+  via: string;
+}
+
+/** FS2024 only. */
 export enum LandingSystemCategory {
   None = 0,
   Cat1,
@@ -714,4 +800,59 @@ export enum LandingSystemCategory {
   LdaWithGs,
   SdfNoGs,
   SdfWithGs,
+}
+
+export enum MsfsIntersectionType {
+  None = 0,
+  Named = 1,
+  Unnamed = 2,
+  Vor = 3,
+  Ndb = 4,
+  Offroute = 5,
+  Iaf = 6,
+  Faf = 7,
+  Rnav = 8,
+  Vfr = 9,
+}
+
+export enum MsfsFacilityType {
+  None = 0,
+  Airport = 1,
+  Intersection = 2,
+  Vor = 3,
+  Ndb = 4,
+  Boundary = 5,
+}
+
+/**
+ * Legacy nearest search result for MSFS2024 and above.
+ */
+export interface MsfsNearestSearchStructResult {
+  sessionId: number;
+  searchId: number;
+  added: JS_ICAO[];
+  removed: JS_ICAO[];
+}
+
+/**
+ * Legacy nearest search result for MSFS2020.
+ */
+export interface MsfsNearestSearchLegacyResult {
+  sessionId: number;
+  searchId: number;
+  added: string[];
+  removed: string[];
+}
+
+/** MSFS2024 and above data flags for LOAD_AIRPORT_FROM_STRUCT. */
+export enum JSAirportRequestFlags {
+  Minimal = 0,
+  Approaches = 1 << 0,
+  Departues = 1 << 1,
+  Arrivals = 1 << 2,
+  Frequencies = 1 << 3,
+  Gates = 1 << 4,
+  HoldingPatterns = 1 << 5,
+  Runways = 1 << 6,
+  All = 0x7f, // combo of the above
 }

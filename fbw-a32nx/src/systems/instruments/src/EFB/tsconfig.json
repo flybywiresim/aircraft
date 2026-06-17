@@ -1,18 +1,6 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.react.json",
   "compilerOptions": {
     "resolveJsonModule" : true,
-    "paths": {
-      "@instruments/common/*": ["./instruments/src/Common/*"],
-      "@typings/*": ["../../../fbw-common/src/typings/*"],
-      "@sentry/*": ["./sentry-client/src/*"],
-      "@failures": ["./failures/src/index.ts"],
-      "@fmgc/*": ["./fmgc/src/*"],
-      "@shared/*": ["./shared/src/*"],
-      "@simbridge/*": ["./simbridge-client/src/*"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
-      "@flybywiresim/checklists": ["../../../fbw-common/src/systems/shared/src/checklists/index.ts"],
-    }
   }
 }

@@ -9,9 +9,9 @@
 #include <MSFS/Render/stb_image.h>
 #pragma clang diagnostic pop
 #include <cstdint>
+#include <iostream>
 #include <string_view>
 #include <vector>
-#include <iostream>
 
 #define FMT_HEADER_ONLY
 #include <fmt/format.h>
@@ -39,10 +39,11 @@ class DisplayBase {
  public:
   struct NdConfiguration {
     types::Length range;
-    std::uint8_t mode;
-    bool terrainActive;
-    float potentiometer;
-    bool powered;
+    std::uint8_t  mode;
+    bool          terrOnNd;
+    bool          terrOnVd;
+    float         potentiometer;
+    bool          powered;
   };
 
   DisplayBase(const DisplayBase&) = delete;
@@ -53,16 +54,16 @@ class DisplayBase {
   virtual void update(const NdConfiguration& config) = 0;
 
   DisplaySide side() const;
-  void destroy();
-  void render(sGaugeDrawData* pDrawData);
+  void        destroy();
+  void        render(sGaugeDrawData* pDrawData);
 
  protected:
-  DisplaySide _side;
-  NdConfiguration _configuration;
-  std::size_t _frameBufferSize;
-  int _nanovgImage;
-  NVGcontext* _context;
-  std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>> _thresholds;
+  DisplaySide                                                                                       _side;
+  NdConfiguration                                                                                   _configuration;
+  std::size_t                                                                                       _frameBufferSize;
+  int                                                                                               _nanovgImage;
+  NVGcontext*                                                                                       _context;
+  std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>>                                 _thresholds;
   std::shared_ptr<simconnect::ClientDataAreaBuffered<std::uint8_t, SIMCONNECT_CLIENTDATA_MAX_SIZE>> _frameData;
 
   DisplayBase(DisplaySide side, FsContext context);
@@ -84,12 +85,12 @@ template <std::string_view const& NdMinElevation,
 class Display : public DisplayBase {
  private:
   std::shared_ptr<simconnect::LVarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>> _ndThresholdData;
-  bool _ignoreNextFrame;
+  bool                                                                                                            _ignoreNextFrame;
 
   void resetNavigationDisplayData() {
-    this->_ndThresholdData->template value<NdMinElevation>() = -1;
+    this->_ndThresholdData->template value<NdMinElevation>()     = -1;
     this->_ndThresholdData->template value<NdMinElevationMode>() = 0;
-    this->_ndThresholdData->template value<NdMaxElevation>() = -1;
+    this->_ndThresholdData->template value<NdMaxElevation>()     = -1;
     this->_ndThresholdData->template value<NdMaxElevationMode>() = 0;
     this->_ndThresholdData->writeValues();
   }
@@ -116,10 +117,11 @@ class Display : public DisplayBase {
     this->_frameData->defineArea(side == DisplaySide::Left ? FrameDataLeftName : FrameDataRightName);
     this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     this->_frameData->setOnChangeCallback([=]() {
-      if (!this->_ignoreNextFrame && this->_configuration.terrainActive) {
+      if (!this->_ignoreNextFrame && (this->_configuration.terrOnNd || this->_configuration.terrOnVd)) {
         if (this->_nanovgImage == 0) {
           // If we don't have an image yet, create one
-          this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
+          this->_nanovgImage =
+              nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
           if (this->_nanovgImage == 0) {
             std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
           }
@@ -128,8 +130,9 @@ class Display : public DisplayBase {
         }
 
         // Otherwise, decode the PNG manually and update the existing image
-        int decodedWidth, decodedHeight;
-        uint8_t* decodedImage = stbi_load_from_memory(this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize), &decodedWidth, &decodedHeight, nullptr, 4);
+        int      decodedWidth, decodedHeight;
+        uint8_t* decodedImage = stbi_load_from_memory(this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize),
+                                                      &decodedWidth, &decodedHeight, nullptr, 4);
         if (decodedImage == nullptr) {
           std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
           return;
@@ -140,7 +143,8 @@ class Display : public DisplayBase {
 
         if (decodedWidth != width || decodedHeight != height) {
           // This should never happen, but bail just in case
-          std::cerr << fmt::format("TERR ON ND: The image size does not match the expected size. Expected: {}x{}, actual: {}x{}", width, height, decodedWidth, decodedHeight);
+          std::cerr << fmt::format("TERR ON ND: The image size does not match the expected size. Expected: {}x{}, actual: {}x{}", width,
+                                   height, decodedWidth, decodedHeight);
           stbi_image_free(decodedImage);
           return;
         }
@@ -166,9 +170,9 @@ class Display : public DisplayBase {
            this->_configuration.range != (this->_thresholds->data().displayRange * types::nauticmile));
 
       if (!this->_ignoreNextFrame) {
-        this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
+        this->_ndThresholdData->template value<NdMinElevation>()     = this->_thresholds->data().lowerThreshold;
         this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
-        this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
+        this->_ndThresholdData->template value<NdMaxElevation>()     = this->_thresholds->data().upperThreshold;
         this->_ndThresholdData->template value<NdMaxElevationMode>() = this->_thresholds->data().upperThresholdMode;
         this->_ndThresholdData->writeValues();
       }
@@ -184,14 +188,15 @@ class Display : public DisplayBase {
    * @param config The new ND configuration instance
    */
   void update(const DisplayBase::NdConfiguration& config) override {
-    const bool resetMapData = this->_configuration.mode != config.mode || config.range != this->_configuration.range;
+    const bool resetMapData = this->_configuration.mode != config.mode || config.range != this->_configuration.range ||
+                              this->_configuration.terrOnNd != config.terrOnNd || this->_configuration.terrOnVd != config.terrOnVd;
     const bool validEfisMode = config.mode == NavigationDisplayArcModeId || config.mode == NavigationDisplayRoseLsModeId ||
                                config.mode == NavigationDisplayRoseNavModeId || config.mode == NavigationDisplayRoseVorModeId;
 
     this->_configuration = config;
-    this->_configuration.terrainActive &= validEfisMode;
+    this->_configuration.terrOnNd &= validEfisMode;
 
-    if (!this->_configuration.terrainActive || !validEfisMode || resetMapData) {
+    if (!(this->_configuration.terrOnNd || this->_configuration.terrOnVd) || !validEfisMode || resetMapData) {
       this->resetNavigationDisplayData();
       this->destroyImage();
       this->_ignoreNextFrame = true;

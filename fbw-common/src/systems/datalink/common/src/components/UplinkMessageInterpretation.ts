@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Atc } from '../../../atc/src';
 import { coordinateToString, timestampToString } from './Convert';
 import { InputValidation } from './InputValidation';

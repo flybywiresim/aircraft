@@ -15,6 +15,4 @@ export interface Departure extends DatabaseItem<SectionCode.Airport> {
   commonLegs: ProcedureLeg[];
 
   enrouteTransitions: ProcedureTransition[];
-
-  engineOutLegs: ProcedureLeg[];
 }

@@ -1,24 +1,44 @@
 {
   "compilerOptions": {
     "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
-    "baseUrl": ".",
+    "strict": false,
+    "plugins": [
+      {
+        "name": "typescript-strict-plugin"
+      }
+    ],
     "resolveJsonModule" : true,
+    "skipLibCheck": true,
     "typeRoots": [
       "../typings",
       "../../../node_modules/@types",
     ],
-    "moduleResolution": "node",
+    "types": ["*"], // could specify exactly which types for better perf
+    "moduleResolution": "bundler",
+    "module": "preserve",
     "allowSyntheticDefaultImports": true,
-    "jsx": "react",
-    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "paths": {
+      "@datalink/aoc": ["./datalink/aoc/src/index.ts"],
+      "@datalink/atc": ["./datalink/atc/src/index.ts"],
+      "@datalink/common": ["./datalink/common/src/index.ts"],
+      "@datalink/router": ["./datalink/router/src/index.ts"],
+      "@failures": ["./failures/src/index.ts"],
+      "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"],
+      "@flybywiresim/fbw-sdk": ["./index.ts"],
+      "@flybywiresim/fbw-sdk-react": ["./index-react.ts"],
+      "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
+      "@flybywiresim/oanc": ["./instruments/src/OANC/index.ts"],
+      // FIXME no a32nx imports in fbw-common!
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@localization/*": ["../localization/*"],
+      "@sentry/*": ["./sentry-client/src/*"],
       "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
       "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
+      "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../typings/*"],
-      "@flybywiresim/fbw-sdk": ["./index.ts"],
-      "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
-      "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"]
     }
   }
 }

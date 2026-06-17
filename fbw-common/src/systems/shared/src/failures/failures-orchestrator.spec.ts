@@ -1,11 +1,42 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vitest } from 'vitest';
 import { FailuresOrchestrator } from '.';
-import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';
 
+// mock enough of JS GenericDataListener to ensure the right calls are made for JS interop
+const genericDataListenerSend = vitest.fn();
+vitest.mock('../GenericDataListenerSync', () => ({
+  GenericDataListenerSync: vitest.fn().mockImplementation(() => {
+    return {
+      sendEvent: genericDataListenerSend,
+    };
+  }),
+}));
+
+let sendRequestForFailures = undefined;
+
+vitest.mock('../ViewListenerUtils', () => ({
+  ViewListenerUtils: {
+    getListener: () =>
+      Promise.resolve({
+        on: (topic, requestFailuresCallback) => (sendRequestForFailures = requestFailuresCallback),
+      }),
+  },
+}));
+
+// mock enough of COMM BUS to ensure the right calls are made for WASM interop
+const failuresUpdateReceiver = vitest.fn();
+(global as any).RegisterGenericDataListener = vitest.fn();
+(global as any).Coherent = {
+  call: (event, data0, data1) => {
+    if (event === 'COMM_BUS_WASM_CALLBACK' && data0 === 'FBW_FAILURE_UPDATE') {
+      failuresUpdateReceiver(data1);
+    }
+  },
+};
+
 describe('FailuresOrchestrator', () => {
-  test('stores configured failures', () => {
-    const o = orchestrator();
+  test('stores configured failures', async () => {
+    const o = await orchestrator();
 
     const allFailures = o.getAllFailures();
     expect(allFailures).toHaveLength(1);
@@ -17,13 +48,13 @@ describe('FailuresOrchestrator', () => {
   });
 
   describe('indicates a failure is', () => {
-    test('inactive when never activated', () => {
-      const o = orchestrator();
+    test('inactive when never activated', async () => {
+      const o = await orchestrator();
       expect(o.isActive(identifier)).toBe(false);
     });
 
     test('active when activated', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       await activateFailure(o);
 
@@ -31,7 +62,7 @@ describe('FailuresOrchestrator', () => {
     });
 
     test('inactive when deactivated', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
       // First activate the failure to ensure we're not just observing
       // the lack of any change.
       await activateFailure(o);
@@ -40,54 +71,80 @@ describe('FailuresOrchestrator', () => {
 
       expect(o.isActive(identifier)).toBe(false);
     });
+  });
 
-    describe('changing', () => {
-      test('while failure is activating', async () => {
-        const o = orchestrator();
+  describe('sends failures over commbus', () => {
+    test('sends failures when requested', async () => {
+      const o = await orchestrator();
 
-        expect(o.isChanging(identifier)).toBe(false);
+      o.update();
 
-        const promise = o.activate(identifier);
+      failuresUpdateReceiver.mockReset();
+      sendRequestForFailures();
 
-        expect(o.isChanging(identifier)).toBe(true);
+      o.update();
 
-        await flushPromises();
-        await SimVar.SetSimVarValue(activateSimVarName, 'number', 0);
-        o.update();
-        await promise;
+      expect(failuresUpdateReceiver).toHaveBeenCalledTimes(1);
+      expect(failuresUpdateReceiver.mock.lastCall[0]).toBe('[]');
+    });
 
-        expect(o.isChanging(identifier)).toBe(false);
-      });
+    test('sends failures when failures change', async () => {
+      const o = await orchestrator();
 
-      test('while failure is deactivating', async () => {
-        const o = orchestrator();
+      o.update();
 
-        expect(o.isChanging(identifier)).toBe(false);
+      failuresUpdateReceiver.mockReset();
 
-        const promise = o.deactivate(identifier);
+      activateFailure(o);
 
-        expect(o.isChanging(identifier)).toBe(true);
+      o.update();
 
-        await flushPromises();
-        await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
-        o.update();
-        await promise;
+      expect(failuresUpdateReceiver).toHaveBeenCalledTimes(1);
+      expect(failuresUpdateReceiver.mock.lastCall[0]).toBe('[123]');
+    });
+  });
 
-        expect(o.isChanging(identifier)).toBe(false);
-      });
+  describe('sends failures over generic data listener sync', () => {
+    test('sends failures when requested', async () => {
+      const o = await orchestrator();
+
+      o.update();
+
+      genericDataListenerSend.mockReset();
+      sendRequestForFailures();
+
+      o.update();
+
+      expect(genericDataListenerSend).toHaveBeenCalledTimes(1);
+      expect(genericDataListenerSend.mock.lastCall[0]).toBe('FBW_FAILURE_UPDATE');
+      expect(genericDataListenerSend.mock.lastCall[1]).toEqual([]);
+    });
+
+    test('sends failures when failures change', async () => {
+      const o = await orchestrator();
+
+      o.update();
+
+      genericDataListenerSend.mockReset();
+
+      activateFailure(o);
+
+      o.update();
+
+      expect(genericDataListenerSend).toHaveBeenCalledTimes(1);
+      expect(genericDataListenerSend.mock.lastCall[0]).toBe('FBW_FAILURE_UPDATE');
+      expect(genericDataListenerSend.mock.lastCall[1]).toEqual([123]);
     });
   });
 });
 
-const prefix = 'PREFIX';
-const activateSimVarName = getActivateFailureSimVarName(prefix);
-const deactivateSimVarName = getDeactivateFailureSimVarName(prefix);
-
 const identifier = 123;
 const name = 'test';
 
-function orchestrator() {
-  return new FailuresOrchestrator(prefix, [[0, identifier, name]]);
+async function orchestrator() {
+  const orch = new FailuresOrchestrator([[0, identifier, name]]);
+  await flushPromises();
+  return orch;
 }
 
 function activateFailure(o: FailuresOrchestrator) {
@@ -101,7 +158,6 @@ function deactivateFailure(o: FailuresOrchestrator) {
 async function activateOrDeactivateFailure(o: FailuresOrchestrator, activate: boolean) {
   const promise = activate ? o.activate(identifier) : o.deactivate(identifier);
   await flushPromises();
-  await SimVar.SetSimVarValue(activate ? activateSimVarName : deactivateSimVarName, 'number', 0);
   o.update();
 
   await promise;

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -12,6 +13,8 @@ export class UpdatableSimVarPublisher<T> extends SimVarPublisher<T> {
    * @deprecated Removed upstream and won't be needed when DMC switching implemented properly
    */
   public updateSimVarSource(key: keyof T & string, value: SimVarDefinition): void {
+    this.subscribed.delete(key);
     this.resolvedSimVars.set(key, value);
+    super.onTopicSubscribed(key);
   }
 }

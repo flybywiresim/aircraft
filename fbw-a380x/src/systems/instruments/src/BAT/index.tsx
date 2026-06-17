@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { BatDisplay } from '@flybywiresim/bat';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { render } from '@instruments/common/index';
 import React from 'react';
 import './style.scss';

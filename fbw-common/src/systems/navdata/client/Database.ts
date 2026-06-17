@@ -1,7 +1,5 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
 import {
   Airport,
-  AirwayLevel,
   Approach,
   Arrival,
   Departure,
@@ -9,23 +7,19 @@ import {
   Airway,
   IlsNavaid,
   NdbNavaid,
-  NdbClass,
   Marker,
   ProcedureLeg,
   VhfNavaid,
-  VhfNavaidType,
-  VorClass,
   Waypoint,
   DatabaseIdent,
   DataInterface,
-  RestrictiveAirspace,
   Fix,
   SectionCode,
   AirportSubsectionCode,
 } from '../shared';
 import { AirportCommunication } from '../shared/types/Communication';
-import { ControlledAirspace } from '../shared/types/Airspace';
 import { Gate } from '../shared/types/Gate';
+import { NearbyFacilityMonitor, NearbyFacilityType } from './NearbyFacilityMonitor';
 
 export class Database {
   backend: DataInterface;
@@ -132,66 +126,18 @@ export class Database {
     return this.backend.getAirways(idents);
   }
 
-  public async getAirwaysByFix(fix: Fix, airwayIdent?: string): Promise<Airway[]> {
+  public async getAirwayByFix(fix: Fix, airwayIdent: string): Promise<Airway[]> {
     if (fix.sectionCode === SectionCode.Airport && fix.subSectionCode === AirportSubsectionCode.ReferencePoints) {
       return [];
     }
-    return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode, airwayIdent);
+    return this.backend.getAirwayByFix(fix.ident, fix.icaoCode, airwayIdent);
   }
 
-  public getNearbyAirports(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
-  ): Promise<readonly Airport[]> {
-    return this.backend.getNearbyAirports(center, range, limit, longestRunwaySurfaces, longestRunwayLength);
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return this.backend.createNearbyFacilityMonitor(type);
   }
 
-  public getNearbyAirways(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return this.backend.getNearbyAirways(center, range, limit, levels);
-  }
-
-  public getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: VorClass,
-    types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]> {
-    return this.backend.getNearbyVhfNavaids(center, range, limit, classes, types);
-  }
-
-  public getNearbyNdbNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]> {
-    return this.backend.getNearbyNdbNavaids(center, range, limit, classes);
-  }
-
-  public getWaypointsInRange(center: Coordinates, range: number, limit?: number): Promise<readonly Waypoint[]> {
-    return this.backend.getNearbyWaypoints(center, range, limit);
-  }
-
-  public getControlledAirspacesInRange(
-    center: Coordinates,
-    range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return this.backend.getControlledAirspaceInRange(center, range);
-  }
-
-  public getRestrictiveAirspacesInRange(
-    center: Coordinates,
-    range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
-    return this.backend.getRestrictiveAirspaceInRange(center, range);
+  public getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    return this.backend.getVhfNavaidFromId(databaseId);
   }
 }

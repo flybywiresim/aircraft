@@ -92,49 +92,7 @@
         "bin": "./glass/glass.bin"
       },
       {
-        "combineFiles": [
-          "./a320-interior/A320_NEO_INTERIOR_LOD00.gltf"
-        ],
-        "nodes": [
-          {
-            "translation": [
-              0.5676975,
-              1.26269531,
-              10.7851953
-            ],
-            "rotation": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "name": "CAPTAIN_AVATAR"
-          },
-          {
-            "translation": [
-              -0.567698,
-              1.262695,
-              10.7851953
-            ],
-            "rotation": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "name": "FIRSTOFFICER_AVATAR"
-          }
-        ]
+        "gltf": "./sound_nodes/sound_nodes_interior.gltf"
       }
     ],
     "modifications": [

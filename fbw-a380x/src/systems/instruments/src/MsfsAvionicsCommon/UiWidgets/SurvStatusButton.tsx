@@ -6,7 +6,6 @@ import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscripti
 export interface SurvStatusButtonProps extends ComponentProps {
   label: string;
   active: Subscribable<boolean>;
-  onChanged?(val: boolean): void;
   onClick?: () => void;
 }
 
@@ -20,18 +19,22 @@ export class SurvStatusButton extends DisplayComponent<SurvStatusButtonProps> {
   private readonly buttonRef = FSComponent.createRef<HTMLSpanElement>();
 
   private clickHandler(): void {
-    console.log(this.props.label + 'button clicked');
+    if (this.props.onClick) {
+      this.props.onClick();
+    }
   }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.buttonRef.instance.addEventListener('click', () => this.clickHandler());
+    this.buttonRef.instance.addEventListener('click', this.clickHandler.bind(this));
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    this.buttonRef.instance.removeEventListener('click', () => this.clickHandler.bind(this));
 
     super.destroy();
   }

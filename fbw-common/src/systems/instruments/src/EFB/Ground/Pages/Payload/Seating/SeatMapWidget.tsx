@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import { BitFlags, PaxStationInfo, PayloadSeatDisplay, RowInfo, SeatInfo, SeatType } from '@flybywiresim/fbw-sdk';
+import { BitFlags, PaxStationInfo, PayloadSeatDisplay, RowInfo, SeatInfo, SeatType } from '@flybywiresim/fbw-sdk-react';
 import { BusinessSeatLeft, BusinessSeatRight, Seat, SuiteLeft, SuiteRight } from '../../../../Assets/Seat';
 
 interface SeatMapProps {

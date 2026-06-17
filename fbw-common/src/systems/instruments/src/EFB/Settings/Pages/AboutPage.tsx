@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -10,7 +11,7 @@ import {
   SentryConsentState,
   SENTRY_CONSENT_KEY,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { PageLink, pathify, t, TabRoutes } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore

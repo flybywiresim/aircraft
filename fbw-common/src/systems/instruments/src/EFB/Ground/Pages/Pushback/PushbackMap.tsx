@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk-react';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';

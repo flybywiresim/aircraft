@@ -3,7 +3,6 @@
 
 export * from './AircraftContext';
 export * from './Apis/Navigraph/Components/Authentication';
-export * from './Apis/Simbrief';
 export * from './Efb';
 export * from './Enum/Airframe';
 export * from './Assets/Error';

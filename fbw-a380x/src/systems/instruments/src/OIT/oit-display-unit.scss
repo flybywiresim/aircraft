@@ -28,6 +28,7 @@
 }
 
 .SelfTest {
+  display: block;
   position: absolute;
   left: 0%;
   top: 0%;
@@ -37,30 +38,6 @@
   background-color: $display-background;
 }
 
-.LoadingProgressBarBackground {
-  position: absolute;
-  width: 40%;
-  height: 25px;
-  left: 30%;
-  top: 597.5px;
-  border: 1px solid #ffffff;
-}
-.LoadingProgressBarFill {
-  position: absolute;
-  width: 0%;
-  height: 25px;
-  left: 30%;
-  top: 597.5px;
-  border: 1px solid #ffffff;
-  background-color: rgb(0, 224, 254);
-}
-.FbwTail {
-  position: absolute;
-  top: 377.5px;
-  left: 591.5px;
-  background-image: url('/Images/fbw-a380x/Common/fbw-tail.png');
-  background-repeat: no-repeat;
-  background-size: contain;
-  width: 160px;
-  height: 150px;
+.SelfTest.Hidden {
+  display: none;
 }

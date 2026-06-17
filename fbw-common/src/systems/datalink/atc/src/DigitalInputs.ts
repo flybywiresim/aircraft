@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { RouterAtcAocMessages } from '../../router/src';

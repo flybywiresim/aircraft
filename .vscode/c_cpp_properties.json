@@ -14,7 +14,8 @@
                 "${workspaceFolder}/fbw-a32nx/src/wasm/extra-backend-a32nx/src/**",
                 "${workspaceFolder}/fbw-a380x/src/wasm/extra-backend-a380x/src/**",
                 "${workspaceFolder}/fbw-common/src/wasm/fadec_common/src",
-                "${workspaceFolder}/fbw-common/src/wasm/**"
+                "${workspaceFolder}/fbw-common/src/wasm/**",
+                "${workspaceFolder}/fbw-common/src/wasm/fbw_common/src"
             ],
             "defines": [
                 "_MSFS_WASM=1",

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -9,6 +10,7 @@ import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
 import { CanvasMap } from './CanvasMap';
+import { MapOptions } from '../../types/MapOptions';
 
 const VOR_DME_PATH = new Path2D(
   'M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0 M 0,-15 L 0,-7 M 0,15 L 0,7 M -15,0 L -7,0 M 15,0 L 7,0',
@@ -21,7 +23,17 @@ const COURSE_REVERSAL_ARC_PATH_RIGHT = new Path2D('M 0, 0 a 21, 21 0 0  1 42, 0'
 export class WaypointLayer implements MapLayer<NdSymbol> {
   data: NdSymbol[] = [];
 
-  constructor(private readonly canvasMap: CanvasMap) {}
+  private readonly options: MapOptions;
+
+  constructor(
+    private readonly canvasMap: CanvasMap,
+    options?: Partial<MapOptions>,
+  ) {
+    this.options = {
+      waypointBoxing: !!options?.waypointBoxing,
+      secondaryFlightPlanWaypointsInWhite: !!options?.secondaryFlightPlanWaypointsInWhite,
+    };
+  }
 
   paintShadowLayer(
     context: CanvasRenderingContext2D,
@@ -75,6 +87,9 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         this.paintFlightPlanWaypoint(true, context, rx, ry, symbol, mapParameters);
       } else {
         this.paintWaypoint(true, context, rx, ry, symbol);
+        if (this.options.waypointBoxing) {
+          this.paintWaypointBox(context, rx, ry, symbol);
+        }
       }
 
       if (symbol.constraints) {
@@ -149,6 +164,12 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
   ) {
     this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
 
+    context.font = '21px Ecam';
+
+    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
+  }
+
+  private paintWaypointBox(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
     const px = this.canvasMap.pointerX;
     const py = this.canvasMap.pointerY;
 
@@ -158,10 +179,6 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
       context.lineWidth = 1.75;
       context.strokeRect(x - 7, y - 10, 10 + 13 + TEXT_LENGTH, 29);
     }
-
-    context.font = '21px Ecam';
-
-    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
   }
 
   private paintFlightPlanWaypoint(
@@ -172,7 +189,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     mapParameters: MapParameters,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+    const mainColor =
+      symbol.type & NdSymbolTypeFlags.ActiveLegTermination ||
+      (symbol.type & NdSymbolTypeFlags.SecondaryFlightPlan && this.options.secondaryFlightPlanWaypointsInWhite)
+        ? '#fff'
+        : '#0f0';
 
     this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 

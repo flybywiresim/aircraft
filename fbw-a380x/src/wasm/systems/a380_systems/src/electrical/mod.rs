@@ -325,7 +325,7 @@ trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
     fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool;
     fn tr_apu(&self) -> &TransformerRectifier;
-    fn tr_2_powered_by_ac_bus(&self) -> bool;
+    fn ground_servicing_active(&self) -> bool;
     fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
     fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
     fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
@@ -710,6 +710,60 @@ mod a380_electrical_circuit_tests {
                 .hot_bus_output(i)
                 .is_single(PotentialOrigin::Battery(i.into())));
         }
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
+    #[test]
+    fn distribution_batteries_only_with_ext_power_connected() {
+        let test_bed = test_bed_with()
+            .all_bats_auto()
+            .connected_external_power()
+            .on_the_ground()
+            .and()
+            .airspeed(Velocity::default())
+            .run();
+
+        for i in 1..=4 {
+            assert!(test_bed.ac_bus_output(i).is_unpowered());
+        }
+        assert!(test_bed
+            .ac_ess_bus_output()
+            .is_single(PotentialOrigin::StaticInverter));
+        assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
+        assert!(test_bed.ac_eha_bus_output().is_unpowered());
+        assert!(test_bed
+            .static_inverter_input()
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_1_input().is_unpowered());
+        assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_ess_input().is_unpowered());
+        assert!(test_bed.tr_apu_input().is_unpowered());
+        assert!(test_bed.dc_bus_output(1).is_unpowered());
+        assert!(test_bed.dc_bus_output(2).is_unpowered());
+        assert!(test_bed
+            .dc_ess_bus_output()
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
+        assert!(test_bed.dc_eha_bus_output().is_unpowered());
+        assert!(test_bed
+            .dc_apu_bus_output()
+            .is_single(PotentialOrigin::Battery(4)));
+        assert!(test_bed
+            .hot_bus_output(1)
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
+        assert!(test_bed
+            .hot_bus_output(2)
+            .is_single(PotentialOrigin::Battery(2)));
+        assert!(test_bed
+            .hot_bus_output(3)
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(3)));
+        assert!(test_bed
+            .hot_bus_output(4)
+            .is_single(PotentialOrigin::Battery(4)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -3675,7 +3729,7 @@ mod a380_electrical_circuit_tests {
         }
 
         fn on_the_ground(mut self) -> Self {
-            self.set_indicated_altitude(Length::new::<foot>(0.));
+            self.set_pressure_altitude(Length::new::<foot>(0.));
             self.set_on_ground(true);
             self
         }
@@ -3826,109 +3880,109 @@ mod a380_electrical_circuit_tests {
             self.query(|a| a.apu_start_motor_is_powered())
         }
 
-        fn ac_bus_output(&self, number: u8) -> Ref<Potential> {
+        fn ac_bus_output(&'_ self, number: u8) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::AlternatingCurrent(number))
             })
         }
 
-        fn ac_ess_bus_output(&self) -> Ref<Potential> {
+        fn ac_ess_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::AlternatingCurrentEssential)
             })
         }
 
-        fn ac_ess_shed_bus_output(&self) -> Ref<Potential> {
+        fn ac_ess_shed_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::AlternatingCurrentEssentialShed)
             })
         }
 
-        fn ac_eha_bus_output(&self) -> Ref<Potential> {
+        fn ac_eha_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.ac_named_bus_output("247XP")
         }
 
-        fn ac_named_bus_output(&self, name: &'static str) -> Ref<Potential> {
+        fn ac_named_bus_output(&'_ self, name: &'static str) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::AlternatingCurrentNamed(name))
             })
         }
 
-        fn ac_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
+        fn ac_gnd_flt_service_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::AlternatingCurrentGndFltService)
             })
         }
 
-        fn static_inverter_input(&self) -> Ref<Potential> {
+        fn static_inverter_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.static_inverter_input(elec))
         }
 
-        fn tr_1_input(&self) -> Ref<Potential> {
+        fn tr_1_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.tr_1_input(elec))
         }
 
-        fn tr_2_input(&self) -> Ref<Potential> {
+        fn tr_2_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.tr_2_input(elec))
         }
 
-        fn tr_ess_input(&self) -> Ref<Potential> {
+        fn tr_ess_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.tr_ess_input(elec))
         }
 
-        fn tr_apu_input(&self) -> Ref<Potential> {
+        fn tr_apu_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.tr_apu_input(elec))
         }
 
-        fn battery_1_input(&self) -> Ref<Potential> {
+        fn battery_1_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.battery_1_input(elec))
         }
 
-        fn battery_2_input(&self) -> Ref<Potential> {
+        fn battery_2_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.battery_2_input(elec))
         }
 
-        fn battery_ess_input(&self) -> Ref<Potential> {
+        fn battery_ess_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.battery_ess_input(elec))
         }
 
-        fn battery_apu_input(&self) -> Ref<Potential> {
+        fn battery_apu_input(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|a, elec| a.battery_apu_input(elec))
         }
 
-        fn dc_bus_output(&self, number: u8) -> Ref<Potential> {
+        fn dc_bus_output(&'_ self, number: u8) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::DirectCurrent(number))
             })
         }
 
-        fn dc_ess_bus_output(&self) -> Ref<Potential> {
+        fn dc_ess_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::DirectCurrentEssential)
             })
         }
 
-        fn dc_eha_bus_output(&self) -> Ref<Potential> {
+        fn dc_eha_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.dc_named_bus_output("247PP")
         }
 
-        fn dc_apu_bus_output(&self) -> Ref<Potential> {
+        fn dc_apu_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.dc_named_bus_output("309PP")
         }
 
-        fn hot_bus_output(&self, number: u8) -> Ref<Potential> {
+        fn hot_bus_output(&'_ self, number: u8) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::DirectCurrentHot(number))
             })
         }
 
-        fn dc_named_bus_output(&self, name: &'static str) -> Ref<Potential> {
+        fn dc_named_bus_output(&'_ self, name: &'static str) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::DirectCurrentNamed(name))
             })
         }
 
-        fn dc_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
+        fn dc_gnd_flt_service_bus_output(&'_ self) -> Ref<'_, Potential> {
             self.query_elec_ref(|_, elec| {
                 elec.potential_of(ElectricalBusType::DirectCurrentGndFltService)
             })

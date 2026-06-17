@@ -176,17 +176,11 @@
     </Template>
 
     <Template Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
-        <DefaultTemplateParameters>
+        <Parameters Type="Default">
             <ID>1</ID>
             <SIDE>L</SIDE>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_SubTemplate">
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRLINER_Switch_Baro_Selector_SubTemplate">
-        <DefaultTemplateParameters>
+        </Parameters>
+        <Parameters Type="Default">
             <NODE_ID>AIRLINER_Switch_Baro_Selector_#ID#</NODE_ID>
             <ANIM_NAME>AIRLINER_Switch_Baro_Selector_#ID#</ANIM_NAME>
             <PART_ID>AIRLINER_Switch_Baro_Selector</PART_ID>
@@ -194,14 +188,24 @@
             <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HPA</ANIMTIP_0>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HG</ANIMTIP_1>
-        </DefaultTemplateParameters>
-
+        </Parameters>
+        <Parameters Type="OVERRIDE">
+            <Switch Param="SIDE">
+                <Case Value="R">
+                    <OFFSIDE>L</OFFSIDE>
+                </Case>
+                <Default>
+                    <OFFSIDE>R</OFFSIDE>
+                </Default>
+            </Switch >
+        </Parameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_Code">
-                <!-- TODO unsync Baro unit selector -->
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_FCU_EFIS_L_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_L_BARO_IS_INHG)
-                    (L:A32NX_FCU_EFIS_R_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_R_BARO_IS_INHG)
+                    (L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG)
+                    (L:A32NX_FO_SYNC_EFIS_ENABLED) if{
+                        (L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) (&gt;L:A32NX_FCU_EFIS_#OFFSIDE#_BARO_IS_INHG)
+                    }
                 </LEFT_SINGLE_CODE>
                 <ANIM_CODE>(L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! 100 *</ANIM_CODE>
             </UseTemplate>

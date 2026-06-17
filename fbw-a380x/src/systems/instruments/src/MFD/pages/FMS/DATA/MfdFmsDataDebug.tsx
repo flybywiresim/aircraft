@@ -3,12 +3,12 @@
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsDataStatus.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { FmsPage } from '../../common/FmsPage';
+import { MfdSimvars } from '../../../shared/MFDSimvarPublisher';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsDataDebugProps extends AbstractMfdPageProps {}
@@ -138,7 +138,12 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

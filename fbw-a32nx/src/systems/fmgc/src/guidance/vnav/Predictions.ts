@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -45,10 +46,10 @@ export class Predictions {
    * @param headwindAtMidStepAlt headwind component (in knots) at initialAltitude + (stepSize / 2); tailwind is negative
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    * @param speedbrakesExtended whether or not speedbrakes are extended at half
    * @param flapsConfig flaps configuration to use for drag calculation
    * @param gearExtended whether or not gear is extended
-   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    */
   static altitudeStep(
     config: AircraftConfig,
@@ -62,10 +63,10 @@ export class Predictions {
     headwindAtMidStepAlt: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const midStepAltitude = initialAltitude + stepSize / 2;
 
@@ -166,10 +167,10 @@ export class Predictions {
    * @param headwindAtMidStepAlt headwind component (in knots) at initialAltitude + (stepSize / 2); tailwind is negative
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    * @param speedbrakesExtended whether or not speedbrakes are extended at half
    * @param flapsConfig flaps configuration to use for drag calculation
    * @param gearExtended whether or not gear is extended
-   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    */
   static distanceStep(
     config: AircraftConfig,
@@ -183,10 +184,10 @@ export class Predictions {
     headwindAtMidStepAlt: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const weightEstimate = zeroFuelWeight + initialFuelWeight;
 
@@ -289,10 +290,10 @@ export class Predictions {
    * @param headwind headwind component (in knots) at altitude; tailwind is negative
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    * @param speedbrakesExtended whether or not speedbrakes are extended at half
    * @param flapsConfig flaps configuration to use for drag calculation
    * @param gearExtended whether or not gear is extended
-   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    */
   static levelFlightStep(
     config: AircraftConfig,
@@ -305,10 +306,10 @@ export class Predictions {
     headwind: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const theta = Common.getTheta(altitude, isaDev, altitude > tropoAltitude);
     const delta = Common.getDelta(altitude, altitude > tropoAltitude);
@@ -337,8 +338,8 @@ export class Predictions {
     // Engine model calculations
     const theta2 = Common.getTheta2(theta, mach);
     const delta2 = Common.getDelta2(delta, mach);
-    // Divide by 2 to get thrust per engine
-    const correctedThrust = thrust / delta2 / 2;
+    // Divide by number of engines to get thrust per engine
+    const correctedThrust = thrust / delta2 / config.engineModelParameters.numberOfEngines;
     // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
     const correctedN1 = EngineModel.reverseTableInterpolation(
       config.engineModelParameters.table1506,
@@ -382,11 +383,11 @@ export class Predictions {
    * @param headwindAtInitialAltitude headwind component (in knots) at initialAltitude
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    * @param gearExtended whether the gear is extended
    * @param flapConfig the flaps configuration
    * @param speedbrakesExtended whether or not speedbrakes are extended at half
    * @param minimumAbsoluteAcceleration the minimum absolute acceleration before emitting TOO_LOW_DECELERATION (kts/s)
-   * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
    */
   static speedChangeStep(
     config: AircraftConfig,
@@ -402,11 +403,11 @@ export class Predictions {
     headwindAtInitialAltitude: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent = 0,
     gearExtended = false,
     flapConfig = FlapConf.CLEAN,
     speedbrakesExtended = false,
     minimumAbsoluteAcceleration?: number,
-    perfFactorPercent = 0,
   ): StepResults {
     const theta = Common.getTheta(initialAltitude, isaDev, initialAltitude > tropoAltitude);
     const delta = Common.getDelta(initialAltitude, initialAltitude > tropoAltitude);
@@ -539,10 +540,10 @@ export class Predictions {
    * @param isaDev ISA deviation (in celsius)
    * @param headwind headwind component (in knots)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent)
    * @param gearExtended whether or not the landing gear is extended
    * @param flapConfig flap configuration to use for drag calculation
    * @param speedbrakesExtended whether or not the speedbrakes are extended at half
-   * @param perfFactorPercent performance factor (in percent)
    */
   static geometricStep(
     config: AircraftConfig,
@@ -556,10 +557,10 @@ export class Predictions {
     isaDev: number,
     headwind: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     gearExtended: boolean = false,
     flapConfig: FlapConf = FlapConf.CLEAN,
     speedbrakesExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const distanceInFeet = distance * 6076.12;
     const fpaRadians = Math.atan((finalAltitude - initialAltitude) / distanceInFeet);
@@ -673,10 +674,10 @@ export class Predictions {
    * @param isaDev ISA deviation (in celsius)
    * @param headwind headwind component (in knots)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent)
    * @param speedbrakesExtended whether or not the speedbrakes are extended at half
    * @param flapsConfig flap configuration to use for drag calculation
    * @param gearExtended whether or not the landing gear is extended
-   * @param perfFactorPercent performance factor (in percent)
    */
   static verticalSpeedStep(
     config: AircraftConfig,
@@ -690,10 +691,10 @@ export class Predictions {
     isaDev: number,
     headwind: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults & { predictedN1: number } {
     const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
@@ -786,10 +787,10 @@ export class Predictions {
    * @param isaDev ISA deviation (in celsius)
    * @param headwind headwind component (in knots)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent)
    * @param speedbrakesExtended whether or not the speedbrakes are extended at half
    * @param flapsConfig flap configuration to use for drag calculation
    * @param gearExtended whether or not the landing gear is extended
-   * @param perfFactorPercent performance factor (in percent)
    */
   static verticalSpeedDistanceStep(
     config: AircraftConfig,
@@ -803,10 +804,10 @@ export class Predictions {
     isaDev: number,
     headwind: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number,
   ): StepResults & { predictedN1: number } {
     let finalAltitude = initialAltitude;
     let previousFinalAltitude = finalAltitude;
@@ -906,10 +907,10 @@ export class Predictions {
    * @param headwindAtMidStepAlt headwind component (in knots)
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent)
    * @param speedbrakesExtended whether or not the speedbrakes are extended at half
    * @param flapsConfig flap configuration to use for drag calculation
    * @param gearExtended whether or not the landing gear is extended
-   * @param perfFactorPercent performance factor (in percent)
    */
   static verticalSpeedStepWithSpeedChange(
     config: AircraftConfig,
@@ -924,10 +925,10 @@ export class Predictions {
     headwindAtMidStepAlt: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const weightEstimate = zeroFuelWeight + initialFuelWeight;
 
@@ -1045,10 +1046,10 @@ export class Predictions {
    * @param headwindAtMidStepAlt headwind component (in knots)
    * @param isaDev ISA deviation (in celsius)
    * @param tropoAltitude tropopause altitude (feet)
+   * @param perfFactorPercent performance factor (in percent)
    * @param speedbrakesExtended whether or not the speedbrakes are extended at half
    * @param flapsConfig flap configuration to use for drag calculation
    * @param gearExtended whether or not the landing gear is extended
-   * @param perfFactorPercent performance factor (in percent)
    */
   static altitudeStepWithSpeedChange(
     config: AircraftConfig,
@@ -1062,10 +1063,10 @@ export class Predictions {
     headwindAtMidStepAlt: number,
     isaDev: number,
     tropoAltitude: number,
+    perfFactorPercent: number = 0,
     speedbrakesExtended = false,
     flapsConfig: FlapConf = FlapConf.CLEAN,
     gearExtended: boolean = false,
-    perfFactorPercent: number = 0,
   ): StepResults {
     const weightEstimate = zeroFuelWeight + initialFuelWeight;
 
