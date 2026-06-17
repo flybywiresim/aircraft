@@ -12,8 +12,8 @@
 		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
 		<Include Path="A32NX\generated\A32NX_Exterior.xml"/>
+		<Include Path="fbw_a380x\door_animations.xml" />
 		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/engines.xml"/>
-		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/door_animations.xml"/>
 		<Component ID="GEAR_DOORS">
 			<!-- Nose Landing Gear -->
 			<UseTemplate Name="ASOBO_GT_Anim">

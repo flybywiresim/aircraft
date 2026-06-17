@@ -8,14 +8,11 @@
 		<LOD minSize="1" ModelFile="../../Part_Exterior_Wings/model/A380_WINGS_LOD02.gltf"/>
 	</LODS>
 	<Behaviors>
-		<!-- <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml"/> -->
 		<Include ModelBehaviorFile="Asobo\Common.xml"/>
 		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
-		<!-- <Include Path="A32NX\generated\A32NX_Exterior.xml"/> -->
 		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/engines.xml"/>
-		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/door_animations.xml"/>
 		<Component ID="GEAR_DOORS">
 			<!-- Nose Landing Gear -->
 			<UseTemplate Name="ASOBO_GT_Anim">
@@ -299,9 +296,6 @@
 				<ANIM_CODE>(L:A32NX_RIGHT_FLAPS_ANIMATION_POSITION)</ANIM_CODE>
 				<ANIM_LENGTH>100</ANIM_LENGTH>
 			</UseTemplate>
-		</Component>
-		<Component ID="DOOR_ANIMATIONS_EXTERIOR">
-			<UseTemplate Name="FBW_A380X_Components_DoorAnimations"/>
 		</Component>
 		<Component ID="Wingflex_Inboard_Left">
 			<!-- Wingflex InboardLeft -->

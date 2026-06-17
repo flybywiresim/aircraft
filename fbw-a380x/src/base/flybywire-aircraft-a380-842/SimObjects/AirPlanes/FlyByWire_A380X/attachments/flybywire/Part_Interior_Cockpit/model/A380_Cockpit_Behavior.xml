@@ -5,7 +5,7 @@
 
 <ModelInfo>
 	<Behaviors>
-        <Include Path="A380X\id_definitions.xml" />
+        <Include Path="fbw_a380x\id_definitions.xml" />
 
         <!-- Legacy includes -->
         <Include RelativeFile="behaviour\legacy\Interior\A32NX_Interior_Includes.xml" />
@@ -31,7 +31,6 @@
         <Include RelativeFile="behaviour\overhead\reset.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal.xml" />
-        <Include RelativeFile="behaviour\door_animations.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
         <Include RelativeFile="behaviour\ecam-cp.xml" />
         <Include RelativeFile="behaviour\fcu.xml" />
@@ -90,9 +89,6 @@
         <Component ID="INTERACTIVE_PARTS">
             <UseTemplate Name="FBW_A380X_Components_InteractiveParts" />
         </Component>
-        <!-- <Component ID="DOOR_ANIMATIONS_COCKPIT">
-            <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />
-        </Component> -->
         <Component ID="MIP">
             <UseTemplate Name="FBW_A380X_Components_MIP" />
         </Component>
