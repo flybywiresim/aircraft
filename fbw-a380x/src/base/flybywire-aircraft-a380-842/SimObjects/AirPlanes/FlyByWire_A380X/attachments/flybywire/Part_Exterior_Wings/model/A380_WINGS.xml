@@ -14,31 +14,6 @@
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
 		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/engines.xml"/>
 		<Component ID="GEAR_DOORS">
-			<!-- Nose Landing Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_CENTER_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- Nose Landing Gear Door FWD -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear_door1</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_CENTER_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- Nose Landing Gear Door AFT -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>c_gear_door2</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_CENTER_SMALL_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Body Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_b_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:1, Percent) 0.5 * +</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Body Gear -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_b_gear</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:2, Percent) 0.5 * +</ANIM_CODE>
-			</UseTemplate>
 			<!-- LH Wing Gear-->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>l_w_gear</ANIM_NAME>
@@ -48,50 +23,6 @@
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>r_w_gear</ANIM_NAME>
 				<ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:4, Percent) 0.5 * +</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_body_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Secondary Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_blg_inner_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- LH Wing Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>l_wing_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_body_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Secondary Body Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_blg_inner_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_SECONDARY_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-			<!-- RH Wing Gear Door-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>r_wing_gear_door</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION)</ANIM_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="INTERACTIVE_POINTS">
-			<!-- CARGO DOOR FWD -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>fwd_door_cargo</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
-				<ANIM_LENGTH>100</ANIM_LENGTH>
-			</UseTemplate>
-			<!-- CARGO DOOR AFT -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>aft_door_cargo</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_AFT_DOOR_CARGO_POSITION)</ANIM_CODE>
-				<ANIM_LENGTH>100</ANIM_LENGTH>
 			</UseTemplate>
 		</Component>
 		<Template Name="FBW_Control_Surface_Template">
@@ -111,22 +42,10 @@
 			</Component>
 		</Template>
 		<Component ID="HANDLING">
-			<UseTemplate Name="ASOBO_INSTRUMENT_Needle_Airspeed_Template">
-				<MIN_VALUE>0</MIN_VALUE>
-				<MAX_VALUE>170</MAX_VALUE>
-				<DONT_APPEND_ID>True</DONT_APPEND_ID>
-			</UseTemplate>
 			<UseTemplate Name="ASOBO_HANDLING_Slats_Template">
 				<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
 				<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
 			</UseTemplate>
-			<!-- THS -->
-			<Component ID="THS">
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
-					<DEFLECTION_CODE>(A:ELEVATOR TRIM PCT, percent over 100) -1 *</DEFLECTION_CODE>
-				</UseTemplate>
-			</Component>
 			<!-- Ailerons left -->
 			<Component ID="AILERONS_LEFT">
 				<!-- Inboard -->
@@ -249,42 +168,6 @@
 					<DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_8_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
 				</UseTemplate>
 			</Component>
-			<!-- Rudder -->
-			<Component ID="RUDDER">
-				<!-- Rudder lower -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>lower_rudder_percent_key</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_LOWER_RUDDER_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-				<!-- Rudder upper -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>upper_rudder_percent_key</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_UPPER_RUDDER_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-			</Component>
-			<!-- Elevator -->
-			<Component ID="ELEVATOR">
-				<!-- Left inner elevator -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>l_inner_elevator_deflection</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_ELEVATOR_LEFT_INWARD_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-				<!-- Right inner elevator -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>r_inner_elevator_deflection</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_ELEVATOR_RIGHT_INWARD_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-				<!-- Left outer elevator -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>l_outer_elevator_deflection</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_ELEVATOR_LEFT_OUTWARD_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-				<!-- Right outer elevator -->
-				<UseTemplate Name="FBW_Control_Surface_Template">
-					<ANIM_NAME>r_outer_elevator_deflection</ANIM_NAME>
-					<DEFLECTION_CODE>(L:A32NX_HYD_ELEVATOR_RIGHT_OUTWARD_DEFLECTION, number)</DEFLECTION_CODE>
-				</UseTemplate>
-			</Component>
 			<!-- Flaps -->
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>l_flap_percent_key</ANIM_NAME>
@@ -393,27 +276,6 @@
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>A32NX_HYD_RAT_PROPELLER_ANGLE</ANIM_NAME>
 				<ANIM_CODE>(L:A32NX_RAT_PROPELLER_ANGLE) 100 *</ANIM_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="LEFT_ELEVATOR_FLEX">
-			<!-- LEFT ELEVATOR WINGFLEX -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>left_elevator_flex</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ELEVATOR_LEFT_WOBBLE_Y_POSITION, number) 100 * </ANIM_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="RIGHT_ELEVATOR_FLEX">
-			<!-- RIGHT ELEVATOR WINGFLEX -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>right_elevator_flex</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_ELEVATOR_RIGHT_WOBBLE_Y_POSITION, number) 100 * </ANIM_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="AFT_FLEX">
-			<!-- AFT FUSELAGE FLEX -->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>AFT_FLEX</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_AFT_FLEX_POSITION, number) 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 		<Component ID="FX_CONTRAIL_QUAD">
@@ -536,28 +398,6 @@
 				<ANIM_NAME>thrust_rev_2</ANIM_NAME>
 				<ANIM_CODE>(L:A32NX_REVERSER_3_POSITION) 100 *</ANIM_CODE>
 				<ANIM_LENGTH>100</ANIM_LENGTH>
-			</UseTemplate>
-		</Component>
-		<Component ID="OUTFLOW_VALVES">
-			<!-- OUTFLOW VALVE 1-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>outflow_valve_1</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
-			</UseTemplate>
-			<!-- OUTFLOW VALVE 2-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>outflow_valve_2</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
-			</UseTemplate>
-			<!-- OUTFLOW VALVE 3-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>outflow_valve_3</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
-			</UseTemplate>
-			<!-- OUTFLOW VALVE 4-->
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_NAME>outflow_valve_4</ANIM_NAME>
-				<ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 
