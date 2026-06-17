@@ -146,7 +146,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
   const [eng3Running] = useSimVar('ENG COMBUSTION:3', 'Bool', 1_000);
   const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 1_000);
-  const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
+  const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING', 'REAL');
 
   const [INNER_FEED_MAX_KG] = useState(7753.2 * FUEL_GALLONS_TO_KG); // 23562.56 kg
   const [OUTER_FEED_MAX_KG] = useState(7299.6 * FUEL_GALLONS_TO_KG); // 22184.04 kg
