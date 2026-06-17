@@ -108,7 +108,7 @@ export class NXDataStore {
     let parsed: DataStoreSettingValue;
     try {
       parsed = JSON.parse(rawValue);
-    } catch (e) {
+    } catch (_e) {
       let newValue: any;
 
       if (rawValue === '' || typeof NXDataStore.settingsDefaultValues[key] !== 'string') {

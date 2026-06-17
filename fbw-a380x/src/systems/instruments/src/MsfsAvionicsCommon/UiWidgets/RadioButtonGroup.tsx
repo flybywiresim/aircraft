@@ -39,7 +39,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     FSComponent.createRef<HTMLLabelElement>(),
   );
   private readonly inputRefs = Array.from(Array(this.props.values.length), () =>
-    FSComponent.createRef<HTMLLabelElement>(),
+    FSComponent.createRef<HTMLInputElement>(),
   );
 
   private changeEventHandler(i: number) {
@@ -68,9 +68,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       this.props.selectedIndex.sub((val) => {
         this.inputRefs.forEach((ref, index) => {
           if (index === val) {
-            ref.instance.setAttribute('checked', 'checked');
+            ref.instance.checked = true;
           } else {
-            ref.instance.removeAttribute('checked');
+            ref.instance.checked = false;
           }
         });
       }, true),

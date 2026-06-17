@@ -1,5 +1,5 @@
 import { EventBus, Publisher, Subject } from '@microsoft/msfs-sdk';
-import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
+import { MfdUIData } from '../../shared/MfdUIData';
 
 export enum MfdSystem {
   None = '',

@@ -12,7 +12,7 @@ import {
   useInterval,
   usePersistentNumberProperty,
   usePersistentProperty,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';

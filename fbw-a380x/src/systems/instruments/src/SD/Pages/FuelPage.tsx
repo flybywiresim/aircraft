@@ -3,7 +3,7 @@ import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { NXUnits, useInterval } from '@flybywiresim/fbw-sdk';
+import { NXUnits, useInterval } from '@flybywiresim/fbw-sdk-react';
 
 export const FuelPage = () => {
   const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;

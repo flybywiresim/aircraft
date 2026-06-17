@@ -10,10 +10,10 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { RmpPage, RmpPageProps } from 'instruments/src/RMP/Components/RmpPage';
-import { TransponderController } from 'instruments/src/RMP/Pages/Transponder/TransponderController';
-import { PageKeys } from 'instruments/src/RMP/Systems/KeypadController';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { RmpPage, RmpPageProps } from '../../Components/RmpPage';
+import { TransponderController } from './TransponderController';
+import { PageKeys } from '../../Systems/KeypadController';
+import { RmpMessageControlEvents } from '../../Systems/RmpMessageManager';
 
 import './TransponderPage.scss';
 

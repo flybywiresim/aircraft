@@ -4,7 +4,7 @@
 
 import { useAppDispatch, useAppSelector } from '@flybywiresim/flypad';
 import React, { useEffect, useState } from 'react';
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { ChecklistItem } from '@flybywiresim/checklists';

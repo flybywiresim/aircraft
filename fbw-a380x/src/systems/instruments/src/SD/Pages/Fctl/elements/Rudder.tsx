@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { EbhaActuatorIndication, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
 import { HORIZONTAL_MAX_DEFLECTION, HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 export enum RudderPosition {
   Upper = 'UPPER',

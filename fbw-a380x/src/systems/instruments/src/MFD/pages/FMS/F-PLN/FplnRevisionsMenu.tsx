@@ -3,8 +3,8 @@
 import { TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
-import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { MfdFmsFpln } from './MfdFmsFpln';
+import { ContextMenuElement } from '../../../../MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { lateralRevisionHoldPage, showReturnButtonUriExtra } from '../../../shared/utils';

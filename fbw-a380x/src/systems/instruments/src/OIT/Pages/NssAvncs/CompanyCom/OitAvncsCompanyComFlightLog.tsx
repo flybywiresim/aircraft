@@ -3,8 +3,8 @@
 
 import { ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 import { FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { OitSimvars } from '../../../OitSimvarPublisher';
 import { AnsuOps } from '../../../System/AnsuOps';

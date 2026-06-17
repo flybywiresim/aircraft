@@ -1,4 +1,4 @@
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position, ValidRedundantSystem } from '@instruments/common/types';

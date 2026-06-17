@@ -19,12 +19,12 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 600;
 const ValueSpacing = 100;

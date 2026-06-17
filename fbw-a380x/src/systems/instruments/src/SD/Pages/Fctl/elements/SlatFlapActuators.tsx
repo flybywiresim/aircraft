@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 interface SlatFlapActuatorIndicationProps {
   x: number;

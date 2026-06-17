@@ -18,7 +18,7 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { getAirportMagVar, getRunways } from '../Data/Runways';
@@ -282,7 +282,7 @@ export const TakeoffWidget = () => {
           qnh: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
     }
   };

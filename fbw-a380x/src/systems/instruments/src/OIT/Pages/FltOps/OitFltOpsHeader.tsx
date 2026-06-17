@@ -10,9 +10,9 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { PageSelectorDropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
 

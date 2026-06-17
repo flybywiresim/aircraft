@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChartCategory, LocalChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
+import { ChartCategory, LocalChartCategory, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk-react';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { Chart } from 'navigraph/charts';

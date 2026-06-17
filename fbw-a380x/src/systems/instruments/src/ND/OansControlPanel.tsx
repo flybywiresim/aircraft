@@ -5,17 +5,17 @@ import './oans-style.scss';
 import './OansControlPanel.scss';
 
 import { Feature, Geometry, LineString, Point, Position } from 'geojson';
-import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
-import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { LengthFormat } from '../MFD/pages/common/DataEntryFormats';
+import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
+import { ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
+import { Button } from '../MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from '../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from '../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { InputField, InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
+import { RadioButtonGroup } from '../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { TopTabNavigator, TopTabNavigatorPage } from '../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { NDSimvars } from './NDSimvarPublisher';
 import { Coordinates, distanceTo } from 'msfs-geo';
 
 import {

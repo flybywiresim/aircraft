@@ -10,7 +10,8 @@ import {
   WeightBalanceEvents,
 } from '@microsoft/msfs-sdk';
 
-import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+// FIXME should not import from instruments
+import { FuelSystemEvents } from '../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 enum ValveState {
   Closed,

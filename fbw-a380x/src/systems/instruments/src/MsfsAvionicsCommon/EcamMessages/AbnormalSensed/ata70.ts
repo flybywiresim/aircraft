@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure } from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter

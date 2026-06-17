@@ -1,8 +1,8 @@
-import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
+import { FmsPage } from '../../common/FmsPage';
+import { Footer } from '../../common/Footer';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 
 import {
   BitFlags,
@@ -17,13 +17,13 @@ import {
 
 import './MfdFmsSecIndex.scss';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmcInterface } from '../../../FMC/FmcInterface';
 import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';

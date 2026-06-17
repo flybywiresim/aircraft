@@ -10,8 +10,8 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FcuEvents } from 'instruments/src/FCU/Publishers/FcuPublisher';
-import { OverheadEvents } from 'instruments/src/MsfsAvionicsCommon/providers/OverheadPublisher';
+import { FcuEvents } from '../Publishers/FcuPublisher';
+import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
 
 export interface HeadingProps {
   readonly bus: EventBus;

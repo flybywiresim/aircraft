@@ -16,7 +16,7 @@ import {
   SunFill,
   XCircleFill,
 } from 'react-bootstrap-icons';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { Chart } from 'navigraph/charts';
 import { t } from '../Localization/translation';

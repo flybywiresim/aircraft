@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { AtaChaptersTitle } from '@flybywiresim/fbw-sdk-react';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { t } from '../Localization/translation';

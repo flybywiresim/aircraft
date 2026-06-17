@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
-import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 interface PitchTrimProps {
   x: number;

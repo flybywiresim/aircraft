@@ -14,9 +14,9 @@ import {
 } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
-import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FuelSystemPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
-import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXAdrBusPublisher } from '@shared/publishers/A32NXAdrBusPublisher';
 import { A32NXDisplayManagementPublisher } from '@shared/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
