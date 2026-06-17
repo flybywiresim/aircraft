@@ -276,6 +276,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
   const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
+  const roundNearest10 = (fuel: number) => Math.round(fuel / 10) * 10;
+
   const switchRefuelState = () => {
     if (refuelStartedByUser || isRefuelAllowed()) {
       setRefuelStartedByUser(!refuelStartedByUser);
