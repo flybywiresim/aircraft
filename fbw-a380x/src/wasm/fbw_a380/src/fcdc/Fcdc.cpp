@@ -382,7 +382,9 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   bool doubleElevFault = (elevStatusWord->bitFromValueOr(11, false) ? 1 : 0) + (elevStatusWord->bitFromValueOr(14, false) ? 1 : 0) +
                              (elevStatusWord->bitFromValueOr(17, false) ? 1 : 0) <
                          2;
-  bool anyAileronFault = false;  // FIXME add
+  Arinc429DiscreteWord* ailStatusWord =
+      reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[masterPrimIndex].aileron_status_word);
+  bool anyAileronFault = !ailStatusWord->bitFromValueOr(11, false) || !ailStatusWord->bitFromValueOr(14, false);
   Arinc429DiscreteWord* sfcc1StatusWord =
       reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.sfccBusOutputs[0].slat_flap_system_status_word);
   Arinc429DiscreteWord* sfcc2StatusWord =
