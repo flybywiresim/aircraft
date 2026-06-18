@@ -1,7 +1,11 @@
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface WindEntry {
+  /** Undefined for altitude only wind entries. */
   vector: WindVector | undefined;
   altitude: number;
 }
@@ -32,8 +36,8 @@ export const extractWindSpeedFromVector = (vector: WindVector) => Math.round(Vec
 export const extractWindDirectionFromVector = (vector: WindVector) =>
   MathUtils.normalise360(Vec2Math.theta(vector) * MathUtils.RADIANS_TO_DEGREES);
 
-export const formatWindVector = (vector: WindVector) =>
-  `${formatWindTrueDegrees(vector)}/${formatWindMagnitude(vector)}`;
+export const formatWindVector = (vector: WindVector | undefined) =>
+  `${vector !== undefined ? formatWindTrueDegrees(vector) : '---'}/${vector !== undefined ? formatWindMagnitude(vector) : '---'}`;
 
 export const debugFormatWindEntry = (entry: WindEntry) =>
   `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
@@ -56,8 +60,11 @@ export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindC
 
 export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
   MathUtils.isAboutEqual(one.altitude, two.altitude) && areWindVectorsTheSame(one.vector, two.vector);
-export const areWindVectorsTheSame = (one: WindVector, two: WindVector) =>
-  MathUtils.isAboutEqual(one[0], two[0]) && MathUtils.isAboutEqual(one[1], two[1]);
+export const areWindVectorsTheSame = (one: WindVector | undefined, two: WindVector | undefined) =>
+  one !== undefined &&
+  two !== undefined &&
+  MathUtils.isAboutEqual(one[0], two[0]) &&
+  MathUtils.isAboutEqual(one[1], two[1]);
 
 /**
  * Creates a wind vector from a direction in degrees and a speed in knots.

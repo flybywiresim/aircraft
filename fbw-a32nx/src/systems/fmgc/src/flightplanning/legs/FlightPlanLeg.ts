@@ -155,7 +155,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         : undefined,
       calculated: this.calculated ? JSON.parse(JSON.stringify(this.calculated)) : undefined,
       cruiseWindEntries: this.cruiseWindEntries.map((entry) => ({
-        vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+        vector: entry.vector !== undefined ? Vec2Math.copy(entry.vector, Vec2Math.create()) : undefined,
         altitude: entry.altitude,
       })),
     };
@@ -190,7 +190,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
     leg.calculated = serialized.calculated;
     leg.cruiseWindEntries = serialized.cruiseWindEntries.map((entry) => ({
-      vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+      vector: entry.vector !== undefined ? Vec2Math.copy(entry.vector, Vec2Math.create()) : undefined,
       altitude: entry.altitude,
     }));
 

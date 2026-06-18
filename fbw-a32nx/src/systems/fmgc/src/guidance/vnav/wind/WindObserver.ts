@@ -26,7 +26,7 @@ export class WindObserver {
     }
 
     result.altitude = altitude;
-    Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
+    Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector!);
 
     return result;
   }

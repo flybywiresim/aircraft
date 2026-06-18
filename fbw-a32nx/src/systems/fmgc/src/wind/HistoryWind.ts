@@ -33,10 +33,7 @@ export class HistoryWind {
 
   private readonly historyWinds: (WindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
-  constructor(
-    private readonly bus: EventBus,
-    private readonly filterEmptyOnInterpolation: boolean,
-  ) {
+  constructor(private readonly bus: EventBus) {
     this.altitude.sub(this.handleAltitudeChange.bind(this));
     this.sub.on('fmgc_flight_phase').handle(this.handleFlightPhaseChange.bind(this));
     for (let i = 0; i < this.defaultRecordedWind.length; i++) {
@@ -108,28 +105,21 @@ export class HistoryWind {
 
   public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<WindEntry>[] {
     const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude - b.altitude);
-    const interpolationSourceWinds = this.filterEmptyOnInterpolation
-      ? historyWinds.filter((entry) => entry.vector !== undefined)
-      : historyWinds;
+    const interpolationSourceWinds = historyWinds.filter((entry) => entry.vector !== undefined);
     const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
 
     const shouldAddInterpolatedWind =
       cruiseAltitude !== null &&
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
-      interpolationSourceWinds.length >= 0 &&
-      (!this.filterEmptyOnInterpolation || // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
-        (interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && wind.vector !== undefined) &&
-          interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && wind.vector !== undefined)));
+      interpolationSourceWinds.length >= 0 && // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
+      interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && wind.vector !== undefined) &&
+      interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && wind.vector !== undefined);
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;
       WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector!);
       historyWinds.push(this.interpolationCache);
-    } else if (
-      this.filterEmptyOnInterpolation &&
-      cruiseAltitude !== null &&
-      !historyWinds.some((wind) => wind.altitude === cruiseAltitude)
-    ) {
+    } else if (cruiseAltitude !== null && !historyWinds.some((wind) => wind.altitude === cruiseAltitude)) {
       historyWinds.push({
         altitude: cruiseAltitude,
         vector: undefined,

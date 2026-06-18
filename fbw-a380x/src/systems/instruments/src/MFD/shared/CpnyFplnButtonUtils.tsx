@@ -18,7 +18,7 @@ export class CpnyFplnButtonUtils {
           fmc.getUplinkInProgress(),
           fmc.getCpnyFplnRequestedForPlan(),
           fmc.enginesWereStarted,
-          fmc.hasActiveFlightPlan,
+          fmc.hasActiveFlightPlanWithCityPair,
         )
       : MappedSubject.create(() => true);
   }

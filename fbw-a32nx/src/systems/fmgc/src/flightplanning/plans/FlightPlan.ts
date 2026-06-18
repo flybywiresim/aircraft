@@ -3,17 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  Airport,
-  ApproachType,
-  BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
-  Fix,
-  isMsfs2024,
-  LegType,
-  MagVar,
-  MathUtils,
-  NXDataStore,
-} from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -118,7 +108,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default, time?: number): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone(), time);
+    const newPlan = FlightPlan.empty(
+      this.context,
+      newIndex,
+      this.bus,
+      this.performanceData.clone(),
+      time,
+      this.alternateDraftWind !== undefined,
+    );
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
@@ -633,9 +630,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
-    time?: number,
+    time: number,
+    draftOnWindsOnWindEdit: boolean,
   ): Promise<FlightPlan<P>> {
-    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit, time);
+    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit, time, draftOnWindsOnWindEdit);
 
     // TODO init performance data
 

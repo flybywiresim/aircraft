@@ -107,7 +107,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly currFlightPlanService = new FlightPlanService(
     this.bus,
     new A320FlightPlanPerformanceData(),
-    FpmConfigs.A320_HONEYWELL_H3,
+    FpmConfigs.A320_HONEYWELL_H4,
     true,
   );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
@@ -404,7 +404,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
-    this.historyWinds = new HistoryWind(this.bus, FpmConfigs.A320_HONEYWELL_H3.LOAD_EMPTY_HISTORY_WIND);
+    this.historyWinds = new HistoryWind(this.bus);
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
@@ -5638,7 +5638,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           uplink,
           plan,
           this.flightPhaseManager.phase,
-          FpmConfigs.A320_HONEYWELL_H3,
+          FpmConfigs.A320_HONEYWELL_H4,
         );
 
         this.addMessageToQueue(

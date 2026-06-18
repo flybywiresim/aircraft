@@ -38,6 +38,7 @@ import {
 } from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
+  // TODO we should probably split this to a base FMS page class and a FMS flight plan page.
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
@@ -53,10 +54,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly currentFlightPlanVersion = Subject.create<number>(0);
 
-  /** Indicates whether the temporary flight plan is the active */
-  protected readonly tmpyActive = Subject.create<boolean>(false);
-
-  protected readonly tmpyExists = Subject.create<boolean>(false);
+  /** Indicates whether the temporary flight plan is the loaded flightplan */
+  protected readonly tmpyActive = this.loadedFlightPlanIndex.map((index) => index === FlightPlanIndex.Temporary);
 
   /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
   private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
@@ -113,7 +112,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   private readonly periodicNewDataCheck = this.props.bus
     .getSubscriber<ClockEvents>()
     .on('realTime')
-    .atFrequency(0.5)
+    .atFrequency(1)
     .handle(() => {
       this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
     });
@@ -129,6 +128,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       this.shouldShowTemporaryPageUris,
       this.displayTmpy,
       this.periodicNewDataCheck,
+      this.tmpyActive,
     );
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
@@ -199,7 +199,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   protected onFlightPlanChanged(dueToEvent = true) {
     const activeUri = this.props.mfd.uiService.activeUri.get();
     const hasTmpy = this.props.flightPlanInterface.hasTemporary;
-    this.tmpyExists.set(hasTmpy);
     switch (activeUri.category) {
       case 'active':
         if (this.props.flightPlanInterface.hasActive || hasTmpy) {
@@ -208,7 +207,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
             hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-          this.tmpyActive.set(hasTmpy ?? false);
         } else if (activeUri.page === initPage) {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
@@ -221,7 +219,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
             FlightPlanIndex.FirstSecondary,
           ).alternateFlightPlan;
-          this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
           this.loadedAlternateFlightPlan = null;
@@ -241,7 +238,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
             FlightPlanIndex.FirstSecondary + 1,
           ).alternateFlightPlan;
-          this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
           this.loadedAlternateFlightPlan = null;
@@ -259,7 +255,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
             FlightPlanIndex.FirstSecondary + 2,
           ).alternateFlightPlan;
-          this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
           this.loadedAlternateFlightPlan = null;
@@ -278,6 +273,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedAlternateFlightPlan =
             this.props.flightPlanInterface.get(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active)
               .alternateFlightPlan ?? null;
+          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
         }
         break;
     }

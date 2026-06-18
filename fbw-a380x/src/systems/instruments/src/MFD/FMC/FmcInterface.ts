@@ -110,9 +110,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   get enginesWereStarted(): Subject<boolean>;
 
   /**
-   * Returns whether active flight plan exists
+   * Returns whether active flight plan exists with a city pair
    */
-  get hasActiveFlightPlan(): Subject<boolean>;
+  get hasActiveFlightPlanWithCityPair(): Subject<boolean>;
 
   /**
    * Returns currently revised waypoint as Fix

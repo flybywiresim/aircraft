@@ -2884,42 +2884,45 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       const draftCruiseWindEntries = this.draftCruiseWindEntries?.get(i);
 
       for (const windEntry of draftCruiseWindEntries ?? element.cruiseWindEntries) {
-        let windPropagationType: PropagationType;
-        if (i < atIndex) {
-          windPropagationType = PropagationType.Forward;
-        } else if (i === atIndex) {
-          windPropagationType = PropagationType.Entry;
-        } else {
-          windPropagationType = PropagationType.Backward;
-        }
-
-        const existingEntryIndex = result.findIndex(
-          (e, index) => Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100) && index < numWindEntries,
-        );
-
-        if (existingEntryIndex >= 0) {
-          if (windPropagationType !== PropagationType.Backward) {
-            result[existingEntryIndex].altitude = windEntry.altitude;
-            result[existingEntryIndex].vector = windEntry.vector;
-            result[existingEntryIndex].type = windPropagationType;
-            result[existingEntryIndex].sourceLegIndex = i;
-          }
-        } else if (numWindEntries < maxNumEntries) {
-          if (numWindEntries >= result.length) {
-            result.push({
-              altitude: windEntry.altitude,
-              vector: windEntry.vector,
-              type: windPropagationType,
-              sourceLegIndex: i,
-            });
+        if (windEntry.vector !== undefined) {
+          let windPropagationType: PropagationType;
+          if (i < atIndex) {
+            windPropagationType = PropagationType.Forward;
+          } else if (i === atIndex) {
+            windPropagationType = PropagationType.Entry;
           } else {
-            result[numWindEntries].altitude = windEntry.altitude;
-            result[numWindEntries].vector = windEntry.vector;
-            result[numWindEntries].type = windPropagationType;
-            result[numWindEntries].sourceLegIndex = i;
+            windPropagationType = PropagationType.Backward;
           }
 
-          numWindEntries++;
+          const existingEntryIndex = result.findIndex(
+            (e, index) =>
+              Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100) && index < numWindEntries,
+          );
+
+          if (existingEntryIndex >= 0) {
+            if (windPropagationType !== PropagationType.Backward) {
+              result[existingEntryIndex].altitude = windEntry.altitude;
+              result[existingEntryIndex].vector = windEntry.vector;
+              result[existingEntryIndex].type = windPropagationType;
+              result[existingEntryIndex].sourceLegIndex = i;
+            }
+          } else if (numWindEntries < maxNumEntries) {
+            if (numWindEntries >= result.length) {
+              result.push({
+                altitude: windEntry.altitude,
+                vector: windEntry.vector,
+                type: windPropagationType,
+                sourceLegIndex: i,
+              });
+            } else {
+              result[numWindEntries].altitude = windEntry.altitude;
+              result[numWindEntries].vector = windEntry.vector;
+              result[numWindEntries].type = windPropagationType;
+              result[numWindEntries].sourceLegIndex = i;
+            }
+
+            numWindEntries++;
+          }
         }
       }
     }

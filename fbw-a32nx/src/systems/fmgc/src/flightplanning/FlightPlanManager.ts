@@ -108,6 +108,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               this.bus,
               this.performanceDataInit.clone(),
               this.time.get(),
+              this.flightplanDraftWindsEnabled,
             );
 
             this.set(intIndex, newPlan);
@@ -209,6 +210,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       this.bus,
       this.performanceDataInit.clone(),
       this.time.get(),
+      this.flightplanDraftWindsEnabled,
     );
     if (flags !== undefined) {
       this.plans[index].flags |= flags;

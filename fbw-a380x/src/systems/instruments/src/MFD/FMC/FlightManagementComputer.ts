@@ -255,7 +255,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   public enginesWereStarted = Subject.create<boolean>(false);
 
-  public hasActiveFlightPlan = Subject.create<boolean>(false);
+  public hasActiveFlightPlanWithCityPair = Subject.create<boolean>(false);
 
   private readonly legacyFmsIsHealthy = Subject.create(false);
 
@@ -411,7 +411,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPhaseManager.init();
     this.#guidanceController.init();
     this.fmgc.guidanceController = this.#guidanceController;
-    this.historyWinds = new HistoryWind(this.bus, FpmConfigs.A380.LOAD_EMPTY_HISTORY_WIND);
+    this.historyWinds = new HistoryWind(this.bus);
 
     this.initSimVars();
 
@@ -1129,7 +1129,7 @@ export class FlightManagementComputer implements FmcInterface {
    * Called when the active flight plan changes, e.g. when a secondary flight plan is activated.
    */
   private async onActiveFlightPlanChanged(): Promise<void> {
-    this.hasActiveFlightPlan.set(
+    this.hasActiveFlightPlanWithCityPair.set(
       this.#flightPlanService.hasActive &&
         this.#flightPlanService.active.originAirport !== undefined &&
         this.#flightPlanService.active.destinationAirport !== undefined,

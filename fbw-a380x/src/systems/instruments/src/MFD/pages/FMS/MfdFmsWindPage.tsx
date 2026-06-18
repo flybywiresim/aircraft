@@ -366,7 +366,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
   private readonly historyWindsDisabled = MappedSubject.create(
     ([draft, hasTmpy]) => draft || hasTmpy,
     this.draftWindsExist,
-    this.tmpyExists,
+    this.tmpyActive,
   );
 
   private readonly draftWindVisibility = this.draftWindsExist.map((exists) => (exists ? 'visible' : 'hidden'));
@@ -388,7 +388,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
     const subPage = this.selectedSubPage.get();
-    const hasTmpy = this.tmpyExists.get();
+    const hasTmpy = this.tmpyActive.get();
     if (subPage === WindSubPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
       const historyWinds = this.props.fmcService.master.getHistoryWinds(cruiseFlightLevel);
@@ -1515,7 +1515,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
             <CpnyWindRequestButton
               fmc={this.props.fmcService.master}
               flightPlanIndex={this.loadedFlightPlanIndex}
-              tmpyExists={this.tmpyExists}
+              tmpyExists={this.tmpyActive}
               isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
             />
             <Button

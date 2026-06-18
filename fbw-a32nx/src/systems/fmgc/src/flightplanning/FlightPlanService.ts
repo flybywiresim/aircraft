@@ -35,7 +35,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
-    private readonly config = FpmConfigs.A320_HONEYWELL_H3,
+    private readonly config = FpmConfigs.A320_HONEYWELL_H4,
     master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(

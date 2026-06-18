@@ -14,7 +14,7 @@ export interface FpmConfig {
   TMPY_ON_CONSTRAINT_EDIT: boolean;
 
   /**
-   * Whether inserting a waypoint directly in the fligh plan creates a temporary flight plan
+   * Whether inserting a waypoint directly in the flight plan creates a temporary flight plan
    * Note that NEXT WPT will always create a temporary flight plan
    */
   TMPY_ON_INSERT_WAYPOINT: boolean;
@@ -45,10 +45,7 @@ export interface FpmConfig {
    */
   NUM_SECONDARY_FLIGHT_PLANS: number;
 
-  /** Whether to load default wind entries when the wind history is empty */
-  LOAD_EMPTY_HISTORY_WIND: boolean;
-
-  /** Whether to create draft wind entries upon editing a wind entry */
+  /** Whether to create draft wind entries upon editing a wind entry on the flightplan */
   DRAFT_ON_WIND_EDIT: boolean;
 
   /** The number of different flight levels for which cruise wind entries may be made */
@@ -77,11 +74,10 @@ export class FpmConfigs {
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
     NUM_DESCENT_WIND_LEVELS: 5,
-    LOAD_EMPTY_HISTORY_WIND: true,
     DRAFT_ON_WIND_EDIT: true,
   };
 
-  static readonly A320_HONEYWELL_H3: FpmConfig = {
+  static readonly A320_HONEYWELL_H4: FpmConfig = {
     TMPY_ON_DELETE_WAYPOINT: false,
     TMPY_ON_OVERFLY: false,
     TMPY_ON_CONSTRAINT_EDIT: false,
@@ -97,7 +93,6 @@ export class FpmConfigs {
     NUM_CLIMB_WIND_LEVELS: 5,
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
-    LOAD_EMPTY_HISTORY_WIND: false,
     DRAFT_ON_WIND_EDIT: false,
   };
 }
