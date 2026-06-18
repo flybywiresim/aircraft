@@ -12,7 +12,7 @@
 		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
 		<Include Path="A32NX\generated\A32NX_Exterior.xml"/>
-		<Include Path="fbw_a380x\door_animations.xml" />
+		<Include Path="fbw_a380x\Index.xml" />
 		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/engines.xml"/>
 		<Component ID="GEAR_DOORS">
 			<!-- Nose Landing Gear -->
@@ -75,13 +75,6 @@
 				<ANIM_LENGTH>100</ANIM_LENGTH>
 			</UseTemplate>
 		</Component>
-		<Template Name="FBW_Control_Surface_Template">
-			<Component ID="#ANIM_NAME#">
-				<UseTemplate Name="ASOBO_GT_Anim">
-					<ANIM_CODE>#DEFLECTION_CODE# 50 * 50 +</ANIM_CODE>
-				</UseTemplate>
-			</Component>
-		</Template>
 		<Component ID="HANDLING">
 			<!-- THS -->
 			<Component ID="THS">

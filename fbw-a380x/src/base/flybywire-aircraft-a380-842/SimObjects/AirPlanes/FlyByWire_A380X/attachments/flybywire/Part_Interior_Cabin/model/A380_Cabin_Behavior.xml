@@ -3,7 +3,7 @@
 
 <ModelBehaviors>
 	<Include ModelBehaviorFile="Asobo\Common.xml"/>
-    <Include Path="fbw_a380x\door_animations.xml" />
+    <Include Path="fbw_a380x\Index.xml" />
 
     <Component ID="DOOR_ANIMATIONS_CABIN">
             <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />

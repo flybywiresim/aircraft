@@ -12,6 +12,7 @@
 		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
 		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
+		<Include Path="fbw_a380x\Index.xml" />
 		<Include RelativeFile="../../Part_Interior_Cockpit/model/behaviour/engines.xml"/>
 		<Component ID="GEAR_DOORS">
 			<!-- LH Wing Gear-->
@@ -25,22 +26,6 @@
 				<ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:4, Percent) 0.5 * +</ANIM_CODE>
 			</UseTemplate>
 		</Component>
-		<Template Name="FBW_Control_Surface_Template">
-			<Component ID="#ANIM_NAME#">
-				<UseTemplate Name="ASOBO_GT_Anim">
-					<ANIM_CODE>#DEFLECTION_CODE# 50 * 50 +</ANIM_CODE>
-				</UseTemplate>
-			</Component>
-		</Template>
-		<Template Name="FBW_Spoiler_Surface_Template">
-			<Component ID="#ANIM_NAME#">
-				<UseTemplate Name="ASOBO_GT_Anim">
-					<!-- Scales down the animation with a factor of 50/65, since the animation goes
-                    to 65°, but max deflection is 50° -->
-					<ANIM_CODE>#DEFLECTION_CODE# 100 * 50 * 65 /</ANIM_CODE>
-				</UseTemplate>
-			</Component>
-		</Template>
 		<Component ID="HANDLING">
 			<UseTemplate Name="ASOBO_HANDLING_Slats_Template">
 				<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
