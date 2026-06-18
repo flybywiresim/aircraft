@@ -32,7 +32,7 @@ class ElacComputer final
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_MATLABFunction_ElacComputer_kz_T {
+  struct rtDW_MATLABFunction_ElacComputer_g_T {
     real_T timeSinceCondition;
     boolean_T output;
   };
@@ -53,6 +53,15 @@ class ElacComputer final
 
   struct BlockIO_ElacComputer_T {
     real_T in_flight;
+    real32_T u;
+    real32_T u_l;
+    real32_T u_lq;
+    real32_T u_o;
+    real32_T u_oq;
+    real32_T u_oql;
+    real32_T u_c;
+    real32_T u_ce;
+    real32_T u_cef;
   };
 
   struct D_Work_ElacComputer_T {
@@ -62,7 +71,7 @@ class ElacComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_p;
+    real_T eventTime_f;
     real_T on_ground_time;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
@@ -71,6 +80,15 @@ class ElacComputer final
     uint8_T is_active_c30_ElacComputer;
     uint8_T is_c30_ElacComputer;
     boolean_T Memory_PreviousInput;
+    boolean_T Memory_PreviousInput_n;
+    boolean_T Memory_PreviousInput_f;
+    boolean_T Memory_PreviousInput_e;
+    boolean_T Memory_PreviousInput_m;
+    boolean_T Memory_PreviousInput_l;
+    boolean_T Memory_PreviousInput_fd;
+    boolean_T Memory_PreviousInput_h;
+    boolean_T Memory_PreviousInput_j;
+    boolean_T Memory_PreviousInput_no;
     boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
@@ -80,28 +98,37 @@ class ElacComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_f;
-    boolean_T eventTime_not_empty_i;
+    boolean_T sProtActive_l;
+    boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_fb;
-    rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_l0;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_fb;
+    rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_l0x;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_j2;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_g24;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_lf;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_jl;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_jz;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_g24;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_lf;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_jl;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_jz;
     rtDW_RateLimiter_ElacComputer_b_T sf_RateLimiter_m;
     rtDW_RateLimiter_ElacComputer_b_T sf_RateLimiter_n;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_nb;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_nb;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_jg;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_mi;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_gfx;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_cj;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_gfx;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_g2;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_cj;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_iu;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_iz;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_ik;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_m0;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_ox0;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_l;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_ci;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_ps;
+    rtDW_MATLABFunction_ElacComputer_g_T sf_MATLABFunction_cy;
     rtDW_LagFilter_ElacComputer_T sf_LagFilter_a;
     rtDW_LagFilter_ElacComputer_T sf_LagFilter;
     rtDW_RateLimiter_ElacComputer_g_T sf_RateLimiter_p;
@@ -198,6 +225,9 @@ class ElacComputer final
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay;
+    real_T SourceMonitoringPairwise_timeDelay;
+    real_T SourceMonitoringPairwise1_timeDelay;
+    real_T SourceMonitoringPairwise2_timeDelay;
     real_T ConfirmNode_timeDelay_n;
     real_T ConfirmNode1_timeDelay_h;
     real_T ConfirmNode2_timeDelay_k;
@@ -217,10 +247,31 @@ class ElacComputer final
     pitch_efcs_law EnumeratedConstant_Value_i;
     pitch_efcs_law EnumeratedConstant_Value_b;
     real32_T CompareToConstant_const_ll;
+    real32_T SourceMonitoringPairwise_threshold;
+    real32_T SourceMonitoringPairwise1_threshold;
+    real32_T SourceMonitoringPairwise2_threshold;
+    boolean_T SRFlipFlop2_initial_condition;
+    boolean_T SRFlipFlop2_initial_condition_m;
+    boolean_T SRFlipFlop2_initial_condition_a;
+    boolean_T SRFlipFlop1_initial_condition;
+    boolean_T SRFlipFlop1_initial_condition_f;
+    boolean_T SRFlipFlop1_initial_condition_g;
     boolean_T SRFlipFlop_initial_condition;
+    boolean_T SRFlipFlop_initial_condition_g;
+    boolean_T SRFlipFlop_initial_condition_c;
+    boolean_T SRFlipFlop_initial_condition_j;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
+    boolean_T ConfirmNode_isRisingEdge_n;
+    boolean_T ConfirmNode_isRisingEdge_o;
+    boolean_T ConfirmNode_isRisingEdge_c;
+    boolean_T ConfirmNode1_isRisingEdge_p;
+    boolean_T ConfirmNode1_isRisingEdge_f;
+    boolean_T ConfirmNode1_isRisingEdge_n;
+    boolean_T ConfirmNode2_isRisingEdge_n;
+    boolean_T ConfirmNode2_isRisingEdge_a;
+    boolean_T ConfirmNode2_isRisingEdge_h;
     boolean_T ConfirmNode_isRisingEdge_k;
     boolean_T ConfirmNode1_isRisingEdge_i;
     boolean_T ConfirmNode2_isRisingEdge_j;
@@ -228,7 +279,7 @@ class ElacComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
-    boolean_T ConfirmNode_isRisingEdge_o;
+    boolean_T ConfirmNode_isRisingEdge_o3;
     boolean_T PulseNode_isRisingEdge_g;
     boolean_T ConfirmNode_isRisingEdge_f;
     elac_outputs out_Y0;
@@ -294,6 +345,15 @@ class ElacComputer final
     real_T Constant_Value_b;
     real_T Switch13_Threshold;
     real_T Switch12_Threshold;
+    real32_T Y_Y0;
+    real32_T Y_Y0_j;
+    real32_T Y_Y0_d;
+    real32_T Y_Y0_a;
+    real32_T Y_Y0_g;
+    real32_T Y_Y0_h;
+    real32_T Y_Y0_hw;
+    real32_T Y_Y0_aj;
+    real32_T Y_Y0_c;
     real32_T Gain_Gain_b;
     real32_T Gain1_Gain_f;
     real32_T Gain2_Gain_c;
@@ -301,16 +361,25 @@ class ElacComputer final
     real32_T Gain4_Gain;
     uint32_T alphamax_maxIndex[2];
     uint32_T alphaprotection_maxIndex[2];
-    boolean_T Constant1_Value_b;
-    boolean_T Constant_Value_ad;
+    boolean_T Constant_Value_ay;
+    boolean_T Logic_table[16];
+    boolean_T Logic_table_e[16];
+    boolean_T Logic_table_k[16];
+    boolean_T Logic_table_a[16];
+    boolean_T Logic_table_eo[16];
+    boolean_T Logic_table_f[16];
+    boolean_T Logic_table_c[16];
+    boolean_T Logic_table_b[16];
+    boolean_T Logic_table_p[16];
     boolean_T Delay_InitialCondition_c;
     boolean_T Delay1_InitialCondition;
-    boolean_T Logic_table[16];
+    boolean_T Logic_table_h[16];
     boolean_T reset_Value;
     boolean_T reset_Value_j;
     boolean_T Constant1_Value_e;
     boolean_T Constant9_Value;
     boolean_T Constant10_Value;
+    boolean_T Constant11_Value;
   };
 
   ElacComputer(ElacComputer const&) = delete;
@@ -351,10 +420,13 @@ class ElacComputer final
   static void ElacComputer_LagFilter_Reset(rtDW_LagFilter_ElacComputer_T *localDW);
   static void ElacComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_ElacComputer_T *localDW);
-  static void ElacComputer_MATLABFunction_g(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void ElacComputer_MATLABFunction_g5_Reset(rtDW_MATLABFunction_ElacComputer_kz_T *localDW);
+  static void ElacComputer_MATLABFunction_l_Reset(rtDW_MATLABFunction_ElacComputer_g_T *localDW);
   static void ElacComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_ElacComputer_kz_T *localDW);
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_ElacComputer_g_T *localDW);
+  static void ElacComputer_MATLABFunction_cf(boolean_T rtu_deviation1To2, boolean_T rtu_deviation1To3, boolean_T
+    rtu_deviation2To3, boolean_T *rty_source1Failed, boolean_T *rty_source2Failed, boolean_T *rty_source3Failed);
+  static void ElacComputer_MATLABFunction_h(const base_arinc_429 *rtu_u, real32_T *rty_y);
+  static void ElacComputer_MATLABFunction_g(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void ElacComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_ElacComputer_o_T *localDW);
   static void ElacComputer_MATLABFunction_m(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T
     *rty_y, rtDW_MATLABFunction_ElacComputer_o_T *localDW);

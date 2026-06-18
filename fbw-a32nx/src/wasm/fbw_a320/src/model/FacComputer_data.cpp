@@ -82,6 +82,7 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   26.0,
   20.0,
   26.0,
+  1.05,
   20000.0,
   3.0,
   4.0,
@@ -105,11 +106,13 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   -1.0,
   0.0,
   1.0,
+  3.5,
   1.0,
-  1.0,
-  0.6,
-  0.6,
   0.5,
+  1.0,
+  1.05,
+  0.6,
+  0.6,
   10.0,
   1.0,
   0.5,
@@ -135,12 +138,25 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   3.0F,
   100.0F,
   2000.0F,
+  10.0F,
+  false,
+  false,
+  false,
   false,
   false,
   false,
   false,
   false,
   true,
+  false,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  false,
+  false,
   true,
   true,
   true,
@@ -1265,10 +1281,20 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -1424,6 +1450,8 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
       false,
       false,
       false,
+      false,
+      false,
       false
     },
 
@@ -1805,6 +1833,8 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
       0U,
       0.0F
     },
+    false,
+    false,
     false,
     false,
     false,
@@ -2040,8 +2070,13 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   0.0,
   0.0,
   0.0,
-  0.0,
   200.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   5.0F,
   251.97F,
   334.16F,
@@ -2062,8 +2097,19 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   { 44U, 10U },
   false,
-  false,
-  false,
+  true,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
   false,
   false,
@@ -2074,7 +2120,6 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
-  false,
   false,
   false,
   false,

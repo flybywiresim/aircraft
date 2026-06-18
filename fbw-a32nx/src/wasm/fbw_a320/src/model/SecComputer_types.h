@@ -207,6 +207,7 @@ struct base_elac_out_bus
   base_arinc_429 speedbrake_extension_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
+  base_arinc_429 discrete_status_word_3;
 };
 
 #endif
