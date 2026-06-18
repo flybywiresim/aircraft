@@ -4197,27 +4197,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public trySetFlapsTHS(s: string, forPlan: FlightPlanIndex): boolean {
     const plan = this.getFlightPlan(forPlan);
 
-    const thsModificationNotAllowed = this.isTakeoffFieldUpdateNotAllowed(
-      plan,
-      plan?.performanceData.trimmableHorizontalStabilizer.get(),
-    );
-    const flapsModificationNotAllowed = this.isTakeoffFieldUpdateNotAllowed(
-      plan,
-      plan?.performanceData.takeoffFlaps.get(),
-    );
+    const thsExists = plan.performanceData.trimmableHorizontalStabilizer.get() !== null;
+    const flapsExists = plan.performanceData.takeoffFlaps.get() !== null;
 
-    if (thsModificationNotAllowed && flapsModificationNotAllowed) {
+    // THS/FLAPS cannot be modified starting in takeoff phase if both have been set.
+    if (
+      thsExists &&
+      flapsExists &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.flightPhaseManager.phase > FmgcFlightPhase.Preflight
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
 
     if (s === Keypad.clrValue) {
-      if (!flapsModificationNotAllowed) {
-        this.setTakeoffFlaps(null, forPlan);
-      }
-      if (!thsModificationNotAllowed) {
-        this.setTakeoffTrim(null, forPlan);
-      }
+      this.setTakeoffFlaps(null, forPlan);
+      this.setTakeoffTrim(null, forPlan);
+
       this.tryCheckToData();
       return true;
     }
@@ -4276,21 +4273,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (newFlaps !== null) {
-      if (flapsModificationNotAllowed) {
-        this.setScratchpadMessage(newThs !== null ? NXSystemMessages.formatError : NXSystemMessages.notAllowed);
-        return false;
-      }
-      if (plan.performanceData.takeoffFlaps.get() !== null) {
+      if (flapsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffFlaps(newFlaps, forPlan);
     }
     if (newThs !== null) {
-      if (thsModificationNotAllowed) {
-        this.setScratchpadMessage(newFlaps !== null ? NXSystemMessages.formatError : NXSystemMessages.notAllowed);
-        return false;
-      }
-      if (plan.performanceData.trimmableHorizontalStabilizer.get() !== null) {
+      if (thsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffTrim(newThs, forPlan);
