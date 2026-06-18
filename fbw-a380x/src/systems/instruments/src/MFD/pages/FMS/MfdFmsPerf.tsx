@@ -42,7 +42,7 @@ import {
 } from '../common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
 import { ConfirmationDialog } from '../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcData } from '../../FMC/fmgc';
 import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
@@ -79,7 +79,7 @@ enum FlightPhaseTabIndex {
   GoAround = 5,
 }
 
-export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );

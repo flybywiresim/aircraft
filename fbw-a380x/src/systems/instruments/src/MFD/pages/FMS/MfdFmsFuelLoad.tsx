@@ -42,7 +42,7 @@ import {
   minZfw,
   minZfwCg,
 } from '@shared/PerformanceConstants';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
@@ -55,7 +55,7 @@ import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanCh
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
+export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );

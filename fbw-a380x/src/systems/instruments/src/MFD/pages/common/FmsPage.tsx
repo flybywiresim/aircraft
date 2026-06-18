@@ -1,7 +1,6 @@
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+//  Copyright (c) 2026 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 import {
-  ClockEvents,
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -10,79 +9,15 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from '../../MFD';
-import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { dataStatusUri, flightPlanUriPage, fuelAndLoadPage, lateralRevisionHoldPage } from '../../shared/utils';
 import { ActivePageTitleBar } from './ActivePageTitleBar';
-import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
-import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { MfdSystem } from './MfdUiService';
-import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import {
-  performancePage,
-  fuelAndLoadPage,
-  initPage,
-  flightPlanUriPage,
-  airwaysPage,
-  departurePage,
-  arrivalPage,
-  lateralRevisionPage,
-  lateralRevisionHoldPage,
-  verticalRevisionPage,
-  fixInfoUri,
-  secIndexPageUri,
-  dirToUri,
-  dataStatusUri,
-} from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
-  // TODO we should probably split this to a base FMS page class and a FMS flight plan page.
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
-  private readonly sub = this.props.bus.getSubscriber<MfdSimvars>();
-
   protected readonly activePageTitle = Subject.create<string>('');
-
-  public loadedFlightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | null = null;
-
-  public loadedAlternateFlightPlan: AlternateFlightPlan<FlightPlanPerformanceData> | null = null;
-
-  protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
-
-  protected readonly currentFlightPlanVersion = Subject.create<number>(0);
-
-  /** Indicates whether the temporary flight plan is the loaded flightplan */
-  protected readonly tmpyActive = this.loadedFlightPlanIndex.map((index) => index === FlightPlanIndex.Temporary);
-
-  /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
-  private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
-    (uri) =>
-      uri.sys === MfdSystem.Fms &&
-      (uri.page === performancePage ||
-        uri.page === fuelAndLoadPage ||
-        uri.page === initPage ||
-        uri.page === flightPlanUriPage ||
-        uri.page === airwaysPage ||
-        uri.page === departurePage ||
-        uri.page === arrivalPage ||
-        uri.page === lateralRevisionPage ||
-        uri.page === lateralRevisionHoldPage ||
-        uri.page === verticalRevisionPage ||
-        uri.uri === fixInfoUri ||
-        uri.uri === secIndexPageUri ||
-        uri.uri === dirToUri),
-  );
-
-  private readonly displayTmpy = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.shouldShowTemporaryPageUris,
-    this.tmpyActive,
-  );
-
-  protected readonly secActive = Subject.create<boolean>(false);
 
   protected readonly eoActive = Subject.create<boolean>(false);
 
@@ -91,226 +26,30 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   /** Penalty is only displayed in DATA STATUS, FUEL & LOAD, F-PLN, HOLD, ALTERNATE & WHAT IF Pages */
   private readonly penaltyUri = this.props.mfd.uiService.activeUri.map(
     (uri) =>
-      uri.sys === MfdSystem.Fms &&
-      (uri.uri === dataStatusUri ||
-        uri.page === fuelAndLoadPage ||
-        uri.page === flightPlanUriPage ||
-        uri.page === lateralRevisionHoldPage),
+      uri.uri === dataStatusUri ||
+      uri.page === fuelAndLoadPage ||
+      uri.page === flightPlanUriPage ||
+      uri.page === lateralRevisionHoldPage,
   );
 
-  private readonly displayPenalty = MappedSubject.create(
+  protected readonly displayPenalty = MappedSubject.create(
     SubscribableMapFunctions.and(),
     this.penaltyUri,
     this.penaltyActive,
   );
 
-  protected readonly activeFlightPhase = ConsumerSubject.create<FmgcFlightPhase>(
-    this.sub.on('flightPhase'),
-    FmgcFlightPhase.Preflight,
-  );
-
-  private readonly periodicNewDataCheck = this.props.bus
-    .getSubscriber<ClockEvents>()
-    .on('realTime')
-    .atFrequency(1)
-    .handle(() => {
-      this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
-    });
-
-  // protected mfdInViewConsumer: Consumer<boolean>;
-
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.subs.push(
-      this.penaltyUri,
-      this.displayPenalty,
-      this.shouldShowTemporaryPageUris,
-      this.displayTmpy,
-      this.periodicNewDataCheck,
-      this.tmpyActive,
-    );
-
-    // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
-
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
         this.activePageTitle.set(`${val.category.toUpperCase()}/${this.props.pageTitle}`);
       }, true),
-    );
-
-    // Check if flight plan changed using flight plan sync bus events
-    const flightPlanSyncSub = this.props.bus.getSubscriber<FlightPlanEvents>();
-
-    this.subs.push(
-      //FIXME. Should the pages listen to the events directly or get them from the FMC?
-      flightPlanSyncSub.on('flightPlanManager.create').handle(() => {
-        this.onFlightPlanChanged();
-      }),
-    );
-
-    this.subs.push(
-      flightPlanSyncSub.on('flightPlanManager.delete').handle((data) => {
-        if (data.planIndex === this.loadedFlightPlan?.index) {
-          this.onFlightPlanChanged();
-        }
-      }),
-    );
-
-    this.subs.push(
-      flightPlanSyncSub.on('flightPlanManager.deleteAll').handle(() => {
-        this.onFlightPlanChanged();
-      }),
-    );
-
-    this.subs.push(
-      flightPlanSyncSub.on('flightPlanManager.swap').handle((data) => {
-        if (data.planIndex === this.loadedFlightPlan?.index || data.targetPlanIndex === this.loadedFlightPlan?.index) {
-          this.onFlightPlanChanged();
-        }
-      }),
-    );
-
-    this.subs.push(
-      flightPlanSyncSub.on('flightPlanManager.copy').handle((data) => {
-        if (data.planIndex === this.loadedFlightPlan?.index || data.targetPlanIndex === this.loadedFlightPlan?.index) {
-          this.onFlightPlanChanged();
-        }
-      }),
-    );
-
-    this.subs.push(
       this.props.fmcService.masterFmcChanged.sub(() => {
         // Check if master FMC exists, re-route subjects
         this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive);
         this.props.fmcService.master.fmgc.data.fuelPenaltyActive.pipe(this.penaltyActive);
       }, true),
-      this.currentFlightPlanVersion.sub(() => {
-        this.onNewDataChecks();
-        this.onNewData();
-      }),
     );
-
-    this.onFlightPlanChanged(false);
-    this.onNewDataChecks();
-    this.onNewData();
-  }
-
-  protected onFlightPlanChanged(dueToEvent = true) {
-    const activeUri = this.props.mfd.uiService.activeUri.get();
-    const hasTmpy = this.props.flightPlanInterface.hasTemporary;
-    switch (activeUri.category) {
-      case 'active':
-        if (this.props.flightPlanInterface.hasActive || hasTmpy) {
-          this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
-          ).alternateFlightPlan;
-          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-        } else if (activeUri.page === initPage) {
-          // Flight plan might not have been created yet
-          this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
-        }
-        this.secActive.set(false);
-        break;
-      case 'sec1':
-        if (this.props.flightPlanInterface.hasSecondary(1)) {
-          this.loadedFlightPlan = this.props.flightPlanInterface.secondary(1) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            FlightPlanIndex.FirstSecondary,
-          ).alternateFlightPlan;
-        } else if (activeUri.page === initPage) {
-          this.loadedFlightPlan = null;
-          this.loadedAlternateFlightPlan = null;
-          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
-        } else if (dueToEvent) {
-          // If sec has been deleted, navigate to equivelant active page and load the active or tmpy.
-          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec1', 'active'));
-          return;
-        }
-        this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
-        this.secActive.set(true);
-        break;
-      case 'sec2':
-        if (this.props.flightPlanInterface.hasSecondary(2)) {
-          this.loadedFlightPlan = this.props.flightPlanInterface.secondary(2) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            FlightPlanIndex.FirstSecondary + 1,
-          ).alternateFlightPlan;
-        } else if (activeUri.page === initPage) {
-          this.loadedFlightPlan = null;
-          this.loadedAlternateFlightPlan = null;
-        } else if (dueToEvent) {
-          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec2', 'active'));
-          return;
-        }
-        this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
-        this.secActive.set(true);
-        break;
-      case 'sec3':
-        if (this.props.flightPlanInterface.hasSecondary(3)) {
-          this.loadedFlightPlan = this.props.flightPlanInterface.secondary(3) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            FlightPlanIndex.FirstSecondary + 2,
-          ).alternateFlightPlan;
-        } else if (activeUri.page === initPage) {
-          this.loadedFlightPlan = null;
-          this.loadedAlternateFlightPlan = null;
-        } else if (dueToEvent) {
-          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec3', 'active'));
-          return;
-        }
-        this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
-        this.secActive.set(true);
-        break;
-
-      default:
-        if (this.props.flightPlanInterface.hasActive || hasTmpy) {
-          this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
-          this.loadedAlternateFlightPlan =
-            this.props.flightPlanInterface.get(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active)
-              .alternateFlightPlan ?? null;
-          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
-        }
-        break;
-    }
-    this.onNewDataChecks();
-    this.onNewData();
-    this.currentFlightPlanVersion.set(this.loadedFlightPlan?.version ?? 0);
-  }
-
-  protected abstract onNewData(): void;
-
-  private onNewDataChecks() {
-    const fm = this.props.fmcService.master.fmgc.data;
-    const fps = this.props.flightPlanInterface;
-    const activeFlightPlan = fps?.hasActive ? fps.active : undefined;
-    const pdActive = activeFlightPlan?.performanceData;
-
-    // CHECK TO DATA
-    if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {
-      if (!fm?.vSpeedsForRunway.get()) {
-        fm?.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
-      } else if (fm.vSpeedsForRunway.get() !== activeFlightPlan.originRunway.ident) {
-        fm.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pdActive?.v1.get() ?? null);
-        fps?.setPerformanceData('v1', null, FlightPlanIndex.Active);
-        fm.vrToBeConfirmed.set(pdActive?.vr.get() ?? null);
-        fps?.setPerformanceData('vr', null, FlightPlanIndex.Active);
-        fm.v2ToBeConfirmed.set(pdActive?.v2.get() ?? null);
-        fps?.setPerformanceData('v2', null, FlightPlanIndex.Active);
-        this.props.fmcService.master.addMessageToQueue(
-          NXSystemMessages.checkToData,
-          () => activeFlightPlan.performanceData.vr.get() !== null,
-          undefined,
-        );
-      }
-    }
-
-    this.props.fmcService.master.acInterface.updateFmsData();
   }
 
   public destroy(): void {
@@ -328,7 +67,6 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         activePage={this.activePageTitle}
         offset={Subject.create('')}
         eoIsActive={this.eoActive}
-        tmpyIsActive={this.displayTmpy}
         penaltyIsActive={this.displayPenalty}
         isFmsSubsystemPage={true}
       />

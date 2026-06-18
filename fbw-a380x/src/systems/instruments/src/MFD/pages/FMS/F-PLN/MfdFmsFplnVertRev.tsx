@@ -20,7 +20,7 @@ import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 
 import './MfdFmsFplnVertRev.scss';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AltitudeOrFlightLevelFormat, SpeedKnotsFormat, TimeHHMMSSFormat } from '../../common/DataEntryFormats';
 import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
@@ -53,7 +53,7 @@ enum SelectedPage {
   STEP_ALTS = 4,
 }
 
-export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
+export class MfdFmsFplnVertRev extends FmsFlightPlanPage<MfdFmsFplnVertRevProps> {
   private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
 
   private readonly availableWaypoints = ArraySubject.create<string>([]);

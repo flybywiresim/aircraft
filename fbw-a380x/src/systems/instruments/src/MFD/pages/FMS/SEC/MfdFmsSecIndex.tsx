@@ -1,5 +1,5 @@
 import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
@@ -149,7 +149,7 @@ class MfdFmsSecIndexDataStore {
   }
 }
 
-export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
+export class MfdFmsSecIndex extends FmsFlightPlanPage<MfdFmsSecIndexProps> {
   private readonly sec1DataStore = new MfdFmsSecIndexDataStore(1, this.props.bus, this.props.fmcService.master);
   private readonly sec2DataStore = new MfdFmsSecIndexDataStore(2, this.props.bus, this.props.fmcService.master);
   private readonly sec3DataStore = new MfdFmsSecIndexDataStore(3, this.props.bus, this.props.fmcService.master);

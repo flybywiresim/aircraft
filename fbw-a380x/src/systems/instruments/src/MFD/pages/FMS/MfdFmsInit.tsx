@@ -17,7 +17,7 @@ import {
 } from '../common/DataEntryFormats';
 import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
@@ -36,7 +36,7 @@ import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
-export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
+export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
   /** FIX ME WE shouldn't require this but since we completely delete flightplan from memory, it is possible that we are on this page on one MFD and delete the SEC on the other, meaning, we end up with no flightplan.
    * As such, disable callsign and tropo if that's the case.
    */
@@ -698,7 +698,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <CpnyWindRequestButton
                 fmc={this.props.fmcService.master}
                 flightPlanIndex={this.loadedFlightPlanIndex}
-                tmpyExists={this.tmpyExists}
+                tmpyExists={this.tmpyActive}
                 isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
               />
             </div>

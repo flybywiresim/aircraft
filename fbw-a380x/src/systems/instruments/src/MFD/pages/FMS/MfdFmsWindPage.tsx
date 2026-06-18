@@ -12,7 +12,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from '../../MFD';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Footer } from '../common/Footer';
 import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
@@ -80,7 +80,7 @@ interface WindDisplayEntry {
   enteredByPilot?: boolean;
 }
 
-export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
+export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   private static readonly pageTitlesActiveFpln = ['HISTORY', 'CLB', 'CRZ', 'DES'];
   private static readonly pageTitlesSecondaryFpln = ['', 'CLB', 'CRZ', 'DES']; // Use an empty page title to skip the history page in SEC.
 
@@ -107,9 +107,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         return '';
     }
   });
-  private readonly temporaryMessageAreaDisplay = this.tmpyExists.map((exists) => (exists ? 'block' : 'none'));
-  private readonly tableHeaderDisplay = this.tmpyExists.map((exists) => (exists ? 'none' : 'flex'));
-  private readonly uplinkAvailableForPlan = Subject.create(false);
+  private readonly temporaryMessageAreaDisplay = this.tmpyActive.map((exists) => (exists ? 'block' : 'none'));
+  private readonly tableHeaderDisplay = this.tmpyActive.map((exists) => (exists ? 'none' : 'flex'));
 
   // History Wind
   private static readonly NUM_HISTORY_WIND_ENTRIES = 5;

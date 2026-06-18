@@ -33,7 +33,7 @@ import { ContextMenu, ContextMenuElement } from '../../../../MsfsAvionicsCommon/
 import { FplnRevisionsMenuType, getRevisionsMenu } from './FplnRevisionsMenu';
 import { DestinationWindow } from './DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from './InsertNextWptFrom';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -69,7 +69,7 @@ export interface DerivedFplnLegData {
   distanceFromLastWpt: number | null;
 }
 
-export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
+export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );

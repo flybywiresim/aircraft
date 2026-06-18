@@ -4,7 +4,7 @@ import './MfdFmsFplnDirectTo.scss';
 import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -21,7 +21,7 @@ enum DirectToOption {
   CRS_OUT = 3,
 }
 
-export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
+export class MfdFmsFplnDirectTo extends FmsFlightPlanPage<MfdFmsFplnDirectToProps> {
   private readonly dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
   private readonly availableWaypoints = ArraySubject.create<string>([]);
