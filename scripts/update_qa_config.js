@@ -40,7 +40,7 @@ function fetchUrl(url) {
 
 function updateTrackInfo(addonKey, track, prNumber, prTitle, prBody) {
   const addonPrefix = track.key.split('-pr-')[0];
-  const trackName = `PR #${prNumber} ${addonPrefix.startsWith('a380x') && addonKey.includes('fs2020') ? `(${track.key.includes('8k') ? '8K' : '4K'})` : ''} | ${prTitle}`;
+  const trackName = `PR #${prNumber} ${addonPrefix.startsWith('a380x') && addonKey.includes('fs2020') ? `(${track.key.includes('8k') ? '8K' : '4K'}) ` : ''}| ${prTitle}`;
   const description = `## [${prTitle} #${prNumber}](https://github.com/${GITHUB_REPO}/pull/${prNumber})\n\n${prBody}`;
 
   track.name = trackName;
