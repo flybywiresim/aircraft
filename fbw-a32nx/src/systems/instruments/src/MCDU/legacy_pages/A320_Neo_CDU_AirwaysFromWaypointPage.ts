@@ -152,15 +152,20 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
                   inAlternate,
                 );
 
-                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
-                  mcdu,
-                  reviseIndex,
-                  undefined,
-                  result ? 1 : -1,
-                  forPlan,
-                  inAlternate,
-                  planIndexToEdit,
-                );
+                if (result) {
+                  A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
+                    mcdu,
+                    reviseIndex,
+                    undefined,
+                    1,
+                    forPlan,
+                    inAlternate,
+                    planIndexToEdit,
+                  );
+                } else {
+                  mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
+                  scratchpadCallback();
+                }
               } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                 scratchpadCallback();
