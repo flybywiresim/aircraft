@@ -947,7 +947,12 @@ export class CDUFlightPlanPage {
     const waypointsAndMarkers = this.createWaypointsAndMarkers(mcdu, targetPlan, true);
     if (waypointsAndMarkers.length === 0) {
       mcdu.setTemplate([FormatLine(...title), ...emptyFplnPage(forPlan)]);
-      mcdu.onLeftInput[0] = () => CDULateralRevisionPage.ShowPage(mcdu, undefined, undefined, forPlan);
+      mcdu.onLeftInput[0] = () => {
+        if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan)) {
+          return;
+        }
+        CDULateralRevisionPage.ShowPage(mcdu, undefined, undefined, forPlan);
+      };
 
       return;
     }
@@ -1133,6 +1138,9 @@ export class CDUFlightPlanPage {
           5,
           () => mcdu.getDelaySwitchPage(),
           () => {
+            if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan)) {
+              return;
+            }
             mcdu.returnPageCallback = () => {
               CDUFlightPlanPage.ShowDestinationPage(mcdu, isPageB, forPlan);
             };
@@ -1146,6 +1154,9 @@ export class CDUFlightPlanPage {
           5,
           () => mcdu.getDelaySwitchPage(),
           () => {
+            if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan)) {
+              return;
+            }
             CDUVerticalRevisionPage.ShowPage(
               mcdu,
               destLeg,
@@ -1212,8 +1223,18 @@ export class CDUFlightPlanPage {
       };
     }
 
-    mcdu.onNextPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
-    mcdu.onPrevPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+    mcdu.onNextPage = () => {
+      if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan)) {
+        return;
+      }
+      CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+    };
+    mcdu.onPrevPage = () => {
+      if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan)) {
+        return;
+      }
+      CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+    };
 
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}';
@@ -1235,6 +1256,9 @@ export class CDUFlightPlanPage {
       return (value: string, scratchpadCallback: () => void) => {
         if (fpIndex === targetPlan.destinationLegIndex) {
           if (value === '') {
+            if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan, scratchpadCallback)) {
+              return;
+            }
             CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
             mcdu.efisInterfaces?.L.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
             mcdu.efisInterfaces?.R.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
@@ -1259,6 +1283,9 @@ export class CDUFlightPlanPage {
 
         switch (value) {
           case '':
+            if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan, scratchpadCallback)) {
+              return;
+            }
             CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
             break;
           case Keypad.clrValue:
@@ -1356,6 +1383,9 @@ export class CDUFlightPlanPage {
           CDUFlightPlanPage.clearElement(mcdu, fpIndex, forPlan, inAlternate, scratchpadCallback);
           return;
         }
+        if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan, scratchpadCallback)) {
+          return;
+        }
         CDUHoldAtPage.ShowPage(mcdu, fpIndex, forPlan, inAlternate);
         scratchpadCallback();
       };
@@ -1366,6 +1396,9 @@ export class CDUFlightPlanPage {
     return (mcdu: LegacyFmsPageInterface, forPlan: number, offset: number, _isPageB: boolean) => {
       return (value: string, scratchpadCallback: () => void) => {
         if (value === '') {
+          if (CDUFlightPlanPage.rejectActiveTmpyRevision(mcdu, forPlan, scratchpadCallback)) {
+            return;
+          }
           CDUVerticalRevisionPage.ShowPage(
             mcdu,
             wp,
@@ -1426,6 +1459,20 @@ export class CDUFlightPlanPage {
         scratchpadCallback();
       };
     };
+  }
+
+  static rejectActiveTmpyRevision(
+    mcdu: LegacyFmsPageInterface,
+    forPlan: number,
+    scratchpadCallback?: () => void,
+  ): boolean {
+    if (forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
+      mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+      scratchpadCallback?.();
+      return true;
+    }
+
+    return false;
   }
 
   static async clearElement(
