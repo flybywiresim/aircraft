@@ -1488,31 +1488,31 @@ const getBC3Message = (
     className = 'FontMediumSmaller Cyan';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'FontMedium White';
+    className = 'FontMediumSmaller White';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'FontMedium White';
+    className = 'FontMediumSmaller White';
   } else if (thrustLocked) {
     text = 'MOVE THR LEVERS';
     className = 'BlinkInfinite Amber';
   } else if (tdReached) {
     text = 'T/D REACHED';
-    className = 'FontMedium White';
+    className = 'FontMediumSmaller White';
   } else if (false) {
     text = 'EXTEND SPD BRK';
-    className = 'White';
+    className = 'FontMediumSmaller White';
   } else if (false) {
     text = 'RETRACT SPD BRK';
-    className = 'White';
+    className = 'FontMediumSmaller White';
   } else if (false) {
     text = 'CHECK APPR SEL';
-    className = 'White';
+    className = 'FontMediumSmaller White';
   } else if (setHoldSpeed) {
     text = 'SET HOLD SPD';
-    className = 'FontMedium White';
+    className = 'FontMediumSmaller White';
   } else if (exitMissed) {
     text = 'EXIT MISSED';
-    className = 'White';
+    className = 'FontMediumSmaller White';
   } else if (unrestrictedClimbDescent === 1) {
     text = 'FCU ALT BELOW A/C';
     className = 'FontMediumSmaller  White';

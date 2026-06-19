@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 
 ## 2020.15.0
 
