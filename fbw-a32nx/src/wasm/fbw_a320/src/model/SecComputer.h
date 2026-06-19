@@ -59,11 +59,13 @@ class SecComputer final
     boolean_T pRightStickDisabled;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_i;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_iw;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_b4;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_fh;
-    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nu;
-    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_g4b;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_gi;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_i;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_n5;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_d5w;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g24;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_k4;
@@ -180,6 +182,8 @@ class SecComputer final
     real_T ConfirmNode_timeDelay_c;
     real_T ConfirmNode1_timeDelay_k;
     real_T ConfirmNode2_timeDelay;
+    real_T ConfirmNode2_timeDelay_e;
+    real_T ConfirmNode3_timeDelay;
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
     real_T ConfirmNode_timeDelay_e;
@@ -203,7 +207,9 @@ class SecComputer final
     boolean_T ConfirmNode_isRisingEdge_a;
     boolean_T ConfirmNode1_isRisingEdge_j;
     boolean_T ConfirmNode2_isRisingEdge;
+    boolean_T ConfirmNode2_isRisingEdge_f;
     boolean_T PulseNode_isRisingEdge;
+    boolean_T ConfirmNode3_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
