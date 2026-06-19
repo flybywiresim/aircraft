@@ -80,6 +80,8 @@ enum FlightPhaseTabIndex {
   GoAround = 5,
 }
 
+const APPROACH_WEATHER_MANDATORY_DISTANCE_NM = 180;
+
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
@@ -104,6 +106,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
+
+  private readonly approachWeatherMandatory = Subject.create(false);
 
   private readonly visibilityConsideringFlightPlanIndex = this.loadedFlightPlanIndex.map((it) =>
     it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
@@ -960,6 +964,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.weightUnitText,
       this.lengthUnit,
       this.mandatoryAndActiveFpln,
+      this.approachWeatherMandatory,
       this.visibilityConsideringFlightPlanIndex,
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
@@ -1020,6 +1025,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     const fpIndex = this.loadedFlightPlanIndex.get();
+    const isPrimaryFlightPlan = fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary;
+    const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
+
+    this.approachWeatherMandatory.set(
+      isPrimaryFlightPlan &&
+        destPred !== null &&
+        destPred !== undefined &&
+        Number.isFinite(destPred.distanceFromAircraft) &&
+        destPred.distanceFromAircraft < APPROACH_WEATHER_MANDATORY_DISTANCE_NM,
+    );
+
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
       const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
       this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
@@ -1260,7 +1276,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       (selectedTabIndex === FlightPhaseTabIndex.Cruise || selectedTabIndex === FlightPhaseTabIndex.Descent)
     ) {
       let destEta = '--:--';
-      const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
       if (destPred?.secondsFromPresent !== undefined) {
         destEta = getEtaUtcOrFromPresent(
           destPred.secondsFromPresent,
@@ -3114,7 +3129,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          mandatory={this.mandatoryAndActiveFpln}
+                          mandatory={this.approachWeatherMandatory}
                           readonlyValue={this.approachTemperature}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
@@ -3139,7 +3154,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             );
                             SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhToMillibar(v));
                           }}
-                          mandatory={this.mandatoryAndActiveFpln}
+                          mandatory={this.approachWeatherMandatory}
                           readonlyValue={this.approachQnh}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
