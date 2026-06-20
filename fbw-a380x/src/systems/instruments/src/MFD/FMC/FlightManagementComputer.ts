@@ -1132,8 +1132,6 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** Removes a message from the fms message queue by its text content.
-   * @deprecated Use removeMessageFromQueueByType instead.
-   * @param value {String}
    */
   removeMessageFromQueue(value: string) {
     const index = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);

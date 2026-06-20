@@ -556,7 +556,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
           leg.definition.turnDirection;
 
-          const etaOrSecondsFromPresent = isOrigin ? 0 : pred?.secondsFromPresent;
+          const secondsFromPresent = isOrigin ? 0 : pred?.secondsFromPresent;
 
           const data: FplnLineWaypointDisplayData = {
             type: FplnLineType.Waypoint,
@@ -570,7 +570,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             annotation: procedureAnnotation,
             rnpAnnotation: rnpAnnotation,
             etaOrSecondsFromPresent:
-              etaOrSecondsFromPresent !== undefined ? this.predictionTimestamp(etaOrSecondsFromPresent) : null,
+              secondsFromPresent !== undefined ? this.predictionTimestamp(secondsFromPresent) : null,
             transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
             altitudePrediction: isOrigin
               ? this.loadedFlightPlan.originAirport?.location.alt ?? null

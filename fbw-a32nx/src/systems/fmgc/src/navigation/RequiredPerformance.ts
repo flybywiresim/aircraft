@@ -34,19 +34,19 @@ export class RequiredPerformance {
 
   private readonly rnpEventsPublisher = this.bus.getPublisher<RequiredNavigationPerformanceEvents>();
 
-  private readonly areaRnpIs = Subject.create<number | undefined>(undefined);
+  private readonly pilotRnpGreaterThanAreaRnp = Subject.create<number | undefined>(undefined);
 
-  private readonly procedureRnpIs = Subject.create<number | undefined>(undefined);
+  private readonly pilotRnpGreaterThanProcedureRnp = Subject.create<number | undefined>(undefined);
 
   constructor(
     private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
   ) {
-    this.areaRnpIs.sub((areaRnp) => {
+    this.pilotRnpGreaterThanAreaRnp.sub((areaRnp) => {
       this.rnpEventsPublisher.pub('pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
     });
 
-    this.procedureRnpIs.sub((procedureRnp) => {
+    this.pilotRnpGreaterThanProcedureRnp.sub((procedureRnp) => {
       this.rnpEventsPublisher.pub('pilot_rnp_greater_than_proc_rnp', procedureRnp, false, false);
     });
   }
@@ -64,8 +64,8 @@ export class RequiredPerformance {
 
   clearPilotRnp(): void {
     this.manualRnp = false;
-    this.areaRnpIs.set(undefined);
-    this.procedureRnpIs.set(undefined);
+    this.pilotRnpGreaterThanAreaRnp.set(undefined);
+    this.pilotRnpGreaterThanProcedureRnp.set(undefined);
     this.updateAutoRnp();
   }
 
@@ -124,19 +124,15 @@ export class RequiredPerformance {
       const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : undefined;
       const leg = plan?.maybeElementAt(plan.activeLegIndex);
       const legrnp = isLeg(leg) ? leg.rnp : undefined;
-      this.procedureRnpIs.set(pilotRnp !== undefined && legrnp !== undefined && pilotRnp > legrnp ? legrnp : undefined);
+      this.pilotRnpGreaterThanProcedureRnp.set(
+        pilotRnp !== undefined && legrnp !== undefined && pilotRnp > legrnp ? legrnp : undefined,
+      );
+
       // Check if pilot rnp is greater than area rnp if no leg rnp exists.
-      if (legrnp === undefined) {
-        this.procedureRnpIs.set(undefined);
-        const areaRnp = rnpDefaults[this.flightPlanService.active.calculateActiveArea()];
-        if (pilotRnp !== undefined && areaRnp !== undefined && pilotRnp > areaRnp) {
-          this.areaRnpIs.set(areaRnp);
-        } else {
-          this.areaRnpIs.set(undefined);
-        }
-      } else {
-        this.areaRnpIs.set(undefined);
-      }
+      const areaRnp = legrnp === undefined && plan ? rnpDefaults[plan.calculateActiveArea()] : undefined;
+      this.pilotRnpGreaterThanAreaRnp.set(
+        pilotRnp !== undefined && areaRnp !== undefined && pilotRnp > areaRnp ? areaRnp : undefined,
+      );
     }
   }
 }
