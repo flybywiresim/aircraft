@@ -349,7 +349,6 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly atsuBusPublisher = this.bus.getPublisher<FmsToAtsuEvents>();
   private readonly datalinkBusPublisher = this.bus.getPublisher<FmsToDatalinkSubsystemEvents>();
   private readonly atsuBusSubscriber = this.bus.getSubscriber<AtsuToFmsEvents>();
-  private readonly pendingFlightPlanWindUplink = Subject.create<number | null>(null);
 
   constructor(
     private instance: FmcIndex,
@@ -448,6 +447,7 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.cpnyFplnAvailable.sub((v) => {
         if (v) {
+          this.removeMessageFromQueue(NXSystemMessages.receivedCpnyFplnNotValid.text);
           this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         } else {
           this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
@@ -943,9 +943,9 @@ export class FlightManagementComputer implements FmcInterface {
           message: windReq,
         },
         true,
+        false,
       );
       this.cpnyWindUplinkInProgress.set(true);
-      this.pendingFlightPlanWindUplink.set(flightPlanIndex);
     }
   }
 
@@ -1485,6 +1485,8 @@ export class FlightManagementComputer implements FmcInterface {
 
         this.triggerCheckSpeedModeMessage(null);
 
+        this.deleteWindUplinkOrDraftFromAllPlans();
+
         /** Clear pre selected speed/mach */
         this.acInterface.updatePreSelSpeedMach(null);
         this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', null);
@@ -1497,10 +1499,13 @@ export class FlightManagementComputer implements FmcInterface {
 
         this.checkDestData();
 
+        this.deleteWindUplinkOrDraftFromAllPlans();
+
         break;
       }
 
       case FmgcFlightPhase.GoAround: {
+        this.deleteWindUplinkOrDraftFromAllPlans();
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number', Simplane.getIndicatedSpeed());
 
         this.flightPlanInterface.stringMissedApproach(
@@ -2039,7 +2044,7 @@ export class FlightManagementComputer implements FmcInterface {
       const status = response.status;
       const plan = this.flightPlanInterface.get(planIndex);
       // If we have initiated a request before cruise phase and we entered another phase while it was still pending, delete it.
-      if (this.flightPhase.get() > FmgcFlightPhase.Cruise) {
+      if (plan.isActiveOrCopiedFromActive() && this.flightPhase.get() > FmgcFlightPhase.Cruise) {
         plan.pendingWindUplink.onUplinkAborted();
       } else {
         let deletePendingUplink = true;
@@ -2054,6 +2059,10 @@ export class FlightManagementComputer implements FmcInterface {
           } else {
             try {
               PendingWindUplinkParser.setFromUplink(message, plan, this.flightPhaseManager.phase, FpmConfigs.A380);
+              // Remove messages related to failed wind uplink.
+              this.removeMessageFromQueue(NXSystemMessages.receivedCpnyWindNotValid.text);
+              this.removeMessageFromQueue(NXSystemMessages.noCompanyReply.text);
+              this.removeMessageFromQueue(NXSystemMessages.notTransmittedToAcr.text);
               if (planIndex === FlightPlanIndex.Active) {
                 this.windUplinkRecievedActive.set(true);
               } else if (planIndex >= FlightPlanIndex.FirstSecondary) {
@@ -2079,6 +2088,26 @@ export class FlightManagementComputer implements FmcInterface {
       }
     }
     this.cpnyWindUplinkInProgress.set(false);
-    this.pendingFlightPlanWindUplink.set(null);
+  }
+
+  // Deletes all the company wind uplinks or draft winds from flightplans which wind modification is disabled starting in descent phase (active & secs copy of active)
+  private deleteWindUplinkOrDraftFromAllPlans(): void {
+    for (let i = 0; i < FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+      const planIndex = i + FlightPlanIndex.FirstSecondary;
+      if (this.flightPlanInterface.has(planIndex)) {
+        const plan = this.flightPlanInterface.get(planIndex);
+        if (plan.isActiveOrCopiedFromActive()) {
+          plan.deleteDraftWindEntries();
+          plan.pendingWindUplink.onUplinkAborted();
+          this.windUplinkRecievedSec[i].set(false);
+        }
+      }
+    }
+    const active = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active : null;
+    if (active) {
+      active.deleteDraftWindEntries();
+      active.pendingWindUplink.onUplinkAborted();
+      this.windUplinkRecievedActive.set(false);
+    }
   }
 }
