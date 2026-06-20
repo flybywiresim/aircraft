@@ -359,6 +359,14 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
 
   private readonly draftWindLabelVisibility = this.draftWindsExist.map((exists) => (exists ? 'visible' : 'hidden'));
 
+  private readonly draftWindButtonDisplay = this.draftWindsExist.map((exists) => (exists ? 'flex' : 'none'));
+
+  private readonly returnButtonDisplay = MappedSubject.create(
+    ([showReturnButton, draft]) => (showReturnButton && !draft ? 'inline' : 'none'),
+    this.returnButtonVisible,
+    this.draftWindsExist,
+  );
+
   protected onNewData(): void {
     this.updatePage();
   }
@@ -537,6 +545,8 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.historyWindsDisabled,
       this.draftWindButtonIsAmber,
       this.draftWindLabelVisibility,
+      this.draftWindButtonDisplay,
+      this.returnButtonDisplay,
     );
     this.automaticallySelectTab();
   }
@@ -734,6 +744,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
           this.loadedFlightPlanIndex.get(),
         );
       }
+      this.shiftUpDisplayedWindEntriesFromIndex(displayEntries, index);
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
       const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
@@ -1451,56 +1462,64 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
             </TopTabNavigatorPage>
           </TopTabNavigator>
           <div class="mfd-fms-wind-bottom-buttons-container">
-            <Button
-              label={
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <span
-                    style={{ textAlign: 'center', verticalAlign: 'center', marginRight: '10px' }}
-                    class={{ amber: this.draftWindButtonIsAmber }}
-                  >
-                    CANCEL
-                    <br />
-                    WIND
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>*</span>
-                </div>
-              }
-              onClick={() => this.confirmFlightPlanDraftWinds(false)}
-              visible={this.draftWindsExist}
-            />
-            <Button
-              label="RETURN"
-              onClick={() => this.props.mfd.uiService.navigateTo('back')}
-              buttonStyle="margin-right: 61px; width:125px;"
-              visible={this.returnButtonVisible}
-            />
-            <CpnyWindRequestButton
-              fmc={this.props.fmcService.master}
-              flightPlanIndex={this.loadedFlightPlanIndex}
-              tmpyExists={this.tmpyActive}
-              isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
-            />
-            <Button
-              visible={this.draftWindsExist}
-              onClick={() => this.confirmFlightPlanDraftWinds(true)}
-              label={
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <span
-                    style={{
-                      'text-align': 'center',
-                      'vertical-align': 'center',
-                      'margin-right': '10px',
-                    }}
-                    class={{ amber: this.draftWindButtonIsAmber }}
-                  >
-                    INSERT
-                    <br />
-                    WIND
-                  </span>
-                  <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                </div>
-              }
-            />
+            <div class="mfd-fms-wind-return-cancel-wind-container">
+              <div style={{ display: this.returnButtonDisplay }}>
+                <Button
+                  label="RETURN"
+                  onClick={() => this.props.mfd.uiService.navigateTo('back')}
+                  buttonStyle="width:125px;"
+                  visible={this.returnButtonVisible}
+                />
+              </div>
+              <div style={{ display: this.draftWindButtonDisplay }}>
+                <Button
+                  label={
+                    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                      <span
+                        style="text-align: center; vertical-align: center; margin-right: 10px;"
+                        class={{ 'mfd-fms-wind-draft-wind-button-text-amber': this.draftWindButtonIsAmber }}
+                      >
+                        CANCEL
+                        <br />
+                        WIND
+                      </span>
+                      <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                    </div>
+                  }
+                  onClick={() => this.confirmFlightPlanDraftWinds(false)}
+                  visible={this.draftWindsExist}
+                  buttonStyle="justify-self: flex-end; height:58px;"
+                />
+              </div>
+            </div>
+            <div class="mfd-fms-wind-cpny-button-container">
+              <CpnyWindRequestButton
+                fmc={this.props.fmcService.master}
+                flightPlanIndex={this.loadedFlightPlanIndex}
+                tmpyExists={this.tmpyActive}
+                isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
+              />
+            </div>
+            <div class="mfd-fms-wind-insert-button-container" style={{ display: this.draftWindButtonDisplay }}>
+              <Button
+                label={
+                  <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                    <span
+                      style="text-align: center; vertical-align: center; margin-right: 10px;"
+                      class={{ 'mfd-fms-wind-draft-wind-button-text-amber': this.draftWindButtonIsAmber }}
+                    >
+                      INSERT
+                      <br />
+                      WIND
+                    </span>
+                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                  </div>
+                }
+                onClick={() => this.confirmFlightPlanDraftWinds(true)}
+                visible={this.draftWindsExist}
+                buttonStyle="justify-self: flex-end; height:58px;"
+              />
+            </div>
           </div>
         </div>
         <Footer

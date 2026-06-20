@@ -350,7 +350,6 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly datalinkBusPublisher = this.bus.getPublisher<FmsToDatalinkSubsystemEvents>();
   private readonly atsuBusSubscriber = this.bus.getSubscriber<AtsuToFmsEvents>();
   private readonly pendingFlightPlanWindUplink = Subject.create<number | null>(null);
-  private readonly draftWindsExist = Subject.create(false);
 
   constructor(
     private instance: FmcIndex,
@@ -509,11 +508,6 @@ export class FlightManagementComputer implements FmcInterface {
         .handle(() => {
           this.addMessageToQueue(NXSystemMessages.draftWindsInserted, undefined, undefined);
         }),
-      this.draftWindsExist.sub((v) => {
-        if (!v) {
-          this.removeMessageFromQueue(NXSystemMessages.draftWindsInserted.text);
-        }
-      }),
     );
 
     for (let i = 0; i < this.uplinkWaitingInsertionSec.length; i++) {
@@ -1721,7 +1715,6 @@ export class FlightManagementComputer implements FmcInterface {
       this.companyWindUplinkPending.set(
         this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get()) && this.#flightPlanService.hasTemporary,
       );
-      this.draftWindsExist.set(this.flightPlanInterface.active.hasDraftWindEntries());
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
     }

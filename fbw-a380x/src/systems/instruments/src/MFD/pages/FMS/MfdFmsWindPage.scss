@@ -237,3 +237,19 @@ $wind-row-width: 465px;
 .mfd-fms-wind-draft-wind-button-text-amber {
   color: $display-amber;
 }
+
+.mfd-fms-wind-return-cancel-wind-container {
+  width: 125px;
+}
+
+
+.mfd-fms-wind-cpny-button-container {
+  position:relative;
+  left: 61px;
+}
+
+.mfd-fms-wind-insert-button-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
