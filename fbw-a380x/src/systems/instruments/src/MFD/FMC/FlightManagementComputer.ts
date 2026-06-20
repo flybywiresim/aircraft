@@ -61,6 +61,7 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
@@ -521,31 +522,32 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
-    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-      const latched = this.flightPlanInterface.get(forPlan).performanceData.rememberedTakeoffWeight?.get();
-      return latched !== undefined ? latched : this.calculatePreflightTakeoffWeight(forPlan);
-    }
-    return this.calculatePreflightTakeoffWeight(forPlan);
+    return this.flightPlanInterface.get(forPlan).performanceData.takeoffWeight?.get() ?? null;
   }
 
-  private calculatePreflightTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
-    const pd = this.flightPlanInterface.get(forPlan).performanceData;
-    if (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan)) {
-      // On ground, engines off
-      // TOW before engine start: TOW = ZFW + BLOCK - TAXI
+  public calculateTakeoffWeight(forPlan = FlightPlanIndex.Active): void {
+    const plan = this.flightPlanInterface.get(forPlan);
+    const pd = plan.performanceData;
+    const isManualSecondary = !!(plan.flags & FlightPlanFlags.ManualCreation);
 
+    if (!isManualSecondary && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+      return; // frozen at liftoff, don't overwrite
+    }
+
+    let tow: number | null;
+    if (isManualSecondary || (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan))) {
+      // Engines off or manual secondary: ZFW + BLOCK - TAXI
       const zfw = pd.zeroFuelWeight.get();
       const blockFuel = pd.blockFuel.get();
       const taxiFuel = pd.taxiFuel.get();
-      if (zfw != null && blockFuel !== null && taxiFuel !== null) {
-        return (zfw + blockFuel - taxiFuel) * 1000;
-      }
-      return null;
+      tow = zfw != null && blockFuel !== null && taxiFuel !== null ? (zfw + blockFuel - taxiFuel) * 1000 : null;
+    } else {
+      // Engines on, preflight: GW - TAXI
+      const gw = this.fmgc.getGrossWeightKg();
+      tow = gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
     }
-    // Preflight, engines on
-    // TOW after engine start: TOW = GW - TAXI
-    const gw = this.fmgc.getGrossWeightKg();
-    return gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
+
+    pd.takeoffWeight?.set(tow);
   }
 
   public getTripFuel(forPlan = FlightPlanIndex.Active): number | null {
@@ -1203,9 +1205,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
-        this.flightPlanInterface.active.performanceData.rememberedTakeoffWeight?.set(
-          this.calculatePreflightTakeoffWeight(),
-        );
+        this.flightPlanInterface.active.performanceData.takeoffWeight?.set(this.fmgc.getGrossWeightKg());
 
         this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);

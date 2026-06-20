@@ -122,7 +122,7 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
     cloned.estimatedTakeoffTimeExpired.set(this.estimatedTakeoffTimeExpired.get());
 
-    cloned.rememberedTakeoffWeight?.set(this.rememberedTakeoffWeight.get());
+    cloned.takeoffWeight?.set(this.takeoffWeight.get());
     cloned.paxNumber?.set(this.paxNumber.get());
     cloned.takeoffPowerSetting?.set(this.takeoffPowerSetting.get());
     cloned.takeoffDeratedSetting?.set(this.takeoffDeratedSetting.get());
@@ -599,7 +599,7 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * The takeoff weight latched at the moment the Takeoff phase begins, in kg. Null until then.
    */
-  readonly rememberedTakeoffWeight = Subject.create<number | null>(null);
+  readonly takeoffWeight = Subject.create<number | null>(null);
 
   /**
    * The taxi fuel entered by the pilot in tonnes, or null if not set.
@@ -984,7 +984,7 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
       costIndexMode: this.costIndexMode.get(),
       climbDerated: this.climbDerated.get(),
       descentCabinRate: this.descentCabinRate.get(),
-      rememberedTakeoffWeight: this.rememberedTakeoffWeight.get(),
+      takeoffWeight: this.takeoffWeight.get(),
       climbWindEntries: this.climbWindEntries.get(),
       descentWindEntries: this.descentWindEntries.get(),
       alternateWind: this.alternateWind.get(),
