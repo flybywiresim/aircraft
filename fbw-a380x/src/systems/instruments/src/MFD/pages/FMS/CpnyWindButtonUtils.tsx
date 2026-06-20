@@ -14,7 +14,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FmcInterface } from '../../FMC/FmcInterface';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 export interface CpnyWindRequestButtonProps extends ComponentProps {

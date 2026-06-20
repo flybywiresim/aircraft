@@ -1606,10 +1606,6 @@ export class FlightManagementComputer implements FmcInterface {
     return this.cpnyWindUplinkInProgress;
   }
 
-  getDraftWindsExist(): Subscribable<boolean> {
-    return this.draftWindsExist;
-  }
-
   private checkDestData(): void {
     if (!this.destDataEntered.get()) {
       this.addMessageToQueue(NXSystemMessages.enterDestData);
@@ -1986,7 +1982,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.flightPlanInterface.hasActive
     ) {
       const fp = this.flightPlanInterface.active;
-      if (fp.hasDraftWindEntries()) {
+      if (!fp.hasDraftWindEntries()) {
         const historyWinds = this.historyWinds
           .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
           .filter((entry) => entry.vector !== undefined);

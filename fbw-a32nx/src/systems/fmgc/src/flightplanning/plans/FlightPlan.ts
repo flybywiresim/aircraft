@@ -801,13 +801,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const entries = this.prepareClimbWindDraftModification() ?? this.performanceData.climbWindEntries.get();
 
     this.setClbDesWindEntry(entries, altitudeOrGround, entry, maxNumberEntries);
-    if (!this.draftClimbWindExists) {
+    if (this.draftClimbWindEntries === undefined) {
       // Only send the event if we are not modifying the draft winds.
       // Do this so the RPC event is sent
       this.setPerformanceData(
         'climbWindEntries',
         this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
       );
+    } else {
+      this.incrementVersion();
     }
   }
 
@@ -845,6 +847,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         'descentWindEntries',
         this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
       );
+    } else {
+      this.incrementVersion();
     }
   }
 
@@ -952,6 +956,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateDraftWind = null;
       }
       this.alternateDraftWindExists = true;
+      this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', entry);
     }
@@ -1135,12 +1140,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * Deletes the draft wind entries from the flight plan without inserting them, if they exist.
    */
   public deleteDraftWindEntries() {
-    this.deleteDraftClimbWindEntries();
-    this.deleteCruiseDraftWindEntries();
-    this.deleteDraftDescentWindEntries();
-    if (this.alternateDraftWindExists) {
-      this.alternateDraftWind = null;
-      this.alternateDraftWindExists = false;
+    const climbDeleted = this.deleteDraftClimbWindEntries();
+    const cruiseDeleted = this.deleteCruiseDraftWindEntries();
+    const descentDeleted = this.deleteDraftDescentWindEntries();
+    const alternateDeleted = this.deleteAlternateDraftWindEntries();
+    if (climbDeleted || cruiseDeleted || descentDeleted || alternateDeleted) {
+      this.incrementVersion();
     }
   }
 
@@ -1166,11 +1171,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return this.draftClimbWindEntries;
   }
 
-  private deleteDraftClimbWindEntries(): void {
+  private deleteDraftClimbWindEntries(): boolean {
     if (this.draftClimbWindEntries !== undefined) {
       this.draftClimbWindEntries.length = 0;
       this.draftClimbWindExists = false;
+      return true;
     }
+    return false;
   }
 
   private prepareDescentWindDraftModification(): FlightPlanWindEntry[] | undefined {
@@ -1190,11 +1197,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return this.draftDescentWindEntries;
   }
 
-  private deleteDraftDescentWindEntries(): void {
+  private deleteDraftDescentWindEntries(): boolean {
     if (this.draftDescentWindEntries !== undefined) {
       this.draftDescentWindEntries.length = 0;
       this.draftDescentWindExists = false;
+      return true;
     }
+    return false;
+  }
+
+  private deleteAlternateDraftWindEntries(): boolean {
+    if (this.alternateDraftWind !== undefined) {
+      this.alternateDraftWind = null;
+      this.alternateDraftWindExists = false;
+      return true;
+    }
+    return false;
   }
 
   protected static cloneFlightPlanWindEntry(entry: FlightPlanWindEntry): FlightPlanWindEntry {

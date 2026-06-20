@@ -90,23 +90,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   private wasSecPreviouslyActive = false;
   private readonly returnButtonVisible = Subject.create(true);
   private readonly fpIsActiveOrCopyOfActive = Subject.create(false);
-  private readonly draftWinds = MappedSubject.create(
-    ([draftExists, loadedFpIndex]) => draftExists && loadedFpIndex === FlightPlanIndex.Active,
-    this.props.fmcService.master.getDraftWindsExist(),
-    this.loadedFlightPlanIndex,
-  );
-  private readonly displayedWindHeader = this.selectedSubPage.map((menu) => {
-    switch (menu) {
-      case WindSubPageMenu.Climb:
-        return 'CLB WIND';
-      case WindSubPageMenu.Cruise:
-        return 'CRZ WIND AT';
-      case WindSubPageMenu.Descent:
-        return 'DES WIND';
-      default:
-        return '';
-    }
-  });
   private readonly temporaryMessageAreaDisplay = this.tmpyActive.map((exists) => (exists ? 'block' : 'none'));
   private readonly tableHeaderDisplay = this.tmpyActive.map((exists) => (exists ? 'none' : 'flex'));
 
@@ -368,7 +351,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     this.tmpyActive,
   );
 
-  private readonly draftWindVisibility = this.draftWindsExist.map((exists) => (exists ? 'visible' : 'hidden'));
+  private readonly draftWindButtonIsAmber = MappedSubject.create(
+    ([draft, fpIndex]) => draft && fpIndex === FlightPlanIndex.Active,
+    this.draftWindsExist,
+    this.loadedFlightPlanIndex,
+  );
+
+  private readonly draftWindLabelVisibility = this.draftWindsExist.map((exists) => (exists ? 'visible' : 'hidden'));
 
   protected onNewData(): void {
     this.updatePage();
@@ -386,6 +375,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const fp = hasFP ? this.props.fmcService.master.flightPlanInterface.get(loadedFlightPlanIndex) : null;
     const isActiveOrCopyOfActive = fp ? fp.isActiveOrCopiedFromActive() : false;
     this.fpIsActiveOrCopyOfActive.set(isActiveOrCopyOfActive);
+    this.draftWindsExist.set(fp?.hasDraftWindEntries() ?? false);
     const subPage = this.selectedSubPage.get();
     const hasTmpy = this.tmpyActive.get();
     if (subPage === WindSubPageMenu.History) {
@@ -544,12 +534,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       ...this.cruiseWindRowAltitudeIsInactive,
       ...this.cruiseWindRowFlightLevelIsEnteredByPilot,
       this.selectNextDisabled,
-      this.draftWinds.sub((v) => {
-        if (v) {
-          this.updatePage();
-        }
-      }),
       this.historyWindsDisabled,
+      this.draftWindButtonIsAmber,
+      this.draftWindLabelVisibility,
     );
     this.automaticallySelectTab();
   }
@@ -731,33 +718,21 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const displayedAltitudes = isDescentWind ? this.displayedDescentWindAltitudes : this.displayedClimbWindAltitudes;
     const displayEntry = displayEntries[index];
     const oldAltitude = displayEntry.altitude;
-    // Altitude was cleared meaning we need to delete the entry and shift rows accordingly.
-    if (value === null && dataType === WindEntryData.Altitude) {
-      const existsInFlightPlan = oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
-      this.shiftUpDisplayedWindEntriesFromIndex(displayEntries, index);
-      if (existsInFlightPlan) {
-        if (isDescentWind) {
-          this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
-            oldAltitude,
-            null,
-            this.loadedFlightPlanIndex.get(),
-            true,
-          );
-        } else {
-          this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
-            oldAltitude,
-            null,
-            this.loadedFlightPlanIndex.get(),
-          );
-        }
+    // If null is specified, we are clearing the entry.
+    if (value === null && oldAltitude !== null && dataType === WindEntryData.Altitude) {
+      if (isDescentWind) {
+        this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
+          oldAltitude,
+          null,
+          this.loadedFlightPlanIndex.get(),
+          true,
+        );
       } else {
-        // Draft entry which was not in the flightplan.
-        if (isDescentWind) {
-          this.updateDescentWindDisplayRows();
-        } else {
-          this.updateClimbWindDisplayRows();
-        }
-        this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
+        this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
+          oldAltitude,
+          null,
+          this.loadedFlightPlanIndex.get(),
+        );
       }
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
@@ -769,7 +744,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       if (dataType === WindEntryData.Altitude && currentAlt !== null && currentAlt !== oldAltitude) {
         displayEntry.enteredByPilot = true;
       }
-      if (currentAlt !== null && currentDir != null && currentSpeed != null) {
+      if (currentAlt !== null) {
         const altitudeChanged = oldAltitude !== currentAlt;
         if (altitudeChanged) {
           this.sortDisplayWindEntriesByAltitude(displayEntries);
@@ -797,20 +772,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         if (oldAltitude === null) {
           this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
         }
-      } else {
-        const altitudeChanged = oldAltitude !== currentAlt;
-        if (altitudeChanged) {
-          this.sortDisplayWindEntriesByAltitude(displayEntries);
-        }
-        if (isDescentWind) {
-          this.updateDescentWindDisplayRows();
-        } else {
-          this.updateClimbWindDisplayRows();
-        }
-        // Change visibility if it is a new entry or if it was cleared.
-        if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
-          this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
-        }
       }
     }
   }
@@ -821,6 +782,11 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const oldAltitude = displayEntry.altitude;
     const selectedLegIndex = this.selectedWaypointLegIndex.get();
 
+    if (selectedLegIndex === null) {
+      console.log('No selected leg index for cruise wind entry modification.');
+      return;
+    }
+
     if (dataType === WindEntryData.Altitude && displayEntry.isPropagated) {
       // We should never enter here.
       console.log('Propagated cruise wind entry FL edit attempt.');
@@ -829,24 +795,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     }
 
     // Altitude was cleared meaning we need to delete the entry and shift rows accordingly.
-    if (value === null && dataType === WindEntryData.Altitude) {
-      const existsInFlightPlan = oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
+    if (value === null && dataType === WindEntryData.Altitude && oldAltitude !== null) {
       this.shiftUpDisplayedCruiseWindEntriesFromIndex(index);
-      if (existsInFlightPlan && selectedLegIndex !== null) {
-        this.props.fmcService.master.flightPlanInterface.deleteCruiseWindEntry(
-          selectedLegIndex,
-          oldAltitude * 100,
-          this.loadedFlightPlanIndex.get(),
-        );
-      } else {
-        // Draft entry which was not in the flightplan.
-        this.updateCruiseWindDisplayRows();
-        this.updateWindDisplayedEntriesVisibility(
-          this.cruiseWindAltitudesVisible,
-          this.cruiseWindSpeedDirectionVisible,
-          this.displayedCruiseWindFlightLevels,
-        );
-      }
+      this.props.fmcService.master.flightPlanInterface.deleteCruiseWindEntry(
+        selectedLegIndex,
+        oldAltitude * 100,
+        this.loadedFlightPlanIndex.get(),
+      );
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
       const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
@@ -867,48 +822,29 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         displayEntry.speedOrDirectionIsPropagated = false;
       }
 
-      if (currentAlt !== null && currentDir != null && currentSpeed != null) {
+      if (currentAlt !== null) {
         const altitudeChanged = oldAltitude !== currentAlt;
         if (altitudeChanged) {
           this.sortDisplayWindEntriesByAltitude(displayEntries);
         }
         const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
         entry.altitude *= 100;
-        const existedInFlightPlan =
-          oldAltitude !== null && displayEntry.direction !== null && displayEntry.speed !== null;
-
-        if (selectedLegIndex !== null) {
-          if (existedInFlightPlan) {
-            this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
-              selectedLegIndex,
-              oldAltitude * 100,
-              entry,
-              this.loadedFlightPlanIndex.get(),
-            );
-          } else {
-            this.props.fmcService.master.flightPlanInterface.addCruiseWindEntry(
-              selectedLegIndex,
-              entry,
-              this.loadedFlightPlanIndex.get(),
-            );
-          }
+        if (oldAltitude !== null) {
+          this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
+            selectedLegIndex,
+            oldAltitude * 100,
+            entry,
+            this.loadedFlightPlanIndex.get(),
+          );
+        } else {
+          this.props.fmcService.master.flightPlanInterface.addCruiseWindEntry(
+            selectedLegIndex,
+            entry,
+            this.loadedFlightPlanIndex.get(),
+          );
         }
         this.updateCruiseWindDisplayRows();
         if (oldAltitude === null) {
-          this.updateWindDisplayedEntriesVisibility(
-            this.cruiseWindAltitudesVisible,
-            this.cruiseWindSpeedDirectionVisible,
-            this.displayedCruiseWindFlightLevels,
-          );
-        }
-      } else {
-        const altitudeChanged = oldAltitude !== currentAlt;
-        if (altitudeChanged) {
-          this.sortDisplayWindEntriesByAltitude(displayEntries);
-        }
-        this.updateCruiseWindDisplayRows();
-        // Change visibility if it is a new entry or if it was cleared.
-        if ((oldAltitude === null && currentAlt !== null) || currentAlt === null) {
           this.updateWindDisplayedEntriesVisibility(
             this.cruiseWindAltitudesVisible,
             this.cruiseWindSpeedDirectionVisible,
@@ -952,10 +888,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     }
   }
 
-  private getWindEntryFromValues(altitude: number, direction: number, speed: number): WindEntry {
+  private getWindEntryFromValues(altitude: number, direction: number | null, speed: number | null): WindEntry {
     return {
       altitude: altitude,
-      vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
+      vector:
+        direction !== null && speed !== null
+          ? Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create())
+          : undefined,
     };
   }
 
@@ -1105,7 +1044,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
               {/* CLIMB */}
               <div class="mfd-fms-wind-page-container">
                 <div class="mfd-fms-wind-page-title-container">
-                  <span class="mfd-label bigger">{this.displayedWindHeader}</span>
+                  <span
+                    class="mfd-fms-wind-page-draft-label mfd-label biggest"
+                    style={{ visibility: this.draftWindLabelVisibility }}
+                  >
+                    DRAFT
+                  </span>
+                  <span class="mfd-label bigger">CLB WIND</span>
                 </div>
                 <MfdFmsWindPageTableHeader
                   headerDisplay={this.tableHeaderDisplay}
@@ -1157,6 +1102,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedClimbWindDirections[value]}
                           canBeCleared={false}
+                          tmpyActive={this.draftWindsExist}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1184,7 +1130,15 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
               <div class="mfd-fms-wind-page-container crz">
                 <div class="mfd-fms-wind-page-crz-title-buttons-container">
                   <div class="mfd-fms-wind-page-crz-title-container">
-                    <span class="mfd-label bigger">{this.displayedWindHeader}</span>
+                    <span
+                      class="mfd-fms-wind-page-draft-label mfd-label biggest"
+                      style={{ visibility: this.draftWindLabelVisibility }}
+                    >
+                      DRAFT
+                    </span>
+                    <span class="mfd-label bigger" style={{ position: 'relative', bottom: '3px' }}>
+                      CRZ WIND AT
+                    </span>
                   </div>
                   <div class="mfd-fms-wind-page-crz-dropdown-container">
                     <DropdownMenu
@@ -1356,7 +1310,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
               {/* DESCENT */}
               <div class="mfd-fms-wind-page-container">
                 <div class="mfd-fms-wind-page-title-container">
-                  <span class="mfd-label bigger">{this.displayedWindHeader}</span>
+                  <span
+                    class="mfd-fms-wind-page-draft-label mfd-label biggest"
+                    style={{ visibility: this.draftWindLabelVisibility }}
+                  >
+                    DRAFT
+                  </span>
+                  <span class="mfd-label bigger">DES WIND</span>
                 </div>
                 <MfdFmsWindPageTableHeader
                   headerDisplay={this.tableHeaderDisplay}
@@ -1493,13 +1453,16 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
           <div class="mfd-fms-wind-bottom-buttons-container">
             <Button
               label={
-                <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                  <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <span
+                    style={{ textAlign: 'center', verticalAlign: 'center', marginRight: '10px' }}
+                    class={{ amber: this.draftWindButtonIsAmber }}
+                  >
                     CANCEL
                     <br />
                     WIND
                   </span>
-                  <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>*</span>
                 </div>
               }
               onClick={() => this.confirmFlightPlanDraftWinds(false)}
@@ -1518,10 +1481,18 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
               isActiveOrCopiedFromActive={this.fpIsActiveOrCopyOfActive}
             />
             <Button
+              visible={this.draftWindsExist}
               onClick={() => this.confirmFlightPlanDraftWinds(true)}
               label={
-                <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                  <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <span
+                    style={{
+                      'text-align': 'center',
+                      'vertical-align': 'center',
+                      'margin-right': '10px',
+                    }}
+                    class={{ amber: this.draftWindButtonIsAmber }}
+                  >
                     INSERT
                     <br />
                     WIND

@@ -2,17 +2,28 @@
 
 $table-margin-history: 92px;
 $table-margin-no-history: 125px;
+$title-margin-no-history: 22px;
 $header-height-no-history: 63px;
 $header-height-history: 65px;
 $history-fl-label-padding-top: 41px;
 $history-fl-value-padding-top: 39px;
 $wind-row-width: 465px;
+
+
 .mfd-fms-wind-page-container {
   margin-top: 34px;
 }
 
+.mfd-fms-wind-page-draft-label {
+  color: #ffff00;
+  position: relative;
+  padding-right: 13px;
+  bottom: 4px;
+  font-size: 30px;
+}
+
 .mfd-fms-wind-page-title-container {
-  margin-left: $table-margin-no-history;
+  margin-left: $title-margin-no-history;
   display: flex;
   flex-direction: row;
   height: 58px;
@@ -175,8 +186,8 @@ $wind-row-width: 465px;
 .mfd-fms-wind-page-crz-title-buttons-container {
   display: flex;
   flex-direction: row;
-  margin-left: $table-margin-no-history;
-   padding-bottom: 18px;
+  margin-left: $title-margin-no-history;
+  padding-bottom: 18px;
 }
 
 .mfd-fms-wind-page-crz-title-container {
@@ -221,4 +232,8 @@ $wind-row-width: 465px;
   padding-top: 19px;
   padding-left: 10px;
   padding-right: 10px;
+}
+
+.mfd-fms-wind-draft-wind-button-text-amber {
+  color: $display-amber;
 }

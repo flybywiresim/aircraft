@@ -870,6 +870,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                         this.loadedFlightPlanIndex.get(),
                       )
                     }
+                    canBeCleared={false}
                     enteredByPilot={this.minimumFuelAtDestinationIsPilotEntered}
                     readonlyValue={this.minimumFuelAtDestination}
                     alignText="flex-end"

@@ -10,9 +10,9 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './F-PLN/MfdFmsFpln.scss';
-import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
-import { MfdSimvars } from '../../../shared/MFDSimvarPublisher';
-import { MfdSystem } from '../../common/MfdUiService';
+import { FmcServiceInterface } from '../../FMC/FmcServiceInterface';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
+import { MfdSystem } from '../common/MfdUiService';
 
 interface MfdFmsPageNotAvailProps {
   bus: EventBus;

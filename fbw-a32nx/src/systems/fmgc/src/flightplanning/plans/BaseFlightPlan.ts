@@ -2930,12 +2930,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return result.slice(0, numWindEntries).sort((a, b) => b.altitude - a.altitude);
   }
 
-  async addCruiseWindEntry(
-    atIndex: number,
-    entry: WindEntry,
-    maxNumEntries: number,
-    draftCruiseWindEntriesMap?: Map<number, WindEntry[]>,
-  ): Promise<void> {
+  async addCruiseWindEntry(atIndex: number, entry: WindEntry, maxNumEntries: number): Promise<void> {
     const leg = this.maybeElementAt(atIndex);
 
     if (leg === undefined) {
@@ -2955,7 +2950,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.prepareCruiseWindDraftModification();
 
-    const windEntries = draftCruiseWindEntriesMap?.get(atIndex) ?? leg.cruiseWindEntries;
+    const windEntries = this.draftCruiseWindEntries?.get(atIndex) ?? leg.cruiseWindEntries;
 
     if (windEntries.some((e) => Math.round(e.altitude / 100) === Math.round(entry.altitude / 100))) {
       // Tried to add a cruise wind entry with the same altitude as an existing one. Editing the existing one instead
@@ -2963,16 +2958,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     } else {
       windEntries.push(entry);
     }
-    if (draftCruiseWindEntriesMap === undefined) {
+    if (this.draftCruiseWindEntries === undefined) {
       this.syncCruiseWindChange(atIndex);
+    } else {
+      this.incrementVersion();
     }
   }
 
-  async deleteCruiseWindEntry(
-    atIndex: number,
-    altitude: number,
-    draftCruiseWindEntriesMap?: Map<number, WindEntry[]>,
-  ): Promise<void> {
+  async deleteCruiseWindEntry(atIndex: number, altitude: number): Promise<void> {
     const leg = this.maybeElementAt(atIndex);
 
     if (leg === undefined) {
@@ -2990,7 +2983,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
-    const draftCruiseWindEntries = draftCruiseWindEntriesMap?.get(atIndex);
+    const draftCruiseWindEntries = this.draftCruiseWindEntries?.get(atIndex);
     let entries = draftCruiseWindEntries ?? leg.cruiseWindEntries;
 
     if (!entries.some((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100))) {
@@ -3000,7 +2993,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     // You cannot delete a propagated wind entry (FCOM)
     entries = entries.filter((e) => Math.round(e.altitude / 100) !== Math.round(altitude / 100));
-    if (draftCruiseWindEntriesMap === undefined) {
+    if (this.draftCruiseWindEntries === undefined) {
       this.syncCruiseWindChange(atIndex);
     }
   }
@@ -3073,6 +3066,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         if (this.draftCruiseWindEntries === undefined) {
           this.syncCruiseWindChange(atIndex);
+        } else {
+          this.incrementVersion();
         }
       } else {
         LnavConfig.VERBOSE_FPM_LOG &&
@@ -3129,11 +3124,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return leg.hasCruiseWindEntryAt(altitude);
   }
 
-  protected deleteCruiseDraftWindEntries(): void {
+  protected deleteCruiseDraftWindEntries(): boolean {
     if (this.draftCruiseWindEntries !== undefined) {
       this.draftCruiseWindEntries.clear();
       this.draftCruiseWindEntriesExist = false;
+      return true;
     }
+    return false;
   }
 
   private prepareCruiseWindDraftModification(): void {

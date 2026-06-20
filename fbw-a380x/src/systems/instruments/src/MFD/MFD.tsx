@@ -31,7 +31,7 @@ import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
-import { MfdFmsPageNotAvail } from './pages/FMS/F-PLN/MfdFmsPageNotAvail';
+import { MfdFmsPageNotAvail } from './pages/FMS/MfdFmsPageNotAvail';
 
 import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
