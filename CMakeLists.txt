@@ -61,3 +61,6 @@ add_subdirectory(fbw-a32nx/src/wasm)
 
 # add the A380X components
 add_subdirectory(fbw-a380x/src/wasm)
+
+# add the LVarProvider components
+add_subdirectory(fbw-arinc429-lvar-bridge/src/wasm)
