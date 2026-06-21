@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
+1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
 
 ## 2020.15.0
 
