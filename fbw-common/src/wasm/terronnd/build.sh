@@ -63,7 +63,8 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/../cpp-msfs-framework/lib/" \
-  "${DIR}/src/main.cpp" \
+  "${DIR}/src/main_taxi_cam.cpp" \
+  "${DIR}/src/Shared.cpp" \
   "${DIR}/src/nanovg/nanovg.cpp" \
   "${DIR}/src/navigationdisplay/collection.cpp" \
   "${DIR}/src/navigationdisplay/displaybase.cpp" \
