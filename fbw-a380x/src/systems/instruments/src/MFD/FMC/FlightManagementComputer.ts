@@ -61,7 +61,6 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
@@ -528,15 +527,15 @@ export class FlightManagementComputer implements FmcInterface {
   public calculateTakeoffWeight(forPlan = FlightPlanIndex.Active): void {
     const plan = this.flightPlanInterface.get(forPlan);
     const pd = plan.performanceData;
-    const isManualSecondary = !!(plan.flags & FlightPlanFlags.ManualCreation);
+    const isActiveOrCopyOfActive = plan.isActiveOrCopiedFromActive();
 
-    if (!isManualSecondary && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+    if (isActiveOrCopyOfActive && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       return; // frozen at liftoff, don't overwrite
     }
 
     let tow: number | null;
-    if (isManualSecondary || (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan))) {
-      // Engines off or manual secondary: ZFW + BLOCK - TAXI
+    if (!isActiveOrCopyOfActive || (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan))) {
+      // Engines off or secondary not copied from active: ZFW + BLOCK - TAXI
       const zfw = pd.zeroFuelWeight.get();
       const blockFuel = pd.blockFuel.get();
       const taxiFuel = pd.taxiFuel.get();
