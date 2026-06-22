@@ -6,7 +6,7 @@ import { FlightArea } from './FlightArea';
 import { ConsumerValue, EventBus, Subject } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
-import { RequiredNavigationPerformanceEvents } from '../events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '../events/RequiredNavigationPerformanceEvents';
 import { isLeg } from '../flightplanning/legs/FlightPlanLeg';
 
 const rnpDefaults: Record<FlightArea, number> = {
@@ -32,7 +32,7 @@ export class RequiredPerformance {
     FmgcFlightPhase.Preflight,
   );
 
-  private readonly rnpEventsPublisher = this.bus.getPublisher<RequiredNavigationPerformanceEvents>();
+  private readonly rnpEventsPublisher = this.bus.getPublisher<FmsNavigationEvents>();
 
   private readonly pilotRnpGreaterThanAreaRnp = Subject.create<number | undefined>(undefined);
 

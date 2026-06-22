@@ -7,13 +7,13 @@ import { FMMessage } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
 import { FMMessageTypes } from './FmMessages';
-import { RequiredNavigationPerformanceEvents } from '../../events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '../../events/RequiredNavigationPerformanceEvents';
 
 export class ProcedureRnpIs implements FMMessageSelector {
   public readonly message: FMMessage = { ...FMMessageTypes.ProcedureRnpIs };
 
   private readonly pilotRnpGreaterThanProcedure = ConsumerSubject.create(
-    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('pilot_rnp_greater_than_proc_rnp'),
+    this.bus.getSubscriber<FmsNavigationEvents>().on('pilot_rnp_greater_than_proc_rnp'),
     undefined,
   );
   private stateChanged = false;

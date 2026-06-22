@@ -7,13 +7,13 @@ import { FMMessage } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
 import { FMMessageTypes } from './FmMessages';
-import { RequiredNavigationPerformanceEvents } from '../../events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '../../events/RequiredNavigationPerformanceEvents';
 
 export class AreaRnpIs implements FMMessageSelector {
   public readonly message: FMMessage = { ...FMMessageTypes.AreaRnpIs };
 
   private readonly pilotRnpGreaterThanArea = ConsumerSubject.create(
-    this.bus.getSubscriber<RequiredNavigationPerformanceEvents>().on('pilot_rnp_greater_than_area_rnp'),
+    this.bus.getSubscriber<FmsNavigationEvents>().on('pilot_rnp_greater_than_area_rnp'),
     undefined,
   );
   private stateChanged = false;

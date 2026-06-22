@@ -70,7 +70,7 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
-import { RequiredNavigationPerformanceEvents } from '@fmgc/events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '@fmgc/events/RequiredNavigationPerformanceEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -414,7 +414,7 @@ export class FlightManagementComputer implements FmcInterface {
       }),
 
       this.bus
-        .getSubscriber<RequiredNavigationPerformanceEvents>()
+        .getSubscriber<FmsNavigationEvents>()
         .on('pilot_rnp_greater_than_area_rnp')
         .handle((v) => {
           if (v !== undefined) {
@@ -424,7 +424,7 @@ export class FlightManagementComputer implements FmcInterface {
           }
         }),
       this.bus
-        .getSubscriber<RequiredNavigationPerformanceEvents>()
+        .getSubscriber<FmsNavigationEvents>()
         .on('pilot_rnp_greater_than_proc_rnp')
         .handle((v) => {
           if (v !== undefined) {
