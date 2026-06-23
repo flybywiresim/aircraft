@@ -1,5 +1,6 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import {
-  ClockEvents,
   ConsumerSubject,
   DisplayComponent,
   EventBus,
@@ -20,7 +21,7 @@ interface WdMemosProps {
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
 export class WdMemos extends DisplayComponent<WdMemosProps> {
-  private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
 
   private readonly memosLeftSvgRef = FSComponent.createRef<SVGGraphicsElement>();
 
@@ -61,11 +62,6 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
 
     this.memosLeft.forEach((el) => el.sub(() => this.update(), true));
     this.memosRight.forEach((el) => el.sub(() => this.update(), true));
-
-    this.sub
-      .on('realTime')
-      .atFrequency(0.05)
-      .handle(() => this.update());
   }
 
   render() {

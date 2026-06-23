@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
@@ -171,7 +171,7 @@ export class FwsAbnormalNonSensed {
         false,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', SimVarValueType.Bool),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', SimVarValueType.Bool),
-        !!this.fws.seatBelt.get(),
+        this.fws.seatBelt.get(),
         false,
         false,
       ],
@@ -311,7 +311,7 @@ export class FwsAbnormalNonSensed {
       ],
       whichItemsChecked: () => [
         false,
-        !!this.fws.seatBelt.get(),
+        this.fws.seatBelt.get(),
         false,
         this.fws.allThrottleIdle.get(),
         this.fws.speedBrakeCommand.get(),
@@ -321,7 +321,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         false,
-        this.fws.paxOxyMasksDeployed.get(),
+        this.fws.paxOxyMasksDeployed,
         false,
         false,
       ],
