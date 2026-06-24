@@ -105,6 +105,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
 
+  private readonly approachParametersMandatory = Subject.create<boolean>(false);
+
   private readonly visibilityConsideringFlightPlanIndex = this.loadedFlightPlanIndex.map((it) =>
     it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
   );
@@ -1018,8 +1020,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private drawPage(tab?: FlightPhaseTabIndex) {
     this.loadFlightPlanPerformanceData();
 
-    // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     const fpIndex = this.loadedFlightPlanIndex.get();
+    const isActiveOrTmpy = fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary;
+    if (isActiveOrTmpy) {
+      const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination();
+      const predictionsNotAvailable =
+        distanceToDest === null || distanceToDest === undefined || !Number.isFinite(distanceToDest);
+      const closeToDest =
+        distanceToDest !== null &&
+        distanceToDest !== undefined &&
+        Number.isFinite(distanceToDest) &&
+        distanceToDest <= 180;
+      this.approachParametersMandatory.set(predictionsNotAvailable || closeToDest);
+    } else {
+      this.approachParametersMandatory.set(false);
+    }
+
+    // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
       const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
       this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
@@ -3114,7 +3131,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          mandatory={this.mandatoryAndActiveFpln}
+                          mandatory={this.approachParametersMandatory}
                           readonlyValue={this.approachTemperature}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
@@ -3139,7 +3156,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             );
                             SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhToMillibar(v));
                           }}
-                          mandatory={this.mandatoryAndActiveFpln}
+                          mandatory={this.approachParametersMandatory}
                           readonlyValue={this.approachQnh}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
