@@ -3,19 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import {
-  MappedSubject,
-  MappedSubscribable,
-  Subscribable,
-  SubscribableMapFunctions,
-  Subscription,
-} from '@microsoft/msfs-sdk';
-import { FwsCore } from './FwsCore';
+import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
+import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
-interface EwdMemoItem {
-  flightPhaseInhib?: number[];
-  /** warning is active */
-  simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
+interface EwdMemoItem extends FwsSuppressableItem {
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
 }
@@ -282,15 +273,15 @@ export class FwsMemos {
     // 31 INDICATING RECORDING
     314000001: {
       // T.O. INHIBIT
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.showTakeoffInhibit,
+      monitorConfirmTime: 0,
+      simVarIsActive: this.fws.takeoffInhibitMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['314000001'],
     },
     314000002: {
       // LDG INHIBIT
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.showLandingInhibit,
+      monitorConfirmTime: 0,
+      simVarIsActive: this.fws.ldgInhibitMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['314000002'],
     },

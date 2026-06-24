@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -118,11 +118,19 @@ enum engineState {
   SHUTTING = 3,
 }
 
+export interface FwsNotActiveWithOthersSupressableItem extends FwsSuppressableItem {
+  /** @deprecated set the inhibition in the logic itself if possible
+   * This line won't be shown if the following line(s) are active */
+  notActiveWhenItemActive?: string[];
+}
+
 export interface FwsSuppressableItem {
+  /**
+   * The flight phases in which this item is inhibited.
+   */
+  flightPhaseInhib?: number[];
   /** INOP SYS line is active */
   simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
-  /** This line won't be shown if the following line(s) are active */
-  notActiveWhenItemActive?: string[];
   /** The monitor confirm time in seconds. Defaults to 1.0 s. */
   monitorConfirmTime?: number;
 }
@@ -147,7 +155,11 @@ export class FwsCore {
       StallWarningEvents
   >();
 
-  private subs: Subscription[] = [];
+  private static readonly ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS = 1.0;
+
+  private static readonly FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS = 0.6;
+
+  private readonly subs: Subscription[] = [];
 
   public readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
 
@@ -204,8 +216,6 @@ export class FwsCore {
   public readonly flightPhase1211 = this.flightPhase.map((v) => v === 1 || v === 2 || v === 11);
 
   public readonly flightPhase89 = this.flightPhase.map((v) => v === 8 || v === 9);
-
-  public readonly flightPhase910 = this.flightPhase.map((v) => v === 9 || v === 10);
 
   public readonly flightPhase1Or12 = this.flightPhase.map((v) => v === 1 || v === 12);
 
@@ -325,6 +335,9 @@ export class FwsCore {
 
   /** Indices of items which were updated */
   public readonly deferredUpdatedItems = new Map<string, number[]>();
+
+  /** Map to memorize the state of the memos (active or inactive) */
+  private readonly memosStatusMap = new Map<string, boolean>();
 
   public recallFailures: string[] = [];
 
@@ -1072,9 +1085,13 @@ export class FwsCore {
 
   public readonly allPrimAndSecFailed = Subject.create(false);
 
-  public readonly showLandingInhibit = Subject.create(false);
+  private readonly ldgInhibitConfirm = new NXLogicConfirmNode(1);
 
-  public readonly showTakeoffInhibit = Subject.create(false);
+  public readonly ldgInhibitMemo = Subject.create(false);
+
+  private readonly takeoffInhibitConfirm = new NXLogicConfirmNode(1);
+
+  public readonly takeoffInhibitMemo = Subject.create(false);
 
   public readonly speedBrakeCommand = Subject.create(false);
 
@@ -1471,10 +1488,6 @@ export class FwsCore {
 
   public readonly flightPhase1112MoreThanOneMinConfNode = new NXLogicConfirmNode(60);
 
-  public readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
-
-  public readonly toInhibitTimer = new NXLogicConfirmNode(3);
-
   /** TO CONFIG TEST raw button input */
   private toConfigTestRaw = false;
 
@@ -1510,7 +1523,7 @@ export class FwsCore {
 
   public readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
-  public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
+  public readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false); // TODO implement and disable flight hphase inhibit override once true
 
   public readonly manualCheckListReset = Subject.create(false);
 
@@ -2340,8 +2353,8 @@ export class FwsCore {
   public readonly information = new FwsInformation(this);
   public readonly limitations = new FwsLimitations(this);
   public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
-  public ewdAbnormal: EwdAbnormalDict;
-  public allSuppressableItems: FwsSuppressableItemDict;
+  public readonly ewdAbnormal: EwdAbnormalDict;
+  public readonly allSuppressableItems: FwsSuppressableItemDict;
   private readonly failureActivationTime = new Map<keyof FwsSuppressableItemDict, number>();
 
   constructor(
@@ -2358,6 +2371,8 @@ export class FwsCore {
     );
     this.allSuppressableItems = Object.assign(
       {},
+      this.memos.ewdToLdgMemos,
+      this.memos.ewdMemos,
       this.abnormalSensed.ewdAbnormalSensed,
       this.abnormalNonSensed.ewdAbnormalNonSensed,
       this.inopSys.inopSys,
@@ -2385,7 +2400,6 @@ export class FwsCore {
       this.startupCompleted.sub((v) => {
         if (v) {
           this.init();
-
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
@@ -2462,10 +2476,8 @@ export class FwsCore {
       this.flightPhase128,
       this.flightPhase23,
       this.flightPhase345,
-      this.flightPhase34567,
       this.flightPhase1211,
       this.flightPhase89,
-      this.flightPhase910,
       this.flightPhase1Or12,
       this.flightPhase6789,
       this.flightPhase189,
@@ -2800,6 +2812,9 @@ export class FwsCore {
    * Periodic update
    */
   update(_deltaTime: number) {
+    if (!this.startupCompleted.get()) {
+      return;
+    }
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
 
     const ecpNotReachable =
@@ -2895,6 +2910,8 @@ export class FwsCore {
     const phase6 = flightPhase === 6;
     const flightPhase1 = flightPhase === 1;
     const flightPhase8 = flightPhase === 8;
+    const flightphase3Or4Or5Or6or7 = this.flightPhase34567.get();
+    const flightPhase9Or10 = flightPhase === 9 || flightPhase === 10;
     this.flightPhase3PulseNode.write(phase3);
 
     // flight phase convinence vars
@@ -2925,13 +2942,14 @@ export class FwsCore {
       this.toConfigTestHeldMin1s5PulseNode.write(this.toConfigTestRaw, deltaTime) || this.toConfigTestRaw,
     );
 
-    this.flightPhaseInhibitOverrideNode.write(this.rclUpPulseNode.read(), this.flightPhaseEndedPulseNode.read());
-
-    this.showTakeoffInhibit.set(
-      this.toInhibitTimer.write(this.flightPhase34567.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
+    this.takeoffInhibitMemo.set(
+      this.takeoffInhibitConfirm.write(
+        flightphase3Or4Or5Or6or7 && !this.flightPhaseInhibitOverrideNode.read(),
+        deltaTime,
+      ),
     );
-    this.showLandingInhibit.set(
-      this.ldgInhibitTimer.write(this.flightPhase910.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
+    this.ldgInhibitMemo.set(
+      this.ldgInhibitConfirm.write(flightPhase9Or10 && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
     );
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
@@ -5430,44 +5448,20 @@ export class FwsCore {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
-    const itemIsActiveConsideringFaultSuppression = (
-      item: FwsSuppressableItem,
-      key: keyof FwsSuppressableItemDict,
-      defaultMonitorConfirmTime: number = 0.6,
-    ) => {
-      const simTime = this.simTime.get();
-
-      if (
-        !item.simVarIsActive.get() ||
-        simTime < (this.failureActivationTime.get(key) ?? 0) + (item.monitorConfirmTime ?? defaultMonitorConfirmTime)
-      ) {
-        // Return early if not even this item is active
-        return false;
-      }
-
-      // Skip if other fault overrides this one
-      const shouldBeSuppressed =
-        item.notActiveWhenItemActive?.some((val) => {
-          if (val && this.allSuppressableItems[val]) {
-            const otherFault = this.allSuppressableItems[val] as FwsSuppressableItem;
-            // Question for the future: Should this check fault suppressions recursively? Beware loops
-            if (
-              otherFault.simVarIsActive.get() &&
-              simTime >=
-                (this.failureActivationTime.get(key) ?? 0) +
-                  (otherFault.monitorConfirmTime ?? defaultMonitorConfirmTime)
-            ) {
-              return true;
-            }
-            return false;
-          }
-        }) ?? false;
-      return !shouldBeSuppressed;
-    };
+    const simTime = this.simTime.get();
 
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (!itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
+      if (
+        !value.simVarIsActive.get() ||
+        !this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
+          flightPhase,
+        )
+      ) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -5492,11 +5486,17 @@ export class FwsCore {
         continue;
       }
 
-      if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
-        continue;
-      }
-
-      if (itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
+      if (
+        value.simVarIsActive.get() &&
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
+          flightPhase,
+          newWarning,
+        )
+      ) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
@@ -5779,11 +5779,21 @@ export class FwsCore {
     const rightMemos: string[] = [];
 
     // MEMOs (except T.O and LDG)
-    for (const [, value] of Object.entries(this.memos.ewdMemos)) {
-      if (
+    for (const [key, value] of Object.entries(this.memos.ewdMemos)) {
+      const isNew = this.memosStatusMap.get(key) ?? false === false;
+
+      const isActive =
         value.simVarIsActive.get() &&
-        (!value.flightPhaseInhib || !value.flightPhaseInhib.some((e) => e === flightPhase))
-      ) {
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
+          flightPhase,
+          isNew,
+        );
+      this.memosStatusMap.set(key, isActive);
+      if (isActive) {
         const newCode: string[] = [];
 
         const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
@@ -5797,8 +5807,21 @@ export class FwsCore {
 
     // T.O and LDG MEMOs
     const takeoffLandingMemos: string[] = [];
-    for (const [, value] of Object.entries(this.memos.ewdToLdgMemos)) {
-      if (value.simVarIsActive.get()) {
+    for (const [key, value] of Object.entries(this.memos.ewdToLdgMemos)) {
+      const isNew = this.memosStatusMap.get(key) ?? false === false;
+      const isActive =
+        value.simVarIsActive.get() &&
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
+          flightPhase,
+          isNew,
+        );
+      this.memosStatusMap.set(key, isActive);
+
+      if (isActive) {
         const newCode: string[] = [];
 
         const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
@@ -5812,7 +5835,15 @@ export class FwsCore {
 
     // INOP SYS
     for (const [key, value] of Object.entries(this.inopSys.inopSys)) {
-      if (itemIsActiveConsideringFaultSuppression(value, key, 1.0)) {
+      if (
+        value.simVarIsActive.get() &&
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
+        )
+      ) {
         if (
           !value.redundancyLoss &&
           value.phase === FwsInopSysPhases.AllPhases &&
@@ -5833,14 +5864,31 @@ export class FwsCore {
 
     // INFO
     for (const [key, value] of Object.entries(this.information.info)) {
-      if (itemIsActiveConsideringFaultSuppression(value, key, 1.0) && !stsInfoKeys.includes(key)) {
+      if (
+        value.simVarIsActive.get() &&
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
+        ) &&
+        !stsInfoKeys.includes(key)
+      ) {
         stsInfoKeys.push(key);
       }
     }
 
     // LIMITATIONS
     for (const [key, value] of Object.entries(this.limitations.limitations)) {
-      if (itemIsActiveConsideringFaultSuppression(value, key, 1.0)) {
+      if (
+        value.simVarIsActive.get() &&
+        this.itemIsActiveConsideringFaultSuppression(
+          value,
+          key,
+          simTime,
+          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
+        )
+      ) {
         if (value.phase === FwsLimitationsPhases.AllPhases && !ewdLimitationsAllPhasesKeys.includes(key)) {
           ewdLimitationsAllPhasesKeys.push(key);
         } else if (value.phase === FwsLimitationsPhases.ApprLdg && !ewdLimitationsApprLdgKeys.includes(key)) {
@@ -6202,6 +6250,66 @@ export class FwsCore {
       tcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_TCS_DISCRETE_WORD`);
       cpcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_CPCS_DISCRETE_WORD`);
     }
+  }
+
+  private itemIsActiveConsideringFaultSuppression(
+    item: FwsSuppressableItem | FwsNotActiveWithOthersSupressableItem,
+    key: keyof FwsSuppressableItemDict,
+    simTime: number,
+    defaultMonitorConfirmTime: number = FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
+    flightPhase?: number,
+    isNew?: boolean,
+  ): boolean {
+    let isInhibitedInFlightPhase = false;
+    if (isNew && flightPhase !== undefined && item.flightPhaseInhib !== undefined) {
+      for (const inhibitedPhase of item.flightPhaseInhib) {
+        if (inhibitedPhase === flightPhase) {
+          isInhibitedInFlightPhase = true;
+          break;
+        }
+      }
+    }
+
+    if (isInhibitedInFlightPhase || !item.simVarIsActive.get()) {
+      return false;
+    }
+
+    const itemActivationTime = this.failureActivationTime.get(key) ?? 0;
+    const monitorConfirmTime = item.monitorConfirmTime ?? defaultMonitorConfirmTime;
+    if (simTime < itemActivationTime + monitorConfirmTime) {
+      return false;
+    }
+
+    if (!this.itemCanBeSupressedByOthers(item) || !item.notActiveWhenItemActive?.length) {
+      return true;
+    }
+
+    // Skip if other fault overrides this one
+    for (const suppressingKey of item.notActiveWhenItemActive) {
+      if (!suppressingKey) {
+        continue;
+      }
+
+      const otherFault = this.allSuppressableItems[suppressingKey] as FwsSuppressableItem | undefined;
+      if (!otherFault || !otherFault.simVarIsActive.get()) {
+        continue;
+      }
+
+      // Question for the future: Should this check fault suppressions recursively? Beware loops
+      const suppressingActivationTime = this.failureActivationTime.get(suppressingKey) ?? 0;
+      const suppressingMonitorConfirmTime = otherFault.monitorConfirmTime ?? defaultMonitorConfirmTime;
+      if (simTime >= suppressingActivationTime + suppressingMonitorConfirmTime) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private itemCanBeSupressedByOthers(
+    item: FwsSuppressableItem | FwsNotActiveWithOthersSupressableItem,
+  ): item is FwsNotActiveWithOthersSupressableItem {
+    return (item as FwsNotActiveWithOthersSupressableItem).notActiveWhenItemActive !== undefined;
   }
 
   destroy() {

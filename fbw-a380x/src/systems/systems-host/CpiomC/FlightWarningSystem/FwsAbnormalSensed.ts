@@ -21,14 +21,11 @@ import {
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 // FIXME should not import from instruments
 import { ChecklistState, FwsEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from './FwsCore';
+import { FwcAuralWarning, FwsNotActiveWithOthersSupressableItem, FwsCore } from './FwsCore';
 
-export interface EwdAbnormalItem extends FwsSuppressableItem {
-  flightPhaseInhib: number[];
+export interface EwdAbnormalItem extends FwsNotActiveWithOthersSupressableItem {
   /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
   auralWarning?: MappedSubscribable<FwcAuralWarning> | Subscribable<FwcAuralWarning>;
-  /** The monitor confirm time in seconds. Defaults to 0.6 s. */
-  monitorConfirmTime?: number;
   /** Returns a boolean vector (same length as number of items). If true, item is shown in ECAM actions */
   whichItemsToShow: () => boolean[];
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed */
@@ -1030,7 +1027,7 @@ export class FwsAbnormalSensed {
         false, // Atc emergency msg
         false, // Max 100MEA
         false, // If cab alt above 14000
-        this.fws.paxOxyMasksDeployed.get(), // Pax oxy mask on
+        this.fws.paxOxyMasksDeployed, // Pax oxy mask on
         false, // When descent stablished
         false, // Crew oxy mask dilution
         false, // When diff Pr <2 psi
@@ -4336,7 +4333,7 @@ export class FwsAbnormalSensed {
     341800037: {
       // XPDR STBY
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 10, 12],
-      simVarIsActive: this.fws.xpdrStby,
+      simVarIsActive: this.fws.xpdrStbymemo,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

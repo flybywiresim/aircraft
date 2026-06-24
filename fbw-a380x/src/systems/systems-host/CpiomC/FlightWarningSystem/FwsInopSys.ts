@@ -4,14 +4,14 @@
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { FwsCore, FwsSuppressableItem } from './FwsCore';
+import { FwsNotActiveWithOthersSupressableItem, FwsCore } from './FwsCore';
 
 export enum FwsInopSysPhases {
   AllPhases,
   ApprLdg,
 }
 
-export interface FwsInopSysItem extends FwsSuppressableItem {
+export interface FwsInopSysItem extends FwsNotActiveWithOthersSupressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsInopSysPhases;
   /** Only to be shown under REDUND LOSS on MORE page */
