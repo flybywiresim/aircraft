@@ -9,6 +9,9 @@ import { FwsCore, FwsSuppressableItem } from './FwsCore';
 interface EwdMemoItem extends FwsSuppressableItem {
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
+
+  /** Whether the memo should be displayed on the PFD. */
+  pfd?: boolean;
 }
 
 export interface EwdMemoDict {
@@ -69,12 +72,14 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['300000001'],
+      pfd: true,
     },
     '300000002': {
       // WING ANTI ICE
       simVarIsActive: this.fws.wingAntiIce,
       whichCodeToReturn: () => [0],
       codesToReturn: ['300000002'],
+      pfd: true,
     },
     '300000003': {
       // ICE NOT DETECTED
@@ -126,12 +131,14 @@ export class FwsMemos {
       simVarIsActive: this.fws.autoPilotOffShowMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220000001'],
+      pfd: true,
     },
     220000002: {
       // A/THR OFF
       simVarIsActive: this.fws.autoThrustOffVoluntary,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220000002'],
+      pfd: this.fws.autoThrustOffPfdMemo,
     },
     // FMS SWTG
     221000001: {
@@ -292,6 +299,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.autoBrakeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
+      pfd: true,
     },
     // ATA 32
     '322000001': {
@@ -310,13 +318,13 @@ export class FwsMemos {
       codesToReturn: ['322000001', '322000002'],
     },
     '320000002': {
-      // PRK BRK ON
+      // PARK BRK ON
       simVarIsActive: this.fws.parkingBrakeOnMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000002'],
     },
     '333000001': {
-      // STROBE LIGHT OFF
+      // STROBE LT OFF
       simVarIsActive: MappedSubject.create(
         ([strobeLightsOn, flightPhase]) => strobeLightsOn === 2 && flightPhase === 8,
         this.fws.strobeLightsOn,

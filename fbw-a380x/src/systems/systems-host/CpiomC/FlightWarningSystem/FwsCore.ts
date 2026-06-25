@@ -32,6 +32,7 @@ import {
   Arinc429Word,
   FailuresConsumer,
   FrequencyMode,
+  GroundSupportEvents,
   MsfsFlightModelEvents,
   NXDataStore,
   NXLogicClockNode,
@@ -48,13 +49,11 @@ import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 // FIXME should not import from instruments
 import {
-  AThrOffMemoKey,
   EcamAbnormalProcedures,
   EcamDeferredProcedures,
   EcamLimitations,
   EcamMemos,
   isTimedItem,
-  pfdMemoDisplay,
 } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 // FIXME should not import from instruments
 import { ProcedureLinesGenerator } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
@@ -152,7 +151,8 @@ export class FwsCore {
       MfdSurvEvents &
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
-      StallWarningEvents
+      StallWarningEvents &
+      GroundSupportEvents
   >();
 
   private static readonly ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS = 1.0;
@@ -227,7 +227,7 @@ export class FwsCore {
 
   private readonly flightPhase12 = this.flightPhase.map((v) => v === 12);
 
-  private readonly flightPhase12Or1112 = MappedSubject.create(
+  private readonly flightPhase1Or2Or11Or12 = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.flightPhase1Or2,
     this.flightPhase1112,
@@ -408,8 +408,6 @@ export class FwsCore {
   public readonly compMesgCount = Subject.create(0);
 
   public readonly landAsap = Subject.create(false);
-
-  public readonly ndXfrKnob = Subject.create(0);
 
   private readonly landingElevation = Arinc429Register.empty();
 
@@ -790,6 +788,8 @@ export class FwsCore {
 
   private readonly autoThrustInvoluntaryPfdMemoMemoryNode = new NXLogicMemoryNode(false);
 
+  public autoThrustOffPfdMemo = false;
+
   public autoThrustInhibitCaution = false; // Inhibit for 10 sec
 
   public readonly autoThrustOffVoluntary = Subject.create(false);
@@ -844,6 +844,38 @@ export class FwsCore {
   public readonly dc2BusPowered = Subject.create(false);
 
   private readonly dc108PhBusPowered = Subject.create(false);
+
+  private readonly externalPower1Available = ConsumerSubject.create(this.sub.on('ext_pwr_avail_1'), false);
+
+  private static readonly externalPower1Connected = RegisteredSimVar.createBoolean(
+    'L:A32NX_ELEC_CONTACTOR_990XG1_IS_CLOSED',
+  );
+
+  private static readonly externalPower2Connected = RegisteredSimVar.createBoolean(
+    'L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED',
+  );
+
+  private readonly externalPower2Available = ConsumerSubject.create(this.sub.on('ext_pwr_avail_2'), false);
+
+  private static readonly externalPower3Connected = RegisteredSimVar.createBoolean(
+    'L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED',
+  );
+
+  private readonly externalPower3Available = ConsumerSubject.create(this.sub.on('ext_pwr_avail_3'), false);
+
+  private static readonly externalPower4Connected = RegisteredSimVar.createBoolean(
+    'L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED',
+  );
+
+  private readonly externalPower4Available = ConsumerSubject.create(this.sub.on('ext_pwr_avail_4'), false);
+
+  private readonly anyExternalPowerAvailable = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.externalPower1Available,
+    this.externalPower2Available,
+    this.externalPower3Available,
+    this.externalPower4Available,
+  );
 
   public readonly extPowerMemo = Subject.create(false);
 
@@ -1339,7 +1371,7 @@ export class FwsCore {
       (!!refuelPanelOpen || fuelingInprogress) && phase1or2or11or12,
     this.refuelPanel,
     this.fuelingInitiated,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
   );
 
   private readonly isRefuelFuelTarget = MappedSubject.create(
@@ -1352,14 +1384,14 @@ export class FwsCore {
     SubscribableMapFunctions.and(),
     this.isRefuelFuelTarget,
     this.fuelingInitiated,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
   );
 
   public readonly defuelInProgressMemo = MappedSubject.create(
     ([fuelingInitiated, refuel, flightPhase12Or1112]) => fuelingInitiated && !refuel && flightPhase12Or1112,
     this.fuelingInitiated,
     this.isRefuelFuelTarget,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
   );
 
   /* HYDRAULICS */
@@ -1573,7 +1605,7 @@ export class FwsCore {
   public readonly parkingBrakeOnMemo = MappedSubject.create(
     SubscribableMapFunctions.and(),
     this.parkBrakeSet,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
   );
 
   private readonly parkBrake2sConfNode = new NXLogicConfirmNode(2);
@@ -2291,25 +2323,25 @@ export class FwsCore {
   // GENERATORS // TODO add generator contractor open, idg disconnect & fault conditions
   public readonly gen1Inop = MappedSubject.create(
     ([phase121112, eng1Running]) => !phase121112 && !eng1Running,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
     this.engine1Running,
   );
 
   public readonly gen2Inop = MappedSubject.create(
     ([phase121112, eng2Running]) => !phase121112 && !eng2Running,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
     this.engine2Running,
   );
 
   public readonly gen3Inop = MappedSubject.create(
     ([phase121112, eng3Running]) => !phase121112 && !eng3Running,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
     this.engine3Running,
   );
 
   public readonly gen4Inop = MappedSubject.create(
     ([phase121112, eng4Running]) => !phase121112 && !eng4Running,
-    this.flightPhase12Or1112,
+    this.flightPhase1Or2Or11Or12,
     this.engine4Running,
   );
 
@@ -2482,7 +2514,7 @@ export class FwsCore {
       this.flightPhase6789,
       this.flightPhase189,
       this.flightPhase1112,
-      this.flightPhase12Or1112,
+      this.flightPhase1Or2Or11Or12,
       this.stallWarningRaw,
       this.computedAirSpeedToNearest2,
       this.machSelectedFromAdr,
@@ -2505,6 +2537,11 @@ export class FwsCore {
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
+      this.anyExternalPowerAvailable,
+      this.externalPower1Available,
+      this.externalPower2Available,
+      this.externalPower3Available,
+      this.externalPower4Available,
     );
   }
 
@@ -2910,13 +2947,15 @@ export class FwsCore {
     const phase6 = flightPhase === 6;
     const flightPhase1 = flightPhase === 1;
     const flightPhase8 = flightPhase === 8;
+    const flightPhase1Or2Or8 = flightPhase1 || flightPhase === 2 || flightPhase8;
     const flightphase3Or4Or5Or6or7 = this.flightPhase34567.get();
     const flightPhase9Or10 = flightPhase === 9 || flightPhase === 10;
+    const flightPhase1Or2Or11Or12 = this.flightPhase1Or2Or11Or12.get();
     this.flightPhase3PulseNode.write(phase3);
 
     // flight phase convinence vars
     const flightPhase6789 = this.flightPhase6789.get();
-    const flightPhase112 = this.flightPhase1Or12.get();
+    const flightPhase1Or12 = this.flightPhase1Or12.get();
 
     this.phase815MinConfNode.write(flightPhase === 8, deltaTime);
 
@@ -3133,12 +3172,12 @@ export class FwsCore {
     const yLoPressure = !yellowSysPressurised;
 
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
-      this.engine1Running.get() || this.engine2Running.get() || !this.flightPhase12Or1112.get(),
+      this.engine1Running.get() || this.engine2Running.get() || !flightPhase1Or2Or11Or12,
       deltaTime,
     );
 
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
-      this.engine3Running.get() || this.engine4Running.get() || !this.flightPhase12Or1112.get(),
+      this.engine3Running.get() || this.engine4Running.get() || !flightPhase1Or2Or11Or12,
       deltaTime,
     );
 
@@ -3391,9 +3430,9 @@ export class FwsCore {
     const adr2Fault = adr2Discrete1.isFailureWarning() || adr2Discrete1.bitValueOr(3, false);
     const adr3Fault = adr3Discrete1.isFailureWarning() || adr3Discrete1.bitValueOr(3, false);
 
-    this.ir1Fault.set(!flightPhase112 && (this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true)));
-    this.ir2Fault.set(!flightPhase112 && (this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true)));
-    this.ir3Fault.set(!flightPhase112 && (this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true)));
+    this.ir1Fault.set(!flightPhase1Or12 && (this.ir1Pitch.isFailureWarning() || this.ir1MaintWord.bitValueOr(9, true)));
+    this.ir2Fault.set(!flightPhase1Or12 && (this.ir2Pitch.isFailureWarning() || this.ir2MaintWord.bitValueOr(9, true)));
+    this.ir3Fault.set(!flightPhase1Or12 && (this.ir3Pitch.isFailureWarning() || this.ir3MaintWord.bitValueOr(9, true)));
 
     const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
     const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
@@ -3405,9 +3444,9 @@ export class FwsCore {
         this.ir3MaintWord.bitValueOr(13, false),
     );
 
-    this.adr1Faulty.set(!(!this.acESSBusPowered.get() || flightPhase112) && adr1Fault);
-    this.adr2Faulty.set(!(!this.ac4BusPowered.get() || flightPhase112) && adr2Fault);
-    this.adr3Faulty.set(!(!this.ac2BusPowered.get() || flightPhase112) && adr3Fault);
+    this.adr1Faulty.set(!(!this.acESSBusPowered.get() || flightPhase1Or12) && adr1Fault);
+    this.adr2Faulty.set(!(!this.ac4BusPowered.get() || flightPhase1Or12) && adr2Fault);
+    this.adr3Faulty.set(!(!this.ac2BusPowered.get() || flightPhase1Or12) && adr3Fault);
 
     // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
@@ -3493,7 +3532,7 @@ export class FwsCore {
       this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
     );
     this.nwSteeringDiscMemo.set(
-      this.flightPhase12Or1112.get() && SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'),
+      flightPhase1Or2Or11Or12 && SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'),
     );
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
@@ -3735,7 +3774,7 @@ export class FwsCore {
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
     // PFD ONLY memo A/THR OFF
-    this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
+    this.autoThrustOffPfdMemo = this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
       involuntaryAThrDisc,
       athrEngagedOrArmed || this.autoThrustInstinctiveDiscPressed.read(),
     );
@@ -4240,7 +4279,7 @@ export class FwsCore {
       this.outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
       this.outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
       this.outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-      if (this.flightPhase12Or1112.get()) {
+      if (flightPhase1Or2Or11Or12) {
         this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
       }
       if (flightPhase8) {
@@ -4365,11 +4404,13 @@ export class FwsCore {
 
     // Cabin altitude in phase 1,2 11 or 12
     this.highLandingFieldElevation.set(
-      (this.flightPhase.get() === 8
-        ? this.manCabinAltMode.get()
-          ? this.cabinAltitudeTarget.valueOr(0)
-          : this.landingElevation.valueOr(0)
-        : this.cabinAltitude.valueOr(0)) >= 8550,
+      flightPhase1Or2Or8 &&
+        //FIXME: This should be a direct read from the landing elevation.
+        (flightPhase8
+          ? this.manCabinAltMode.get()
+            ? this.cabinAltitudeTarget.valueOr(0)
+            : this.landingElevation.valueOr(0)
+          : this.cabinAltitude.valueOr(0)) >= 8550,
     );
 
     // 0: Man, 1: Low, 2: Norm, 3: High
@@ -4390,11 +4431,12 @@ export class FwsCore {
 
     /* 24 - Electrical */
     this.extPowerMemo.set(
-      this.flightPhase12Or1112.get() &&
-        (SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG1_IS_CLOSED', 'bool') ||
-          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
-          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
-          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool')),
+      flightPhase1Or2Or11Or12 &&
+        (this.anyExternalPowerAvailable.get() ||
+          FwsCore.externalPower1Connected.get() ||
+          FwsCore.externalPower2Connected.get() ||
+          FwsCore.externalPower3Connected.get() ||
+          FwsCore.externalPower4Connected.get()),
     );
 
     this.allBatteriesOff.set(
@@ -4419,7 +4461,6 @@ export class FwsCore {
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') > 0);
-    this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
 
@@ -4476,21 +4517,21 @@ export class FwsCore {
     this.sec1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
     this.sec1FaultCondition.set(
-      !(flightPhase112 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
+      !(flightPhase1Or12 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
     );
     this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get());
     this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
     this.sec2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.sec2FaultCondition.set(
-      !(flightPhase112 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
+      !(flightPhase1Or12 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get());
     this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
 
     this.sec3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.sec3FaultCondition.set(
-      !(flightPhase112 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
+      !(flightPhase1Or12 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
     );
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get());
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
@@ -4498,21 +4539,21 @@ export class FwsCore {
     this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
     this.prim1FaultCondition.set(
-      !(flightPhase112 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
+      !(flightPhase1Or12 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
     );
     this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get());
     this.prim1OffThenOnMemoryNode.write(this.prim1OffThenOnPulseNode.read(), !this.prim1FaultCondition.get());
 
     this.prim2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.prim2FaultCondition.set(
-      !(flightPhase112 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
+      !(flightPhase1Or12 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get());
     this.prim2OffThenOnMemoryNode.write(this.prim2OffThenOnPulseNode.read(), !this.prim2FaultCondition.get());
 
     this.prim3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
     this.prim3FaultCondition.set(
-      !(flightPhase112 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
+      !(flightPhase1Or12 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
     );
     this.prim3OffThenOnPulseNode.write(!this.prim3PbOff.get());
     this.prim3OffThenOnMemoryNode.write(this.prim3OffThenOnPulseNode.read(), !this.prim3FaultCondition.get());
@@ -4544,21 +4585,23 @@ export class FwsCore {
 
     // ALTN LAW 2 computation
     const SPA2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
-    this.altn2LawConfirmNodeOutput.set(this.altn2LawConfirmNode.write(SPA2 && !flightPhase112, deltaTime));
+    this.altn2LawConfirmNodeOutput.set(this.altn2LawConfirmNode.write(SPA2 && !flightPhase1Or12, deltaTime));
 
     // ALTN LAW 1 computation
     const SPA1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
-    this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && !flightPhase112, deltaTime));
+    this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && !flightPhase1Or12, deltaTime));
 
-    this.altnLawCondition.set((this.altn1LawConfirmNode.read() || this.altn2LawConfirmNode.read()) && !flightPhase112);
+    this.altnLawCondition.set(
+      (this.altn1LawConfirmNode.read() || this.altn2LawConfirmNode.read()) && !flightPhase1Or12,
+    );
     this.altn1ALawCondition.set(
-      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) && !flightPhase112,
+      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) && !flightPhase1Or12,
     );
 
     // DIRECT LAW computation
     const SPBUL =
       (false && SFCDC12FT) || fcdc1DiscreteWord1.bitValueOr(15, false) || fcdc2DiscreteWord1.bitValueOr(15, false);
-    this.directLawCondition.set(SPBUL && !flightPhase112);
+    this.directLawCondition.set(SPBUL && !flightPhase1Or12);
 
     // L+R ELEV FAULT computation
     const lhElevBlueFail =
@@ -4574,7 +4617,7 @@ export class FwsCore {
       (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(18, false)) ||
       (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(18, false));
     this.lrElevFaultCondition.set(
-      lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && !flightPhase112,
+      lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && !flightPhase1Or12,
     );
 
     // GND SPLRS FAULT status
@@ -4966,7 +5009,7 @@ export class FwsCore {
 
     this.tcas1AdrInopOrIrConfNode.write(oneUsedLeftAdrInop || oneLeftUsedIrInop || leftIrFaultyOrInAlign, deltaTime);
     this.tcas1FaultAndNoAdiruInop.write(
-      tcasFaulty && !(flightPhase112 && this.tcas1AdrInopOrIrConfNode.read()),
+      tcasFaulty && !(flightPhase1Or12 && this.tcas1AdrInopOrIrConfNode.read()),
       deltaTime,
     );
     this.tcas1FaultCond.set(!allRaInvalid && this.acESSBusPowered.get() && this.tcas1FaultAndNoAdiruInop.read());
@@ -4987,7 +5030,7 @@ export class FwsCore {
 
     this.tcas2AdrInopOrIrConfNode.write(oneUsedRightAdrInop || oneUsedRightIrInop || rightIrFaultyOrInAlign, deltaTime);
     this.tcas2FaultAndNoAdiruInop.write(
-      tcasFaulty && !(flightPhase112 && this.tcas2AdrInopOrIrConfNode.read()),
+      tcasFaulty && !(flightPhase1Or12 && this.tcas2AdrInopOrIrConfNode.read()),
       deltaTime,
     );
     this.tcas2FaultCond.set(!allRaInvalid && this.ac2BusPowered.get() && this.tcas2FaultAndNoAdiruInop.read());
@@ -5327,7 +5370,7 @@ export class FwsCore {
     this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
     this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
 
-    const engineShutdownPreCondition = !this.flightPhase12Or1112.get();
+    const engineShutdownPreCondition = !flightPhase1Or2Or11Or12;
 
     // ENG SHUTDOWN
     this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !this.engine1Master.get()));
@@ -5777,6 +5820,7 @@ export class FwsCore {
     this.presentedFailures.push(...failureKeys);
 
     const rightMemos: string[] = [];
+    const rightPfdMemos: string[] = [];
 
     // MEMOs (except T.O and LDG)
     for (const [key, value] of Object.entries(this.memos.ewdMemos)) {
@@ -5794,14 +5838,17 @@ export class FwsCore {
         );
       this.memosStatusMap.set(key, isActive);
       if (isActive) {
-        const newCode: string[] = [];
-
-        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-        codeIndex.forEach((e: number) => {
-          newCode.push(value.codesToReturn[e]);
-        });
-        const tempArrayRight = rightMemos.filter((e) => !value.codesToReturn.includes(e));
-        rightMemos.push(...tempArrayRight);
+        for (const codeIndex of value.whichCodeToReturn()) {
+          if (codeIndex !== null) {
+            const code = value.codesToReturn[codeIndex];
+            if (!rightMemos.includes(code)) {
+              rightMemos.push(code);
+            }
+            if (value.pfd && !rightPfdMemos.includes(code)) {
+              rightPfdMemos.push(code);
+            }
+          }
+        }
       }
     }
 
@@ -5822,14 +5869,11 @@ export class FwsCore {
       this.memosStatusMap.set(key, isActive);
 
       if (isActive) {
-        const newCode: string[] = [];
-
-        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-        codeIndex.forEach((e: number) => {
-          newCode.push(value.codesToReturn[e]);
-        });
-
-        takeoffLandingMemos.push(...newCode);
+        for (const codeIndex of value.whichCodeToReturn()) {
+          if (codeIndex !== null) {
+            takeoffLandingMemos.push(value.codesToReturn[codeIndex]);
+          }
+        }
       }
     }
 
@@ -5946,14 +5990,7 @@ export class FwsCore {
 
     const memosSorted = rightMemos.sort((a, b) => (EcamMemos[a].order ?? 0) - (EcamMemos[b].order ?? 0));
     this.ewdMessageLinesRight.forEach((l, i) => l.set(memosSorted[i] ?? ''));
-
-    const pfdMemosFiltered = rightMemos.filter((it) => pfdMemoDisplay.includes(it));
-    // Add A/THR OFF PFD only memo in case of involuntary auto thrust disconnect
-    if (this.autoThrustInvoluntaryPfdMemoMemoryNode.read() && pfdMemosFiltered.indexOf(AThrOffMemoKey) == -1) {
-      pfdMemosFiltered.push(AThrOffMemoKey);
-    }
-    const pfdMemos = pfdMemosFiltered.sort((a, b) => (EcamMemos[a].order ?? 0) - (EcamMemos[b].order ?? 0));
-    // TODO order by decreasing importance
+    const pfdMemos = rightPfdMemos.sort((a, b) => (EcamMemos[a].order ?? 0) - (EcamMemos[b].order ?? 0));
     this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i] ?? ''));
 
     // TODO order by decreasing importance
