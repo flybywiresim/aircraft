@@ -1022,19 +1022,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     const fpIndex = this.loadedFlightPlanIndex.get();
     const isActiveOrTmpy = fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary;
-    if (isActiveOrTmpy) {
-      const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination();
-      const predictionsNotAvailable =
-        distanceToDest === null || distanceToDest === undefined || !Number.isFinite(distanceToDest);
-      const closeToDest =
-        distanceToDest !== null &&
-        distanceToDest !== undefined &&
-        Number.isFinite(distanceToDest) &&
-        distanceToDest <= 180;
-      this.approachParametersMandatory.set(predictionsNotAvailable || closeToDest);
-    } else {
-      this.approachParametersMandatory.set(false);
-    }
 
     // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
@@ -1339,6 +1326,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
     if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
       // Update APPR page
+      const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination(fpIndex);
+      this.approachParametersMandatory.set(isActiveOrTmpy && (distanceToDest ?? 0) <= 180);
+
       this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
       this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? NaN);
       this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
@@ -1365,6 +1355,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         this.towerHeadwind.set(null);
         this.apprCrosswind.set('---');
       }
+    } else {
+      this.approachParametersMandatory.set(false);
     }
   }
 
