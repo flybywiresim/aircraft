@@ -525,6 +525,9 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public calculateTakeoffWeight(forPlan = FlightPlanIndex.Active): void {
+   if(!this.flightPlanInterface.has(forPlan)) {
+   return;
+   }
     const plan = this.flightPlanInterface.get(forPlan);
     const pd = plan.performanceData;
     const isActiveOrCopyOfActive = plan.isActiveOrCopiedFromActive();
