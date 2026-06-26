@@ -537,7 +537,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     let tow: number | null;
-    if (!isActiveOrCopyOfActive || (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan))) {
+    if (!isActiveOrCopyOfActive || !this.enginesWereStarted.get()) {
       // Engines off or secondary not copied from active: ZFW + BLOCK - TAXI
       const zfw = pd.zeroFuelWeight.get();
       const blockFuel = pd.blockFuel.get();
