@@ -155,9 +155,7 @@ export class FwsCore {
       GroundSupportEvents
   >();
 
-  private static readonly ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS = 1.0;
-
-  private static readonly FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS = 0.6;
+  private static readonly FWS_DEFAULT_MONITOR_CONFIRM_TIME_SECONDS = 0.6;
 
   private readonly subs: Subscription[] = [];
 
@@ -5505,13 +5503,7 @@ export class FwsCore {
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
       if (
         !value.simVarIsActive.get() ||
-        !this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
-          flightPhase,
-        )
+        !this.itemIsActiveConsideringFaultSuppression(value, key, simTime, flightPhase)
       ) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
@@ -5539,14 +5531,7 @@ export class FwsCore {
 
       if (
         value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
-          flightPhase,
-          newWarning,
-        )
+        this.itemIsActiveConsideringFaultSuppression(value, key, simTime, flightPhase, newWarning)
       ) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
@@ -5836,14 +5821,7 @@ export class FwsCore {
 
       const isActive =
         value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
-          flightPhase,
-          isNew,
-        );
+        this.itemIsActiveConsideringFaultSuppression(value, key, simTime, flightPhase, isNew);
       this.memosStatusMap.set(key, isActive);
       if (isActive) {
         const code = value.codesToReturn[value.whichCodeToReturn()];
@@ -5868,14 +5846,7 @@ export class FwsCore {
       const isNew = this.memosStatusMap.get(key) ?? false === false;
       const isActive =
         value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
-          flightPhase,
-          isNew,
-        );
+        this.itemIsActiveConsideringFaultSuppression(value, key, simTime, flightPhase, isNew);
       this.memosStatusMap.set(key, isActive);
 
       if (isActive) {
@@ -5887,15 +5858,7 @@ export class FwsCore {
 
     // INOP SYS
     for (const [key, value] of Object.entries(this.inopSys.inopSys)) {
-      if (
-        value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
-        )
-      ) {
+      if (value.simVarIsActive.get() && this.itemIsActiveConsideringFaultSuppression(value, key, simTime)) {
         if (
           !value.redundancyLoss &&
           value.phase === FwsInopSysPhases.AllPhases &&
@@ -5918,12 +5881,7 @@ export class FwsCore {
     for (const [key, value] of Object.entries(this.information.info)) {
       if (
         value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
-        ) &&
+        this.itemIsActiveConsideringFaultSuppression(value, key, simTime) &&
         !stsInfoKeys.includes(key)
       ) {
         stsInfoKeys.push(key);
@@ -5932,15 +5890,7 @@ export class FwsCore {
 
     // LIMITATIONS
     for (const [key, value] of Object.entries(this.limitations.limitations)) {
-      if (
-        value.simVarIsActive.get() &&
-        this.itemIsActiveConsideringFaultSuppression(
-          value,
-          key,
-          simTime,
-          FwsCore.ECAM_MEMOS_INFO_STS_DEFAULT_MONITOR_TIME_SECONDS,
-        )
-      ) {
+      if (value.simVarIsActive.get() && this.itemIsActiveConsideringFaultSuppression(value, key, simTime)) {
         if (value.phase === FwsLimitationsPhases.AllPhases && !ewdLimitationsAllPhasesKeys.includes(key)) {
           ewdLimitationsAllPhasesKeys.push(key);
         } else if (value.phase === FwsLimitationsPhases.ApprLdg && !ewdLimitationsApprLdgKeys.includes(key)) {
@@ -6301,7 +6251,6 @@ export class FwsCore {
     item: FwsSuppressableItem | FwsNotActiveWithOthersSupressableItem,
     key: keyof FwsSuppressableItemDict,
     simTime: number,
-    defaultMonitorConfirmTime: number = FwsCore.FWS_ABNORMAL_SENSED_DEFAULT_MONITOR_TIME_SECONDS,
     flightPhase?: number,
     isNew?: boolean,
   ): boolean {
@@ -6320,7 +6269,7 @@ export class FwsCore {
     }
 
     const itemActivationTime = this.failureActivationTime.get(key) ?? 0;
-    const monitorConfirmTime = item.monitorConfirmTime ?? defaultMonitorConfirmTime;
+    const monitorConfirmTime = item.monitorConfirmTime ?? FwsCore.FWS_DEFAULT_MONITOR_CONFIRM_TIME_SECONDS;
     if (simTime < itemActivationTime + monitorConfirmTime) {
       return false;
     }
@@ -6342,7 +6291,8 @@ export class FwsCore {
 
       // Question for the future: Should this check fault suppressions recursively? Beware loops
       const suppressingActivationTime = this.failureActivationTime.get(suppressingKey) ?? 0;
-      const suppressingMonitorConfirmTime = otherFault.monitorConfirmTime ?? defaultMonitorConfirmTime;
+      const suppressingMonitorConfirmTime =
+        otherFault.monitorConfirmTime ?? FwsCore.FWS_DEFAULT_MONITOR_CONFIRM_TIME_SECONDS;
       if (simTime >= suppressingActivationTime + suppressingMonitorConfirmTime) {
         return false;
       }
