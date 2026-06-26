@@ -1895,9 +1895,10 @@ export class FwsCore {
   private readonly xpdrAltReporting = Subject.create(false);
 
   public readonly xpdrAltReportingOffMemo = MappedSubject.create(
-    ([altReporting, phase1or12]) => !altReporting && !phase1or12,
+    ([altReporting, phase1or12, xpdrStby]) => !altReporting && !phase1or12 && !xpdrStby,
     this.xpdrAltReporting,
     this.flightPhase1Or12,
+    this.xpdrStby,
   );
 
   public readonly tcasInop = Subject.create(false);
