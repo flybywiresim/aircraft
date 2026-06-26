@@ -1849,7 +1849,7 @@ export class FwsCore {
   public readonly tawsFlapModeOff = Subject.create(false);
 
   public readonly tawsFlapModeOffMemo = MappedSubject.create(
-    SubscribableMapFunctions.and(),
+    ([tawsFlapModeOff, phase1or12]) => tawsFlapModeOff && !phase1or12,
     this.tawsFlapModeOff,
     this.flightPhase1Or12,
   );
@@ -1857,7 +1857,7 @@ export class FwsCore {
   public readonly tawsGpwsOff = Subject.create(false);
 
   public readonly tawsGpwsOffMemo = MappedSubject.create(
-    SubscribableMapFunctions.and(),
+    ([tawsGpwsOff, phase1or12]) => tawsGpwsOff && !phase1or12,
     this.tawsGpwsOff,
     this.flightPhase1Or12,
   );
@@ -1865,7 +1865,7 @@ export class FwsCore {
   public readonly tawsGsOff = Subject.create(false);
 
   public readonly tawsGsOffMemo = MappedSubject.create(
-    SubscribableMapFunctions.and(),
+    ([tawsGsOff, phase1or12]) => tawsGsOff && !phase1or12,
     this.tawsGsOff,
     this.flightPhase1Or12,
   );
@@ -1873,7 +1873,7 @@ export class FwsCore {
   public readonly tawsTerrOff = Subject.create(false);
 
   public readonly tawsTerrOffMemo = MappedSubject.create(
-    SubscribableMapFunctions.and(),
+    ([tawsTerrOff, phase1or12]) => tawsTerrOff && !phase1or12,
     this.tawsTerrOff,
     this.flightPhase1Or12,
   );
@@ -2855,9 +2855,6 @@ export class FwsCore {
    * Periodic update
    */
   update(_deltaTime: number) {
-    if (!this.startupCompleted.get()) {
-      return;
-    }
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
 
     const ecpNotReachable =
@@ -5848,21 +5845,17 @@ export class FwsCore {
         );
       this.memosStatusMap.set(key, isActive);
       if (isActive) {
-        for (const codeIndex of value.whichCodeToReturn()) {
-          if (codeIndex !== null) {
-            const code = value.codesToReturn[codeIndex];
-            // Default to EWD memos if undefined.
-            const ewdOnly = value.displayedOnPfd === undefined;
-            if (ewdOnly || value.displayedOnPfd === PfdMemoDisplay.EWD_PFD) {
-              if (!rightMemos.includes(code)) {
-                rightMemos.push(code);
-              }
-            }
-            if (!ewdOnly) {
-              if (!rightPfdMemos.includes(code)) {
-                rightPfdMemos.push(code);
-              }
-            }
+        const code = value.codesToReturn[value.whichCodeToReturn()];
+        // Default to EWD memos if undefined.
+        const ewdOnly = value.displayedOnPfd === undefined;
+        if (ewdOnly || value.displayedOnPfd === PfdMemoDisplay.EWD_PFD) {
+          if (!rightMemos.includes(code)) {
+            rightMemos.push(code);
+          }
+        }
+        if (!ewdOnly) {
+          if (!rightPfdMemos.includes(code)) {
+            rightPfdMemos.push(code);
           }
         }
       }
@@ -5886,9 +5879,7 @@ export class FwsCore {
 
       if (isActive) {
         for (const codeIndex of value.whichCodeToReturn()) {
-          if (codeIndex !== null) {
-            takeoffLandingMemos.push(value.codesToReturn[codeIndex]);
-          }
+          takeoffLandingMemos.push(value.codesToReturn[codeIndex]);
         }
       }
     }

@@ -43,13 +43,13 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
     this.memosLeftFormatString.set(
       this.memosLeft
         .filter((v) => !!v.get())
-        .map((val) => EcamMemos[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())].text)
         .join('\r'),
     );
     this.memosRightFormatString.set(
       this.memosRight
         .filter((v) => !!v.get())
-        .map((val) => EcamMemos[padEWDCode(val.get())])
+        .map((val) => EcamMemos[padEWDCode(val.get())].text)
         .join('\r'),
     );
 

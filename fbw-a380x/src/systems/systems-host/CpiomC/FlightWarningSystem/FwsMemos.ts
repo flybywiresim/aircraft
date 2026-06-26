@@ -11,9 +11,12 @@ export enum PfdMemoDisplay {
   EWD_PFD,
 }
 
-interface EwdMemoItem extends FwsSuppressableItem {
-  whichCodeToReturn: () => any[];
+interface FwsMemo extends FwsSuppressableItem {
   codesToReturn: string[];
+}
+
+interface EwdMemoItem extends FwsMemo {
+  whichCodeToReturn: () => number;
 
   /** Whether the memo should be displayed on the PFD, EWD, or both. Defaults to EWD only if undefined */
   displayedOnPfd?: PfdMemoDisplay;
@@ -21,6 +24,14 @@ interface EwdMemoItem extends FwsSuppressableItem {
 
 export interface EwdMemoDict {
   [key: keyof typeof EcamMemos]: EwdMemoItem;
+}
+
+interface SpecialEwdMemoItem extends FwsMemo {
+  whichCodeToReturn: () => number[];
+}
+
+export interface SpecialEwdMemoDict {
+  [key: keyof typeof EcamMemos]: SpecialEwdMemoItem;
 }
 
 export class FwsMemos {
@@ -32,38 +43,37 @@ export class FwsMemos {
     210000001: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.highLandingFieldElevation,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['210000001'],
     },
     271000001: {
       // GND SPLRs ARMED
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.spoilersArmedMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['271000001'],
     },
     '280000001': {
       // CROSSFEED OPEN
       simVarIsActive: this.fws.crossFeedOpenMemo,
-      whichCodeToReturn: () => [this.fws.flightPhase34567.get() ? 1 : 0],
+      whichCodeToReturn: () => (this.fws.flightPhase34567.get() ? 1 : 0),
       codesToReturn: ['280000001', '280000013'],
     },
     280000003: {
       // DEFUEL IN PROGRESS,
       simVarIsActive: this.fws.defuelInProgressMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['280000003'],
     },
     280000009: {
       // REFUEL IN PROGRESS,
       simVarIsActive: this.fws.refuelInProgressMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['280000009'],
     },
     '280000010': {
       // REFUEL PNL DOOR OPEN
       simVarIsActive: this.fws.refuelPanelOpenMemo,
-      whichCodeToReturn: () => (!this.fws.flightPhase1Or12.get() ? [1] : [0]),
+      whichCodeToReturn: () => (!this.fws.flightPhase1Or12.get() ? 1 : 0),
       codesToReturn: ['280000010', '280000011'],
     },
     '300000001': {
@@ -75,14 +85,14 @@ export class FwsMemos {
         this.fws.eng3AntiIce,
         this.fws.eng4AntiIce,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['300000001'],
       displayedOnPfd: PfdMemoDisplay.EWD_PFD,
     },
     '300000002': {
       // WING ANTI ICE
       simVarIsActive: this.fws.wingAntiIce,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['300000002'],
       displayedOnPfd: PfdMemoDisplay.EWD_PFD,
     },
@@ -94,29 +104,27 @@ export class FwsMemos {
         this.fws.iceNotDetTimer2Status,
         this.fws.aircraftOnGround,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['300000003'],
     },
     '0000170': {
       // APU AVAIL
-      flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
         ([apuAvail, apuBleedValveOpen]) => apuAvail && !apuBleedValveOpen,
         this.fws.apuAvail,
         this.fws.apuBleedValveOpen,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['000017001'],
     },
     '0000180': {
       // APU BLEED
-      flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
         ([apuAvail, apuBleedValveOpen]) => apuAvail && apuBleedValveOpen,
         this.fws.apuAvail,
         this.fws.apuBleedValveOpen,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['000018001'],
     },
     '230000001': {
@@ -127,14 +135,14 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000001'],
     },
     // 22 - Flight guidance
     220000001: {
       // AP OFF
       simVarIsActive: this.fws.autoPilotOffShowMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['220000001'],
       displayedOnPfd: PfdMemoDisplay.EWD_PFD,
       monitorConfirmTime: 0,
@@ -142,14 +150,14 @@ export class FwsMemos {
     220000002: {
       // A/THR OFF EWD
       simVarIsActive: this.fws.autoThrustOffVoluntaryEwdMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['220000002'],
       monitorConfirmTime: 0,
     },
     220000003: {
       // A/THR OFF PFD
       simVarIsActive: this.fws.autoThrustoffInvoluntaryPfdMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['220000002'],
       displayedOnPfd: PfdMemoDisplay.PFD,
       monitorConfirmTime: 0,
@@ -157,13 +165,13 @@ export class FwsMemos {
     // FMS SWTG
     221000001: {
       simVarIsActive: this.fws.fmsSwitchingNotNorm,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['221000001'],
     },
     // DEST EFOB
     221000002: {
       simVarIsActive: this.fws.fmsDestEfob,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['221000002'],
     },
     '230000002': {
@@ -174,7 +182,7 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000002'],
     },
     '230000003': {
@@ -185,7 +193,7 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000003'],
     },
     '230000009': {
@@ -196,7 +204,7 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000009'],
     },
     '230000010': {
@@ -207,7 +215,7 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000010'],
     },
     '230000011': {
@@ -218,7 +226,7 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000011'],
     },
     '230000012': {
@@ -229,13 +237,13 @@ export class FwsMemos {
         this.fws.rmp2Off,
         this.fws.rmp3Off,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000012'],
     },
     '230000015': {
       // VHF3 VOICE
       simVarIsActive: this.fws.vhf3VoiceMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['230000015'],
     },
 
@@ -243,7 +251,7 @@ export class FwsMemos {
     '241000001': {
       // ELEC EXT PWR
       simVarIsActive: this.fws.extPowerMemo,
-      whichCodeToReturn: () => [
+      whichCodeToReturn: () =>
         [
           this.fws.engine1Running.get(),
           this.fws.engine2Running.get(),
@@ -252,43 +260,37 @@ export class FwsMemos {
         ].filter(Boolean).length > 1
           ? 0
           : 1,
-      ],
       codesToReturn: ['241000001', '241000002'],
     },
     '242000001': {
       // RAT OUT
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 0 : 1],
+      whichCodeToReturn: () => (this.fws.flightPhase1211.get() ? 0 : 1),
       codesToReturn: ['242000001', '242000002'],
     },
     // ATA 29
     '290000001': {
       // G ELEC PMP A CTL
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.greenAPumpOn,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['290000001'],
     },
     '290000002': {
       // G ELEC PMP B CTL
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.greenBPumpOn,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['290000002'],
     },
     '290000003': {
       // Y ELEC PMP A CTL
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.yellowAPumpOn,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['290000003'],
     },
     '290000004': {
       // Y ELEC PMP A CTL
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.yellowBPumpOn,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['290000004'],
     },
     // 31 INDICATING RECORDING
@@ -296,14 +298,14 @@ export class FwsMemos {
       // T.O. INHIBIT
       monitorConfirmTime: 0,
       simVarIsActive: this.fws.takeoffInhibitMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['314000001'],
     },
     314000002: {
       // LDG INHIBIT
       monitorConfirmTime: 0,
       simVarIsActive: this.fws.ldgInhibitMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['314000002'],
     },
     // 32 LANDING GEAR
@@ -311,7 +313,7 @@ export class FwsMemos {
       // AUTO BRK OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
       simVarIsActive: this.fws.autoBrakeOff,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['320000001'],
       displayedOnPfd: PfdMemoDisplay.EWD_PFD,
       monitorConfirmTime: 0,
@@ -320,7 +322,7 @@ export class FwsMemos {
     '322000001': {
       // N/W STEER DISC
       simVarIsActive: this.fws.nwSteeringDiscMemo,
-      whichCodeToReturn: () => [
+      whichCodeToReturn: () =>
         [
           this.fws.engine1Running.get(),
           this.fws.engine2Running.get(),
@@ -329,13 +331,12 @@ export class FwsMemos {
         ].filter(Boolean).length > 1
           ? 0
           : 1,
-      ],
       codesToReturn: ['322000001', '322000002'],
     },
     '320000002': {
       // PARK BRK ON
       simVarIsActive: this.fws.parkingBrakeOnMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['320000002'],
     },
     '333000001': {
@@ -345,27 +346,26 @@ export class FwsMemos {
         this.fws.strobeLightsOn,
         this.fws.flightPhase,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['333000001'],
     },
     '335000001': {
       // SEAT BELTS
-      simVarIsActive: this.fws.seatBelt,
-      whichCodeToReturn: () => [0],
+      simVarIsActive: this.fws.seatBeltOnMemo,
+      whichCodeToReturn: () => 0,
       codesToReturn: ['335000001'],
     },
     '335000003': {
       // NO MOBILE
       simVarIsActive: this.fws.noMobileSwitchPosition.map((pos) => pos === 0),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['335000003'],
     },
     '340000001': {
       // TODO add pulsing on slat/flap extension
       // TRUE NORTH REF
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.trueNorthRef,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['340000001'],
     },
     '340003001': {
@@ -382,7 +382,7 @@ export class FwsMemos {
         this.fws.ir3Align,
         this.fws.flightphase1Or2Or12,
       ),
-      whichCodeToReturn: () => [
+      whichCodeToReturn: () =>
         this.fws.adirsMessage1(
           this.fws.adirsRemainingAlignTime.get(),
           (this.fws.engine1State.get() > 0 && this.fws.engine1State.get() < 4) ||
@@ -390,7 +390,6 @@ export class FwsMemos {
             (this.fws.engine3State.get() > 0 && this.fws.engine3State.get() < 4) ||
             (this.fws.engine4State.get() > 0 && this.fws.engine4State.get() < 4),
         ),
-      ],
       codesToReturn: [
         '340003001',
         '340003002',
@@ -417,7 +416,7 @@ export class FwsMemos {
         this.fws.ir3Align,
         this.fws.flightphase1Or2Or12,
       ),
-      whichCodeToReturn: () => [
+      whichCodeToReturn: () =>
         this.fws.adirsMessage2(
           this.fws.adirsRemainingAlignTime.get(),
           (this.fws.engine1State.get() > 0 && this.fws.engine1State.get() < 4) ||
@@ -425,7 +424,6 @@ export class FwsMemos {
             (this.fws.engine3State.get() > 0 && this.fws.engine3State.get() < 4) ||
             (this.fws.engine4State.get() > 0 && this.fws.engine4State.get() < 4),
         ),
-      ],
       codesToReturn: [
         '340003101',
         '340003102',
@@ -439,80 +437,76 @@ export class FwsMemos {
     },
     '340068001': {
       // ADIRS SWTG
-      flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
         ([airKnob, attKnob]) => attKnob !== 1 || airKnob !== 1,
         this.fws.airKnob,
         this.fws.attKnob,
       ),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['340068001'],
     },
 
     '341000001': {
       // GPWS OFF
       simVarIsActive: this.fws.tawsGpwsOffMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['341000001'],
     },
     '341000002': {
       // TAWS FLAP MODE OFF
       simVarIsActive: this.fws.tawsFlapModeOffMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['341000002'],
     },
     '341000003': {
       // TAWS G/S MODE OFF
       simVarIsActive: this.fws.tawsGsOffMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['341000003'],
     },
 
     '343000001': {
       // TCAS STBY
       simVarIsActive: this.fws.tcasStandbyMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['343000001'],
     },
     '343000002': {
       // ALT RPTG OFF
       simVarIsActive: this.fws.xpdrAltReportingOffMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['343000002'],
     },
     '343000003': {
       // XPDR STBY
       simVarIsActive: this.fws.xpdrStbymemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['343000003'],
     },
     '350000001': {
       // OXY PAX SYS ON
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.paxOxyMasksDeployedMemo,
-      whichCodeToReturn: () => [0],
-      codesToReturn: [this.fws.paxOxyMasksDeployedMemoGreen ? '350000001' : '350000002'],
+      whichCodeToReturn: () => (this.fws.paxOxyMasksDeployedMemoGreen ? 0 : 1),
+      codesToReturn: ['350000001', '350000002'],
     },
     '460000001': {
       // COMPANY MSG
       simVarIsActive: this.fws.companyMessageMemo,
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['460000001'],
     },
     '709000001': {
       // IGNITION
-      flightPhaseInhib: [],
       simVarIsActive: this.fws.engSelectorPosition.map((v) => v === 2),
-      whichCodeToReturn: () => [0],
+      whichCodeToReturn: () => 0,
       codesToReturn: ['709000001'],
     },
   };
 
   /** MEMOs on lower left side of EWD (TO and LDG memos only) */
-  ewdToLdgMemos: EwdMemoDict = {
+  ewdToLdgMemos: SpecialEwdMemoDict = {
     '0000010': {
       // T.O MEMO
-      flightPhaseInhib: [1, 3, 8, 12],
       simVarIsActive: this.fws.toMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
@@ -543,7 +537,6 @@ export class FwsMemos {
     },
     '0000020': {
       // LANDING MEMO
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 11, 12],
       simVarIsActive: this.fws.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
