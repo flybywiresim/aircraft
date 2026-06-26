@@ -6,12 +6,17 @@ import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessa
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
 import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
+export enum PfdMemoDisplay {
+  PFD,
+  EWD_PFD,
+}
+
 interface EwdMemoItem extends FwsSuppressableItem {
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
 
-  /** Whether the memo should be displayed on the PFD. */
-  pfd?: boolean;
+  /** Whether the memo should be displayed on the PFD, EWD, or both. Defaults to EWD only if undefined */
+  displayedOnPfd?: PfdMemoDisplay;
 }
 
 export interface EwdMemoDict {
@@ -72,14 +77,14 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['300000001'],
-      pfd: true,
+      displayedOnPfd: PfdMemoDisplay.EWD_PFD,
     },
     '300000002': {
       // WING ANTI ICE
       simVarIsActive: this.fws.wingAntiIce,
       whichCodeToReturn: () => [0],
       codesToReturn: ['300000002'],
-      pfd: true,
+      displayedOnPfd: PfdMemoDisplay.EWD_PFD,
     },
     '300000003': {
       // ICE NOT DETECTED
@@ -131,14 +136,23 @@ export class FwsMemos {
       simVarIsActive: this.fws.autoPilotOffShowMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220000001'],
-      pfd: true,
+      displayedOnPfd: PfdMemoDisplay.EWD_PFD,
+      monitorConfirmTime: 0,
     },
     220000002: {
-      // A/THR OFF
-      simVarIsActive: this.fws.autoThrustOffVoluntary,
+      // A/THR OFF EWD
+      simVarIsActive: this.fws.autoThrustOffVoluntaryEwdMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['220000002'],
-      pfd: this.fws.autoThrustOffPfdMemo,
+      monitorConfirmTime: 0,
+    },
+    220000003: {
+      // A/THR OFF PFD
+      simVarIsActive: this.fws.autoThrustoffInvoluntaryPfdMemo,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220000002'],
+      displayedOnPfd: PfdMemoDisplay.PFD,
+      monitorConfirmTime: 0,
     },
     // FMS SWTG
     221000001: {
@@ -299,7 +313,8 @@ export class FwsMemos {
       simVarIsActive: this.fws.autoBrakeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000001'],
-      pfd: true,
+      displayedOnPfd: PfdMemoDisplay.EWD_PFD,
+      monitorConfirmTime: 0,
     },
     // ATA 32
     '322000001': {
@@ -480,7 +495,7 @@ export class FwsMemos {
     },
     '460000001': {
       // COMPANY MSG
-      simVarIsActive: this.fws.compMesgCount.map((c) => c > 0),
+      simVarIsActive: this.fws.companyMessageMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['460000001'],
     },

@@ -60,7 +60,7 @@ import { ProcedureLinesGenerator } from '../../../instruments/src/MsfsAvionicsCo
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 // FIXME should not import from instruments
 import { ChecklistState, FwsEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { FwsMemos } from './FwsMemos';
+import { FwsMemos, PfdMemoDisplay } from './FwsMemos';
 import { FwsNormalChecklists } from './FwsNormalChecklists';
 import { EwdAbnormalDict, EwdAbnormalItem, FwsAbnormalSensed } from './FwsAbnormalSensed';
 import { FwsAbnormalNonSensed } from './FwsAbnormalNonSensed';
@@ -405,7 +405,7 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
-  public readonly compMesgCount = Subject.create(0);
+  public readonly companyMessageMemo = Subject.create(false); //TODO: Hookup once OIT company message backend is ready.
 
   public readonly landAsap = Subject.create(false);
 
@@ -788,14 +788,20 @@ export class FwsCore {
 
   private readonly autoThrustInvoluntaryPfdMemoMemoryNode = new NXLogicMemoryNode(false);
 
-  public autoThrustOffPfdMemo = false;
+  private readonly autoThrustOffInvoluntaryPfdMemoryNode = Subject.create(false);
 
   public autoThrustInhibitCaution = false; // Inhibit for 10 sec
 
-  public readonly autoThrustOffVoluntary = Subject.create(false);
+  public readonly autoThrustOffVoluntaryEwdMemo = Subject.create(false);
 
   public readonly autoThrustOffInvoluntary = Subject.create(false);
   public autoThrustOffVoluntaryMemoInhibited = false;
+
+  public readonly autoThrustoffInvoluntaryPfdMemo = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.autoThrustOffVoluntaryEwdMemo,
+    this.autoThrustOffInvoluntaryPfdMemoryNode,
+  );
 
   public readonly fmsSwitchingKnob = Subject.create(0);
 
@@ -3750,7 +3756,7 @@ export class FwsCore {
 
     if (
       this.autoThrustOffVoluntaryCautionNode.read() &&
-      !this.autoThrustOffVoluntary.get() &&
+      !this.autoThrustOffVoluntaryEwdMemo.get() &&
       !this.autoThrustInhibitCaution
     ) {
       // First triggered in this cycle, request master caution
@@ -3760,7 +3766,7 @@ export class FwsCore {
       this.requestMasterCautionFromAThrOff = false;
       this.requestSingleChimeFromAThrOff = false;
     }
-    this.autoThrustOffVoluntary.set(
+    this.autoThrustOffVoluntaryEwdMemo.set(
       this.autoThrustOffVoluntaryMemoNode.read() && !this.autoThrustInhibitCaution && !athrEngagedOrArmed,
     );
 
@@ -3770,13 +3776,18 @@ export class FwsCore {
       this.autoThrustDisengagedInstantPulse.read() &&
       !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
 
-    this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, athrEngagedOrArmed || voluntaryAThrDisc);
-    this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
+    const involuntaryAutoThrustMemory = this.autoThrustOffInvoluntaryNode.write(
+      involuntaryAThrDisc,
+      athrEngagedOrArmed || voluntaryAThrDisc || flightPhase1,
+    );
+    this.autoThrustOffInvoluntary.set(involuntaryAutoThrustMemory);
 
     // PFD ONLY memo A/THR OFF
-    this.autoThrustOffPfdMemo = this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
-      involuntaryAThrDisc,
-      athrEngagedOrArmed || this.autoThrustInstinctiveDiscPressed.read(),
+    this.autoThrustOffInvoluntaryPfdMemoryNode.set(
+      this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
+        involuntaryAThrDisc,
+        athrEngagedOrArmed || this.autoThrustInstinctiveDiscPressed.read() || flightPhase1,
+      ),
     );
 
     // A/THR LIMITED
@@ -4458,7 +4469,6 @@ export class FwsCore {
     this.attKnob.set(attKnob);
     this.ir3UsedLeft.set(attKnob === 0);
     this.ir3UsedRight.set(attKnob === 2);
-    this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') > 0);
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
@@ -5841,11 +5851,17 @@ export class FwsCore {
         for (const codeIndex of value.whichCodeToReturn()) {
           if (codeIndex !== null) {
             const code = value.codesToReturn[codeIndex];
-            if (!rightMemos.includes(code)) {
-              rightMemos.push(code);
+            // Default to EWD memos if undefined.
+            const ewdOnly = value.displayedOnPfd === undefined;
+            if (ewdOnly || value.displayedOnPfd === PfdMemoDisplay.EWD_PFD) {
+              if (!rightMemos.includes(code)) {
+                rightMemos.push(code);
+              }
             }
-            if (value.pfd && !rightPfdMemos.includes(code)) {
-              rightPfdMemos.push(code);
+            if (!ewdOnly) {
+              if (!rightPfdMemos.includes(code)) {
+                rightPfdMemos.push(code);
+              }
             }
           }
         }
@@ -6192,7 +6208,7 @@ export class FwsCore {
 
     this.aThrDiscInputBuffer.write(true, false);
 
-    if (this.autoThrustOffVoluntary.get()) {
+    if (this.autoThrustOffVoluntaryEwdMemo.get()) {
       // Pressed a second time -> silence
       this.autoThrustInhibitCaution = true;
       this.requestMasterCautionFromAThrOff = false;
