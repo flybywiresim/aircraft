@@ -1,24 +1,22 @@
-//  Copyright (c) 2023-2024 FlyByWire Simulations
-//  SPDX-License-Identifier: GPL-3.0
-
-import { NavAidMode } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
-  VNode,
   SubscribableMapFunctions,
+  VNode,
 } from '@microsoft/msfs-sdk';
-import { FcuEvents } from '../Publishers/FcuPublisher';
-import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
+import { NavAidMode } from '@flybywiresim/fbw-sdk';
+import { FcuSimvars } from '../Publishers/FcuSimvarPublisher';
 
-export interface NdDataProps {
+interface NdDataDisplayProps {
   readonly bus: EventBus;
-  readonly index: 1 | 2;
+  readonly index: number;
 }
 
-export class NdData extends DisplayComponent<NdDataProps> {
+export class NdDataDisplay extends DisplayComponent<NdDataDisplayProps> {
+  private static readonly TEST_IMAGE: string = '/Images/fbw-a380x/fcu/TEST.png';
+
   private static readonly NAVAID_1_IMAGES: Record<NavAidMode, string> = {
     [NavAidMode.Off]: '/Images/fbw-a380x/fcu/POINTER1.png',
     [NavAidMode.VOR]: '/Images/fbw-a380x/fcu/VOR1.png',
@@ -30,25 +28,29 @@ export class NdData extends DisplayComponent<NdDataProps> {
     [NavAidMode.ADF]: '/Images/fbw-a380x/fcu/ADF2.png',
   };
 
-  private readonly sub = this.props.bus.getSubscriber<FcuEvents & OverheadEvents>();
+  private readonly sub = this.props.bus.getSubscriber<FcuSimvars>();
 
   private readonly navaidMode1 = ConsumerSubject.create(
-    this.sub.on(this.props.index === 2 ? 'fcu_right_navaid_mode_1' : 'fcu_left_navaid_mode_1'),
+    this.sub.on(this.props.index === 1 ? 'eisDisplayRightNavaid1Mode' : 'eisDisplayLeftNavaid1Mode'),
     NavAidMode.Off,
   );
   private readonly navaidMode2 = ConsumerSubject.create(
-    this.sub.on(this.props.index === 2 ? 'fcu_right_navaid_mode_2' : 'fcu_left_navaid_mode_2'),
+    this.sub.on(this.props.index === 1 ? 'eisDisplayRightNavaid2Mode' : 'eisDisplayLeftNavaid2Mode'),
     NavAidMode.Off,
   );
 
-  private readonly isLightTestActive = ConsumerSubject.create(this.sub.on('ovhd_ann_lt_test_active'), false);
+  private readonly isLightTestActive = ConsumerSubject.create(this.sub.on('lightsTest'), false);
+
+  private readonly navaidImage1 = this.navaidMode1.map((mode) => NdDataDisplay.NAVAID_1_IMAGES[mode as NavAidMode]);
+
+  private readonly navaidImage2 = this.navaidMode2.map((mode) => NdDataDisplay.NAVAID_2_IMAGES[mode as NavAidMode]);
 
   render(): VNode | null {
     return (
       <div
         class={{
           NdData: true,
-          [`${this.props.index === 2 ? 'Right' : 'Left'}Side`]: true,
+          [`${this.props.index === 1 ? 'Right' : 'Left'}Side`]: true,
         }}
       >
         <div class="TopRow">
@@ -82,6 +84,7 @@ export class NdData extends DisplayComponent<NdDataProps> {
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/ARPT.png"
           />
+
           {/* LIGHT TESTS */}
           <img
             style="position: absolute; top: 0; left: 0"
@@ -120,7 +123,7 @@ export class NdData extends DisplayComponent<NdDataProps> {
             style="position: absolute; top: 0; left: 0"
             width="310px"
             class={{ hidden: this.isLightTestActive }}
-            src={this.navaidMode1.map((v) => NdData.NAVAID_1_IMAGES[v])}
+            src={this.navaidImage1}
           />
           <img
             style="position: absolute; top: 0; left: 445px"
@@ -144,8 +147,9 @@ export class NdData extends DisplayComponent<NdDataProps> {
             style="position: absolute; top: 0; left: 1870px"
             width="310px"
             class={{ hidden: this.isLightTestActive }}
-            src={this.navaidMode2.map((v) => NdData.NAVAID_2_IMAGES[v])}
+            src={this.navaidImage2}
           />
+
           {/* LIGHT TESTS */}
           <img
             style="position: absolute; top: 0; left: 0"
