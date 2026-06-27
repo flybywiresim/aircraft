@@ -3,19 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
-import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
-import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
   Units,
   MetarParserType,
   useSimVar,
   usePersistentProperty,
   parseMetar,
-  ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
-  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -28,6 +24,7 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import { fetchRawMetarBySource } from '../../Service/WeatherService';
 import {
   isValidIcao,
   isWindMagnitudeAndDirection,
@@ -72,7 +69,6 @@ export const LandingWidget = () => {
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentSetting('CONFIG_METAR_SRC');
 
   const { usingMetric } = Units;
 
@@ -178,28 +174,11 @@ export const LandingWidget = () => {
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
-    // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
-      let metar: MsfsMetar;
-      try {
-        metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-        if (metar.icao !== icao.toUpperCase()) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(metar.metarString);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else {
-      try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
-        if (!response.metar) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
+    try {
+      const rawMetar = await fetchRawMetarBySource(icao);
+      parsedMetar = parseMetar(rawMetar);
+    } catch (err) {
+      toast.error(err.message);
     }
 
     if (parsedMetar === undefined) {
