@@ -1325,7 +1325,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.approachGreenDotSpeed.set(this.props.fmcService.master.getApproachGreenDotSpeed(fpIndex) ?? null);
     }
     if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
-      // Update APPR page
+      // Update APPR page // FIXME: Logic should be in FMS code
       const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination(fpIndex);
       this.approachParametersMandatory.set(isActiveOrTmpy && (distanceToDest ?? 0) <= 180);
 
