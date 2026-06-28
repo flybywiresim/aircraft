@@ -46,6 +46,12 @@ export class FwsMemos {
       whichCodeToReturn: () => 0,
       codesToReturn: ['210000001'],
     },
+    210000002: {
+      // RAM AIR
+      simVarIsActive: this.fws.ramAirOn,
+      whichCodeToReturn: () => (this.fws.flightPhase1Or12.get() ? 0 : 1),
+      codesToReturn: ['210000002', '210000003'],
+    },
     271000001: {
       // GND SPLRs ARMED
       simVarIsActive: this.fws.spoilersArmedMemo,

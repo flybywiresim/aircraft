@@ -16,6 +16,7 @@
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
 1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 1. [A380X/EWD] Improve ordering of displayed FWS memos  - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add "RAM AIR" ECAM memo - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
