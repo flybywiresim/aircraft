@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [A380X/ECAM] Add RELIGHT IN FLIGHT, TAILPIPE FIRE, VOLCANIC ASH ENCOUNTER, BOMB ON BOARD and SEVERE TURBULENCE abnormal non-sensed checklists  - @Jonny23787 (Jonathan)
 
 ## 2020.15.0
 
