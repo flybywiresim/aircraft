@@ -573,8 +573,8 @@ export class FwsAbnormalNonSensed {
           isGpsAbove25k ? '340200015' : '',
           isGpsAbove25k ? '340200016' : '',
           isGpsAbove25k ? '340200017' : '',
-          isGpsAbove25k ? '220200014' : '',
-          isGpsAbove25k ? '220200011' : '',
+          isGpsAbove25k ? '340200018' : '',
+          isGpsAbove25k ? '340200019' : '',
         ];
       },
     },
