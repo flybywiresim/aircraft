@@ -5481,7 +5481,7 @@ export class FwsCore {
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
-        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer, itemsToShow);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -5538,10 +5538,15 @@ export class FwsCore {
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
                 : Array(deferredItemsActive.length).fill(true);
+              const deferredItemsToShow = deferredValue.whichItemsToShow
+                ? deferredValue.whichItemsToShow()
+                : Array(deferredValue.whichItemsChecked().length).fill(true);
               ProcedureLinesGenerator.conditionalActiveItems(
                 EcamDeferredProcedures[deferredKey],
                 deferredItemsChecked,
                 deferredItemsActive,
+                undefined,
+                deferredItemsToShow,
               );
               this.activeDeferredProceduresList.setValue(deferredKey, {
                 id: deferredKey,
@@ -5549,9 +5554,7 @@ export class FwsCore {
                 procedureActivated: false,
                 itemsChecked: deferredItemsChecked,
                 itemsActive: deferredItemsActive,
-                itemsToShow: deferredValue.whichItemsToShow
-                  ? deferredValue.whichItemsToShow()
-                  : Array(deferredValue.whichItemsChecked().length).fill(true),
+                itemsToShow: deferredItemsToShow,
               });
             }
           }
@@ -5560,7 +5563,7 @@ export class FwsCore {
           const fusedChecked = [...previousPresentedState.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
-          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
+          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer, itemsToShow);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
@@ -5681,7 +5684,7 @@ export class FwsCore {
         proc.items[index].sensed ? itemsChecked[index] : !!val,
       );
 
-      ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+      ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, undefined, itemsToShow);
       this.deferredUpdatedItems.set(key, []);
       proc.items.forEach((item, idx) => {
         if (

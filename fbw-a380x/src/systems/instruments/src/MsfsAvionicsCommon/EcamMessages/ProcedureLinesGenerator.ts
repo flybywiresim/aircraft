@@ -101,6 +101,7 @@ export class ProcedureLinesGenerator {
     itemsChecked: boolean[],
     itemsActive: boolean[],
     itemsTimeStamp?: (number | null | undefined)[],
+    itemsToShow?: boolean[],
   ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
     if (proc?.items && proc.items.some((v) => isChecklistCondition(v))) {
@@ -111,8 +112,9 @@ export class ProcedureLinesGenerator {
           for (let recI = i; recI >= 0; recI--) {
             const parent = proc.items[recI];
             const timeStamp = itemsTimeStamp !== undefined ? itemsTimeStamp[recI] : undefined;
+            const parentShown = itemsToShow !== undefined ? itemsToShow[recI] ?? true : true;
             const isParentCondition =
-              (parent && parent?.level ? parent.level : 0) < v.level && isChecklistCondition(parent);
+              (parent && parent?.level ? parent.level : 0) < v.level && isChecklistCondition(parent) && parentShown;
             active = isParentCondition
               ? active &&
                 (itemsChecked[recI] ||
@@ -296,7 +298,13 @@ export class ProcedureLinesGenerator {
       if (clState.itemsChecked[this.sii]) {
         if (isChecklistCondition(this.selectedItem) && this.selectedItem.condition) {
           // Force 'active' status update
-          ProcedureLinesGenerator.conditionalActiveItems(this.procedure, clState.itemsChecked, clState.itemsActive);
+          ProcedureLinesGenerator.conditionalActiveItems(
+            this.procedure,
+            clState.itemsChecked,
+            clState.itemsActive,
+            clState.itemsTimeStamp,
+            clState.itemsToShow,
+          );
         }
         this.moveDown();
       }
