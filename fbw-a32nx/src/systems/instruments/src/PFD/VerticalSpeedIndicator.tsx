@@ -5,18 +5,58 @@
 import {
   ClockEvents,
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
+  MathUtils,
   Subject,
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429LocalVarConsumerSubject, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { A32NXTcasBusEvents } from '@shared/publishers/A32NXTcasBusPublisher';
+
+function bitsToInteger(word: Arinc429WordData, startBit: number, endBit: number): number {
+  const mask = ((1 << (endBit - startBit + 1)) - 1) << (startBit - 1);
+
+  return (word.value & mask) >> (startBit - 1);
+}
+
+function resolutionAdvisoryNumberToVs(resAdv: number, rateToMaintain: number, sign: number) {
+  if (resAdv == 1) {
+    return rateToMaintain;
+  } else if (resAdv == 2) {
+    return sign * 250;
+  } else if (resAdv == 3) {
+    return sign * 500;
+  } else if (resAdv == 4) {
+    return sign * 1000;
+  } else if (resAdv == 5) {
+    return sign * 2000;
+  } else {
+    return sign * 32767;
+  }
+}
+
+function yPosFromVs(vsValue: number): number {
+  const absVSpeed = Math.abs(vsValue);
+  const sign = Math.sign(vsValue);
+
+  if (absVSpeed < 1000) {
+    return (vsValue / 1000) * -27.22;
+  } else if (absVSpeed < 2000) {
+    return ((vsValue - sign * 1000) / 1000) * -10.1 - sign * 27.22;
+  } else if (absVSpeed < 6000) {
+    return ((vsValue - sign * 2000) / 4000) * -10.1 - sign * 37.32;
+  } else {
+    return sign * -47.37;
+  }
+}
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -24,152 +64,156 @@ interface VerticalSpeedIndicatorProps {
   filteredRadioAltitude: Subscribable<number>;
 }
 
-interface TcasState {
-  tcasState: number;
-  isTcasCorrective: boolean;
-  tcasRedZoneL: number;
-  tcasRedZoneH: number;
-  tcasGreenZoneL: number;
-  tcasGreenZoneH: number;
-}
-
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
-  private yOffsetSub = Subject.create(0);
+  private readonly sub = this.props.bus.getArincSubscriber<A32NXTcasBusEvents & Arinc429Values & ClockEvents>();
 
-  private needleColour = Subject.create('Green');
+  private readonly verticalSpeed = ConsumerSubject.create(this.sub.on('vs'), Arinc429Word.empty());
 
-  private radioAlt = new Arinc429Word(0);
+  private readonly lagFilter = new LagFilter(2);
 
-  private readonly vsFlagVisible = Subject.create(false);
+  private readonly filteredVerticalSpeed = Subject.create(0);
 
-  private vsNormal = FSComponent.createRef<SVGGElement>();
+  private readonly ra = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private lagFilter = new LagFilter(2);
+  private readonly verticalResolutionAdvisoryWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_tcas_vertical_resolution_advisory_word'),
+  );
 
-  private needsUpdate = false;
+  private readonly tcasModeWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_tcas_mode_word'));
 
-  private vspeedTcas = FSComponent.createRef<VSpeedTcas>();
+  private readonly tcasFaultSummaryWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_tcas_fault_summary_word'),
+  );
 
-  private filteredRadioAltitude = 0;
+  private readonly vsFlagVisible = this.verticalSpeed.map((vs) => vs.isFailureWarning());
 
-  private tcasState: TcasState = {
-    tcasState: 0,
-    isTcasCorrective: false,
-    tcasRedZoneL: 0,
-    tcasRedZoneH: 0,
-    tcasGreenZoneL: 0,
-    tcasGreenZoneH: 0,
-  };
+  private readonly tcasInvalid = MappedSubject.create(
+    ([verticalResolutionAdvisoryWord, tcasModeWord, tcasFaultSummaryWord]) => {
+      const tcasFailure =
+        verticalResolutionAdvisoryWord.isFailureWarning() ||
+        tcasFaultSummaryWord.isFailureWarning() ||
+        tcasFaultSummaryWord.bitValue(20);
+      const tcasStandby =
+        tcasModeWord.bitValue(25) &&
+        !(tcasModeWord.bitValue(23) || tcasModeWord.bitValue(24) || tcasModeWord.isFailureWarning());
+
+      return tcasFailure && !tcasStandby;
+    },
+    this.verticalResolutionAdvisoryWord,
+    this.tcasModeWord,
+    this.tcasFaultSummaryWord,
+  );
+
+  private readonly needleYOffset = this.filteredVerticalSpeed.map((filteredVS) => {
+    return yPosFromVs(filteredVS);
+  });
+
+  private readonly tcasVerticalResolutionWordValid = this.verticalResolutionAdvisoryWord.map(
+    (word) => !word.isFailureWarning(),
+  );
+
+  private readonly downResolutionAdvisory = this.verticalResolutionAdvisoryWord.map((word) =>
+    bitsToInteger(word, 27, 29),
+  );
+
+  private readonly downResolutionAdvisoryActive = MappedSubject.create(
+    ([downResolutionAdvisory, tcasVerticalResolutionWordValid]) =>
+      tcasVerticalResolutionWordValid && downResolutionAdvisory > 0 && downResolutionAdvisory < 6,
+    this.downResolutionAdvisory,
+    this.tcasVerticalResolutionWordValid,
+  );
+
+  private readonly upResolutionAdvisory = this.verticalResolutionAdvisoryWord.map((word) =>
+    bitsToInteger(word, 24, 26),
+  );
+
+  private readonly upResolutionAdvisoryActive = MappedSubject.create(
+    ([upResolutionAdvisory, tcasVerticalResolutionWordValid]) =>
+      tcasVerticalResolutionWordValid && upResolutionAdvisory > 0 && upResolutionAdvisory < 6,
+    this.upResolutionAdvisory,
+    this.tcasVerticalResolutionWordValid,
+  );
+
+  private readonly rateToMaintain = this.verticalResolutionAdvisoryWord.map((word) => {
+    const sign = word.bitValue(17) ? -1 : 1;
+    return sign * Math.min(bitsToInteger(word, 11, 16), 6000) * 100;
+  });
+
+  private readonly upperVsLimit = MappedSubject.create(
+    ([downResolutionAdvisory, rateToMaintain]) =>
+      resolutionAdvisoryNumberToVs(downResolutionAdvisory, rateToMaintain, 1),
+    this.downResolutionAdvisory,
+    this.rateToMaintain,
+  );
+
+  private readonly lowerVsLimit = MappedSubject.create(
+    ([upResolutionAdvisory, rateToMaintain]) => resolutionAdvisoryNumberToVs(upResolutionAdvisory, rateToMaintain, -1),
+    this.upResolutionAdvisory,
+    this.rateToMaintain,
+  );
+
+  private readonly combinedControl = this.verticalResolutionAdvisoryWord.map((word) => bitsToInteger(word, 18, 20));
+
+  private readonly excessiveVs = MappedSubject.create(
+    ([raWord, filteredRa, filteredVs]) => {
+      const absVSpeed = Math.abs(filteredVs);
+      const raValid = !(raWord.isNoComputedData() || raWord.isFailureWarning());
+
+      return (
+        absVSpeed >= 6000 ||
+        (filteredVs <= -2000 && raValid && filteredRa <= 2500 && filteredRa >= 1000) ||
+        (filteredVs <= -1200 && raValid && filteredRa <= 1000)
+      );
+    },
+    this.ra,
+    this.props.filteredRadioAltitude,
+    this.filteredVerticalSpeed,
+  );
+
+  private readonly needleColour = MappedSubject.create(
+    ([excessiveVs, downRaActive, upRaActive]) => {
+      const resolutionAdvisoryActive = downRaActive || upRaActive;
+
+      if (resolutionAdvisoryActive) {
+        return 'White';
+      } else if (excessiveVs) {
+        return 'Amber';
+      } else {
+        return 'Green';
+      }
+    },
+    this.excessiveVs,
+    this.downResolutionAdvisoryActive,
+    this.upResolutionAdvisoryActive,
+  );
+
+  private readonly textColour = MappedSubject.create(
+    ([upRaActive, downRaActive, upperVsLimit, lowerVsLimit, filteredVs, excessiveVs]) => {
+      const tcasRaInRedSector =
+        (upRaActive && lowerVsLimit > filteredVs) || (downRaActive && upperVsLimit < filteredVs);
+
+      if (tcasRaInRedSector) {
+        return 'Red';
+      } else if (excessiveVs) {
+        return 'Amber';
+      } else {
+        return 'Green';
+      }
+    },
+    this.upResolutionAdvisoryActive,
+    this.downResolutionAdvisoryActive,
+    this.upperVsLimit,
+    this.lowerVsLimit,
+    this.filteredVerticalSpeed,
+    this.excessiveVs,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
-
-    sub
-      .on('tcasState')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasState = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('tcasCorrective')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.isTcasCorrective = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasRedZoneL')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasRedZoneL = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasRedZoneH')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasRedZoneH = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasGreenZoneL')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasGreenZoneL = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasGreenZoneH')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasGreenZoneH = s;
-        this.needsUpdate = true;
-      });
-
-    sub.on('simTime').handle((_r) => {
-      if (this.needsUpdate) {
-        if (this.tcasState.tcasState === 2) {
-          this.needleColour.set('White');
-        }
-        this.vspeedTcas.instance.update(this.tcasState);
-      }
-    });
-
-    sub
-      .on('vs')
-      .withArinc429Precision(3)
-      .handle((vs) => {
-        const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
-
-        const absVSpeed = Math.abs(filteredVS);
-
-        if (!vs.isNormalOperation()) {
-          this.vsFlagVisible.set(true);
-          this.vsNormal.instance.style.visibility = 'hidden';
-        } else {
-          this.vsFlagVisible.set(false);
-          this.vsNormal.instance.style.visibility = 'visible';
-        }
-
-        const radioAltitudeValid = !this.radioAlt.isNoComputedData() && !this.radioAlt.isFailureWarning();
-        if (this.tcasState.tcasState !== 2) {
-          if (
-            absVSpeed >= 6000 ||
-            (vs.value <= -2000 &&
-              radioAltitudeValid &&
-              this.filteredRadioAltitude <= 2500 &&
-              this.filteredRadioAltitude >= 1000) ||
-            (vs.value <= -1200 && radioAltitudeValid && this.filteredRadioAltitude <= 1000)
-          ) {
-            this.needleColour.set('Amber');
-          } else {
-            this.needleColour.set('Green');
-          }
-        }
-
-        const sign = Math.sign(filteredVS);
-
-        if (absVSpeed < 1000) {
-          this.yOffsetSub.set((filteredVS / 1000) * -27.22);
-        } else if (absVSpeed < 2000) {
-          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -10.1 - sign * 27.22);
-        } else if (absVSpeed < 6000) {
-          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -10.1 - sign * 37.32);
-        } else {
-          this.yOffsetSub.set(sign * -47.37);
-        }
-      });
-
-    sub.on('chosenRa').handle((ra) => {
-      this.radioAlt = ra;
-    });
-
-    this.props.filteredRadioAltitude.sub((filteredRadioAltitude) => {
-      this.filteredRadioAltitude = filteredRadioAltitude;
+    this.sub.on('simTime').handle(() => {
+      const filtered = this.lagFilter.step(this.verticalSpeed.get().value, this.props.instrument.deltaTime / 1000);
+      this.filteredVerticalSpeed.set(MathUtils.round(filtered, 0.1));
     });
   }
 
@@ -190,9 +234,33 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
           </text>
         </FlashOneHertz>
 
-        <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} />
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasInvalid}>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
+            T
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
+            C
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
+            A
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
+            S
+          </text>
+        </FlashOneHertz>
 
-        <g id="VerticalSpeedGroup" ref={this.vsNormal}>
+        <g
+          id="VerticalSpeedGroup"
+          visibility={this.vsFlagVisible.map((flagVisible) => (flagVisible ? 'hidden' : 'visible'))}
+        >
+          <VSpeedTcas
+            bus={this.props.bus}
+            upRaActive={this.upResolutionAdvisoryActive}
+            downRaActive={this.downResolutionAdvisoryActive}
+            combinedControl={this.combinedControl}
+            vsUpperLimit={this.upperVsLimit}
+            vsLowerLimit={this.lowerVsLimit}
+          />
           <g class="Fill White">
             <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
             <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
@@ -230,12 +298,13 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             </text>
           </g>
           <path class="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
-          <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
+          <VSpeedNeedle yOffset={this.needleYOffset} needleColour={this.needleColour} />
 
           <VSpeedText
             bus={this.props.bus}
-            yOffset={this.yOffsetSub}
-            textColour={this.needleColour.map((c) => (c === 'White' ? 'Green' : c))}
+            yOffset={this.needleYOffset}
+            textColour={this.textColour}
+            filteredVs={this.filteredVerticalSpeed}
           />
         </g>
       </g>
@@ -260,7 +329,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
       const path = `m${centerX - dxBorder} ${centerY + (dxBorder / dxFull) * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
 
       this.pathSub.set(path);
-    });
+    }, true);
 
     this.props.needleColour.sub((colour) => {
       this.indicatorRef.instance.setAttribute('class', `HugeStroke ${colour}`);
@@ -281,6 +350,7 @@ class VSpeedText extends DisplayComponent<{
   bus: ArincEventBus;
   yOffset: Subscribable<number>;
   textColour: Subscribable<string>;
+  filteredVs: Subscribable<number>;
 }> {
   private vsTextRef = FSComponent.createRef<SVGTextElement>();
 
@@ -291,28 +361,23 @@ class VSpeedText extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+    this.props.filteredVs.sub((vs) => {
+      const absVSpeed = Math.abs(vs);
 
-    sub
-      .on('vs')
-      .withArinc429Precision(2)
-      .handle((vs) => {
-        const absVSpeed = Math.abs(vs.value);
+      if (absVSpeed < 200) {
+        this.visibilitySub.set('hidden');
+      } else {
+        this.visibilitySub.set('inherit');
+      }
 
-        if (absVSpeed < 200) {
-          this.visibilitySub.set('hidden');
-        } else {
-          this.visibilitySub.set('visible');
-        }
+      const sign = Math.sign(vs);
 
-        const sign = Math.sign(vs.value);
+      const textOffset = this.props.yOffset.get() - sign * 2.4;
 
-        const textOffset = this.props.yOffset.get() - sign * 2.4;
-
-        const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
-        this.vsTextRef.instance.textContent = text;
-        this.groupRef.instance.style.transform = `translate3d(0px, ${textOffset}px, 0px)`;
-      });
+      const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
+      this.vsTextRef.instance.textContent = text;
+      this.groupRef.instance.style.transform = `translate3d(0px, ${textOffset}px, 0px)`;
+    }, true);
 
     this.props.textColour.sub((colour) => {
       const className = `FontSmallest MiddleAlign ${colour}`;
@@ -330,200 +395,173 @@ class VSpeedText extends DisplayComponent<{
   }
 }
 
+function getRedSectorPath(vs: number, isUpperSector: boolean) {
+  const dxFull = 10.9;
+  const dxBorder = 6.77;
+  const centerX = 162.74;
+  const centerY = 80.822;
+
+  const yOffset = yPosFromVs(vs);
+
+  const y1 = isUpperSector ? 29.92 : 131.72;
+  const y2 = centerY + yOffset;
+
+  const y3 = centerY + (dxBorder / dxFull) * yOffset;
+  const y4 = y1;
+
+  const x1 = centerX - dxFull;
+  const x2 = centerX - dxBorder;
+
+  return `m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} z`;
+}
+
 interface VSpeedTcasProps extends ComponentProps {
   bus: ArincEventBus;
+  upRaActive: Subscribable<boolean>;
+  downRaActive: Subscribable<boolean>;
+  combinedControl: Subscribable<number>;
+  vsUpperLimit: Subscribable<number>;
+  vsLowerLimit: Subscribable<number>;
 }
 class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
-  private tcasGroup = FSComponent.createRef<SVGGElement>();
+  private readonly upAndDownResolutionAdvisoryActive = MappedSubject.create(
+    ([upResolutionAdvisoryActive, downResolutionAdvisoryActive]) =>
+      upResolutionAdvisoryActive && downResolutionAdvisoryActive,
+    this.props.upRaActive,
+    this.props.downRaActive,
+  );
 
-  private nonCorrective = FSComponent.createRef<SVGGElement>();
+  private readonly downCorrectiveResolutionAdvisoryActive = MappedSubject.create(
+    ([combinedControl, upAndDownResolutionAdvisoryActive]) =>
+      combinedControl == 5 && !upAndDownResolutionAdvisoryActive,
+    this.props.combinedControl,
+    this.upAndDownResolutionAdvisoryActive,
+  );
 
-  private background = FSComponent.createRef<SVGRectElement>();
+  private readonly upCorrectiveResolutionAdvisoryActive = MappedSubject.create(
+    ([combinedControl, upAndDownResolutionAdvisoryActive]) =>
+      combinedControl == 4 && !upAndDownResolutionAdvisoryActive,
+    this.props.combinedControl,
+    this.upAndDownResolutionAdvisoryActive,
+  );
 
-  private redZoneElement = FSComponent.createRef<VSpeedTcasZone>();
+  private readonly upAndDownCorrectiveResolutionAdvisoryActive = MappedSubject.create(
+    ([combinedControl, upAndDownResolutionAdvisoryActive]) =>
+      (combinedControl == 4 || combinedControl == 5) && upAndDownResolutionAdvisoryActive,
+    this.props.combinedControl,
+    this.upAndDownResolutionAdvisoryActive,
+  );
 
-  private greenZoneElement = FSComponent.createRef<VSpeedTcasZone>();
+  private readonly downResolutionAdvsioryZoneVisible = MappedSubject.create(
+    ([downRaActive, upDownCorrectiveRaActive]) => downRaActive || upDownCorrectiveRaActive,
+    this.props.downRaActive,
+    this.upAndDownCorrectiveResolutionAdvisoryActive,
+  );
 
-  private redZone = Subject.create(-1);
+  private readonly upResolutionAdvsioryZoneVisible = MappedSubject.create(
+    ([upRaActive, upDownCorrectiveRaActive]) => upRaActive || upDownCorrectiveRaActive,
+    this.props.upRaActive,
+    this.upAndDownCorrectiveResolutionAdvisoryActive,
+  );
 
-  private redZoneHigh = Subject.create(-1);
+  private readonly flyToZoneVisible = MappedSubject.create(
+    ([upRaActive, upCorrectiveRaActive, downRaActive, downCorrectiveRaActive, upDownCorrectiveRaActive]) =>
+      (upRaActive && upCorrectiveRaActive) || (downRaActive && downCorrectiveRaActive) || upDownCorrectiveRaActive,
+    this.props.upRaActive,
+    this.upCorrectiveResolutionAdvisoryActive,
+    this.props.downRaActive,
+    this.downCorrectiveResolutionAdvisoryActive,
+    this.upAndDownCorrectiveResolutionAdvisoryActive,
+  );
 
-  private greenZone = Subject.create(-1);
+  private readonly tcasIndicationsVisible = MappedSubject.create(
+    ([upRaActive, downRaActive]) => upRaActive || downRaActive,
+    this.props.upRaActive,
+    this.props.downRaActive,
+  );
 
-  private greenZoneHigh = Subject.create(-1);
+  private readonly downResolutionAdvisoryZonePath = this.props.vsUpperLimit.map((vs) => getRedSectorPath(vs, true));
 
-  private extended = Subject.create(false);
+  private readonly upResolutionAdvisoryZonePath = this.props.vsLowerLimit.map((vs) => getRedSectorPath(vs, false));
 
-  private isCorrective = Subject.create(false);
+  private readonly flyToZonePath = MappedSubject.create(
+    ([
+      vsUpperLimit,
+      vsLowerLimit,
+      upRaActive,
+      upCorrectiveResolutionAdvisoryActive,
+      downRaActive,
+      downCorrectiveResolutionAdvisoryActive,
+    ]) => {
+      const dxFull = 10.9;
+      const dxBorder = 6.77;
+      const centerX = 162.74;
+      const centerY = 80.822;
 
-  public update(state: TcasState) {
-    if (state.tcasState !== 2) {
-      this.tcasGroup.instance.classList.add('HiddenElement');
-      this.nonCorrective.instance.classList.add('HiddenElement');
-    } else if (state.isTcasCorrective) {
-      this.tcasGroup.instance.classList.remove('HiddenElement');
-      this.background.instance.classList.remove('HiddenElement');
-      this.redZone.set(state.tcasRedZoneL);
-      this.redZoneHigh.set(state.tcasRedZoneH);
-      this.greenZone.set(state.tcasGreenZoneL);
-      this.greenZoneHigh.set(state.tcasGreenZoneH);
-      this.nonCorrective.instance.classList.add('HiddenElement');
-    } else {
-      this.background.instance.classList.add('HiddenElement');
-      this.nonCorrective.instance.classList.add('HiddenElement');
+      const yOffsetForCorrective = 18;
 
-      this.isCorrective.set(false);
-      this.extended.set(false);
-      this.redZone.set(state.tcasRedZoneL);
-      this.redZoneHigh.set(state.tcasRedZoneH);
-    }
-  }
+      const upCorrectiveActive = upRaActive && upCorrectiveResolutionAdvisoryActive;
+      const downCorrectiveActive = downRaActive && downCorrectiveResolutionAdvisoryActive;
+
+      const upperSectorYOffset = yPosFromVs(vsUpperLimit);
+      const lowerSectorYOffset = yPosFromVs(vsLowerLimit);
+
+      let y1: number, y2: number, y3: number, y4: number;
+
+      if (upCorrectiveActive) {
+        y1 = centerY + lowerSectorYOffset * (dxBorder / dxFull) - yOffsetForCorrective;
+        y4 = y1;
+      } else {
+        y1 = centerY + upperSectorYOffset;
+        y4 = centerY + (dxBorder / dxFull) * upperSectorYOffset;
+      }
+
+      if (downCorrectiveActive) {
+        y2 = centerY + upperSectorYOffset * (dxBorder / dxFull) + yOffsetForCorrective;
+        y3 = y2;
+      } else {
+        y2 = centerY + lowerSectorYOffset;
+        y3 = centerY + (dxBorder / dxFull) * lowerSectorYOffset;
+      }
+
+      const x1 = centerX - dxFull;
+      const x2 = centerX - dxBorder;
+
+      return `m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} z`;
+    },
+    this.props.vsUpperLimit,
+    this.props.vsLowerLimit,
+    this.props.upRaActive,
+    this.upCorrectiveResolutionAdvisoryActive,
+    this.props.downRaActive,
+    this.downCorrectiveResolutionAdvisoryActive,
+  );
 
   render(): VNode {
     return (
       <>
-        <g id="VerticalSpeedTCASGroup" ref={this.tcasGroup}>
-          <rect ref={this.background} class="TapeBackground" height="101.8" width="5.5404" y="29.92" x="151.84" />
-          <VSpeedTcasZone
-            ref={this.redZoneElement}
-            zoneBoundLow={this.redZone}
-            zoneBoundHigh={this.redZoneHigh}
-            zoneClass="Fill Red"
-            isCorrective={this.isCorrective}
-            extended={Subject.create(false)}
+        <g
+          id="VerticalSpeedTCASGroup"
+          visibility={this.tcasIndicationsVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+        >
+          <rect class="TapeBackground" height="101.8" width="4.1301" y="29.92" x="151.84" />
+          <path
+            d={this.downResolutionAdvisoryZonePath}
+            visibility={this.downResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+            class="Fill Red"
           />
-          <VSpeedTcasZone
-            ref={this.greenZoneElement}
-            zoneBoundLow={this.greenZone}
-            zoneBoundHigh={this.greenZoneHigh}
-            zoneClass="Fill Green"
-            extended={this.extended}
-            isCorrective={this.isCorrective}
+          <path
+            d={this.upResolutionAdvisoryZonePath}
+            visibility={this.upResolutionAdvsioryZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+            class="Fill Red"
           />
-        </g>
-        <g id="VerticalSpeedTCASGroupNonCorrective" ref={this.nonCorrective}>
-          <VSpeedTcasZone
-            zoneBoundLow={this.redZone}
-            zoneBoundHigh={this.redZoneHigh}
-            zoneClass="Fill Red"
-            extended={Subject.create(false)}
-            isCorrective={Subject.create(false)}
+          <path
+            d={this.flyToZonePath}
+            visibility={this.flyToZoneVisible.map((visible) => (visible ? 'inherit' : 'hidden'))}
+            class="Fill Green"
           />
         </g>
       </>
     );
-  }
-}
-
-interface VSpeedTcasZoneProps extends ComponentProps {
-  zoneBoundLow: Subscribable<number>;
-  zoneBoundHigh: Subscribable<number>;
-  zoneClass: string;
-  isCorrective: Subscribable<boolean>;
-  extended: Subscribable<boolean>;
-}
-class VSpeedTcasZone extends DisplayComponent<VSpeedTcasZoneProps> {
-  private zoneUpper = 0;
-
-  private zoneLower = 0;
-
-  private extended = false;
-
-  private isCorrective = false;
-
-  private path = FSComponent.createRef<SVGPathElement>();
-
-  private getYoffset = (VSpeed: number) => {
-    const absVSpeed = Math.abs(VSpeed);
-    const sign = Math.sign(VSpeed);
-
-    if (absVSpeed < 1000) {
-      return (VSpeed / 1000) * -27.22;
-    }
-    if (absVSpeed < 2000) {
-      return ((VSpeed - sign * 1000) / 1000) * -10.1 - sign * 27.22;
-    }
-    if (absVSpeed < 6000) {
-      return ((VSpeed - sign * 2000) / 4000) * -10.1 - sign * 37.32;
-    }
-    return sign * -47.37;
-  };
-
-  private drawTcasZone() {
-    if (this.zoneLower !== -1 && this.zoneUpper !== -1) {
-      let y1;
-      let y2;
-      let y3;
-      let y4;
-
-      if (this.zoneLower >= 6000) {
-        y1 = 29.92;
-      } else if (this.zoneLower <= -6000) {
-        y1 = 131.72;
-      } else {
-        y1 = 80.822 + this.getYoffset(this.zoneLower);
-      }
-
-      if (this.zoneUpper >= 6000) {
-        y2 = 29.92;
-      } else if (this.zoneUpper <= -6000) {
-        y2 = 131.72;
-      } else {
-        y2 = 80.822 + this.getYoffset(this.zoneUpper);
-      }
-
-      if (
-        (Math.abs(this.zoneUpper) > 1750 && Math.abs(this.zoneUpper) > Math.abs(this.zoneLower)) ||
-        (this.isCorrective && this.props.zoneClass === 'Fill Red')
-      ) {
-        y3 = y2;
-      } else {
-        // y3 = 80.822 + getYoffset(zoneBounds[1] / 2);
-        y3 = 80.822;
-      }
-
-      if (
-        (Math.abs(this.zoneLower) > 1750 && Math.abs(this.zoneLower) > Math.abs(this.zoneUpper)) ||
-        (this.isCorrective && this.props.zoneClass === 'Fill Red')
-      ) {
-        y4 = y1;
-      } else {
-        // y4 = 80.822 + getYoffset(zoneBounds[0] / 2);
-        y4 = 80.822;
-      }
-
-      const x1 = 151.84;
-      const x2 = this.extended ? 162.74 : 157.3804;
-
-      this.path.instance.setAttribute('d', `m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} L${x1},${y1}z`);
-    }
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    this.props.zoneBoundLow.sub((z) => {
-      this.zoneLower = z;
-      this.drawTcasZone();
-    });
-
-    this.props.zoneBoundHigh.sub((z) => {
-      this.zoneUpper = z;
-      this.drawTcasZone();
-    });
-
-    this.props.extended.sub((z) => {
-      this.extended = z;
-      this.drawTcasZone();
-    });
-
-    this.props.isCorrective.sub((z) => {
-      this.isCorrective = z;
-      this.drawTcasZone();
-    });
-  }
-
-  render(): VNode {
-    return <path ref={this.path} class={this.props.zoneClass} />;
   }
 }

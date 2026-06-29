@@ -50,6 +50,7 @@ import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { qnhToMillibar } from '../../shared/QnhUtils';
 import {
   getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
   getApproachName,
@@ -3131,18 +3132,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               return;
                             }
 
-                            let qnhMillibar = v;
-
-                            if (v < 745 || v > 1050) {
-                              qnhMillibar = v * 33.8639;
-                            }
-
                             this.props.flightPlanInterface.setPerformanceData(
                               'approachQnh',
-                              qnhMillibar,
+                              v,
                               this.loadedFlightPlanIndex.get(),
                             );
-                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhToMillibar(v));
                           }}
                           mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachQnh}
