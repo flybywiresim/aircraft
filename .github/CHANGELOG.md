@@ -13,6 +13,7 @@
 ## 2020.16.0
 
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
 
 ## 2020.15.0
 
