@@ -7,7 +7,7 @@ export function wordWrap(text: string, maxLength: number) {
   let line = [];
   let length = 0;
 
-  const words = text.match(/[-.:*@_A-Z0-9]+|\[\s+\]|\n/g);
+  const words = text.match(/[-.:*@_A-Za-z0-9]+|\[\s+\]|\n/g);
   for (const word of words) {
     if (word === '\n') {
       continue;
