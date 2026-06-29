@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -531,6 +531,90 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'VFE', // CONF FULL
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '182',
+      },
+      {
+        name: 'VFE', // F=0, 0<S<=1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '263',
+      },
+      {
+        name: 'VFE', // F=0, S>1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '220',
+      },
+      {
+        name: 'VFE', // 0<F<=1, S=0
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '245',
+      },
+      {
+        name: 'VFE', // 0<F<=1, 0<S<=1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '243',
+      },
+      {
+        name: 'VFE', // 0<F<=1, S>1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '218',
+      },
+      {
+        name: 'VFE', // 1<F<=2, S=0
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '243',
+      },
+      {
+        name: 'VFE', // 1<F<=2, 0<S<=1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '241',
+      },
+      {
+        name: 'VFE', // 1<F<=2, S>1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '216',
+      },
+      {
+        name: 'VFE', // 2<F<=3, S=0
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '219',
+      },
+      {
+        name: 'VFE', // 2<F<=3, 0<S<=1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '216',
+      },
+      {
+        name: 'VFE', // 2<F<=3, S>1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '196',
+      },
+      {
+        name: 'VFE', // F>3, S=0
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '186',
+      },
+      {
+        name: 'VFE', // F>3, 0<S<=1
+        sensed: true,
+        style: ChecklistLineStyle.Red,
+        labelNotCompleted: '184',
+      },
+      {
+        name: 'VFE', // F>3, S>1
         sensed: true,
         style: ChecklistLineStyle.Red,
         labelNotCompleted: '182',
