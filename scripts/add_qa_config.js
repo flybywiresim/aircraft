@@ -41,9 +41,9 @@ function fetchUrl(url) {
 
 function createTrack(addonKey, prNumber, prTitle, prBody, textureQuality) {
   const addonPrefix = addonKey.split('-')[0];
-  const textureQualitySuffix = addonKey.startsWith('a380x') ? `-${textureQuality}` : '';
+  const textureQualitySuffix = addonKey.startsWith('a380x') && addonKey.includes('fs2020') ? `-${textureQuality}` : '';
   const trackKey = `${addonPrefix}-pr-${prNumber}${textureQualitySuffix}`;
-  const trackName = `PR #${prNumber} ${addonKey.startsWith('a380x') ? `(${textureQuality.toUpperCase()})` : ''} | ${prTitle}`;
+  const trackName = `PR #${prNumber} ${addonKey.startsWith('a380x') && addonKey.includes('fs2020') ? `(${textureQuality.includes('8k') ? '8K' : '4K'}) ` : ''}| ${prTitle}`;
   const description = `## [${prTitle} #${prNumber}](https://github.com/${GITHUB_REPO}/pull/${prNumber})\n\n${prBody}`;
   const addon = addonKey.includes('a32nx') ? 'a32nx' : addonKey.includes('a380x') ? 'a380x' : addonKey;
   const simulator = addonKey.includes('fs2024') ? 'msfs2024' : addonKey.includes('fs2020') ? 'msfs2020' : '';
