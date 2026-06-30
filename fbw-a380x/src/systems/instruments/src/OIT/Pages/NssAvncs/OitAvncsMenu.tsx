@@ -2,10 +2,10 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 import { AbstractOitAvncsPageProps } from '../../OIT';
 import { OitAvncsSubHeader } from './OitAvncsSubHeader';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { OitFile, OitFolder } from './OitAvncsFolderNavigator';
 
 interface OitAvncsMenuPageProps extends AbstractOitAvncsPageProps {}

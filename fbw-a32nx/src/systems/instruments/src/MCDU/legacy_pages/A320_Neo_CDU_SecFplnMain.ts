@@ -98,7 +98,7 @@ export class CDUSecFplnMain {
         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
       }
 
-      CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
+      CDUFlightPlanPage.ShowPage(mcdu, 0, false, FlightPlanIndex.FirstSecondary);
     };
 
     // INIT>
@@ -121,7 +121,7 @@ export class CDUSecFplnMain {
       if (!hasSecondary) {
         await mcdu.flightPlanService.secondaryInit(1);
       }
-      CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
+      CDUFlightPlanPage.ShowPage(mcdu, 0, false, FlightPlanIndex.FirstSecondary);
     };
 
     // PERF>

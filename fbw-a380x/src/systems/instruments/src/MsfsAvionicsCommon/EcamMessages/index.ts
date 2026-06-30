@@ -4,29 +4,20 @@
 export const WD_NUM_LINES = 18;
 export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
-import {
-  EcamAbnormalSensedAta212223,
-  EcamDeferredProcAta212223,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
-import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
-import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
-import {
-  EcamAbnormalSensedAta27,
-  EcamDeferredProcAta27,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
-import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
-import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
-import {
-  EcamAbnormalSensedAta313233,
-  EcamDeferredProcAta313233,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
-import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
-import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
-import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
-import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
-import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
-import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
-import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+import { EcamAbnormalSensedAta212223, EcamDeferredProcAta212223 } from './AbnormalSensed/ata21-22-23';
+import { EcamAbnormalSensedAta24 } from './AbnormalSensed/ata24';
+import { EcamAbnormalSensedAta26 } from './AbnormalSensed/ata26';
+import { EcamAbnormalSensedAta27, EcamDeferredProcAta27 } from './AbnormalSensed/ata27';
+import { EcamAbnormalSensedAta28 } from './AbnormalSensed/ata28';
+import { EcamAbnormalSensedAta2930 } from './AbnormalSensed/ata29-30';
+import { EcamAbnormalSensedAta313233, EcamDeferredProcAta313233 } from './AbnormalSensed/ata31-32-33';
+import { EcamAbnormalSensedAta34 } from './AbnormalSensed/ata34';
+import { EcamAbnormalSensedAta353642 } from './AbnormalSensed/ata35-36-42';
+import { EcamAbnormalSensedAta46495256 } from './AbnormalSensed/ata46-49-52-56';
+import { EcamAbnormalSensedAta70 } from './AbnormalSensed/ata70';
+import { EcamAbnormalSensedAta80Rest } from './AbnormalSensed/ata80-rest';
+import { EcamAbnormalSecondaryFailures } from './AbnormalSensed/secondary-failures';
+import { AbnormalNonSensedCategory } from '../providers/FwsPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -265,6 +256,10 @@ export const EcamLimitations: { [n: string]: string } = {
   800400002: '\x1b<5mLDG DIST AFFECTED',
   800400003: '\x1b<5mLDG PERF AFFECTED',
   800400004: '\x1b<5mFOR GA : KEEP S/F CONF',
+  800400005: '\x1b<5mMAX DIFF PR : 1 PSI',
+  800400006: '\x1b<5mMAX SPEED : 300/.85',
+  800400007: '\x1b<5mMIN SPEED : GREEN DOT',
+  800400008: '\x1b<5mTURB SPEED:',
 };
 
 /** All possible INOP sys, with special formatting characters. */

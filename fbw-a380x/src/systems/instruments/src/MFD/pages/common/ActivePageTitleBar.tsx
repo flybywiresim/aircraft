@@ -63,17 +63,17 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
             {this.props.activePage}
             {this.offsetText}
           </span>
-          <span class="mfd-title-bar-text label white" style={{ visibility: this.penaltyVisibility }}>
+          <span class="mfd-title-bar-text label penalty" style={{ visibility: this.penaltyVisibility }}>
             PENALTY
           </span>
         </div>
         <div class="mfd-title-bar-section eo" style={{ 'margin-left': this.titleBarMargin }}>
-          <span class="mfd-label mfd-title-bar-text label amber" style={{ visibility: this.engineOutVisibility }}>
+          <span class="mfd-label mfd-title-bar-text label eo" style={{ visibility: this.engineOutVisibility }}>
             EO
           </span>
         </div>
         <div class="mfd-title-bar-section tmpy" style={{ 'margin-left': this.titleBarMargin }}>
-          <span class="mfd-label mfd-title-bar-text label yellow" style={{ visibility: this.temporaryVisibility }}>
+          <span class="mfd-label mfd-title-bar-text label tmpy" style={{ visibility: this.temporaryVisibility }}>
             TMPY
           </span>
         </div>

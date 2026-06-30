@@ -1,11 +1,11 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { AirportFormat } from '../../common/DataEntryFormats';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { MfdDisplayInterface } from '../../../MFD';
+import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 interface DestinationWindowProps extends ComponentProps {
@@ -92,7 +92,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 inactive={Subject.create(false)}
                 value={this.newDest}
                 alignText="center"
-                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e.type)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />

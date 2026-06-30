@@ -10,23 +10,28 @@ import {
   SubscribableMapFunctions,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+// FIXME should not import from instruments
+import { ChecklistState, FwsEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+// FIXME circular import
+import { FwsCore } from './FwsCore';
+// FIXME should not import from instruments
 import {
   deferredProcedureIds,
   EcamNormalProcedures,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
+// FIXME should not import from instruments
 import {
   DeferredProcedureType,
   EcamDeferredProcedures,
   NormalProcedure,
   WD_NUM_LINES,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+// FIXME should not import from instruments
 import {
   ProcedureLinesGenerator,
   ProcedureType,
   SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
 export interface NormalEclSensedItems {
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed. If null, it's a non-sensed item */

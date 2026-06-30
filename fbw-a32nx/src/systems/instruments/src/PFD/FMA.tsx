@@ -1521,37 +1521,37 @@ const getBC3Message = (
     flashingClassName2 = 'DimmedAmber Fill';
   } else if (tcasRaInhibited && !isAttExcessive) {
     text = 'TCAS RA INHIBITED';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
     text = 'TRK FPA DESELECTED';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (false) {
     text = 'SET GREEN DOT SPEED';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (tdReached) {
     text = 'T/D REACHED';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (false) {
     text = 'MORE DRAG';
-    className = 'FontMedium White';
+    className = 'FontMediumSmaller White';
   } else if (checkSpeedMode && !isAttExcessive) {
     text = 'CHECK SPEED MODE';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (false) {
     text = 'CHECK APPR SELECTION';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (false) {
     text = 'TURN AREA EXCEEDANCE';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (setHoldSpeed) {
     text = 'SET HOLD SPEED';
-    className = 'FontMedium White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else if (false) {
     text = 'VERT DISCONT AHEAD';
     className = 'FontMedium Amber Fill';
   } else if (false) {
     text = 'FINAL APP SELECTED';
-    className = 'FontSmall White Fill';
+    className = 'FontMediumSmaller White Fill';
   } else {
     return [null, null, flashingClassName1, flashingClassName2];
   }

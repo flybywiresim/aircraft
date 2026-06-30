@@ -15,7 +15,7 @@ import { Arinc429ConsumerSubject, Arinc429WordData } from '@flybywiresim/fbw-sdk
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
+import { getDisplayIndex } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;

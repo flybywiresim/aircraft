@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import EWDMessages from '@instruments/common/EWDMessages';
+import { formatEwdMessages } from '@shared/EwdMessages';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
 
@@ -91,15 +91,9 @@ export class LowerLeftDisplay extends DisplayComponent<LowerLeftDisplayProps> {
       .atFrequency(2)
       .handle((_t) => {
         this.message.set(
-          [
-            EWDMessages[this.line1],
-            EWDMessages[this.line2],
-            EWDMessages[this.line3],
-            EWDMessages[this.line4],
-            EWDMessages[this.line5],
-            EWDMessages[this.line6],
-            EWDMessages[this.line7],
-          ].join('\r'),
+          formatEwdMessages([this.line1, this.line2, this.line3, this.line4, this.line5, this.line6, this.line7]).join(
+            '\r',
+          ),
         );
       });
   }

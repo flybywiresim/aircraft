@@ -1,20 +1,17 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, MappedSubject, Subject, SubscribableMapFunctions, VNode } from '@microsoft/msfs-sdk';
-import {
-  ProcedureLinesGenerator,
-  ProcedureType,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+import { ProcedureLinesGenerator, ProcedureType } from '../../MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
-import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+import { WdAbstractChecklistComponent } from './WdAbstractChecklistComponent';
 import {
   EcamAbnormalProcedures,
   EcamAbnormalSensedProcedures,
   isChecklistAction,
   isChecklistCondition,
   isTimedItem,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+} from '../..//MsfsAvionicsCommon/EcamMessages';
+import { ChecklistState } from '../..//MsfsAvionicsCommon/providers/FwsPublisher';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {

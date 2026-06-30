@@ -41,7 +41,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
-          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024,a380x-msfs2020,a380x-msfs2024
+          ADDON_KEYS: a32nx-msfs2024,a380x-msfs2024,a32nx-msfs2020,a380x-msfs2020
         run: node ./scripts/update_qa_config.js
       - name: Upload QA config to CDN
         if: github.event.pull_request.auto_merge == false && steps.update_config.outputs.tracks-updated == 'true'

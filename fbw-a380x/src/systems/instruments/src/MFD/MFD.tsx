@@ -1,6 +1,8 @@
 //  Copyright (c) 2024-2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import './pages/common/style.scss';
+
 import {
   ClockEvents,
   ComponentProps,
@@ -18,21 +20,20 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DatabaseItem, EfisSide, Waypoint } from '@flybywiresim/fbw-sdk';
 
-import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
-import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
-import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
-import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
+import { MfdMsgList } from './pages/FMS/MfdMsgList';
+import { ActiveUriInformation, MfdUiService } from './pages/common/MfdUiService';
+import { MfdFmsFplnDuplicateNames } from './pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
+import { headerForSystem, pageForUrl } from './MfdPageDirectory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
-import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
+import { MfdFmsPageNotAvail } from './pages/FMS/MfdFmsPageNotAvail';
 
-import './pages/common/style.scss';
-import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 

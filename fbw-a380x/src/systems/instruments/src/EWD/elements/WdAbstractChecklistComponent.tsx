@@ -9,18 +9,13 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
 import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
-import {
-  ChecklistLineStyle,
-  WD_NUM_LINES,
-  WdLineData,
-  WdSpecialLine,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EclSoftKeys } from 'instruments/src/EWD/elements/EclSoftKeys';
+import { ChecklistLineStyle, WD_NUM_LINES, WdLineData, WdSpecialLine } from '../../MsfsAvionicsCommon/EcamMessages';
+import { DestroyableComponent } from '../..//MsfsAvionicsCommon/DestroyableComponent';
+import { FormattedFwcText } from './FormattedFwcText';
+import { EclSoftKeys } from './EclSoftKeys';
 import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
 import { CpiomEwdAvailabilityChecker } from '../EWD';
 

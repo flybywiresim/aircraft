@@ -9,12 +9,12 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { StepResults, VnavStepError } from '@fmgc/guidance/vnav/Predictions';
 import {
   MaxSpeedConstraint,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointReason,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { PlannedGeometricSegment } from '@fmgc/guidance/vnav/descent/GeometricPathPlanner';
@@ -39,7 +39,6 @@ export class GeometricPathBuilder {
     segments: PlannedGeometricSegment[],
     profile: BaseGeometryProfile,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
   ) {
     const speedConstraints = profile.descentSpeedConstraints;
 
@@ -52,31 +51,16 @@ export class GeometricPathBuilder {
         MathUtils.RADIANS_TO_DEGREES * Math.atan(segment.gradient / 6076.12);
 
       if (
-        !this.executeGeometricSegment(
-          currentSegmentSequence,
-          segment,
-          accelerationTargets,
-          windProfile,
-          false,
-          lastTarget,
-        )
+        !this.executeGeometricSegment(profile, currentSegmentSequence, segment, accelerationTargets, false, lastTarget)
       ) {
         if (
-          !this.executeGeometricSegment(
-            currentSegmentSequence,
-            segment,
-            accelerationTargets,
-            windProfile,
-            true,
-            lastTarget,
-          )
+          !this.executeGeometricSegment(profile, currentSegmentSequence, segment, accelerationTargets, true, lastTarget)
         ) {
           // If we cannot do meet the constraint with speedbrakes, build a new descent path to the constraint
           this.descentPathBuilder.computeManagedDescentPath(
             currentSegmentSequence,
             profile,
             speedProfile,
-            windProfile,
             Infinity,
             segment.end.distanceFromStart,
           );
@@ -113,10 +97,10 @@ export class GeometricPathBuilder {
   }
 
   private executeGeometricSegment(
+    profile: BaseGeometryProfile,
     sequence: TemporaryCheckpointSequence,
     segment: PlannedGeometricSegment,
     accelerationTargets: AccelerationTarget[],
-    windProfile: HeadwindProfile,
     useSpeedbrakes: boolean,
     lastTarget: AccelerationTarget,
   ) {
@@ -141,7 +125,7 @@ export class GeometricPathBuilder {
         sequence.lastCheckpoint.speed,
         managedDescentSpeedMach,
         sequence.lastCheckpoint.remainingFuelOnBoard,
-        windProfile.getHeadwindComponent(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
+        -profile.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
         { speedbrakesExtended: useSpeedbrakes, flapConfig: FlapConf.CLEAN, gearExtended: false },
       );
 
@@ -155,7 +139,11 @@ export class GeometricPathBuilder {
         const scaling = maxDistance / decelerationStep.distanceTraveled;
 
         this.scaleStepBasedOnLastCheckpoint(sequence.lastCheckpoint, decelerationStep, scaling);
-        sequence.addCheckpointFromStep(decelerationStep, VerticalCheckpointReason.SpeedConstraint);
+        sequence.addCheckpointFromStep(
+          decelerationStep,
+          VerticalCheckpointReason.SpeedConstraint,
+          ProfilePhase.Descent,
+        );
       } else if (
         Math.max(accelerationTarget.distanceFromStart, segment.end.distanceFromStart) <
         sequence.lastCheckpoint.distanceFromStart + decelerationStep.distanceTraveled
@@ -164,10 +152,19 @@ export class GeometricPathBuilder {
           const decelerationReason = lastTarget.isSpeedLimit
             ? VerticalCheckpointReason.StartDecelerationToLimit
             : VerticalCheckpointReason.StartDecelerationToConstraint;
-          sequence.addDecelerationCheckpointFromStep(decelerationStep, decelerationReason, lastTarget.speed);
+          sequence.addDecelerationCheckpointFromStep(
+            decelerationStep,
+            decelerationReason,
+            lastTarget.speed,
+            ProfilePhase.Descent,
+          );
         }
 
         // Fly to constraint
+        const headwind = -profile.winds.getDescentTailwind(
+          sequence.lastCheckpoint.distanceFromStart,
+          sequence.lastCheckpoint.altitude,
+        );
         const stepToConstraint = this.flightPathAngleStrategy.predictToDistance(
           sequence.lastCheckpoint.altitude,
           Math.max(accelerationTarget.distanceFromStart, segment.end.distanceFromStart) -
@@ -175,13 +172,13 @@ export class GeometricPathBuilder {
           sequence.lastCheckpoint.speed,
           managedDescentSpeedMach,
           sequence.lastCheckpoint.remainingFuelOnBoard,
-          windProfile.getHeadwindComponent(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
+          headwind,
         );
 
         const checkpointReason = accelerationTarget.isSpeedLimit
           ? VerticalCheckpointReason.CrossingDescentSpeedLimit
           : VerticalCheckpointReason.SpeedConstraint;
-        sequence.addCheckpointFromStep(stepToConstraint, checkpointReason);
+        sequence.addCheckpointFromStep(stepToConstraint, checkpointReason, ProfilePhase.Descent);
         lastTarget = accelerationTarget;
       }
     }
@@ -194,10 +191,14 @@ export class GeometricPathBuilder {
         sequence.lastCheckpoint.speed,
         managedDescentSpeedMach,
         sequence.lastCheckpoint.remainingFuelOnBoard,
-        windProfile.getHeadwindComponent(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
+        -profile.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
       );
 
-      sequence.addCheckpointFromStep(stepToEndOfSegment, VerticalCheckpointReason.AtmosphericConditions);
+      sequence.addCheckpointFromStep(
+        stepToEndOfSegment,
+        VerticalCheckpointReason.AtmosphericConditions,
+        ProfilePhase.Descent,
+      );
     }
 
     return true;

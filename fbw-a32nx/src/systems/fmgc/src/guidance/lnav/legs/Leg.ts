@@ -21,11 +21,21 @@ export abstract class Leg extends Guidable {
     return this.metadata.turnDirection;
   }
 
+  /** The inbound course at the leg start in degrees, relative to true north. */
   abstract get inboundCourse(): Degrees | undefined;
 
-  abstract get outboundCourse(): Degrees | undefined;
+  /** The outbound course at the leg termination, relative to true north. */
+  abstract get outboundCourse(): number | undefined;
 
   abstract get terminationWaypoint(): Fix | Coordinates | undefined;
+
+  get terminationCoordinates(): Coordinates | undefined {
+    if (!this.terminationWaypoint) {
+      return undefined;
+    }
+
+    return 'location' in this.terminationWaypoint ? this.terminationWaypoint.location : this.terminationWaypoint;
+  }
 
   isNull = false;
 

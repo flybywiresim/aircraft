@@ -15,18 +15,18 @@ import {
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus, CpiomData } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
-import { EngineGauge } from 'instruments/src/EWD/elements/EngineGauge';
-import { Idle } from 'instruments/src/EWD/elements/Idle';
-import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
-import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
-import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
-import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
-import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
-import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { EngineGauge } from './elements/EngineGauge';
+import { Idle } from './elements/Idle';
+import { BleedSupply } from './elements/BleedSupply';
+import { WdMemos } from './elements/WdMemos';
+import { WdLimitations } from './elements/WdLimitations';
+import { WdNormalChecklists } from './elements/WdNormalChecklists';
+import { FwsEvents } from '../MsfsAvionicsCommon/providers/FwsPublisher';
+import { WdAbnormalSensedProcedures } from './elements/WdAbnormalSensedProcedures';
+import { WdAbnormalNonSensedProcedures } from './elements/WdAbnormalNonSensed';
+import { DestroyableComponent } from '../MsfsAvionicsCommon/DestroyableComponent';
 import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -31,8 +31,6 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -43,7 +41,7 @@ import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { A32NX_Util } from '../../../shared/src/A32NX_Util';
+import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -74,8 +72,6 @@ export interface Fmgc {
   getSlatRetractionSpeed(): Knots;
   getCleanSpeed(): Knots;
   getTripWind(): number;
-  getWinds(): FmcWinds;
-  getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
   getDestEFOB(useFob: boolean): number | null; // Metric tons
@@ -164,8 +160,6 @@ export class GuidanceController {
 
   viewListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-  private windProfileFactory: WindProfileFactory;
-
   public atmosphericConditions: AtmosphericConditions;
 
   private readonly flightPhase = ConsumerValue.create(
@@ -174,6 +168,12 @@ export class GuidanceController {
   );
 
   private readonly approachIdentSize: number;
+
+  private activeLegSecondsToGo: number | null;
+
+  public getActiveLegSecondsToGo(): number | null {
+    return this.activeLegSecondsToGo;
+  }
 
   private updateEfisState(side: EfisSide, state: EfisState<number>): void {
     const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
@@ -285,12 +285,14 @@ export class GuidanceController {
 
       // Don't compute distance and ETA for XM legs
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-      const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
+      this.activeLegSecondsToGo = isXMLeg || !etaComputable ? null : this.lnavDriver.legSecondsToGo(gs, termination);
+      const efisEta = this.activeLegSecondsToGo !== null ? this.formatLegEta(this.activeLegSecondsToGo) : -1;
 
       // FIXME should be NCD if no FM position
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'R');
     } else {
+      this.activeLegSecondsToGo = null;
       this.updateEfisVars(-1, -1, -1, -1, 'L');
       this.updateEfisVars(-1, -1, -1, -1, 'R');
     }
@@ -301,6 +303,12 @@ export class GuidanceController {
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, 'Degrees', trueBearing);
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number', distance);
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds', eta);
+  }
+
+  private formatLegEta(secondsToGo: number) {
+    const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
+    const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
+    return eta;
   }
 
   constructor(
@@ -315,23 +323,28 @@ export class GuidanceController {
       fmgc,
       flightPlanService,
     );
-    this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
     this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
     this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
+      this.bus,
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,
       this.atmosphericConditions,
-      this.windProfileFactory,
       this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
     this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
+    this.bus
+      .getSubscriber<FlightPlanOperationEvents>()
+      .on('fms_set_hold_immediate_exit')
+      .handle((immExit) => {
+        this.holdImmediateExit(immExit.index, immExit.exit);
+      });
   }
 
   init() {
@@ -360,22 +373,7 @@ export class GuidanceController {
     Coherent.on(
       'A32NX_IMM_EXIT',
       (fpIndex, immExit) => {
-        const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
-        const geometryLeg = this.activeGeometry.legs.get(fpIndex);
-
-        const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
-
-        if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
-          fpLeg.holdImmExit = immExit;
-
-          this.flightPlanService.active.incrementVersion();
-        }
-
-        if (geometryLeg instanceof HMLeg) {
-          geometryLeg.setImmediateExit(immExit, this.lnavDriver.ppos, tas);
-
-          this.automaticSequencing = true;
-        }
+        this.holdImmediateExit(fpIndex, immExit);
       },
       undefined,
     );
@@ -395,7 +393,6 @@ export class GuidanceController {
 
     try {
       this.verticalProfileComputationParametersObserver.update();
-      this.windProfileFactory.updateFmgcInputs();
       this.atmosphericConditions.update();
     } catch (e) {
       console.error('[FMS] Error during update of VNAV input parameters. See exception below.');
@@ -548,9 +545,9 @@ export class GuidanceController {
     );
 
     // Update distance to destination
-    geometry.updateDistances(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
+    geometry.updateCalculatedData(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
     // Update distances in missed approach segment
-    geometry.updateDistances(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
+    geometry.updateCalculatedData(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
   }
 
   /**
@@ -603,5 +600,24 @@ export class GuidanceController {
 
   getAlongTrackDistanceToDestination(forPlan = FlightPlanIndex.Active) {
     return this.alongTrackDistancesToDestination.get(forPlan);
+  }
+
+  private holdImmediateExit(fpIndex: FlightPlanIndex, immExit: boolean) {
+    const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
+    const geometryLeg = this.activeGeometry.legs.get(fpIndex);
+
+    const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+
+    if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
+      fpLeg.holdImmExit = immExit;
+
+      this.flightPlanService.active.incrementVersion();
+    }
+
+    if (geometryLeg instanceof HMLeg) {
+      geometryLeg.setImmediateExit(immExit, this.lnavDriver.ppos, tas);
+
+      this.automaticSequencing = true;
+    }
   }
 }

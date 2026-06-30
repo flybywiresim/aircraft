@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { EventBus, Publisher, EventSubscriber } from '@microsoft/msfs-sdk';
-import { useSimVar, useInteractionEvents } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInteractionEvents } from '@flybywiresim/fbw-sdk-react';
 import {
   AtsuMessageComStatus,
   AtsuMessageDirection,

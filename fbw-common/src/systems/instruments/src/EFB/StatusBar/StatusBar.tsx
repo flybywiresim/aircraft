@@ -11,7 +11,7 @@ import {
   usePersistentProperty,
   ClientState,
   useGlobalVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { useInterval } from '@flybywiresim/react-components';
 import { t, TooltipWrapper, initialState, useTroubleshooting, pathify } from '@flybywiresim/flypad';
 import { BatteryStatus } from './BatteryStatus';

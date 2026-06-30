@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { PitchScale } from './PitchScale';
 import { RollScale } from './RollScale';
 import { RollIndex } from './RollIndex';

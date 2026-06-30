@@ -36,6 +36,7 @@ pub trait SimulatorReaderWriter {
 
 pub trait VariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier;
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier;
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
@@ -127,6 +128,10 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn get_unprefixed_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get_unprefixed(name)
     }
 
     pub fn start_state(&self) -> StartState {
@@ -414,6 +419,10 @@ impl<T: Aircraft> Simulation<T> {
     /// # impl VariableRegistry for MyVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         Default::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
     /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();

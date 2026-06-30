@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { HydraulicPowerSource, PowerSupplyIndication, PowerSupplyType } from './PowerSupply';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 export enum GearPosition {
   Nose = 'NOSE',

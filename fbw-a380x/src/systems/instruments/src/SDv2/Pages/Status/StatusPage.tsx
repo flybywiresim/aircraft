@@ -10,7 +10,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 import {
   DEFERRED_PROCEDURE_TYPE_TO_STRING,
   DeferredProcedureType,
@@ -18,9 +18,9 @@ import {
   EcamInfos,
   EcamInopSys,
   EcamLimitations,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+} from '../../../MsfsAvionicsCommon/EcamMessages';
+import { FormattedFwcText } from '../../../EWD/elements/FormattedFwcText';
+import { ChecklistState, FwsEvents } from '../../../MsfsAvionicsCommon/providers/FwsPublisher';
 import { MoreLabel, PageTitle } from '../Generic/PageTitle';
 import { SDSimvars } from '../../SDSimvarPublisher';
 import { SdPageProps } from '../../SD';

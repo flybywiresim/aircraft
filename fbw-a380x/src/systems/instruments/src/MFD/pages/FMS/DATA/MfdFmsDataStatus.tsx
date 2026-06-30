@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { DatabaseIdent } from '@flybywiresim/fbw-sdk';
 import { ConfirmationDialog } from '../../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
@@ -15,7 +15,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDataba
 
 import './MfdFmsDataStatus.scss';
 import { FuelPenaltyPercentFormat } from '../../common/DataEntryFormats';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
@@ -139,12 +139,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
                 </span>
                 <div style="display: flex; justify-content: center;">
-                  <Button
-                    label="MODIFY"
-                    onClick={() => {}}
-                    disabled={Subject.create(true)}
-                    buttonStyle="width: 125px;"
-                  />
+                  <Button label="MODIFY" onClick={() => {}} disabled={true} buttonStyle="width: 125px;" />
                 </div>
               </div>
               <div class="mfd-data-status-performance-row" style="width:380px; margin-bottom: 10px;">
@@ -156,7 +151,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -197,7 +192,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   </div>
                   <div style=" margin-right:55px;">
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center; margin-left: 10px;">
                             SWAP
@@ -205,8 +200,8 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                           <span style="display: flex; align-items: center; justify-content: center;">
                             &nbsp;&nbsp;*
                           </span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => this.isSwapConfirmVisible.set(true)}
                       buttonStyle="width: 140px; height: 62px;"
                     />
@@ -240,12 +235,12 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   </div>
                   <div style="flex: 1;">
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 175px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center;">DELETE ALL</span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => this.props.fmcService.master.getDataManager()?.deleteAllStoredWaypoints()}
                       disabled={this.deleteStoredElementsDisabled}
                     />

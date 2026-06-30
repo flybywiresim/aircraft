@@ -37,6 +37,7 @@ module.exports = {
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('RMP'),
     msfsAvionicsInstrument('SDv2'),
+    msfsAvionicsInstrument('popup'),
 
     reactInstrument('BAT'),
     reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),

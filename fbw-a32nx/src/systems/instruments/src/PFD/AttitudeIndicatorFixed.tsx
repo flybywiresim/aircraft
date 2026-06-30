@@ -4,14 +4,14 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 
 interface AttitudeIndicatorFixedUpperProps {
   bus: ArincEventBus;
