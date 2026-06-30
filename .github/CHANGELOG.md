@@ -35,6 +35,7 @@
 1. [A380X/MODEL] Improve clickspots on throttle levers to make it easier to click on nearby objects - @heclak (Heclak)
 1. [A380X/MODEL] Fix OIT backlighting wrongly connected to MFD backlighting - @heclak (Heclak)
 1. [A380X/ECAM] Add RELIGHT IN FLIGHT, TAILPIPE FIRE, VOLCANIC ASH ENCOUNTER, BOMB ON BOARD and SEVERE TURBULENCE abnormal non-sensed checklists  - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Worked around a sim bug where the right side cursor was sometimes oriented incorrectly - @tracernz (Mike)
 
 ## 2024.1.0
 
