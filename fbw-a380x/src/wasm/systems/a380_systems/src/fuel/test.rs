@@ -166,7 +166,7 @@ impl FuelTestBed {
         self
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn desired_fuel_max(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 259755.);
         self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
@@ -206,7 +206,7 @@ impl FuelTestBed {
         self
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn desired_fuel_250000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 250000.);
         self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
@@ -599,13 +599,11 @@ fn spawn_no_fuel_load_desired_real_250000_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
 
-    let ninety_five_minutes = 95 * MINUTES_TO_SECONDS;
-
     test_bed = test_bed
         .desired_fuel_250000()
         .trigger_real_refuel()
         .and_run()
-        .run_multiple_frames(Duration::from_secs(ninety_five_minutes));
+        .run_multiple_frames(Duration::from_mins(95));
 
     assert_fuel_quantity_250000(&test_bed);
     assert_false!(test_bed.refuel_status());
@@ -616,13 +614,11 @@ fn spawn_no_fuel_load_desired_real_max_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
 
-    let hundred_minutes = 100 * MINUTES_TO_SECONDS;
-
     test_bed = test_bed
         .desired_fuel_max()
         .trigger_real_refuel()
         .and_run()
-        .run_multiple_frames(Duration::from_secs(hundred_minutes));
+        .run_multiple_frames(Duration::from_mins(100));
 
     assert_fuel_quantity_max(&test_bed);
     assert_false!(test_bed.refuel_status());
@@ -669,14 +665,12 @@ fn spawn_high_fuel_load_desired_real_250000_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
 
-    let ninety_five_minutes = 95 * MINUTES_TO_SECONDS;
-
     test_bed = test_bed
         .fuel_high()
         .desired_fuel_250000()
         .trigger_real_refuel()
         .and_run()
-        .run_multiple_frames(Duration::from_secs(ninety_five_minutes));
+        .run_multiple_frames(Duration::from_mins(95));
 
     assert_fuel_quantity_250000(&test_bed);
     assert_false!(test_bed.refuel_status());
@@ -687,14 +681,12 @@ fn spawn_high_fuel_load_desired_real_max_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
 
-    let hundred_minutes = 100 * MINUTES_TO_SECONDS;
-
     test_bed = test_bed
         .fuel_high()
         .desired_fuel_max()
         .trigger_real_refuel()
         .and_run()
-        .run_multiple_frames(Duration::from_secs(hundred_minutes));
+        .run_multiple_frames(Duration::from_mins(100));
 
     assert_fuel_quantity_max(&test_bed);
     assert_false!(test_bed.refuel_status());
