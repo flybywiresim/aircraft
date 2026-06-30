@@ -536,12 +536,21 @@ export class FwsCore {
 
   public readonly apuBleedPbOn = Subject.create(false);
 
+  public readonly apuBleedPbOff = Subject.create(false);
+
   public readonly apuBleedPbOnOver22500ft = Subject.create(false);
 
   public readonly eng1BleedAbnormalOff = Subject.create(false);
   public readonly eng2BleedAbnormalOff = Subject.create(false);
   public readonly eng3BleedAbnormalOff = Subject.create(false);
   public readonly eng4BleedAbnormalOff = Subject.create(false);
+
+  public readonly eng1BleedPbOff = Subject.create(false);
+  public readonly eng2BleedPbOff = Subject.create(false);
+  public readonly eng3BleedPbOff = Subject.create(false);
+  public readonly eng4BleedPbOff = Subject.create(false);
+
+  public readonly allBleedsOff = Subject.create(false);
 
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
@@ -623,6 +632,10 @@ export class FwsCore {
   private readonly cabinAltitude = Arinc429Register.empty();
 
   private readonly cabinAltitudeTarget = Arinc429Register.empty();
+
+  public readonly ditchingPbOn = Subject.create(false);
+
+  public readonly ditchingPbOff = Subject.create(false);
 
   /* 22 - AUTOFLIGHT */
 
@@ -3021,6 +3034,7 @@ export class FwsCore {
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    this.apuBleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
@@ -3042,6 +3056,19 @@ export class FwsCore {
     this.eng4BleedAbnormalOff.set(
       this.engine4Running.get() &&
         !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+
+    this.eng1BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng2BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng3BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng4BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+
+    this.allBleedsOff.set(
+      this.eng1BleedPbOff.get() &&
+        this.eng2BleedPbOff.get() &&
+        this.eng3BleedPbOff.get() &&
+        this.eng4BleedPbOff.get() &&
+        this.apuBleedPbOff.get(),
     );
 
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
@@ -4328,6 +4355,9 @@ export class FwsCore {
           : this.landingElevation.valueOr(0)
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
+
+    this.ditchingPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON', 'bool'));
+    this.ditchingPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON', 'bool'));
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
