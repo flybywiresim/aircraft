@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -14,7 +14,7 @@
     -->
     <Template Name="FBW_A380X_ND_Setting_Label_Template">
         <DefaultTemplateParameters>
-            <SIMVAR_NAME>L:A380X_EFIS_#SIMVAR_SIDE#_ND_#SIMVAR_PREFIX#</SIMVAR_NAME>
+            <SIMVAR_NAME>L:A32NX_FCU_EFIS_#SIMVAR_SIDE#_EFIS_#SIMVAR_PREFIX#</SIMVAR_NAME>
         </DefaultTemplateParameters>
 
         <Component ID="RANGE_#SIMVAR_VALUE#" Node="#NODE_ID#">
@@ -23,6 +23,157 @@
                     (#SIMVAR_NAME#, Enum) #SIMVAR_VALUE# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #INDICATOR_POWERED# and
                 </EMISSIVE_CODE>
             </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for rigging EFIS CP Pushbuttons
+
+    Main Parameters
+            - SIDE_NODE_GROUP           <no default>    Side (L or R) of the node-id
+            - SIDE_SIMVAR_GROUP         <no default>    Side (L or R) of the simvar
+            - BUTTON_NAME               <no default>    Name of the Button
+            - TOOLTIPID                 <no default>    Tooltip ID of the button
+    -->
+    <Template Name="FBW_A380X_EFIS_CP_Button_Template">
+        <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
+            <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_#BUTTON_NAME#</NODE_ID>
+
+            <BUTTON_CODE>'A32NX.FCU_EFIS_#SIDE_SIMVAR_GROUP#_#BUTTON_NAME#_PUSH' (&gt;F:KeyEvent)</BUTTON_CODE>
+            <INDICATOR_CODE>(L:A32NX_FCU_EFIS_#SIDE_SIMVAR_GROUP#_#BUTTON_NAME#_LIGHT_ON)</INDICATOR_CODE>
+
+            <NODE_IS_INDICATOR />
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging the baro ref knob on the EFIS CP
+
+    Main Parameters
+            - NODE_ID                   <no default>    n/a
+            - ANIM_NAME_KNOB            <no default>    Animation name of the knob turning
+            - ANIM_NAME_PUSHPULL        <no default>    Animation name of the push/pull animation
+            - SIDE                      L               Side
+    -->
+    <Template Name="FBW_Airbus_FCU_Baro_Knob">
+        <DefaultTemplateParameters>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+            <SIDE>L</SIDE>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                <ANTICLOCKWISE_CODE>
+                    'A32NX.FCU_EFIS_#SIDE#_BARO_DEC' (&gt;F:KeyEvent)
+                </ANTICLOCKWISE_CODE>
+                <CLOCKWISE_CODE>
+                    'A32NX.FCU_EFIS_#SIDE#_BARO_INC' (&gt;F:KeyEvent)
+                </CLOCKWISE_CODE>
+                <PULL_CODE>
+                    'A32NX.FCU_EFIS_#SIDE#_BARO_PULL' (&gt;F:KeyEvent)
+                </PULL_CODE>
+                <PUSH_CODE>
+                    'A32NX.FCU_EFIS_#SIDE#_BARO_PUSH' (&gt;F:KeyEvent)
+                </PUSH_CODE>
+
+                <CENTER_RADIUS>0</CENTER_RADIUS>
+                <COUNT>36</COUNT>
+                <WWISE_EVENT>QNHknob</WWISE_EVENT>
+                <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
+                <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
+            </UseTemplate>
+            <!--Disables FCU baro knob emissive-->
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for rigging the baro ref unit selector on the EFIS CP
+
+    Main Parameters
+            - NODE_ID                   <no default>
+            - ANIM_NAME                 <no default>
+            - SIDE                      L
+    -->
+    <Template Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
+        <Parameters Type="Default">
+            <ID>1</ID>
+            <SIDE>L</SIDE>
+        </Parameters>
+        <Parameters Type="Default">
+            <NODE_ID>AIRLINER_Switch_Baro_Selector_#ID#</NODE_ID>
+            <ANIM_NAME>AIRLINER_Switch_Baro_Selector_#ID#</ANIM_NAME>
+            <PART_ID>AIRLINER_Switch_Baro_Selector</PART_ID>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HPA</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HG</ANIMTIP_1>
+        </Parameters>
+        <Parameters Type="OVERRIDE">
+            <Switch Param="SIDE">
+                <Case Value="R">
+                    <OFFSIDE>L</OFFSIDE>
+                </Case>
+                <Default>
+                    <OFFSIDE>R</OFFSIDE>
+                </Default>
+            </Switch >
+        </Parameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! (&gt;L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG)
+                    (L:A32NX_FO_SYNC_EFIS_ENABLED) if{
+                        (L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) (&gt;L:A32NX_FCU_EFIS_#OFFSIDE#_BARO_IS_INHG)
+                    }
+                </LEFT_SINGLE_CODE>
+                <ANIM_CODE>(L:A32NX_FCU_EFIS_#SIDE#_BARO_IS_INHG) ! 100 *</ANIM_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for rigging the ND mode and range knobs on the EFIS CP
+
+    Main Parameters
+            - NODE_ID                   <no default>    n/a
+            - ANIM_NAME                 <no default>    Animation name of the knob turning
+            - TOOLTIPID                 <no default>    Tooltip ID for the knob
+            - SIDE                      L               Side
+            - TYPE                      MODE            Type of ND knob, MODE or RANGE
+    -->
+    <Template Name="FBW_AIRLINER_Knob_ND_Template">
+        <DefaultTemplateParameters>
+            <SIDE>L</SIDE>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#_Group">
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                    <WWISE_EVENT>turnknob</WWISE_EVENT>
+                    <ROTATION_SPEED>20</ROTATION_SPEED>
+                    <ANTICLOCKWISE_CODE>
+                        'A32NX.FCU_EFIS_#SIDE#_#TYPE#_DEC' (&gt;F:KeyEvent)
+                    </ANTICLOCKWISE_CODE>
+                    <CLOCKWISE_CODE>
+                        'A32NX.FCU_EFIS_#SIDE#_#TYPE#_INC' (&gt;F:KeyEvent)
+                    </CLOCKWISE_CODE>
+                </UseTemplate>
+            </Component>
         </Component>
     </Template>
 
@@ -40,11 +191,9 @@
     <Template Name="FBW_A380X_EFIS_CP_Template">
         <Component ID="EFIS_CP_#SIDE_SIMVAR_GROUP#">
             <!-- TAXI -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_TAXI</NODE_ID>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE TAXI CAMERA ON EFIS (INOP.)</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>TAXI</BUTTON_NAME>
             </UseTemplate>
 
             <!-- BLANK -->
@@ -56,139 +205,107 @@
             </UseTemplate>
 
             <!-- LS -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_LS</NODE_ID>
-                <TOGGLE_SIMVAR>L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_LS_BUTTON_IS_ON</TOGGLE_SIMVAR>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE LS INDICATIONS ON EFIS</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>LS</BUTTON_NAME>
             </UseTemplate>
 
             <!-- VV -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_VV</NODE_ID>
-                <BUTTON_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_VV_BUTTON_IS_ON, Boolean) ! (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_VV_BUTTON_IS_ON, Boolean)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_VV_BUTTON_IS_ON) (L:A32NX_TRK_FPA_MODE_ACTIVE) or</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE VELOCITY VECTOR ON EFIS</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>VV</BUTTON_NAME>
             </UseTemplate>
 
             <!-- ND Filters -->
 
             <!-- CSTR -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_CSTR</NODE_ID>
-                <TOGGLE_SIMVAR>L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_CSTR_BUTTON_IS_ON</TOGGLE_SIMVAR>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE CONSTRAINTS DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>CSTR</BUTTON_NAME>
             </UseTemplate>
 
             <!-- WPT -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_WPT</NODE_ID>
-                <BUTTON_CODE>0 1 (L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 1 == ? (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 1 ==</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>SELECT WAYPOINT DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>WPT</BUTTON_NAME>
             </UseTemplate>
 
             <!-- VORD -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_VORD</NODE_ID>
-                <BUTTON_CODE>0 2 (L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 2 == ? (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 2 ==</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>SELECT VOR/DME DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>VORD</BUTTON_NAME>
             </UseTemplate>
 
             <!-- NDB -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_NDB</NODE_ID>
-                <BUTTON_CODE>0 3 (L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 3 == ? (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_FILTER) 3 ==</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>SELECT NDB DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>NDB</BUTTON_NAME>
             </UseTemplate>
 
             <!-- ARPT -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_ARPT</NODE_ID>
-                <TOGGLE_SIMVAR>L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ARPT_BUTTON_IS_ON</TOGGLE_SIMVAR>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE AIRPORTS DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>ARPT</BUTTON_NAME>
             </UseTemplate>
 
             <!-- VOR1 NEEDLE -->
             <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
                 <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_VOR</NODE_ID>
                 <TOOLTIPID>TOGGLE VOR1 NEEDLE ON ND</TOOLTIPID>
-                <BUTTON_CODE>0 2 (L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE) 2 == ? (&gt;L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE) 2 ==</INDICATOR_CODE>
+                <BUTTON_CODE>'A32NX.FCU_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_PUSH' (&gt;F:KeyEvent)</BUTTON_CODE>
+                <INDICATOR_CODE>(L:A32NX_FCU_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_1_MODE) 0 !=</INDICATOR_CODE>
                 <NODE_IS_INDICATOR />
             </UseTemplate>
 
             <!-- WX -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_WX</NODE_ID>
-                <BUTTON_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY) 1 == ! (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY) 1 ==</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>SELECT WX OVERLAY ON ND/VD</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>WX</BUTTON_NAME>
             </UseTemplate>
 
             <!-- TERR -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_TERR</NODE_ID>
-                <BUTTON_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY) 2 == ! 2 * (&gt;L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_ACTIVE_OVERLAY) 2 ==</INDICATOR_CODE>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>SELECT TERR OVERLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>TERR</BUTTON_NAME>
             </UseTemplate>
 
             <!-- TRAF -->
-            <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
-                <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_TRAF</NODE_ID>
-                <TOGGLE_SIMVAR>L:A380X_EFIS_#SIDE_SIMVAR_GROUP#_TRAF_BUTTON_IS_ON</TOGGLE_SIMVAR>
+            <UseTemplate Name="FBW_A380X_EFIS_CP_Button_Template">
                 <TOOLTIPID>TOGGLE TRAFFIC DISPLAY ON ND</TOOLTIPID>
-
-                <NODE_IS_INDICATOR />
+                <BUTTON_NAME>TRAF</BUTTON_NAME>
             </UseTemplate>
 
             <!-- VOR2 NEEDLE -->
             <UseTemplate Name="FBW_A380X_BacklightIndicator_Button_Template">
                 <NODE_ID>PUSH_EFIS_#SIDE_NODE_GROUP#_ADF</NODE_ID>
                 <TOOLTIPID>TOGGLE VOR2 NEEDLE ON ND</TOOLTIPID>
-                <BUTTON_CODE>0 2 (L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE) 2 == ? (&gt;L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE)</BUTTON_CODE>
-                <INDICATOR_CODE>(L:A32NX_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE) 2 ==</INDICATOR_CODE>
+                <BUTTON_CODE>'A32NX.FCU_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_PUSH' (&gt;F:KeyEvent)</BUTTON_CODE>
+                <INDICATOR_CODE>(L:A32NX_FCU_EFIS_#SIDE_SIMVAR_GROUP#_NAVAID_2_MODE) 0 !=</INDICATOR_CODE>
                 <NODE_IS_INDICATOR />
             </UseTemplate>
 
-            <!-- Baro Unit -->
+            <!-- Baro Ref Knob -->
             <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_PUSHPULL>
             </UseTemplate>
 
-            <!-- Baro Value -->
+            <!-- Baro Ref Unit -->
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO2</NODE_ID>
                 <ANIM_NAME>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO2</ANIM_NAME>
+                <SIDE>#SIDE_SIMVAR_GROUP#</SIDE>
             </UseTemplate>
 
             <!-- ND Mode -->
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
-                <TYPE>AIRBUS</TYPE>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE</TOOLTIPID>
+                <SIDE>#SIDE_SIMVAR_GROUP#</SIDE>
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_ROSE</NODE_ID>
-                <KNOB_POSITION_VAR>A32NX_EFIS_#SIDE_SIMVAR_GROUP#_ND_MODE</KNOB_POSITION_VAR>
+                <ANIM_NAME>KNOB_EFIS_#SIDE_NODE_GROUP#_ROSE</ANIM_NAME>
+                <TYPE>MODE</TYPE>
+                <ANIM_LAG>800</ANIM_LAG>
             </UseTemplate>
 
             <!-- Mode LEDs -->
@@ -226,10 +343,12 @@
             </Component>
 
             <!-- ND Range -->
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
-                <TYPE>AIRBUS</TYPE>
+            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.EFIS_CP_ND_RANGE</TOOLTIPID>
+                <SIDE>#SIDE_SIMVAR_GROUP#</SIDE>
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_RANGE</NODE_ID>
-                <KNOB_POSITION_VAR>A32NX_EFIS_#SIDE_SIMVAR_GROUP#_ND_RANGE</KNOB_POSITION_VAR>
+                <ANIM_NAME>KNOB_EFIS_#SIDE_NODE_GROUP#_RANGE</ANIM_NAME>
+                <TYPE>RANGE</TYPE>
                 <ANIM_LAG>800</ANIM_LAG>
             </UseTemplate>
 
@@ -289,7 +408,6 @@
         <UseTemplate Name="FBW_A380X_EFIS_CP_Template">
             <SIDE_NODE_GROUP>CS</SIDE_NODE_GROUP>
             <SIDE_SIMVAR_GROUP>L</SIDE_SIMVAR_GROUP>
-            <ALTIMETER_INDEX>1</ALTIMETER_INDEX>
 
             <INDICATOR_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</INDICATOR_POWERED>
             <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
@@ -300,7 +418,6 @@
         <UseTemplate Name="FBW_A380X_EFIS_CP_Template">
             <SIDE_NODE_GROUP>FO</SIDE_NODE_GROUP>
             <SIDE_SIMVAR_GROUP>R</SIDE_SIMVAR_GROUP>
-            <ALTIMETER_INDEX>2</ALTIMETER_INDEX>
 
             <INDICATOR_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</INDICATOR_POWERED>
             <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>

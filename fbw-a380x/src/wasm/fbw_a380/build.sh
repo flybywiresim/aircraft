@@ -104,6 +104,8 @@ clang++ \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/fcdc" \
   "${DIR}/src/fcdc/Fcdc.cpp" \
+  -I "${DIR}/src/fcu" \
+  "${DIR}/src/fcu/Fcu.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/TriggeredMonostableNode.cpp" \
@@ -132,6 +134,8 @@ clang++ \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
   "${DIR}/src/model/A380LateralNormalLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
+  "${DIR}/src/model/A380FcuComputer_data.cpp" \
+  "${DIR}/src/model/A380FcuComputer.cpp" \
   "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \

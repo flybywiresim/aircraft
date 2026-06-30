@@ -34,7 +34,7 @@ bool FlyByWireInterface::connect() {
   // connect to sim connect
   bool success = simConnectInterface.connect(
       clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, primGeneralLogicDisabled,
-      primFctlDisabled, primFeDisabled, secDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
+      primFctlDisabled, primFeDisabled, secDisabled, fcuDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
       flightControlsKeyChangeElevator, flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
       idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
@@ -124,6 +124,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateAdirs(i);
   }
 
+  for (int i = 0; i < 2; i++) {
+    result &= updateFcu(calculatedSampleTime, i);
+  }
+
   for (int i = 0; i < 3; i++) {
     result &= updatePrim(calculatedSampleTime, i);
   }
@@ -184,6 +188,7 @@ void FlyByWireInterface::loadConfiguration() {
   primFctlDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FCTL_DISABLED", false);
   primFeDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FE_DISABLED", false);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
+  fcuDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FCU_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
@@ -201,6 +206,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_FE_DISABLED                     = " << primFeDisabled << std::endl;
   std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
+  std::cout << "WASM: MODEL     : FCU_DISABLED                         = " << fcuDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
 
   // --------------------------------------------------------------------------
@@ -802,6 +808,59 @@ void FlyByWireInterface::setupLocalVariables() {
   idAfdxSwitch4Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_4_AVAIL");
   idAfdxSwitch13Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_13_AVAIL");
   idAfdxSwitch14Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_14_AVAIL");
+
+  // FCU
+  idLightsTest = std::make_unique<LocalVariable>("A32NX_OVHD_INTLT_ANN");
+
+  for (int i = 0; i < 2; i++) {
+    std::string idString = i == 0 ? "L" : "R";
+
+    idFcuEisPanelBaroIsInhg[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BARO_IS_INHG");
+
+    idFcuEisDisplayBaroIsInhg[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_IS_INHG");
+    idFcuEisDisplayBaroIsStd[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_IS_STD");
+    idFcuEisDisplayBaroValue[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_VALUE");
+    idFcuEisDisplayBaroMode[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_MODE");
+    idFcuEisDisplayBaroPresetVisible[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_PRESET_VISIBLE");
+    idFcuEisDisplayNavaid1Mode[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_NAVAID_1_MODE");
+    idFcuEisDisplayNavaid2Mode[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_NAVAID_2_MODE");
+
+    idFcuEisPanelEfisMode[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_EFIS_MODE");
+    idFcuEisPanelEfisRange[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_EFIS_RANGE");
+    idFcuEisPanelVvLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_VV_LIGHT_ON");
+    idFcuEisPanelLsLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_LS_LIGHT_ON");
+    idFcuEisPanelTaxiLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_TAXI_LIGHT_ON");
+    idFcuEisPanelCstrLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_CSTR_LIGHT_ON");
+    idFcuEisPanelWptLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_WPT_LIGHT_ON");
+    idFcuEisPanelVordLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_VORD_LIGHT_ON");
+    idFcuEisPanelNdbLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_NDB_LIGHT_ON");
+    idFcuEisPanelArptLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_ARPT_LIGHT_ON");
+    idFcuEisPanelTrafLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_TRAF_LIGHT_ON");
+    idFcuEisPanelWxLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_WX_LIGHT_ON");
+    idFcuEisPanelTerrLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_TERR_LIGHT_ON");
+
+    idFcuEisCpActive[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_CP_ACTIVE");
+  }
+  idFcuAfsPanelAltIncrement1000 = std::make_unique<LocalVariable>("A32NX_FCU_ALT_INCREMENT_1000");
+
+  idFcuAfsPanelAp1LightOn = std::make_unique<LocalVariable>("A32NX_FCU_AP_1_LIGHT_ON");
+  idFcuAfsPanelAp2LightOn = std::make_unique<LocalVariable>("A32NX_FCU_AP_2_LIGHT_ON");
+  idFcuAfsPanelAthrLightOn = std::make_unique<LocalVariable>("A32NX_FCU_ATHR_LIGHT_ON");
+  idFcuAfsPanelFdLightOn = std::make_unique<LocalVariable>("A32NX_FCU_FD_LIGHT_ON");
+  idFcuAfsPanelLocLightOn = std::make_unique<LocalVariable>("A32NX_FCU_LOC_LIGHT_ON");
+  idFcuAfsPanelAltLightOn = std::make_unique<LocalVariable>("A32NX_FCU_ALT_LIGHT_ON");
+  idFcuAfsPanelApprLightOn = std::make_unique<LocalVariable>("A32NX_FCU_APPR_LIGHT_ON");
+  idFcuAfsDisplayTrkFpaMode = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_TRK_FPA_MODE");
+  idFcuAfsDisplayTrueMode = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_TRUE_MODE");
+  idFcuAfsDisplayMachMode = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_MACH_MODE");
+  idFcuAfsDisplaySpdMachValue = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_SPD_MACH_VALUE");
+  idFcuAfsDisplaySpdMachDashes = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_SPD_MACH_DASHES");
+  idFcuAfsDisplayHdgTrkValue = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_HDG_TRK_VALUE");
+  idFcuAfsDisplayHdgTrkDashes = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_HDG_TRK_DASHES");
+  idFcuAfsDisplayAltValue = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_ALT_VALUE");
+  idFcuAfsDisplayVsFpaValue = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_VS_FPA_VALUE");
+  idFcuAfsDisplayVsFpaDashes = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_VS_FPA_DASHES");
+  idFcuAfsCpActive = std::make_unique<LocalVariable>("A32NX_FCU_AFS_CP_ACTIVE");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -867,6 +926,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // reset input
   simConnectInterface.resetSimInputAutopilot();
+
+  simConnectInterface.resetFcuFrontPanelInputs();
 
   simConnectInterface.resetSimInputPitchTrim();
 
@@ -1856,6 +1917,164 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
   idBtvLost->set(fcdcsDiscreteOutputs[0].btvLost || fcdcsDiscreteOutputs[1].btvLost ? 1 : 0);
 
+  return true;
+}
+
+bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
+  SimData simData = simConnectInterface.getSimData();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
+
+  fcus[fcuIndex].modelInputs.in.time.dt = sampleTime;
+  fcus[fcuIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
+  fcus[fcuIndex].modelInputs.in.time.monotonic_time = monotonicTime;
+
+  fcus[fcuIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
+  fcus[fcuIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
+  fcus[fcuIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
+  fcus[fcuIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
+  fcus[fcuIndex].modelInputs.in.sim_input.baro_setting_hpa =
+      fcuIndex == 0 ? simInputAutopilot.baro_left_set : simInputAutopilot.baro_right_set;
+
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_1_healthy = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_2_healthy = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_3_healthy = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.lights_test = idLightsTest->get();
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.pin_prog_qfe_avail = false;
+
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_inputs = simConnectInterface.getFcuEfisPanelInputs(fcuIndex);
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_inputs.baro_is_inhg = idFcuEisPanelBaroIsInhg[fcuIndex]->get();
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.afs_inputs = simConnectInterface.getFcuAfsPanelInputs();
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.afs_inputs.alt_increment_1000 = idFcuAfsPanelAltIncrement1000->get();
+
+  // fcu.modelInputs.in.bus_inputs.fmgc_1_bus = fmgcsBusOutputs[0].fmgc_a_bus;
+  // fcu.modelInputs.in.bus_inputs.fmgc_2_bus = fmgcsBusOutputs[1].fmgc_a_bus;
+
+  base_fcu_discrete_outputs discreteOutputs = fcus[fcuIndex].getDiscreteOutputs();
+
+  if (fcuDisabled) {
+    simConnectInterface.setClientDataFcuDiscretes(fcus[fcuIndex].modelInputs.in.discrete_inputs);
+    fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
+    discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
+  } else {
+    fcus[fcuIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(fcuIndex == 0 ? Failures::Fcu1 : Failures::Fcu2),
+                          fcuIndex == 0 ? idElecDcEssBusPowered->get() : idElecDc2BusPowered->get());
+    fcuBusOutputs = fcus[fcuIndex].getBusOutputs();
+  }
+
+  fcuHealthy = discreteOutputs.fcu_healthy;
+
+  // if (fmgcDisabled != -1 || fadecDisabled != -1) {
+  //   simConnectInterface.setClientDataFcuBus(fcuBusOutputs);
+  // }
+
+  // idFcuHealthy->set(discreteOutputs.fcu_healthy);
+
+  // idFcuSelectedHeading->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_hdg_deg));
+  // idFcuSelectedAltitude->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_alt_ft));
+  // idFcuSelectedAirspeed->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_spd_kts));
+  // idFcuSelectedVerticalSpeed->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_vz_ft_min));
+  // idFcuSelectedTrack->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_trk_deg));
+  // idFcuSelectedFpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_fpa_deg));
+  // idFcuAtsDiscreteWord->set(Arinc429Utils::toSimVar(fcuBusOutputs.ats_discrete_word));
+  // idFcuAtsFmaDiscreteWord->set(Arinc429Utils::toSimVar(fcuBusOutputs.ats_fma_discrete_word));
+  // idFcuEisLeftDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_1_left));
+  // idFcuEisLeftDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_2_left));
+  // idFcuEisLeftBaro->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_left_inhg));
+  // idFcuEisLeftBaroHpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_left_hpa));
+  // idFcuEisRightDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_1_right));
+  // idFcuEisRightDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_2_right));
+  // idFcuEisRightBaro->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_right_inhg));
+  // idFcuEisRightBaroHpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_right_hpa));
+  // idFcuDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_1));
+  // idFcuDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_2));
+
+  base_fcu_efis_panel_outputs efisPanelOutputs = discreteOutputs.efis_outputs;
+
+  idFcuEisPanelVvLightOn[fcuIndex]->set(efisPanelOutputs.vv_light_on);
+  idFcuEisPanelLsLightOn[fcuIndex]->set(efisPanelOutputs.ls_light_on);
+  idFcuEisPanelTaxiLightOn[fcuIndex]->set(efisPanelOutputs.taxi_light_on);
+  idFcuEisPanelCstrLightOn[fcuIndex]->set(efisPanelOutputs.cstr_light_on);
+  idFcuEisPanelWptLightOn[fcuIndex]->set(efisPanelOutputs.wpt_light_on);
+  idFcuEisPanelVordLightOn[fcuIndex]->set(efisPanelOutputs.vord_light_on);
+  idFcuEisPanelNdbLightOn[fcuIndex]->set(efisPanelOutputs.ndb_light_on);
+  idFcuEisPanelArptLightOn[fcuIndex]->set(efisPanelOutputs.arpt_light_on);
+  idFcuEisPanelTrafLightOn[fcuIndex]->set(efisPanelOutputs.traf_light_on);
+  idFcuEisPanelWxLightOn[fcuIndex]->set(efisPanelOutputs.wxr_light_on);
+  idFcuEisPanelTerrLightOn[fcuIndex]->set(efisPanelOutputs.terr_light_on);
+  idFcuEisDisplayNavaid1Mode[fcuIndex]->set(static_cast<int>(efisPanelOutputs.navaid_1_mode));
+  idFcuEisDisplayNavaid2Mode[fcuIndex]->set(static_cast<int>(efisPanelOutputs.navaid_2_mode));
+  idFcuEisPanelEfisRange[fcuIndex]->set(static_cast<int>(efisPanelOutputs.efis_range));
+  idFcuEisPanelEfisMode[fcuIndex]->set(static_cast<int>(efisPanelOutputs.efis_mode));
+
+  idFcuEisDisplayBaroIsInhg[fcuIndex]->set(efisPanelOutputs.baro_is_inhg);
+  idFcuEisDisplayBaroIsStd[fcuIndex]->set(efisPanelOutputs.baro_is_std);
+  idFcuEisDisplayBaroValue[fcuIndex]->set(efisPanelOutputs.baro_value);
+  idFcuEisDisplayBaroMode[fcuIndex]->set(efisPanelOutputs.baro_mode);
+  idFcuEisCpActive[fcuIndex]->set(efisPanelOutputs.efis_cp_active);
+
+  idFcuAfsPanelAp1LightOn->set(discreteOutputs.afs_outputs.ap_1_light_on);
+  idFcuAfsPanelAp2LightOn->set(discreteOutputs.afs_outputs.ap_2_light_on);
+  idFcuAfsPanelAthrLightOn->set(discreteOutputs.afs_outputs.athr_light_on);
+  idFcuAfsPanelLocLightOn->set(discreteOutputs.afs_outputs.loc_light_on);
+  idFcuAfsPanelAltLightOn->set(discreteOutputs.afs_outputs.alt_light_on);
+  idFcuAfsPanelApprLightOn->set(discreteOutputs.afs_outputs.appr_light_on);
+
+  idFcuAfsDisplayTrkFpaMode->set(discreteOutputs.afs_outputs.trk_fpa_mode);
+  idFcuAfsDisplayMachMode->set(discreteOutputs.afs_outputs.mach_mode);
+  idFcuAfsDisplaySpdMachValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+  idFcuAfsDisplaySpdMachDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
+  idFcuAfsDisplayHdgTrkValue->set(discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuAfsDisplayHdgTrkDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
+  idFcuAfsDisplayAltValue->set(discreteOutputs.afs_outputs.alt_value);
+  idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+
+  // Update AFS CP variables (Sim AP vars and legacy Lvars)
+  // The speed var comes from the FMGC, do a simple check of FMGC health to select the FMGC to use
+  /*simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_SPD_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   fmgcsBusOutputs[fmgcsDiscreteOutputs[0].fmgc_healthy ? 0 : 1].fmgc_a_bus.pfd_sel_spd_kts.Data, 0);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_SPEED_SLOT_INDEX_SET, discreteOutputs.afs_outputs.spd_mach_managed ? 2 :
+  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes ||
+  !discreteOutputs.fcu_healthy); idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed); if
+  (discreteOutputs.afs_outputs.spd_mach_dashes || !discreteOutputs.fcu_healthy) { idFcuShimSpdValue->set(-1.); } else {
+    idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
+  }
+
+  idFcuShimTrkFpaActive->set(discreteOutputs.afs_outputs.trk_fpa_mode);
+
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::HEADING_BUG_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   discreteOutputs.afs_outputs.hdg_trk_value, 1);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_HEADING_SLOT_INDEX_SET, discreteOutputs.afs_outputs.hdg_trk_managed ? 2 :
+  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimHdgValue1->set( discreteOutputs.afs_outputs.hdg_trk_dashes ||
+  !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value); idFcuShimHdgValue2->set(
+      discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
+  idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes && discreteOutputs.fcu_healthy);
+  idFcuShimHdgDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy);
+  idFcuShimHdgDot->set(discreteOutputs.afs_outputs.hdg_trk_managed);
+
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   discreteOutputs.afs_outputs.alt_value, 3);
+  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_ALTITUDE_SLOT_INDEX_SET, discreteOutputs.afs_outputs.lvl_ch_managed ? 2 :
+  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimAltManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
+
+  idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
+  idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+
+  // Shim Hevents
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 13, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_AP_DEC_ALT)", nullptr, nullptr, nullptr);
+  }
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 17, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
+  }
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 18, false)) {
+    execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
+  }
+*/
   return true;
 }
 

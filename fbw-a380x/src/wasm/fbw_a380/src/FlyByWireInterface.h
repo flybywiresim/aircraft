@@ -12,6 +12,7 @@
 #include "ThrottleAxisMapping.h"
 #include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
+#include "fcu/Fcu.h"
 #include "interface/SimConnectInterface.h"
 #include "model/AutopilotLaws.h"
 #include "model/AutopilotStateMachine.h"
@@ -58,6 +59,7 @@ class FlyByWireInterface {
   bool primFctlDisabled = false;
   bool primFeDisabled = false;
   int secDisabled = -1;
+  int fcuDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
@@ -140,6 +142,10 @@ class FlyByWireInterface {
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
   FcdcBus fcdcsBusOutputs[2] = {};
+
+  Fcu fcus[2] = {Fcu(), Fcu()};
+  base_fcu_bus fcuBusOutputs = {};
+  bool fcuHealthy = false;
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -581,6 +587,54 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAfdxSwitch4Available;
   std::unique_ptr<LocalVariable> idAfdxSwitch14Available;
 
+  // FCU
+  std::unique_ptr<LocalVariable> idLightsTest;
+
+  std::unique_ptr<LocalVariable> idFcuEisPanelBaroIsInhg[2];
+
+  std::unique_ptr<LocalVariable> idFcuEisPanelVvLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelLsLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelTaxiLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelCstrLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelWptLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelVordLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelNdbLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelArptLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelTrafLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelWxLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelTerrLightOn[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelEfisMode[2];
+  std::unique_ptr<LocalVariable> idFcuEisPanelEfisRange[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayNavaid1Mode[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayNavaid2Mode[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroIsInhg[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroIsStd[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroValue[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroMode[2];
+  std::unique_ptr<LocalVariable> idFcuEisDisplayBaroPresetVisible[2];
+  std::unique_ptr<LocalVariable> idFcuEisCpActive[2];
+
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAltIncrement1000;
+
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAp1LightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAp2LightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAthrLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelFdLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelLocLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelAltLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsPanelApprLightOn;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayTrkFpaMode;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayTrueMode;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayMachMode;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplaySpdMachValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplaySpdMachDashes;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayHdgTrkValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayHdgTrkDashes;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayAltValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayVsFpaValue;
+  std::unique_ptr<LocalVariable> idFcuAfsDisplayVsFpaDashes;
+  std::unique_ptr<LocalVariable> idFcuAfsCpActive;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -614,6 +668,10 @@ class FlyByWireInterface {
   bool updateSec(double sampleTime, int secIndex);
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
+
+  bool updateFcu(double sampleTime, int fcuIndex);
+
+  bool updateFcuShim();
 
   bool updateServoSolenoidStatus();
 
