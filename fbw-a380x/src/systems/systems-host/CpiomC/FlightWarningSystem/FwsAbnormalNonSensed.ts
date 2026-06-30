@@ -33,7 +33,6 @@ export class FwsAbnormalNonSensed {
 
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
-
   constructor(private fws: FwsCore) {
     this.subscriptions.push(
       this.checklistId.sub((id) => {
