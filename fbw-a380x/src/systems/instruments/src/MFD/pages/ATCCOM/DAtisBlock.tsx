@@ -13,15 +13,15 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomMfdPageProps } from '../../MFD';
 
-import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { NewAtisIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/NewAtisIcon';
-import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUpdateIcon';
-import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
+import { AirportFormat } from '../../pages/common/DataEntryFormats';
+import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { NewAtisIcon } from './Elements/NewAtisIcon';
+import { AutoUpdateIcon } from './Elements/AutoUpdateIcon';
+import { AutoPrintIcon } from './Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 import { AtisMessage, AtisType } from '@datalink/common';
 import { AtcDatalinkMessages } from '../../ATCCOM/AtcDatalinkPublisher';
@@ -64,8 +64,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
     return icao == null || icao == '----';
   });
-
-  private readonly messageStatusSpan = this.messageStatusLabel.map((s) => <>{s}</>);
 
   private readonly isAutoUpdateNotAllowed = MappedSubject.create(
     ([atisType, isIcaoEmpty]) => {
@@ -204,7 +202,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.dropdownMenuVisible,
       this.combinedMenuVisible,
       this.statusButtonVisible,
-      this.messageStatusSpan,
       this.isAutoUpdateNotAllowed,
     );
   }
@@ -225,7 +222,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             value={this.atisIcao}
             containerStyle="width: 106px; margin-left: 5px; position: absolute; top: 12px; height:40px"
             alignText="center"
-            errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e)}
+            errorHandler={(e) => this.props.atcService?.showAtcErrorMessage(e.type, e.details)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />
@@ -254,8 +251,8 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
           <div>
             {/* FSM Status Message Button */}
             <Button
-              label={this.messageStatusSpan}
-              disabled={Subject.create(false)}
+              label={this.messageStatusLabel}
+              disabled={false}
               onClick={() => {}}
               visible={this.statusButtonVisible}
               highlighted={Subject.create(true)}
@@ -264,7 +261,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="UPDATE<br/>OR PRINT"
-              disabled={Subject.create(false)}
+              disabled={false}
               onClick={() => {}}
               visible={this.combinedMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
@@ -318,7 +315,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         <div>
           <Button
             label=">>>"
-            disabled={Subject.create(false)}
+            disabled={false}
             visible={this.readMoreVisible}
             onClick={() => {
               this.props.data.lastReadAtis = this.atisCode.get();

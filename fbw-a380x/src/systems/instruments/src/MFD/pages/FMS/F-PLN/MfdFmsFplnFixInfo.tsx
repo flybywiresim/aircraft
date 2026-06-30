@@ -1,8 +1,8 @@
 import './MfdFmsFplnFixInfo.scss';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -92,7 +92,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       this.loadedFlightPlanIndex.get(),
                     );
                   }}
-                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                   dataEntryFormat={new FixFormat()}
                   tmpyActive={this.flightPlanManager.temporaryPlanExists}
                   hEventConsumer={this.props.mfd.hEventConsumer}
@@ -144,7 +144,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -182,7 +182,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -222,7 +222,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadiusFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}

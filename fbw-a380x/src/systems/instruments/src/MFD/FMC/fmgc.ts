@@ -8,7 +8,6 @@ import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import {
   EventBus,
   MappedSubject,
@@ -24,6 +23,7 @@ import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { qnhToMillibar } from '../shared/QnhUtils';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -118,8 +118,6 @@ export class FmgcData {
 
   public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly approachVapp = Subject.create<Knots | null>(null);
-
   /** in feet. null if not set. */
   public readonly climbPredictionsReferencePilotEntry = Subject.create<number | null>(null);
 
@@ -135,6 +133,8 @@ export class FmgcData {
   public readonly climbPredictionsReferenceIsPilotEntered = this.climbPredictionsReferencePilotEntry.map(
     (it) => it !== null,
   );
+
+  public readonly approachVapp = Subject.create<Knots | null>(null);
 
   public readonly approachVref = Subject.create<Knots | null>(null);
 
@@ -444,28 +444,9 @@ export class FmgcDataService implements Fmgc {
     return this.flightPlanService.active.performanceData.pilotTripWind.get() ?? 0;
   }
 
-  getWinds(): FmcWinds {
-    return {
-      climb: [{ direction: 0, speed: 0 }],
-      cruise: [{ direction: 0, speed: 0 }],
-      des: [{ direction: 0, speed: 0 }],
-      alternate: null,
-    };
-  }
-
-  getApproachWind(): FmcWindVector | null {
-    const windDirection = this.flightPlanService.active.performanceData.approachWindDirection.get();
-    const windMagnitude = this.flightPlanService.active.performanceData.approachWindMagnitude.get();
-    if (windDirection !== null && windMagnitude !== null) {
-      return { direction: windDirection, speed: windMagnitude };
-    } else {
-      return null;
-    }
-  }
-
   /** in hPa */
   getApproachQnh(): number {
-    return this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25;
+    return qnhToMillibar(this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25);
   }
 
   /** in degrees celsius */

@@ -8,7 +8,7 @@ import {
   usePersistentNumberProperty,
   usePersistentProperty,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';

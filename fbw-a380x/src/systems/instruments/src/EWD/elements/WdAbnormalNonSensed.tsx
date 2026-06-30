@@ -5,9 +5,9 @@ import {
   EcamAbNormalSensedSubMenuVector,
   isChecklistAction,
   isChecklistCondition,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+} from '../../MsfsAvionicsCommon/EcamMessages';
+import { AbnormalNonSensedProceduresOverview } from '../..//MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
+import { WdAbstractChecklistComponent } from './WdAbstractChecklistComponent';
 
 function removeUnderline(text: string): string {
   // eslint-disable-next-line no-control-regex

@@ -296,10 +296,10 @@ struct FuelSystemData {
   double trigger_4_innerand_mid_tanks_xfer_feed4_start;
   double trigger_5_equalize1and4;
   double trigger_6_equalize2and3;
-  double trigger_7_innerand_mid_tanks_xfer_feed1and4_end;
-  double trigger_8_innerand_mid_tanks_xfer_feed2and3_end;
-  double trigger_9_innerand_mid_tanks_xfer_feed2and3_end_redundant;
-  double trigger_10_innerand_mid_tanks_xfer_feed1and4_end_redundant;
+  double trigger_7_innerand_mid_tanks_xfer_feed1_end;
+  double trigger_8_innerand_mid_tanks_xfer_feed2_end;
+  double trigger_9_innerand_mid_tanks_xfer_feed3_end;
+  double trigger_10_innerand_mid_tanks_xfer_feed4_end;
   double trigger_11_inner_tank_left_empty;
   double trigger_12_inner_tank_right_empty;
   double trigger_13_mid_tanks_below8000;

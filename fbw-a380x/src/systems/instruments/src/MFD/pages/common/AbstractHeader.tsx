@@ -8,9 +8,9 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { MfdDisplayInterface } from '../../MFD';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { MfdUiService } from './MfdUiService';
 
 interface AbstractMfdHeaderProps {
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;

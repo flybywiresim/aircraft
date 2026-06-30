@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { DeviceFlowParams } from 'navigraph/auth';
 import QRCode from 'qrcode.react';
-import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
+import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk-react';
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';

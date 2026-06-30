@@ -280,6 +280,7 @@ A32NX_GPWS_GROUND_STATE=0
 A32NX_GPWS_APPROACH_STATE=1
 A32NX_ENGINE_N2:1=85
 A32NX_ENGINE_N2:2=85
+A32NX_LIGHTS_NAV_LOGO=1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -293,8 +294,8 @@ PitotHeat_EX1=2
 WindshieldDeice=2
 BeaconLights=True
 LandingLights=False
-LogoLights=True
-NavLights=True
+LogoLights=False
+NavLights=False
 PanelLights=True
 RecognitionLights=True
 StrobeLights=True

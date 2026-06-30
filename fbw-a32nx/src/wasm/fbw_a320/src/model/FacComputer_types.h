@@ -25,21 +25,6 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
 #define DEFINED_TYPEDEF_FOR_base_fac_bus_
 
@@ -85,6 +70,21 @@ struct base_fac_analog_outputs
   real_T yaw_damper_order_deg;
   real_T rudder_trim_order_deg;
   real_T rudder_travel_limit_order_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
 };
 
 #endif
@@ -373,6 +373,8 @@ struct base_fac_ir_computation_data
   real_T n_z_g;
   real_T theta_dot_deg_s;
   real_T phi_dot_deg_s;
+  real_T V_gnd_kts;
+  real_T V_zbi_ft_min;
 };
 
 #endif
@@ -392,6 +394,8 @@ struct base_fac_logic_outputs
   real32_T flap_handle_index;
   real32_T flap_angle_deg;
   real32_T slat_angle_deg;
+  real_T flap_surface_angle_deg;
+  real_T slat_surface_angle_deg;
   real32_T slat_flap_actual_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
@@ -401,6 +405,8 @@ struct base_fac_logic_outputs
   boolean_T double_not_self_detected_ir_failure;
   base_fac_adr_computation_data adr_computation_data;
   base_fac_ir_computation_data ir_computation_data;
+  boolean_T all_ra_failed;
+  base_arinc_429 ra_height;
   boolean_T yaw_damper_engaged;
   boolean_T yaw_damper_can_engage;
   boolean_T yaw_damper_has_priority;
@@ -412,6 +418,8 @@ struct base_fac_logic_outputs
   boolean_T rudder_travel_lim_has_priority;
   boolean_T speed_scale_lost;
   boolean_T speed_scale_visible;
+  boolean_T any_ap_engaged;
+  boolean_T fmgc_own_selected;
 };
 
 #endif
@@ -443,6 +451,10 @@ struct base_fac_flight_envelope_outputs
   real_T v_fe_next_kn;
   boolean_T v_fe_next_visible;
   real_T v_c_trend_kn;
+  real_T gamma_a_deg;
+  real_T gamma_t_deg;
+  boolean_T pitch_pitch_warning_active;
+  boolean_T low_energy_warning_active;
 };
 
 #endif

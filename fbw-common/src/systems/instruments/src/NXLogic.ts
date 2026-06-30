@@ -71,11 +71,11 @@ export class NXLogicConfirmNode {
 
   timer: number;
 
-  previousInput: any;
+  previousInput: boolean | null;
 
-  previousOutput: any;
+  previousOutput: boolean | null;
 
-  constructor(t, risingEdge = true) {
+  constructor(t: number, risingEdge = true) {
     this.t = t;
     this.risingEdge = risingEdge;
     this.timer = 0;
@@ -83,7 +83,7 @@ export class NXLogicConfirmNode {
     this.previousOutput = null;
   }
 
-  write(value, deltaTime) {
+  write(value: boolean, deltaTime: number) {
     if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousInput = value;
       this.previousOutput = value;
@@ -121,7 +121,7 @@ export class NXLogicConfirmNode {
   }
 
   read() {
-    return this.previousOutput;
+    return this.previousOutput ?? false;
   }
 }
 
@@ -153,7 +153,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
-  write(set, reset) {
+  write(set: boolean, reset: boolean) {
     if (set && reset) {
       this.value = this.setStar;
     } else if (set && !this.value) {
@@ -232,27 +232,45 @@ export class NXLogicPulseNode {
 
   private lastInput = false;
 
-  private remainingTime = 0;
+  constructor(private risingEdge = true) {}
 
-  constructor(
-    private risingEdge = true,
-    private time = 0.1,
-  ) {}
-
-  write(input: boolean, deltaTime: number): boolean {
+  write(input: boolean): boolean {
     if (this.output) {
-      this.remainingTime -= deltaTime / 1000;
-      if (this.remainingTime <= 0) {
-        this.output = false;
-      }
+      this.output = false;
     }
 
     if ((this.risingEdge && input && !this.lastInput) || (!this.risingEdge && !input && this.lastInput)) {
-      this.remainingTime = this.time;
       this.output = true;
     }
 
     this.lastInput = input;
+    return this.output;
+  }
+
+  read(): boolean {
+    return this.output;
+  }
+}
+
+/**
+ * The following class represents a hysterisis node.
+ * Outputs true when the input value is equal to or above the upper threshold, and false when it is equal to or below the lower threshold.
+ * If the input value is between the two thresholds, it outputs the same as the previous output.
+ */
+export class NxHysterisNode {
+  private output: boolean;
+
+  constructor(
+    private upperTreshold: number,
+    private lowerThreshold: number,
+  ) {}
+
+  write(value: number): boolean {
+    if (!this.output && value >= this.upperTreshold) {
+      this.output = true;
+    } else if (this.output && value <= this.lowerThreshold) {
+      this.output = false;
+    }
     return this.output;
   }
 

@@ -3,8 +3,8 @@
 
 import { ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
 import { FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { OitSimvars } from '../../../OitSimvarPublisher';
 import { AnsuOps } from '../../../System/AnsuOps';
@@ -34,15 +34,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   private readonly onBlockTimeText = this.props.container.ansu.onBlockTime.map((t) => AnsuOps.formatDateTime(t));
   private readonly inBlockTimeText = this.props.container.ansu.inBlockTime.map((t) => AnsuOps.formatDateTime(t));
 
-  private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
-
-  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribeLegacy(
-    'CONFIG_USING_METRIC_UNIT',
-    (_, value) => {
-      this.userWeight.set(value === '1' ? 'KG' : 'LBS');
-    },
-    '1',
-  );
+  private readonly userWeight = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) => (v ? 'KG' : 'LBS'));
 
   private readonly outBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
@@ -118,6 +110,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
     super.onAfterRender(node);
 
     this.subscriptions.push(
+      this.userWeight,
       this.fltNumberText,
       this.fltOriginText,
       this.fltDestinationText,
@@ -147,8 +140,6 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   }
 
   destroy(): void {
-    this.configMetricUnitsSub();
-
     super.destroy();
   }
 

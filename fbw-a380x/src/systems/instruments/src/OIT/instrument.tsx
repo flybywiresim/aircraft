@@ -17,7 +17,7 @@ import { InternalKbdKeyEvent, OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
 import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 import { AnsuOps } from './System/AnsuOps';
-import { ResetPanelSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class OitInstrument implements FsInstrument {
@@ -68,6 +68,8 @@ class OitInstrument implements FsInstrument {
   }
 
   public doInit(): void {
+    RegisterViewListener('JS_LISTENER_FACILITY', () => console.log('JS_LISTENER_FACILITY registered.'), true);
+
     this.backplane.init();
 
     const oit = document.getElementById('OIT_CONTENT');

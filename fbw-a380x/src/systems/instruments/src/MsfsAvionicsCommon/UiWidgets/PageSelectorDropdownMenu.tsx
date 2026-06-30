@@ -10,7 +10,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { TriangleDown } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
+import { TriangleDown } from './shapes';
 
 type PageSelectorMenuItem = {
   label: string;

@@ -4,14 +4,5 @@
     "jsx": "react",
     "jsxFactory": "React.createElement",
     "jsxFragmentFactory": "React.Fragment",
-    "paths": {
-      "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"],
-      "@flybywiresim/fbw-sdk": ["./index-react.ts"],
-      "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
-      "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
-      "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
-      "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
-      "@typings/*": ["../typings/*"],
-    }
   }
 }
