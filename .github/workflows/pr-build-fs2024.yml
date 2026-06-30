@@ -154,8 +154,8 @@ jobs:
           path: ./fbw-a32nx/out/build-modules/
           retention-days: 1
 
-  build_a380x_4k:
-    name: Build A380X (4K)
+  build_a380x:
+    name: Build A380X
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -221,7 +221,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4 -4k
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
@@ -244,12 +244,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
-          name: flybywire-aircraft-a380-842 (4K)
+          name: flybywire-aircraft-a380-842
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
       - name: Upload modules as artifact
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
-          name: build-modules-a380x-4k
+          name: build-modules-a380x
           path: ./fbw-a380x/out/build-modules/
           retention-days: 1
