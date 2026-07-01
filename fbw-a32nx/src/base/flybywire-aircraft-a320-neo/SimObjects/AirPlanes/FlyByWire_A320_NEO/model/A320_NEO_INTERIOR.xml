@@ -1964,8 +1964,7 @@
                 <!-- EXT LT NAV & LOGO -->
                 <UseTemplate Name="FBW_A32NX_NAV_LOGO_LT_SW_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
-                    <INVERT_DRAG_POSITIVE_CONDITION>True</INVERT_DRAG_POSITIVE_CONDITION>
-                    <INVERT_WHEEL_INTERACTION>True</INVERT_WHEEL_INTERACTION>
+                    <INVERT_ANIM>True</INVERT_ANIM>
                 </UseTemplate>
 
                 <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
