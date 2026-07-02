@@ -48,7 +48,7 @@ void Prim::update(double deltaTime,
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  if (generalLogicDisabled || fctlDisabled) {
+  if (generalLogicDisabled || fctlDisabled || feDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.analog_inputs);
     simConnectInterface.setClientDataPrimTemporaryAp(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.temporary_ap_input);
@@ -61,6 +61,8 @@ void Prim::update(double deltaTime,
   if (!generalLogicDisabled) {
     primGeneralLogic.step();
   } else {
+    primGeneralLogic.A380PrimComputerGeneralLogic_Y = {};
+    primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.data = primGeneralLogic.A380PrimComputerGeneralLogic_U.in;
     primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic = simConnectInterface.getClientDataPrimGeneralLogicOutput();
   }
   primFe.A380PrimComputerFe_U.in = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
@@ -81,6 +83,7 @@ void Prim::update(double deltaTime,
   if (!feDisabled) {
     primFe.step();
   } else {
+    primFe.A380PrimComputerFe_Y.out = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
     primFe.A380PrimComputerFe_Y.out.flight_envelope = simConnectInterface.getClientDataPrimFlightEnvelopeOutput();
   }
   primFctl.A380PrimComputerFctl_U.in = primFe.A380PrimComputerFe_Y.out;
@@ -101,7 +104,7 @@ void Prim::update(double deltaTime,
 
   // Set client data loopback if any other model is disabled
   if (feDisabled) {
-    simConnectInterface.setClientDataPrimFctlLogicOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.fctl_logic);
+    simConnectInterface.setClientDataPrimFctlLogicOutput(primFctl.A380PrimComputerFctl_Y.out.fctl_logic);
   }
 }
 
