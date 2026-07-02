@@ -2,7 +2,16 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, MappedSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  MappedSubject,
+  SimVarValueType,
+  Subject,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { GroundSupportEvents, MsfsElectricsEvents, MsfsFlightModelEvents, MsfsMiscEvents } from '@flybywiresim/fbw-sdk';
 
 export class GPUManagement implements Instrument {
@@ -21,11 +30,17 @@ export class GPUManagement implements Instrument {
 
   private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
-  private readonly cameraState = Subject.create(-1);
+  private readonly isInAircraft = Subject.create(0);
 
   private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
   private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
+
+  private readonly isIngame = MappedSubject.create(
+    ([gameState, isInAircraft]) => gameState === GameState.ingame && isInAircraft === 1,
+    GameStateProvider.get(),
+    this.isInAircraft,
+  );
 
   private initialIngameFrame: boolean;
   constructor(
@@ -45,15 +60,17 @@ export class GPUManagement implements Instrument {
   }
 
   public init(): void {
-    this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
-    this.gpuHookedUp.sub((v) => this.setEXTpower(v));
-    this.groundVelocity.sub((v) => {
-      // disable ext power when aircraft starts moving
-      if (v > 0.3 && this.anyGPUAvail()) {
-        this.toggleGPU();
-      }
+    Wait.awaitSubscribable(this.isIngame, (state) => state, true).then(() => {
+      this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
+      this.gpuHookedUp.sub((v) => this.setEXTpower(v));
+      this.groundVelocity.sub((v) => {
+        // disable ext power when aircraft starts moving
+        if (v > 0.3 && this.anyGPUAvail()) {
+          this.toggleGPU();
+        }
+      });
+      this.initialIngameFrame = true;
     });
-    this.initialIngameFrame = true;
   }
 
   public onUpdate(): void {
@@ -63,7 +80,7 @@ export class GPUManagement implements Instrument {
       }
       this.initialIngameFrame = false;
     } else {
-      this.cameraState.set(SimVar.GetSimVarValue('CAMERA STATE', 'enum'));
+      this.isInAircraft.set(SimVar.GetSimVarValue('E:IS AIRCRAFT', 'enum'));
     }
   }
 
