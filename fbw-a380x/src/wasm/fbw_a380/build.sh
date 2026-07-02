@@ -127,6 +127,8 @@ clang++ \
   "${DIR}/src/model/A380PrimComputerGeneralLogic.cpp" \
   "${DIR}/src/model/A380PrimComputerFctl_data.cpp" \
   "${DIR}/src/model/A380PrimComputerFctl.cpp" \
+  "${DIR}/src/model/A380PrimComputerFe_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFe.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
   "${DIR}/src/model/A380SecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
@@ -137,6 +139,7 @@ clang++ \
   "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
+  "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_iflf_binlxpw.cpp" \
   "${DIR}/src/model/maximum_Y6vyn2io.cpp" \

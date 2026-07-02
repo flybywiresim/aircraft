@@ -18,6 +18,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   int primDisabled,
                                   bool primGeneralLogicDisabled,
                                   bool primFctlDisabled,
+                                  bool primFeDisabled,
                                   int secDisabled,
                                   int facDisabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
@@ -53,6 +54,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     this->primDisabled = primDisabled;
     this->primGeneralLogicDisabled = primGeneralLogicDisabled;
     this->primFctlDisabled = primFctlDisabled;
+    this->primFeDisabled = primFeDisabled;
     this->secDisabled = secDisabled;
     this->facDisabled = facDisabled;
     // store key change value for each axis
@@ -1000,10 +1002,45 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_GENERAL_LOGIC_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  sizeof(base_prim_general_logic_outputs));
 
-  if (primFctlDisabled) {
+  if (primGeneralLogicDisabled) {
     // request data to be updated when set
     result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_GENERAL_LOGIC_OUTPUT, ClientData::PRIM_GENERAL_LOGIC_OUTPUT,
                                            ClientData::PRIM_GENERAL_LOGIC_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_FLIGHT_ENVELOPE_OUTPUT",
+                                             ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, sizeof(base_prim_flight_envelope_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_flight_envelope_outputs));
+
+  if (primFeDisabled) {
+    // request data to be updated when set
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT,
+                                           ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_FCTL_LOGIC_OUTPUT", ClientData::PRIM_FCTL_LOGIC_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, sizeof(base_prim_fctl_logic_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_fctl_logic_outputs));
+
+  if (primFctlDisabled) {
+    // request data to be updated when set
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, ClientData::PRIM_FCTL_LOGIC_OUTPUT,
+                                           ClientData::PRIM_FCTL_LOGIC_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
   }
 
   // ------------------------------------------------------------------------------------------------------------------
@@ -1480,6 +1517,14 @@ bool SimConnectInterface::setClientDataPrimGeneralLogicOutput(const base_prim_ge
   return sendClientData(ClientData::PRIM_GENERAL_LOGIC_OUTPUT, sizeof(output), const_cast<base_prim_general_logic_outputs*>(&output));
 }
 
+bool SimConnectInterface::setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output) {
+  return sendClientData(ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, sizeof(output), const_cast<base_prim_flight_envelope_outputs*>(&output));
+}
+
+bool SimConnectInterface::setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output) {
+  return sendClientData(ClientData::PRIM_FCTL_LOGIC_OUTPUT, sizeof(output), const_cast<base_prim_fctl_logic_outputs*>(&output));
+}
+
 bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs& output) {
   return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
 }
@@ -1518,6 +1563,14 @@ base_prim_out_bus& SimConnectInterface::getClientDataPrimBusOutput() {
 
 base_prim_general_logic_outputs& SimConnectInterface::getClientDataPrimGeneralLogicOutput() {
   return clientDataPrimGeneralLogicOutput;
+}
+
+base_prim_flight_envelope_outputs& SimConnectInterface::getClientDataPrimFlightEnvelopeOutput() {
+  return clientDataPrimFlightEnvelopeOutput;
+}
+
+base_prim_fctl_logic_outputs& SimConnectInterface::getClientDataPrimFctlLogicOutput() {
+  return clientDataPrimFctlLogicOutput;
 }
 
 base_sec_discrete_outputs& SimConnectInterface::getClientDataSecDiscretesOutput() {
@@ -3264,6 +3317,16 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::PRIM_GENERAL_LOGIC_OUTPUT:
       // store aircraft data
       clientDataPrimGeneralLogicOutput = *((base_prim_general_logic_outputs*)&data->dwData);
+      return;
+
+    case ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT:
+      // store aircraft data
+      clientDataPrimFlightEnvelopeOutput = *((base_prim_flight_envelope_outputs*)&data->dwData);
+      return;
+
+    case ClientData::PRIM_FCTL_LOGIC_OUTPUT:
+      // store aircraft data
+      clientDataPrimFctlLogicOutput = *((base_prim_fctl_logic_outputs*)&data->dwData);
       return;
 
     case ClientData::SEC_DISCRETE_OUTPUTS:

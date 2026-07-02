@@ -34,7 +34,7 @@ bool FlyByWireInterface::connect() {
   // connect to sim connect
   bool success = simConnectInterface.connect(
       clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, primGeneralLogicDisabled,
-      primFctlDisabled, secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
+      primFctlDisabled, primFeDisabled, secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
       flightControlsKeyChangeElevator, flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
       idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
@@ -186,6 +186,7 @@ void FlyByWireInterface::loadConfiguration() {
   primDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "PRIM_DISABLED", -1);
   primGeneralLogicDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_GENERAL_LOGIC_DISABLED", false);
   primFctlDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FCTL_DISABLED", false);
+  primFeDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FE_DISABLED", false);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
   facDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FAC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
@@ -203,6 +204,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : PRIM_DISABLED                        = " << primDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = " << primGeneralLogicDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
+  std::cout << "WASM: MODEL     : PRIM_FE_DISABLED                     = " << primFeDisabled << std::endl;
   std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
   std::cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
@@ -1539,7 +1541,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
   prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable,
                           simConnectInterface, primIndex == primDisabled && primGeneralLogicDisabled,
-                          primIndex == primDisabled && primFctlDisabled);
+                          primIndex == primDisabled && primFctlDisabled, primIndex == primDisabled && primFeDisabled);
 
   primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
   primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
@@ -1547,9 +1549,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
   idPrimApAuthorised[primIndex]->set(
-      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[primIndex].fe_status_word)->bitFromValueOr(11, true));
-  idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl_law_status_word));
-  idPrimFeStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe_status_word));
+      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[primIndex].fctl.fe_status_word)->bitFromValueOr(11, true));
+  idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fctl_law_status_word));
+  idPrimFeStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fe_status_word));
 
   return true;
 }
@@ -2161,7 +2163,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     for (int i = 0; i < 3; i++) {
       if (primsDiscreteOutputs[i].prim_healthy) {
         doDisconnect =
-            !reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[i].fe_status_word)->bitFromValueOr(11, true);  // AP authorised
+            !reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[i].fctl.fe_status_word)->bitFromValueOr(11, true);  // AP authorised
         break;
       }
     }

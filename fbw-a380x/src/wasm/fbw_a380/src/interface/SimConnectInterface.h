@@ -210,6 +210,7 @@ class SimConnectInterface {
                int primDisabled,
                bool primGeneralLogicDisabled,
                bool primFctlDisabled,
+               bool primFeDisabled,
                int secDisabled,
                int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
@@ -293,11 +294,15 @@ class SimConnectInterface {
   bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
   bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
+  bool setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output);
+  bool setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
   base_prim_analog_outputs& getClientDataPrimAnalogsOutput();
   base_prim_out_bus& getClientDataPrimBusOutput();
   base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
+  base_prim_flight_envelope_outputs& getClientDataPrimFlightEnvelopeOutput();
+  base_prim_fctl_logic_outputs& getClientDataPrimFctlLogicOutput();
 
   bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
   bool setClientDataSecAnalog(base_sec_analog_inputs& output);
@@ -352,6 +357,8 @@ class SimConnectInterface {
     PRIM_2_BUS_OUTPUT,
     PRIM_3_BUS_OUTPUT,
     PRIM_GENERAL_LOGIC_OUTPUT,
+    PRIM_FLIGHT_ENVELOPE_OUTPUT,
+    PRIM_FCTL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
     SEC_DISCRETE_OUTPUTS,
@@ -397,6 +404,7 @@ class SimConnectInterface {
   int primDisabled = -1;
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
+  bool primFeDisabled = false;
   int secDisabled = -1;
   int facDisabled = -1;
 
@@ -429,6 +437,8 @@ class SimConnectInterface {
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
   base_prim_out_bus clientDataPrimBusOutputs = {};
   base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
+  base_prim_flight_envelope_outputs clientDataPrimFlightEnvelopeOutput = {};
+  base_prim_fctl_logic_outputs clientDataPrimFctlLogicOutput = {};
 
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   base_sec_analog_outputs clientDataSecAnalogOutputs = {};
