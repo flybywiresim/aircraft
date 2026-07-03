@@ -70,7 +70,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private availableWaypointsToLegIndex: number[] = [];
   private readonly selectedLegIndex = Subject.create<number | null>(null);
-  private readonly selectedLegIsAlternate = Subject.create<boolean | null>(null);
+  private selectedLegIsAlternate: boolean | null = null;
   private readonly dropdownMenuSelectedWaypointIndex = this.selectedLegIndex.map((si) => {
     if (si === null) {
       return null;
@@ -231,12 +231,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.transitionLevel.set(pd?.transitionLevel.get() ?? null);
 
     // Do not update till a flightplan has been fully loaded.
-    const fpLoaded = this.selectedLegIsAlternate.get() !== null;
+    const fpLoaded = this.selectedLegIsAlternate !== null;
     if (!fpLoaded) {
       return;
     }
 
-    const plan = this.selectedLegIsAlternate.get() ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+    const plan = this.selectedLegIsAlternate ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
     const activeLegIndex = plan?.activeLegIndex;
     let indexToSelect: number | null = null;
     this.availableWaypointsToLegIndex = [];
@@ -287,11 +287,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private updateConstraints() {
-    if (!this.props.fmcService.master || this.selectedLegIsAlternate.get() === null) {
+    if (!this.props.fmcService.master || this.selectedLegIsAlternate === null) {
       return;
     }
 
-    const plan = this.selectedLegIsAlternate.get() ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+    const plan = this.selectedLegIsAlternate ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
     const selectedLegIdx = this.selectedLegIndex.get();
     const leg = selectedLegIdx !== null ? plan?.legElementAt(selectedLegIdx) : null;
     const previousElement = selectedLegIdx !== null ? plan?.maybeElementAt(selectedLegIdx - 1) : null;
@@ -342,7 +342,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       );
 
       const climbSpeedLimit = speedLimitType === SpeedLimitType.CLB;
-      const isAlternate = this.selectedLegIsAlternate.get();
+      const isAlternate = this.selectedLegIsAlternate;
 
       const speedLimitSpeed = climbSpeedLimit
         ? isAlternate
@@ -491,7 +491,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (
       this.loadedFlightPlan &&
       this.selectedPageIndex.get() === SelectedPage.STEP_ALTS &&
-      !this.selectedLegIsAlternate.get()
+      !this.selectedLegIsAlternate
     ) {
       const stepDisabledReason = this.checkStepAltsAccessPrerequisites();
       this.stepPageDisabledReason.set(stepDisabledReason ?? null);
@@ -661,7 +661,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.spdConstraintTypeRadioSelected.get() === 1,
           speed,
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       }
     }
@@ -674,7 +674,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.spdConstraintTypeRadioSelected.get() === 1,
         undefined,
         this.loadedFlightPlanIndex.get(),
-        this.selectedLegIsAlternate.get() ?? false,
+        this.selectedLegIsAlternate ?? false,
       );
     }
   }
@@ -713,7 +713,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.altConstraintTypeRadioSelected.get() === 1,
         { altitude1: alt, altitudeDescriptor: option },
         this.loadedFlightPlanIndex.get(),
-        this.selectedLegIsAlternate.get() ?? false,
+        this.selectedLegIsAlternate ?? false,
       );
     }
   }
@@ -725,7 +725,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.altConstraintTypeRadioSelected.get() === 1,
         undefined,
         this.loadedFlightPlanIndex.get(),
-        this.selectedLegIsAlternate.get() ?? false,
+        this.selectedLegIsAlternate ?? false,
       );
     }
   }
@@ -742,13 +742,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       } else {
         this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       }
     }
@@ -762,13 +762,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       } else {
         this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       }
     }
@@ -779,12 +779,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
         this.props.flightPlanInterface.deleteClimbSpeedLimit(
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       } else {
         this.props.flightPlanInterface.deleteDescentSpeedLimit(
           this.loadedFlightPlanIndex.get(),
-          this.selectedLegIsAlternate.get() ?? false,
+          this.selectedLegIsAlternate ?? false,
         );
       }
     }
@@ -953,7 +953,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.selectedPageIndex.set(SelectedPage.RTA);
         break;
       case 'spd':
-        this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+        this.selectedLegIsAlternate = this.props.fmcService.master.revisedLegIsAltn.get();
         this.initialLoadRevisedWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.SPD);
         break;
@@ -961,7 +961,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.selectedPageIndex.set(SelectedPage.CMS);
         break;
       case 'alt':
-        this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+        this.selectedLegIsAlternate = this.props.fmcService.master.revisedLegIsAltn.get();
         this.initialLoadRevisedWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.ALT);
         break;
@@ -1018,9 +1018,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.subs.push(
       this.selectedPageIndex.sub((val) => {
         if (val === SelectedPage.STEP_ALTS || val === SelectedPage.RTA || val === SelectedPage.CMS) {
-          this.selectedLegIsAlternate.set(false);
+          this.selectedLegIsAlternate = false;
         } else if (val === SelectedPage.SPD || val === SelectedPage.ALT) {
-          this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+          this.selectedLegIsAlternate = this.props.fmcService.master.revisedLegIsAltn.get();
         }
 
         if (val === SelectedPage.STEP_ALTS) {
