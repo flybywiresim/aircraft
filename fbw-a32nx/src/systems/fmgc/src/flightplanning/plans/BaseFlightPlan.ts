@@ -25,6 +25,7 @@ import {
   TurnDirection,
   WaypointConstraintType,
   WaypointDescriptor,
+  DepartureRunwayTransition,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import {
@@ -81,6 +82,7 @@ import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAi
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
+import { EngineOutDepartureSegment } from '../segments/EngineOutDepartureSegment';
 
 export interface FlightPlanContext {
   get syncClientID(): number;
@@ -619,6 +621,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   departureRunwayTransitionSegment = new DepartureRunwayTransitionSegment(this);
 
+  /** This is a special segment that is not actually included in the plan legs, but existing for drawing of the EOSID. */
+  public readonly engineOutDepartureSegment: EngineOutDepartureSegment = new EngineOutDepartureSegment(this);
+
   departureSegment = new DepartureSegment(this);
 
   departureEnrouteTransitionSegment = new DepartureEnrouteTransitionSegment(this);
@@ -750,6 +755,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     return this.cachedAllLegs;
+  }
+
+  /** @inheritdoc */
+  public getEngineOutDepartureLegs() {
+    return this.engineOutDepartureSegment.allLegs;
   }
 
   /**
@@ -914,7 +924,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get departureRunwayTransition(): ProcedureTransition {
+  get departureRunwayTransition(): DepartureRunwayTransition {
     return this.departureRunwayTransitionSegment.procedure;
   }
 

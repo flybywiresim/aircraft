@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "model/A380PrimComputer_types.h"
+#include "model/A380PrimComputerGeneralLogic_types.h"
 
 namespace Arinc429Utils {
 base_arinc_429 fromSimVar(double simVar);
