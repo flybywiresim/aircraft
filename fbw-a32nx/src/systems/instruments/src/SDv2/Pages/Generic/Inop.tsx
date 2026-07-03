@@ -1,3 +1,5 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { FSComponent } from '@microsoft/msfs-sdk';
 
 export const Inop = () => (

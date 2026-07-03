@@ -1,3 +1,5 @@
+//  Copyright (c) 2026 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 import { DisplayComponent, FSComponent, MappedSubject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 
 interface SvgGroupProps {

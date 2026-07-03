@@ -1,3 +1,5 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, EventBus, FSComponent, MappedSubject, MathUtils, VNode } from '@microsoft/msfs-sdk';
 
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { FSComponent, Subscribable } from '@microsoft/msfs-sdk';
 import { ComponentPositionProps } from '../../../common/ComponentPositionProps';

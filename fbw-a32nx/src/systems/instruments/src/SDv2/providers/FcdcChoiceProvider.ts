@@ -1,3 +1,5 @@
+//  Copyright (c) 2026 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { A32NXFcdcBusEvents } from '@shared/publishers/A32NXFcdcBusPublisher';

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, Subscription } from '@microsoft/msfs-sdk';
