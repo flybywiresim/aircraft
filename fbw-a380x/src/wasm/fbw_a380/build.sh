@@ -100,8 +100,6 @@ clang++ \
   "${DIR}/src/prim/Prim.cpp" \
   -I "${DIR}/src/sec" \
   "${DIR}/src/sec/Sec.cpp" \
-  -I "${DIR}/src/fac" \
-  "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/fcdc" \
@@ -121,8 +119,6 @@ clang++ \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
-  "${DIR}/src/model/A380FacComputer_data.cpp" \
-  "${DIR}/src/model/A380FacComputer.cpp" \
   "${DIR}/src/model/A380PrimComputerGeneralLogic_data.cpp" \
   "${DIR}/src/model/A380PrimComputerGeneralLogic.cpp" \
   "${DIR}/src/model/A380PrimComputerFctl_data.cpp" \

@@ -73,6 +73,9 @@ struct base_prim_fctl_out_bus
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 fe_status_word;
   base_arinc_429 fg_status_word;
+  base_arinc_429 v_alpha_lim_kn;
+  base_arinc_429 v_alpha_prot_kn;
+  base_arinc_429 v_alpha_stall_warn_kn;
 };
 
 #endif
@@ -85,17 +88,15 @@ struct base_prim_fe_out_bus
   base_arinc_429 gamma_a_deg;
   base_arinc_429 gamma_t_deg;
   base_arinc_429 sideslip_target_deg;
-  base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_ls_kn;
   base_arinc_429 v_stall_kn;
-  base_arinc_429 v_alpha_prot_kn;
-  base_arinc_429 v_stall_warn_kn;
   base_arinc_429 speed_trend_kn;
   base_arinc_429 v_3_kn;
   base_arinc_429 v_4_kn;
   base_arinc_429 v_man_kn;
   base_arinc_429 v_max_kn;
   base_arinc_429 v_fe_next_kn;
+  base_arinc_429 discrete_word_1;
 };
 
 #endif
@@ -133,19 +134,6 @@ struct base_elac_ir_computation_data
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -177,6 +165,19 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -429,6 +430,8 @@ struct base_prim_temporary_ap_input
   real_T lateral_mode_armed;
   real_T vertical_mode;
   real_T vertical_mode_armed;
+  real_T weight_lbs;
+  real_T cg_percent;
 };
 
 #endif
@@ -700,6 +703,9 @@ struct base_prim_fctl_logic_outputs
   boolean_T high_alpha_prot_active;
   real_T alpha_prot_deg;
   real_T alpha_max_deg;
+  real_T v_alpha_prot_kn;
+  real_T v_alpha_max_kn;
+  real_T v_alpha_stall_warn_kn;
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
@@ -798,6 +804,86 @@ enum class SignStatusMatrix
   NoComputedData,
   FunctionalTest,
   NormalOperation
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_yDWHCPeCVEhBdtz6xS9CGF_
+#define DEFINED_TYPEDEF_FOR_struct_yDWHCPeCVEhBdtz6xS9CGF_
+
+struct struct_yDWHCPeCVEhBdtz6xS9CGF
+{
+  base_prim_surface_status surface_statuses;
+  base_prim_lateral_surface_positions lateral_surface_positions;
+  base_prim_pitch_surface_positions pitch_surface_positions;
+  a380_lateral_efcs_law lateral_law_capability;
+  a380_lateral_efcs_law active_lateral_law;
+  a380_pitch_efcs_law pitch_law_capability;
+  a380_pitch_efcs_law active_pitch_law;
+  boolean_T abnormal_condition_law_active;
+  boolean_T is_master_prim;
+  boolean_T elevator_1_avail;
+  boolean_T elevator_1_engaged;
+  boolean_T elevator_2_avail;
+  boolean_T elevator_2_engaged;
+  boolean_T elevator_3_avail;
+  boolean_T elevator_3_engaged;
+  boolean_T ths_avail;
+  boolean_T ths_engaged;
+  boolean_T left_aileron_1_avail;
+  boolean_T left_aileron_1_engaged;
+  boolean_T left_aileron_2_avail;
+  boolean_T left_aileron_2_engaged;
+  boolean_T right_aileron_1_avail;
+  boolean_T right_aileron_1_engaged;
+  boolean_T right_aileron_2_avail;
+  boolean_T right_aileron_2_engaged;
+  boolean_T left_spoiler_hydraulic_mode_avail;
+  boolean_T left_spoiler_electric_mode_avail;
+  boolean_T left_spoiler_hydraulic_mode_engaged;
+  boolean_T left_spoiler_electric_mode_engaged;
+  boolean_T right_spoiler_hydraulic_mode_avail;
+  boolean_T right_spoiler_electric_mode_avail;
+  boolean_T right_spoiler_hydraulic_mode_engaged;
+  boolean_T right_spoiler_electric_mode_engaged;
+  boolean_T rudder_1_hydraulic_mode_avail;
+  boolean_T rudder_1_electric_mode_avail;
+  boolean_T rudder_1_hydraulic_mode_engaged;
+  boolean_T rudder_1_electric_mode_engaged;
+  boolean_T rudder_2_hydraulic_mode_avail;
+  boolean_T rudder_2_electric_mode_avail;
+  boolean_T rudder_2_hydraulic_mode_engaged;
+  boolean_T rudder_2_electric_mode_engaged;
+  boolean_T aileron_droop_active;
+  boolean_T aileron_antidroop_active;
+  boolean_T ths_automatic_mode_active;
+  real_T ths_manual_mode_c_deg_s;
+  boolean_T is_yellow_hydraulic_power_avail;
+  boolean_T is_green_hydraulic_power_avail;
+  boolean_T eha_ebha_elec_mode_inhibited;
+  boolean_T left_sidestick_disabled;
+  boolean_T right_sidestick_disabled;
+  boolean_T left_sidestick_priority_locked;
+  boolean_T right_sidestick_priority_locked;
+  real_T total_sidestick_pitch_command;
+  real_T total_sidestick_roll_command;
+  boolean_T speed_brake_inhibited;
+  real_T speed_brake_command_deg;
+  boolean_T ground_spoilers_armed;
+  boolean_T ground_spoilers_out;
+  boolean_T phased_lift_dumping_active;
+  boolean_T spoiler_lift_active;
+  boolean_T ap_authorised;
+  boolean_T protection_ap_disconnect;
+  boolean_T high_alpha_prot_active;
+  real_T alpha_prot_deg;
+  real_T alpha_max_deg;
+  boolean_T v_alpha_prot_kn;
+  real_T v_alpha_max_kn;
+  real_T v_alpha_stall_warn_kn;
+  boolean_T high_speed_prot_active;
+  real_T high_speed_prot_lo_thresh_kn;
+  real_T high_speed_prot_hi_thresh_kn;
 };
 
 #endif

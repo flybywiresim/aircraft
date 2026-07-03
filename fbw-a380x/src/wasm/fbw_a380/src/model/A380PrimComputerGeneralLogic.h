@@ -34,7 +34,7 @@ class A380PrimComputerGeneralLogic final
   };
 
   struct Parameters_A380PrimComputerGeneralLogic_T {
-    base_prim_fctl_logic_outputs prim_fctl_logic_output_MATLABStruct;
+    struct_yDWHCPeCVEhBdtz6xS9CGF prim_fctl_logic_output_MATLABStruct;
     base_prim_laws_outputs prim_laws_output_MATLABStruct;
     base_prim_analog_outputs prim_analog_output_MATLABStruct;
     base_prim_discrete_outputs prim_discrete_output_MATLABStruct;

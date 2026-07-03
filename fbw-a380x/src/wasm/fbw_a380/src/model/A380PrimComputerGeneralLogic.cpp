@@ -676,7 +676,148 @@ void A380PrimComputerGeneralLogic::step()
     A380PrimComputerGeneralLogic_Y.out.general_logic.flaps_locked = (rtb_y_d != 0U);
     A380PrimComputerGeneralLogic_Y.out.flight_envelope = A380PrimComputerGeneralLogic_P.Constant7_Value;
     A380PrimComputerGeneralLogic_Y.out.laws = A380PrimComputerGeneralLogic_P.prim_laws_output_MATLABStruct;
-    A380PrimComputerGeneralLogic_Y.out.fctl_logic = A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.surface_statuses =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.surface_statuses;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.lateral_surface_positions =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.lateral_surface_positions;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.pitch_surface_positions =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.pitch_surface_positions;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.lateral_law_capability =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.lateral_law_capability;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.active_lateral_law =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.active_lateral_law;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.pitch_law_capability =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.pitch_law_capability;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.active_pitch_law =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.active_pitch_law;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.abnormal_condition_law_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.abnormal_condition_law_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.is_master_prim =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.is_master_prim;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_1_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_1_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_1_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_1_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_2_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_2_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_2_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_2_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_3_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_3_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.elevator_3_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.elevator_3_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ths_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ths_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ths_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ths_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_aileron_1_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_aileron_1_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_aileron_1_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_aileron_1_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_aileron_2_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_aileron_2_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_aileron_2_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_aileron_2_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_aileron_1_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_aileron_1_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_aileron_1_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_aileron_1_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_aileron_2_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_aileron_2_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_aileron_2_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_aileron_2_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_spoiler_hydraulic_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_spoiler_hydraulic_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_spoiler_electric_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_spoiler_electric_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_spoiler_hydraulic_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_spoiler_hydraulic_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_spoiler_electric_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_spoiler_electric_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_spoiler_hydraulic_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_spoiler_hydraulic_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_spoiler_electric_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_spoiler_electric_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_spoiler_hydraulic_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_spoiler_hydraulic_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_spoiler_electric_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_spoiler_electric_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_1_hydraulic_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_1_hydraulic_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_1_electric_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_1_electric_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_1_hydraulic_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_1_hydraulic_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_1_electric_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_1_electric_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_2_hydraulic_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_2_hydraulic_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_2_electric_mode_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_2_electric_mode_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_2_hydraulic_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_2_hydraulic_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.rudder_2_electric_mode_engaged =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.rudder_2_electric_mode_engaged;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.aileron_droop_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.aileron_droop_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.aileron_antidroop_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.aileron_antidroop_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ths_automatic_mode_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ths_automatic_mode_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ths_manual_mode_c_deg_s =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ths_manual_mode_c_deg_s;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.is_yellow_hydraulic_power_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.is_yellow_hydraulic_power_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.is_green_hydraulic_power_avail =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.is_green_hydraulic_power_avail;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.eha_ebha_elec_mode_inhibited =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.eha_ebha_elec_mode_inhibited;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_sidestick_disabled =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_sidestick_disabled;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_sidestick_disabled =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_sidestick_disabled;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.left_sidestick_priority_locked =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.left_sidestick_priority_locked;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.right_sidestick_priority_locked =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.right_sidestick_priority_locked;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.total_sidestick_pitch_command =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.total_sidestick_pitch_command;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.total_sidestick_roll_command =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.total_sidestick_roll_command;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.speed_brake_inhibited =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.speed_brake_inhibited;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.speed_brake_command_deg =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.speed_brake_command_deg;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ground_spoilers_armed =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ground_spoilers_armed;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ground_spoilers_out =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ground_spoilers_out;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.phased_lift_dumping_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.phased_lift_dumping_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.spoiler_lift_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.spoiler_lift_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.ap_authorised =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.ap_authorised;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.protection_ap_disconnect =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.protection_ap_disconnect;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.high_alpha_prot_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.high_alpha_prot_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.alpha_prot_deg =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.alpha_prot_deg;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.alpha_max_deg =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.alpha_max_deg;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.v_alpha_prot_kn =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.v_alpha_prot_kn;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.v_alpha_max_kn =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.v_alpha_max_kn;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.v_alpha_stall_warn_kn =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.v_alpha_stall_warn_kn;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.high_speed_prot_active =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.high_speed_prot_active;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.high_speed_prot_lo_thresh_kn =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.high_speed_prot_lo_thresh_kn;
+    A380PrimComputerGeneralLogic_Y.out.fctl_logic.high_speed_prot_hi_thresh_kn =
+      A380PrimComputerGeneralLogic_P.prim_fctl_logic_output_MATLABStruct.high_speed_prot_hi_thresh_kn;
     A380PrimComputerGeneralLogic_Y.out.fg_logic = A380PrimComputerGeneralLogic_P.prim_fg_logic_output_MATLABStruct;
     A380PrimComputerGeneralLogic_Y.out.discrete_outputs =
       A380PrimComputerGeneralLogic_P.prim_discrete_output_MATLABStruct;

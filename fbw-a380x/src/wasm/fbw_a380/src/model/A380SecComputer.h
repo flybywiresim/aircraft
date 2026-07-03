@@ -417,6 +417,9 @@ class A380SecComputer final
     uint32_T SSM_cci;
     uint32_T SSM_ow;
     uint32_T SSM_bcj;
+    uint32_T SSM_i5;
+    uint32_T SSM_jww;
+    uint32_T SSM_kkj;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -775,6 +778,9 @@ class A380SecComputer final
     real32_T Data_a5;
     real32_T Data_hyo;
     real32_T Data_bjx;
+    real32_T Data_ci;
+    real32_T Data_h2;
+    real32_T Data_ce;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
     boolean_T is_unit_3;
