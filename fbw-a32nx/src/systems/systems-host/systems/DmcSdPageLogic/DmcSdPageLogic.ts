@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { A32NXFcdcBusEvents } from '../../../shared/src/publishers/A32NXFcdcBusPublisher';
 import {
   Arinc429LocalVarConsumerSubject,
@@ -9,6 +9,7 @@ import {
   NXLogicConfirmNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { SdPages } from '../../../shared/src/SdPages';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
@@ -22,7 +23,7 @@ enum SdMode {
 
 /** An A32NX ECAM Control Panel, excluding the DU brightness pots. */
 export class DmcSdPageLogic {
-  private readonly sub = this.bus.getSubscriber<A32NXFcdcBusEvents & A32NXEcpBusEvents & ClockEvents>();
+  private readonly sub = this.bus.getSubscriber<A32NXFcdcBusEvents & A32NXEcpBusEvents>();
 
   private readonly apuNWord = Arinc429Register.empty();
 
@@ -66,6 +67,10 @@ export class DmcSdPageLogic {
 
   private activePage = SdPages.NONE;
 
+  private activePageSimvar = RegisteredSimVar.create('L:A32NX_ECAM_SD_PAGE_TO_DISPLAY', 'Enum');
+
+  private selectedPageSimvar = RegisteredSimVar.create('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'Enum');
+
   private readonly subs: Subscription[] = [];
 
   constructor(private readonly bus: EventBus) {}
@@ -77,6 +82,7 @@ export class DmcSdPageLogic {
   }
 
   public updateFlightPhasePage(dt: number) {
+    // FIXME should come from relevant systems
     const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
     const sidestickPosX = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_X', 'Number');
@@ -220,7 +226,7 @@ export class DmcSdPageLogic {
       this.activePage = this.flightPhaseModePage;
     }
 
-    SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', this.selectedPage);
-    SimVar.SetSimVarValue('L:A32NX_ECAM_SD_PAGE_TO_DISPLAY', 'number', this.activePage);
+    this.selectedPageSimvar.set(this.selectedPage);
+    this.activePageSimvar.set(this.activePage);
   }
 }
