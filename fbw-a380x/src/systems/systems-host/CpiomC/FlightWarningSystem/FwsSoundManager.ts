@@ -41,7 +41,7 @@ export interface FwsAudioOutputSignals {
   keepMaxReverse: boolean;
 }
 
-const KEEP_MAX_REVERSE_OUTPUT_VAR = 'L:A32NX_AUDIO_ROP_KEEP_MAX_REVERSE';
+const KEEP_MAX_REVERSE_OUTPUT_VAR = 'A32NX_AUDIO_ROP_KEEP_MAX_REVERSE';
 
 export const FwsAuralsList: Record<string, FwsAural> = {
   continuousRepetitiveChime: {
