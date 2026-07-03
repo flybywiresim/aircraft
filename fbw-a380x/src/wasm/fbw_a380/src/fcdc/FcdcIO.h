@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../interface/SimConnectData.h"
-#include "../model/A380PrimComputer.h"
+#include "../model/A380PrimComputerGeneralLogic.h"
 #include "../model/AutopilotLaws.h"
 #include "../model/Autothrust.h"
 

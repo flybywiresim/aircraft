@@ -123,8 +123,10 @@ clang++ \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/A380FacComputer_data.cpp" \
   "${DIR}/src/model/A380FacComputer.cpp" \
-  "${DIR}/src/model/A380PrimComputer_data.cpp" \
-  "${DIR}/src/model/A380PrimComputer.cpp" \
+  "${DIR}/src/model/A380PrimComputerGeneralLogic_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerGeneralLogic.cpp" \
+  "${DIR}/src/model/A380PrimComputerFctl_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFctl.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
   "${DIR}/src/model/A380SecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
