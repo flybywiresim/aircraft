@@ -156,6 +156,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getTakeoffWeight(forPlan: FlightPlanIndex): number | null;
 
+  calculateTakeoffWeight(forPlan: FlightPlanIndex): void;
+
   /** in kilograms */
   getTripFuel(forPlan: FlightPlanIndex): number | null;
 

@@ -115,6 +115,9 @@ export interface ProcedureLeg {
    * The procedure design magvar for this leg in degrees, or null if it is a true north referenced leg.
    */
   magVar: number | null;
+
+  /** Whether the end of the leg is the engine-out branch point for the EOSID. */
+  isEngineOutBranch?: true;
 }
 
 export enum AltitudeDescriptor {

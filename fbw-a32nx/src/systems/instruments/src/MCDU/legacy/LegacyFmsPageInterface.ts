@@ -29,6 +29,7 @@ import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
 import { WindEntry } from '@fmgc/flightplanning/data/wind';
+import { Accessible } from '@microsoft/msfs-sdk';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -225,6 +226,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
+  clearEngineOutCondition(): void;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -282,6 +284,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   progDistance: number;
   progWaypointIdent: string | undefined;
   isTrueRefMode: boolean;
+  readonly isEngineOutCondition: Accessible<boolean>;
 }
 
 /** This breaks some circular refs, and tells us what we need a shim for to wrap legacy pages in future. */
