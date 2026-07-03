@@ -4,11 +4,13 @@
 #include "../Arinc429Utils.h"
 
 Prim::Prim(bool isUnit1, bool isUnit2, bool isUnit3) : isUnit1(isUnit1), isUnit2(isUnit2), isUnit3(isUnit3) {
-  primComputer.initialize();
+  primGeneralLogic.initialize();
+  primFctl.initialize();
 }
 
 Prim::Prim(const Prim& obj) : isUnit1(obj.isUnit1), isUnit2(obj.isUnit2), isUnit3(obj.isUnit3) {
-  primComputer.initialize();
+  primGeneralLogic.initialize();
+  primFctl.initialize();
 }
 
 void Prim::clearMemory() {}
@@ -22,7 +24,8 @@ void Prim::initSelfTests(bool viaPushButton) {
   if (powerSupplyFault)
     return;
 
-  if (modelInputs.in.discrete_inputs.green_low_pressure && modelInputs.in.discrete_inputs.yellow_low_pressure &&
+  if (primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.green_low_pressure &&
+      primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.yellow_low_pressure &&
       (powerSupplyOutageTime > 3 || viaPushButton)) {
     selfTestTimer = longSelfTestDuration;
   } else {
@@ -31,22 +34,55 @@ void Prim::initSelfTests(bool viaPushButton) {
 }
 
 // Main update cycle. Surface position through parameters here is temporary.
-void Prim::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered) {
+void Prim::update(double deltaTime,
+                  double simulationTime,
+                  bool faultActive,
+                  bool isPowered,
+                  SimConnectInterface& simConnectInterface,
+                  bool generalLogicDisabled,
+                  bool fctlDisabled) {
   monitorPowerSupply(deltaTime, isPowered);
   monitorButtonStatus();
 
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  primComputer.setExternalInputs(&modelInputs);
-  modelInputs.in.sim_data.computer_running = monitoringHealthy;
-  primComputer.step();
-  modelOutputs = primComputer.getExternalOutputs().out;
+  if (generalLogicDisabled || fctlDisabled) {
+    simConnectInterface.setClientDataPrimDiscretes(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs);
+    simConnectInterface.setClientDataPrimAnalog(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.analog_inputs);
+    simConnectInterface.setClientDataPrimTemporaryAp(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.temporary_ap_input);
+  }
+
+  primGeneralLogic.A380PrimComputerGeneralLogic_U.in.sim_data.computer_running = monitoringHealthy;
+
+  if (!generalLogicDisabled) {
+    primGeneralLogic.step();
+    primFctl.A380PrimComputerFctl_U.in = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
+  } else {
+    primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic = simConnectInterface.getClientDataPrimGeneralLogicOutput();
+  }
+
+  if (fctlDisabled) {
+    simConnectInterface.setClientDataPrimGeneralLogicOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic);
+  }
+
+  if (!fctlDisabled) {
+    primFctl.step();
+  } else {
+    primFctl.A380PrimComputerFctl_Y.out.discrete_outputs = simConnectInterface.getClientDataPrimDiscretesOutput();
+    primFctl.A380PrimComputerFctl_Y.out.analog_outputs = simConnectInterface.getClientDataPrimAnalogsOutput();
+    primFctl.A380PrimComputerFctl_Y.out.bus_outputs = simConnectInterface.getClientDataPrimBusOutput();
+  }
+}
+
+A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& Prim::externalInputs() {
+  return primGeneralLogic.A380PrimComputerGeneralLogic_U;
 }
 
 // Perform self monitoring
 void Prim::monitorSelf(bool faultActive) {
-  if (faultActive || powerSupplyFault || !selfTestComplete || !modelInputs.in.discrete_inputs.prim_overhead_button_pressed) {
+  if (faultActive || powerSupplyFault || !selfTestComplete ||
+      !primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.prim_overhead_button_pressed) {
     monitoringHealthy = false;
   } else {
     monitoringHealthy = true;
@@ -56,10 +92,10 @@ void Prim::monitorSelf(bool faultActive) {
 // Monitor the overhead button position. If the button was switched off, and is now on,
 // begin self-tests.
 void Prim::monitorButtonStatus() {
-  if (modelInputs.in.discrete_inputs.prim_overhead_button_pressed && !prevEngageButtonWasPressed) {
+  if (primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.prim_overhead_button_pressed && !prevEngageButtonWasPressed) {
     initSelfTests(true);
   }
-  prevEngageButtonWasPressed = modelInputs.in.discrete_inputs.prim_overhead_button_pressed;
+  prevEngageButtonWasPressed = primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.prim_overhead_button_pressed;
 }
 
 // Monitor the power supply and record the outage time (used for self test and healthy logic).
@@ -107,6 +143,7 @@ void Prim::updateSelfTest(double deltaTime) {
 // Write the bus output data and return it.
 base_prim_out_bus Prim::getBusOutputs() {
   base_prim_out_bus output = {};
+  const auto& modelOutputs = primFctl.A380PrimComputerFctl_Y.out;
 
   if (!monitoringHealthy) {
     output.left_inboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
@@ -175,6 +212,7 @@ base_prim_out_bus Prim::getBusOutputs() {
 // Write the discrete output data and return it.
 base_prim_discrete_outputs Prim::getDiscreteOutputs() {
   base_prim_discrete_outputs output = {};
+  const auto& modelOutputs = primFctl.A380PrimComputerFctl_Y.out;
 
   output.prim_healthy = (selfTestComplete && monitoringHealthy) || (!selfTestComplete && !selfTestFaultLightVisible);
   if (!monitoringHealthy) {
@@ -202,6 +240,7 @@ base_prim_discrete_outputs Prim::getDiscreteOutputs() {
 // Write the analog outputs and return it.
 base_prim_analog_outputs Prim::getAnalogOutputs() {
   base_prim_analog_outputs output = {};
+  const auto& modelOutputs = primFctl.A380PrimComputerFctl_Y.out;
 
   if (!monitoringHealthy) {
     output.elevator_1_pos_order_deg = 0;
