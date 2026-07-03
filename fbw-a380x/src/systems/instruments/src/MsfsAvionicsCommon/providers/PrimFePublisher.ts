@@ -35,10 +35,10 @@ export type PrimFeBusBaseEvents = {
 
 type IndexedTopics = keyof PrimFeBusBaseEvents;
 
-type FcdcIndexedEventType<T extends string> = `${T}_${1 | 2 | 3}`;
+type PrimFeIndexedEventType<T extends string> = `${T}_${1 | 2 | 3}`;
 
 type PrimFeBusIndexedEvents = {
-  [P in keyof Pick<PrimFeBusBaseEvents, IndexedTopics> as FcdcIndexedEventType<P>]: PrimFeBusBaseEvents[P];
+  [P in keyof Pick<PrimFeBusBaseEvents, IndexedTopics> as PrimFeIndexedEventType<P>]: PrimFeBusBaseEvents[P];
 };
 
 interface PrimFeBusPublisherEvents extends PrimFeBusBaseEvents, PrimFeBusIndexedEvents {}
