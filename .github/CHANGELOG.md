@@ -46,6 +46,8 @@
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
 1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
+1. [A380X/PRIM] Move FE to PRIM and add SPD LIM flag - @lukecologne (luke)
+1. [A380X/PRIM] Improve speed trend behaviour - @lukecologne (luke)
 
 ## 2024.1.0
 
