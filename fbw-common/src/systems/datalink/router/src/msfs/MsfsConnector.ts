@@ -30,6 +30,7 @@ export class MsfsConnector {
     } catch (e) {
       console.log('receiveMsfsTaf: Failed', e);
     }
+
     message.Reports.push({ airport: icao, report: report ?? 'NO TAF AVAILABLE' });
     return AtsuStatusCodes.Ok;
   }

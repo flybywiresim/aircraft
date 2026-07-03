@@ -211,16 +211,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
   std::unique_ptr<LocalVariable> idFmNavCaptureCondition;
 
-  std::unique_ptr<LocalVariable> idTcasFault;
-  std::unique_ptr<LocalVariable> idTcasMode;
-  std::unique_ptr<LocalVariable> idTcasTaOnly;
   std::unique_ptr<LocalVariable> idTcasState;
-  std::unique_ptr<LocalVariable> idTcasRaCorrective;
-  std::unique_ptr<LocalVariable> idTcasRaType;
-  std::unique_ptr<LocalVariable> idTcasRaRateToMaintain;
-  std::unique_ptr<LocalVariable> idTcasRaUpAdvStatus;
-  std::unique_ptr<LocalVariable> idTcasRaDownAdvStatus;
-  std::unique_ptr<LocalVariable> idTcasSensitivityLevel;
+  std::unique_ptr<LocalVariable> idTcasModeWord;
+  std::unique_ptr<LocalVariable> idTcasVerticalAdvisoryWord;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
