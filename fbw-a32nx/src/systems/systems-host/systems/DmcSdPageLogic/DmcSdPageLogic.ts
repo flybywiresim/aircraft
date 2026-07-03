@@ -1,7 +1,7 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { A32NXFcdcBusEvents } from '../../../shared/src/publishers/A32NXFcdcBusPublisher';
 import {
   Arinc429LocalVarConsumerSubject,
@@ -61,11 +61,11 @@ export class DmcSdPageLogic {
 
   private readonly sdManualSelectionPulseNode = new NXLogicPulseNode(true);
 
-  private selectedPage = SdPages.NONE;
+  private selectedPage = Subject.create(SdPages.NONE);
 
   private sdMode = SdMode.FlightPhase;
 
-  private activePage = SdPages.NONE;
+  private activePage = Subject.create(SdPages.NONE);
 
   private activePageSimvar = RegisteredSimVar.create('L:A32NX_ECAM_SD_PAGE_TO_DISPLAY', 'Enum');
 
@@ -79,6 +79,14 @@ export class DmcSdPageLogic {
     for (const sub of this.subs) {
       sub.resume(true);
     }
+
+    this.activePage.sub((value) => {
+      this.activePageSimvar.set(value);
+    });
+
+    this.selectedPage.sub((value) => {
+      this.selectedPageSimvar.set(value);
+    });
   }
 
   public updateFlightPhasePage(dt: number) {
@@ -194,23 +202,25 @@ export class DmcSdPageLogic {
     this.stsPageNormalMtrig.write(systemPageButtonPressed === SdPages.STS, dt);
     this.stsPageNormalPulse.write(this.stsPageNormalMtrig.read());
 
-    if (this.sdManualSelectionPulseNode.read() && this.selectedPage !== systemPageButtonPressed) {
-      this.selectedPage = systemPageButtonPressed;
+    if (this.sdManualSelectionPulseNode.read() && this.selectedPage.get() !== systemPageButtonPressed) {
+      this.selectedPage.set(systemPageButtonPressed);
       this.sdMode = SdMode.Manual;
     } else if (this.allPagePulse.read()) {
-      this.selectedPage = this.selectedPage === SdPages.NONE ? SdPages.ENG : (this.selectedPage + 1) % 11;
+      this.selectedPage.set(
+        this.selectedPage.get() === SdPages.NONE ? SdPages.ENG : (this.selectedPage.get() + 1) % 11,
+      );
       this.sdMode = SdMode.Manual;
     } else if (this.sdWarningOverridePulseNode.read() && fwcSdPageRequest !== SdPages.NONE) {
-      this.selectedPage = fwcSdPageRequest;
+      this.selectedPage.set(fwcSdPageRequest);
       this.sdMode = SdMode.Warning;
     } else if (
       (this.sdWarningOverridePulseNode.read() && fwcSdPageRequest === SdPages.NONE && this.sdMode === SdMode.Warning) ||
       (this.sdManualSelectionPulseNode.read() &&
         this.sdMode === SdMode.Manual &&
-        this.selectedPage === systemPageButtonPressed) ||
-      (this.stsPageNormalPulse.read() && this.selectedPage === SdPages.STS)
+        this.selectedPage.get() === systemPageButtonPressed) ||
+      (this.stsPageNormalPulse.read() && this.selectedPage.get() === SdPages.STS)
     ) {
-      this.selectedPage = SdPages.NONE;
+      this.selectedPage.set(SdPages.NONE);
       this.sdMode = SdMode.FlightPhase;
     }
     this.prevFwcRequestedSdPage = fwcSdPageRequest;
@@ -221,12 +231,9 @@ export class DmcSdPageLogic {
     this.updateSdSelection(dt);
 
     if (this.sdMode === SdMode.Manual || this.sdMode === SdMode.Warning) {
-      this.activePage = this.selectedPage;
+      this.activePage.set(this.selectedPage.get());
     } else {
-      this.activePage = this.flightPhaseModePage;
+      this.activePage.set(this.flightPhaseModePage);
     }
-
-    this.selectedPageSimvar.set(this.selectedPage);
-    this.activePageSimvar.set(this.activePage);
   }
 }
