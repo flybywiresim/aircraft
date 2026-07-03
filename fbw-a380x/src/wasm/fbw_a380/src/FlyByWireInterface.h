@@ -55,6 +55,8 @@ class FlyByWireInterface {
   bool autopilotLawsEnabled = false;
   bool flyByWireEnabled = false;
   int primDisabled = -1;
+  bool primGeneralLogicDisabled = false;
+  bool primFctlDisabled = false;
   int secDisabled = -1;
   int facDisabled = -1;
   bool autoThrustEnabled = false;
