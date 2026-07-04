@@ -81,6 +81,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
     newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan, options);
+    (newPlan.engineOutDepartureSegment as any) = this.engineOutDepartureSegment.clone(newPlan, options);
     newPlan.departureSegment = this.departureSegment.clone(newPlan, options);
     newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan, options);
     newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan, options);
@@ -369,6 +370,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     await super.newDest(index, airportIdent);
 
     await this.deleteAlternateFlightPlan();
+  }
+
+  override async setApproach(databaseId: string | undefined) {
+    const currentApproachDatabaseId = this.approachSegment.procedure?.databaseId;
+    await super.setApproach(databaseId);
+    if (currentApproachDatabaseId !== databaseId) {
+      this.setPerformanceData('approachBaroMinimum', null);
+      this.setPerformanceData('approachRadioMinimum', null);
+    }
   }
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {

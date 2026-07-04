@@ -1345,7 +1345,7 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 
 bool FlyByWireInterface::updateTcas() {
   tcasBusOutputs.sensitivity_level = Arinc429Utils::fromSimVar(idTcasModeWord->get());
-  tcasBusOutputs.vertical_resolution_advisory =Arinc429Utils::fromSimVar(idTcasVerticalAdvisoryWord->get());
+  tcasBusOutputs.vertical_resolution_advisory = Arinc429Utils::fromSimVar(idTcasVerticalAdvisoryWord->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataTcas(tcasBusOutputs);
@@ -2023,13 +2023,39 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   }
 
   int athrMode = 0;
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 11, false)) {
+    athrMode = 1;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 13, false)) {
+    athrMode = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && !atActive) {
+    athrMode = 5;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && !atActive) {
+    athrMode = 6;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 19, false)) {
+    athrMode = 7;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 20, false)) {
+    athrMode = 8;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && atActive) {
+    athrMode = 9;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 14, false)) {
+    athrMode = 10;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && atActive) {
+    athrMode = 11;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 16, false)) {
+    athrMode = 12;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
     athrMode = 13;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 18, false)) {
+    athrMode = 14;
   }
 
   int athrModeMessage = 0;
   if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 22, false)) {
     athrModeMessage = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 23, false)) {
+    athrModeMessage = 4;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 21, false)) {
+    athrModeMessage = 5;
   }
 
   // Autoland warning
