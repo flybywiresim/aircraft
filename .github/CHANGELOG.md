@@ -17,6 +17,7 @@
 1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
 1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
+1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
 
 ## 2020.15.0
 
