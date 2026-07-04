@@ -6,11 +6,22 @@
 
     <InputEvent ID="A32NX_OVH_LIGHTS">
         <Presets>
-            <Extend Target="ASOBO_GIE_Anim_Handling">
-                <Parameters Type="Default">
-                    <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
-                </Parameters>
-            </Extend>
+            <Condition NotEmpty="EXTEND_TARGET">
+                <True>
+                    <Extend Target="#EXTEND_TARGET#">
+                        <Parameters Type="Default">
+                            <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
+                        </Parameters>
+                    </Extend>
+                </True>
+                <False>
+                    <Extend Target="ASOBO_GIE_Anim_Handling">
+                        <Parameters Type="Default">
+                            <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
+                        </Parameters>
+                    </Extend>
+                </False>
+            </Condition>
         </Presets>
     </InputEvent>
 </ModelBehaviors>
