@@ -41,6 +41,7 @@ import {
   NXLogicTriggeredMonostableNode,
   RegisteredSimVar,
   UpdateThrottler,
+  IrBusEvents,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode, AutoThrustModeMessage } from '@shared/autopilot';
 import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
@@ -145,7 +146,8 @@ export class FwsCore {
       MfdSurvEvents &
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
-      StallWarningEvents
+      StallWarningEvents &
+      IrBusEvents
   >();
 
   private subs: Subscription[] = [];
@@ -1576,12 +1578,9 @@ export class FwsCore {
 
   public readonly gearLeverPos = Subject.create(false);
 
-  private readonly ir1GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_1_GROUND_SPEED`, SimVarValueType.Enum);
-  private readonly ir1GroundSpeed = Arinc429Register.empty();
-  private readonly ir2GroundSpeed = Arinc429Register.empty();
-  private readonly ir2GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_2_GROUND_SPEED`, SimVarValueType.Enum);
-  private readonly ir3GroundSpeed = Arinc429Register.empty();
-  private readonly ir3GroundSpeedVar = RegisteredSimVar.create(`L:A32NX_ADIRS_IR_3_GROUND_SPEED`, SimVarValueType.Enum);
+  private readonly ir1GroundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_1'));
+  private readonly ir2GroundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_2'));
+  private readonly ir3GroundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_3'));
 
   private readonly autobrakeActiveVar = RegisteredSimVar.createBoolean('L:A32NX_AUTOBRAKES_ACTIVE');
 
@@ -3349,9 +3348,6 @@ export class FwsCore {
     /* ADIRS acquisition */
     /* NAVIGATION */
 
-    this.ir1GroundSpeed.set(this.ir1GroundSpeedVar.get());
-    this.ir2GroundSpeed.set(this.ir2GroundSpeedVar.get());
-    this.ir3GroundSpeed.set(this.ir3GroundSpeedVar.get());
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
     const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
@@ -3751,8 +3747,12 @@ export class FwsCore {
     );
 
     //FIXME: We should recieve the ground speed from the CDS.
-    const groundSpeedLeft = this.ir3UsedLeft ? this.ir3GroundSpeed.valueOr(0) : this.ir1GroundSpeed.valueOr(0);
-    const groundSpeedRight = this.ir3UsedRight ? this.ir3GroundSpeed.valueOr(0) : this.ir2GroundSpeed.valueOr(0);
+    const groundSpeedLeft = this.ir3UsedLeft
+      ? this.ir3GroundSpeed.get().valueOr(0)
+      : this.ir1GroundSpeed.get().valueOr(0);
+    const groundSpeedRight = this.ir3UsedRight
+      ? this.ir3GroundSpeed.get().valueOr(0)
+      : this.ir2GroundSpeed.get().valueOr(0);
     const autoBrakeOffShouldTrigger =
       abOffPulse && (flightPhase === 10 || flightPhase === 11) && (groundSpeedLeft > 33 || groundSpeedRight > 33);
     this.autoBrakeOffMemoAndAudio.set(
