@@ -74,7 +74,7 @@ export class VnavDriver implements GuidanceComponent {
   private prevMcduPredReadyToDisplay = false;
 
   /** In knots */
-  private readonly descentManagedSpeedTarget = Subject.create<number | null>(null);
+  private readonly vnavManagedSpeed = Subject.create<number | null>(null);
 
   constructor(
     private readonly bus: EventBus,
@@ -116,8 +116,8 @@ export class VnavDriver implements GuidanceComponent {
       this.aircraftToDescentProfileRelation,
       this.acConfig,
     );
-    this.descentManagedSpeedTarget.sub((v) => {
-      this.bus.getPublisher<VnavEvents>().pub('managed_speed_target', v);
+    this.vnavManagedSpeed.sub((v) => {
+      this.bus.getPublisher<VnavEvents>().pub('fms_vnav_managed_speed', v);
     });
   }
 
@@ -292,7 +292,7 @@ export class VnavDriver implements GuidanceComponent {
 
     // Speed guidance for holds is handled elsewhere for now, so we don't want to interfere here
     if (flightPhase !== FmgcFlightPhase.Descent || fcuExpediteModeActive || isHoldActive) {
-      this.descentManagedSpeedTarget.set(null);
+      this.vnavManagedSpeed.set(null);
       return;
     }
 
@@ -340,7 +340,7 @@ export class VnavDriver implements GuidanceComponent {
     const vLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
     const vMan = this.getVman(approachSpeed);
     const econMachAsCas = this.atmosphericConditions.computeCasFromMach(presentPosition.alt, managedDescentSpeedMach);
-    this.descentManagedSpeedTarget.set(Math.max(vLs, vMan, Math.min(newSpeedTarget, econMachAsCas)));
+    this.vnavManagedSpeed.set(Math.max(vLs, vMan, Math.min(newSpeedTarget, econMachAsCas)));
   }
 
   // TODO: This appears too many times in different places. Centralize
