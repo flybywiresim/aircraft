@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { FSComponent, LifecycleComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, MappedSubject, Subject, VNode, Subscription } from '@microsoft/msfs-sdk';
 
 import { Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars, FwcDataEvents, TawsDataEvents } from '../MsfsAvionicsCommon/providers';
@@ -10,7 +10,9 @@ interface AttitudeIndicatorWarningsProps {
   instrument: BaseInstrument;
 }
 
-export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndicatorWarningsProps> {
+export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicatorWarningsProps> {
+  private readonly subs: Subscription[] = [];
+
   //FIXME: Allow split logic per aircraft.
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
   private readonly maxBrakingRequested = Subject.create(false);
@@ -50,7 +52,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
     this.ifWetRwyTooShortActive,
     this.rwyTooShortActive,
     this.stallActive,
-  ).withLifecycle(this.defaultLifecycle);
+  );
 
   private readonly maxBrakingActive = MappedSubject.create(
     ([maxBraking, wetTooShort, tooShort, stall, stopRudder]) =>
@@ -60,45 +62,118 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
     this.rwyTooShortActive,
     this.stallActive,
     this.stopRudderInputActive,
-  ).withLifecycle(this.defaultLifecycle);
+  );
+
+  private readonly brakeMaxBrakingDisplay = this.maxBrakingActive.map((it) => (it ? 'block' : 'none'));
+
+  private readonly maxReverseDisplay = this.maxReverseActive.map((it) => (it ? 'block' : 'none'));
+
+  private readonly ifWetRwyTooShortDisplay = MappedSubject.create(
+    ([ifWetTooShort, tooShort, stall]) => ifWetTooShort && !tooShort && !stall,
+    this.ifWetRwyTooShortActive,
+    this.rwyTooShortActive,
+    this.stallActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly rwyTooShortDisplay = MappedSubject.create(
+    ([tooShort, stall]) => tooShort && !stall,
+    this.rwyTooShortActive,
+    this.stallActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly stallDisplay = this.stallActive.map((it) => (it ? 'block' : 'none'));
+
+  private readonly stopRudderInputDisplay = MappedSubject.create(
+    ([stopRudder, wetTooShort, tooShort, stall]) => stopRudder && !wetTooShort && !tooShort && !stall,
+    this.stopRudderInputActive,
+    this.ifWetRwyTooShortActive,
+    this.rwyTooShortActive,
+    this.stallActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly wsAheadCautionDisplay = MappedSubject.create(
+    ([wsCaution, wsWarning, maxReverse, maxBraking, windshear, stall]) =>
+      wsCaution && !wsWarning && !maxReverse && !maxBraking && !windshear && !stall,
+    this.wsAheadCaution,
+    this.wsAheadWarning,
+    this.maxReverseActive,
+    this.maxBrakingActive,
+    this.windshearActive,
+    this.stallActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly wsAheadWarningDisplay = MappedSubject.create(
+    ([wsAheadWarning, maxReverse, maxBraking, windshear, stall]) =>
+      wsAheadWarning && !maxReverse && !maxBraking && !windshear && !stall,
+    this.wsAheadWarning,
+    this.maxReverseActive,
+    this.maxBrakingActive,
+    this.windshearActive,
+    this.stallActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly windshearDisplay = MappedSubject.create(
+    ([windshear, maxReverse, maxBraking]) => windshear && !maxReverse && !maxBraking,
+    this.windshearActive,
+    this.maxReverseActive,
+    this.maxBrakingActive,
+  ).map((it) => (it ? 'block' : 'none'));
+
+  private readonly runwayAheadDisplay = this.rwyAheadActive.map((it) => (it ? 'block' : 'none'));
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<FwcDataEvents & RopRowOansSimVars & TawsDataEvents>();
 
-    sub
-      .on('rowRopWord1Raw')
-      .whenChanged()
-      .handle((raw) => {
-        this.rowRopWord1.setWord(raw);
-        const rowRopWord1 = this.rowRopWord1.get();
-        this.maxBrakingRequested.set(rowRopWord1.bitValueOr(11, false));
-        this.ifWetRwyTooShortActive.set(rowRopWord1.bitValueOr(14, false));
-        this.rwyTooShortActive.set(rowRopWord1.bitValueOr(15, false));
-      });
+    this.subs.push(
+      sub
+        .on('rowRopWord1Raw')
+        .whenChanged()
+        .handle((raw) => {
+          this.rowRopWord1.setWord(raw);
+          const rowRopWord1 = this.rowRopWord1.get();
+          this.maxBrakingRequested.set(rowRopWord1.bitValueOr(11, false));
+          this.ifWetRwyTooShortActive.set(rowRopWord1.bitValueOr(14, false));
+          this.rwyTooShortActive.set(rowRopWord1.bitValueOr(15, false));
+        }),
+      sub
+        .on('oansWord1Raw')
+        .whenChanged()
+        .handle((raw) => {
+          this.oansWord1.setWord(raw);
+          this.rwyAheadActive.set(this.oansWord1.get().bitValueOr(11, false));
+        }),
 
-    sub
-      .on('oansWord1Raw')
-      .whenChanged()
-      .handle((raw) => {
-        this.oansWord1.setWord(raw);
-        this.rwyAheadActive.set(this.oansWord1.get().bitValueOr(11, false));
-      });
+      sub
+        .on('fwc_discrete_word_126_1')
+        .whenChanged()
+        .handle((v) => {
+          this.fwcWord126.setWord(v);
+        }),
 
-    sub
-      .on('fwc_discrete_word_126_1')
-      .whenChanged()
-      .handle((v) => {
-        this.fwcWord126.setWord(v);
-      });
+      sub
+        .on('egpws_alert_discrete_word_2_1')
+        .whenChanged()
+        .handle((v) => {
+          this.gpwsWord2.setWord(v);
+        }),
+      this.brakeMaxBrakingDisplay,
+      this.maxReverseDisplay,
+      this.ifWetRwyTooShortDisplay,
+      this.rwyTooShortDisplay,
+      this.stallDisplay,
+      this.stopRudderInputDisplay,
+      this.wsAheadCautionDisplay,
+      this.wsAheadWarningDisplay,
+      this.windshearDisplay,
+      this.runwayAheadDisplay,
+    );
+  }
 
-    sub
-      .on('egpws_alert_discrete_word_2_1')
-      .whenChanged()
-      .handle((v) => {
-        this.gpwsWord2.setWord(v);
-      });
+  destroy(): void {
+    this.subs.forEach((sub) => sub.destroy());
+    super.destroy();
   }
 
   render(): VNode {
@@ -109,7 +184,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="78"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: this.maxReverseActive.map((it) => (it ? 'block' : 'none')).withLifecycle(this.defaultLifecycle),
+            display: this.maxReverseDisplay,
           }}
         >
           MAX REVERSE
@@ -119,7 +194,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="70.25"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: this.maxBrakingActive.map((it) => (it ? 'block' : 'none')).withLifecycle(this.defaultLifecycle),
+            display: this.brakeMaxBrakingDisplay,
           }}
         >
           MAX BRAKING
@@ -129,14 +204,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="70.25"
           class="FontMediumSmaller Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([ifWetTooShort, tooShort, stall]) => ifWetTooShort && !tooShort && !stall,
-              this.ifWetRwyTooShortActive,
-              this.rwyTooShortActive,
-              this.stallActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.ifWetRwyTooShortDisplay,
           }}
         >
           IF WET:RWY TOO SHORT
@@ -146,13 +214,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="70.25"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([rwyTooShort, stall]) => rwyTooShort && !stall,
-              this.rwyTooShortActive,
-              this.stallActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.rwyTooShortDisplay,
           }}
         >
           RWY TOO SHORT
@@ -162,7 +224,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="78"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: this.stallActive.map((it) => (it ? 'block' : 'none')).withLifecycle(this.defaultLifecycle),
+            display: this.stallDisplay,
           }}
         >
           STALL
@@ -174,15 +236,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="70.25"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([stopRudder, wetTooShort, tooShort, stall]) => stopRudder && !wetTooShort && !tooShort && !stall,
-              this.stopRudderInputActive,
-              this.ifWetRwyTooShortActive,
-              this.rwyTooShortActive,
-              this.stallActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.stopRudderInputDisplay,
           }}
         >
           STOP RUDDER INPUT
@@ -192,14 +246,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="78"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([windshear, maxReverse, maxBraking]) => windshear && !maxReverse && !maxBraking,
-              this.windshearActive,
-              this.maxReverseActive,
-              this.maxBrakingActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.windshearDisplay,
           }}
         >
           WINDSHEAR
@@ -209,18 +256,7 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="78"
           class="FontLarge Amber MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([wsCaution, wsWarning, maxReverse, maxBraking, windshear, stall]) =>
-                wsCaution && !wsWarning && !maxReverse && !maxBraking && !windshear && !stall,
-              this.wsAheadCaution,
-              this.wsAheadWarning,
-              this.maxReverseActive,
-              this.maxBrakingActive,
-              this.windshearActive,
-              this.stallActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.wsAheadCautionDisplay,
           }}
         >
           W/S AHEAD
@@ -230,24 +266,14 @@ export class AttitudeIndicatorWarnings extends LifecycleComponent<AttitudeIndica
           y="78"
           class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
           style={{
-            display: MappedSubject.create(
-              ([wsAheadWarning, maxReverse, maxBraking, windshear, stall]) =>
-                wsAheadWarning && !maxReverse && !maxBraking && !windshear && !stall,
-              this.wsAheadWarning,
-              this.maxReverseActive,
-              this.maxBrakingActive,
-              this.windshearActive,
-              this.stallActive,
-            )
-              .map((it) => (it ? 'block' : 'none'))
-              .withLifecycle(this.defaultLifecycle),
+            display: this.wsAheadWarningDisplay,
           }}
         >
           W/S AHEAD
         </text>
         <g
           style={{
-            display: this.rwyAheadActive.map((it) => (it ? 'block' : 'none')).withLifecycle(this.defaultLifecycle),
+            display: this.runwayAheadDisplay,
           }}
         >
           <rect x="50" y="69" width="38" height="8" stroke="yellow" fill="black" />
