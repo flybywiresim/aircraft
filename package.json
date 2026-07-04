@@ -1,7 +1,7 @@
 {
   "name": "a32nx",
   "version": "2020.15.0",
-  "edition": "development",
+  "edition": "stable",
   "imports": {
     "#build-utils": "./build-utils.js"
   },
