@@ -26,7 +26,7 @@
                 <INC_CODE>(B:#IE_TO_USE#) 1 + (&gt;B:#IE_TO_USE#_Set)</INC_CODE>
                 <DEC_CODE>(B:#IE_TO_USE#) 1 - (&gt;B:#IE_TO_USE#_Set)</DEC_CODE>
                 <SET_CODE>
-                    p0 0 2 (F:Clamp) (&gt;L:A32NX_LIGHTS_NAV_LOGO)
+                    p0 0 max 2 min (&gt;L:A32NX_LIGHTS_NAV_LOGO)
                 </SET_CODE>
                 <INIT_CODE>
                     (L:A32NX_LIGHTS_NAV_LOGO) 0 == if{
