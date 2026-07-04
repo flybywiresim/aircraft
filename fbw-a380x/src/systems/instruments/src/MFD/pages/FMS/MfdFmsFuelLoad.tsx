@@ -367,7 +367,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.blockFuel.set(null);
     }
     const pdTaxiFuel = pd?.taxiFuel.get();
-    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null) {
+    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null && !this.taxiAndRouteRsvDisabled.get()) {
       this.taxiFuel.set(pdTaxiFuel * 1000);
     } else {
       this.taxiFuel.set(null);
