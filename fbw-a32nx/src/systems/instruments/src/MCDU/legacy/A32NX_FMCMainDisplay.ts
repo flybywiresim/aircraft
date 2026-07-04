@@ -102,6 +102,7 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
+import { VnavEvents } from '@fmgc/events/VnavEvents';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -356,6 +357,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly ettCheckSub = this.sub.on('simTime').onlyAfter(1000).handle(this.checkEttExpired.bind(this), true);
 
   private static readonly MILISECONDS_IN_DAY = 86400000;
+
+  private readonly vnavDescentManagedSpeedTarget = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('managed_speed_target'),
+    null,
+  );
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -1269,7 +1275,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
+          vPfd = this.vnavDescentManagedSpeedTarget.get() ?? 0;
           this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots');
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
