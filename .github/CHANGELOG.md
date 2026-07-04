@@ -17,6 +17,7 @@
 1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
 1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
+1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 
 ## 2020.15.0
 
