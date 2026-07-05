@@ -45,6 +45,8 @@
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
+1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
+1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 
 ## 2024.1.0
 
