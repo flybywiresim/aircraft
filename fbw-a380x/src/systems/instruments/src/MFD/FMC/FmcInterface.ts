@@ -156,6 +156,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getTakeoffWeight(forPlan: FlightPlanIndex): number | null;
 
+  calculateTakeoffWeight(forPlan: FlightPlanIndex): void;
+
   /** in kilograms */
   getTripFuel(forPlan: FlightPlanIndex): number | null;
 
@@ -307,6 +309,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
+
+  engineOutActive(): boolean;
 
   /**
    * Indicates whether the true heading reference has been manually selected by the pilot.

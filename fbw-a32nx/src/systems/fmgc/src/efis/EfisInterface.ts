@@ -1,10 +1,13 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { EngineOutEvents } from '../events/EngineOutEvents';
+import { FlightPlanFlags } from '../flightplanning/plans/FlightPlanFlags';
 
 type PlanCentre = {
   fpIndex: number;
@@ -23,7 +26,13 @@ export class EfisInterface {
 
   static readonly A32NX_NUM_LEGS_ON_FPLN_PAGE = 5;
 
+  private readonly isEngineOutActive = ConsumerValue.create(
+    this.bus.getSubscriber<EngineOutEvents>().on('fms_engine_out_active'),
+    false,
+  );
+
   constructor(
+    private readonly bus: EventBus,
     private readonly side: EfisSide,
     private readonly flightPlanService: FlightPlanService,
     private numLegOnFplnPage = EfisInterface.A32NX_NUM_LEGS_ON_FPLN_PAGE,
@@ -109,6 +118,28 @@ export class EfisInterface {
       this.planCentre.index <= plan.legCount &&
       this.planCentre.index >= plan.firstMissedApproachLegIndex
     );
+  }
+
+  public shouldTransmitEosid(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
+    if (planIndex !== FlightPlanIndex.Active || !this.flightPlanService.has(planIndex)) {
+      return false;
+    }
+
+    const plan = this.flightPlanService.get(planIndex);
+
+    if (!plan.isDepartureProcedureActive) {
+      return false;
+    }
+
+    if (this.isEngineOutActive.get()) {
+      return (
+        (plan.flags & FlightPlanFlags.EngineOutSid) === 0 &&
+        (!this.flightPlanService.hasTemporary ||
+          (this.flightPlanService.temporary.flags & FlightPlanFlags.EngineOutSid) === 0)
+      );
+    } else {
+      return isPlanMode;
+    }
   }
 
   shouldTransmitAlternate(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {

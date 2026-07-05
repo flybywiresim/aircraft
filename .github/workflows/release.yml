@@ -164,8 +164,8 @@ jobs:
               "body": "This pre-release has its asset updated on every release\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest stable build: https://github.com/${{ github.repository }}/releases/download/${{ env.PRE_RELEASE_TAG }}/${{ env.STANDALONE_ZIP_NAME }}"
             }'
 
-  build_a380x_8k:
-    name: Build and deploy A380X (8K)
+  build_a380x:
+    name: Build and deploy A380X
     # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
@@ -178,7 +178,7 @@ jobs:
       PRE_RELEASE_ID: 313832879
       BUILD_DIR_NAME: stable-a380x
       AIRCRAFT_PROJECT_PREFIX: a380x
-      STANDALONE_ZIP_NAME: A380X-stable-8K.7z
+      STANDALONE_ZIP_NAME: A380X-stable.7z
       AIRCRAFT_VARIANT: a380-842
     steps:
       - name: Maximize build space
@@ -233,9 +233,6 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           sudo apt-get install -y rclone
-      - name: Remove A380X 4K textures
-        run: |
-          rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
@@ -272,154 +269,7 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/msfs2024/a380x/stable-8k
-        run: |
-          ./scripts/cf-cdn.sh ./fbw-a380x/out/build-modules $CDN_BUCKET_DESTINATION
-      - name: Build Standalone Download files
-        run: |
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a380x/out/
-          rm -rf build-modules
-          7z a -t7z -m0=lzma2 -mx=7 -v2047m ../../${{ env.BUILD_DIR_NAME }}/${{ env.STANDALONE_ZIP_NAME }} ./flybywire-aircraft-a380-842/
-          cd ../../
-          df -h
-      - name: Upload release assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          release_id: ${{ needs.create_github_release.outputs.id }}
-          assets_path: ./${{ env.BUILD_DIR_NAME }}/
-      - name: Count Standalone Download files
-        run: |
-          if [ "$(ls -1 ./${{ env.BUILD_DIR_NAME }} | wc -l)" -eq 3 ]; then
-            echo "Standalone Download is split in 3 parts"
-          else
-            ls -1 ./${{ env.BUILD_DIR_NAME }}| wc -l
-            echo "Error: The number of standalone download parts is not 3. Adjust all download references and workflows for the new number of parts!" >&2
-            exit 1
-          fi
-      - name: Delete old GitHub pre-release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          token: ${{ github.token }}
-          tag: ${{ env.PRE_RELEASE_TAG }}
-          assets: "*A380X-stable-8K*"
-          fail-if-no-assets: false
-      - name: Upload pre-release assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          release_id: ${{ env.PRE_RELEASE_ID }}
-          assets_path: ./${{ env.BUILD_DIR_NAME }}/
-
-  build_a380x_4k:
-    name: Build and deploy A380X (4K)
-    # Prevent running this on forks
-    if: github.repository_owner == 'flybywiresim'
-    needs: create_github_release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      FBW_PRODUCTION_BUILD: 1
-      PRE_RELEASE_TAG: assets/msfs2024/stable
-      PRE_RELEASE_ID: 313832879
-      BUILD_DIR_NAME: stable-a380x
-      AIRCRAFT_PROJECT_PREFIX: a380x
-      STANDALONE_ZIP_NAME: A380X-stable-4K.7z
-      AIRCRAFT_VARIANT: a380-842
-    steps:
-      - name: Maximize build space
-        uses: AdityaGarg8/remove-unwanted-software@v4.1
-        with:
-          remove-android: 'true'
-          remove-dotnet: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-large-packages: 'true'
-          remove-cached-tools: 'true'
-      - name: Force even more disk space
-        run: |
-          sudo rm -rf /usr/local/julia1.11.0
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /opt/microsoft/msedge
-          sudo rm -rf /usr/local/share/chromium
-          sudo rm -rf /usr/share/miniconda
-          sudo rm -rf /opt/pipx
-          sudo rm -rf /usr/lib/heroku
-          sudo rm -rf /usr/share/kotlinc
-          sudo rm -rf /usr/local/aws-cli
-          sudo rm -rf /usr/local/share/powershell
-          sudo rm -rf /usr/lib/jvm
-          sudo rm -rf /usr/local/sqlpackage
-          sudo rm -rf /usr/share/gradle-8.10.2
-          sudo rm -rf /usr/lib/python3
-          sudo rm -rf /usr/lib/python3.10
-          sudo rm -rf /usr/lib/mono
-          sudo npm uninstall -g netlify-cli --save
-          sudo npm uninstall -g parcel --save
-          df -h
-      - name: Checkout source
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Set BUILT_DATE_TIME
-        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
-      - name: Create .env file
-        run: |
-          echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
-          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
-          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
-          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
-          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
-          echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
-          echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
-          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
-          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
-          echo VITE_BUILD=false >> .env
-      - name: Install dependencies
-        run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-          sudo apt-get install -y rclone
-      - name: Build A380X
-        run: |
-          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4 -4k
-          docker system prune -af
-      - name: Remove source files
-        run: |
-          rm -rf fbw-a380x/src
-          rm -rf ./fbw-a32nx/
-          rm -rf ./large-files/fbw-a32nx/
-          rm -rf ./fbw-common/
-          rm -rf ./.git/objects/
-          rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Build Fragmenter modules
-        run: |
-          df -h
-          node ./scripts/fragment_a380x.js
-          cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
-          node ./scripts/install-source_a380x.js
-          df -h
-      - name: Configure rclone for Cloudflare R2
-        run: |
-            mkdir -p ~/.config/rclone
-            cat > ~/.config/rclone/rclone.conf <<EOF
-            [cloudflare-r2]
-            type = s3
-            provider = Cloudflare
-            env_auth = false
-            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-            region = auto
-            EOF
-      - name: Upload to CloudFlare CDN (Installer)
-        env:
-          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/msfs2024/a380x/stable-4k
+          CDN_BUCKET_DESTINATION: addons/msfs2024/a380x/stable
         run: |
           ./scripts/cf-cdn.sh ./fbw-a380x/out/build-modules $CDN_BUCKET_DESTINATION
       - name: Build Standalone Download files
@@ -454,7 +304,7 @@ jobs:
         with:
           token: ${{ github.token }}
           tag: ${{ env.PRE_RELEASE_TAG }}
-          assets: "*A380X-stable-4K*"
+          assets: "*A380X-stable*"
           fail-if-no-assets: false
       - name: Upload pre-release assets
         uses: dwenegar/upload-release-assets@v1
