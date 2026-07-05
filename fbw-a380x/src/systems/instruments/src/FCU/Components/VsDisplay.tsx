@@ -63,7 +63,7 @@ export class VsDisplay extends DisplayComponent<{ bus: EventBus }> {
         <svg width="100%" height="100%">
           <text
             id="VS"
-            x="71%"
+            x="78%"
             y="20%"
             text-anchor="end"
             class={{ Active: this.vsLabelSub, Inactive: this.vsLabelSub.map(SubscribableMapFunctions.not()) }}
@@ -72,14 +72,14 @@ export class VsDisplay extends DisplayComponent<{ bus: EventBus }> {
           </text>
           <text
             id="FPA"
-            x="50%"
+            x="54%"
             y="20%"
             text-anchor="end"
             class={{ Active: this.fpaLabelSub, Inactive: this.fpaLabelSub.map(SubscribableMapFunctions.not()) }}
           >
             FPA
           </text>
-          <text id="Value" class="Value" x="11%" y="97%">
+          <text id="Value" class="Value" x="14%" y="97%">
             {this.vsValueSub}
           </text>
         </svg>

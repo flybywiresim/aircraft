@@ -96,7 +96,7 @@ export class HdgDisplay extends DisplayComponent<{ bus: EventBus }> {
               Active: this.trkLabelSub,
               Inactive: this.trkLabelSub.map(SubscribableMapFunctions.not()),
             }}
-            x="68%"
+            x="70%"
             y="20%"
           >
             TRK
@@ -108,6 +108,7 @@ export class HdgDisplay extends DisplayComponent<{ bus: EventBus }> {
             id="DEGREES"
             class={{
               Common: true,
+              Value: true,
               Active: this.unitLabelSub,
               Inactive: this.unitLabelSub.map(SubscribableMapFunctions.not()),
             }}

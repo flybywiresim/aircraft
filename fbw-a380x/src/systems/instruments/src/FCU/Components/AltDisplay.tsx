@@ -24,10 +24,10 @@ export class AltDisplay extends DisplayComponent<{ bus: EventBus }> {
     return (
       <div id="Altitude">
         <svg width="125%" height="100%">
-          <text id="ALT" class="Common Active" x="31%" y="20%">
+          <text id="ALT" class="Common Active" x="27%" y="20%">
             ALT
           </text>
-          <text id="Value" class="Common Value" x="4%" y="97%">
+          <text id="Value" class="Common Value" x="0%" y="97%">
             {this.altValueSub}
           </text>
         </svg>
