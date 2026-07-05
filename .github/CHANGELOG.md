@@ -14,6 +14,39 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
+
+1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
+1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
+1. [A380X] Update aircraft to MSFS2024 native modular aircraft - @heclak (Heclak)
+1. [A380X/MODEL] Performance optimization of 3D model with reduced draw calls - @heclak (Heclak)
+1. [A380X/MODEL] VRAM usage reduction with texture optimization and use of mipmaps for lower spec systems - @heclak (Heclak)
+1. [A380X/MODEL] Add new cabinless variant for better performance on low spec systems - @heclak (Heclak)
+1. [A380X/MODEL] Add parallax windows on cabinless variant based on cabin layout - @heclak (Heclak)
+1. [A380X/MODEL] Update windshield texture to be cleaner - @heclak (Heclak)
+1. [A380X/MODEL] Update windshield to use 2024 rain and wiper effects - @heclak (Heclak)
+1. [A380X/MODEL] Add window heating elements to front windshield - @heclak (Heclak)
+1. [A380X/MODEL] Fix right KCCU SEC PLAN button not working - @heclak (Heclak)
+1. [A380X/LIGHTS] Fix beacon and strobe light timing and pattern to match references - @heclak (Heclak)
+1. [A380X/LIGHTS] Update cockpit with new MIP lighting - @heclak (Heclak), @Repsol2k
+1. [A380X/LIGHTS] Update external lighting positioning and brightness - @heclak (Heclak)
+1. [A380X/LIGHTS] Add taxi cam wing light fx - @heclak (Heclak)
+1. [A380X/MODEL] Add window plugs to windows - @heclak (Heclak)
+1. [A380X/MODEL] Add ability to hide the sidestick for better visibility of the OIT - @heclak (Heclak)
+1. [A380X/LIGHTS] Add cockpit reading lights - @heclak (Heclak)
+1. [A380X] Fix aircraft rolling off the taxiway in the ready screen when using a runway start - @heclak (Heclak)
+1. [A380X/MODEL] Improve clickspots on throttle levers to make it easier to click on nearby objects - @heclak (Heclak)
+1. [A380X/MODEL] Fix OIT backlighting wrongly connected to MFD backlighting - @heclak (Heclak)
+1. [A380X/ECAM] Add RELIGHT IN FLIGHT, TAILPIPE FIRE, VOLCANIC ASH ENCOUNTER, BOMB ON BOARD and SEVERE TURBULENCE abnormal non-sensed checklists  - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Worked around a sim bug where the right side cursor was sometimes oriented incorrectly - @tracernz (Mike)
+1. [A32NX/FMS] Added full support for EOSIDs (engine out SID) - @tracernz (Mike)
+1. [A32NX/FMS] Improved engine out detection logic and added MCDU page EO CLR - @tracernz (Mike)
+1. [FMS] Automatically delete minimums when the approach is changed - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
+1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
+1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
+1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
 1. [A32NX/FLIGHT MODEL] Reduce touchdown rate of descent for autoland - @donstim (donbikes)
 
 ## 2024.1.0
@@ -150,9 +183,9 @@
 1. [A32NX/FWS] Add `ELEC EMER CONFIG` master warning, `EMER GEN 1 LINE OFF` and `RAT FAULT` master cautions and `EMER GEN` memo - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `FAC 1(2)(1+2) FAULT` master cautions - @FozzieHi (fozzie)
 1. [A32NX/MCDU] Renamed "CHECK SPEED MODE" message to "SET MANAGED SPEED"- @BravoMike99 (bruno_pt99)
+1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
 1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
-1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
 1. [A32NX/FLIGHT MODEL] Updated A32NX flight model for MSFS 2024 - @donstim (donbikes)
 
 ## 0.14.0
