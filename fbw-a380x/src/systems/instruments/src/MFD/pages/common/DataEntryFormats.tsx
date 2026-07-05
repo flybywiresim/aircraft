@@ -849,20 +849,36 @@ export class TripWindFormat implements DataEntryFormat<number> {
   }
 }
 
-export class QnhFormat implements DataEntryFormat<number> {
-  public placeholder = '----';
+export class QnhFormat extends SubscriptionCollector implements DataEntryFormat<number> {
+  static readonly HPA_PLACE_HOLDER = '----';
 
-  public maxDigits = 5;
+  static readonly INHG_PLACE_HOLDER = '--.--';
+
+  public placeholder = QnhFormat.HPA_PLACE_HOLDER;
+
+  public readonly maxDigits = 5;
 
   private readonly requiredFormat = 'XXXX';
 
-  private minHpaValue = 745;
+  private readonly minHpaValue = 745;
 
-  private maxHpaValue = 1100;
+  private readonly maxHpaValue = 1100;
 
-  private minInHgValue = 22.0;
+  private readonly minInHgValue = 22.0;
 
-  private maxInHgValue = 32.48;
+  private readonly maxInHgValue = 32.48;
+
+  readonly reFormatTrigger = Subject.create(false);
+
+  constructor(private readonly isHpa: Subscribable<boolean> = Subject.create(true)) {
+    super();
+    this.subscriptions.push(
+      this.isHpa.sub((isHpa) => {
+        this.placeholder = isHpa ? QnhFormat.HPA_PLACE_HOLDER : QnhFormat.INHG_PLACE_HOLDER;
+        this.reFormatTrigger?.notify();
+      }),
+    );
+  }
 
   public format(value: number) {
     if (value === null || value === undefined) {
@@ -882,17 +898,21 @@ export class QnhFormat implements DataEntryFormat<number> {
       throw getFormattedFormatError(this.requiredFormat);
     }
 
-    const hpa = input.indexOf('.') === -1 && input.length >= 3;
-    const minValue = hpa ? this.minHpaValue : this.minInHgValue;
-    const maxValue = hpa ? this.maxHpaValue : this.maxInHgValue;
-
-    if (nbr >= minValue && nbr <= maxValue) {
-      return nbr;
+    const containsDecimal = input.indexOf('.') !== -1;
+    const inputConvertedToInchesPrecision = containsDecimal ? nbr : nbr / 100;
+    // Check inches first, then hpa
+    if (inputConvertedToInchesPrecision <= this.maxInHgValue && inputConvertedToInchesPrecision >= this.minInHgValue) {
+      return inputConvertedToInchesPrecision;
     } else {
-      throw getFormattedEntryOutOfRangeError(
-        hpa ? minValue.toString() : minValue.toFixed(2),
-        hpa ? maxValue.toString() : maxValue.toFixed(2),
-      );
+      // Check if is valid hpa
+      if (nbr <= this.maxHpaValue && nbr >= this.minHpaValue) {
+        return nbr;
+      } else {
+        throw getFormattedEntryOutOfRangeError(
+          containsDecimal ? this.minInHgValue.toFixed(2) : this.minHpaValue.toString(),
+          containsDecimal ? this.maxInHgValue.toFixed(2) : this.maxHpaValue.toString(),
+        );
+      }
     }
   }
 }

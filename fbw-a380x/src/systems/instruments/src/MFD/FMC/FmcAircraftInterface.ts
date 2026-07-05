@@ -23,6 +23,7 @@ import {
   FmArinc429OutputWord,
   RaBusEvents,
   RegisteredSimVar,
+  EfisSide,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -241,6 +242,17 @@ export class FmcAircraftInterface {
   private readonly speedsManagedAthr = Subject.create<number | null>(null);
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
+
+  private readonly fcuEis2DiscreteWordLeft = Arinc429Register.empty();
+  private readonly fcuEis2DiscreteWordRight = Arinc429Register.empty();
+  private readonly fcuEis2DiscreteWordLeftVar = RegisteredSimVar.create<number>(
+    'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
+  private readonly fcuEis2DiscreteWordRightVar = RegisteredSimVar.create<number>(
+    'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
 
   constructor(
     private bus: EventBus,
@@ -2258,6 +2270,14 @@ export class FmcAircraftInterface {
         const finalTime = pd.finalHoldingTime.get();
         pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
       }
+    }
+  }
+
+  isInchesSelectedOnFcu(side: EfisSide): boolean {
+    if (side == 'L') {
+      return this.fcuEis2DiscreteWordLeft.set(this.fcuEis2DiscreteWordLeftVar.get()).bitValueOr(11, false);
+    } else {
+      return this.fcuEis2DiscreteWordRight.set(this.fcuEis2DiscreteWordRightVar.get()).bitValueOr(11, false);
     }
   }
 }
