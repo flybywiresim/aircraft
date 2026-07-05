@@ -348,6 +348,10 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
+  public readonly attHdgCaptOn3 = this.attKnob.map((it) => it === 0);
+
+  public readonly attHdgFoOn3 = this.attKnob.map((it) => it === 0);
+
   public readonly compMesgCount = Subject.create(0);
 
   public readonly landAsap = Subject.create(false);
@@ -370,9 +374,17 @@ export class FwsCore {
 
   public readonly wingAntiIce = Subject.create(false);
 
+  public readonly aicuResetSwitch1 = Subject.create(false);
+
+  public readonly aicuResetSwitch2 = Subject.create(false);
+
   public readonly voiceVhf3 = Subject.create(false);
 
   public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
+
+  public readonly emerExitLightsOn = Subject.create(false);
+
+  public readonly commercial = Subject.create(false);
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -526,12 +538,21 @@ export class FwsCore {
 
   public readonly apuBleedPbOn = Subject.create(false);
 
+  public readonly apuBleedPbOff = Subject.create(false);
+
   public readonly apuBleedPbOnOver22500ft = Subject.create(false);
 
   public readonly eng1BleedAbnormalOff = Subject.create(false);
   public readonly eng2BleedAbnormalOff = Subject.create(false);
   public readonly eng3BleedAbnormalOff = Subject.create(false);
   public readonly eng4BleedAbnormalOff = Subject.create(false);
+
+  public readonly eng1BleedPbOff = Subject.create(false);
+  public readonly eng2BleedPbOff = Subject.create(false);
+  public readonly eng3BleedPbOff = Subject.create(false);
+  public readonly eng4BleedPbOff = Subject.create(false);
+
+  public readonly allBleedsOff = Subject.create(false);
 
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
@@ -613,6 +634,10 @@ export class FwsCore {
   private readonly cabinAltitude = Arinc429Register.empty();
 
   private readonly cabinAltitudeTarget = Arinc429Register.empty();
+
+  public readonly ditchingPbOn = Subject.create(false);
+
+  public readonly ditchingPbOff = Subject.create(false);
 
   /* 22 - AUTOFLIGHT */
 
@@ -929,6 +954,8 @@ export class FwsCore {
   public readonly fireButtonAPU = Subject.create(false);
 
   public readonly allFireButtons = Subject.create(false);
+
+  public readonly allFireAgents = Subject.create(false);
 
   public readonly fireTestPb = Subject.create(false);
 
@@ -1289,6 +1316,10 @@ export class FwsCore {
     this.fuelingInitiated,
     this.isRefuelFuelTarget,
   );
+
+  public readonly jettisonArm = Subject.create(false);
+
+  public readonly jettisonActive = Subject.create(false);
 
   /* HYDRAULICS */
 
@@ -1845,6 +1876,8 @@ export class FwsCore {
 
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
+
+  public readonly crewOxygenSupply = Subject.create(false);
 
   /** ENGINE AND THROTTLE */
 
@@ -3027,6 +3060,7 @@ export class FwsCore {
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    this.apuBleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     this.apuAvailAndApuBleedOn.set(this.apuAvail.get() && this.apuBleedPbOn.get());
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
@@ -3050,6 +3084,19 @@ export class FwsCore {
         !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
 
+    this.eng1BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng2BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng3BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng4BleedPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+
+    this.allBleedsOff.set(
+      this.eng1BleedPbOff.get() &&
+        this.eng2BleedPbOff.get() &&
+        this.eng3BleedPbOff.get() &&
+        this.eng4BleedPbOff.get() &&
+        this.apuBleedPbOff.get(),
+    );
+
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
 
     this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
@@ -3062,6 +3109,8 @@ export class FwsCore {
     this.eng3AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:3', 'bool'));
     this.eng4AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:4', 'bool'));
     this.wingAntiIce.set(!!SimVar.GetSimVarValue('A:STRUCTURAL DEICE SWITCH', 'bool'));
+    this.aicuResetSwitch1.set(!!SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_AICU1', 'bool'));
+    this.aicuResetSwitch2.set(!!SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_AICU2', 'bool'));
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
@@ -4336,6 +4385,9 @@ export class FwsCore {
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
 
+    this.ditchingPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON', 'bool'));
+    this.ditchingPbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON', 'bool'));
+
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
@@ -4395,6 +4447,10 @@ export class FwsCore {
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
+    const emerExitLights = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION', 'enum');
+    this.emerExitLightsOn.set(emerExitLights === 0);
+    this.commercial.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COMMERCIAL_PB_IS_ON', 'bool'));
+
     /* FUEL */
     const feedTank1Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:2', 'kilogram') < 1375;
     this.feedTank1Low.set(this.feedTank1LowConfirm.write(feedTank1Low, deltaTime));
@@ -4420,6 +4476,9 @@ export class FwsCore {
         !this.engine4ValueSwitch.get(),
     );
     this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
+
+    this.jettisonArm.set(SimVar.GetSimVarValue('L:A380X_OVHD_FUEL_JETTISON_ARM_PB_IS_ON', 'bool'));
+    this.jettisonActive.set(SimVar.GetSimVarValue('L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON', 'bool'));
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
@@ -5044,6 +5103,17 @@ export class FwsCore {
     this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool'));
     this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
     this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
+    this.allFireAgents.set(
+      this.apuAgentDischarged.get() &&
+        this.eng1Agent1Discharged.get() &&
+        this.eng1Agent2Discharged.get() &&
+        this.eng2Agent1Discharged.get() &&
+        this.eng2Agent2Discharged.get() &&
+        this.eng3Agent1Discharged.get() &&
+        this.eng3Agent2Discharged.get() &&
+        this.eng4Agent1Discharged.get() &&
+        this.eng4Agent2Discharged.get(),
+    );
 
     this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
     this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
@@ -5159,6 +5229,7 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+    this.crewOxygenSupply.set(SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'Bool'));
 
     /* DOOR */
     this.cockpitWindowOpen.set(
