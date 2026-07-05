@@ -17,8 +17,8 @@ import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublish
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
-import { PrimFeBusPublisher } from '../MsfsAvionicsCommon/providers/PrimFePublisher';
-import { PrimFctlBusPublisher } from '../MsfsAvionicsCommon/providers/PrimFctlPublisher';
+import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
+import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
 
 import './style.scss';
 

@@ -28,7 +28,7 @@ import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValuePro
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
-import { PrimFeBusBaseEvents } from '../MsfsAvionicsCommon/providers/PrimFePublisher';
+import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;

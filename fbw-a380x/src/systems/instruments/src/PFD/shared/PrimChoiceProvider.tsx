@@ -1,7 +1,7 @@
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
-import { PrimFeBusBaseEvents, PrimFeBusEvents } from '../../MsfsAvionicsCommon/providers/PrimFePublisher';
-import { PrimFctlBusEvents } from '../../MsfsAvionicsCommon/providers/PrimFctlPublisher';
+import { PrimFeBusBaseEvents, PrimFeBusEvents } from '@shared/publishers/PrimFePublisher';
+import { PrimFctlBusEvents } from '@shared/publishers/PrimFctlPublisher';
 
 const primFeSubjectsByKey = {
   prim_gamma_a: ConsumerSubject.create(null, 0),
