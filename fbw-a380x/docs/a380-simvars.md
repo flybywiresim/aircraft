@@ -1242,19 +1242,19 @@
 
 ## Lights ATA 33
 
-- A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB
+- `L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB`
     - Number
     - Position of the main panel flood light knob (0-100)
 
-- A380X_PED_LIGHTING_AMBIENT_LT_KNOB
+- `L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB`
     - Number
     - Position of the ambient light knob (0-100)
 
-- A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL
+- `L:A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL`
     - Number
     - Brightness of the main panel flood lights (0-100)
 
-- A380X_PED_LIGHTING_AMBIENT_LT_LEVEL
+- `L:A380X_PED_LIGHTING_AMBIENT_LT_LEVEL`
     - Number
     - Brightness of the ambient lights (0-100)
 
