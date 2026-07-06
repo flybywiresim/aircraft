@@ -1028,11 +1028,8 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & SfccEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & SfccEvents & PrimFeBusBaseEvents>();
   private static readonly ARS_1F_F_SPEED = 212;
-  private static readonly CONF_1_F_VFE = 222;
-  private readonly size = ((ArsBar.ARS_1F_F_SPEED - ArsBar.CONF_1_F_VFE) * DistanceSpacing) / ValueSpacing;
-  private readonly path = `m19.031 0h 1.9748v${this.size}`;
 
   //FIXME PRIM Should provide the ARS speed. All this logic should be moved there
   private readonly flapSlatsStatusWord = Arinc429LocalVarConsumerSubject.create(
@@ -1065,21 +1062,31 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly airspeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('speed'), null);
 
-  private readonly arsVisible = MappedSubject.create(
-    ([flapLever1, config1F, airspeed]) => !airspeed.isInvalid() && flapLever1 && config1F,
-    this.flapLever1,
-    this.config1F,
+  private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_max'));
+
+  private readonly path = MappedSubject.create(
+    ([vMax, airspeed]) => {
+      let offset: number;
+      if (vMax.value < airspeed.value + DisplayRange) {
+        offset = ((ArsBar.ARS_1F_F_SPEED - vMax.value) * DistanceSpacing) / ValueSpacing;
+      } else {
+        offset = ((ArsBar.ARS_1F_F_SPEED - (airspeed.value + DisplayRange)) * DistanceSpacing) / ValueSpacing;
+      }
+      const arsPos = ((airspeed.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818;
+
+      return `m19.031 ${arsPos}h 1.9748v${offset}`;
+    },
+    this.vMax,
     this.airspeed,
   );
 
-  private readonly arsStyle = MappedSubject.create(
-    ([visible, ias]) => {
-      return visible
-        ? `transform: translate3d(0px, ${((ias.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818}px, 0px )`
-        : '';
-    },
-    this.arsVisible,
+  private readonly arsVisible = MappedSubject.create(
+    ([flapLever1, config1F, airspeed, vMax]) =>
+      !airspeed.isInvalid() && flapLever1 && config1F && !vMax.isFailureWarning(),
+    this.flapLever1,
+    this.config1F,
     this.airspeed,
+    this.vMax,
   );
 
   onAfterRender(node: VNode): void {
@@ -1103,7 +1110,6 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
           HiddenElement: this.arsVisible.map(SubscribableMapFunctions.not()),
         }}
         d={this.path}
-        style={this.arsStyle}
       />
     );
   }
