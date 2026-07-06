@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachUtils, NXUnits, RunwayUtils, ApproachType } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, NXUnits, RunwayUtils, ApproachType, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { getDisplayIndex } from '../../MsfsAvionicsCommon/displayUnit';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
@@ -1104,7 +1105,14 @@ export class CDUPerformancePage {
     const distanceToDest = mcdu.getDistanceToDestination();
     const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
 
-    let qnhCell = '[\xa0\xa0][color]cyan';
+    const isRightSide = getDisplayIndex() === 2;
+    const rawWord = SimVar.GetSimVarValue(
+      isRightSide ? 'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_1' : 'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_1',
+      'number'
+    );
+    const isBaroInInhg = new Arinc429Word(rawWord).bitValueOr(11, false);
+
+    let qnhCell = isBaroInInhg ? '[\xa0.\xa0][color]cyan' : '[\xa0\xa0][color]cyan';
     if (Number.isFinite(plan.performanceData.approachQnh.get())) {
       if (plan.performanceData.approachQnh.get() < 500) {
         qnhCell = plan.performanceData.approachQnh.get().toFixed(2) + '[color]cyan';
@@ -1112,7 +1120,7 @@ export class CDUPerformancePage {
         qnhCell = plan.performanceData.approachQnh.get().toFixed(0) + '[color]cyan';
       }
     } else if (closeToDest && isActivePlan) {
-      qnhCell = '____[color]amber';
+      qnhCell = isBaroInInhg ? '__.__[color]amber' : '____[color]amber';
     }
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
       if (mcdu.setPerfApprQNH(value, forPlan)) {

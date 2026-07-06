@@ -47,6 +47,7 @@
 1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
 1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
 1. [A380X/MFD] Fix LS field remaining blank on F-PLN arrival page when no landing system is available or selected - @matze-tech (matze2346)
+1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (Matthias)
 
 ## 2024.1.0
 
