@@ -64,7 +64,8 @@ export class PrimChoiceProvider implements Instrument {
 
     this.selectedMasterPrim.sub((masterPrim) => {
       for (const [key, value] of this.primFeSubjects) {
-        value.setConsumer(this.sub.on((key + '_' + masterPrim.toString()) as keyof PrimFeBusEvents));
+        // The FE data over AFDX seems to update only at around 10Hz (see for example Vmax when moving)
+        value.setConsumer(this.sub.on((key + '_' + masterPrim.toString()) as keyof PrimFeBusEvents).atFrequency(10));
       }
     }, true);
 
