@@ -51,6 +51,7 @@
 1. [A380X/PRIM] Improve speed trend behaviour - @lukecologne (luke)
 1. [A380X/FWS] Add NAV UNRELIABLE AIRSPEED INDICATION procedure - @matze-tech (matze2346)
 1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
+1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
 
 ## 2024.1.0
 
