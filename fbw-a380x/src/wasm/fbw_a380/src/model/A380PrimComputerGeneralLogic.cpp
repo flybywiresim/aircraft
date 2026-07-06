@@ -72,6 +72,8 @@ void A380PrimComputerGeneralLogic::step()
   real_T denom;
   int32_T rtb_handleIndex;
   real32_T v[3];
+  real32_T rtb_FlapFPPUtoSurfaceAngle;
+  real32_T rtb_SlatFPPUtoSurfaceAngle;
   real32_T rtb_Switch_idx_1;
   real32_T rtb_Switch_idx_2;
   real32_T rtb_V_ias;
@@ -193,6 +195,12 @@ void A380PrimComputerGeneralLogic::step()
         A380PrimComputerGeneralLogic_P.Constant1_Value;
     }
 
+    rtb_FlapFPPUtoSurfaceAngle = look1_iflf_binlxpw(rtb_Switch_idx_1,
+      A380PrimComputerGeneralLogic_P.FlapFPPUtoSurfaceAngle_bp01Data,
+      A380PrimComputerGeneralLogic_P.FlapFPPUtoSurfaceAngle_tableData, 6U);
+    rtb_SlatFPPUtoSurfaceAngle = look1_iflf_binlxpw(rtb_Switch_idx_2,
+      A380PrimComputerGeneralLogic_P.SlatFPPUtoSurfaceAngle_bp01Data,
+      A380PrimComputerGeneralLogic_P.SlatFPPUtoSurfaceAngle_tableData, 2U);
     A380PrimComputerGeneralLogic_MATLABFunction_b(rtb_Switch3_0, A380PrimComputerGeneralLogic_P.BitfromLabel1_bit,
       &rtb_y_i);
     A380PrimComputerGeneralLogic_MATLABFunction_b(rtb_Switch3_0, A380PrimComputerGeneralLogic_P.BitfromLabel8_bit,
@@ -667,12 +675,30 @@ void A380PrimComputerGeneralLogic::step()
     A380PrimComputerGeneralLogic_Y.out.general_logic.all_sfcc_lost = rtb_y_oj;
     A380PrimComputerGeneralLogic_Y.out.general_logic.flap_angle_deg = rtb_Switch_idx_1;
     A380PrimComputerGeneralLogic_Y.out.general_logic.slat_angle_deg = rtb_Switch_idx_2;
-    A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = look1_iflf_binlxpw(rtb_Switch_idx_1,
-      A380PrimComputerGeneralLogic_P.FlapFPPUtoSurfaceAngle_bp01Data,
-      A380PrimComputerGeneralLogic_P.FlapFPPUtoSurfaceAngle_tableData, 6U);
-    A380PrimComputerGeneralLogic_Y.out.general_logic.slat_surface_angle_deg = look1_iflf_binlxpw(rtb_Switch_idx_2,
-      A380PrimComputerGeneralLogic_P.SlatFPPUtoSurfaceAngle_bp01Data,
-      A380PrimComputerGeneralLogic_P.SlatFPPUtoSurfaceAngle_tableData, 2U);
+    if (rtb_FlapFPPUtoSurfaceAngle < 0.5F) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = 0.0F;
+    } else if ((rtb_FlapFPPUtoSurfaceAngle > 7.5F) && (rtb_FlapFPPUtoSurfaceAngle < 8.5F)) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = 8.0F;
+    } else if ((rtb_FlapFPPUtoSurfaceAngle > 16.5F) && (rtb_FlapFPPUtoSurfaceAngle < 17.5F)) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = 17.0F;
+    } else if ((rtb_FlapFPPUtoSurfaceAngle > 25.5F) && (rtb_FlapFPPUtoSurfaceAngle < 26.5F)) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = 26.0F;
+    } else if (rtb_FlapFPPUtoSurfaceAngle > 32.5F) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = 33.0F;
+    } else {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.flap_surface_angle_deg = rtb_FlapFPPUtoSurfaceAngle;
+    }
+
+    if (rtb_SlatFPPUtoSurfaceAngle < 0.5F) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.slat_surface_angle_deg = 0.0F;
+    } else if ((rtb_SlatFPPUtoSurfaceAngle > 19.5F) && (rtb_SlatFPPUtoSurfaceAngle < 20.5F)) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.slat_surface_angle_deg = 20.0F;
+    } else if (rtb_SlatFPPUtoSurfaceAngle > 22.5F) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.slat_surface_angle_deg = 23.0F;
+    } else {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.slat_surface_angle_deg = rtb_SlatFPPUtoSurfaceAngle;
+    }
+
     A380PrimComputerGeneralLogic_Y.out.general_logic.flaps_locked = (rtb_y_d != 0U);
     A380PrimComputerGeneralLogic_Y.out.flight_envelope = A380PrimComputerGeneralLogic_P.Constant7_Value;
     A380PrimComputerGeneralLogic_Y.out.laws = A380PrimComputerGeneralLogic_P.prim_laws_output_MATLABStruct;
