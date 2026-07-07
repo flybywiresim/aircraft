@@ -1500,8 +1500,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
   modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
   modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
-  modelInputs.in.temporary_ap_input.weight_lbs = simData.total_weight_kg * 2.205;
-  modelInputs.in.temporary_ap_input.cg_percent = simData.CG_percent_MAC;
+  modelInputs.in.temporary_ap_input.weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get()).Data * 2.205;
+  modelInputs.in.temporary_ap_input.cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get()).Data / 100;
 
   if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
