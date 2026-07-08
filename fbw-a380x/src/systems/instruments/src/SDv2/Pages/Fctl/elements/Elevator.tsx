@@ -34,7 +34,10 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
   private readonly deflectionInfoValid = Subject.create(true);
 
   private readonly elevatorDeflection = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.side}${this.props.position}ElevatorDeflection`),
+    this.props.bus
+      .getSubscriber<SDSimvars>()
+      .on(`${this.props.side}${this.props.position}ElevatorDeflection`)
+      .atFrequency(10),
     0,
   );
 

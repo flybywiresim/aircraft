@@ -42,7 +42,10 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
   private readonly deflectionInfoValid = Subject.create(true);
 
   private readonly spoilerDeflection = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.side}Spoiler${this.props.position}Deflection`),
+    this.props.bus
+      .getSubscriber<SDSimvars>()
+      .on(`${this.props.side}Spoiler${this.props.position}Deflection`)
+      .atFrequency(10),
     0,
   );
 

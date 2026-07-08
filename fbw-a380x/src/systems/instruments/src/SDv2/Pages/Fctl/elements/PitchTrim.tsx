@@ -22,7 +22,7 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
   private readonly positionInfoValid = Subject.create(true);
 
   private readonly thsPositionRadians = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`thsDeflection`),
+    this.props.bus.getSubscriber<SDSimvars>().on(`thsDeflection`).atFrequency(10),
     0,
   );
 

@@ -43,7 +43,10 @@ export class Aileron extends DisplayComponent<AileronProps> {
   private readonly deflectionInfoValid = Subject.create(true);
 
   private readonly aileronDeflection = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.side}${this.props.position}AileronDeflection`),
+    this.props.bus
+      .getSubscriber<SDSimvars>()
+      .on(`${this.props.side}${this.props.position}AileronDeflection`)
+      .atFrequency(10),
     0,
   );
 

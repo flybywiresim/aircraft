@@ -70,7 +70,9 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.secSourceForTrim.map((source) => this.rudderTrim.setConsumer(this.sub.on(`sec${source}RudderTrimPosition`)));
+    this.secSourceForTrim.sub((source) =>
+      this.rudderTrim.setConsumer(this.sub.on(`sec${source}RudderTrimPosition`).atFrequency(10)),
+    );
   }
 
   render() {

@@ -28,7 +28,7 @@ export class Rudder extends DisplayComponent<RudderProps> {
   private readonly deflectionInfoValid = Subject.create(true);
 
   private readonly rudderDeflection = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.position}RudderDeflection`),
+    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.position}RudderDeflection`).atFrequency(10),
     0,
   );
 
