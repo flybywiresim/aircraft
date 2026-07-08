@@ -71,7 +71,7 @@ export class PrimChoiceProvider implements Instrument {
 
     for (const [key, value] of this.primFeSubjects) {
       value.sub((word) => {
-        publisher.pub(key, word, true);
+        publisher.pub(key, word);
       }, true);
     }
   }
