@@ -90,7 +90,7 @@ import {
   OisDebugDataControlEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
