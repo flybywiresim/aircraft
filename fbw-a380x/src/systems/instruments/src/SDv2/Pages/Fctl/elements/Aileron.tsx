@@ -6,6 +6,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import {
   ActuatorIndication,
@@ -91,7 +92,7 @@ export class Aileron extends DisplayComponent<AileronProps> {
     );
 
     this.powerAvail = MappedSubject.create(
-      ([power1Avail, power2Avail]) => power1Avail || power2Avail,
+      SubscribableMapFunctions.or(),
       this.powerSource1Avail,
       this.powerSource2Avail,
     );

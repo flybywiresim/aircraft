@@ -43,15 +43,6 @@ export class HorizontalDeflectionIndication extends DisplayComponent<HorizontalD
     this.props.powerAvail,
   );
 
-  private readonly maxDeflectionVisible = MappedSubject.create(
-    ([onGround, deflectionInfoValid, powerAvail]) => onGround && deflectionInfoValid && powerAvail,
-    this.props.onGround,
-    this.props.deflectionInfoValid,
-    this.props.powerAvail,
-  );
-
-  private readonly powerAvailableClass = this.props.powerAvail.map((powerAvail) => (powerAvail ? 'Green' : 'Amber'));
-
   private rudderTravelLimiter = 30;
   private rudderTravelLimXValue = deflectionToXOffset(this.rudderTravelLimiter);
 

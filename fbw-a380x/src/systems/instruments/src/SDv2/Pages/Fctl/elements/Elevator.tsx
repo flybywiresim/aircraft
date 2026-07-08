@@ -6,6 +6,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
 import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
@@ -61,7 +62,7 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
   );
 
   private readonly powerAvail = MappedSubject.create(
-    ([hydPowerAvailable, elecPowerAvailable]) => hydPowerAvailable || elecPowerAvailable,
+    SubscribableMapFunctions.or(),
     this.hydPowerAvailable,
     this.elecPowerAvailable,
   );
