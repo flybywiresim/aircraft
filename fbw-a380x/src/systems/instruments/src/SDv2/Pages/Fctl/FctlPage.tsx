@@ -16,7 +16,7 @@ import { SDSimvars } from '../../SDSimvarPublisher';
 
 export class FctlPage extends DestroyableComponent<SdPageProps> {
   private readonly onGround = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED'),
+    this.props.bus.getSubscriber<SDSimvars>().on('lgciu1LeftGearCompressed'),
     false,
   ); // TODO: Use better logic
 

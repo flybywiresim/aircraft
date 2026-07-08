@@ -90,6 +90,7 @@ export type BaseSDSimvars = AdirsSimVars &
     sec3RudderTrimPosition: number;
     dc1Powered: boolean;
     dcEssPowered: boolean;
+    lgciu1LeftGearCompressed: boolean;
   };
 
 type IndexedTopics =
@@ -236,6 +237,7 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['sec3RudderTrimPosition', { name: 'L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION', type: SimVarValueType.Number }],
     ['dc1Powered', { name: 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED', type: SimVarValueType.Bool }],
     ['dcEssPowered', { name: 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['lgciu1LeftGearCompressed', { name: 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
