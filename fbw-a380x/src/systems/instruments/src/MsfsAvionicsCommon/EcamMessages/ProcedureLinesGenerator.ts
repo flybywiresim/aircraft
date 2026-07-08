@@ -113,7 +113,19 @@ export class ProcedureLinesGenerator {
         // If we went up a level in the chain and it current is active, reset future child elements.
         // This has to happen before handling the current item, otherwise sibling conditions can be overwritten.
         if (previousItemLevel !== null && previousItemLevel > itemLevel && (levelConditionMap.get(itemLevel) ?? true)) {
-          levelConditionMap.set(previousItemLevel, true);
+          for (let level = previousItemLevel; level > itemLevel; level--) {
+            levelConditionMap.set(level, true);
+          }
+        }
+        let itemIsActive = true;
+        if (itemLevel !== 0) {
+          // Iterate the level to check if any parent is inactive, i.e. condition is at L1 but the child is only at L3.
+          for (let level = 1; level <= itemLevel; level++) {
+            if (!(levelConditionMap.get(level) ?? true)) {
+              itemIsActive = false;
+              break;
+            }
+          }
         }
         const isParentCondition =
           isChecklistCondition(item) && itemsToShow !== undefined ? itemsToShow[i] ?? true : false;
@@ -135,7 +147,7 @@ export class ProcedureLinesGenerator {
             itemsChecked[i] = parentIsActive;
           }
         }
-        itemsActive[i] = levelConditionMap.get(itemLevel) ?? true;
+        itemsActive[i] = itemIsActive;
         previousItemLevel = itemLevel;
       }
     }
