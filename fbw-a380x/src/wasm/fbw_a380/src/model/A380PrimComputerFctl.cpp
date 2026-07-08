@@ -1712,7 +1712,7 @@ void A380PrimComputerFctl::step()
                  (A380PrimComputerFctl_U.in.general_logic.all_ra_failure &&
                   A380PrimComputerFctl_U.in.general_logic.landing_gear_down &&
                   (!A380PrimComputerFctl_U.in.data.temporary_ap_input.ap_engaged)) || (rtb_OR_jr && rtb_OR_i) ||
-                 (!A380PrimComputerFctl_B.ths_avail)) {
+                 (!A380PrimComputerFctl_B.ths_engaged)) {
         A380PrimComputerFctl_B.pitch_law_capability = a380_pitch_efcs_law::AlternateLaw1A;
       } else {
         A380PrimComputerFctl_B.pitch_law_capability = a380_pitch_efcs_law::NormalLaw;
@@ -3795,7 +3795,12 @@ void A380PrimComputerFctl::step()
         A380PrimComputerFctl_B.SSM_kz = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_e);
       }
 
-      A380PrimComputerFctl_B.SSM_il = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_j);
+      if (A380PrimComputerFctl_U.in.flight_envelope.speed_scale_visible) {
+        A380PrimComputerFctl_B.SSM_il = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_j);
+      } else {
+        A380PrimComputerFctl_B.SSM_il = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_e);
+      }
+
       if (A380PrimComputerFctl_U.in.flight_envelope.speed_scale_visible &&
           A380PrimComputerFctl_U.in.flight_envelope.v_fe_next_visible) {
         A380PrimComputerFctl_B.SSM_i2 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_j);
