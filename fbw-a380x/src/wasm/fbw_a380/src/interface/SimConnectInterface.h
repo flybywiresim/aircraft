@@ -11,7 +11,7 @@
 #include "SimConnectData.h"
 
 #include "../model/A380FacComputer_types.h"
-#include "../model/A380PrimComputer_types.h"
+#include "../model/A380PrimComputerGeneralLogic_types.h"
 #include "../model/A380SecComputer_types.h"
 
 class SimConnectInterface {
@@ -208,6 +208,8 @@ class SimConnectInterface {
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                int primDisabled,
+               bool primGeneralLogicDisabled,
+               bool primFctlDisabled,
                int secDisabled,
                int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
@@ -290,10 +292,12 @@ class SimConnectInterface {
   bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
   bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
+  bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
   base_prim_analog_outputs& getClientDataPrimAnalogsOutput();
   base_prim_out_bus& getClientDataPrimBusOutput();
+  base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
 
   bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
   bool setClientDataSecAnalog(base_sec_analog_inputs& output);
@@ -347,6 +351,7 @@ class SimConnectInterface {
     PRIM_1_BUS_OUTPUT,
     PRIM_2_BUS_OUTPUT,
     PRIM_3_BUS_OUTPUT,
+    PRIM_GENERAL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
     SEC_DISCRETE_OUTPUTS,
@@ -390,6 +395,8 @@ class SimConnectInterface {
   bool clientDataEnabled = false;
 
   int primDisabled = -1;
+  bool primGeneralLogicDisabled = false;
+  bool primFctlDisabled = false;
   int secDisabled = -1;
   int facDisabled = -1;
 
@@ -421,6 +428,7 @@ class SimConnectInterface {
   base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
   base_prim_out_bus clientDataPrimBusOutputs = {};
+  base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
 
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   base_sec_analog_outputs clientDataSecAnalogOutputs = {};

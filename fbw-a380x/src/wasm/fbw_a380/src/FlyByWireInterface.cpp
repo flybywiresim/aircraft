@@ -33,10 +33,10 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   bool success = simConnectInterface.connect(
-      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, secDisabled, facDisabled,
-      throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(), idMaximumSimulationRate->get(),
-      limitSimulationRateByPerformance);
+      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, primGeneralLogicDisabled,
+      primFctlDisabled, secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
+      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
+      idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
     std::cout << "WASM: Request data failed!" << std::endl;
@@ -184,6 +184,8 @@ void FlyByWireInterface::loadConfiguration() {
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   primDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "PRIM_DISABLED", -1);
+  primGeneralLogicDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_GENERAL_LOGIC_DISABLED", false);
+  primFctlDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FCTL_DISABLED", false);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
   facDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FAC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
@@ -199,6 +201,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << std::endl;
   std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_DISABLED                        = " << primDisabled << std::endl;
+  std::cout << "WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = " << primGeneralLogicDisabled << std::endl;
+  std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
   std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
   std::cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
@@ -1401,153 +1405,145 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     ra2Bus = raBusOutputs[1];
   }
 
-  prims[primIndex].modelInputs.in.time.dt = sampleTime;
-  prims[primIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
-  prims[primIndex].modelInputs.in.time.monotonic_time = monotonicTime;
+  auto& modelInputs = prims[primIndex].externalInputs();
 
-  prims[primIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
-  prims[primIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
-  prims[primIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
-  prims[primIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+  modelInputs.in.time.dt = sampleTime;
+  modelInputs.in.time.simulation_time = simData.simulationTime;
+  modelInputs.in.time.monotonic_time = monotonicTime;
 
-  prims[primIndex].modelInputs.in.discrete_inputs.alignment_dummy = 0.0;
-  prims[primIndex].modelInputs.in.discrete_inputs.prim_overhead_button_pressed = idPrimPushbuttonPressed[primIndex]->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_unit_2 = primIndex == 1;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
-  prims[primIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = true;
-  prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_capt = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.rat_deployed = primIndex == 0 ? idRatPosition->get() > 0.9 : false;
-  prims[primIndex].modelInputs.in.discrete_inputs.rat_contactor_closed = primIndex == 0 ? idRatContactorClosed->get() : false;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
-  prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
+  modelInputs.in.sim_data.slew_on = wasInSlew;
+  modelInputs.in.sim_data.pause_on = pauseDetected;
+  modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
+  modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
-  prims[primIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-  prims[primIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-  prims[primIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.speed_brake_lever_pos =
-      spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
-  prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
-  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_1_pos_deg = -30. * rightAileron1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_2_pos_deg = -30. * rightAileron2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * leftSpoilerPosition;
-  prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -(simInput.inputs[2] + idRudderTrimActualPosition->get() / 30);
-  prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
-  prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
-  prims[primIndex].modelInputs.in.analog_inputs.vert_acc_1_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.vert_acc_2_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.vert_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = idLeftBodyWheelSpeed_rpm->get() * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = idLeftWingWheelSpeed_rpm->get() * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = idRightBodyWheelSpeed_rpm->get() * 0.146189;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = idRightWingWheelSpeed_rpm->get() * 0.146189;
+  modelInputs.in.discrete_inputs.alignment_dummy = 0.0;
+  modelInputs.in.discrete_inputs.prim_overhead_button_pressed = idPrimPushbuttonPressed[primIndex]->get();
+  modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
+  modelInputs.in.discrete_inputs.is_unit_2 = primIndex == 1;
+  modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
+  modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
+  modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
+  modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
+  modelInputs.in.discrete_inputs.fcu_healthy = true;
+  modelInputs.in.discrete_inputs.athr_pushbutton = false;
+  modelInputs.in.discrete_inputs.ir_3_on_capt = false;
+  modelInputs.in.discrete_inputs.ir_3_on_fo = false;
+  modelInputs.in.discrete_inputs.adr_3_on_capt = false;
+  modelInputs.in.discrete_inputs.adr_3_on_fo = false;
+  modelInputs.in.discrete_inputs.rat_deployed = primIndex == 0 ? idRatPosition->get() > 0.9 : false;
+  modelInputs.in.discrete_inputs.rat_contactor_closed = primIndex == 0 ? idRatContactorClosed->get() : false;
+  modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
+  modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
+  modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
+  modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
-  prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.adr_3_bus = adrBusOutputs[2];
-  prims[primIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.ir_3_bus = irBusOutputs[2];
-  prims[primIndex].modelInputs.in.bus_inputs.isis_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.isis_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_pitch_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_pitch_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = ra1Bus;
-  prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
-  prims[primIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.fcu_own_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.fcu_opp_bus = {};
+  modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
+  modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+  modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
+  modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  modelInputs.in.analog_inputs.speed_brake_lever_pos = spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
+  modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
+  modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
+  modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
+  modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
+  modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
+  modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
+  modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
+  modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
+  modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
+  modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
+  modelInputs.in.analog_inputs.right_aileron_1_pos_deg = -30. * rightAileron1Position;
+  modelInputs.in.analog_inputs.right_aileron_2_pos_deg = -30. * rightAileron2Position;
+  modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * leftSpoilerPosition;
+  modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
+  modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
+  modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
+  modelInputs.in.analog_inputs.rudder_pedal_pos = -(simInput.inputs[2] + idRudderTrimActualPosition->get() / 30);
+  modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
+  modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
+  modelInputs.in.analog_inputs.vert_acc_1_g = 0;
+  modelInputs.in.analog_inputs.vert_acc_2_g = 0;
+  modelInputs.in.analog_inputs.vert_acc_3_g = 0;
+  modelInputs.in.analog_inputs.lat_acc_1_g = 0;
+  modelInputs.in.analog_inputs.lat_acc_2_g = 0;
+  modelInputs.in.analog_inputs.lat_acc_3_g = 0;
+  modelInputs.in.analog_inputs.left_body_wheel_speed = idLeftBodyWheelSpeed_rpm->get() * 0.146189;
+  modelInputs.in.analog_inputs.left_wing_wheel_speed = idLeftWingWheelSpeed_rpm->get() * 0.146189;
+  modelInputs.in.analog_inputs.right_body_wheel_speed = idRightBodyWheelSpeed_rpm->get() * 0.146189;
+  modelInputs.in.analog_inputs.right_wing_wheel_speed = idRightWingWheelSpeed_rpm->get() * 0.146189;
+
+  modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
+  modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
+  modelInputs.in.bus_inputs.adr_3_bus = adrBusOutputs[2];
+  modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
+  modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
+  modelInputs.in.bus_inputs.ir_3_bus = irBusOutputs[2];
+  modelInputs.in.bus_inputs.isis_1_bus = {};
+  modelInputs.in.bus_inputs.isis_2_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_pitch_1_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_pitch_2_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_roll_1_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_roll_2_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_yaw_1_bus = {};
+  modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
+  modelInputs.in.bus_inputs.ra_1_bus = ra1Bus;
+  modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
+  modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
+  modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
+  modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
+  modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
+  modelInputs.in.bus_inputs.fcu_own_bus = {};
+  modelInputs.in.bus_inputs.fcu_opp_bus = {};
   if (primIndex == 0) {
-    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[1];
-    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
+    modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[1];
+    modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
   } else if (primIndex == 1) {
-    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
-    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
+    modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
+    modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
   } else {
-    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
-    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[1];
+    modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
+    modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[1];
   }
 
-  prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
+  modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
+  modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
+  modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
+  modelInputs.in.temporary_ap_input.ap_engaged =
       static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1) || static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1);
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
-  prims[primIndex].modelInputs.in.temporary_ap_input.athr_engaged =
-      static_cast<boolean_T>(autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-  prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
-  prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
-  prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
-  prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode = autopilotStateMachineOutput.lateral_mode;
-  prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
-  prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
-  prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
+  modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1);
+  modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
+  modelInputs.in.temporary_ap_input.athr_engaged = static_cast<boolean_T>(autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
+  modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
+  modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
+  modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
+  modelInputs.in.temporary_ap_input.lateral_mode = autopilotStateMachineOutput.lateral_mode;
+  modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
+  modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
+  modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
 
   if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
-  if (primIndex == primDisabled) {
-    simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
-    simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
-    simConnectInterface.setClientDataPrimTemporaryAp(prims[primIndex].modelInputs.in.temporary_ap_input);
-
-    primsDiscreteOutputs[primIndex] = simConnectInterface.getClientDataPrimDiscretesOutput();
-    primsAnalogOutputs[primIndex] = simConnectInterface.getClientDataPrimAnalogsOutput();
-    primsBusOutputs[primIndex] = simConnectInterface.getClientDataPrimBusOutput();
+  bool powerSupplyAvailable = false;
+  if (primIndex == 0) {
+    powerSupplyAvailable = idElecDcEssBusPowered->get();
+  } else if (primIndex == 1) {
+    powerSupplyAvailable = idElecDcEhaBusPowered->get();
   } else {
-    bool powerSupplyAvailable = false;
-    if (primIndex == 0) {
-      powerSupplyAvailable = idElecDcEssBusPowered->get();
-    } else if (primIndex == 1) {
-      powerSupplyAvailable = idElecDcEhaBusPowered->get();
-    } else {
-      powerSupplyAvailable = idElecDc1BusPowered->get();
-    }
-
-    Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
-    prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
-
-    primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
-    primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
-    primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
+    powerSupplyAvailable = idElecDc1BusPowered->get();
   }
+
+  Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
+  prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable,
+                          simConnectInterface, primIndex == primDisabled && primGeneralLogicDisabled,
+                          primIndex == primDisabled && primFctlDisabled);
+
+  primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
+  primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
+  primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
   idPrimApAuthorised[primIndex]->set(
