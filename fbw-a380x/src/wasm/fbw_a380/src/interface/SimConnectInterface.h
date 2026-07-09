@@ -10,7 +10,6 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
-#include "../model/A380FacComputer_types.h"
 #include "../model/A380PrimComputerGeneralLogic_types.h"
 #include "../model/A380SecComputer_types.h"
 
@@ -210,8 +209,8 @@ class SimConnectInterface {
                int primDisabled,
                bool primGeneralLogicDisabled,
                bool primFctlDisabled,
+               bool primFeDisabled,
                int secDisabled,
-               int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                double keyChangeAileron,
@@ -293,11 +292,15 @@ class SimConnectInterface {
   bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
   bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
+  bool setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output);
+  bool setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
   base_prim_analog_outputs& getClientDataPrimAnalogsOutput();
   base_prim_out_bus& getClientDataPrimBusOutput();
   base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
+  base_prim_flight_envelope_outputs& getClientDataPrimFlightEnvelopeOutput();
+  base_prim_fctl_logic_outputs& getClientDataPrimFctlLogicOutput();
 
   bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
   bool setClientDataSecAnalog(base_sec_analog_inputs& output);
@@ -307,20 +310,11 @@ class SimConnectInterface {
   base_sec_analog_outputs& getClientDataSecAnalogsOutput();
   base_sec_out_bus& getClientDataSecBusOutput();
 
-  bool setClientDataFacDiscretes(base_fac_discrete_inputs& output);
-  bool setClientDataFacAnalog(base_fac_analog_inputs& output);
-  bool setClientDataFacBus(base_fac_bus& output, int facIndex);
-
-  base_fac_discrete_outputs& getClientDataFacDiscretesOutput();
-  base_fac_analog_outputs& getClientDataFacAnalogsOutput();
-  base_fac_bus& getClientDataFacBusOutput();
-
   bool setClientDataAdr(base_adr_bus& output, int adrIndex);
   bool setClientDataIr(base_ir_bus& output, int irIndex);
   bool setClientDataRa(base_ra_bus& output, int raIndex);
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
-  bool setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -352,6 +346,8 @@ class SimConnectInterface {
     PRIM_2_BUS_OUTPUT,
     PRIM_3_BUS_OUTPUT,
     PRIM_GENERAL_LOGIC_OUTPUT,
+    PRIM_FLIGHT_ENVELOPE_OUTPUT,
+    PRIM_FCTL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
     SEC_DISCRETE_OUTPUTS,
@@ -359,12 +355,6 @@ class SimConnectInterface {
     SEC_1_BUS_OUTPUT,
     SEC_2_BUS_OUTPUT,
     SEC_3_BUS_OUTPUT,
-    FAC_DISCRETE_INPUTS,
-    FAC_ANALOG_INPUTS,
-    FAC_DISCRETE_OUTPUTS,
-    FAC_ANALOG_OUTPUTS,
-    FAC_1_BUS_OUTPUT,
-    FAC_2_BUS_OUTPUT,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -378,8 +368,6 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
-    FMGC_1_B_BUS,
-    FMGC_2_B_BUS,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -397,8 +385,8 @@ class SimConnectInterface {
   int primDisabled = -1;
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
+  bool primFeDisabled = false;
   int secDisabled = -1;
-  int facDisabled = -1;
 
   long pauseState = 0;
 
@@ -429,14 +417,12 @@ class SimConnectInterface {
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
   base_prim_out_bus clientDataPrimBusOutputs = {};
   base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
+  base_prim_flight_envelope_outputs clientDataPrimFlightEnvelopeOutput = {};
+  base_prim_fctl_logic_outputs clientDataPrimFctlLogicOutput = {};
 
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   base_sec_analog_outputs clientDataSecAnalogOutputs = {};
   base_sec_out_bus clientDataSecBusOutputs = {};
-
-  base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
-  base_fac_analog_outputs clientDataFacAnalogOutputs = {};
-  base_fac_bus clientDataFacBusOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
