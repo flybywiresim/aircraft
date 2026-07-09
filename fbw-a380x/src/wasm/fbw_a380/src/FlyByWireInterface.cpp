@@ -1944,6 +1944,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   idFcuEisDisplayBaroIsStd[fcuIndex]->set(efisPanelOutputs.baro_is_std);
   idFcuEisDisplayBaroValue[fcuIndex]->set(efisPanelOutputs.baro_value);
   idFcuEisDisplayBaroMode[fcuIndex]->set(efisPanelOutputs.baro_mode);
+  idFcuEisDisplayBaroPresetVisible[fcuIndex]->set(efisPanelOutputs.baro_preset_visible);
   idFcuEisCpActive[fcuIndex]->set(efisPanelOutputs.efis_cp_active);
 
   idFcuAfsPanelAp1LightOn->set(discreteOutputs.afs_outputs.ap_1_light_on);

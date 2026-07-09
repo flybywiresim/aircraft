@@ -20,13 +20,30 @@ interface BaroRefDisplayProps {
 export class BaroRefDisplay extends DisplayComponent<BaroRefDisplayProps> {
   private sub = this.props.bus.getSubscriber<FcuSimvars>();
 
-  private baroIsInhg = ConsumerSubject.create(null, false);
+  private baroIsInhg = ConsumerSubject.create(
+    this.sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroIsInhg`),
+    false,
+  );
 
-  private baroIsStd = ConsumerSubject.create(null, false);
+  private baroIsStd = ConsumerSubject.create(
+    this.sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroIsStd`),
+    false,
+  );
 
-  private baroValue = ConsumerSubject.create(null, 0);
+  private baroValue = ConsumerSubject.create(
+    this.sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValue`),
+    0,
+  );
 
-  private baroMode = ConsumerSubject.create(null, 0);
+  private baroMode = ConsumerSubject.create(
+    this.sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroMode`),
+    0,
+  );
+
+  private baroPresetVisible = ConsumerSubject.create(
+    this.sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroPresetVisible`),
+    false,
+  );
 
   private lightsTest = ConsumerSubject.create(this.sub.on('lightsTest'), false);
 
@@ -68,11 +85,11 @@ export class BaroRefDisplay extends DisplayComponent<BaroRefDisplayProps> {
   );
 
   private baroPreselSub = MappedSubject.create(
-    ([lightsTest, baroMode]) => {
-      return lightsTest || baroMode === 2;
+    ([lightsTest, baroPresetVisible]) => {
+      return lightsTest || baroPresetVisible;
     },
     this.lightsTest,
-    this.baroMode,
+    this.baroPresetVisible,
   );
 
   private qnhLabelSub = MappedSubject.create(
@@ -90,20 +107,6 @@ export class BaroRefDisplay extends DisplayComponent<BaroRefDisplayProps> {
     this.lightsTest,
     this.baroMode,
   );
-
-  public onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<FcuSimvars>();
-
-    this.baroIsInhg.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroIsInhg`));
-
-    this.baroIsStd.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroIsStd`));
-
-    this.baroValue.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroValue`));
-
-    this.baroMode.setConsumer(sub.on(`eisDisplay${this.props.isCaptSide ? 'Left' : 'Right'}BaroMode`));
-  }
 
   public render(): VNode {
     return (

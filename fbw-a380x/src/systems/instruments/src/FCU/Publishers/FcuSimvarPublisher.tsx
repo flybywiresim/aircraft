@@ -11,12 +11,14 @@ export interface FcuSimvars {
   eisDisplayLeftBaroIsStd: boolean;
   eisDisplayLeftBaroValue: number;
   eisDisplayLeftBaroMode: number;
+  eisDisplayLeftBaroPresetVisible: boolean;
   eisDisplayLeftNavaid1Mode: number;
   eisDisplayLeftNavaid2Mode: number;
   eisDisplayRightBaroIsInhg: boolean;
   eisDisplayRightBaroIsStd: boolean;
   eisDisplayRightBaroValue: number;
   eisDisplayRightBaroMode: number;
+  eisDisplayRightBaroPresetVisible: boolean;
   eisDisplayRightNavaid1Mode: number;
   eisDisplayRightNavaid2Mode: number;
 
@@ -43,12 +45,14 @@ export enum FcuVars {
   eisDisplayLeftBaroIsStd = 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_IS_STD',
   eisDisplayLeftBaroValue = 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_VALUE',
   eisDisplayLeftBaroMode = 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE',
+  eisDisplayLeftBaroPresetVisible = 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_PRESET_VISIBLE',
   eisDisplayLeftNavaid1Mode = 'L:A32NX_FCU_EFIS_L_NAVAID_1_MODE',
   eisDisplayLeftNavaid2Mode = 'L:A32NX_FCU_EFIS_L_NAVAID_2_MODE',
   eisDisplayRightBaroIsInhg = 'L:A32NX_FCU_EFIS_R_DISPLAY_BARO_IS_INHG',
   eisDisplayRightBaroIsStd = 'L:A32NX_FCU_EFIS_R_DISPLAY_BARO_IS_STD',
   eisDisplayRightBaroValue = 'L:A32NX_FCU_EFIS_R_DISPLAY_BARO_VALUE',
   eisDisplayRightBaroMode = 'L:A32NX_FCU_EFIS_R_DISPLAY_BARO_MODE',
+  eisDisplayRightBaroPresetVisible = 'L:A32NX_FCU_EFIS_R_DISPLAY_BARO_PRESET_VISIBLE',
   eisDisplayRightNavaid1Mode = 'L:A32NX_FCU_EFIS_R_NAVAID_1_MODE',
   eisDisplayRightNavaid2Mode = 'L:A32NX_FCU_EFIS_R_NAVAID_2_MODE',
 
@@ -76,12 +80,17 @@ export class FCUSimvarPublisher extends SimVarPublisher<FcuSimvars> {
     ['eisDisplayLeftBaroIsStd', { name: FcuVars.eisDisplayLeftBaroIsStd, type: SimVarValueType.Bool }],
     ['eisDisplayLeftBaroValue', { name: FcuVars.eisDisplayLeftBaroValue, type: SimVarValueType.Number }],
     ['eisDisplayLeftBaroMode', { name: FcuVars.eisDisplayLeftBaroMode, type: SimVarValueType.Number }],
+    ['eisDisplayLeftBaroPresetVisible', { name: FcuVars.eisDisplayLeftBaroPresetVisible, type: SimVarValueType.Bool }],
     ['eisDisplayLeftNavaid1Mode', { name: FcuVars.eisDisplayLeftNavaid1Mode, type: SimVarValueType.Number }],
     ['eisDisplayLeftNavaid2Mode', { name: FcuVars.eisDisplayLeftNavaid2Mode, type: SimVarValueType.Number }],
     ['eisDisplayRightBaroIsInhg', { name: FcuVars.eisDisplayRightBaroIsInhg, type: SimVarValueType.Bool }],
     ['eisDisplayRightBaroIsStd', { name: FcuVars.eisDisplayRightBaroIsStd, type: SimVarValueType.Bool }],
     ['eisDisplayRightBaroValue', { name: FcuVars.eisDisplayRightBaroValue, type: SimVarValueType.Number }],
     ['eisDisplayRightBaroMode', { name: FcuVars.eisDisplayRightBaroMode, type: SimVarValueType.Number }],
+    [
+      'eisDisplayRightBaroPresetVisible',
+      { name: FcuVars.eisDisplayRightBaroPresetVisible, type: SimVarValueType.Bool },
+    ],
     ['eisDisplayRightNavaid1Mode', { name: FcuVars.eisDisplayRightNavaid1Mode, type: SimVarValueType.Number }],
     ['eisDisplayRightNavaid2Mode', { name: FcuVars.eisDisplayRightNavaid2Mode, type: SimVarValueType.Number }],
 
