@@ -6,6 +6,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
 import { SDSimvars } from '../../../SDSimvarPublisher';
@@ -45,7 +46,7 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
   );
 
   private readonly hydraulicAvailable = MappedSubject.create(
-    ([hydGreenAvailable, hydYellowAvailable]) => hydGreenAvailable || hydYellowAvailable,
+    SubscribableMapFunctions.or(),
     this.hydGreenAvailable,
     this.hydYellowAvailable,
   );

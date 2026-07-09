@@ -6,6 +6,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { EbhaActuatorIndication, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
 import { HORIZONTAL_MAX_DEFLECTION, HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
@@ -79,7 +80,7 @@ export class Rudder extends DisplayComponent<RudderProps> {
   );
 
   private readonly powerSourceAvail = MappedSubject.create(
-    ([powerSource1Avail, powerSource2Avail]) => powerSource1Avail || powerSource2Avail,
+    SubscribableMapFunctions.or(),
     this.powerSource1Avail,
     this.powerSource2Avail,
   );
