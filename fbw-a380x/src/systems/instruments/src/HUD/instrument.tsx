@@ -18,6 +18,9 @@ import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher
 import { FcdcSimvarPublisher } from '../MsfsAvionicsCommon/providers/FcdcPublisher';
 import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
+import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
+import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
 
 class A380X_HUD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -64,6 +67,12 @@ class A380X_HUD extends BaseInstrument {
 
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
 
+  private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
+
+  private readonly primFePublisher = new PrimFeBusPublisher(this.bus);
+
+  private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -91,6 +100,9 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
     this.backplane.addPublisher('vor', this.vorBusPublisher);
     this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
+    this.backplane.addInstrument('PrimChoiceProvider', this.primChoiceProvider);
+    this.backplane.addPublisher('PrimFePublisher', this.primFePublisher);
+    this.backplane.addPublisher('PrimFctlPublisher', this.primFctlPublisher);
   }
 
   get templateID(): string {

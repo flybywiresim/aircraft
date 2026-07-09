@@ -140,32 +140,6 @@ export interface HUDSimvars {
   ldevRequestRight: boolean;
   landingElevation1Raw: number;
   landingElevation2Raw: number;
-  fac1Healthy: boolean;
-  fac2Healthy: boolean;
-  fac1VAlphaProtRaw: number;
-  fac2VAlphaProtRaw: number;
-  fac1VAlphaMaxRaw: number;
-  fac2VAlphaMaxRaw: number;
-  fac1VStallWarnRaw: number;
-  fac2VStallWarnRaw: number;
-  fac1VMaxRaw: number;
-  fac2VMaxRaw: number;
-  fac1VFeNextRaw: number;
-  fac2VFeNextRaw: number;
-  fac1VCTrendRaw: number;
-  fac2VCTrendRaw: number;
-  fac1VManRaw: number;
-  fac2VManRaw: number;
-  fac1V4Raw: number;
-  fac2V4Raw: number;
-  fac1V3Raw: number;
-  fac2V3Raw: number;
-  fac1VLsRaw: number;
-  fac2VLsRaw: number;
-  fac1EstimatedBetaRaw: number;
-  fac2EstimatedBetaRaw: number;
-  fac1BetaTargetRaw: number;
-  fac2BetaTargetRaw: number;
   fm1NavDiscrete: number;
   fm1EisDiscrete2Raw: number;
   fm2EisDiscrete2Raw: number;
@@ -330,32 +304,6 @@ export enum HUDVars {
   ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
   landingElevation1Raw = 'L:A32NX_FM1_LANDING_ELEVATION',
   landingElevation2Raw = 'L:A32NX_FM2_LANDING_ELEVATION',
-  fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
-  fac2Healthy = 'L:A32NX_FAC_2_HEALTHY',
-  fac1VAlphaProtRaw = 'L:A32NX_FAC_1_V_ALPHA_PROT',
-  fac2VAlphaProtRaw = 'L:A32NX_FAC_2_V_ALPHA_PROT',
-  fac1VAlphaMaxRaw = 'L:A32NX_FAC_1_V_ALPHA_LIM',
-  fac2VAlphaMaxRaw = 'L:A32NX_FAC_2_V_ALPHA_LIM',
-  fac1VStallWarnRaw = 'L:A32NX_FAC_1_V_STALL_WARN',
-  fac2VStallWarnRaw = 'L:A32NX_FAC_2_V_STALL_WARN',
-  fac1VMaxRaw = 'L:A32NX_FAC_1_V_MAX',
-  fac2VMaxRaw = 'L:A32NX_FAC_2_V_MAX',
-  fac1VFeNextRaw = 'L:A32NX_FAC_1_V_FE_NEXT',
-  fac2VFeNextRaw = 'L:A32NX_FAC_2_V_FE_NEXT',
-  fac1VCTrendRaw = 'L:A32NX_FAC_1_SPEED_TREND',
-  fac2VCTrendRaw = 'L:A32NX_FAC_2_SPEED_TREND',
-  fac1VManRaw = 'L:A32NX_FAC_1_V_MAN',
-  fac2VManRaw = 'L:A32NX_FAC_2_V_MAN',
-  fac1V4Raw = 'L:A32NX_FAC_1_V_4',
-  fac2V4Raw = 'L:A32NX_FAC_2_V_4',
-  fac1V3Raw = 'L:A32NX_FAC_1_V_3',
-  fac2V3Raw = 'L:A32NX_FAC_2_V_3',
-  fac1VLsRaw = 'L:A32NX_FAC_1_V_LS',
-  fac2VLsRaw = 'L:A32NX_FAC_2_V_LS',
-  fac1EstimatedBetaRaw = 'L:A32NX_FAC_1_ESTIMATED_SIDESLIP',
-  fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
-  fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
-  fac2BetaTargetRaw = 'L:A32NX_FAC_2_SIDESLIP_TARGET',
   fm1NavDiscrete = 'L:A32NX_FM1_NAV_DISCRETE',
   fm1EisDiscrete2 = 'L:A32NX_FM1_EIS_DISCRETE_WORD_2',
   fm2EisDiscrete2 = 'L:A32NX_FM2_EIS_DISCRETE_WORD_2',
@@ -521,32 +469,6 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['ldevRequestRight', { name: HUDVars.ldevRight, type: SimVarValueType.Bool }],
     ['landingElevation1Raw', { name: HUDVars.landingElevation1Raw, type: SimVarValueType.Number }],
     ['landingElevation2Raw', { name: HUDVars.landingElevation2Raw, type: SimVarValueType.Number }],
-    ['fac1Healthy', { name: HUDVars.fac1Healthy, type: SimVarValueType.Bool }],
-    ['fac2Healthy', { name: HUDVars.fac2Healthy, type: SimVarValueType.Bool }],
-    ['fac1VAlphaProtRaw', { name: HUDVars.fac1VAlphaProtRaw, type: SimVarValueType.Number }],
-    ['fac2VAlphaProtRaw', { name: HUDVars.fac2VAlphaProtRaw, type: SimVarValueType.Number }],
-    ['fac1VAlphaMaxRaw', { name: HUDVars.fac1VAlphaMaxRaw, type: SimVarValueType.Number }],
-    ['fac2VAlphaMaxRaw', { name: HUDVars.fac2VAlphaMaxRaw, type: SimVarValueType.Number }],
-    ['fac1VStallWarnRaw', { name: HUDVars.fac1VStallWarnRaw, type: SimVarValueType.Number }],
-    ['fac2VStallWarnRaw', { name: HUDVars.fac2VStallWarnRaw, type: SimVarValueType.Number }],
-    ['fac1VMaxRaw', { name: HUDVars.fac1VMaxRaw, type: SimVarValueType.Number }],
-    ['fac2VMaxRaw', { name: HUDVars.fac2VMaxRaw, type: SimVarValueType.Number }],
-    ['fac1VFeNextRaw', { name: HUDVars.fac1VFeNextRaw, type: SimVarValueType.Number }],
-    ['fac2VFeNextRaw', { name: HUDVars.fac2VFeNextRaw, type: SimVarValueType.Number }],
-    ['fac1VCTrendRaw', { name: HUDVars.fac1VCTrendRaw, type: SimVarValueType.Number }],
-    ['fac2VCTrendRaw', { name: HUDVars.fac2VCTrendRaw, type: SimVarValueType.Number }],
-    ['fac1VManRaw', { name: HUDVars.fac1VManRaw, type: SimVarValueType.Number }],
-    ['fac2VManRaw', { name: HUDVars.fac2VManRaw, type: SimVarValueType.Number }],
-    ['fac1V4Raw', { name: HUDVars.fac1V4Raw, type: SimVarValueType.Number }],
-    ['fac2V4Raw', { name: HUDVars.fac2V4Raw, type: SimVarValueType.Number }],
-    ['fac1V3Raw', { name: HUDVars.fac1V3Raw, type: SimVarValueType.Number }],
-    ['fac2V3Raw', { name: HUDVars.fac2V3Raw, type: SimVarValueType.Number }],
-    ['fac1VLsRaw', { name: HUDVars.fac1VLsRaw, type: SimVarValueType.Number }],
-    ['fac2VLsRaw', { name: HUDVars.fac2VLsRaw, type: SimVarValueType.Number }],
-    ['fac1EstimatedBetaRaw', { name: HUDVars.fac1EstimatedBetaRaw, type: SimVarValueType.Number }],
-    ['fac2EstimatedBetaRaw', { name: HUDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
-    ['fac1BetaTargetRaw', { name: HUDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
-    ['fac2BetaTargetRaw', { name: HUDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
     ['fm1NavDiscrete', { name: HUDVars.fm1NavDiscrete, type: SimVarValueType.Number }],
     ['fm1EisDiscrete2Raw', { name: HUDVars.fm1EisDiscrete2, type: SimVarValueType.Number }],
     ['fm2EisDiscrete2Raw', { name: HUDVars.fm2EisDiscrete2, type: SimVarValueType.Number }],
