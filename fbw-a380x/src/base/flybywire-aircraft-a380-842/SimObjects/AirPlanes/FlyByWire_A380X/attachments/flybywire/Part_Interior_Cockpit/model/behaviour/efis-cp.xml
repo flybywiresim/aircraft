@@ -156,15 +156,15 @@
     <Template Name="FBW_AIRLINER_Knob_ND_Template">
         <DefaultTemplateParameters>
             <SIDE>L</SIDE>
-            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            <WWISE_EVENT>QNHknob</WWISE_EVENT>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.EFIS_CP_ND_MODE</TOOLTIPID>
+            <COUNT>18</COUNT>
+            <ANIM_LAG>200</ANIM_LAG>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#_Group">
             <Component ID="#NODE_ID#" Node="#NODE_ID#">
                 <UseTemplate Name="ASOBO_GT_Knob_Infinite">
-                    <WWISE_EVENT>turnknob</WWISE_EVENT>
                     <ROTATION_SPEED>20</ROTATION_SPEED>
                     <ANTICLOCKWISE_CODE>
                         'A32NX.FCU_EFIS_#SIDE#_#TYPE#_DEC' (&gt;F:KeyEvent)
@@ -289,6 +289,7 @@
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_KNOB_EFIS_#SIDE_NODE_GROUP#_BARO1</ANIM_NAME_PUSHPULL>
+                <SIDE>#SIDE_SIMVAR_GROUP#</SIDE>
             </UseTemplate>
 
             <!-- Baro Ref Unit -->
@@ -305,7 +306,6 @@
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_ROSE</NODE_ID>
                 <ANIM_NAME>KNOB_EFIS_#SIDE_NODE_GROUP#_ROSE</ANIM_NAME>
                 <TYPE>MODE</TYPE>
-                <ANIM_LAG>800</ANIM_LAG>
             </UseTemplate>
 
             <!-- Mode LEDs -->
@@ -349,7 +349,6 @@
                 <NODE_ID>KNOB_EFIS_#SIDE_NODE_GROUP#_RANGE</NODE_ID>
                 <ANIM_NAME>KNOB_EFIS_#SIDE_NODE_GROUP#_RANGE</ANIM_NAME>
                 <TYPE>RANGE</TYPE>
-                <ANIM_LAG>800</ANIM_LAG>
             </UseTemplate>
 
             <!-- Range LEDs -->
