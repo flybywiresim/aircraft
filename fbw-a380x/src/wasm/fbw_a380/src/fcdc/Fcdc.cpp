@@ -214,12 +214,8 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
   // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
 
-  int numberOfAutopilotsEngaged =
-      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
-  bool memorizeLand3Capacity =
-      radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
-      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33 ||
-       discreteInputs.autopilotStateMachineOutput.vertical_mode == 34);
+  int numberOfAutopilotsEngaged = 0;
+  bool memorizeLand3Capacity = false;
   // Select capability from master PRIM
   bool land2Capability = false;
   bool land3FailPassiveCapability = false;
@@ -303,8 +299,7 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // if at least one AP engaged and LAND or FLARE mode -> latch
   if (memorizeLand3Capacity) {
     autolandWarningLatch = true;
-  } else if (radioAlt >= 200 || (discreteInputs.autopilotStateMachineOutput.vertical_mode != 32 &&
-                                 discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {
+  } else if (false) {
     autolandWarningLatch = false;
     autolandWarningTriggered = false;
   }

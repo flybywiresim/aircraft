@@ -23,20 +23,15 @@ bool FlyByWireInterface::connect() {
   // initialize failures handler
   failuresConsumer.initialize();
 
-  // initialize model
-  autopilotStateMachine.initialize();
-  autopilotLaws.initialize();
-  autoThrust.initialize();
-
   // initialize flight data recorder
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  bool success = simConnectInterface.connect(
-      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled, primGeneralLogicDisabled,
-      primFctlDisabled, primFeDisabled, secDisabled, fcuDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
-      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
-      idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+  bool success =
+      simConnectInterface.connect(primDisabled, primGeneralLogicDisabled, primFctlDisabled, primFeDisabled, secDisabled, fcuDisabled,
+                                  throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator,
+                                  flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
+                                  idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
     std::cout << "WASM: Request data failed!" << std::endl;
@@ -49,10 +44,6 @@ bool FlyByWireInterface::connect() {
 void FlyByWireInterface::disconnect() {
   // disconnect from sim connect
   simConnectInterface.disconnect();
-
-  // terminate model
-  autopilotStateMachine.terminate();
-  autopilotLaws.terminate();
 
   // terminate flight data recorder
   flightDataRecorder.terminate();
@@ -95,12 +86,6 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   // update altimeter setting
   result &= updateAltimeterSetting(calculatedSampleTime);
-
-  // update autopilot state machine
-  result &= updateAutopilotStateMachine(calculatedSampleTime);
-
-  // update autopilot laws
-  result &= updateAutopilotLaws(calculatedSampleTime);
 
   // update fly-by-wire
   result &= updateFlyByWire(calculatedSampleTime);
@@ -155,8 +140,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
-    flightDataRecorder.update(baseData, aircraftSpecificData, prims, secs, autopilotStateMachine, autopilotLaws, autoThrust,
-                              simConnectInterface.getFuelSystemData());
+    flightDataRecorder.update(baseData, aircraftSpecificData, prims, secs, simConnectInterface.getFuelSystemData());
   }
 
   // if default AP is on -> disconnect it
@@ -179,10 +163,6 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - model
-  autopilotStateMachineEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_STATE_MACHINE_ENABLED", true);
-  autopilotLawsEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_LAWS_ENABLED", true);
-  autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
-  flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   primDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "PRIM_DISABLED", -1);
   primGeneralLogicDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_GENERAL_LOGIC_DISABLED", false);
   primFctlDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FCTL_DISABLED", false);
@@ -192,15 +172,10 @@ void FlyByWireInterface::loadConfiguration() {
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || !autopilotStateMachineEnabled || !autopilotLawsEnabled ||
-                       !autoThrustEnabled || !flyByWireEnabled);
+  clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || fcuDisabled != -1);
 
   // print configuration into console
   std::cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << std::endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << std::endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << std::endl;
-  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << std::endl;
-  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_DISABLED                        = " << primDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = " << primGeneralLogicDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
@@ -966,48 +941,6 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
 
-  // read local variables and update client data
-  // update client data for flight guidance
-  if (!autopilotStateMachineEnabled || !autopilotLawsEnabled) {
-    ClientDataLocalVariables clientDataLocalVariables = {idFmgcFlightPhase->get(),
-                                                         idFmgcV2->get(),
-                                                         idFmgcV_APP->get(),
-                                                         idFmgcV_LS->get(),
-                                                         idFmgcV_MAX->get(),
-                                                         idFmLateralPlanAvail->get(),
-                                                         idFmgcAltitudeConstraint->get(),
-                                                         fmThrustReductionAltitude->valueOr(0),
-                                                         fmThrustReductionAltitudeGoAround->valueOr(0),
-                                                         fmAccelerationAltitude->valueOr(0),
-                                                         fmAccelerationAltitudeEngineOut->valueOr(0),
-                                                         fmAccelerationAltitudeGoAround->valueOr(0),
-                                                         fmAccelerationAltitudeGoAroundEngineOut->valueOr(0),
-                                                         idFmgcCruiseAltitude->get(),
-                                                         simConnectInterface.getSimInputAutopilot().DIR_TO_trigger,
-                                                         idFcuTrkFpaModeActive->get(),
-                                                         idFcuSelectedVs->get(),
-                                                         idFcuSelectedFpa->get(),
-                                                         idFcuSelectedHeading->get(),
-                                                         idFmCrossTrackError->get(),
-                                                         idFmTrackAngleError->get(),
-                                                         idFmPhiCommand->get(),
-                                                         idFmPhiLimit->get(),
-                                                         static_cast<unsigned long long>(idFmRequestedVerticalMode->get()),
-                                                         idFmTargetAltitude->get(),
-                                                         idFmTargetVerticalSpeed->get(),
-                                                         static_cast<unsigned long long>(idFmRnavAppSelected->get()),
-                                                         static_cast<unsigned long long>(idFmFinalCanEngage->get()),
-                                                         simData.speed_slot_index == 2,
-                                                         autopilotLawsOutput.Phi_loc_c,
-                                                         static_cast<unsigned long long>(idTcasFault->get()),
-                                                         static_cast<unsigned long long>(getTcasModeAvailable()),
-                                                         getTcasAdvisoryState(),
-                                                         idTcasTargetGreenMin->get(),
-                                                         idTcasTargetGreenMax->get(),
-                                                         autopilotLawsOutput.flare_law.condition_Flare};
-    simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
-  }
-
   // detect pause
   if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2)) {
     pauseDetected = true;
@@ -1099,11 +1032,12 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
 
   bool elac1ProtActive = false;
   bool elac2ProtActive = false;
+  bool apSpeedProtActive = false;
 
   // check if simulation rate should be reduced
   if (idPerformanceWarningActive->get() == 1 || abs(simConnectInterface.getSimData().Phi_deg) > 33 ||
       simConnectInterface.getSimData().Theta_deg < -20 || simConnectInterface.getSimData().Theta_deg > 10 || elac1ProtActive ||
-      elac2ProtActive || autopilotStateMachineOutput.speed_protection_mode == 1) {
+      elac2ProtActive || apSpeedProtActive) {
     // set target simulation rate
     targetSimulationRateModified = true;
     targetSimulationRate = std::max(1., simData.simulation_rate / 2);
@@ -1549,18 +1483,17 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
   modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
-  modelInputs.in.temporary_ap_input.ap_engaged =
-      static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1) || static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
-  modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1);
-  modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
-  modelInputs.in.temporary_ap_input.athr_engaged = static_cast<boolean_T>(autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-  modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
-  modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
-  modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
-  modelInputs.in.temporary_ap_input.lateral_mode = autopilotStateMachineOutput.lateral_mode;
-  modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
-  modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
-  modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
+  modelInputs.in.temporary_ap_input.ap_engaged = false;
+  modelInputs.in.temporary_ap_input.ap_1_engaged = false;
+  modelInputs.in.temporary_ap_input.ap_2_engaged = false;
+  modelInputs.in.temporary_ap_input.athr_engaged = false;
+  modelInputs.in.temporary_ap_input.roll_command = 0;
+  modelInputs.in.temporary_ap_input.pitch_command = 0;
+  modelInputs.in.temporary_ap_input.yaw_command = 0;
+  modelInputs.in.temporary_ap_input.lateral_mode = 0;
+  modelInputs.in.temporary_ap_input.lateral_mode_armed = 0;
+  modelInputs.in.temporary_ap_input.vertical_mode = 0;
+  modelInputs.in.temporary_ap_input.vertical_mode_armed = 0;
   modelInputs.in.temporary_ap_input.weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get()).Data * 2.205;
   modelInputs.in.temporary_ap_input.cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get()).Data / 100;
 
@@ -1834,8 +1767,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
     fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
     fcdcs[fcdcIndex].discreteInputs.simData = simData;
-    fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
-    fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
     fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[0] = simData.engine_combustion_1;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[1] = simData.engine_combustion_2;
@@ -2230,506 +2161,6 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   return true;
 }
 
-bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
-  // get data from interface ------------------------------------------------------------------------------------------
-  SimData simData = simConnectInterface.getSimData();
-  SimInput simInput = simConnectInterface.getSimInput();
-  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
-
-  // determine disconnection conditions -------------------------------------------------------------------------------
-
-  bool doDisconnect = false;
-  if (autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2) {
-    // Select PRIM master, check for AP authorised signal
-    for (int i = 0; i < 3; i++) {
-      if (primsDiscreteOutputs[i].prim_healthy) {
-        doDisconnect =
-            !reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[i].fctl.fe_status_word)->bitFromValueOr(11, true);  // AP authorised
-        break;
-      }
-    }
-  }
-
-  bool pulsedCaptureCondition = captureConditionPulseNode.update(idFmNavCaptureCondition->get());
-
-  real32_T v_ls = 0, v_max = 0;
-  if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[0].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[0].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[1].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[2].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  }
-
-  // update state machine ---------------------------------------------------------------------------------------------
-  if (autopilotStateMachineEnabled) {
-    // time -----------------------------------------------------------------------------------------------------------
-    autopilotStateMachineInput.in.time.dt = sampleTime;
-    autopilotStateMachineInput.in.time.simulation_time = simData.simulationTime;
-
-    // data -----------------------------------------------------------------------------------------------------------
-    autopilotStateMachineInput.in.data.aircraft_position.lat = simData.latitude_deg;
-    autopilotStateMachineInput.in.data.aircraft_position.lon = simData.longitude_deg;
-    autopilotStateMachineInput.in.data.aircraft_position.alt = simData.altitude_m;
-    autopilotStateMachineInput.in.data.Theta_deg = simData.Theta_deg;
-    autopilotStateMachineInput.in.data.Phi_deg = simData.Phi_deg;
-    autopilotStateMachineInput.in.data.q_rad_s = simData.bodyRotationVelocity.x;
-    autopilotStateMachineInput.in.data.r_rad_s = simData.bodyRotationVelocity.y;
-    autopilotStateMachineInput.in.data.p_rad_s = simData.bodyRotationVelocity.z;
-    autopilotStateMachineInput.in.data.V_ias_kn = simData.V_ias_kn;
-    autopilotStateMachineInput.in.data.V_tas_kn = simData.V_tas_kn;
-    autopilotStateMachineInput.in.data.V_mach = simData.V_mach;
-    autopilotStateMachineInput.in.data.V_gnd_kn = simData.V_gnd_kn;
-    autopilotStateMachineInput.in.data.alpha_deg = simData.alpha_deg;
-    autopilotStateMachineInput.in.data.beta_deg = simData.beta_deg;
-    autopilotStateMachineInput.in.data.H_ft = simData.H_ft;
-    autopilotStateMachineInput.in.data.H_ind_ft = simData.H_ind_ft;
-    autopilotStateMachineInput.in.data.H_radio_ft = simData.H_radio_ft;
-    autopilotStateMachineInput.in.data.H_dot_ft_min = simData.H_dot_fpm;
-    autopilotStateMachineInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
-    autopilotStateMachineInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
-    autopilotStateMachineInput.in.data.Psi_true_deg = simData.Psi_true_deg;
-    autopilotStateMachineInput.in.data.bx_m_s2 = simData.bx_m_s2;
-    autopilotStateMachineInput.in.data.by_m_s2 = simData.by_m_s2;
-    autopilotStateMachineInput.in.data.bz_m_s2 = simData.bz_m_s2;
-    autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
-    autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
-    autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    if (idRadioReceiverUsageEnabled->get()) {
-      autopilotStateMachineInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
-      autopilotStateMachineInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
-      autopilotStateMachineInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
-      autopilotStateMachineInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
-      autopilotStateMachineInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
-      autopilotStateMachineInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
-    } else {
-      autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
-      autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
-      autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
-      autopilotStateMachineInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
-      autopilotStateMachineInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
-      autopilotStateMachineInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
-    }
-    autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
-    autopilotStateMachineInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
-    autopilotStateMachineInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
-    autopilotStateMachineInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
-    autopilotStateMachineInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
-    autopilotStateMachineInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
-    autopilotStateMachineInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
-    autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = idFmCrossTrackError->get();
-    autopilotStateMachineInput.in.data.flight_guidance_tae_deg = idFmTrackAngleError->get();
-    autopilotStateMachineInput.in.data.flight_guidance_phi_deg = idFmPhiCommand->get();
-    autopilotStateMachineInput.in.data.flight_guidance_phi_limit_deg = idFmPhiLimit->get();
-    autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
-    autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
-    autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotStateMachineInput.in.data.VLS_kn = v_ls;
-    autopilotStateMachineInput.in.data.VMAX_kn = v_max;
-    autopilotStateMachineInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get() && !pulsedCaptureCondition;
-    autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
-    autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
-    autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
-    autopilotStateMachineInput.in.data.acceleration_altitude = fmAccelerationAltitude->valueOr(0);
-    autopilotStateMachineInput.in.data.acceleration_altitude_engine_out = fmAccelerationAltitudeEngineOut->valueOr(0);
-    autopilotStateMachineInput.in.data.acceleration_altitude_go_around = fmAccelerationAltitudeGoAround->valueOr(0);
-    autopilotStateMachineInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
-    autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
-    autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
-    autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotStateMachineInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
-    autopilotStateMachineInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
-    autopilotStateMachineInput.in.data.gear_strut_compression_1 =
-        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
-    autopilotStateMachineInput.in.data.gear_strut_compression_2 =
-        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
-    autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
-    autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
-    autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
-    autopilotStateMachineInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
-    autopilotStateMachineInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
-    autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
-    autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_2;
-    autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
-    autopilotStateMachineInput.in.data.gear_is_extended = simData.gearHandlePosition > 0.95;
-
-    bool landCapability = false;
-    if (fcdcsDiscreteOutputs[0].fcdcValid) {
-      landCapability = fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(23, false) ||
-                       fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(24, false) ||
-                       fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(25, false);
-    } else {
-      landCapability = fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(23, false) ||
-                       fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(24, false) ||
-                       fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(25, false);
-    }
-    autopilotStateMachineInput.in.data.land_capability = landCapability;
-
-    // input ----------------------------------------------------------------------------------------------------------
-    autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
-    autopilotStateMachineInput.in.input.AP_ENGAGE_push = simInputAutopilot.AP_engage;
-    autopilotStateMachineInput.in.input.AP_1_push = simInputAutopilot.AP_1_push;
-    autopilotStateMachineInput.in.input.AP_2_push = simInputAutopilot.AP_2_push;
-    autopilotStateMachineInput.in.input.AP_DISCONNECT_push = simInputAutopilot.AP_disconnect || wasInSlew || doDisconnect;
-    autopilotStateMachineInput.in.input.HDG_push = simInputAutopilot.HDG_push;
-    autopilotStateMachineInput.in.input.HDG_pull = simInputAutopilot.HDG_pull;
-    autopilotStateMachineInput.in.input.ALT_push = simInputAutopilot.ALT_push;
-    autopilotStateMachineInput.in.input.ALT_pull = simInputAutopilot.ALT_pull;
-    autopilotStateMachineInput.in.input.VS_push = simInputAutopilot.VS_push;
-    autopilotStateMachineInput.in.input.VS_pull = simInputAutopilot.VS_pull;
-    autopilotStateMachineInput.in.input.LOC_push = simInputAutopilot.LOC_push;
-    autopilotStateMachineInput.in.input.APPR_push = simInputAutopilot.APPR_push;
-    autopilotStateMachineInput.in.input.EXPED_push = simInputAutopilot.EXPED_push;
-    autopilotStateMachineInput.in.input.V_fcu_kn = simData.ap_V_c_kn;
-    autopilotStateMachineInput.in.input.H_fcu_ft = simData.ap_H_c_ft;
-    autopilotStateMachineInput.in.input.H_constraint_ft = idFmgcAltitudeConstraint->get();
-    autopilotStateMachineInput.in.input.H_dot_fcu_fpm = idFcuSelectedVs->get();
-    autopilotStateMachineInput.in.input.FPA_fcu_deg = idFcuSelectedFpa->get();
-    autopilotStateMachineInput.in.input.Psi_fcu_deg = idFcuSelectedHeading->get();
-    autopilotStateMachineInput.in.input.TRK_FPA_mode = idFcuTrkFpaModeActive->get();
-    autopilotStateMachineInput.in.input.DIR_TO_trigger = simInputAutopilot.DIR_TO_trigger;
-    autopilotStateMachineInput.in.input.is_FLX_active = autoThrust.getExternalOutputs().out.data_computed.is_FLX_active;
-    autopilotStateMachineInput.in.input.Slew_trigger = wasInSlew;
-    autopilotStateMachineInput.in.input.MACH_mode = simData.is_mach_mode_active;
-    autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-    autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
-    autopilotStateMachineInput.in.input.FDR_event = idFdrEvent->get();
-    autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
-    autopilotStateMachineInput.in.input.FM_requested_vertical_mode =
-        static_cast<fm_requested_vertical_mode>(idFmRequestedVerticalMode->get());
-    autopilotStateMachineInput.in.input.FM_H_c_ft = idFmTargetAltitude->get();
-    autopilotStateMachineInput.in.input.FM_H_dot_c_fpm = idFmTargetVerticalSpeed->get();
-    autopilotStateMachineInput.in.input.FM_rnav_appr_selected = static_cast<bool>(idFmRnavAppSelected->get());
-    autopilotStateMachineInput.in.input.FM_final_des_can_engage = static_cast<bool>(idFmFinalCanEngage->get());
-    autopilotStateMachineInput.in.input.TCAS_mode_available = getTcasModeAvailable();
-    autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
-    autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
-    autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
-    autopilotStateMachineInput.in.input.condition_Flare = autopilotLawsOutput.flare_law.condition_Flare;
-
-    // step the model -------------------------------------------------------------------------------------------------
-    autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
-    autopilotStateMachine.step();
-
-    // result
-    autopilotStateMachineOutput = autopilotStateMachine.getExternalOutputs().out.output;
-  } else {
-    // read client data written by simulink
-    ClientDataAutopilotStateMachine clientData = simConnectInterface.getClientDataAutopilotStateMachine();
-    autopilotStateMachineOutput.enabled_AP1 = clientData.enabled_AP1;
-    autopilotStateMachineOutput.enabled_AP2 = clientData.enabled_AP2;
-    autopilotStateMachineOutput.lateral_law = clientData.lateral_law;
-    autopilotStateMachineOutput.lateral_mode = clientData.lateral_mode;
-    autopilotStateMachineOutput.lateral_mode_armed = clientData.lateral_mode_armed;
-    autopilotStateMachineOutput.vertical_law = clientData.vertical_law;
-    autopilotStateMachineOutput.vertical_mode = clientData.vertical_mode;
-    autopilotStateMachineOutput.vertical_mode_armed = clientData.vertical_mode_armed;
-    autopilotStateMachineOutput.mode_reversion_lateral = clientData.mode_reversion_lateral;
-    autopilotStateMachineOutput.mode_reversion_vertical = clientData.mode_reversion_vertical;
-    autopilotStateMachineOutput.mode_reversion_vertical_target_fpm = clientData.mode_reversion_vertical_target_fpm;
-    autopilotStateMachineOutput.mode_reversion_TRK_FPA = clientData.mode_reversion_TRK_FPA;
-    autopilotStateMachineOutput.mode_reversion_triple_click = clientData.mode_reversion_triple_click;
-    autopilotStateMachineOutput.mode_reversion_fma = clientData.mode_reversion_fma;
-    autopilotStateMachineOutput.speed_protection_mode = clientData.speed_protection_mode;
-    autopilotStateMachineOutput.autothrust_mode = clientData.autothrust_mode;
-    autopilotStateMachineOutput.Psi_c_deg = clientData.Psi_c_deg;
-    autopilotStateMachineOutput.H_c_ft = clientData.H_c_ft;
-    autopilotStateMachineOutput.H_dot_c_fpm = clientData.H_dot_c_fpm;
-    autopilotStateMachineOutput.FPA_c_deg = clientData.FPA_c_deg;
-    autopilotStateMachineOutput.V_c_kn = clientData.V_c_kn;
-    autopilotStateMachineOutput.ALT_soft_mode_active = clientData.ALT_soft_mode_active;
-    autopilotStateMachineOutput.ALT_cruise_mode_active = clientData.ALT_cruise_mode_active;
-    autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
-    autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
-    autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
-    autopilotStateMachineOutput.TCAS_message_disarm = clientData.TCAS_message_disarm;
-    autopilotStateMachineOutput.TCAS_message_RA_inhibit = clientData.TCAS_message_RA_inhibit;
-    autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection = clientData.TCAS_message_TRK_FPA_deselection;
-  }
-
-  // update autopilot state -------------------------------------------------------------------------------------------
-  idAutopilotActiveAny->set(autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2);
-  idAutopilotActive_1->set(autopilotStateMachineOutput.enabled_AP1);
-  idAutopilotActive_2->set(autopilotStateMachineOutput.enabled_AP2);
-
-  bool isLocArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.lateral_mode_armed) >> 1 & 0x01;
-  bool isLocEngaged = autopilotStateMachineOutput.lateral_mode >= 30 && autopilotStateMachineOutput.lateral_mode <= 34;
-  bool isGsArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
-  bool isGsEngaged = autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
-  bool isFinalArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 5 & 0x01;
-  bool isFinalEngaged = autopilotStateMachineOutput.vertical_mode == 24;
-  idFcuLocModeActive->set((isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
-  idFcuApprModeActive->set(((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged)) || isFinalArmed || isFinalEngaged);
-  idFcuHeadingSync->set(autopilotStateMachineOutput.mode_reversion_lateral);
-  idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_vertical);
-  idFcuModeReversionTargetFpm->set(autopilotStateMachineOutput.mode_reversion_vertical_target_fpm);
-  idFcuModeReversionTrkFpaActive->set(autopilotStateMachineOutput.mode_reversion_TRK_FPA);
-  idAutopilotTcasMessageDisarm->set(autopilotStateMachineOutput.TCAS_message_disarm);
-  idAutopilotTcasMessageRaInhibited->set(autopilotStateMachineOutput.TCAS_message_RA_inhibit);
-  idAutopilotTcasMessageTrkFpaDeselection->set(autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection);
-
-  bool isTcasEngaged = autopilotStateMachineOutput.vertical_mode == 50;
-  if (!wasTcasEngaged && isTcasEngaged) {
-    execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TCAS)", nullptr, nullptr, nullptr);
-  }
-  wasTcasEngaged = isTcasEngaged;
-
-  // update autothrust mode -------------------------------------------------------------------------------------------
-  idAutopilotAutothrustMode->set(autopilotStateMachineOutput.autothrust_mode);
-
-  // connect FD if requested ------------------------------------------------------------------------------------------
-  if (simData.ap_fd_1_active) {
-    flightDirectorConnectLatch_1 = false;
-  }
-  if (simData.ap_fd_2_active) {
-    flightDirectorConnectLatch_2 = false;
-  }
-  if (autopilotStateMachineOutput.FD_connect) {
-    if (!simData.ap_fd_1_active && !flightDirectorConnectLatch_1) {
-      flightDirectorConnectLatch_1 = true;
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
-    }
-    if (!simData.ap_fd_2_active && !flightDirectorConnectLatch_2) {
-      flightDirectorConnectLatch_2 = true;
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
-    }
-  }
-
-  // disconnect FD if requested ---------------------------------------------------------------------------------------
-  if (!simData.ap_fd_1_active) {
-    flightDirectorDisconnectLatch_1 = false;
-  }
-  if (!simData.ap_fd_2_active) {
-    flightDirectorDisconnectLatch_2 = false;
-  }
-  if (autopilotStateMachineOutput.FD_disconnect) {
-    if (simData.ap_fd_1_active && !flightDirectorDisconnectLatch_1) {
-      flightDirectorDisconnectLatch_1 = true;
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
-    }
-    if (simData.ap_fd_2_active && !flightDirectorDisconnectLatch_2) {
-      flightDirectorDisconnectLatch_2 = true;
-      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
-    }
-  }
-
-  // update FMA variables ---------------------------------------------------------------------------------------------
-  idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);
-  idFmaLateralArmed->set(autopilotStateMachineOutput.lateral_mode_armed);
-  idFmaVerticalMode->set(autopilotStateMachineOutput.vertical_mode);
-  idFmaVerticalArmed->set(autopilotStateMachineOutput.vertical_mode_armed);
-  idFmaExpediteModeActive->set(autopilotStateMachineOutput.EXPED_mode_active);
-  idFmaSpeedProtectionActive->set(autopilotStateMachineOutput.speed_protection_mode);
-  idFmaSoftAltModeActive->set(autopilotStateMachineOutput.ALT_soft_mode_active);
-  idFmaCruiseAltModeActive->set(autopilotStateMachineOutput.ALT_cruise_mode_active);
-
-  // FMA triple click and mode reversion ------------------------------------------------------------------------------
-  idFmaTripleClick->set(autopilotStateMachineOutput.mode_reversion_triple_click);
-  idFmaModeReversion->set(autopilotStateMachineOutput.mode_reversion_fma);
-
-  // return result ----------------------------------------------------------------------------------------------------
-  return true;
-}
-
-bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
-  // get data from interface ------------------------------------------------------------------------------------------
-  SimData simData = simConnectInterface.getSimData();
-
-  real32_T v_ls = 0, v_max = 0;
-  if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[0].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[0].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[1].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[2].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  }
-
-  // update laws ------------------------------------------------------------------------------------------------------
-  if (autopilotLawsEnabled) {
-    // time -----------------------------------------------------------------------------------------------------------
-    autopilotLawsInput.in.time.dt = sampleTime;
-    autopilotLawsInput.in.time.simulation_time = simData.simulationTime;
-
-    // data -----------------------------------------------------------------------------------------------------------
-    autopilotLawsInput.in.data.aircraft_position.lat = simData.latitude_deg;
-    autopilotLawsInput.in.data.aircraft_position.lon = simData.longitude_deg;
-    autopilotLawsInput.in.data.aircraft_position.alt = simData.altitude_m;
-    autopilotLawsInput.in.data.Theta_deg = simData.Theta_deg;
-    autopilotLawsInput.in.data.Phi_deg = simData.Phi_deg;
-    autopilotLawsInput.in.data.q_rad_s = simData.bodyRotationVelocity.x;
-    autopilotLawsInput.in.data.r_rad_s = simData.bodyRotationVelocity.y;
-    autopilotLawsInput.in.data.p_rad_s = simData.bodyRotationVelocity.z;
-    autopilotLawsInput.in.data.V_ias_kn = simData.V_ias_kn;
-    autopilotLawsInput.in.data.V_tas_kn = simData.V_tas_kn;
-    autopilotLawsInput.in.data.V_mach = simData.V_mach;
-    autopilotLawsInput.in.data.V_gnd_kn = simData.V_gnd_kn;
-    autopilotLawsInput.in.data.alpha_deg = simData.alpha_deg;
-    autopilotLawsInput.in.data.beta_deg = simData.beta_deg;
-    autopilotLawsInput.in.data.H_ft = simData.H_ft;
-    autopilotLawsInput.in.data.H_ind_ft = simData.H_ind_ft;
-    autopilotLawsInput.in.data.H_radio_ft = simData.H_radio_ft;
-    autopilotLawsInput.in.data.H_dot_ft_min = simData.H_dot_fpm;
-    autopilotLawsInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
-    autopilotLawsInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
-    autopilotLawsInput.in.data.Psi_true_deg = simData.Psi_true_deg;
-    autopilotLawsInput.in.data.bx_m_s2 = simData.bx_m_s2;
-    autopilotLawsInput.in.data.by_m_s2 = simData.by_m_s2;
-    autopilotLawsInput.in.data.bz_m_s2 = simData.bz_m_s2;
-    autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
-    autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
-    autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    if (idRadioReceiverUsageEnabled->get()) {
-      autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
-      autopilotLawsInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
-      autopilotLawsInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
-      autopilotLawsInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
-      autopilotLawsInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
-      autopilotLawsInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
-    } else {
-      autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
-      autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
-      autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
-      autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
-      autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
-      autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
-    }
-    autopilotLawsInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
-    autopilotLawsInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
-    autopilotLawsInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
-    autopilotLawsInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
-    autopilotLawsInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
-    autopilotLawsInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
-    autopilotLawsInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
-    autopilotLawsInput.in.data.flight_guidance_xtk_nmi = idFmCrossTrackError->get();
-    autopilotLawsInput.in.data.flight_guidance_tae_deg = idFmTrackAngleError->get();
-    autopilotLawsInput.in.data.flight_guidance_phi_deg = idFmPhiCommand->get();
-    autopilotLawsInput.in.data.flight_guidance_phi_limit_deg = idFmPhiLimit->get();
-    autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
-    autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
-    autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotLawsInput.in.data.VLS_kn = v_ls;
-    autopilotLawsInput.in.data.VMAX_kn = v_max;
-    autopilotLawsInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get();
-    autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
-    autopilotLawsInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
-    autopilotLawsInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
-    autopilotLawsInput.in.data.acceleration_altitude = fmAccelerationAltitude->valueOr(0);
-    autopilotLawsInput.in.data.acceleration_altitude_engine_out = fmAccelerationAltitudeEngineOut->valueOr(0);
-    autopilotLawsInput.in.data.acceleration_altitude_go_around = fmAccelerationAltitudeGoAround->valueOr(0);
-    autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
-    autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
-    autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
-    autopilotLawsInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
-    autopilotLawsInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
-    autopilotLawsInput.in.data.gear_strut_compression_1 =
-        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
-    autopilotLawsInput.in.data.gear_strut_compression_2 =
-        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
-    autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
-    autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
-    autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
-    autopilotLawsInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
-    autopilotLawsInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
-    autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
-    autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
-    autopilotLawsInput.in.data.total_weight_kg = simData.total_weight_kg;
-
-    // input ----------------------------------------------------------------------------------------------------------
-    autopilotLawsInput.in.input = autopilotStateMachineOutput;
-
-    // step the model -------------------------------------------------------------------------------------------------
-    autopilotLaws.setExternalInputs(&autopilotLawsInput);
-    autopilotLaws.step();
-
-    // result ---------------------------------------------------------------------------------------------------------
-    autopilotLawsOutput = autopilotLaws.getExternalOutputs().out.output;
-  } else {
-    if (autopilotStateMachineEnabled) {
-      // send data to client data to be read by simulink
-      ClientDataAutopilotStateMachine clientDataStateMachine = {
-          autopilotStateMachineOutput.enabled_AP1,
-          autopilotStateMachineOutput.enabled_AP2,
-          autopilotStateMachineOutput.lateral_law,
-          autopilotStateMachineOutput.lateral_mode,
-          autopilotStateMachineOutput.lateral_mode_armed,
-          autopilotStateMachineOutput.vertical_law,
-          autopilotStateMachineOutput.vertical_mode,
-          autopilotStateMachineOutput.vertical_mode_armed,
-          autopilotStateMachineOutput.mode_reversion_lateral,
-          autopilotStateMachineOutput.mode_reversion_vertical,
-          autopilotStateMachineOutput.mode_reversion_vertical_target_fpm,
-          autopilotStateMachineOutput.mode_reversion_TRK_FPA,
-          autopilotStateMachineOutput.mode_reversion_triple_click,
-          autopilotStateMachineOutput.mode_reversion_fma,
-          autopilotStateMachineOutput.speed_protection_mode,
-          autopilotStateMachineOutput.autothrust_mode,
-          autopilotStateMachineOutput.Psi_c_deg,
-          autopilotStateMachineOutput.H_c_ft,
-          autopilotStateMachineOutput.H_dot_c_fpm,
-          autopilotStateMachineOutput.FPA_c_deg,
-          autopilotStateMachineOutput.V_c_kn,
-          autopilotStateMachineOutput.ALT_soft_mode_active,
-          autopilotStateMachineOutput.ALT_cruise_mode_active,
-          autopilotStateMachineOutput.EXPED_mode_active,
-          autopilotStateMachineOutput.FD_disconnect,
-          autopilotStateMachineOutput.FD_connect,
-          idRadioReceiverLocalizerValid->get(),
-          idRadioReceiverLocalizerDeviation->get(),
-          idRadioReceiverGlideSlopeValid->get(),
-          idRadioReceiverGlideSlopeDeviation->get(),
-          autopilotStateMachineOutput.TCAS_message_disarm,
-          autopilotStateMachineOutput.TCAS_message_RA_inhibit,
-          autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection,
-      };
-      simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
-    }
-    // read client data written by simulink
-    ClientDataAutopilotLaws clientDataLaws = simConnectInterface.getClientDataAutopilotLaws();
-    autopilotLawsOutput.ap_on = clientDataLaws.enableAutopilot;
-    autopilotLawsOutput.flight_director.Theta_c_deg = clientDataLaws.flightDirectorTheta;
-    autopilotLawsOutput.autopilot.Theta_c_deg = clientDataLaws.autopilotTheta;
-    autopilotLawsOutput.flight_director.Phi_c_deg = clientDataLaws.flightDirectorPhi;
-    autopilotLawsOutput.autopilot.Phi_c_deg = clientDataLaws.autopilotPhi;
-    autopilotLawsOutput.flight_director.Beta_c_deg = clientDataLaws.autopilotBeta;
-    autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
-    autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
-    autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
-    autopilotLawsOutput.flare_law.condition_Flare = clientDataLaws.conditionFlare;
-  }
-
-  base_arinc_429 raToUse;
-  if (raBusOutputs[0].radio_height_ft.SSM != Arinc429SignStatus::FailureWarning) {
-    raToUse = raBusOutputs[0].radio_height_ft;
-  } else {
-    raToUse = raBusOutputs[1].radio_height_ft;
-  }
-
-  // update flight director -------------------------------------------------------------------------------------------
-  idFlightDirectorPitch->set(-autopilotLawsOutput.flight_director.Theta_c_deg);
-  idFlightDirectorBank->set(-autopilotLawsOutput.flight_director.Phi_c_deg);
-  idFlightDirectorYaw->set(autopilotLawsOutput.flight_director.Beta_c_deg);
-
-  // update development variables -------------------------------------------------------------------------------------
-  idDevelopmentAutoland_condition_Flare->set(autopilotLawsOutput.flare_law.condition_Flare);
-  idAutopilot_H_dot_radio->set(autopilotLawsOutput.flare_law.H_dot_radio_fpm);
-  idDevelopmentAutoland_H_dot_c_fpm->set(autopilotLawsOutput.flare_law.H_dot_c_fpm);
-  idDevelopmentAutoland_delta_Theta_H_dot_deg->set(autopilotLawsOutput.flare_law.delta_Theta_H_dot_deg);
-  idDevelopmentAutoland_delta_Theta_bx_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bx_deg);
-  idDevelopmentAutoland_delta_Theta_bz_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bz_deg);
-  idDevelopmentAutoland_delta_Theta_beta_c_deg->set(autopilotLawsOutput.flare_law.delta_Theta_beta_c_deg);
-
-  // return result ----------------------------------------------------------------------------------------------------
-  return true;
-}
-
 bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // get data from interface ------------------------------------------------------------------------------------------
   SimData simData = simConnectInterface.getSimData();
@@ -2746,13 +2177,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
-
-  // determine if nosewheel demand shall be set
-  if (!(wasInSlew || pauseDetected || idExternalOverride->get() || failuresConsumer.isActive(Failures::Rollout))) {
-    idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
-  } else {
-    idAutopilotNosewheelDemand->set(0);
-  }
 
   // success ----------------------------------------------------------------------------------------------------------
   return true;
@@ -2792,178 +2216,116 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     v_max = primsBusOutputs[1].fe.v_max_kn.Data;
   }
 
-  // set client data if needed
-  if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
-    ClientDataLocalVariablesAutothrust ClientDataLocalVariablesAutothrust = {
-        simConnectInterface.getSimInputThrottles().ATHR_push,
-        simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1,
-        thrustLeverAngle_1->get(),
-        thrustLeverAngle_2->get(),
-        simData.ap_V_c_kn,
-        idFmgcV_LS->get(),
-        idFmgcV_MAX->get(),
-        idAutothrustThrustLimitREV->get(),
-        idAutothrustThrustLimitIDLE->get(),
-        idAutothrustThrustLimitCLB->get(),
-        idAutothrustThrustLimitMCT->get(),
-        idAutothrustThrustLimitFLX->get(),
-        idAutothrustThrustLimitTOGA->get(),
-        idFmgcFlexTemperature->get(),
-        autopilotStateMachineOutput.autothrust_mode,
-        simData.is_mach_mode_active,
-        reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-            reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-            reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fe.discrete_word_1)->bitFromValueOr(11, false),
-        autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34,
-        autopilotStateMachineOutput.vertical_mode == 40,
-        autopilotStateMachineOutput.vertical_mode == 41,
-        autopilotStateMachineOutput.vertical_mode == 32,
-        fmThrustReductionAltitude->valueOr(0),
-        fmThrustReductionAltitudeGoAround->valueOr(0),
-        idFmgcFlightPhase->get(),
-        autopilotStateMachineOutput.ALT_soft_mode_active,
-        getTcasAdvisoryState() > 1,
-        autopilotStateMachineOutput.H_dot_c_fpm,
-    };
-    simConnectInterface.setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust);
-  }
+  autoThrustInput.in.time.dt = sampleTime;
+  autoThrustInput.in.time.simulation_time = simData.simulationTime;
 
-  if (autoThrustEnabled) {
-    autoThrustInput.in.time.dt = sampleTime;
-    autoThrustInput.in.time.simulation_time = simData.simulationTime;
+  autoThrustInput.in.data.nz_g = simData.nz_g;
+  autoThrustInput.in.data.Theta_deg = simData.Theta_deg;
+  autoThrustInput.in.data.Phi_deg = simData.Phi_deg;
+  autoThrustInput.in.data.V_ias_kn = simData.V_ias_kn;
+  autoThrustInput.in.data.V_tas_kn = simData.V_tas_kn;
+  autoThrustInput.in.data.V_mach = simData.V_mach;
+  autoThrustInput.in.data.V_gnd_kn = simData.V_gnd_kn;
+  autoThrustInput.in.data.alpha_deg = simData.alpha_deg;
+  autoThrustInput.in.data.H_ft = simData.H_ft;
+  autoThrustInput.in.data.H_ind_ft = simData.H_ind_ft;
+  autoThrustInput.in.data.H_radio_ft = simData.H_radio_ft;
+  autoThrustInput.in.data.H_dot_fpm = simData.H_dot_fpm;
+  autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
+  autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
+  autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
+  autoThrustInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
+  autoThrustInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
+  autoThrustInput.in.data.gear_strut_compression_1 =
+      std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
+  autoThrustInput.in.data.gear_strut_compression_2 =
+      std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
+  autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
+  autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
+  autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+  autoThrustInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+  autoThrustInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
+  autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
+  autoThrustInput.in.data.commanded_engine_N1_2_percent = simData.commanded_engine_N1_2_percent;
+  autoThrustInput.in.data.commanded_engine_N1_3_percent = simData.commanded_engine_N1_3_percent;
+  autoThrustInput.in.data.commanded_engine_N1_4_percent = simData.commanded_engine_N1_4_percent;
+  autoThrustInput.in.data.engine_N1_1_percent = simData.engine_N1_1_percent;
+  autoThrustInput.in.data.engine_N1_2_percent = simData.engine_N1_2_percent;
+  autoThrustInput.in.data.engine_N1_3_percent = simData.engine_N1_3_percent;
+  autoThrustInput.in.data.engine_N1_4_percent = simData.engine_N1_4_percent;
+  autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
+  autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+  autoThrustInput.in.data.corrected_engine_N1_3_percent = simData.corrected_engine_N1_3_percent;
+  autoThrustInput.in.data.corrected_engine_N1_4_percent = simData.corrected_engine_N1_4_percent;
+  autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
+  autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
+  autoThrustInput.in.data.ambient_density_kg_per_m3 = simData.ambient_density_kg_per_m3;
 
-    autoThrustInput.in.data.nz_g = simData.nz_g;
-    autoThrustInput.in.data.Theta_deg = simData.Theta_deg;
-    autoThrustInput.in.data.Phi_deg = simData.Phi_deg;
-    autoThrustInput.in.data.V_ias_kn = simData.V_ias_kn;
-    autoThrustInput.in.data.V_tas_kn = simData.V_tas_kn;
-    autoThrustInput.in.data.V_mach = simData.V_mach;
-    autoThrustInput.in.data.V_gnd_kn = simData.V_gnd_kn;
-    autoThrustInput.in.data.alpha_deg = simData.alpha_deg;
-    autoThrustInput.in.data.H_ft = simData.H_ft;
-    autoThrustInput.in.data.H_ind_ft = simData.H_ind_ft;
-    autoThrustInput.in.data.H_radio_ft = simData.H_radio_ft;
-    autoThrustInput.in.data.H_dot_fpm = simData.H_dot_fpm;
-    autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
-    autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
-    autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
-    autoThrustInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
-    autoThrustInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
-    autoThrustInput.in.data.gear_strut_compression_1 =
-        std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
-    autoThrustInput.in.data.gear_strut_compression_2 =
-        std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
-    autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
-    autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
-    autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
-    autoThrustInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
-    autoThrustInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
-    autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
-    autoThrustInput.in.data.commanded_engine_N1_2_percent = simData.commanded_engine_N1_2_percent;
-    autoThrustInput.in.data.commanded_engine_N1_3_percent = simData.commanded_engine_N1_3_percent;
-    autoThrustInput.in.data.commanded_engine_N1_4_percent = simData.commanded_engine_N1_4_percent;
-    autoThrustInput.in.data.engine_N1_1_percent = simData.engine_N1_1_percent;
-    autoThrustInput.in.data.engine_N1_2_percent = simData.engine_N1_2_percent;
-    autoThrustInput.in.data.engine_N1_3_percent = simData.engine_N1_3_percent;
-    autoThrustInput.in.data.engine_N1_4_percent = simData.engine_N1_4_percent;
-    autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
-    autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
-    autoThrustInput.in.data.corrected_engine_N1_3_percent = simData.corrected_engine_N1_3_percent;
-    autoThrustInput.in.data.corrected_engine_N1_4_percent = simData.corrected_engine_N1_4_percent;
-    autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
-    autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
-    autoThrustInput.in.data.ambient_density_kg_per_m3 = simData.ambient_density_kg_per_m3;
+  autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
+  autoThrustInput.in.input.ATHR_disconnect =
+      simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
+  autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
+  autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
+  autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
+  autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
+  autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
+  autoThrustInput.in.input.V_LS_kn = v_ls;
+  autoThrustInput.in.input.V_MAX_kn = v_max;
+  autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
+  autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
+  autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+  autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
+  autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
+  autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
+  autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
+  autoThrustInput.in.input.mode_requested = 0;
+  autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
+  autoThrustInput.in.input.alpha_floor_condition =
+      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fe.discrete_word_1)->bitFromValueOr(11, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fe.discrete_word_1)->bitFromValueOr(11, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fe.discrete_word_1)->bitFromValueOr(11, false);
+  autoThrustInput.in.input.is_approach_mode_active = false;
+  autoThrustInput.in.input.is_SRS_TO_mode_active = false;
+  autoThrustInput.in.input.is_SRS_GA_mode_active = false;
+  autoThrustInput.in.input.is_LAND_mode_active = false;
+  autoThrustInput.in.input.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
+  autoThrustInput.in.input.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
+  autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
+  autoThrustInput.in.input.is_alt_soft_mode_active = false;
+  autoThrustInput.in.input.is_anti_ice_wing_active = idWingAntiIce->get() == 1;
+  autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
+  autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
+  autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1;
+  autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1;
+  autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
+  autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
+  autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
+  autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
+  autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
+  autoThrustInput.in.input.target_TCAS_RA_rate_fpm = 0;
 
-    autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
-    autoThrustInput.in.input.ATHR_disconnect =
-        simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
-    autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
-    autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
-    autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
-    autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
-    autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-    autoThrustInput.in.input.V_LS_kn = v_ls;
-    autoThrustInput.in.input.V_MAX_kn = v_max;
-    autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
-    autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
-    autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
-    autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
-    autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
-    autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
-    autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
-    autoThrustInput.in.input.mode_requested = autopilotStateMachineOutput.autothrust_mode;
-    autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
-    autoThrustInput.in.input.alpha_floor_condition =
-        reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-        reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-        reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fe.discrete_word_1)->bitFromValueOr(11, false);
-    autoThrustInput.in.input.is_approach_mode_active =
-        (autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34) ||
-        autopilotStateMachineOutput.vertical_mode == 24;
-    autoThrustInput.in.input.is_SRS_TO_mode_active = autopilotStateMachineOutput.vertical_mode == 40;
-    autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
-    autoThrustInput.in.input.is_LAND_mode_active = autopilotStateMachineOutput.vertical_mode == 32;
-    autoThrustInput.in.input.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
-    autoThrustInput.in.input.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
-    autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
-    autoThrustInput.in.input.is_alt_soft_mode_active = autopilotStateMachineOutput.ALT_soft_mode_active;
-    autoThrustInput.in.input.is_anti_ice_wing_active = idWingAntiIce->get() == 1;
-    autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
-    autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
-    autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1;
-    autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1;
-    autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
-    autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-    autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
-    autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
-    autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
-    autoThrustInput.in.input.target_TCAS_RA_rate_fpm = autopilotStateMachineOutput.H_dot_c_fpm;
+  // step the model -------------------------------------------------------------------------------------------------
+  autoThrust.setExternalInputs(&autoThrustInput);
+  autoThrust.step();
 
-    // step the model -------------------------------------------------------------------------------------------------
-    autoThrust.setExternalInputs(&autoThrustInput);
-    autoThrust.step();
+  // get output from model ------------------------------------------------------------------------------------------
+  autoThrustOutput = autoThrust.getExternalOutputs().out.output;
 
-    // get output from model ------------------------------------------------------------------------------------------
-    autoThrustOutput = autoThrust.getExternalOutputs().out.output;
+  // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
+  idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
-    // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
-    idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
-
-    // write output to sim --------------------------------------------------------------------------------------------
-    SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
-                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
-                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_3_pos),
-                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_4_pos),
-                                             autoThrustOutput.sim_thrust_mode_1,
-                                             autoThrustOutput.sim_thrust_mode_2,
-                                             autoThrustOutput.sim_thrust_mode_3,
-                                             autoThrustOutput.sim_thrust_mode_4};
-    if (!simConnectInterface.sendData(simOutputThrottles)) {
-      std::cout << "WASM: Write data failed!" << std::endl;
-      return false;
-    }
-  } else {
-    // read data from client data
-    ClientDataAutothrust clientData = simConnectInterface.getClientDataAutothrust();
-    autoThrustOutput.N1_TLA_1_percent = clientData.N1_TLA_1_percent;
-    autoThrustOutput.N1_TLA_2_percent = clientData.N1_TLA_2_percent;
-    autoThrustOutput.is_in_reverse_1 = clientData.is_in_reverse_1;
-    autoThrustOutput.is_in_reverse_2 = clientData.is_in_reverse_2;
-    autoThrustOutput.thrust_limit_type = static_cast<athr_thrust_limit_type>(clientData.thrust_limit_type);
-    autoThrustOutput.thrust_limit_percent = clientData.thrust_limit_percent;
-    autoThrustOutput.N1_c_1_percent = clientData.N1_c_1_percent;
-    autoThrustOutput.N1_c_2_percent = clientData.N1_c_2_percent;
-    autoThrustOutput.status = static_cast<athr_status>(clientData.status);
-    autoThrustOutput.mode = static_cast<athr_mode>(clientData.mode);
-    autoThrustOutput.mode_message = static_cast<athr_mode_message>(clientData.mode_message);
-
-    ClientDataAutothrustA380 clientDataA380 = simConnectInterface.getClientDataAutothrustA380();
-    autoThrustOutput.N1_TLA_3_percent = clientDataA380.N1_TLA_3_percent;
-    autoThrustOutput.N1_TLA_4_percent = clientDataA380.N1_TLA_4_percent;
-    autoThrustOutput.is_in_reverse_3 = clientDataA380.is_in_reverse_3;
-    autoThrustOutput.is_in_reverse_4 = clientDataA380.is_in_reverse_4;
-    autoThrustOutput.N1_c_3_percent = clientDataA380.N1_c_3_percent;
-    autoThrustOutput.N1_c_4_percent = clientDataA380.N1_c_4_percent;
+  // write output to sim --------------------------------------------------------------------------------------------
+  SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
+                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
+                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_3_pos),
+                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_4_pos),
+                                           autoThrustOutput.sim_thrust_mode_1,
+                                           autoThrustOutput.sim_thrust_mode_2,
+                                           autoThrustOutput.sim_thrust_mode_3,
+                                           autoThrustOutput.sim_thrust_mode_4};
+  if (!simConnectInterface.sendData(simOutputThrottles)) {
+    std::cout << "WASM: Write data failed!" << std::endl;
+    return false;
   }
 
   // update local variables

@@ -2,8 +2,6 @@
 
 #include "../interface/SimConnectData.h"
 #include "../model/A380PrimComputerGeneralLogic.h"
-#include "../model/AutopilotLaws.h"
-#include "../model/Autothrust.h"
 
 struct FcdcBus {
   // Label 040
@@ -70,8 +68,6 @@ struct FcdcDiscreteInputs {
   int btvState;
 
   /* FIXME use proper bus messages */
-  ap_raw_laws_input autopilotStateMachineOutput;
-  athr_output autoThrustOutput;
   SimData simData;
 };
 

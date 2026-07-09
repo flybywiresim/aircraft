@@ -255,11 +255,7 @@ class SimConnectInterface {
 
   ~SimConnectInterface() = default;
 
-  bool connect(bool clientDataEnabled,
-               bool autopilotStateMachineEnabled,
-               bool autopilotLawsEnabled,
-               bool flyByWireEnabled,
-               int primDisabled,
+  bool connect(int primDisabled,
                bool primGeneralLogicDisabled,
                bool primFctlDisabled,
                bool primFeDisabled,
@@ -302,10 +298,6 @@ class SimConnectInterface {
 
   bool sendEventEx1(Events eventId, DWORD priority, DWORD data0, DWORD data1 = 0, DWORD data2 = 0, DWORD data3 = 0, DWORD data4 = 0);
 
-  bool setClientDataLocalVariables(ClientDataLocalVariables& output);
-
-  bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust& output);
-
   void resetSimInputPitchTrim();
 
   void resetSimInputRudderTrim();
@@ -333,21 +325,6 @@ class SimConnectInterface {
   SimInputRudderTrim& getSimInputRudderTrim();
 
   SimInputThrottles& getSimInputThrottles();
-
-  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output);
-  ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
-
-  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws& output);
-  ClientDataAutopilotLaws& getClientDataAutopilotLaws();
-
-  ClientDataAutothrust& getClientDataAutothrust();
-
-  ClientDataAutothrustA380& getClientDataAutothrustA380();
-
-  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput& output);
-
-  bool setClientDataFlyByWire(ClientDataFlyByWire& output);
-  ClientDataFlyByWire& getClientDataFlyByWire();
 
   bool setClientDataPrimDiscretes(base_prim_discrete_inputs& output);
   bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
@@ -401,10 +378,6 @@ class SimConnectInterface {
 
  private:
   enum ClientData {
-    AUTOPILOT_STATE_MACHINE,
-    AUTOPILOT_LAWS,
-    AUTOTHRUST,
-    AUTOTHRUST_A380,
     PRIM_DISCRETE_INPUTS,
     PRIM_ANALOG_INPUTS,
     PRIM_TEMPORARY_AP_INPUTS,
@@ -440,8 +413,6 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
-    LOCAL_VARIABLES,
-    LOCAL_VARIABLES_AUTOTHRUST,
   };
 
   bool isConnected = false;
@@ -481,12 +452,6 @@ class SimConnectInterface {
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-
-  ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
-  ClientDataAutopilotLaws clientDataAutopilotLaws = {};
-  ClientDataAutothrust clientDataAutothrust = {};
-  ClientDataAutothrustA380 clientDataAutothrustA380 = {};
-  ClientDataFlyByWire clientDataFlyByWire = {};
 
   base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};

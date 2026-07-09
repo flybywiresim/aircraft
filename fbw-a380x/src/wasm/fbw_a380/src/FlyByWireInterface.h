@@ -14,8 +14,6 @@
 #include "fcdc/Fcdc.h"
 #include "fcu/Fcu.h"
 #include "interface/SimConnectInterface.h"
-#include "model/AutopilotLaws.h"
-#include "model/AutopilotStateMachine.h"
 #include "model/Autothrust.h"
 #include "prim/Prim.h"
 #include "recording/FlightDataRecorder.h"
@@ -51,16 +49,12 @@ class FlyByWireInterface {
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
 
-  bool autopilotStateMachineEnabled = false;
-  bool autopilotLawsEnabled = false;
-  bool flyByWireEnabled = false;
   int primDisabled = -1;
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
   bool primFeDisabled = false;
   int secDisabled = -1;
   int fcuDisabled = -1;
-  bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
   bool wasTcasEngaged = false;
@@ -107,14 +101,6 @@ class FlyByWireInterface {
   SimConnectInterface simConnectInterface;
 
   FailuresConsumer failuresConsumer;
-
-  AutopilotStateMachine autopilotStateMachine;
-  AutopilotStateMachine::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
-  ap_raw_laws_input autopilotStateMachineOutput;
-
-  AutopilotLawsModelClass autopilotLaws;
-  AutopilotLawsModelClass::ExternalInputs_AutopilotLaws_T autopilotLawsInput = {};
-  ap_raw_output autopilotLawsOutput;
 
   Autothrust autoThrust;
   Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
@@ -650,8 +636,6 @@ class FlyByWireInterface {
   bool updateBaseData(double sampleTime);
   bool updateAircraftSpecificData(double sampleTime);
 
-  bool updateAutopilotStateMachine(double sampleTime);
-  bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
 

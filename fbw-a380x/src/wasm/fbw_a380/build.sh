@@ -113,10 +113,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/AutopilotLaws_data.cpp" \
-  "${DIR}/src/model/AutopilotLaws.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine_data.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine.cpp" \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \

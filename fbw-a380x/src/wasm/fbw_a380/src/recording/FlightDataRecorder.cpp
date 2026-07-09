@@ -29,9 +29,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 const AircraftSpecificData& aircraftSpecificData,
                                 Prim (&prims)[3],
                                 Sec (&secs)[3],
-                                const AutopilotStateMachine& autopilotStateMachine,
-                                const AutopilotLawsModelClass& autopilotLaws,
-                                const Autothrust& autoThrust,
                                 const FuelSystemData& fuelSystemData) {
   // check if enabled
   if (!idIsEnabled->get()) {
@@ -56,18 +53,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
   for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
     writeSec(secs[i]);
   }
-
-  // write AP state machine data
-  auto autopilotStateMachineOut = autopilotStateMachine.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotStateMachineOut), sizeof(autopilotStateMachineOut));
-
-  // write AP laws data
-  auto autopilotLawsOut = autopilotLaws.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotLawsOut), sizeof(autopilotLawsOut));
-
-  // write ATHR data
-  auto autoThrustOut = autoThrust.getExternalOutputs().out;
-  fileStream->write((char*)(&autoThrustOut), sizeof(autoThrustOut));
 
   // write fuel system data
   fileStream->write((char*)(&fuelSystemData), sizeof(fuelSystemData));

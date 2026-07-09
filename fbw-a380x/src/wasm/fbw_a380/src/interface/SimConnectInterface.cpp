@@ -11,11 +11,7 @@ SimInput SimConnectInterface::simInput = {};
 // remove when aileron events can be processed via SimConnect
 double SimConnectInterface::flightControlsKeyChangeAileron = 0.0;
 
-bool SimConnectInterface::connect(bool clientDataEnabled,
-                                  bool autopilotStateMachineEnabled,
-                                  bool autopilotLawsEnabled,
-                                  bool flyByWireEnabled,
-                                  int primDisabled,
+bool SimConnectInterface::connect(int primDisabled,
                                   bool primGeneralLogicDisabled,
                                   bool primFctlDisabled,
                                   bool primFeDisabled,
@@ -922,66 +918,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result = SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_STATE_MACHINE", ClientData::AUTOPILOT_STATE_MACHINE);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, sizeof(ClientDataAutopilotStateMachine),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataAutopilotStateMachine));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
-                                         ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_LAWS", ClientData::AUTOPILOT_LAWS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, sizeof(ClientDataAutopilotLaws),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataAutopilotLaws));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOTHRUST", ClientData::AUTOTHRUST);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOTHRUST, sizeof(ClientDataAutothrust),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataAutothrust));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOTHRUST_A380", ClientData::AUTOTHRUST_A380);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOTHRUST_A380, sizeof(ClientDataAutothrustA380),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST_A380, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataAutothrustA380));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_DISCRETE_INPUT", ClientData::PRIM_DISCRETE_INPUTS);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, sizeof(base_prim_discrete_inputs),
@@ -1295,29 +1231,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES", ClientData::LOCAL_VARIABLES);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataLocalVariables));
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &=
-      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES_AUTOTHRUST", ClientData::LOCAL_VARIABLES_AUTOTHRUST);
-  // create client
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(ClientDataLocalVariablesAutothrust),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(ClientDataLocalVariablesAutothrust));
-
-  // ------------------------------------------------------------------------------------------------------------------
-
   // return result
   return result;
 }
@@ -1429,16 +1342,6 @@ bool SimConnectInterface::sendEventEx1(Events eventId, DWORD priority, DWORD dat
   return true;
 }
 
-bool SimConnectInterface::setClientDataLocalVariables(ClientDataLocalVariables& output) {
-  // write data and return result
-  return sendClientData(ClientData::LOCAL_VARIABLES, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust& output) {
-  // write data and return result
-  return sendClientData(ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(output), &output);
-}
-
 SimData& SimConnectInterface::getSimData() {
   return simData;
 }
@@ -1515,36 +1418,6 @@ void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_push = 0;
   simInputThrottles.ATHR_disconnect = 0;
   simInputThrottles.ATHR_reset_disable = 0;
-}
-
-bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws& output) {
-  // write data and return result
-  return sendClientData(ClientData::AUTOPILOT_LAWS, sizeof(output), &output);
-}
-
-ClientDataAutopilotLaws& SimConnectInterface::getClientDataAutopilotLaws() {
-  return clientDataAutopilotLaws;
-}
-
-bool SimConnectInterface::setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output) {
-  // write data and return result
-  return sendClientData(ClientData::AUTOPILOT_STATE_MACHINE, sizeof(output), &output);
-}
-
-ClientDataAutopilotStateMachine& SimConnectInterface::getClientDataAutopilotStateMachine() {
-  return clientDataAutopilotStateMachine;
-}
-
-ClientDataAutothrust& SimConnectInterface::getClientDataAutothrust() {
-  return clientDataAutothrust;
-}
-
-ClientDataAutothrustA380& SimConnectInterface::getClientDataAutothrustA380() {
-  return clientDataAutothrustA380;
-}
-
-ClientDataFlyByWire& SimConnectInterface::getClientDataFlyByWire() {
-  return clientDataFlyByWire;
 }
 
 bool SimConnectInterface::setClientDataPrimDiscretes(base_prim_discrete_inputs& output) {
@@ -3604,26 +3477,6 @@ void SimConnectInterface::simConnectProcessSimObjectData(const SIMCONNECT_RECV_S
 void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
   // process depending on request id
   switch (data->dwRequestID) {
-    case ClientData::AUTOPILOT_STATE_MACHINE:
-      // store aircraft data
-      clientDataAutopilotStateMachine = *((ClientDataAutopilotStateMachine*)&data->dwData);
-      return;
-
-    case ClientData::AUTOPILOT_LAWS:
-      // store aircraft data
-      clientDataAutopilotLaws = *((ClientDataAutopilotLaws*)&data->dwData);
-      return;
-
-    case ClientData::AUTOTHRUST:
-      // store aircraft data
-      clientDataAutothrust = *((ClientDataAutothrust*)&data->dwData);
-      return;
-
-    case ClientData::AUTOTHRUST_A380:
-      // store aircraft data
-      clientDataAutothrustA380 = *((ClientDataAutothrustA380*)&data->dwData);
-      return;
-
     case ClientData::PRIM_DISCRETE_OUTPUTS:
       // store aircraft data
       clientDataPrimDiscreteOutputs = *((base_prim_discrete_outputs*)&data->dwData);
