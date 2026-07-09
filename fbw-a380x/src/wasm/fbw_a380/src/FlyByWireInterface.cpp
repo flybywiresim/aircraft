@@ -1885,7 +1885,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
 
   base_fcu_discrete_outputs discreteOutputs = fcus[fcuIndex].getDiscreteOutputs();
 
-  if (fcuDisabled) {
+  if (fcuDisabled == fcuIndex) {
     simConnectInterface.setClientDataFcuDiscretes(fcus[fcuIndex].modelInputs.in.discrete_inputs);
     fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
     discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
