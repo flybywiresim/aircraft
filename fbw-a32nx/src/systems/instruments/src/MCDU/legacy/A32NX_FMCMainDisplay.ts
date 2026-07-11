@@ -345,6 +345,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
+  private readonly fcuEisDiscreteWord1 = Arinc429Register.empty();
+  private readonly fcuEisLeftDiscreteWord1 = RegisteredSimVar.create<number>(
+    'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_1',
+    SimVarValueType.Enum,
+  );
+  private readonly fcuEisRightDiscreteWord1 = RegisteredSimVar.create<number>(
+    'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_1',
+    SimVarValueType.Enum,
+  );
+
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
   private readonly simTime = ConsumerSubject.create(this.sub.on('simTime'), 0);
 
@@ -657,6 +667,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUpdate(deltaTime: number) {
     this._deltaTime = deltaTime;
+
+    this.fcuEisDiscreteWord1.set(this.fcuEisLeftDiscreteWord1.get());
+    if (this.fcuEisDiscreteWord1.isInvalid()) {
+      // FIXME: use right side when split displays are supported
+      this.fcuEisDiscreteWord1.set(this.fcuEisRightDiscreteWord1.get());
+    }
+
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -5855,6 +5872,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
+  }
+
+  public isInhgSelected(): boolean {
+    return this.fcuEisDiscreteWord1.bitValueOr(11, false);
   }
 
   getPerformanceFactorPercent(): number | null {

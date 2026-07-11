@@ -9,8 +9,7 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { AltitudeDescriptor, WaypointConstraintType, Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { getDisplayIndex } from '../../MsfsAvionicsCommon/displayUnit';
+import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
@@ -148,12 +147,7 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      const isRightSide = getDisplayIndex() === 2;
-      const rawWord = SimVar.GetSimVarValue(
-        isRightSide ? 'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_1' : 'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_1',
-        'number'
-      );
-      const isBaroInInhg = new Arinc429Word(rawWord).bitValueOr(11, false);
+      const isBaroInInhg = mcdu.isInhgSelected();
 
       if (Number.isFinite(mainTargetPlan.performanceData.approachQnh.get())) {
         if (mainTargetPlan.performanceData.approachQnh.get() < 500) {
