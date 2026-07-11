@@ -69,16 +69,16 @@ FcdcBus Fcdc::getBusOutputs() {
   // Target: Should behave unsuspiciously in normal ops
   Arinc429SignStatus ssm = allPrimsDead ? Arinc429SignStatus::FailureWarning : Arinc429SignStatus::NormalOperation;
 
-  LateralLaw systemLateralLaw = allPrimsDead
-                                    ? LateralLaw::DirectLaw
-                                    : getLateralLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl_law_status_word, 19),
-                                                                  bitFromValue(busInputs.prims[masterPrimIndex].fctl_law_status_word, 20));
+  LateralLaw systemLateralLaw =
+      allPrimsDead ? LateralLaw::DirectLaw
+                   : getLateralLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 19),
+                                                 bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 20));
 
   PitchLaw systemPitchLaw = allPrimsDead
                                 ? PitchLaw::DirectLaw
-                                : getPitchLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl_law_status_word, 16),
-                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl_law_status_word, 17),
-                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl_law_status_word, 18));
+                                : getPitchLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 16),
+                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
+                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
 
   output.efcsStatus1.setSsm(ssm);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
@@ -100,58 +100,58 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(29, allPrimsDead);
 
   output.efcsStatus2.setSsm(ssm);
-  output.efcsStatus2.setBit(11, !bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 11, false));
-  output.efcsStatus2.setBit(12, !bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 11, false));
-  output.efcsStatus2.setBit(13, !bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 14, false));
-  output.efcsStatus2.setBit(14, !bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 14, false));
-  output.efcsStatus2.setBit(15, !bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 11, false));
-  output.efcsStatus2.setBit(16, !bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 11, false));
-  output.efcsStatus2.setBit(17, !bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 14, false));
-  output.efcsStatus2.setBit(18, !bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 14, false));
+  output.efcsStatus2.setBit(11, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
+  output.efcsStatus2.setBit(12, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
+  output.efcsStatus2.setBit(13, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
+  output.efcsStatus2.setBit(14, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
+  output.efcsStatus2.setBit(15, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
+  output.efcsStatus2.setBit(16, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
+  output.efcsStatus2.setBit(17, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
+  output.efcsStatus2.setBit(18, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
 
   output.efcsStatus3.setSsm(ssm);
-  output.efcsStatus3.setBit(11, bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 11, false));
-  output.efcsStatus3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 11, false));
-  output.efcsStatus3.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 14, false));
-  output.efcsStatus3.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].aileron_status_word, 14, false));
-  output.efcsStatus3.setBit(15, bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 11, false));
-  output.efcsStatus3.setBit(16, bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 11, false));
-  output.efcsStatus3.setBit(17, bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 14, false));
-  output.efcsStatus3.setBit(18, bitFromValueOr(busInputs.prims[masterPrimIndex].elevator_status_word, 14, false));
-  output.efcsStatus3.setBit(21, bitFromValueOr(busInputs.prims[masterPrimIndex].spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(22, bitFromValueOr(busInputs.prims[masterPrimIndex].spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(23, bitFromValueOr(busInputs.prims[masterPrimIndex].spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(24, bitFromValueOr(busInputs.prims[masterPrimIndex].spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(25, bitFromValueOr(busInputs.prims[masterPrimIndex].spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(11, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
+  output.efcsStatus3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
+  output.efcsStatus3.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
+  output.efcsStatus3.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
+  output.efcsStatus3.setBit(15, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
+  output.efcsStatus3.setBit(16, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
+  output.efcsStatus3.setBit(17, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
+  output.efcsStatus3.setBit(18, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
+  output.efcsStatus3.setBit(21, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(22, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(23, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(24, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(25, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
 
   // FIXME inaccurate atm, improve
   output.efcsStatus4.setSsm(ssm);
-  output.efcsStatus4.setBit(11, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(12, valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(13, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(14, valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(15, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(16, valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(17, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(18, valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(19, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(20, valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0) < -2.5);
-  bool spoilerValid =
-      isNo(busInputs.prims[masterPrimIndex].left_spoiler_position_deg) && isNo(busInputs.prims[masterPrimIndex].right_spoiler_position_deg);
+  output.efcsStatus4.setBit(11, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(12, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(13, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(14, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(15, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(16, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(17, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(18, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(19, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
+  output.efcsStatus4.setBit(20, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
+  bool spoilerValid = isNo(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg) &&
+                      isNo(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg);
   output.efcsStatus4.setBit(21, spoilerValid);
   output.efcsStatus4.setBit(22, spoilerValid);
   output.efcsStatus4.setBit(23, spoilerValid);
   output.efcsStatus4.setBit(24, spoilerValid);
   output.efcsStatus4.setBit(25, spoilerValid);
-  output.efcsStatus4.setBit(26, valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0) < -5);
+  output.efcsStatus4.setBit(26, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -5);
   output.efcsStatus4.setBit(27, discreteInputs.spoilersArmed);
   output.efcsStatus4.setBit(28, analogInputs.spoilersLeverPos > 0.9);
 
   output.efcsStatus5.setData(0);
 
   output.efcsStatus5.setSsm(ssm);
-  bool spoilersRetracted = valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0.0f) >= -2.5f &&
-                           valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0.0f) >= -2.5f;
+  bool spoilersRetracted = valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0.0f) >= -2.5f &&
+                           valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0.0f) >= -2.5f;
   output.efcsStatus5.setBit(26, (analogInputs.spoilersLeverPos > 0.05) && spoilersRetracted);
 
   output.primFgDiscreteWord4.setSsm(ssm);
@@ -226,8 +226,8 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   bool land3FailOperationalCapability = false;
 
   for (int i = 0; i < 3; i++) {
-    if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl_law_status_word)->bitFromValueOr(21, false)) {
-      Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fg_status_word);
+    if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
+      Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl.fg_status_word);
       land2Capability = fg_status_word->bitFromValueOr(16, false);
       land3FailPassiveCapability = fg_status_word->bitFromValueOr(17, false);
       land3FailOperationalCapability = fg_status_word->bitFromValueOr(18, false);
@@ -246,7 +246,7 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   int fwsAudioFunctionAvailable = 0;
 
   for (int i = 0; i < 3; i++) {
-    if (isNo(busInputs.prims[i].fctl_law_status_word) == true) {
+    if (isNo(busInputs.prims[i].fctl.fctl_law_status_word) == true) {
       primAvailable++;
     }
     if (isNo(busInputs.secs[i].fctl_law_status_word) == true) {
@@ -276,8 +276,8 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       primAvailable >= 1 && secAvailable >= 1 && fwsAudioFunctionAvailable >= 1 && land2EngineCriteria && !discreteInputs.fcuNorthRefTrue;
   bool land3SingleCriteria = land2Criteria && land3FailPassiveEngineCriteria;
   bool land3DualCriteria = land3SingleCriteria &&
-                           ((isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[1].fctl_law_status_word)) ||
-                            (isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[2].fctl_law_status_word))) &&
+                           ((isNo(busInputs.prims[0].fctl.fctl_law_status_word) && isNo(busInputs.prims[1].fctl.fctl_law_status_word)) ||
+                            (isNo(busInputs.prims[0].fctl.fctl_law_status_word) && isNo(busInputs.prims[2].fctl.fctl_law_status_word))) &&
                            fwsAudioFunctionAvailable >= 2 && discreteInputs.otherFcdcHealthy && land3FailOperationalEngineCriteria &&
                            discreteInputs.everyDcSuppliedByTr && discreteInputs.antiskidAvailable &&
                            discreteInputs.nwsCommunicationAvailable;
@@ -349,7 +349,7 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   int fwsAudioFunctionAvailable = 0;
 
   for (int i = 0; i < 3; i++) {
-    if (isNo(busInputs.prims[i].fctl_law_status_word) == true) {
+    if (isNo(busInputs.prims[i].fctl.fctl_law_status_word) == true) {
       primAvailable++;
     }
     if (isNo(busInputs.secs[i].fctl_law_status_word) == true) {
@@ -378,7 +378,8 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
                               discreteInputs.dcEssFailed || discreteInputs.dc2Failed || discreteInputs.ac2Failed;
 
   // LDG PERF AFFECTED leading to BTV LOST
-  Arinc429DiscreteWord* elevStatusWord = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[masterPrimIndex].elevator_status_word);
+  Arinc429DiscreteWord* elevStatusWord =
+      reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[masterPrimIndex].fctl.elevator_status_word);
   bool doubleElevFault = (elevStatusWord->bitFromValueOr(11, false) ? 1 : 0) + (elevStatusWord->bitFromValueOr(14, false) ? 1 : 0) +
                              (elevStatusWord->bitFromValueOr(17, false) ? 1 : 0) <
                          2;
