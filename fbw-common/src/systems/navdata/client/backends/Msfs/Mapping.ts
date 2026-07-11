@@ -7,7 +7,7 @@
 import { Coordinates, bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 // FIXME remove msfs-sdk dep
 import { AirportClassMask } from '@microsoft/msfs-sdk';
-import { ElevatedCoordinates, isMsfs2024, MathUtils } from '@flybywiresim/fbw-sdk';
+import { ElevatedCoordinates, MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   AirportCommunication,
   Airway,
@@ -1433,8 +1433,6 @@ export class MsfsMapping {
         let dmeLocation: Coordinates | undefined;
         if (vor.dme) {
           dmeLocation = { lat: vor.dme.lat, long: vor.dme.lon };
-        } else if (!isMsfs2024() && (vor.type & VorType.DME) > 0) {
-          dmeLocation = databaseItem.location;
         }
 
         return {
