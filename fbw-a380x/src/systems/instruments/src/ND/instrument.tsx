@@ -5,7 +5,6 @@
 import {
   Clock,
   ConsumerSubject,
-  ConsumerValue,
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
