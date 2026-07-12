@@ -7,6 +7,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   NXLogicConfirmNode,
+  NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
   RegisteredSimVar,
@@ -48,6 +49,8 @@ export class DmcSdPageLogic {
   private readonly controlsMovedMtrig = new NXLogicTriggeredMonostableNode(20, true, true);
 
   private readonly cruiseConditionConfirmNode = new NXLogicConfirmNode(60, true);
+
+  private readonly cruiseConditionFlipFlop = new NXLogicMemoryNode(false);
 
   private readonly stsPageNormalMtrig = new NXLogicTriggeredMonostableNode(3, true, true);
 
@@ -120,8 +123,10 @@ export class DmcSdPageLogic {
     const flapsDeployed = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0;
 
     this.cruiseConditionConfirmNode.write(fwcFlightPhase === 6 && (toPowerSet || flapsDeployed), dt);
-    const cruiseCondition =
-      this.cruiseConditionConfirmNode.read() || (fwcFlightPhase === 6 && !flapsDeployed && !toPowerSet);
+    this.cruiseConditionFlipFlop.write(
+      this.cruiseConditionConfirmNode.read() || (fwcFlightPhase === 6 && !flapsDeployed && !toPowerSet),
+      fwcFlightPhase !== 6,
+    );
 
     this.altitudeWord.setFromSimVar('L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1');
     const isGearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
@@ -142,7 +147,7 @@ export class DmcSdPageLogic {
       fwcFlightPhase === 3 ||
       fwcFlightPhase === 4 ||
       fwcFlightPhase === 5 ||
-      (fwcFlightPhase === 6 && !cruiseCondition)
+      (fwcFlightPhase === 6 && !this.cruiseConditionFlipFlop.read())
     ) {
       this.flightPhaseModePage = SdPages.ENG;
     } else if (
