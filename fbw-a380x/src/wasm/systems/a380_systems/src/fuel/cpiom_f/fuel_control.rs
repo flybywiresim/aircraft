@@ -224,11 +224,7 @@ mod tests {
 
         control.update(&gallery);
 
-        // Only the forward pump for the gallery should be running
-        let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerFwd]);
-        // Aft pump should be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerAft]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::LeftInnerFwd]);
     }
 
     #[test]
@@ -241,11 +237,7 @@ mod tests {
 
         control.update(&gallery);
 
-        // Only the aft pump for the gallery should be running
-        let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerAft]);
-        // Forward pump should be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::LeftInnerAft]);
     }
 
     #[test]
@@ -258,9 +250,10 @@ mod tests {
 
         control.update(&gallery);
 
-        // Check that forward transfer valve is open
-        let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[A380FuelValve::FeedTank1ForwardTransferValve],
+        );
     }
 
     #[test]
@@ -273,9 +266,7 @@ mod tests {
 
         control.update(&gallery);
 
-        // Check that aft transfer valve is open
-        let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank2AftTransferValve]);
+        assert_only_specified_valves_open(&control, &[A380FuelValve::FeedTank2AftTransferValve]);
     }
 
     #[test]
@@ -289,11 +280,15 @@ mod tests {
 
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        // Trim forward valve should be open
-        assert!(valve_state[A380FuelValve::TrimTankInletValve1]);
-        // LeftInner aft valve should be open
-        assert!(valve_state[A380FuelValve::LeftInnerAftTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::TrimLineIsolationValveFwd,
+                A380FuelValve::TrimTankInletValve1,
+                A380FuelValve::TrimTankInletValve2,
+                A380FuelValve::LeftInnerAftTransferValve,
+            ],
+        );
     }
 
     #[test]
@@ -307,11 +302,13 @@ mod tests {
 
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        // LeftOuter forward valve should be open
-        assert!(valve_state[A380FuelValve::LeftOuterForwardTransferValve]);
-        // RightMid aft valve should be open
-        assert!(valve_state[A380FuelValve::RightMidAftTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::LeftOuterForwardTransferValve,
+                A380FuelValve::RightMidAftTransferValve,
+            ],
+        );
     }
 
     #[test]
@@ -325,13 +322,10 @@ mod tests {
 
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        // LeftOuter forward pump should be on
-        assert!(pump_state[A380FuelPump::LeftOuter]);
-        // RightMid aft pump should be on
-        assert!(pump_state[A380FuelPump::RightMidAft]);
-        // RightMid forward pump should be OFF (different gallery)
-        assert!(!pump_state[A380FuelPump::RightMidFwd]);
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::LeftOuter, A380FuelPump::RightMidAft],
+        );
     }
 
     #[test]
@@ -341,12 +335,8 @@ mod tests {
 
         control.update(&gallery);
 
-        // All pumps and valves should be off
-        let pump_state = control.fuel_pump_requested_running();
-        let valve_state = control.fuel_valve_requested_open();
-
-        assert!(pump_state.values().all(|b| !b));
-        assert!(valve_state.values().all(|b| !b));
+        assert_only_specified_pumps_on(&control, &[]);
+        assert_only_specified_valves_open(&control, &[]);
     }
 
     #[test]
@@ -358,16 +348,13 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerFwd]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::LeftInnerFwd]);
 
         // Second update: Clear LeftInner as source (set to None)
         gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::None;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        // LeftInner forward pump should now be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
+        assert_only_specified_pumps_on(&control, &[]);
     }
 
     #[test]
@@ -379,16 +366,16 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[A380FuelValve::FeedTank1ForwardTransferValve],
+        );
 
         // Second update: Clear FeedOne as target (set to None)
         gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::None;
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        // FeedOne forward valve should now be OFF
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert_only_specified_valves_open(&control, &[]);
     }
 
     #[test]
@@ -400,16 +387,7 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::RightOuter] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-
-        // Only RightOuter pump should be on
-        assert!(pump_state[A380FuelPump::RightOuter]);
-
-        // Other pumps should be off
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
-        assert!(!pump_state[A380FuelPump::LeftMidFwd]);
-        assert!(!pump_state[A380FuelPump::TrimLeft]);
-        assert!(!pump_state[A380FuelPump::Feed1Main]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::RightOuter]);
     }
 
     #[test]
@@ -421,15 +399,7 @@ mod tests {
         gallery.aft_gallery[A380FuelTankType::FeedThree] = TankMode::Target;
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-
-        // Only FeedThree aft valve should be open
-        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve]);
-
-        // Other feed tank transfer valves should be closed
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
-        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
-        assert!(!valve_state[A380FuelValve::FeedTank4AftTransferValve]);
+        assert_only_specified_valves_open(&control, &[A380FuelValve::FeedTank3AftTransferValve]);
     }
 
     #[test]
@@ -441,19 +411,14 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::LeftMid] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftMidFwd]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::LeftMidFwd]);
 
         // Second update: Switch to RightMid as source in forward gallery
         gallery.forward_gallery[A380FuelTankType::LeftMid] = TankMode::None;
         gallery.forward_gallery[A380FuelTankType::RightMid] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        // Old pump should be off
-        assert!(!pump_state[A380FuelPump::LeftMidFwd]);
-        // New pump should be on
-        assert!(pump_state[A380FuelPump::RightMidFwd]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::RightMidFwd]);
     }
 
     #[test]
@@ -465,19 +430,20 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[A380FuelValve::FeedTank1ForwardTransferValve],
+        );
 
         // Second update: Switch to FeedTwo as target
         gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::None;
         gallery.forward_gallery[A380FuelTankType::FeedTwo] = TankMode::Target;
         control.update(&gallery);
 
-        let valve_state = control.fuel_valve_requested_open();
-        // Old valve should be off
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
-        // New valve should be on
-        assert!(valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
+        assert_only_specified_valves_open(
+            &control,
+            &[A380FuelValve::FeedTank2ForwardTransferValve],
+        );
     }
 
     #[test]
@@ -494,23 +460,17 @@ mod tests {
 
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        let valve_state = control.fuel_valve_requested_open();
-
-        // Verify forward gallery source is active (only forward pump)
-        assert!(pump_state[A380FuelPump::LeftOuter]);
-        // Verify aft gallery source is active (only aft pump)
-        assert!(pump_state[A380FuelPump::RightMidAft]);
-        // Verify aft pump for RightMid is NOT on (wrong gallery)
-        assert!(!pump_state[A380FuelPump::RightMidFwd]);
-
-        // Verify targets are active
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
-        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve]);
-
-        // Verify other pumps/valves are off
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
-        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::LeftOuter, A380FuelPump::RightMidAft],
+        );
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::FeedTank1ForwardTransferValve,
+                A380FuelValve::FeedTank3AftTransferValve,
+            ],
+        );
     }
 
     #[test]
@@ -522,9 +482,7 @@ mod tests {
         gallery.forward_gallery[A380FuelTankType::LeftOuter] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-        // LeftOuter pump should be running (same pump for both galleries)
-        assert!(pump_state[A380FuelPump::LeftOuter]);
+        assert_only_specified_pumps_on(&control, &[A380FuelPump::LeftOuter]);
     }
 
     #[test]
@@ -537,15 +495,10 @@ mod tests {
         gallery.aft_gallery[A380FuelTankType::RightMid] = TankMode::Source;
         control.update(&gallery);
 
-        let pump_state = control.fuel_pump_requested_running();
-
-        // Forward pumps
-        assert!(pump_state[A380FuelPump::LeftMidFwd]);
-        assert!(!pump_state[A380FuelPump::LeftMidAft]);
-
-        // Aft pumps
-        assert!(pump_state[A380FuelPump::RightMidAft]);
-        assert!(!pump_state[A380FuelPump::RightMidFwd]);
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::LeftMidFwd, A380FuelPump::RightMidAft],
+        );
     }
 
     #[test]
