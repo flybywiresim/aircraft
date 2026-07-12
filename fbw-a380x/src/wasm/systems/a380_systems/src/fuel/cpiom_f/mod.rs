@@ -16,7 +16,7 @@ use crate::{
     systems::simulation::SimulationElement,
 };
 use bitflags::{bitflags, Flags};
-use enum_map::Enum;
+use enum_map::{enum_map, Enum, EnumMap};
 use fuel_measuring::FuelMeasuringApplication;
 use fuel_transfer::FuelTransferApplication;
 use serde::Deserialize;
@@ -132,18 +132,18 @@ trait TransferGalleryConnections {
 
 #[derive(Default)]
 struct TransferGalleryTankConnections {
-    forward_gallery: [TankMode; A380FuelTankType::LENGTH],
-    aft_gallery: [TankMode; A380FuelTankType::LENGTH],
+    forward_gallery: EnumMap<A380FuelTankType, TankMode>,
+    aft_gallery: EnumMap<A380FuelTankType, TankMode>,
     forward_gallery_in_use: bool,
     aft_gallery_in_use: bool,
 }
 impl TransferGalleryTankConnections {
     fn set_gallery_modes(
-        gallery: &mut [TankMode; A380FuelTankType::LENGTH],
+        gallery: &mut EnumMap<A380FuelTankType, TankMode>,
         modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
     ) -> bool {
         modes.into_iter().fold(false, |assigned, (tank, mode)| {
-            gallery[tank.into_usize()] = mode;
+            gallery[tank] = mode;
             assigned || !matches!(mode, TankMode::None)
         })
     }
@@ -942,12 +942,10 @@ impl A380FuelQuantityManagementSystem {
         let fuel_valve_commands = self.fuel_control_application.fuel_valve_requested_open();
 
         self.fuel_pump_target_state_words =
-            pack_fuel_pump_words(SignStatus::NormalOperation, |pump| {
-                fuel_pump_commands[pump.into_usize()]
-            });
+            pack_fuel_pump_words(SignStatus::NormalOperation, |pump| fuel_pump_commands[pump]);
         self.fuel_valve_target_state_words =
             pack_fuel_valve_words(SignStatus::NormalOperation, |valve| {
-                fuel_valve_commands[valve.into_usize()]
+                fuel_valve_commands[valve]
             });
         self.apply_fuel_control(fuel_system, fuel_pump_commands, fuel_valve_commands);
     }
@@ -967,14 +965,14 @@ impl A380FuelQuantityManagementSystem {
     fn apply_fuel_control(
         &self,
         fuel_system: &mut impl SetFuelControlState,
-        fuel_pump_commands: [bool; A380FuelPump::LENGTH],
-        fuel_valve_commands: [bool; A380FuelValve::LENGTH],
+        fuel_pump_commands: EnumMap<A380FuelPump, bool>,
+        fuel_valve_commands: EnumMap<A380FuelValve, bool>,
     ) {
-        for (pump, running) in A380FuelPump::iterator().zip(fuel_pump_commands) {
+        for (pump, running) in fuel_pump_commands {
             fuel_system.set_fuel_pump_command(pump, running);
         }
 
-        for (valve, open) in A380FuelValve::iterator().zip(fuel_valve_commands) {
+        for (valve, open) in fuel_valve_commands {
             fuel_system.set_fuel_valve_command(valve, open);
         }
     }

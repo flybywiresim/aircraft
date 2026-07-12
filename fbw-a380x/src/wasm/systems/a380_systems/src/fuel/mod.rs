@@ -10,6 +10,7 @@ use crate::{
 use enum_map::{enum_map, Enum};
 use fuel_quantity_data_concentrator::FuelQuantityDataConcentrator;
 use nalgebra::Vector3;
+use strum_macros::EnumIter;
 use systems::{
     accept_iterable,
     fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem, FuelValve},
@@ -121,7 +122,7 @@ impl std::fmt::Display for A380FuelTankType {
     }
 }
 
-#[derive(Clone, Copy, Enum)]
+#[derive(Clone, Copy, Enum, EnumIter)]
 enum A380FuelPump {
     Feed1Main,
     Feed1Stby,
@@ -145,36 +146,8 @@ enum A380FuelPump {
     TrimRight,
     Apu,
 }
-impl A380FuelPump {
-    fn iterator() -> impl Iterator<Item = A380FuelPump> {
-        [
-            A380FuelPump::Feed1Main,
-            A380FuelPump::Feed1Stby,
-            A380FuelPump::Feed2Main,
-            A380FuelPump::Feed2Stby,
-            A380FuelPump::Feed3Main,
-            A380FuelPump::Feed3Stby,
-            A380FuelPump::Feed4Main,
-            A380FuelPump::Feed4Stby,
-            A380FuelPump::LeftOuter,
-            A380FuelPump::LeftMidFwd,
-            A380FuelPump::LeftMidAft,
-            A380FuelPump::LeftInnerFwd,
-            A380FuelPump::RightInnerFwd,
-            A380FuelPump::RightOuter,
-            A380FuelPump::RightMidFwd,
-            A380FuelPump::RightMidAft,
-            A380FuelPump::LeftInnerAft,
-            A380FuelPump::RightInnerAft,
-            A380FuelPump::TrimLeft,
-            A380FuelPump::TrimRight,
-            A380FuelPump::Apu,
-        ]
-        .into_iter()
-    }
-}
 
-#[derive(Clone, Copy, Enum)]
+#[derive(Clone, Copy, Enum, EnumIter)]
 enum A380FuelValve {
     Engine1LowPressureValve,
     Engine2LowPressureValve,
@@ -225,54 +198,6 @@ enum A380FuelValve {
     TransferDefuelValve,
     LeftJettisonNozzleValve,
     RightJettisonNozzleValve,
-}
-impl A380FuelValve {
-    fn iterator() -> impl Iterator<Item = A380FuelValve> {
-        [
-            A380FuelValve::Engine1LowPressureValve,
-            A380FuelValve::Engine2LowPressureValve,
-            A380FuelValve::Engine3LowPressureValve,
-            A380FuelValve::Engine4LowPressureValve,
-            A380FuelValve::FeedTank1ForwardTransferValve,
-            A380FuelValve::FeedTank2ForwardTransferValve,
-            A380FuelValve::FeedTank3ForwardTransferValve,
-            A380FuelValve::FeedTank4ForwardTransferValve,
-            A380FuelValve::LeftInnerForwardTransferValve,
-            A380FuelValve::LeftMidForwardTransferValve,
-            A380FuelValve::LeftOuterForwardTransferValve,
-            A380FuelValve::RightInnerForwardTransferValve,
-            A380FuelValve::RightMidForwardTransferValve,
-            A380FuelValve::RightOuterForwardTransferValve,
-            A380FuelValve::FeedTank1AftTransferValve,
-            A380FuelValve::FeedTank2AftTransferValve,
-            A380FuelValve::FeedTank3AftTransferValve,
-            A380FuelValve::FeedTank4AftTransferValve,
-            A380FuelValve::LeftInnerAftTransferValve,
-            A380FuelValve::LeftMidAftTransferValve,
-            A380FuelValve::LeftOuterAftTransferValve,
-            A380FuelValve::RightInnerAftTransferValve,
-            A380FuelValve::RightMidAftTransferValve,
-            A380FuelValve::RightOuterAftTransferValve,
-            A380FuelValve::TrimTankInletValve1,
-            A380FuelValve::TrimTankInletValve2,
-            A380FuelValve::TrimLineIsolationValveFwd,
-            A380FuelValve::TrimLineIsolationValveAft,
-            A380FuelValve::CrossFeedValve1,
-            A380FuelValve::CrossFeedValve2,
-            A380FuelValve::CrossFeedValve3,
-            A380FuelValve::CrossFeedValve4,
-            A380FuelValve::APUIsolationValve,
-            A380FuelValve::APULowPressureValve,
-            A380FuelValve::LeftOuterEmerTransferValve,
-            A380FuelValve::RightOuterEmerTransferValve,
-            A380FuelValve::GalleryAuxRefuelValveLeft,
-            A380FuelValve::GalleryAuxRefuelValveRight,
-            A380FuelValve::TransferDefuelValve,
-            A380FuelValve::LeftJettisonNozzleValve,
-            A380FuelValve::RightJettisonNozzleValve,
-        ]
-        .into_iter()
-    }
 }
 
 pub(crate) struct A380Fuel {

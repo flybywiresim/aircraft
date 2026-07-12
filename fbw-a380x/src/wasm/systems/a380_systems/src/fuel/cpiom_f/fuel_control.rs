@@ -2,7 +2,7 @@ use crate::fuel::{
     cpiom_f::{TankMode, TransferGalleryTankConnections},
     A380FuelPump, A380FuelTankType, A380FuelValve,
 };
-use enum_map::{enum_map, Enum, EnumMap};
+use enum_map::{enum_map, EnumMap};
 use std::sync::LazyLock;
 
 static TANK_PUMP_MAP: LazyLock<EnumMap<A380FuelTankType, (A380FuelPump, A380FuelPump)>> =
@@ -66,29 +66,27 @@ static TANK_INLET_MAP: LazyLock<EnumMap<A380FuelTankType, (A380FuelValve, A380Fu
         }
     });
 
+#[derive(Default)]
 pub(super) struct FuelControlApplication {
-    fuel_pump_requested_running: [bool; A380FuelPump::LENGTH],
-    fuel_valve_requested_open: [bool; A380FuelValve::LENGTH],
+    fuel_pump_requested_running: EnumMap<A380FuelPump, bool>,
+    fuel_valve_requested_open: EnumMap<A380FuelValve, bool>,
 }
 impl FuelControlApplication {
     pub(super) fn new() -> Self {
-        Self {
-            fuel_pump_requested_running: [false; A380FuelPump::LENGTH],
-            fuel_valve_requested_open: [false; A380FuelValve::LENGTH],
-        }
+        Self::default()
     }
 
     pub(super) fn update(&mut self, gallery_connections: &TransferGalleryTankConnections) {
         self.fuel_pump_requested_running = Default::default();
-        self.fuel_valve_requested_open = [false; A380FuelValve::LENGTH];
+        self.fuel_valve_requested_open = Default::default();
 
         // Process forward gallery connections
-        for (tank, mode) in A380FuelTankType::iterator().zip(gallery_connections.forward_gallery) {
+        for (tank, mode) in gallery_connections.forward_gallery {
             self.process_tank_mode(tank, mode, true);
         }
 
         // Process aft gallery connections
-        for (tank, mode) in A380FuelTankType::iterator().zip(gallery_connections.aft_gallery) {
+        for (tank, mode) in gallery_connections.aft_gallery {
             self.process_tank_mode(tank, mode, false);
         }
     }
@@ -100,22 +98,22 @@ impl FuelControlApplication {
                 // Activate fuel pump for source tank
                 let (pump1, pump2) = TANK_PUMP_MAP[tank];
                 let pump = if is_forward { pump1 } else { pump2 };
-                self.fuel_pump_requested_running[pump.into_usize()] = true;
+                self.fuel_pump_requested_running[pump] = true;
             }
             TankMode::Target => {
                 // Open inlet valves for target tank (any tank type can be a target)
                 let (fwd_valve, aft_valve) = TANK_INLET_MAP[tank];
                 let valve = if is_forward { fwd_valve } else { aft_valve };
-                self.fuel_valve_requested_open[valve.into_usize()] = true;
+                self.fuel_valve_requested_open[valve] = true;
             }
         }
     }
 
-    pub(super) fn fuel_pump_requested_running(&self) -> [bool; A380FuelPump::LENGTH] {
+    pub(super) fn fuel_pump_requested_running(&self) -> EnumMap<A380FuelPump, bool> {
         self.fuel_pump_requested_running
     }
 
-    pub(super) fn fuel_valve_requested_open(&self) -> [bool; A380FuelValve::LENGTH] {
+    pub(super) fn fuel_valve_requested_open(&self) -> EnumMap<A380FuelValve, bool> {
         self.fuel_valve_requested_open
     }
 }
@@ -131,15 +129,15 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set LeftInner as source in forward gallery
-        gallery.forward_gallery[A380FuelTankType::LeftInner.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
 
         control.update(&gallery);
 
         // Only the forward pump for the gallery should be running
         let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftInnerFwd]);
         // Aft pump should be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerAft.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftInnerAft]);
     }
 
     #[test]
@@ -148,15 +146,15 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set LeftInner as source in aft gallery
-        gallery.aft_gallery[A380FuelTankType::LeftInner.into_usize()] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
 
         control.update(&gallery);
 
         // Only the aft pump for the gallery should be running
         let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerAft.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftInnerAft]);
         // Forward pump should be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
     }
 
     #[test]
@@ -165,13 +163,13 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set FeedOne as target in forward gallery
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
 
         control.update(&gallery);
 
         // Check that forward transfer valve is open
         let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
     }
 
     #[test]
@@ -180,13 +178,13 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set FeedTwo as target in aft gallery
-        gallery.aft_gallery[A380FuelTankType::FeedTwo.into_usize()] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::FeedTwo] = TankMode::Target;
 
         control.update(&gallery);
 
         // Check that aft transfer valve is open
         let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank2AftTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank2AftTransferValve]);
     }
 
     #[test]
@@ -195,16 +193,16 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set various tank types as targets
-        gallery.forward_gallery[A380FuelTankType::Trim.into_usize()] = TankMode::Target;
-        gallery.aft_gallery[A380FuelTankType::LeftInner.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::Trim] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::LeftInner] = TankMode::Target;
 
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
         // Trim forward valve should be open
-        assert!(valve_state[A380FuelValve::TrimTankInletValve1.into_usize()]);
+        assert!(valve_state[A380FuelValve::TrimTankInletValve1]);
         // LeftInner aft valve should be open
-        assert!(valve_state[A380FuelValve::LeftInnerAftTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::LeftInnerAftTransferValve]);
     }
 
     #[test]
@@ -213,16 +211,16 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set wing tanks as targets
-        gallery.forward_gallery[A380FuelTankType::LeftOuter.into_usize()] = TankMode::Target;
-        gallery.aft_gallery[A380FuelTankType::RightMid.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::LeftOuter] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::RightMid] = TankMode::Target;
 
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
         // LeftOuter forward valve should be open
-        assert!(valve_state[A380FuelValve::LeftOuterForwardTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::LeftOuterForwardTransferValve]);
         // RightMid aft valve should be open
-        assert!(valve_state[A380FuelValve::RightMidAftTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::RightMidAftTransferValve]);
     }
 
     #[test]
@@ -231,18 +229,18 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set sources in different galleries
-        gallery.forward_gallery[A380FuelTankType::LeftOuter.into_usize()] = TankMode::Source;
-        gallery.aft_gallery[A380FuelTankType::RightMid.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftOuter] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::RightMid] = TankMode::Source;
 
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
         // LeftOuter forward pump should be on
-        assert!(pump_state[A380FuelPump::LeftOuter.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftOuter]);
         // RightMid aft pump should be on
-        assert!(pump_state[A380FuelPump::RightMidAft.into_usize()]);
+        assert!(pump_state[A380FuelPump::RightMidAft]);
         // RightMid forward pump should be OFF (different gallery)
-        assert!(!pump_state[A380FuelPump::RightMidFwd.into_usize()]);
+        assert!(!pump_state[A380FuelPump::RightMidFwd]);
     }
 
     #[test]
@@ -256,8 +254,8 @@ mod tests {
         let pump_state = control.fuel_pump_requested_running();
         let valve_state = control.fuel_valve_requested_open();
 
-        assert!(pump_state.iter().all(|&b| !b));
-        assert!(valve_state.iter().all(|&b| !b));
+        assert!(pump_state.values().all(|b| !b));
+        assert!(valve_state.values().all(|b| !b));
     }
 
     #[test]
@@ -266,19 +264,19 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // First update: LeftInner is source in forward gallery
-        gallery.forward_gallery[A380FuelTankType::LeftInner.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftInnerFwd]);
 
         // Second update: Clear LeftInner as source (set to None)
-        gallery.forward_gallery[A380FuelTankType::LeftInner.into_usize()] = TankMode::None;
+        gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::None;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
         // LeftInner forward pump should now be OFF
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
     }
 
     #[test]
@@ -287,19 +285,19 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // First update: FeedOne is target
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
 
         // Second update: Clear FeedOne as target (set to None)
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::None;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::None;
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
         // FeedOne forward valve should now be OFF
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
+        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
     }
 
     #[test]
@@ -308,19 +306,19 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set RightOuter as source
-        gallery.forward_gallery[A380FuelTankType::RightOuter.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::RightOuter] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
 
         // Only RightOuter pump should be on
-        assert!(pump_state[A380FuelPump::RightOuter.into_usize()]);
+        assert!(pump_state[A380FuelPump::RightOuter]);
 
         // Other pumps should be off
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
-        assert!(!pump_state[A380FuelPump::LeftMidFwd.into_usize()]);
-        assert!(!pump_state[A380FuelPump::TrimLeft.into_usize()]);
-        assert!(!pump_state[A380FuelPump::Feed1Main.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
+        assert!(!pump_state[A380FuelPump::LeftMidFwd]);
+        assert!(!pump_state[A380FuelPump::TrimLeft]);
+        assert!(!pump_state[A380FuelPump::Feed1Main]);
     }
 
     #[test]
@@ -329,18 +327,18 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Set FeedThree as target
-        gallery.aft_gallery[A380FuelTankType::FeedThree.into_usize()] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::FeedThree] = TankMode::Target;
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
 
         // Only FeedThree aft valve should be open
-        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve]);
 
         // Other feed tank transfer valves should be closed
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
-        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve.into_usize()]);
-        assert!(!valve_state[A380FuelValve::FeedTank4AftTransferValve.into_usize()]);
+        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
+        assert!(!valve_state[A380FuelValve::FeedTank4AftTransferValve]);
     }
 
     #[test]
@@ -349,22 +347,22 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // First update: LeftMid is source in forward gallery
-        gallery.forward_gallery[A380FuelTankType::LeftMid.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftMid] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
-        assert!(pump_state[A380FuelPump::LeftMidFwd.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftMidFwd]);
 
         // Second update: Switch to RightMid as source in forward gallery
-        gallery.forward_gallery[A380FuelTankType::LeftMid.into_usize()] = TankMode::None;
-        gallery.forward_gallery[A380FuelTankType::RightMid.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftMid] = TankMode::None;
+        gallery.forward_gallery[A380FuelTankType::RightMid] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
         // Old pump should be off
-        assert!(!pump_state[A380FuelPump::LeftMidFwd.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftMidFwd]);
         // New pump should be on
-        assert!(pump_state[A380FuelPump::RightMidFwd.into_usize()]);
+        assert!(pump_state[A380FuelPump::RightMidFwd]);
     }
 
     #[test]
@@ -373,22 +371,22 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // First update: FeedOne is target (forward gallery)
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
 
         // Second update: Switch to FeedTwo as target
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::None;
-        gallery.forward_gallery[A380FuelTankType::FeedTwo.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::None;
+        gallery.forward_gallery[A380FuelTankType::FeedTwo] = TankMode::Target;
         control.update(&gallery);
 
         let valve_state = control.fuel_valve_requested_open();
         // Old valve should be off
-        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
+        assert!(!valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
         // New valve should be on
-        assert!(valve_state[A380FuelValve::FeedTank2ForwardTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
     }
 
     #[test]
@@ -398,10 +396,10 @@ mod tests {
 
         // Setup: LeftOuter and RightMid as sources (from different galleries)
         // FeedOne and FeedThree as targets (from different galleries)
-        gallery.forward_gallery[A380FuelTankType::LeftOuter.into_usize()] = TankMode::Source;
-        gallery.forward_gallery[A380FuelTankType::FeedOne.into_usize()] = TankMode::Target;
-        gallery.aft_gallery[A380FuelTankType::RightMid.into_usize()] = TankMode::Source;
-        gallery.aft_gallery[A380FuelTankType::FeedThree.into_usize()] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::LeftOuter] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::FeedOne] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::RightMid] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::FeedThree] = TankMode::Target;
 
         control.update(&gallery);
 
@@ -409,19 +407,19 @@ mod tests {
         let valve_state = control.fuel_valve_requested_open();
 
         // Verify forward gallery source is active (only forward pump)
-        assert!(pump_state[A380FuelPump::LeftOuter.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftOuter]);
         // Verify aft gallery source is active (only aft pump)
-        assert!(pump_state[A380FuelPump::RightMidAft.into_usize()]);
+        assert!(pump_state[A380FuelPump::RightMidAft]);
         // Verify aft pump for RightMid is NOT on (wrong gallery)
-        assert!(!pump_state[A380FuelPump::RightMidFwd.into_usize()]);
+        assert!(!pump_state[A380FuelPump::RightMidFwd]);
 
         // Verify targets are active
-        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve.into_usize()]);
-        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve.into_usize()]);
+        assert!(valve_state[A380FuelValve::FeedTank1ForwardTransferValve]);
+        assert!(valve_state[A380FuelValve::FeedTank3AftTransferValve]);
 
         // Verify other pumps/valves are off
-        assert!(!pump_state[A380FuelPump::LeftInnerFwd.into_usize()]);
-        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve.into_usize()]);
+        assert!(!pump_state[A380FuelPump::LeftInnerFwd]);
+        assert!(!valve_state[A380FuelValve::FeedTank2ForwardTransferValve]);
     }
 
     #[test]
@@ -430,12 +428,12 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Outer tanks have only one pump (LeftOuter == LeftOuter for both galleries)
-        gallery.forward_gallery[A380FuelTankType::LeftOuter.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftOuter] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
         // LeftOuter pump should be running (same pump for both galleries)
-        assert!(pump_state[A380FuelPump::LeftOuter.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftOuter]);
     }
 
     #[test]
@@ -444,18 +442,18 @@ mod tests {
         let mut gallery = TransferGalleryTankConnections::default();
 
         // Forward: LeftMid source, Aft: RightMid source
-        gallery.forward_gallery[A380FuelTankType::LeftMid.into_usize()] = TankMode::Source;
-        gallery.aft_gallery[A380FuelTankType::RightMid.into_usize()] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftMid] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::RightMid] = TankMode::Source;
         control.update(&gallery);
 
         let pump_state = control.fuel_pump_requested_running();
 
         // Forward pumps
-        assert!(pump_state[A380FuelPump::LeftMidFwd.into_usize()]);
-        assert!(!pump_state[A380FuelPump::LeftMidAft.into_usize()]);
+        assert!(pump_state[A380FuelPump::LeftMidFwd]);
+        assert!(!pump_state[A380FuelPump::LeftMidAft]);
 
         // Aft pumps
-        assert!(pump_state[A380FuelPump::RightMidAft.into_usize()]);
-        assert!(!pump_state[A380FuelPump::RightMidFwd.into_usize()]);
+        assert!(pump_state[A380FuelPump::RightMidAft]);
+        assert!(!pump_state[A380FuelPump::RightMidFwd]);
     }
 }

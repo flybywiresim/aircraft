@@ -5,7 +5,7 @@ use crate::fuel::{
     },
     A380FuelTankType,
 };
-use std::{f64::INFINITY, time::Duration};
+use std::time::Duration;
 use uom::si::{f64::Mass, mass::pound};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
@@ -98,7 +98,7 @@ impl MainTransfer {
     ) -> (Mass, Mass, Mass, bool) {
         match source_tank {
             TransferSourceTank::Inner | TransferSourceTank::Mid => {
-                if remaining_flight_time.is_some_and(|d| d < Duration::from_secs(90 * 60)) {
+                if remaining_flight_time.is_some_and(|d| d < Duration::from_mins(90)) {
                     (
                         Mass::new::<pound>(36_500.), // 16'556.12 kg
                         Mass::new::<pound>(39_350.), // 17'848.86 kg
@@ -124,7 +124,7 @@ impl MainTransfer {
             TransferSourceTank::Trim => (
                 Mass::new::<pound>(13_250.), // 6'010.10 kg
                 Mass::new::<pound>(13_250.), // 6'010.10 kg
-                Mass::new::<pound>(INFINITY),
+                Mass::new::<pound>(f64::INFINITY),
                 false, // TODO: when not enough fuel is in the trim tank to balance all feed tanks they are balanced pair-wise
             ),
             TransferSourceTank::Outer | TransferSourceTank::None => (
@@ -159,16 +159,11 @@ impl MainTransfer {
                     .rev(),
             )
         {
-            *feed_tank_is_target = if below_threshold
+            *feed_tank_is_target = below_threshold
                 || below_upper_threshold
                     && (*feed_tank_is_target
                         || paired_feed_tank_is_target
-                            && tanks_balanced(feed_tank_quantity, paired_feed_tank_quantity))
-            {
-                true
-            } else {
-                false
-            };
+                            && tanks_balanced(feed_tank_quantity, paired_feed_tank_quantity));
         }
         self.feed_tank_is_target = new_feed_tank_is_target;
     }
@@ -225,7 +220,7 @@ impl FuelTransfer for MainTransfer {
             match self.source_tank {
                 TransferSourceTank::Inner => {
                     if gallery_connections.is_forward_gallery_usable() {
-                        gallery_connections.set_aft_gallery_modes(
+                        gallery_connections.set_forward_gallery_modes(
                             INNER_TANKS
                                 .into_iter()
                                 .map(|t| (t, TankMode::Source))
@@ -235,7 +230,7 @@ impl FuelTransfer for MainTransfer {
                 }
                 TransferSourceTank::Mid => {
                     if gallery_connections.is_forward_gallery_usable() {
-                        gallery_connections.set_aft_gallery_modes(
+                        gallery_connections.set_forward_gallery_modes(
                             MID_TANKS
                                 .into_iter()
                                 .map(|t| (t, TankMode::Source))
@@ -245,7 +240,7 @@ impl FuelTransfer for MainTransfer {
                 }
                 TransferSourceTank::Outer => {
                     if gallery_connections.is_forward_gallery_usable() {
-                        gallery_connections.set_aft_gallery_modes(
+                        gallery_connections.set_forward_gallery_modes(
                             OUTER_TANKS
                                 .into_iter()
                                 .map(|t| (t, TankMode::Source))

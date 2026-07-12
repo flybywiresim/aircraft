@@ -1,4 +1,5 @@
 use super::{A380FuelPump, A380FuelValve};
+use strum::IntoEnumIterator;
 use systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 const FIRST_DISCRETE_BIT: u8 = 11;
@@ -44,7 +45,7 @@ pub(super) fn pack_fuel_valve_words(
     ssm: SignStatus,
     state_for_valve: impl FnMut(A380FuelValve) -> bool,
 ) -> [Arinc429Word<u32>; 3] {
-    pack_discrete_words_from_items(ssm, A380FuelValve::iterator(), state_for_valve)
+    pack_discrete_words_from_items(ssm, A380FuelValve::iter(), state_for_valve)
 }
 
 pub(super) fn pack_discrete_words<const WORD_COUNT: usize>(
