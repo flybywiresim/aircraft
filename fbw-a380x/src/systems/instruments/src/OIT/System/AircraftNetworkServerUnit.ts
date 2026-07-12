@@ -12,7 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
-import { ResetPanelSimvars } from '../../MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvars } from '../../../../shared/src/publishers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
 import { SecureCommunicationInterface } from './SecureCommunicationInterface';
 

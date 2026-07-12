@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -49,7 +49,6 @@ import { CdsDisplayUnit, DisplayUnitID, getDisplayIndex } from '../MsfsAvionicsC
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
-import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
@@ -60,6 +59,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
+import { OansBusEvents, OansSimVarPublisher } from '@shared/publishers/OansPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -107,8 +107,6 @@ class NDInstrument implements FsInstrument {
 
   private readonly hEventPublisher: HEventPublisher;
 
-  private readonly resetPanelPublisher: ResetPanelSimvarPublisher;
-
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
   private readonly simplaneValueProvider: SimplaneValueProvider;
@@ -137,29 +135,33 @@ class NDInstrument implements FsInstrument {
 
   private readonly eraseFlagIndex = Subject.create<number | null>(null);
 
-  private oansContextMenuItems = Subject.create(this.getOansContextMenu(false, false));
+  private readonly oansContextMenuItems = Subject.create(this.getOansContextMenu(false, false));
 
-  private contextMenuRef = FSComponent.createRef<ContextMenu>();
+  private readonly contextMenuRef = FSComponent.createRef<ContextMenu>();
 
-  private contextMenuOpened = Subject.create<boolean>(false);
+  private readonly contextMenuOpened = Subject.create<boolean>(false);
 
-  private contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 });
+  private readonly contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 });
 
-  private mouseCursorRef = FSComponent.createRef<MouseCursor>();
+  private readonly mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private efisNdMode = EfisNdMode.ARC;
 
   private efisCpRange: A380EfisNdRangeValue = 10;
 
-  private oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
+  private readonly oansRef = FSComponent.createRef<Oanc<A380EfisZoomRangeValue>>();
 
-  private cursorVisible = Subject.create<boolean>(true);
+  private readonly cursorVisible = Subject.create<boolean>(true);
 
   private readonly oansNotAvailable = ConsumerSubject.create(null, true);
 
   private readonly oansShown = Subject.create(false);
+
+  private readonly oansHealthy = ConsumerSubject.create(null, false);
+
+  private readonly oansSimVarPublisher: OansSimVarPublisher;
 
   constructor() {
     const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
@@ -184,12 +186,12 @@ class NDInstrument implements FsInstrument {
     this.raBusPublisher = new RaBusPublisher(this.bus);
     this.lgciuBusPublisher = new LgciuBusPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
-    this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
     this.aesuPublisher = new AesuBusPublisher(this.bus);
     this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
+    this.oansSimVarPublisher = new OansSimVarPublisher(this.bus);
 
     this.clock = new Clock(this.bus);
 
@@ -209,7 +211,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('ra', this.raBusPublisher);
     this.backplane.addPublisher('lgciu', this.lgciuBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
-    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('oans', this.oansSimVarPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);
     this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
 
@@ -217,6 +219,8 @@ class NDInstrument implements FsInstrument {
     this.backplane.addInstrument('clock', this.clock);
 
     this.doInit();
+
+    this.oansHealthy.setConsumer(this.bus.getSubscriber<OansBusEvents>().on('oans_healthy'));
   }
 
   private doInit(): void {
@@ -261,6 +265,7 @@ class NDInstrument implements FsInstrument {
                 contextMenuX={this.contextMenuX}
                 contextMenuY={this.contextMenuY}
                 zoomValues={a380EfisZoomRangeSettings}
+                oansHealthy={this.oansHealthy}
               />
             </div>
           </div>
@@ -317,6 +322,7 @@ class NDInstrument implements FsInstrument {
               side={this.efisSide}
               isVisible={this.controlPanelVisible}
               togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
+              oansHealthy={this.oansHealthy}
             />
           </div>
           <MouseCursor
@@ -357,7 +363,7 @@ class NDInstrument implements FsInstrument {
       });
     }
 
-    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars & HEvent>();
+    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & HEvent>();
 
     this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 
@@ -396,10 +402,12 @@ class NDInstrument implements FsInstrument {
 
   private updateNdOansVisibility() {
     if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: true }, true, false);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: true }, false, false);
       this.oansShown.set(true);
     } else {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: false }, true, false);
+      this.bus
+        .getPublisher<OansControlEvents>()
+        .pub('nd_show_oans', { side: this.efisSide, show: false }, false, false);
       this.oansShown.set(false);
     }
   }

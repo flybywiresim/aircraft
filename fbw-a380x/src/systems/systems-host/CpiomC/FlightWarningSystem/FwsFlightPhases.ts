@@ -1,6 +1,3 @@
-// @ts-strict-ignore
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable camelcase */
 import {
   Arinc429Register,
   NXLogicConfirmNode,
@@ -29,135 +26,75 @@ export enum FwcFlightPhase {
  * This nearly a 1:1 port from the A32NX's FWC serves as temporary replacement, until a more sophisticated system simulation is in place.
  */
 export class FwsFlightPhases {
-  toConfigTest: boolean;
+  private readonly toConfigTest = false;
 
-  ldgMemo: boolean;
+  private ldgMemo = false;
 
-  toMemo: boolean;
+  private toMemo = false;
 
-  gndMemo: NXLogicConfirmNode;
+  private readonly gndMemo = new NXLogicConfirmNode(1);
 
-  oneEngineRunningConf: NXLogicConfirmNode;
+  private readonly oneEngineRunningConf = new NXLogicConfirmNode(30);
 
-  speedAbove80KtsMemo: NXLogicMemoryNode;
+  private readonly speedAbove80KtsMemo = new NXLogicMemoryNode(true);
 
-  speedAboveV1Memo: NXLogicMemoryNode;
+  private readonly speedAboveV1Memo = new NXLogicMemoryNode();
 
-  mctMemo: NXLogicConfirmNode;
+  private readonly mctMemo = new NXLogicConfirmNode(60, false);
 
-  firePBOutConf: NXLogicConfirmNode;
+  private readonly firePBOutConf = new NXLogicConfirmNode(0.2);
 
-  firePBOutMemo: NXLogicTriggeredMonostableNode;
+  private readonly firePBOutMemo = new NXLogicTriggeredMonostableNode(2);
 
-  firePBClear12: NXLogicMemoryNode;
+  private readonly firePBClear12 = new NXLogicMemoryNode(false);
 
-  phase112Memo: NXLogicTriggeredMonostableNode;
+  private readonly phase112Memo = new NXLogicTriggeredMonostableNode(300);
 
-  phase10GroundMemo: NXLogicTriggeredMonostableNode;
+  private readonly phase10GroundMemo = new NXLogicTriggeredMonostableNode(2);
 
-  ac80KtsMemo: NXLogicTriggeredMonostableNode;
+  private readonly ac80KtsMemo = new NXLogicTriggeredMonostableNode(2);
 
-  prevPhase11InvertMemo: NXLogicTriggeredMonostableNode;
+  private readonly prevPhase11InvertMemo = new NXLogicTriggeredMonostableNode(3, false);
 
-  twoEnginesTOPowerInvertMemo: NXLogicTriggeredMonostableNode;
+  private readonly twoEnginesTOPowerInvertMemo = new NXLogicTriggeredMonostableNode(1, false);
 
-  phase9Nvm: NXLogicMemoryNode;
+  private readonly phase9Nvm = new NXLogicMemoryNode(true, true);
 
-  prevPhase11: boolean;
+  private prevPhase11 = false;
 
-  groundImmediateMemo: NXLogicTriggeredMonostableNode;
+  private readonly groundImmediateMemo = new NXLogicTriggeredMonostableNode(2);
 
-  phase6Memo: NXLogicTriggeredMonostableNode;
+  private readonly phase6Memo = new NXLogicTriggeredMonostableNode(15);
 
-  phase7Memo: NXLogicTriggeredMonostableNode;
+  private readonly phase7Memo = new NXLogicTriggeredMonostableNode(120);
 
-  phase89Memo: NXLogicTriggeredMonostableNode;
+  private readonly phase89Memo = new NXLogicTriggeredMonostableNode(180);
 
-  memoTo_conf01: NXLogicConfirmNode;
+  private readonly memoTo_conf01 = new NXLogicConfirmNode(120, true);
 
-  memoTo_memo: NXLogicMemoryNode;
+  private readonly memoTo_memo = new NXLogicMemoryNode(false);
 
-  memoLdgMemo_conf01: NXLogicConfirmNode;
+  private readonly memoLdgMemo_conf01 = new NXLogicConfirmNode(1, true);
 
-  memoLdgMemo_inhibit: NXLogicMemoryNode;
+  private readonly memoLdgMemo_inhibit = new NXLogicMemoryNode(false);
 
-  memoLdgMemo_conf02: NXLogicConfirmNode;
+  private readonly memoLdgMemo_conf02 = new NXLogicConfirmNode(10, true);
 
-  memoLdgMemo_below2000ft: NXLogicMemoryNode;
+  private readonly memoLdgMemo_below2000ft = new NXLogicMemoryNode(true);
 
-  memoToInhibit_conf01: NXLogicConfirmNode;
+  private previousTargetAltitude = NaN;
 
-  memoLdgInhibit_conf01: NXLogicConfirmNode;
+  private _wasBelowThreshold = false;
 
-  previousTargetAltitude: number;
+  private _wasAboveThreshold = false;
 
-  _wasBelowThreshold: boolean;
+  private wasInRange = false;
 
-  _wasAboveThreshold: boolean;
+  private wasReach200ft = false;
 
-  _wasInRange: boolean;
+  private cChordShortWasTriggered = false;
 
-  _wasReach200ft: boolean;
-
-  _cChordShortWasTriggered: boolean;
-
-  aircraft: Aircraft;
-
-  private readonly adrAltitude = Arinc429Register.empty();
-
-  constructor(private fws: FwsCore) {
-    // momentary
-    this.toConfigTest = null;
-
-    // persistent
-    this.ldgMemo = null;
-    this.toMemo = null;
-
-    this.gndMemo = new NXLogicConfirmNode(1);
-
-    this.oneEngineRunningConf = new NXLogicConfirmNode(30);
-
-    this.speedAbove80KtsMemo = new NXLogicMemoryNode(true);
-
-    this.speedAboveV1Memo = new NXLogicMemoryNode();
-
-    this.mctMemo = new NXLogicConfirmNode(60, false);
-
-    this.firePBOutConf = new NXLogicConfirmNode(0.2);
-    this.firePBOutMemo = new NXLogicTriggeredMonostableNode(2);
-    this.firePBClear12 = new NXLogicMemoryNode(false);
-    this.phase112Memo = new NXLogicTriggeredMonostableNode(300);
-    this.phase10GroundMemo = new NXLogicTriggeredMonostableNode(2);
-    this.ac80KtsMemo = new NXLogicTriggeredMonostableNode(2);
-    this.prevPhase11InvertMemo = new NXLogicTriggeredMonostableNode(3, false);
-    this.twoEnginesTOPowerInvertMemo = new NXLogicTriggeredMonostableNode(1, false);
-    this.phase9Nvm = new NXLogicMemoryNode(true, true);
-    this.prevPhase11 = false;
-
-    this.groundImmediateMemo = new NXLogicTriggeredMonostableNode(2);
-    this.phase6Memo = new NXLogicTriggeredMonostableNode(15);
-    this.phase7Memo = new NXLogicTriggeredMonostableNode(120);
-    this.phase89Memo = new NXLogicTriggeredMonostableNode(180);
-
-    this.memoTo_conf01 = new NXLogicConfirmNode(120, true);
-    this.memoTo_memo = new NXLogicMemoryNode(false);
-
-    this.memoLdgMemo_conf01 = new NXLogicConfirmNode(1, true);
-    this.memoLdgMemo_inhibit = new NXLogicMemoryNode(false);
-    this.memoLdgMemo_conf02 = new NXLogicConfirmNode(10, true);
-    this.memoLdgMemo_below2000ft = new NXLogicMemoryNode(true);
-
-    this.memoToInhibit_conf01 = new NXLogicConfirmNode(3, true);
-
-    this.memoLdgInhibit_conf01 = new NXLogicConfirmNode(3, true);
-
-    // altitude warning
-    this.previousTargetAltitude = NaN;
-    this._wasBelowThreshold = false;
-    this._wasAboveThreshold = false;
-    this._wasInRange = false;
-    this._wasReach200ft = false;
-  }
+  constructor(private readonly fws: FwsCore) {}
 
   update(deltaTime: number) {
     this._updateFlightPhase(deltaTime);
@@ -169,7 +106,7 @@ export class FwsFlightPhases {
   _updateFlightPhase(_deltaTime: number) {
     const raHeight1Invalid = this.fws.radioHeight1.isFailureWarning() || this.fws.radioHeight1.isNoComputedData();
     const raHeight2Invalid = this.fws.radioHeight2.isFailureWarning() || this.fws.radioHeight2.isNoComputedData();
-    let radioHeight;
+    let radioHeight: Arinc429Register;
     if (raHeight1Invalid) {
       if (raHeight2Invalid) {
         radioHeight = this.fws.radioHeight3;
@@ -208,9 +145,9 @@ export class FwsFlightPhases {
       acAboveV1 = false;
     }
 
-    const hAbv1500 = radioHeight.isNoComputedData() || radioHeight.value > 1500;
-    const hAbv800 = radioHeight.isNoComputedData() || radioHeight.value > 800;
-    const hAbv400 = radioHeight.isNoComputedData() || radioHeight.value > 400;
+    const hAbv1500 = !radioHeight.isInvalid() && radioHeight.value > 1500;
+    const hAbv800 = !radioHeight.isInvalid() && radioHeight.value > 800;
+    const hAbv400 = !radioHeight.isInvalid() && radioHeight.value > 400;
 
     const eng1TLA = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
     const eng1TLAFTO = SimVar.GetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'number') !== 0; // is a flex temp is set?
@@ -307,12 +244,7 @@ export class FwsFlightPhases {
     // consolidate into single variable (just to be safe)
     const phases = [phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9, phase10, phase11, phase12];
 
-    if (this.fws.flightPhase.get() === null && phases.indexOf(true) !== -1) {
-      // if we aren't initialized, just grab the first one that is valid
-      this.fws.flightPhase.set(phases.indexOf(true) + 1);
-      console.log(`FWC flight phase: ${this.fws.flightPhase.get()}`);
-      return;
-    }
+    const currentPhase = this.fws.flightPhase.get();
 
     const activePhases = phases
       .map((x, i) => [x ? 1 : 0, i + 1])
@@ -321,8 +253,8 @@ export class FwsFlightPhases {
 
     // the usual and easy case: only one flight phase is valid
     if (activePhases.length === 1) {
-      if (activePhases[0] !== this.fws.flightPhase.get()) {
-        console.log(`FWC flight phase: ${this.fws.flightPhase.get()} => ${activePhases[0]}`);
+      if (activePhases[0] !== currentPhase) {
+        console.log(`FWC flight phase: ${currentPhase} => ${activePhases[0]}`);
         this.fws.flightPhase.set(activePhases[0]);
       }
       return;
@@ -330,7 +262,7 @@ export class FwsFlightPhases {
 
     // the mixed case => warn
     if (activePhases.length > 1) {
-      if (activePhases.indexOf(this.fws.flightPhase.get()) !== -1) {
+      if (activePhases.indexOf(currentPhase) !== -1) {
         // if the currently active one is present, keep it
         return;
       }
@@ -339,19 +271,18 @@ export class FwsFlightPhases {
       return;
     }
 
-    // otherwise, no flight phase is valid => warn
-    if (this.fws.flightPhase.get() === null) {
-      this.fws.flightPhase.set(null);
-    }
+    // Fallback to flight phase 8 if no phase is valid
+    this.fws.flightPhase.set(FwcFlightPhase.AtOrAbove1500FeetTo800Feet);
   }
 
   _updateTakeoffMemo(_deltaTime: number) {
-    const setFlightPhaseMemo = this.fws.flightPhase.get() === FwcFlightPhase.FirstEngineStarted && this.toConfigTest;
+    const flightPhase = this.fws.flightPhase.get();
+    const setFlightPhaseMemo = flightPhase === FwcFlightPhase.FirstEngineStarted && this.toConfigTest;
     const resetFlightPhaseMemo =
-      this.fws.flightPhase.get() === FwcFlightPhase.EnginesShutdown ||
-      this.fws.flightPhase.get() === FwcFlightPhase.SecondEngineTakeOffPower ||
-      this.fws.flightPhase.get() === FwcFlightPhase.ElecPwr ||
-      this.fws.flightPhase.get() === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
+      flightPhase === FwcFlightPhase.EnginesShutdown ||
+      flightPhase === FwcFlightPhase.SecondEngineTakeOffPower ||
+      flightPhase === FwcFlightPhase.ElecPwr ||
+      flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
     const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
 
     this.fws.engine1Running.get();
@@ -363,15 +294,14 @@ export class FwsFlightPhases {
       _deltaTime,
     );
 
-    this.toMemo =
-      flightPhaseMemo || (this.fws.flightPhase.get() === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
+    this.toMemo = flightPhaseMemo || (flightPhase === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
     SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
   }
 
   _updateLandingMemo(_deltaTime: number) {
-    const radioHeight1Invalid = this.fws.radioHeight1.isFailureWarning() || this.fws.radioHeight1.isNoComputedData();
-    const radioHeight2Invalid = this.fws.radioHeight2.isFailureWarning() || this.fws.radioHeight2.isNoComputedData();
-    const radioHeight3Invalid = this.fws.radioHeight3.isFailureWarning() || this.fws.radioHeight3.isNoComputedData();
+    const radioHeight1Invalid = this.fws.radioHeight1.isInvalid();
+    const radioHeight2Invalid = this.fws.radioHeight2.isInvalid();
+    const radioHeight3Invalid = this.fws.radioHeight3.isInvalid();
     const gearDownlocked = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
 
     const setBelow2000ft =
@@ -388,29 +318,30 @@ export class FwsFlightPhases {
       resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid && !radioHeight3Invalid,
       _deltaTime,
     );
+    const flightPhase = this.fws.flightPhase.get();
     const resetInhibitMemo = !(
-      this.fws.flightPhase.get() === FwcFlightPhase.AtOrBelow800Feet ||
-      this.fws.flightPhase.get() === FwcFlightPhase.TouchDown ||
-      this.fws.flightPhase.get() === FwcFlightPhase.AtOrAbove1500FeetTo800Feet
+      flightPhase === FwcFlightPhase.AtOrBelow800Feet ||
+      flightPhase === FwcFlightPhase.TouchDown ||
+      flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet
     );
     const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
 
-    const showInApproach = memo1 && memo2 && this.fws.flightPhase.get() === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
+    const showInApproach = memo1 && memo2 && flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet;
 
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
       radioHeight1Invalid &&
         radioHeight2Invalid &&
         radioHeight3Invalid &&
         gearDownlocked &&
-        this.fws.flightPhase.get() === FwcFlightPhase.AtOrAbove1500FeetTo800Feet,
+        flightPhase === FwcFlightPhase.AtOrAbove1500FeetTo800Feet,
       _deltaTime,
     );
 
     this.ldgMemo =
       showInApproach ||
       invalidRadioMemo ||
-      this.fws.flightPhase.get() === FwcFlightPhase.TouchDown ||
-      this.fws.flightPhase.get() === FwcFlightPhase.AtOrBelow800Feet;
+      flightPhase === FwcFlightPhase.TouchDown ||
+      flightPhase === FwcFlightPhase.AtOrBelow800Feet;
     SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
   }
 
@@ -421,8 +352,8 @@ export class FwsFlightPhases {
     if (warningPressed === true) {
       this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      this._cChordShortWasTriggered = false;
+      this.wasInRange = false;
+      this.cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
@@ -443,9 +374,9 @@ export class FwsFlightPhases {
       this.previousTargetAltitude = targetAltitude;
       this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      this._wasReach200ft = false;
-      this._cChordShortWasTriggered = false;
+      this.wasInRange = false;
+      this.wasReach200ft = false;
+      this.cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
@@ -466,9 +397,9 @@ export class FwsFlightPhases {
     if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown || isTcasResolutionAdvisoryActive) {
       this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      this._wasReach200ft = false;
-      this._cChordShortWasTriggered = false;
+      this.wasInRange = false;
+      this.wasReach200ft = false;
+      this.cChordShortWasTriggered = false;
       this.fws.soundManager.dequeueSound('cChordOnce');
       this.fws.soundManager.dequeueSound('cChordCont');
       return;
@@ -481,21 +412,21 @@ export class FwsFlightPhases {
     if (delta < 200) {
       this._wasBelowThreshold = true;
       this._wasAboveThreshold = false;
-      this._wasReach200ft = true;
+      this.wasReach200ft = true;
     }
     if (delta > 750) {
       this._wasAboveThreshold = true;
       this._wasBelowThreshold = false;
-      this._cChordShortWasTriggered = false;
+      this.cChordShortWasTriggered = false;
     }
     if (delta >= 200 && delta <= 750) {
-      this._wasInRange = true;
+      this.wasInRange = true;
     }
 
     const apEngaged =
       SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'Bool') ||
       SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'Bool');
-    if (this._wasBelowThreshold && this._wasReach200ft) {
+    if (this._wasBelowThreshold && this.wasReach200ft) {
       if (delta >= 200) {
         this.fws.soundManager.enqueueSound('cChordCont');
       } else {
@@ -504,14 +435,14 @@ export class FwsFlightPhases {
     } else if (
       this._wasAboveThreshold &&
       delta <= 750 &&
-      !this._wasReach200ft &&
-      !this._cChordShortWasTriggered &&
+      !this.wasReach200ft &&
+      !this.cChordShortWasTriggered &&
       !apEngaged
     ) {
-      this._cChordShortWasTriggered = true;
+      this.cChordShortWasTriggered = true;
       this.fws.soundManager.dequeueSound('cChordCont');
       this.fws.soundManager.enqueueSound('cChordOnce');
-    } else if (delta > 750 && this._wasInRange && !this._wasReach200ft) {
+    } else if (delta > 750 && this.wasInRange && !this.wasReach200ft) {
       if (delta > 750) {
         this.fws.soundManager.enqueueSound('cChordCont');
       } else {

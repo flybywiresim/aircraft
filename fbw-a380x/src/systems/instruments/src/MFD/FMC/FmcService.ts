@@ -13,7 +13,7 @@ import { FmcInterface, FmcOperatingModes } from './FmcInterface';
 import { FmcIndex, FmcServiceInterface } from './FmcServiceInterface';
 import { MfdDisplayInterface } from '../MFD';
 import { MfdSimvars } from '../shared/MFDSimvarPublisher';
-import { ResetPanelSimvars } from '../../MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvars } from '../../../../shared/src/publishers/ResetPanelPublisher';
 import { DummyFlightManagementComputer } from './DummyFlightManagementComputer';
 
 /*

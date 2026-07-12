@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -62,7 +62,6 @@ import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { OancMarkerManager } from './OancMarkerManager';
-import { ResetPanelSimvars } from './ResetPanelPublisher';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { pointAngle } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
@@ -141,6 +140,7 @@ export interface OancProps<T extends number> extends ComponentProps {
   contextMenuY?: Subject<number>;
   contextMenuItems?: ContextMenuItemData[];
   zoomValues: T[];
+  oansHealthy?: Subscribable<boolean>;
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
@@ -196,12 +196,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.dataAirportIcao,
     this.dataAirportIata,
   );
-
-  private readonly resetPulled = ConsumerSubject.create(
-    this.props.bus.getSubscriber<ResetPanelSimvars>().on('a380x_reset_panel_arpt_nav'),
-    false,
-  );
-
   private layerFeatures: FeatureCollection<Geometry, AmdbProperties>[] = [
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
@@ -395,8 +389,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.airportLoading,
   );
 
-  private readonly oansNotAvailable = ConsumerSubject.create(null, false);
-
   private readonly anyFlagVisible = MappedSubject.create(
     ([arptNavPosLostFlagVisible, pleaseWaitFlagVisible]) => arptNavPosLostFlagVisible || pleaseWaitFlagVisible,
     this.arptNavPosLostFlagVisible,
@@ -419,7 +411,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
     this.oansVisible.setConsumer(this.sub.on('nd_show_oans'));
-    this.oansNotAvailable.setConsumer(this.sub.on('oans_not_avail'));
     this.efisNDModeSub.setConsumer(this.sub.on('ndMode'));
 
     this.efisNDModeSub.sub((mode) => {
@@ -573,10 +564,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.modeAnimationOffsetX,
       this.modeAnimationOffsetY,
     );
-
-    this.pposNotAvailable.sub((notAvailable) => {
-      SimVar.SetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool, notAvailable);
-    }, true);
   }
 
   private handleLabelFilter() {
@@ -1145,16 +1132,18 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    if (this.data && this.resetPulled.get()) {
-      this.unloadAirportMap(true);
+    if (this.data && !this.props.oansHealthy?.get()) {
+      // TODO pause all subscritpions when its failed.
+      this.unloadAirportMap(false);
+      return;
     }
 
-    if (!this.data || this.dataLoading || this.resetPulled.get()) {
+    if (!this.data || this.dataLoading || !this.props.oansHealthy?.get()) {
       return;
     }
 
     this.aircraftOnGround.set(
-      // FIXME use an enum...
+      // FIXME use an enum... and be recieved from the OANS
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 

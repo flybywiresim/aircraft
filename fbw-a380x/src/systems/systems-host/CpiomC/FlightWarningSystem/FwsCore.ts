@@ -34,7 +34,6 @@ import {
   FrequencyMode,
   MsfsFlightModelEvents,
   NXDataStore,
-  NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -92,6 +91,7 @@ import {
 // FIXME should not import from instruments
 import { FcdcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { OansBusEvents } from '@shared/publishers/OansPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -147,7 +147,8 @@ export class FwsCore {
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
       StallWarningEvents &
-      IrBusEvents
+      IrBusEvents &
+      OansBusEvents
   >();
 
   private subs: Subscription[] = [];
@@ -350,7 +351,7 @@ export class FwsCore {
 
   public readonly attKnob = Subject.create(0);
 
-  public readonly compMesgCount = Subject.create(0);
+  public readonly companyMessageMemo = Subject.create(false); // Disabled until we handle it on the OIT.
 
   public readonly landAsap = Subject.create(false);
 
@@ -710,7 +711,8 @@ export class FwsCore {
 
   public readonly rollOutFault = Subject.create(false);
 
-  public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
+  private readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
+  private readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly apEngaged = RegisteredSimVar.createBoolean('L:A32NX_AUTOPILOT_ACTIVE');
   public readonly apOff = Subject.create(false);
@@ -718,9 +720,7 @@ export class FwsCore {
   public readonly fd2Active = RegisteredSimVar.createBoolean('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2');
   public readonly fdOff = Subject.create(false);
 
-  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
-  public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
-  public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
+  private readonly tripleClickAudio = Subject.create(false);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -791,7 +791,7 @@ export class FwsCore {
 
   private readonly dc108PhBusPowered = Subject.create(false);
 
-  public readonly extPwrConnected = Subject.create(false);
+  public readonly extPwrMemo = Subject.create(false);
 
   public readonly engine1Running = Subject.create(false);
 
@@ -800,6 +800,8 @@ export class FwsCore {
   public readonly engine3Running = Subject.create(false);
 
   public readonly engine4Running = Subject.create(false);
+
+  public twoOrMoreEnginesRunning = false;
 
   public readonly allBatteriesOff = Subject.create(false);
 
@@ -1550,7 +1552,7 @@ export class FwsCore {
 
   public isAllGearDownlocked = false;
 
-  public readonly nwSteeringDisc = Subject.create(false);
+  public readonly nwSteeringDiscMemo = Subject.create(false);
 
   public readonly parkBrakeSet = Subject.create(false);
 
@@ -1634,20 +1636,21 @@ export class FwsCore {
     this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
-  public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
-  public readonly oansFailed = Subject.create(false);
-  public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
-  public readonly oansPposLost = Subject.create(false);
-  public readonly arptNavInop = MappedSubject.create(
-    ([oansFailed, pposLost]) => oansFailed || pposLost,
-    this.oansFailed,
-    this.oansPposLost,
-  );
+  private readonly oansHealthy = ConsumerSubject.create(this.sub.on('oans_healthy'), true);
+
+  public readonly oansNotHealthy = this.oansHealthy.map((v) => !v);
+
   public readonly arptNavFault = MappedSubject.create(
-    ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
-    this.arptNavInop,
+    ([oansHealthy, ac4, dc1]) => !oansHealthy && (ac4 || dc1),
+    this.oansHealthy,
     this.ac4BusPowered,
     this.dc1BusPowered,
+  );
+
+  public readonly btvFaultCondition = MappedSubject.create(
+    ([btvLost, oansHealthy]) => btvLost && !oansHealthy,
+    this.btvLost,
+    this.oansHealthy,
   );
 
   /* NAVIGATION */
@@ -1885,10 +1888,10 @@ export class FwsCore {
   private readonly engine3masterOnPulseNode = new NXLogicPulseNode();
   private readonly engine4masterOnPulseNode = new NXLogicPulseNode();
 
-  public readonly engine1State = Subject.create(0);
-  public readonly engine2State = Subject.create(0);
-  public readonly engine3State = Subject.create(0);
-  public readonly engine4State = Subject.create(0);
+  public readonly engine1State = Subject.create(engineState.OFF);
+  public readonly engine2State = Subject.create(engineState.OFF);
+  public readonly engine3State = Subject.create(engineState.OFF);
+  public readonly engine4State = Subject.create(engineState.OFF);
 
   public readonly N1Eng1 = Subject.create(0);
   public readonly N1Eng2 = Subject.create(0);
@@ -1900,8 +1903,6 @@ export class FwsCore {
   public readonly HPNEng3 = Subject.create(0);
   public readonly HPNEng4 = Subject.create(0);
   public readonly N1IdleEng = Subject.create(0);
-
-  public readonly engine1DischargeTimer = new NXLogicClockNode(10, 0);
 
   // FIXME ECU should provide this in a discrete word
   public readonly engine1AboveIdle = MappedSubject.create(
@@ -2483,6 +2484,13 @@ export class FwsCore {
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
+      this.tripleClickAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('pause0p8s');
+          this.soundManager.enqueueSound('tripleClick');
+        }
+      }, true),
+      this.oansHealthy,
     );
   }
 
@@ -3006,14 +3014,17 @@ export class FwsCore {
     this.engine3State.set(engine3StateSiMVar);
     this.engine4State.set(engine4StateSiMVar);
 
-    this.engine1Running.set(engine1StatesimVar === engineState.ON);
-    this.engine2Running.set(engine2StateSimVar === engineState.ON);
-    this.engine3Running.set(engine3StateSiMVar === engineState.ON);
-    this.engine4Running.set(engine4StateSiMVar === engineState.ON);
+    const engine1Running = engine1StatesimVar === engineState.ON;
+    const engine2Running = engine2StateSimVar === engineState.ON;
+    const engine3Running = engine3StateSiMVar === engineState.ON;
+    const engine4Running = engine4StateSiMVar === engineState.ON;
 
-    this.oneEngineRunning.set(
-      this.engine1Running.get() || this.engine2Running.get() || this.engine3Running.get() || this.engine4Running.get(),
-    );
+    this.engine1Running.set(engine1Running);
+    this.engine2Running.set(engine2Running);
+    this.engine3Running.set(engine3Running);
+    this.engine4Running.set(engine4Running);
+    this.oneEngineRunning.set(engine1Running || engine2Running || engine3Running || engine4Running);
+    this.twoOrMoreEnginesRunning = countTrue(engine1Running, engine2Running, engine3Running, engine4Running) >= 2;
 
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
@@ -3080,20 +3091,16 @@ export class FwsCore {
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
-      this.engine1Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+      engine1Running && !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
     this.eng2BleedAbnormalOff.set(
-      this.engine2Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+      engine2Running && !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
     this.eng3BleedAbnormalOff.set(
-      this.engine3Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+      engine3Running && !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
     this.eng4BleedAbnormalOff.set(
-      this.engine4Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+      engine4Running && !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
 
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
@@ -3169,12 +3176,12 @@ export class FwsCore {
     const yLoPressure = !yellowSysPressurised;
 
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
-      this.engine1Running.get() || this.engine2Running.get() || !this.flightPhase12Or1112.get(),
+      engine1Running || engine2Running || !this.flightPhase12Or1112.get(),
       deltaTime,
     );
 
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
-      this.engine3Running.get() || this.engine4Running.get() || !this.flightPhase12Or1112.get(),
+      engine3Running || engine4Running || !this.flightPhase12Or1112.get(),
       deltaTime,
     );
 
@@ -3266,7 +3273,7 @@ export class FwsCore {
     const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
       this.eng1APumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() &&
+        (engine1Running &&
           eng1APumpBelow2900 &&
           !this.greenYellowAbnormLoPressure.get() &&
           !this.greenRsvOverheat.get()),
@@ -3283,7 +3290,7 @@ export class FwsCore {
     const eng1BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1BPumpFault.set(
       this.eng1BPumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() &&
+        (engine1Running &&
           eng1BPumpBelow2900 &&
           !this.greenYellowAbnormLoPressure.get() &&
           !this.greenRsvOverheat.get()),
@@ -3323,7 +3330,7 @@ export class FwsCore {
     const eng2BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2BPumpFault.set(
       this.eng2BPumpOffConfirmationNode.read() ||
-        (this.engine2Running.get() &&
+        (engine2Running &&
           eng2BPumpBelow2900 &&
           !this.greenYellowAbnormLoPressure.get() &&
           !this.greenRsvOverheat.get()),
@@ -3346,7 +3353,7 @@ export class FwsCore {
     const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
       this.eng3APumpOffConfirmationNode.read() ||
-        (this.engine3Running.get() &&
+        (engine3Running &&
           eng3APumpBelow2900 &&
           !this.greenYellowAbnormLoPressure.get() &&
           !this.yellowRsvOverheat.get()),
@@ -3387,10 +3394,7 @@ export class FwsCore {
 
     this.eng4APumpFault.set(
       this.eng4APumpOffConfirmationNode.read() ||
-        (this.engine4Running &&
-          eng4APumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure &&
-          !this.yellowRsvOverheat.get()),
+        (engine4Running && eng4APumpBelow2900 && !this.greenYellowAbnormLoPressure && !this.yellowRsvOverheat.get()),
     );
 
     this.eng4BPumpOffConfirmationNode.write(
@@ -3530,7 +3534,9 @@ export class FwsCore {
     this.configParkBrakeOn.set(
       this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
     );
-    this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+    this.nwSteeringDiscMemo.set(
+      this.flightPhase12Or1112.get() && SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'),
+    );
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
@@ -3709,10 +3715,7 @@ export class FwsCore {
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
-    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read());
-    if (this.checkFmaTripleClickPulse.read()) {
-      this.soundManager.enqueueSound('tripleClick');
-    }
+    this.tripleClickAudio.set(this.checkFmaTripleClickDebounce.read());
 
     // ROLLOUT FAULT
     this.rollOutFault.set(
@@ -4263,11 +4266,7 @@ export class FwsCore {
     this.aftVentCtrDegraded.set(cpiomB2VcsFailedAndPowered && cpiomB4VcsFailedAndPowered);
     this.aftVentRedundLost.set(cpiomB2VcsFailedAndPowered || cpiomB4VcsFailedAndPowered);
 
-    const engNotRunning =
-      !this.engine1Running.get() &&
-      !this.engine2Running.get() &&
-      !this.engine3Running.get() &&
-      !this.engine4Running.get();
+    const engNotRunning = !engine1Running && !engine2Running && !engine3Running && !engine4Running;
     this.enginesOffAndOnGroundSignal.write(this.aircraftOnGround.get() && engNotRunning, deltaTime); // FIXME eng running should use core speed at above min idle
 
     const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
@@ -4437,11 +4436,12 @@ export class FwsCore {
     this.rmp3Off.set(rmp3State === RmpState.OffStandby || rmp3State === RmpState.OffFailed);
 
     /* 24 - Electrical */
-    this.extPwrConnected.set(
-      SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG1_IS_CLOSED', 'bool') ||
-        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
-        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
-        SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool'),
+    this.extPwrMemo.set(
+      this.flightPhase12Or1112.get() &&
+        (SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG1_IS_CLOSED', 'bool') ||
+          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG2_IS_CLOSED', 'bool') ||
+          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG3_IS_CLOSED', 'bool') ||
+          SimVar.GetSimVarValue('L:A32NX_ELEC_CONTACTOR_990XG4_IS_CLOSED', 'bool')),
     );
 
     this.allBatteriesOff.set(
@@ -4461,9 +4461,8 @@ export class FwsCore {
     this.adr3UsedRight.set(adrKnob === 2);
     const attKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
     this.attKnob.set(attKnob);
-    this.ir3UsedLeft = attKnob === 0; //FIXME: Should come from the CDS.
+    this.ir3UsedLeft = attKnob === 0;
     this.ir3UsedRight = attKnob === 2;
-    this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
     this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
@@ -5069,10 +5068,6 @@ export class FwsCore {
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(this.tawsWxrSelectedSimvar.get());
 
-    // OANS
-    this.oansFailed.set(this.oansFailedSimvar.get());
-    this.oansPposLost.set(this.oansPposLostSimVar.get());
-
     /* 26 - FIRE */
 
     this.fduDiscreteWord.setFromSimVar('L:A32NX_FIRE_FDU_DISCRETE_WORD');
@@ -5122,11 +5117,11 @@ export class FwsCore {
     this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
     this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
 
-    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
-    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
-    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool'));
-    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool'));
-    this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool'));
+    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool') > 0);
+    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool') > 0);
+    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool') > 0);
+    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool') > 0);
+    this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool') > 0);
     this.allFireButtons.set(
       this.fireButtonEng1.get() &&
         this.fireButtonEng2.get() &&
@@ -5140,13 +5135,15 @@ export class FwsCore {
     this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
     this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
 
+    const engine1Master = this.engine1Master.get();
+    const engine2Master = this.engine2Master.get();
+    const engine3Master = this.engine3Master.get();
+    const engine4Master = this.engine4Master.get();
+
     // FIRE Timers
     this.apuFireAgent1Discharge10SecondsClockActive.set(this.apuFireDetected.get() && this.fireButtonAPU.get());
     this.fireEng1Agent1InFlight10SecondsDischClock.set(
-      !this.aircraftOnGround.get() &&
-        !this.engine1Master.get() &&
-        this.eng1FireDetected.get() &&
-        !this.eng1Agent1Discharged.get(),
+      !this.aircraftOnGround.get() && !engine1Master && this.eng1FireDetected.get() && !this.eng1Agent1Discharged.get(),
     );
     this.eng1FireInFlightFire30SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -5155,10 +5152,7 @@ export class FwsCore {
         this.eng1Agent1Discharged.get(),
     );
     this.fireEng2Agent1InFlight10SecondsDischClock.set(
-      !this.aircraftOnGround.get() &&
-        !this.engine2Master.get() &&
-        this.eng2FireDetected.get() &&
-        !this.eng2Agent1Discharged.get(),
+      !this.aircraftOnGround.get() && !engine2Master && this.eng2FireDetected.get() && !this.eng2Agent1Discharged.get(),
     );
     this.eng2FireInFlightFire30SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -5167,10 +5161,7 @@ export class FwsCore {
         this.eng2Agent1Discharged.get(),
     );
     this.fireEng3Agent1InFlight10SecondsDischClock.set(
-      !this.aircraftOnGround.get() &&
-        !this.engine3Master.get() &&
-        this.eng3FireDetected.get() &&
-        !this.eng3Agent1Discharged.get(),
+      !this.aircraftOnGround.get() && !engine3Master && this.eng3FireDetected.get() && !this.eng3Agent1Discharged.get(),
     );
     this.eng3FireInFlightFire30SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -5264,117 +5255,101 @@ export class FwsCore {
     }
 
     /** ATA 70- Engines */
-
+    const engine1State = this.engine1State.get();
+    const engine2State = this.engine2State.get();
+    const engine3State = this.engine3State.get();
+    const engine4State = this.engine4State.get();
     // ENG FAIL
 
     // FIXME Workaround due to starting state only being set when ignitires kick in. Starting state signal from fadec should handle this
     this.eng1NotStartingConfNode.write(
-      this.engine1State.get() !== engineState.STARTING && this.engine1Running.get(),
+      engine1State !== engineState.STARTING && this.engine1CoreAtOrAboveMinIdle.get(),
       deltaTime,
     );
     this.eng1WasRunningMemoryNode.write(
       this.eng1NotStartingConfNode.read(),
-      this.engine1masterOnPulseNode.write(this.engine1Master.get()),
+      this.engine1masterOnPulseNode.write(engine1Master),
     );
     this.eng2NotStartingConfNode.write(
-      this.engine2State.get() !== engineState.STARTING && this.engine2Running.get(),
+      engine2State !== engineState.STARTING && this.engine2CoreAtOrAboveMinIdle.get(),
       deltaTime,
     );
     this.eng2WasRunningMemoryNode.write(
       this.eng2NotStartingConfNode.read(),
-      this.engine2masterOnPulseNode.write(this.engine2Master.get()),
+      this.engine2masterOnPulseNode.write(engine2Master),
     );
     this.eng3NotStartingConfNode.write(
-      this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING,
+      engine3State !== engineState.STARTING && this.engine3CoreAtOrAboveMinIdle.get(),
       deltaTime,
     );
     this.eng3WasRunningMemoryNode.write(
       this.eng3NotStartingConfNode.read(),
-      this.engine3masterOnPulseNode.write(this.engine3Master.get()),
+      this.engine3masterOnPulseNode.write(engine3Master),
     );
     this.eng4NotStartingConfNode.write(
-      this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING,
+      engine4State !== engineState.STARTING && this.engine4CoreAtOrAboveMinIdle.get(),
       deltaTime,
     );
     this.eng4WasRunningMemoryNode.write(
       this.eng4NotStartingConfNode.read(),
-      this.engine4masterOnPulseNode.write(this.engine4Master.get()),
+      this.engine4masterOnPulseNode.write(engine4Master),
     );
+
+    const hpnEng1 = this.HPNEng1.get();
+    const hpnEng2 = this.HPNEng2.get();
+    const hpnEng3 = this.HPNEng3.get();
+    const hpnEng4 = this.HPNEng4.get();
 
     this.eng1Fail.set(
       !this.allEnginesFailure.get() &&
         this.eng1FailMemoryNode.write(
-          this.engine1Master.get() &&
-            this.eng1WasRunningMemoryNode.read() &&
-            !this.fireButtonEng1.get() &&
-            this.HPNEng1.get() < 50,
-          this.engine1State.get() === engineState.ON ||
-            (this.HPNEng1.get() > 50 && this.engine1State.get() === engineState.STARTING),
+          engine1Master && this.eng1WasRunningMemoryNode.read() && !this.fireButtonEng1.get() && hpnEng1 < 50,
+          engine1State === engineState.ON || (hpnEng1 > 50 && engine1State === engineState.STARTING),
         ),
     );
 
     this.eng2Fail.set(
       !this.allEnginesFailure.get() &&
         this.eng2FailMemoryNode.write(
-          this.engine2Master.get() &&
-            this.eng2WasRunningMemoryNode.read() &&
-            !this.fireButtonEng2.get() &&
-            this.HPNEng2.get() < 50,
-          this.engine2State.get() === engineState.ON ||
-            (this.HPNEng2.get() > 50 && this.engine2State.get() === engineState.STARTING),
+          engine2Master && this.eng2WasRunningMemoryNode.read() && !this.fireButtonEng2.get() && hpnEng2 < 50,
+          engine2State === engineState.ON || (hpnEng2 > 50 && engine2State === engineState.STARTING),
         ),
     );
 
     this.eng3Fail.set(
       !this.allEnginesFailure.get() &&
         this.eng3FailMemoryNode.write(
-          this.engine3Master.get() &&
-            this.eng3WasRunningMemoryNode.read() &&
-            !this.fireButtonEng3.get() &&
-            this.HPNEng3.get() < 50,
-          this.engine3State.get() === engineState.ON ||
-            (this.HPNEng3.get() > 50 && this.engine3State.get() === engineState.STARTING),
+          engine3Master && this.eng3WasRunningMemoryNode.read() && !this.fireButtonEng3.get() && hpnEng3 < 50,
+          engine3State === engineState.ON || (hpnEng3 > 50 && engine3State === engineState.STARTING),
         ),
     );
     this.eng4Fail.set(
       !this.allEnginesFailure.get() &&
         this.eng4FailMemoryNode.write(
-          this.engine4Master.get() &&
-            this.eng4WasRunningMemoryNode.read() &&
-            !this.fireButtonEng4.get() &&
-            this.HPNEng4.get() < 50,
-          this.engine4State.get() === engineState.ON ||
-            (this.HPNEng4.get() > 50 && this.engine4State.get() === engineState.STARTING),
+          engine4Master && this.eng4WasRunningMemoryNode.read() && !this.fireButtonEng4.get() && hpnEng4 < 50,
+          engine4State === engineState.ON || (hpnEng4 > 50 && engine4State === engineState.STARTING),
         ),
     );
 
     // Attnetion getting box
-    this.eng1StartOrCrank.set(
-      this.N1Eng1.get() < this.N1IdleEng.get() - 1 && this.engine1State.get() === engineState.STARTING,
-    );
-    this.eng2StartOrCrank.set(
-      this.N1Eng2.get() < this.N1IdleEng.get() - 1 && this.engine2State.get() === engineState.STARTING,
-    );
-    this.eng3StartOrCrank.set(
-      this.N1Eng3.get() < this.N1IdleEng.get() - 1 && this.engine3State.get() === engineState.STARTING,
-    );
-    this.eng4StartOrCrank.set(
-      this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() === engineState.STARTING,
-    );
+    this.eng1StartOrCrank.set(this.N1Eng1.get() < this.N1IdleEng.get() - 1 && engine1State === engineState.STARTING);
+    this.eng2StartOrCrank.set(this.N1Eng2.get() < this.N1IdleEng.get() - 1 && engine2State === engineState.STARTING);
+    this.eng3StartOrCrank.set(this.N1Eng3.get() < this.N1IdleEng.get() - 1 && engine3State === engineState.STARTING);
+    this.eng4StartOrCrank.set(this.N1Eng4.get() < this.N1IdleEng.get() - 1 && engine4State === engineState.STARTING);
 
     //TODO add more conditions
-    this.eng1PrimaryAbnormalParams.set(!this.eng1StartOrCrank.get() && this.engine1Master.get() && this.eng1Fail.get());
-    this.eng2PrimaryAbnormalParams.set(!this.eng2StartOrCrank.get() && this.engine2Master.get() && this.eng2Fail.get());
-    this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
-    this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
+    this.eng1PrimaryAbnormalParams.set(!this.eng1StartOrCrank.get() && engine1Master && this.eng1Fail.get());
+    this.eng2PrimaryAbnormalParams.set(!this.eng2StartOrCrank.get() && engine2Master && this.eng2Fail.get());
+    this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && engine3Master && this.eng3Fail.get());
+    this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && engine4Master && this.eng4Fail.get());
 
     const engineShutdownPreCondition = !this.flightPhase12Or1112.get();
 
     // ENG SHUTDOWN
-    this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !this.engine1Master.get()));
-    this.eng2ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng2.get() || !this.engine2Master.get()));
-    this.eng3ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng3.get() || !this.engine3Master.get()));
-    this.eng4ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng4.get() || !this.engine4Master.get()));
+    this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !engine1Master));
+    this.eng2ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng2.get() || !engine2Master));
+    this.eng3ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng3.get() || !engine3Master));
+    this.eng4ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng4.get() || !engine4Master));
 
     this.eng1Out.set(this.eng1ShutDown.get() || this.eng1FailMemoryNode.read());
     this.eng2Out.set(this.eng2ShutDown.get() || this.eng2FailMemoryNode.read());
@@ -5383,10 +5358,10 @@ export class FwsCore {
 
     this.allEnginesFailure.set(
       !this.aircraftOnGround.get() &&
-        !this.engine1Running.get() &&
-        !this.engine2Running.get() &&
-        !this.engine3Running.get() &&
-        !this.engine4Running.get() &&
+        !engine1Running &&
+        !engine2Running &&
+        !engine3Running &&
+        !engine4Running &&
         this.eng1Out.get() &&
         this.eng2Out.get() &&
         this.eng3Out.get() &&
@@ -5858,7 +5833,7 @@ export class FwsCore {
       if (
         value.simVarIsActive.get() &&
         !value.memoInhibit() &&
-        !value.flightPhaseInhib.some((e) => e === flightPhase)
+        !value.flightPhaseInhib?.some((e) => e === flightPhase)
       ) {
         const newCode: string[] = [];
 
@@ -5876,7 +5851,7 @@ export class FwsCore {
       if (
         value.simVarIsActive.get() &&
         !value.memoInhibit() &&
-        !value.flightPhaseInhib.some((e) => e === flightPhase)
+        !value.flightPhaseInhib?.some((e) => e === flightPhase)
       ) {
         const newCode: string[] = [];
 
@@ -5893,11 +5868,7 @@ export class FwsCore {
     const memoOrderRight: string[] = [];
 
     for (const [, value] of Object.entries(this.memos.ewdToLdgMemos)) {
-      if (value.leftSide) {
-        memoOrderLeft.push(...value.codesToReturn);
-      } else {
-        memoOrderRight.push(...value.codesToReturn);
-      }
+      memoOrderLeft.push(...value.codesToReturn);
     }
 
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, memoOrderLeft);

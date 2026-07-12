@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../Arinc429.h"
+#include "../utils/PulseNode.h"
+#include "../utils/SRFlipFlop.h"
 #include "../utils/TriggeredMonostableNode.h"
 #include "FcdcIO.h"
 
@@ -98,6 +100,8 @@ class Fcdc {
   bool land3FailPassiveInop = false;
   bool land3FailOperationalInop = false;
 
+  PulseNode autoBrakeActiveAndGroundPulseNode = PulseNode(true);
+  SRFlipFlop btvDowngradeBelow200FeetFlipFlop = SRFlipFlop(true);
   TriggeredMonostableNode btvTripleClickMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
   TriggeredMonostableNode capabilityTripleClickMtrig = TriggeredMonostableNode(1);
   TriggeredMonostableNode modeReversionTripleClickMtrig = TriggeredMonostableNode(1);
