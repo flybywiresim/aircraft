@@ -10,7 +10,7 @@ export interface PageTitleProps {
 export class PageTitle extends DisplayComponent<PageTitleProps> {
   render() {
     return (
-      <text x={this.props.x} y={this.props.y} class="F36 White TextUnderline">
+      <text x={this.props.x} y={this.props.y} class="F36 White Underline">
         {this.props.children}
       </text>
     );

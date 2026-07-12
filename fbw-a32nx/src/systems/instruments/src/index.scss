@@ -1,182 +1,85 @@
 @import "Common/definitions";
 
-#main-container {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    column-gap: 2em;
-}
-
-#ecam-cp {
-    width: 60em;
-    height: 20em;
-
-    background-color: gray;
-}
-
-#displays-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    row-gap: 2em;
-}
-
-.main-svg {
-    width: 100%;
-    background-color: $display-background;
-    transform: translateY(10px);
-}
-
-.main-svg text {
-    font-family: Ecam, monospace;
-}
-
-#safety-check {
-    font-size: 24px;
-    text-anchor: middle;
-
-    fill: $display-green
-}
-
 .NoFill {
     fill: none;
 }
 
-.Green {
-    stroke: $display-green;
-}
-
-text.Green,
-tspan.Green,
-.GreenFill {
-    fill: $display-green;
-}
-
-.Green.Fill {
+text,
+tspan,
+.Fill {
+    color: $display-white;
+    fill: currentColor;
     stroke: none;
-    fill: $display-green;
+}
+
+:not(text, tspan, .Fill) {
+    color: $display-white;
+    fill: none;
+    stroke: currentColor;
+}
+
+.Green {
+    color: $display-green;
+}
+
+.Green.DimColor {
+    color: scale-color($display-green, $lightness: -50%) !important;
 }
 
 .Cyan {
-    stroke: $display-cyan;
+    color: $display-cyan;
 }
 
-text.Cyan,
-tspan.Cyan,
-.Cyan.Fill {
-    stroke: none;
-    fill: $display-cyan;
+.Cyan.DimColor {
+    color: scale-color($display-cyan, $lightness: -50%) !important;
 }
 
 .White {
-    stroke: $display-white;
-}
-
-.WhiteFill {
-    fill: $display-white;
-}
-
-text.White,
-tspan.White,
-.White.Fill {
-    stroke: none;
-    fill: $display-white;
     color: $display-white;
 }
 
 .LightGrey {
-    stroke: $display-light-grey;
-}
-
-text.LightGrey,
-tspan.LightGrey,
-.LightGreyFill {
-    fill: $display-light-grey;
-}
-
-.LightGreyBox {
-    stroke: none;
-    fill: $display-light-grey;
-    opacity: 0.2
+    color: $display-light-grey;
 }
 
 .Grey {
-    stroke: $display-grey;
-}
-
-text.Grey,
-tspan.Grey,
-.GreyFill {
-    fill: $display-grey;
-}
-
-.Grey.Fill {
-    stroke: none;
-    fill: $display-grey;
+    color: $display-grey;
 }
 
 .DarkGrey {
-    stroke: $display-dark-grey;
-}
-
-text.DarkGrey,
-tspan.DarkGrey,
-.DarkGreyFill {
-    fill: $display-dark-grey;
+    color: $display-dark-grey;
 }
 
 .Amber {
-    stroke: $display-amber;
-}
-
-text.Amber,
-tspan.Amber,
-.AmberFill {
-    fill: $display-amber;
     color: $display-amber;
 }
 
-.Amber.Fill {
-    stroke: none;
-    fill: $display-amber;
+.Amber.DimColor {
+    color: scale-color($display-amber, $lightness: -50%) !important;
 }
 
 .Magenta {
-    stroke: $display-magenta;
+    color: $display-magenta;
+}
+
+.Magenta.DimColor {
+    color: scale-color($display-magenta, $lightness: -50%) !important;
 }
 
 .Red {
-    stroke: $display-red;
+    color: $display-red;
 }
 
-text.Red,
-tspan.Red,
-.Red.Fill {
-    stroke: none;
-    fill: $display-red;
+.Red.DimColor {
+    color: scale-color($display-red, $lightness: -50%) !important;
 }
 
 .Transparent {
-    stroke: transparent;
-}
-
-text.Transparent,
-tspan.Transparent,
-.Transparent.Fill {
-    stroke: none;
-    fill: transparent;
-}
-
-.BackgroundFill {
-    fill: $display-background !important;
+    color: transparent;
 }
 
 .Background {
-    stroke: $display-background;
+    color: $display-background;
 }
 
 .XSmall,
@@ -278,34 +181,29 @@ tspan.Transparent,
     word-spacing: -10px !important;
 }
 
+.StartAlign {
+    text-anchor: start;
+}
+
+.Center,
+.MiddleAlign {
+    text-anchor: middle !important;
+}
+
+.End,
+.EndAlign {
+    text-anchor: end !important;
+}
+
+.Underline {
+    text-decoration: underline;
+}
+
 .TextOutline2 {
     stroke-width: 2px;
     // currentColor uses the color attribute, so we need to add that to the classes specifying the colors
     // Important is necessary as some color classes specify stroke:none
     stroke: currentColor !important;
-}
-
-.StartAlign {
-    text-anchor: start;
-}
-
-.MiddleAlign {
-    text-anchor: middle;
-    dominant-baseline: middle;
-}
-
-.EndAlign,
-.End {
-    text-anchor: end !important;
-}
-
-.ecam-page-text {
-    fill: $display-white;
-    font-size: 21px;
-}
-
-.TextUnderline {
-    text-decoration: underline;
 }
 
 .LineRound {
@@ -316,29 +214,8 @@ tspan.Transparent,
     stroke-linejoin: round;
 }
 
-.EcamPageMore {
-    fill: $display-grey;
-    font-size: 21px;
-}
-
-.ecam-thiccer-line {
-    stroke: $display-white;
-    stroke-width: 5;
-}
-
-.ecam-thicc-line {
-    stroke: $display-white;
-    stroke-width: 4;
-}
-
-.ecam-thin-line {
-    stroke: $display-white;
-    stroke-width: 2;
-}
-
-.body-line {
-    stroke: $display-grey;
-    stroke-width: 3;
+.Mitre10 {
+    stroke-miterlimit: 10;
 }
 
 .Line,
@@ -360,79 +237,10 @@ tspan.Transparent,
     stroke-width: 6px;
 }
 
-.ThickRedLine {
-    stroke: $display-red !important;
-    stroke-width: 8 !important;
-    fill: $display-red;
-}
-
-.SW6RedLine {
-    stroke: $display-red !important;
-    stroke-width: 6 !important;
-    fill: $display-red;
-}
-
-.ThickAmberLine {
-    stroke: $display-amber !important;
-    stroke-width: 8 !important;
-    fill: $display-amber;
-}
-
-.FillPulse {
-    animation: fill-pulse 1s step-end infinite;
-
-    @keyframes fill-pulse {
-
-        0%,
-        100% {
-            fill: $display-green;
-        }
-
-        50% {
-            fill: hsl(120, 100%, 20%);
-        }
-    }
-}
-
-.LinePulse {
-    animation: line-pulse 1s step-end infinite;
-
-    @keyframes line-pulse {
-
-        0%,
-        100% {
-            stroke: $display-green;
-        }
-
-        50% {
-            stroke: hsl(120, 100%, 20%);
-        }
-    }
-}
-
-.Box {
-    stroke: $display-light-grey;
-    fill: none;
-    stroke-width: 2.5px;
-}
-
-.StrokeRound {
-    stroke-linecap: round;
-}
-
-.Mitre10 {
-    stroke-miterlimit: 10;
-}
-
 .Show {
     display: block !important;
 }
 
 .Hide {
     display: none !important;
-}
-
-.EWDWarn {
-    font-size: 26px;
-    letter-spacing: 1.75px;
 }

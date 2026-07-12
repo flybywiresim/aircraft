@@ -13,7 +13,6 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import './style.scss';
 import { Arinc429LocalVarConsumerSubject, NXDataStore, NXLogicConfirmNode, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
@@ -207,9 +206,9 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
           viewBox="0 0 768 768"
           style="position: absolute; top: 0px; left: 0px;"
         >
-          <path class="SW4 Grey StrokeRound" d="M 3,667 l 761,0" />
-          <path class="SW4 Grey StrokeRound" d="M 257,667 l 0,96" />
-          <path class="SW4 Grey StrokeRound" d="M 509,667 l 0,96" />
+          <path class="SW4 Grey LineRound" d="M 3,667 l 761,0" />
+          <path class="SW4 Grey LineRound" d="M 257,667 l 0,96" />
+          <path class="SW4 Grey LineRound" d="M 509,667 l 0,96" />
 
           {/* Temps */}
           <text x={37} y={698} class="F25 White LS1">

@@ -115,10 +115,7 @@ class ElacSecShape extends DestroyableComponent<ElacSecShapeProps> {
   render() {
     return (
       <SvgGroup x={this.props.x} y={this.props.y}>
-        <path
-          class={this.lineColorClass.map((color) => `SW2 ${color} LineRound NoFill`)}
-          d="M0 0 l97,0 l0,-33 l-10,0"
-        />
+        <path class={this.lineColorClass.map((color) => `SW2 ${color} LineRound`)} d="M0 0 l97,0 l0,-33 l-10,0" />
         <text x={76} y={-7} class={this.textColorClass.map((color) => `F25 ${color}`)}>
           {this.props.infoAvailable.map((avail) => (avail ? this.props.num : 'X'))}
         </text>
