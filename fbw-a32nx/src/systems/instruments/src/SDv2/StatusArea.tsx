@@ -119,7 +119,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly eng1Running = ConsumerSubject.create(this.sub.on('eng1Running'), false);
 
-  private readonly eng2Running = ConsumerSubject.create(this.sub.on('eng1Running'), false);
+  private readonly eng2Running = ConsumerSubject.create(this.sub.on('eng2Running'), false);
 
   // TODO Should simply come with the FMS data word SSM
   private gwVisible = MappedSubject.create(
