@@ -7,7 +7,6 @@ import './OansControlPanel.scss';
 import { Feature, Geometry, LineString, Point, Position } from 'geojson';
 import { LengthFormat } from '../MFD/pages/common/DataEntryFormats';
 import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
-import { ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { Button } from '../MsfsAvionicsCommon/UiWidgets/Button';
 import { DropdownMenu } from '../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
@@ -66,7 +65,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { A380XElectricalSystemEvents } from '@shared/publishers/A380XElectricalSystemPublisher';
+import { OansBusEvents } from '@shared/publishers/OansPublisher';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -81,29 +80,11 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
-    AdirsSimVars &
-      BtvData &
-      ClockEvents &
-      FmsOansData &
-      LgciuBusEvents &
-      NDSimvars &
-      OansControlEvents &
-      ResetPanelSimvars &
-      A380XElectricalSystemEvents
+    AdirsSimVars & BtvData & ClockEvents & FmsOansData & LgciuBusEvents & NDSimvars & OansControlEvents & OansBusEvents
   >();
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
-  //FIXME: We should have an OANC in systems host handling system state?
-  private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
-  private readonly ac4BusPowered = ConsumerSubject.create(this.sub.on('ac_bus_4_powered'), false);
-  private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dc_bus_1_powered'), false);
-  private readonly oancDisabled = MappedSubject.create(
-    ([ac4, dc1, reset]) => reset || !ac4 || !dc1,
-    this.ac4BusPowered,
-    this.dc1BusPowered,
-    this.oansResetPulled,
-  );
 
   private oansPerformanceModeSettingSub = () => {};
   private readonly oansPerformanceMode = Subject.create(false);
@@ -111,10 +92,12 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   private lastUpdateTime: number | null = null;
   private readonly oansPerformanceModeAndMovedOutOfZoomRange = new NXLogicConfirmNode(60, true);
 
+  private readonly oansFailed = ConsumerSubject.create(this.sub.on('oans_failed'), false);
+
   private readonly oansAvailable = MappedSubject.create(
     ([ng, disabled]) => ng && !disabled,
     this.navigraphAvailable,
-    this.oancDisabled,
+    this.oansFailed,
   );
 
   private amdbClient = new NavigraphAmdbClient();
@@ -258,6 +241,7 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
     !notSelected ? 'inherit' : 'hidden',
   );
 
+  // TODO we should recieve these from the OANS, rather than the systems directly.
   private readonly ropsDetectedAirport = ConsumerSubject.create(this.sub.on('ropsDetectedAirport'), null);
   private readonly ropsDetectedRunway = ConsumerSubject.create(this.sub.on('ropsDetectedRunway'), null);
   private readonly ropsDetectedRunwayLda = ConsumerSubject.create(this.sub.on('ropsDetectedRunwayLda'), null);
@@ -344,12 +328,12 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
         }
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, false, false);
       }, true),
-      this.oancDisabled.sub((v) => {
+      this.oansFailed.sub((v) => {
         if (v) {
           this.unloadCurrentAirport();
           this.clearRunwayInfo();
         }
-        SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oans_failed', v, false, false);
       }, true),
     );
 
@@ -469,7 +453,6 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
       this.runwayToraText,
       this.setPlanModeConsumer,
       this.setPlanModeDisplay,
-      this.oansResetPulled,
       this.oansAvailable,
       this.entityIsNotSelected,
       this.symbolsForFeatureIds,
@@ -483,9 +466,6 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
       this.reqStoppingDistance,
       this.fmsLandingRunwayVisibility,
       this.airportDatabase,
-      this.ac4BusPowered,
-      this.dc1BusPowered,
-      this.oancDisabled,
     );
   }
 
@@ -669,12 +649,13 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
       (this.manualAirportSelection === true && this.simTimeVar.get() - this.manualAirportSelectionTime < 600) ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
-      this.oancDisabled.get()
+      this.oansFailed.get()
     ) {
       return;
     }
     // If on ground, and no airport is loaded, find current airport.
     if (![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number))) {
+      //TODO we should recieve this from the OANS.
       // Go through all airports, load if distance <20NM
       const nearestAirports = this.store.airports
         .getArray()
@@ -726,7 +707,7 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   render(): VNode {
     return (
       <div
-        style={{ display: this.oancDisabled.map((v) => (v ? 'none' : 'inherit')).withLifecycle(this.defaultLifecycle) }}
+        style={{ display: this.oansFailed.map((v) => (v ? 'none' : 'inherit')).withLifecycle(this.defaultLifecycle) }}
       >
         <div
           style={{

@@ -49,10 +49,7 @@ import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/
 // FIXME should not import from instruments
 import { FcdcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 // FIXME should not import from instruments
-import {
-  ResetPanelSimvarPublisher,
-  ResetPanelSimvars,
-} from '../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../shared/src/publishers/ResetPanelPublisher';
 // FIXME should not import from instruments
 import {
   CpiomAvailableSimvarPublisher,
@@ -72,6 +69,7 @@ import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
 // FIXME should not import from instruments
 import { FmsMessagePublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { PseudoOans } from './Oans/PseudoOans';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -193,6 +191,8 @@ class SystemsHost extends BaseInstrument {
 
   // FIXME delete this when PRIM gets the THS auto trim
   private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
+
+  private readonly oans = new PseudoOans(this.bus);
 
   /**
    * "mainmenu" = 0

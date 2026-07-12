@@ -417,7 +417,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTargetRedMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
   idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
-  idOansFailed = std::make_unique<LocalVariable>("A32NX_OANS_FAILED");
+  idOansFailed = std::make_unique<LocalVariable>("A380X_OANS_FAILED");
 
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");

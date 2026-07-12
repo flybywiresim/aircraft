@@ -1,10 +1,11 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
   ArrayUtils,
   ComponentProps,
   ConsumerSubject,
+  ConsumerValue,
   DebounceTimer,
   DisplayComponent,
   EventBus,
@@ -39,7 +40,6 @@ import {
   OansFmsDataStore,
   OansMapProjection,
   PolygonalStructureType,
-  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 
 import {
@@ -197,8 +197,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.dataAirportIata,
   );
 
-  private readonly oansFailed = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED', SimVarValueType.Bool);
-
+  private readonly oansFailed = ConsumerValue.create(this.sub.on('oans_failed'), false);
   private layerFeatures: FeatureCollection<Geometry, AmdbProperties>[] = [
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
@@ -1146,7 +1145,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     this.aircraftOnGround.set(
-      // FIXME use an enum...
+      // FIXME use an enum... and be recieved from the OANS
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 

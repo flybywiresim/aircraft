@@ -38,7 +38,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 // FIXME should not import from instruments
-import { ResetPanelSimvars } from '../../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { ResetPanelSimvars } from '../../shared/src/publishers/ResetPanelPublisher';
 // FIXME should not import from ND!!!
 import { FmsSymbolsData } from '../../instruments/src/ND/FmsSymbolsPublisher';
 import { PowerSupplyBusTypes } from './powersupply';

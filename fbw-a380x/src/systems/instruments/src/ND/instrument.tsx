@@ -49,7 +49,6 @@ import { CdsDisplayUnit, DisplayUnitID, getDisplayIndex } from '../MsfsAvionicsC
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
-import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
@@ -60,7 +59,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
-import { A380XElectricalSystemPublisher } from '@shared/publishers/A380XElectricalSystemPublisher';
+import { OansSimVarPublisher } from '@shared/publishers/OansPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -107,8 +106,6 @@ class NDInstrument implements FsInstrument {
   private readonly lgciuBusPublisher: LgciuBusPublisher;
 
   private readonly hEventPublisher: HEventPublisher;
-
-  private readonly resetPanelPublisher: ResetPanelSimvarPublisher;
 
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
@@ -162,6 +159,8 @@ class NDInstrument implements FsInstrument {
 
   private readonly oansShown = Subject.create(false);
 
+  private readonly oansSimVarPublisher: OansSimVarPublisher;
+
   constructor() {
     const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
     const stateSubject = Subject.create<'L' | 'R'>(side);
@@ -185,12 +184,12 @@ class NDInstrument implements FsInstrument {
     this.raBusPublisher = new RaBusPublisher(this.bus);
     this.lgciuBusPublisher = new LgciuBusPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
-    this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
     this.aesuPublisher = new AesuBusPublisher(this.bus);
     this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
+    this.oansSimVarPublisher = new OansSimVarPublisher(this.bus);
 
     this.clock = new Clock(this.bus);
 
@@ -210,10 +209,9 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('ra', this.raBusPublisher);
     this.backplane.addPublisher('lgciu', this.lgciuBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
-    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('oans', this.oansSimVarPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);
     this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
-    this.backplane.addPublisher('power', new A380XElectricalSystemPublisher(this.bus));
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
@@ -359,7 +357,7 @@ class NDInstrument implements FsInstrument {
       });
     }
 
-    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars & HEvent>();
+    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & HEvent>();
 
     this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 
