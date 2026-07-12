@@ -1098,10 +1098,7 @@ impl From<f64> for GsxState {
             4 => GsxState::Requested,
             5 => GsxState::Performing,
             6 => GsxState::Completed,
-            i => {
-                println!("Warning: Unknown GSX state value: {}", i);
-                GsxState::None
-            }
+            _i => GsxState::Completed,
         }
     }
 }
