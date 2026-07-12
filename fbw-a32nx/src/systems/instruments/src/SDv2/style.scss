@@ -8,10 +8,12 @@
   font-style: normal;
 }
 
-.sd {
+.sdv2 {
   visibility: visible !important;
 
   font-family: "Ecam", monospace !important;
+
+  @import "../index.scss";
 }
 
 :root {

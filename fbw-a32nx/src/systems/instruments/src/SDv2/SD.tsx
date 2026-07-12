@@ -17,7 +17,6 @@ import { SdPages } from '@shared/SdPages';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
 import './style.scss';
-import '../index.scss';
 import { SDSimvars } from './SDSimvarPublisher';
 import { StatusPage } from './Pages/Status/StatusPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
@@ -103,7 +102,7 @@ export class SD extends DestroyableComponent<SDProps> {
   render(): VNode | null {
     return (
       <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.sdPotentiometer} powered={this.ac2BusPowered}>
-        <div class="sd">
+        <div class="sdv2">
           {this.sdPages}
           <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
           <PermanentData bus={this.props.bus} />
