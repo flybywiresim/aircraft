@@ -105,6 +105,10 @@ impl FuelTestAircraft {
         }
     }
 
+    fn set_on_ground(&mut self, on_ground: bool) {
+        self.lgcius = [TestLgciu::new(on_ground), TestLgciu::new(on_ground)];
+    }
+
     fn set_fqms_powered(&mut self, powered: bool) {
         self.fqms_powered = powered;
     }
@@ -181,6 +185,11 @@ impl FuelTestBed {
 
     pub(super) fn with_fqms_powered(mut self) -> Self {
         self.command(|aircraft| aircraft.set_fqms_powered(true));
+        self
+    }
+
+    pub(super) fn with_on_ground(mut self, on_ground: bool) -> Self {
+        self.command(|aircraft| aircraft.set_on_ground(on_ground));
         self
     }
 

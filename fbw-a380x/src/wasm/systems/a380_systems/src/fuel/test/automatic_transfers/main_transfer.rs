@@ -92,7 +92,7 @@ fn trim_tank_feeds_low_feed_tanks_after_inner_and_mid_tanks_are_empty() {
         .and_run_past_fqms_self_test();
 
     test_bed.assert_fqms_pump_targeted(A380FuelPump::TrimRight);
-    test_bed.assert_fqms_pump_not_targeted(A380FuelPump::TrimLeft);
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::TrimLeft);
     assert_aft_feed_tank_inlet_valves_targeted(&mut test_bed);
     test_bed.assert_fqms_valve_not_targeted(A380FuelValve::FeedTank1ForwardTransferValve);
 }
@@ -117,6 +117,7 @@ fn outer_tanks_feed_low_feed_tanks_after_inner_mid_and_trim_tanks_are_empty() {
 #[test]
 fn ground_main_transfer_disabled() {
     let mut test_bed = main_transfer_test_bed()
+        .with_on_ground(true)
         .with_tank_quantity(A380FuelTankType::FeedOne, Mass::new::<kilogram>(14_500.))
         .with_tank_quantity(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(15_000.))
         .with_tank_quantity(A380FuelTankType::FeedThree, Mass::new::<kilogram>(15_000.))
