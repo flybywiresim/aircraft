@@ -5,7 +5,6 @@ import {
   ArrayUtils,
   ComponentProps,
   ConsumerSubject,
-  ConsumerValue,
   DebounceTimer,
   DisplayComponent,
   EventBus,
@@ -141,6 +140,7 @@ export interface OancProps<T extends number> extends ComponentProps {
   contextMenuY?: Subject<number>;
   contextMenuItems?: ContextMenuItemData[];
   zoomValues: T[];
+  oansHealthy: Subscribable<boolean>;
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
@@ -196,8 +196,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.dataAirportIcao,
     this.dataAirportIata,
   );
-
-  private readonly oansFailed = ConsumerValue.create(this.sub.on('oans_failed'), false);
   private layerFeatures: FeatureCollection<Geometry, AmdbProperties>[] = [
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
@@ -1134,13 +1132,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    if (this.data && this.oansFailed.get()) {
+    if (this.data && !this.props.oansHealthy.get()) {
       // TODO pause all subscritpions when its failed.
       this.unloadAirportMap(false);
       return;
     }
 
-    if (!this.data || this.dataLoading || this.oansFailed.get()) {
+    if (!this.data || this.dataLoading || !this.props.oansHealthy.get()) {
       return;
     }
 

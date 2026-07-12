@@ -91,6 +91,7 @@ import {
 // FIXME should not import from instruments
 import { FcdcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { OansBusEvents } from '@shared/publishers/OansPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -146,7 +147,8 @@ export class FwsCore {
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
       StallWarningEvents &
-      IrBusEvents
+      IrBusEvents &
+      OansBusEvents
   >();
 
   private subs: Subscription[] = [];
@@ -1634,19 +1636,18 @@ export class FwsCore {
     this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
-  private readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
-  public readonly oansFailed = Subject.create(false);
+  public readonly oansHealthy = ConsumerSubject.create(this.sub.on('oans_healthy'), true);
   public readonly arptNavFault = MappedSubject.create(
-    ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
-    this.oansFailed,
+    ([oansHealthy, ac4, dc1]) => !oansHealthy && (ac4 || dc1),
+    this.oansHealthy,
     this.ac4BusPowered,
     this.dc1BusPowered,
   );
 
   public readonly btvFaultCondition = MappedSubject.create(
-    ([btvLost, oansFailed]) => btvLost && !oansFailed,
+    ([btvLost, oansHealthy]) => btvLost && !oansHealthy,
     this.btvLost,
-    this.oansFailed,
+    this.oansHealthy,
   );
 
   /* NAVIGATION */
@@ -2486,6 +2487,7 @@ export class FwsCore {
           this.soundManager.enqueueSound('tripleClick');
         }
       }, true),
+      this.oansHealthy,
     );
   }
 
@@ -5062,9 +5064,6 @@ export class FwsCore {
     this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(this.tawsWxrSelectedSimvar.get());
-
-    // OANS
-    this.oansFailed.set(this.oansFailedSimvar.get());
 
     /* 26 - FIRE */
 

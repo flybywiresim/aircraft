@@ -65,13 +65,12 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { OansBusEvents } from '@shared/publishers/OansPublisher';
-
 export interface OansProps extends ComponentProps {
   bus: EventBus;
   side: EfisSide;
   isVisible: Subscribable<boolean>;
   togglePanel: () => void;
+  oansHealthy: Subscribable<boolean>;
 }
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -80,7 +79,7 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
-    AdirsSimVars & BtvData & ClockEvents & FmsOansData & LgciuBusEvents & NDSimvars & OansControlEvents & OansBusEvents
+    AdirsSimVars & BtvData & ClockEvents & FmsOansData & LgciuBusEvents & NDSimvars & OansControlEvents
   >();
 
   /** If navigraph not available, this class will compute BTV features */
@@ -92,12 +91,10 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   private lastUpdateTime: number | null = null;
   private readonly oansPerformanceModeAndMovedOutOfZoomRange = new NXLogicConfirmNode(60, true);
 
-  private readonly oansFailed = ConsumerSubject.create(this.sub.on('oans_failed'), false);
-
   private readonly oansAvailable = MappedSubject.create(
-    ([ng, disabled]) => ng && !disabled,
+    ([ng, healthy]) => ng && healthy,
     this.navigraphAvailable,
-    this.oansFailed,
+    this.props.oansHealthy,
   );
 
   private amdbClient = new NavigraphAmdbClient();
@@ -328,12 +325,12 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
         }
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, false, false);
       }, true),
-      this.oansFailed.sub((v) => {
-        if (v) {
+      this.props.oansHealthy.sub((v) => {
+        if (!v) {
           this.unloadCurrentAirport();
           this.clearRunwayInfo();
         }
-        this.props.bus.getPublisher<OansControlEvents>().pub('oans_failed', v, false, false);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oans_failed', !v, false, false);
       }, true),
     );
 
@@ -649,7 +646,7 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
       (this.manualAirportSelection === true && this.simTimeVar.get() - this.manualAirportSelectionTime < 600) ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
-      this.oansFailed.get()
+      !this.props.oansHealthy.get()
     ) {
       return;
     }
@@ -707,7 +704,9 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
   render(): VNode {
     return (
       <div
-        style={{ display: this.oansFailed.map((v) => (v ? 'none' : 'inherit')).withLifecycle(this.defaultLifecycle) }}
+        style={{
+          display: this.props.oansHealthy.map((v) => (v ? 'inherit' : 'none')).withLifecycle(this.defaultLifecycle),
+        }}
       >
         <div
           style={{

@@ -4,8 +4,8 @@
 import { SimVarPublisher, SimVarDefinition, SimVarValueType, EventBus } from '@microsoft/msfs-sdk';
 
 interface OansBaseEvents {
-  /** Indicates whether the OANS system has failed */
-  oans_failed: boolean;
+  /** Indicates whether the OANS system is healthy */
+  oans_healthy: boolean;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface OansBusEvents extends OansBaseEvents {}
  */
 export class OansSimVarPublisher extends SimVarPublisher<OansBusEvents> {
   private static simvars = new Map<keyof OansBusEvents, SimVarDefinition>([
-    ['oans_failed', { name: 'L:A380X_OANS_FAILED', type: SimVarValueType.Bool }],
+    ['oans_healthy', { name: 'L:A380X_OANS_HEALTHY', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

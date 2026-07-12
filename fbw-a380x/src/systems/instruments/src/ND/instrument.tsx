@@ -5,6 +5,7 @@
 import {
   Clock,
   ConsumerSubject,
+  ConsumerValue,
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
@@ -59,7 +60,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
-import { OansSimVarPublisher } from '@shared/publishers/OansPublisher';
+import { OansBusEvents, OansSimVarPublisher } from '@shared/publishers/OansPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -159,6 +160,8 @@ class NDInstrument implements FsInstrument {
 
   private readonly oansShown = Subject.create(false);
 
+  private readonly oansHealthy = ConsumerSubject.create(null, false);
+
   private readonly oansSimVarPublisher: OansSimVarPublisher;
 
   constructor() {
@@ -217,6 +220,8 @@ class NDInstrument implements FsInstrument {
     this.backplane.addInstrument('clock', this.clock);
 
     this.doInit();
+
+    this.oansHealthy.setConsumer(this.bus.getSubscriber<OansBusEvents>().on('oans_healthy'));
   }
 
   private doInit(): void {
@@ -261,6 +266,7 @@ class NDInstrument implements FsInstrument {
                 contextMenuX={this.contextMenuX}
                 contextMenuY={this.contextMenuY}
                 zoomValues={a380EfisZoomRangeSettings}
+                oansHealthy={this.oansHealthy}
               />
             </div>
           </div>
@@ -317,6 +323,7 @@ class NDInstrument implements FsInstrument {
               side={this.efisSide}
               isVisible={this.controlPanelVisible}
               togglePanel={() => this.controlPanelVisible.set(!this.controlPanelVisible.get())}
+              oansHealthy={this.oansHealthy}
             />
           </div>
           <MouseCursor
