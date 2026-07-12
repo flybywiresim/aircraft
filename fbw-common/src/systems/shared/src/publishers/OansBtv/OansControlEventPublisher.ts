@@ -9,7 +9,6 @@ export interface OansControlEvents {
   oans_performance_mode_hide: { side: EfisSide; hide: boolean };
   oans_display_airport: string;
   oans_not_avail: boolean;
-  oans_failed: boolean;
   oans_center_map_on: Position;
   oans_center_on_acft: boolean;
   oans_add_cross_at_feature: { id: number; feattype: FeatureType };

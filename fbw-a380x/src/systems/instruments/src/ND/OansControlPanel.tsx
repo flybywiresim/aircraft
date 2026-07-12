@@ -330,7 +330,6 @@ export class OansControlPanel extends LifecycleComponent<OansProps> {
           this.unloadCurrentAirport();
           this.clearRunwayInfo();
         }
-        this.props.bus.getPublisher<OansControlEvents>().pub('oans_failed', !v, false, false);
       }, true),
     );
 
