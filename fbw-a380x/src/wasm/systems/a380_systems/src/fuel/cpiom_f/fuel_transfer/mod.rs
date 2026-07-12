@@ -38,15 +38,7 @@ impl FuelTransferApplication {
         gross_weight: Option<Mass>,
         gross_cg: Option<Ratio>,
         remaining_flight_time: Option<Duration>,
-        on_ground: bool,
     ) {
-        // Automatic transfers are disabled on the ground
-        if on_ground {
-            // We need to reset any state stored
-            *self = Self::new();
-            return;
-        }
-
         if total_fuel_on_board.is_none() {
             // Only manual transfers are available
             // TODO

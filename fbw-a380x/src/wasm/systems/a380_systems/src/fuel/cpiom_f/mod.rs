@@ -917,20 +917,33 @@ impl A380FuelQuantityManagementSystem {
         self.fuel_measuring_application
             .update(loadsheet, selected_fqdc, fms_zfw, fms_zfwcg);
 
-        // Automatic transfer is not available when the fuel quantity in one feed tank is not available, or more than one tank are not available
-        let automatic_transfer_available = !self.integrated_refuel_panel.refuel_is_enabled(context)
-            && self.fuel_measuring_application.all_feed_tanks_valid()
-            && self
-                .fuel_measuring_application
-                .unavailable_tank_quantity_count()
-                < 2;
-
         // TODO: should come from the LGERS via AFDX
         // TODO: are the transfers enabled if the LGERS are inop?
         let is_on_ground = lgcius
             .iter()
             .any(|lgciu| lgciu.left_and_right_gear_compressed(false));
 
+        // Automatic transfers are disabled on the ground or when the fuel quantity
+        // in one feed tank is not available, or more than one tank are not available
+        let automatic_transfer_available = !is_on_ground
+            && !self.integrated_refuel_panel.refuel_is_enabled(context)
+            && self.fuel_measuring_application.all_feed_tanks_valid()
+            && self
+                .fuel_measuring_application
+                .unavailable_tank_quantity_count()
+                < 2;
+
+        if automatic_transfer_available {
+            self.fuel_transfer_application.update(
+                &self.fuel_measuring_application,
+                self.fuel_measuring_application.total_fuel_onboard(),
+                self.fuel_measuring_application.total_aircraft_weight(),
+                self.fuel_measuring_application.center_of_gravity(),
+                fms_remaining_flight_time,
+            );
+        } else {
+            self.fuel_transfer_application.reset();
+        }
 
         self.fuel_control_application
             .update(self.fuel_transfer_application.gallery_connections());
