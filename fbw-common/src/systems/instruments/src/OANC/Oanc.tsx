@@ -140,7 +140,7 @@ export interface OancProps<T extends number> extends ComponentProps {
   contextMenuY?: Subject<number>;
   contextMenuItems?: ContextMenuItemData[];
   zoomValues: T[];
-  oansHealthy: Subscribable<boolean>;
+  oansHealthy?: Subscribable<boolean>;
 }
 
 export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
@@ -1132,13 +1132,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    if (this.data && !this.props.oansHealthy.get()) {
+    if (this.data && !this.props.oansHealthy?.get()) {
       // TODO pause all subscritpions when its failed.
       this.unloadAirportMap(false);
       return;
     }
 
-    if (!this.data || this.dataLoading || !this.props.oansHealthy.get()) {
+    if (!this.data || this.dataLoading || !this.props.oansHealthy?.get()) {
       return;
     }
 

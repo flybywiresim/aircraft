@@ -1636,7 +1636,10 @@ export class FwsCore {
     this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
-  public readonly oansHealthy = ConsumerSubject.create(this.sub.on('oans_healthy'), true);
+  private readonly oansHealthy = ConsumerSubject.create(this.sub.on('oans_healthy'), true);
+
+  public readonly oansNotHealthy = this.oansHealthy.map((v) => !v);
+
   public readonly arptNavFault = MappedSubject.create(
     ([oansHealthy, ac4, dc1]) => !oansHealthy && (ac4 || dc1),
     this.oansHealthy,
