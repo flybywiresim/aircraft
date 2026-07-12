@@ -117,13 +117,26 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly fmsGrossWeight = ConsumerSubject.create(this.sub.on('grossWeight'), 0);
 
-  private readonly gwText = MappedSubject.create(
-    ([gw, _uw]) => (gw !== 0 ? (Math.round(NXUnits.kgToUser(gw * 10)) * 100).toFixed(0) : '--\xa0\xa0'),
+  private readonly eng1Running = ConsumerSubject.create(this.sub.on('eng1Running'), false);
+
+  private readonly eng2Running = ConsumerSubject.create(this.sub.on('eng1Running'), false);
+
+  // TODO Should simply come with the FMS data word SSM
+  private gwVisible = MappedSubject.create(
+    ([gw, eng1Running, eng2Running]) => gw !== 0 && (eng1Running || eng2Running),
     this.fmsGrossWeight,
-    this.userWeight,
+    this.eng1Running,
+    this.eng2Running,
   );
 
-  private readonly gwClass = this.fmsGrossWeight.map((gw) => (gw !== 0 ? 'F27 Green EndAlign' : 'F27 Cyan EndAlign'));
+  private readonly gwText = MappedSubject.create(
+    ([gw, _uw, gwVisible]) => (gwVisible ? (Math.round(NXUnits.kgToUser(gw * 10)) * 100).toFixed(0) : '--\xa0\xa0'),
+    this.fmsGrossWeight,
+    this.userWeight,
+    this.gwVisible,
+  );
+
+  private readonly gwClass = this.gwVisible.map((visible) => (visible ? 'F27 Green EndAlign' : 'F27 Cyan EndAlign'));
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

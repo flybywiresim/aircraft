@@ -24,6 +24,8 @@ export type BaseSDSimvars = AdirsSimVars &
     sdPotentiometer: number;
     ir1NormalAcc: number;
     fwcFlightPhase: number;
+    eng1Running: boolean;
+    eng2Running: boolean;
   };
 
 type SDIndexedEvents = {
@@ -57,6 +59,8 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['sdPotentiometer', { name: 'LIGHT POTENTIOMETER:93', type: SimVarValueType.Number }],
     ['ir1NormalAcc', { name: 'L:A32NX_ADIRS_IR_1_BODY_NORMAL_ACC', type: SimVarValueType.Number }],
     ['fwcFlightPhase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Number }],
+    ['eng1Running', { name: 'A:ENG COMBUSTION:1', type: SimVarValueType.Bool }],
+    ['eng2Running', { name: 'A:ENG COMBUSTION:2', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
