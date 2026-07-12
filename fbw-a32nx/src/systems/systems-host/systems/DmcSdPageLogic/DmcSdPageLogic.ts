@@ -42,6 +42,12 @@ export class DmcSdPageLogic {
 
   private readonly allPagePulse = new NXLogicPulseNode(true);
 
+  private readonly allPageImmediatePulse = new NXLogicPulseNode(false);
+
+  private readonly allPageImmediateInhibitConfirm = new NXLogicConfirmNode(3, true);
+
+  private readonly allPageImmediateInhibitPulse = new NXLogicPulseNode(false);
+
   private readonly apuAbove95PercentConfirmNode = new NXLogicConfirmNode(10, true);
 
   private readonly engineStartConfirmNode = new NXLogicConfirmNode(10, false);
@@ -199,6 +205,10 @@ export class DmcSdPageLogic {
     this.allPageConfirm.write(allButtonPressed && !this.allPagePulse.read(), dt);
     this.allPagePulse.write(this.allPageConfirm.read());
 
+    this.allPageImmediatePulse.write(allButtonPressed);
+    this.allPageImmediateInhibitConfirm.write(allButtonPressed, dt);
+    this.allPageImmediateInhibitPulse.write(this.allPageImmediateInhibitConfirm.read());
+
     const systemPageButtonPressed = this.computeEcpButtonPressedFromWord();
     this.sdManualSelectionPulseNode.write(systemPageButtonPressed !== SdPages.NONE);
 
@@ -210,7 +220,10 @@ export class DmcSdPageLogic {
     if (this.sdManualSelectionPulseNode.read() && this.selectedPage.get() !== systemPageButtonPressed) {
       this.selectedPage.set(systemPageButtonPressed);
       this.sdMode = SdMode.Manual;
-    } else if (this.allPagePulse.read()) {
+    } else if (
+      this.allPagePulse.read() ||
+      (this.allPageImmediatePulse.read() && !this.allPageImmediateInhibitPulse.read())
+    ) {
       this.selectedPage.set(
         this.selectedPage.get() === SdPages.NONE ? SdPages.ENG : (this.selectedPage.get() + 1) % 11,
       );
