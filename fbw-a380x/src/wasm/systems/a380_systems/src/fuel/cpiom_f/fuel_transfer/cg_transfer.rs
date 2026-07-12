@@ -22,9 +22,9 @@ impl CGTransfer {
             let target_aft_cg = Self::calculate_target_cg(weight);
 
             if self.active {
-                cg >= target_aft_cg
-            } else {
                 cg > target_aft_cg - Ratio::new::<percent>(1.)
+            } else {
+                cg >= target_aft_cg
             }
         } else {
             // If we don't have the necessary data, we can't adjust CG
