@@ -214,7 +214,8 @@ export class DmcSdPageLogic {
 
     this.sdWarningOverridePulseNode.write(fwcSdPageRequest !== this.prevFwcRequestedSdPage);
 
-    this.stsPageNormalMtrig.write(systemPageButtonPressed === SdPages.STS, dt);
+    const stsNormal = true;
+    this.stsPageNormalMtrig.write(systemPageButtonPressed === SdPages.STS && stsNormal, dt);
     this.stsPageNormalPulse.write(this.stsPageNormalMtrig.read());
 
     if (this.sdManualSelectionPulseNode.read() && this.selectedPage.get() !== systemPageButtonPressed) {

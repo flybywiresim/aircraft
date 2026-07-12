@@ -1,5 +1,8 @@
 {
   "index": "./instrument.tsx",
   "name": "SDv2",
-  "isInteractive": false
+  "isInteractive": false,
+  "extraDeps": [
+    "../MsfsAvionicsCommon"
+  ]
 }
