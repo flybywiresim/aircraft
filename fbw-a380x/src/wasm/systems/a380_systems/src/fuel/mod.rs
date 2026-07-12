@@ -123,6 +123,7 @@ impl std::fmt::Display for A380FuelTankType {
 }
 
 #[derive(Clone, Copy, Enum, EnumIter)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 enum A380FuelPump {
     Feed1Main,
     Feed1Stby,
@@ -148,6 +149,7 @@ enum A380FuelPump {
 }
 
 #[derive(Clone, Copy, Enum, EnumIter)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 enum A380FuelValve {
     Engine1LowPressureValve,
     Engine2LowPressureValve,

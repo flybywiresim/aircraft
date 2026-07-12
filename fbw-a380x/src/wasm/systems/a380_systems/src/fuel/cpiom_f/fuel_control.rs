@@ -5,64 +5,129 @@ use crate::fuel::{
 use enum_map::{enum_map, EnumMap};
 use std::sync::LazyLock;
 
-static TANK_PUMP_MAP: LazyLock<EnumMap<A380FuelTankType, (A380FuelPump, A380FuelPump)>> =
-    LazyLock::new(|| {
+struct SourceControl<'a> {
+    fuel_pump_fwd: &'a [A380FuelPump],
+    fuel_pump_aft: &'a [A380FuelPump],
+    fuel_valve_fwd: &'a [A380FuelValve],
+    fuel_valve_aft: &'a [A380FuelValve],
+}
+
+struct TargetControl<'a> {
+    fuel_inlet_valve_fwd: &'a [A380FuelValve],
+    fuel_inlet_valve_aft: &'a [A380FuelValve],
+}
+
+static SOURCE_CONTROL_MAP: LazyLock<EnumMap<A380FuelTankType, SourceControl>> = LazyLock::new(
+    || {
         enum_map! {
-            A380FuelTankType::FeedOne => (A380FuelPump::Feed1Main, A380FuelPump::Feed1Stby),
-            A380FuelTankType::FeedTwo => (A380FuelPump::Feed2Main, A380FuelPump::Feed2Stby),
-            A380FuelTankType::FeedThree => (A380FuelPump::Feed3Main, A380FuelPump::Feed3Stby),
-            A380FuelTankType::FeedFour => (A380FuelPump::Feed4Main, A380FuelPump::Feed4Stby),
-            A380FuelTankType::LeftInner => (A380FuelPump::LeftInnerFwd, A380FuelPump::LeftInnerAft),
-            A380FuelTankType::LeftMid => (A380FuelPump::LeftMidFwd, A380FuelPump::LeftMidAft),
-            A380FuelTankType::LeftOuter => (A380FuelPump::LeftOuter, A380FuelPump::LeftOuter), // only one pump for outer tank
-            A380FuelTankType::RightInner => (A380FuelPump::RightInnerFwd, A380FuelPump::RightInnerAft),
-            A380FuelTankType::RightMid => (A380FuelPump::RightMidFwd, A380FuelPump::RightMidAft),
-            A380FuelTankType::RightOuter => (A380FuelPump::RightOuter, A380FuelPump::RightOuter), // only one pump for outer tank
-            A380FuelTankType::Trim => (A380FuelPump::TrimLeft, A380FuelPump::TrimRight),
+            // Feed tank pumps can't be controlled by the fuel transfer system
+            A380FuelTankType::FeedOne | A380FuelTankType::FeedTwo | A380FuelTankType::FeedThree | A380FuelTankType::FeedFour => SourceControl {
+                fuel_pump_fwd: &[],
+                fuel_pump_aft: &[],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::LeftInner => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::LeftInnerFwd],
+                fuel_pump_aft: &[A380FuelPump::LeftInnerAft],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::LeftMid => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::LeftMidFwd],
+                fuel_pump_aft: &[A380FuelPump::LeftMidAft],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::LeftOuter => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::LeftOuter],
+                fuel_pump_aft: &[A380FuelPump::LeftOuter],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::RightInner => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::RightInnerFwd],
+                fuel_pump_aft: &[A380FuelPump::RightInnerAft],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::RightMid => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::RightMidFwd],
+                fuel_pump_aft: &[A380FuelPump::RightMidAft],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::RightOuter => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::RightOuter],
+                fuel_pump_aft: &[A380FuelPump::RightOuter],
+                fuel_valve_fwd: &[],
+                fuel_valve_aft: &[],
+            },
+            A380FuelTankType::Trim => SourceControl {
+                fuel_pump_fwd: &[A380FuelPump::TrimLeft, A380FuelPump::TrimRight],
+                fuel_pump_aft: &[A380FuelPump::TrimLeft, A380FuelPump::TrimRight],
+                fuel_valve_fwd: &[A380FuelValve::TrimLineIsolationValveFwd],
+                fuel_valve_aft: &[A380FuelValve::TrimLineIsolationValveAft],
+            },
         }
-    });
+    },
+);
 
-static PUMP_TANK_MAP: LazyLock<EnumMap<A380FuelPump, A380FuelTankType>> = LazyLock::new(|| {
-    enum_map! {
-        A380FuelPump::Feed1Main => A380FuelTankType::FeedOne,
-        A380FuelPump::Feed1Stby => A380FuelTankType::FeedOne,
-        A380FuelPump::Feed2Main => A380FuelTankType::FeedTwo,
-        A380FuelPump::Feed2Stby => A380FuelTankType::FeedTwo,
-        A380FuelPump::Feed3Main => A380FuelTankType::FeedThree,
-        A380FuelPump::Feed3Stby => A380FuelTankType::FeedThree,
-        A380FuelPump::Feed4Main => A380FuelTankType::FeedFour,
-        A380FuelPump::Feed4Stby => A380FuelTankType::FeedFour,
-        A380FuelPump::LeftInnerFwd => A380FuelTankType::LeftInner,
-        A380FuelPump::LeftInnerAft => A380FuelTankType::LeftInner,
-        A380FuelPump::LeftMidFwd => A380FuelTankType::LeftMid,
-        A380FuelPump::LeftMidAft => A380FuelTankType::LeftMid,
-        A380FuelPump::LeftOuter => A380FuelTankType::LeftOuter,
-        A380FuelPump::RightInnerFwd => A380FuelTankType::RightInner,
-        A380FuelPump::RightInnerAft => A380FuelTankType::RightInner,
-        A380FuelPump::RightMidFwd => A380FuelTankType::RightMid,
-        A380FuelPump::RightMidAft => A380FuelTankType::RightMid,
-        A380FuelPump::RightOuter => A380FuelTankType::RightOuter,
-        A380FuelPump::TrimLeft => A380FuelTankType::Trim,
-        A380FuelPump::TrimRight => A380FuelTankType::Trim,
-        A380FuelPump::Apu => A380FuelTankType::FeedFour,
-    }
-});
-
-static TANK_INLET_MAP: LazyLock<EnumMap<A380FuelTankType, (A380FuelValve, A380FuelValve)>> =
+static TARGET_CONTROL_MAP: LazyLock<EnumMap<A380FuelTankType, TargetControl>> =
     LazyLock::new(|| {
         enum_map! {
-            A380FuelTankType::FeedOne => (A380FuelValve::FeedTank1ForwardTransferValve, A380FuelValve::FeedTank1AftTransferValve),
-            A380FuelTankType::FeedTwo => (A380FuelValve::FeedTank2ForwardTransferValve, A380FuelValve::FeedTank2AftTransferValve),
-            A380FuelTankType::FeedThree => (A380FuelValve::FeedTank3ForwardTransferValve, A380FuelValve::FeedTank3AftTransferValve),
-            A380FuelTankType::FeedFour => (A380FuelValve::FeedTank4ForwardTransferValve, A380FuelValve::FeedTank4AftTransferValve),
-            A380FuelTankType::LeftInner => (A380FuelValve::LeftInnerForwardTransferValve, A380FuelValve::LeftInnerAftTransferValve),
-            A380FuelTankType::LeftMid => (A380FuelValve::LeftMidForwardTransferValve, A380FuelValve::LeftMidAftTransferValve),
-            A380FuelTankType::LeftOuter => (A380FuelValve::LeftOuterForwardTransferValve, A380FuelValve::LeftOuterAftTransferValve),
-            A380FuelTankType::RightInner => (A380FuelValve::RightInnerForwardTransferValve, A380FuelValve::RightInnerAftTransferValve),
-            A380FuelTankType::RightMid => (A380FuelValve::RightMidForwardTransferValve, A380FuelValve::RightMidAftTransferValve),
-            A380FuelTankType::RightOuter => (A380FuelValve::RightOuterForwardTransferValve, A380FuelValve::RightOuterAftTransferValve),
-            // The trim tank inlet valves are not used for fuel transfer, but for filling the tank during refueling
-            A380FuelTankType::Trim => (A380FuelValve::TrimTankInletValve1, A380FuelValve::TrimTankInletValve2),
+            A380FuelTankType::FeedOne => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::FeedTank1ForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::FeedTank1AftTransferValve],
+            },
+            A380FuelTankType::FeedTwo => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::FeedTank2ForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::FeedTank2AftTransferValve],
+            },
+            A380FuelTankType::FeedThree => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::FeedTank3ForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::FeedTank3AftTransferValve],
+            },
+            A380FuelTankType::FeedFour => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::FeedTank4ForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::FeedTank4AftTransferValve],
+            },
+            A380FuelTankType::LeftInner => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::LeftInnerForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::LeftInnerAftTransferValve],
+            },
+            A380FuelTankType::LeftMid => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::LeftMidForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::LeftMidAftTransferValve],
+            },
+            A380FuelTankType::LeftOuter => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::LeftOuterForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::LeftOuterAftTransferValve],
+            },
+            A380FuelTankType::RightInner => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::RightInnerForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::RightInnerAftTransferValve],
+            },
+            A380FuelTankType::RightMid => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::RightMidForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::RightMidAftTransferValve],
+            },
+            A380FuelTankType::RightOuter => TargetControl {
+                fuel_inlet_valve_fwd: &[A380FuelValve::RightOuterForwardTransferValve],
+                fuel_inlet_valve_aft: &[A380FuelValve::RightOuterAftTransferValve],
+            },
+            A380FuelTankType::Trim => TargetControl {
+                fuel_inlet_valve_fwd: &[
+                    A380FuelValve::TrimTankInletValve1,
+                    A380FuelValve::TrimTankInletValve2,
+                    A380FuelValve::TrimLineIsolationValveFwd,
+                ],
+                fuel_inlet_valve_aft: &[
+                    A380FuelValve::TrimTankInletValve1,
+                    A380FuelValve::TrimTankInletValve2,
+                    A380FuelValve::TrimLineIsolationValveAft,
+                ],
+            },
         }
     });
 
@@ -95,16 +160,42 @@ impl FuelControlApplication {
         match mode {
             TankMode::None => {}
             TankMode::Source => {
-                // Activate fuel pump for source tank
-                let (pump1, pump2) = TANK_PUMP_MAP[tank];
-                let pump = if is_forward { pump1 } else { pump2 };
-                self.fuel_pump_requested_running[pump] = true;
+                let SourceControl {
+                    fuel_pump_fwd,
+                    fuel_pump_aft,
+                    fuel_valve_fwd,
+                    fuel_valve_aft,
+                } = SOURCE_CONTROL_MAP[tank];
+                if is_forward {
+                    for &pump in fuel_pump_fwd {
+                        self.fuel_pump_requested_running[pump] = true;
+                    }
+                    for &valve in fuel_valve_fwd {
+                        self.fuel_valve_requested_open[valve] = true;
+                    }
+                } else {
+                    for &pump in fuel_pump_aft {
+                        self.fuel_pump_requested_running[pump] = true;
+                    }
+                    for &valve in fuel_valve_aft {
+                        self.fuel_valve_requested_open[valve] = true;
+                    }
+                }
             }
             TankMode::Target => {
-                // Open inlet valves for target tank (any tank type can be a target)
-                let (fwd_valve, aft_valve) = TANK_INLET_MAP[tank];
-                let valve = if is_forward { fwd_valve } else { aft_valve };
-                self.fuel_valve_requested_open[valve] = true;
+                let TargetControl {
+                    fuel_inlet_valve_fwd,
+                    fuel_inlet_valve_aft,
+                } = TARGET_CONTROL_MAP[tank];
+                if is_forward {
+                    for &valve in fuel_inlet_valve_fwd {
+                        self.fuel_valve_requested_open[valve] = true;
+                    }
+                } else {
+                    for &valve in fuel_inlet_valve_aft {
+                        self.fuel_valve_requested_open[valve] = true;
+                    }
+                }
             }
         }
     }
@@ -455,5 +546,131 @@ mod tests {
         // Aft pumps
         assert!(pump_state[A380FuelPump::RightMidAft]);
         assert!(!pump_state[A380FuelPump::RightMidFwd]);
+    }
+
+    #[test]
+    fn test_trim_tank_forward_transfer_should_open_correct_valves() {
+        let mut control = FuelControlApplication::new();
+        let mut gallery = TransferGalleryTankConnections::default();
+
+        // Forward: LeftMid source, Aft: RightMid source
+        gallery.forward_gallery[A380FuelTankType::Trim] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::RightInner] = TankMode::Target;
+        control.update(&gallery);
+
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::TrimLeft, A380FuelPump::TrimRight],
+        );
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::TrimLineIsolationValveFwd,
+                A380FuelValve::LeftInnerForwardTransferValve,
+                A380FuelValve::RightInnerForwardTransferValve,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_trim_tank_aft_transfer_should_open_correct_valves() {
+        let mut control = FuelControlApplication::new();
+        let mut gallery = TransferGalleryTankConnections::default();
+
+        // Forward: LeftMid source, Aft: RightMid source
+        gallery.aft_gallery[A380FuelTankType::Trim] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::LeftInner] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::RightInner] = TankMode::Target;
+        control.update(&gallery);
+
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::TrimLeft, A380FuelPump::TrimRight],
+        );
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::TrimLineIsolationValveAft,
+                A380FuelValve::LeftInnerAftTransferValve,
+                A380FuelValve::RightInnerAftTransferValve,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_target_trim_tank_forward_transfer_should_open_correct_valves() {
+        let mut control = FuelControlApplication::new();
+        let mut gallery = TransferGalleryTankConnections::default();
+
+        gallery.forward_gallery[A380FuelTankType::Trim] = TankMode::Target;
+        gallery.forward_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
+        gallery.forward_gallery[A380FuelTankType::RightInner] = TankMode::Source;
+        control.update(&gallery);
+
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::LeftInnerFwd, A380FuelPump::RightInnerFwd],
+        );
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::TrimLineIsolationValveFwd,
+                A380FuelValve::TrimTankInletValve1,
+                A380FuelValve::TrimTankInletValve2,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_target_trim_tank_aft_transfer_should_open_correct_valves() {
+        let mut control = FuelControlApplication::new();
+        let mut gallery = TransferGalleryTankConnections::default();
+
+        gallery.aft_gallery[A380FuelTankType::Trim] = TankMode::Target;
+        gallery.aft_gallery[A380FuelTankType::LeftInner] = TankMode::Source;
+        gallery.aft_gallery[A380FuelTankType::RightInner] = TankMode::Source;
+        control.update(&gallery);
+
+        assert_only_specified_pumps_on(
+            &control,
+            &[A380FuelPump::LeftInnerAft, A380FuelPump::RightInnerAft],
+        );
+        assert_only_specified_valves_open(
+            &control,
+            &[
+                A380FuelValve::TrimLineIsolationValveAft,
+                A380FuelValve::TrimTankInletValve1,
+                A380FuelValve::TrimTankInletValve2,
+            ],
+        );
+    }
+
+    fn assert_only_specified_pumps_on(
+        control: &FuelControlApplication,
+        expected_on: &[A380FuelPump],
+    ) {
+        let pump_state = control.fuel_pump_requested_running();
+        for (pump, state) in pump_state {
+            if expected_on.contains(&pump) {
+                assert!(state, "Expected pump {pump:?} to be ON");
+            } else {
+                assert!(!state, "Expected pump {pump:?} to be OFF");
+            }
+        }
+    }
+
+    fn assert_only_specified_valves_open(
+        control: &FuelControlApplication,
+        expected_open: &[A380FuelValve],
+    ) {
+        let valve_state = control.fuel_valve_requested_open();
+        for (valve, state) in valve_state {
+            if expected_open.contains(&valve) {
+                assert!(state, "Expected valve {valve:?} to be OPEN");
+            } else {
+                assert!(!state, "Expected valve {valve:?} to be CLOSED");
+            }
+        }
     }
 }
