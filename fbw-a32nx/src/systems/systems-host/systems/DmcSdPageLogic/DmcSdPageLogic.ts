@@ -226,7 +226,9 @@ export class DmcSdPageLogic {
       (this.allPageImmediatePulse.read() && !this.allPageImmediateInhibitPulse.read())
     ) {
       this.selectedPage.set(
-        this.selectedPage.get() === SdPages.NONE ? SdPages.ENG : (this.selectedPage.get() + 1) % 11,
+        this.selectedPage.get() === SdPages.NONE || this.selectedPage.get() === SdPages.STS
+          ? SdPages.ENG
+          : (this.selectedPage.get() + 1) % 11,
       );
       this.sdMode = SdMode.Manual;
     } else if (this.sdWarningOverridePulseNode.read() && fwcSdPageRequest !== SdPages.NONE) {
