@@ -28,7 +28,8 @@ use systems::{
     pneumatic::EngineState,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, Resolution,
+        ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        LgciuWeightOnWheels, Resolution,
     },
     simulation::{
         InitContext, Read, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -874,6 +875,7 @@ impl A380FuelQuantityManagementSystem {
         loadsheet: &LoadsheetInfo,
         fqdcs: &[FuelQuantityDataConcentrator; 2],
         cpioms_available: [bool; 4],
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) {
         // Currently this is excluded from the powered check to support
         // the current "legacy" refuel system implementation.
@@ -923,17 +925,12 @@ impl A380FuelQuantityManagementSystem {
                 .unavailable_tank_quantity_count()
                 < 2;
 
-        if automatic_transfer_available {
-            self.fuel_transfer_application.update(
-                &self.fuel_measuring_application,
-                self.fuel_measuring_application.total_fuel_onboard(),
-                self.fuel_measuring_application.total_aircraft_weight(),
-                self.fuel_measuring_application.center_of_gravity(),
-                fms_remaining_flight_time,
-            );
-        } else {
-            self.fuel_transfer_application.reset();
-        }
+        // TODO: should come from the LGERS via AFDX
+        // TODO: are the transfers enabled if the LGERS are inop?
+        let is_on_ground = lgcius
+            .iter()
+            .any(|lgciu| lgciu.left_and_right_gear_compressed(false));
+
 
         self.fuel_control_application
             .update(self.fuel_transfer_application.gallery_connections());

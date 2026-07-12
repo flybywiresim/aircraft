@@ -16,7 +16,7 @@ use systems::{
     fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem, FuelValve},
     integrated_modular_avionics::AvionicsDataCommunicationNetwork,
     payload::LoadsheetInfo,
-    shared::{arinc429::Arinc429Word, ElectricalBusType},
+    shared::{arinc429::Arinc429Word, ElectricalBusType, LgciuWeightOnWheels},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::f64::*;
@@ -226,6 +226,7 @@ impl A380Fuel {
         context: &UpdateContext,
         acdn: &A380AvionicsDataCommunicationNetwork,
         loadsheet: &LoadsheetInfo,
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) {
         let cpioms = ["F1", "F2", "F3", "F4"].map(|id| acdn.get_cpiom(id));
         for fqdc in &mut self.fuel_quantity_data_concentrators {
@@ -237,6 +238,7 @@ impl A380Fuel {
             loadsheet,
             &self.fuel_quantity_data_concentrators,
             cpioms.map(|cpiom| cpiom.is_available()),
+            lgcius,
         );
     }
 
