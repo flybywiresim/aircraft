@@ -158,6 +158,7 @@ export const FuelPage = () => {
   const isRightTrimTankPumpActive = fqmsRightPumpStates.bitValueOr(20, false);
   const [isRightTrimTankPumpSwitchOff, setIsRightTrimTankPumpSwitchOff] = useState(false); // circuit 81
 
+  // TODO: these signals should come from the FQMS
   useInterval(
     async () => {
       SimVar.SetSimVarValue('BUS LOOKUP INDEX', 'Number', 1)
