@@ -1,6 +1,7 @@
 // Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
 
 mod cpiom_f;
+mod discrete_words;
 mod fuel_quantity_data_concentrator;
 use crate::{
     avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
@@ -11,7 +12,7 @@ use fuel_quantity_data_concentrator::FuelQuantityDataConcentrator;
 use nalgebra::Vector3;
 use systems::{
     accept_iterable,
-    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem, FuelValve},
     integrated_modular_avionics::AvionicsDataCommunicationNetwork,
     payload::LoadsheetInfo,
     shared::{arinc429::Arinc429Word, ElectricalBusType},
@@ -40,8 +41,18 @@ trait FuelPumpStatus {
     fn is_fuel_pump_running(&self, pump: A380FuelPump) -> bool;
 }
 
+trait FuelValveStatus {
+    fn is_fuel_valve_open(&self, valve: A380FuelValve) -> bool;
+    fn is_fuel_valve_closed(&self, valve: A380FuelValve) -> bool;
+}
+
 trait SetFuelLevel {
     fn set_tank_quantity(&mut self, tank: A380FuelTankType, quantity: Mass);
+}
+
+trait SetFuelControlState {
+    fn set_fuel_pump_command(&mut self, pump: A380FuelPump, running: bool);
+    fn set_fuel_valve_command(&mut self, valve: A380FuelValve, open: bool);
 }
 
 trait ArincFuelQuantityProvider {
@@ -51,6 +62,11 @@ trait ArincFuelQuantityProvider {
 trait ArincFuelPumpStatusProvider {
     fn get_left_fuel_pump_running_word(&self) -> Arinc429Word<u32>;
     fn get_right_fuel_pump_running_word(&self) -> Arinc429Word<u32>;
+}
+
+trait ArincFuelValveStatusProvider {
+    fn get_fuel_valve_open_words(&self) -> [Arinc429Word<u32>; 3];
+    fn get_fuel_valve_closed_words(&self) -> [Arinc429Word<u32>; 3];
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Enum)]
@@ -127,6 +143,136 @@ enum A380FuelPump {
     RightInnerAft,
     TrimLeft,
     TrimRight,
+    Apu,
+}
+impl A380FuelPump {
+    fn iterator() -> impl Iterator<Item = A380FuelPump> {
+        [
+            A380FuelPump::Feed1Main,
+            A380FuelPump::Feed1Stby,
+            A380FuelPump::Feed2Main,
+            A380FuelPump::Feed2Stby,
+            A380FuelPump::Feed3Main,
+            A380FuelPump::Feed3Stby,
+            A380FuelPump::Feed4Main,
+            A380FuelPump::Feed4Stby,
+            A380FuelPump::LeftOuter,
+            A380FuelPump::LeftMidFwd,
+            A380FuelPump::LeftMidAft,
+            A380FuelPump::LeftInnerFwd,
+            A380FuelPump::RightInnerFwd,
+            A380FuelPump::RightOuter,
+            A380FuelPump::RightMidFwd,
+            A380FuelPump::RightMidAft,
+            A380FuelPump::LeftInnerAft,
+            A380FuelPump::RightInnerAft,
+            A380FuelPump::TrimLeft,
+            A380FuelPump::TrimRight,
+            A380FuelPump::Apu,
+        ]
+        .into_iter()
+    }
+}
+
+#[derive(Clone, Copy, Enum)]
+enum A380FuelValve {
+    Engine1LowPressureValve,
+    Engine2LowPressureValve,
+    Engine3LowPressureValve,
+    Engine4LowPressureValve,
+
+    // Forward transfer valves
+    FeedTank1ForwardTransferValve,
+    FeedTank2ForwardTransferValve,
+    FeedTank3ForwardTransferValve,
+    FeedTank4ForwardTransferValve,
+    LeftInnerForwardTransferValve,
+    LeftMidForwardTransferValve,
+    LeftOuterForwardTransferValve,
+    RightInnerForwardTransferValve,
+    RightMidForwardTransferValve,
+    RightOuterForwardTransferValve,
+
+    // Aft transfer valves
+    FeedTank1AftTransferValve,
+    FeedTank2AftTransferValve,
+    FeedTank3AftTransferValve,
+    FeedTank4AftTransferValve,
+    LeftInnerAftTransferValve,
+    LeftMidAftTransferValve,
+    LeftOuterAftTransferValve,
+    RightInnerAftTransferValve,
+    RightMidAftTransferValve,
+    RightOuterAftTransferValve,
+
+    TrimTankInletValve1,
+    TrimTankInletValve2,
+    TrimLineIsolationValveFwd,
+    TrimLineIsolationValveAft,
+
+    CrossFeedValve1,
+    CrossFeedValve2,
+    CrossFeedValve3,
+    CrossFeedValve4,
+
+    APUIsolationValve,
+    APULowPressureValve,
+
+    LeftOuterEmerTransferValve,
+    RightOuterEmerTransferValve,
+    GalleryAuxRefuelValveLeft,
+    GalleryAuxRefuelValveRight,
+    TransferDefuelValve,
+    LeftJettisonNozzleValve,
+    RightJettisonNozzleValve,
+}
+impl A380FuelValve {
+    fn iterator() -> impl Iterator<Item = A380FuelValve> {
+        [
+            A380FuelValve::Engine1LowPressureValve,
+            A380FuelValve::Engine2LowPressureValve,
+            A380FuelValve::Engine3LowPressureValve,
+            A380FuelValve::Engine4LowPressureValve,
+            A380FuelValve::FeedTank1ForwardTransferValve,
+            A380FuelValve::FeedTank2ForwardTransferValve,
+            A380FuelValve::FeedTank3ForwardTransferValve,
+            A380FuelValve::FeedTank4ForwardTransferValve,
+            A380FuelValve::LeftInnerForwardTransferValve,
+            A380FuelValve::LeftMidForwardTransferValve,
+            A380FuelValve::LeftOuterForwardTransferValve,
+            A380FuelValve::RightInnerForwardTransferValve,
+            A380FuelValve::RightMidForwardTransferValve,
+            A380FuelValve::RightOuterForwardTransferValve,
+            A380FuelValve::FeedTank1AftTransferValve,
+            A380FuelValve::FeedTank2AftTransferValve,
+            A380FuelValve::FeedTank3AftTransferValve,
+            A380FuelValve::FeedTank4AftTransferValve,
+            A380FuelValve::LeftInnerAftTransferValve,
+            A380FuelValve::LeftMidAftTransferValve,
+            A380FuelValve::LeftOuterAftTransferValve,
+            A380FuelValve::RightInnerAftTransferValve,
+            A380FuelValve::RightMidAftTransferValve,
+            A380FuelValve::RightOuterAftTransferValve,
+            A380FuelValve::TrimTankInletValve1,
+            A380FuelValve::TrimTankInletValve2,
+            A380FuelValve::TrimLineIsolationValveFwd,
+            A380FuelValve::TrimLineIsolationValveAft,
+            A380FuelValve::CrossFeedValve1,
+            A380FuelValve::CrossFeedValve2,
+            A380FuelValve::CrossFeedValve3,
+            A380FuelValve::CrossFeedValve4,
+            A380FuelValve::APUIsolationValve,
+            A380FuelValve::APULowPressureValve,
+            A380FuelValve::LeftOuterEmerTransferValve,
+            A380FuelValve::RightOuterEmerTransferValve,
+            A380FuelValve::GalleryAuxRefuelValveLeft,
+            A380FuelValve::GalleryAuxRefuelValveRight,
+            A380FuelValve::TransferDefuelValve,
+            A380FuelValve::LeftJettisonNozzleValve,
+            A380FuelValve::RightJettisonNozzleValve,
+        ]
+        .into_iter()
+    }
 }
 
 pub(crate) struct A380Fuel {
@@ -199,7 +345,7 @@ impl SimulationElement for A380Fuel {
 }
 
 struct A380FuelSystem {
-    fuel_system: FuelSystem<11, 20>,
+    fuel_system: FuelSystem<11, 21, 41>,
 }
 
 impl A380FuelSystem {
@@ -435,18 +581,192 @@ impl A380FuelSystem {
                     consumption_current_ampere: 5.,
                 },
             ),
+            A380FuelPump::Apu => (
+                // APU feed pump
+                21,
+                FuelPumpProperties {
+                    powered_by: ElectricalBusType::DirectCurrentEssential,
+                    consumption_current_ampere: 8.,
+                },
+            ),
+        };
+
+        let fuel_valves = enum_map! {
+            // Engine 1 LP Valve
+            A380FuelValve::Engine1LowPressureValve => (
+                1,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Engine 2 LP Valve
+            A380FuelValve::Engine2LowPressureValve => (
+                2,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Engine 3 LP Valve
+            A380FuelValve::Engine3LowPressureValve => (
+                3,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Engine 4 LP Valve
+            A380FuelValve::Engine4LowPressureValve => (
+                4,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Feed Tank 1 Forward Inlet Valve
+            A380FuelValve::FeedTank1ForwardTransferValve => (5, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Feed Tank 2 Forward Inlet Valve
+            A380FuelValve::FeedTank2ForwardTransferValve => (6, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Feed Tank 3 Forward Inlet Valve
+            A380FuelValve::FeedTank3ForwardTransferValve=>(7, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Feed Tank 4 Forward Inlet Valve
+            A380FuelValve::FeedTank4ForwardTransferValve => (8, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Left Inner Forward Inlet Valve
+            A380FuelValve::LeftInnerForwardTransferValve => (9, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Left Mid Forward Inlet Valve
+            A380FuelValve::LeftMidForwardTransferValve => (10, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Left Outer Forward Inlet Valve
+            A380FuelValve::LeftOuterForwardTransferValve => (11, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Right Inner Forward Inlet Valve
+            A380FuelValve::RightInnerForwardTransferValve => (12, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Right Mid Forward Inlet Valve
+            A380FuelValve::RightMidForwardTransferValve => (13, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Right Outer Forward Inlet Valve
+            A380FuelValve::RightOuterForwardTransferValve => (14, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Feed Tank 1 Aft Inlet Valve
+            A380FuelValve::FeedTank1AftTransferValve => (15, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Feed Tank 2 Aft Inlet Valve
+            A380FuelValve::FeedTank2AftTransferValve => (16, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Feed Tank 3 Aft Inlet Valve
+            A380FuelValve::FeedTank3AftTransferValve => (17, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Feed Tank 4 Aft Inlet Valve
+            A380FuelValve::FeedTank4AftTransferValve => (18, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Left Inner Aft Inlet Valve
+            A380FuelValve::LeftInnerAftTransferValve => (19, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Left Mid Aft Inlet Valve
+            A380FuelValve::LeftMidAftTransferValve => (20, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Left Outer Aft Inlet Valve
+            A380FuelValve::LeftOuterAftTransferValve => (21, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Right Inner Aft Inlet Valve
+            A380FuelValve::RightInnerAftTransferValve => (22, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Right Mid Aft Inlet Valve
+            A380FuelValve::RightMidAftTransferValve => (23, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Right Outer Aft Inlet Valve
+            A380FuelValve::RightOuterAftTransferValve => (24, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            // Trim Tank Inlet Valve 1, TODO: power source switching
+            A380FuelValve::TrimTankInletValve1 => (25, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Trim Tank Inlet Valve 2
+            A380FuelValve::TrimTankInletValve2 => (26, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Trim Line Forward Isolation Valve, TODO: power source switching
+            A380FuelValve::TrimLineIsolationValveFwd => (27, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Trim Line Aft Isolation Valve
+            A380FuelValve::TrimLineIsolationValveAft => (28, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Cross Feed Valve 1
+            A380FuelValve::CrossFeedValve1 => (
+                29,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Cross Feed Valve 2
+            A380FuelValve::CrossFeedValve2 => (
+                30,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Cross Feed Valve 3
+            A380FuelValve::CrossFeedValve3 => (
+                31,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Cross Feed Valve 4
+            A380FuelValve::CrossFeedValve4 => (
+                32,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // APU Isolation Valve
+            A380FuelValve::APUIsolationValve => (33, (ElectricalBusType::DirectCurrentEssential, None)),
+            // APU LP Valve
+            A380FuelValve::APULowPressureValve => (
+                34,
+                (
+                    ElectricalBusType::DirectCurrentEssential,
+                    Some(ElectricalBusType::DirectCurrentNamed("309PP")),
+                ),
+            ),
+            // Left Outer Emer Transfer Valve
+            A380FuelValve::LeftOuterEmerTransferValve => (
+                35,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            // Right Outer Emer Transfer Valve
+            A380FuelValve::RightOuterEmerTransferValve => (
+                36,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            // Left Refuel Valve
+            A380FuelValve::GalleryAuxRefuelValveLeft => (37, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            // Right Refuel Valve
+            A380FuelValve::GalleryAuxRefuelValveRight => (38, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
+            // Transfer Defuel Valve
+            A380FuelValve::TransferDefuelValve => (39, (ElectricalBusType::DirectCurrent(1), None)),
+            // Left Jettison Valve
+            A380FuelValve::LeftJettisonNozzleValve => (
+                40,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
+            // Right Jettison Valve
+            A380FuelValve::RightJettisonNozzleValve => (
+                41,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrent(2)),
+                ),
+            ),
         };
 
         let fuel_tanks = Self::A380_FUEL.map(|f| f.into_fuel_tank(context, true));
         let fuel_pumps = fuel_pumps
             .into_array()
             .map(|(id, properties)| FuelPump::new(context, id, properties));
+        let fuel_valves = fuel_valves
+            .into_array()
+            .map(|(id, powered_by)| FuelValve::new(context, id, powered_by));
         A380FuelSystem {
-            fuel_system: FuelSystem::new(context, fuel_tanks, fuel_pumps),
+            fuel_system: FuelSystem::new(context, fuel_tanks, fuel_pumps, fuel_valves),
         }
     }
 
-    fn fuel_system(&self) -> &FuelSystem<11, 20> {
+    fn fuel_system(&self) -> &FuelSystem<11, 21, 41> {
         &self.fuel_system
     }
 
@@ -547,6 +867,26 @@ impl FuelCG for A380FuelSystem {
 impl FuelPumpStatus for A380FuelSystem {
     fn is_fuel_pump_running(&self, pump: A380FuelPump) -> bool {
         self.fuel_system().is_fuel_pump_running(pump.into_usize())
+    }
+}
+impl FuelValveStatus for A380FuelSystem {
+    fn is_fuel_valve_open(&self, valve: A380FuelValve) -> bool {
+        self.fuel_system().is_fuel_valve_open(valve.into_usize())
+    }
+
+    fn is_fuel_valve_closed(&self, valve: A380FuelValve) -> bool {
+        self.fuel_system().is_fuel_valve_closed(valve.into_usize())
+    }
+}
+impl SetFuelControlState for A380FuelSystem {
+    fn set_fuel_pump_command(&mut self, pump: A380FuelPump, running: bool) {
+        self.fuel_system
+            .command_fuel_pump(pump.into_usize(), running);
+    }
+
+    fn set_fuel_valve_command(&mut self, valve: A380FuelValve, open: bool) {
+        self.fuel_system
+            .command_fuel_valve(valve.into_usize(), open);
     }
 }
 impl SimulationElement for A380FuelSystem {
