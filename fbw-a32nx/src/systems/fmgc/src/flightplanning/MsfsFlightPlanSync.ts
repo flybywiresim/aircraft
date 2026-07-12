@@ -11,7 +11,6 @@ import {
   Arrival,
   Departure,
   Fix,
-  isMsfs2024,
   LegType,
   logTroubleshootingError,
   NavaidSubsectionCode,
@@ -78,10 +77,6 @@ export class MsfsFlightPlanSync {
     private readonly bus: EventBus,
     private readonly flightPlanInterface: FlightPlanInterface,
   ) {
-    if (!isMsfs2024()) {
-      throw new Error('[MsfsFlightPlanSync] Cannot be instantiated in MSFS 2020');
-    }
-
     console.log('[MsfsFlightPlanSync] Created');
 
     this.listener = RegisterViewListener('JS_LISTENER_PLANNEDROUTE', () => {

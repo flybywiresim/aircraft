@@ -4,4 +4,6 @@
 export * from './databus';
 export * from './webinterfaces/AcarsConnector';
 export * from './webinterfaces/AcarsClient';
+export * from './webinterfaces/BeyondATCConnector';
+export * from './webinterfaces/SayIntentionsConnector';
 export * from './Router';
