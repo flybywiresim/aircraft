@@ -3,7 +3,6 @@
   "name": "SDv2",
   "isInteractive": false,
   "extraDeps": [
-    "../MsfsAvionicsCommon",
-    "../index.scss"
+    "../MsfsAvionicsCommon"
   ]
 }

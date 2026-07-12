@@ -13,13 +13,12 @@
 
   font-family: "Ecam", monospace !important;
 
-  @import "../index.scss";
+  @import "../MsfsAvionicsCommon/duStyles.scss";
 }
 
 :root {
   --bodyHeightScale: 1;
 }
-
 
 #Mainframe {
   top: 0;
