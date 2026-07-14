@@ -3,6 +3,7 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include "A380FadecComputer.h"
 #include "Arinc429.h"
 #include "CalculatedRadioReceiver.h"
 #include "InterpolatingLookupTable.h"
@@ -14,7 +15,6 @@
 #include "fcdc/Fcdc.h"
 #include "fcu/Fcu.h"
 #include "interface/SimConnectInterface.h"
-#include "model/Autothrust.h"
 #include "prim/Prim.h"
 #include "recording/FlightDataRecorder.h"
 #include "recording/RecordingDataTypes.h"
@@ -53,8 +53,10 @@ class FlyByWireInterface {
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
   bool primFeDisabled = false;
+  bool primFgDisabled = false;
   int secDisabled = -1;
   int fcuDisabled = -1;
+  int fadecDisabled = -1;
   bool tailstrikeProtectionEnabled = true;
 
   bool wasTcasEngaged = false;
@@ -65,7 +67,7 @@ class FlyByWireInterface {
   bool wasPaused = false;
   bool wasInSlew = false;
 
-  double autothrustThrustLimitReverse = -45;
+  double autothrustThrustLimitReversePercentageToga = 0.0;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -102,9 +104,10 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  Autothrust autoThrust;
-  Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
-  athr_output autoThrustOutput;
+  A380FadecComputer fadecs[4];
+  A380FadecComputer::ExternalInputs_A380FadecComputer_T fadecInputs[4];
+  athr_output fadecOutputs[4];
+  base_eec fadecBusOutputs[4];
 
   base_ra_bus raBusOutputs[3] = {};
 
@@ -130,7 +133,7 @@ class FlyByWireInterface {
   FcdcBus fcdcsBusOutputs[2] = {};
 
   Fcu fcus[2] = {Fcu(), Fcu()};
-  base_fcu_bus fcuBusOutputs = {};
+  base_fcu_bus fcuBusOutputs[2] = {};
   bool fcuHealthy = false;
 
   InterpolatingLookupTable throttleLookupTable;
@@ -224,6 +227,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmTrackAngleError;
   std::unique_ptr<LocalVariable> idFmPhiCommand;
   std::unique_ptr<LocalVariable> idFmPhiLimit;
+  std::unique_ptr<LocalVariable> idFmVerticalProfileAvail;
   std::unique_ptr<LocalVariable> idFmRequestedVerticalMode;
   std::unique_ptr<LocalVariable> idFmTargetAltitude;
   std::unique_ptr<LocalVariable> idFmTargetVerticalSpeed;
@@ -255,8 +259,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
-  std::unique_ptr<LocalVariable> idFmgcV_LS;
-  std::unique_ptr<LocalVariable> idFmgcV_MAX;
+  std::unique_ptr<LocalVariable> idFmsManagedSpeedTarget;
+  std::unique_ptr<LocalVariable> idFmsPresetMach;
+  std::unique_ptr<LocalVariable> idFmsPresetSpeed;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
@@ -266,23 +271,17 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAroundEngineOut;
   std::unique_ptr<LocalVariable> idFmgcCruiseAltitude;
   std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
-  std::unique_ptr<LocalVariable> idFmgcDirToTrigger;
+  std::unique_ptr<LocalVariable> idFmsLsCourse;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginHigh;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginLow;
+  std::unique_ptr<LocalVariable> idFmsSpeedMarginVisible;
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;
 
-  std::unique_ptr<LocalVariable> thrustLeverAngle_1;
-  std::unique_ptr<LocalVariable> thrustLeverAngle_2;
-  std::unique_ptr<LocalVariable> thrustLeverAngle_3;
-  std::unique_ptr<LocalVariable> thrustLeverAngle_4;
-  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_1;
-  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_2;
-  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_3;
-  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_4;
-  std::unique_ptr<LocalVariable> idAutothrustReverse_1;
-  std::unique_ptr<LocalVariable> idAutothrustReverse_2;
-  std::unique_ptr<LocalVariable> idAutothrustReverse_3;
-  std::unique_ptr<LocalVariable> idAutothrustReverse_4;
+  std::unique_ptr<LocalVariable> thrustLeverAngle[4];
+  std::unique_ptr<LocalVariable> idAutothrustN1_TLA[4];
+  std::unique_ptr<LocalVariable> idAutothrustReverse[4];
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitREV;
@@ -291,10 +290,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitMCT;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitFLX;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitTOGA;
-  std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
-  std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
-  std::unique_ptr<LocalVariable> idAutothrustN1_c_3;
-  std::unique_ptr<LocalVariable> idAutothrustN1_c_4;
+  std::unique_ptr<LocalVariable> idAutothrustN1_c[4];
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
@@ -302,10 +298,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
-  std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
-  std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
-  std::unique_ptr<LocalVariable> idThrottlePosition3d_3;
-  std::unique_ptr<LocalVariable> idThrottlePosition3d_4;
+  std::unique_ptr<LocalVariable> idThrottlePosition3d[4];
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
@@ -339,6 +332,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDistance;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
+
+  std::unique_ptr<LocalVariable> idFm1BackbeamSelected;
 
   std::unique_ptr<LocalVariable> idRealisticTillerEnabled;
   std::unique_ptr<LocalVariable> idTillerHandlePosition;
@@ -380,7 +375,8 @@ class FlyByWireInterface {
 
   // ADR bus inputs
   std::unique_ptr<LocalVariable> idAdrAltitudeStandard[3];
-  std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
+  std::unique_ptr<LocalVariable> idAdrAltitudeCorrected1[3];
+  std::unique_ptr<LocalVariable> idAdrAltitudeCorrected2[3];
   std::unique_ptr<LocalVariable> idAdrMach[3];
   std::unique_ptr<LocalVariable> idAdrAirspeedComputed[3];
   std::unique_ptr<LocalVariable> idAdrAirspeedTrue[3];
@@ -455,9 +451,10 @@ class FlyByWireInterface {
 
   // PRIM discrete output Lvars
   std::unique_ptr<LocalVariable> idPrimHealthy[3];
-  std::unique_ptr<LocalVariable> idPrimApAuthorised[3];
+  std::unique_ptr<LocalVariable> idPrimApEngaged[3];
+
+  // PRIM bus FCTL output Lvars
   std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
-  std::unique_ptr<LocalVariable> idPrimFeStatusWord[3];
 
   // PRIM bus FE output Lvars
   std::unique_ptr<LocalVariable> idPrimGammaA[3];
@@ -474,6 +471,38 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idPrimVMan[3];
   std::unique_ptr<LocalVariable> idPrimVMax[3];
   std::unique_ptr<LocalVariable> idPrimVFeNext[3];
+
+  // PRIM bus FG output Lvars
+  std::unique_ptr<LocalVariable> idPrimPfdSpdTgt[3];
+  std::unique_ptr<LocalVariable> idPrimPfdShortTermMngdSpd[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedSpd[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedMach[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedHdg[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedTrk[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedAlt[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedVs[3];
+  std::unique_ptr<LocalVariable> idPrimSelectedFpa[3];
+  std::unique_ptr<LocalVariable> idPrimPreselMach[3];
+  std::unique_ptr<LocalVariable> idPrimPreselSpeed[3];
+  std::unique_ptr<LocalVariable> idPrimRwyHdgMemo[3];
+  std::unique_ptr<LocalVariable> idPrimRollFd1Command[3];
+  std::unique_ptr<LocalVariable> idPrimPitchFd1Command[3];
+  std::unique_ptr<LocalVariable> idPrimYawFd1Command[3];
+  std::unique_ptr<LocalVariable> idPrimRollFd2Command[3];
+  std::unique_ptr<LocalVariable> idPrimPitchFd2Command[3];
+  std::unique_ptr<LocalVariable> idPrimYawFd2Command[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord5[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord4[3];
+  std::unique_ptr<LocalVariable> idPrimFmAltConstraint[3];
+  std::unique_ptr<LocalVariable> idPrimAtsDiscreteWord[3];
+  std::unique_ptr<LocalVariable> idPrimAtsFmaDiscreteWord[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord3[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord1[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord2[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord6[3];
+  std::unique_ptr<LocalVariable> idPrimDiscreteWord7[3];
+  std::unique_ptr<LocalVariable> idPrimSpeedMarginHigh[3];
+  std::unique_ptr<LocalVariable> idPrimSpeedMarginLow[3];
 
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
@@ -551,6 +580,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
+  std::unique_ptr<LocalVariable> idAttHdgSwtgKnob;
+  std::unique_ptr<LocalVariable> idAirDataSwtgKnob;
+
   // CPIOM status
   std::unique_ptr<LocalVariable> idCpiomCxAvailable[2];
 
@@ -575,8 +607,10 @@ class FlyByWireInterface {
 
   // FCU
   std::unique_ptr<LocalVariable> idLightsTest;
+  std::unique_ptr<LocalVariable> idFcuSwitchedOff;
 
   std::unique_ptr<LocalVariable> idFcuEisPanelBaroIsInhg[2];
+  std::unique_ptr<LocalVariable> idFcuEisCpBackupActive[2];
 
   std::unique_ptr<LocalVariable> idFcuEisPanelVvLightOn[2];
   std::unique_ptr<LocalVariable> idFcuEisPanelLsLightOn[2];
@@ -621,6 +655,30 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuAfsDisplayVsFpaDashes;
   std::unique_ptr<LocalVariable> idFcuAfsCpActive;
 
+  std::unique_ptr<LocalVariable> idFcuEisDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFcuEisDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFcuEisBaro[2];
+  std::unique_ptr<LocalVariable> idFcuEisBaroHpa[2];
+
+  std::unique_ptr<LocalVariable> idFcuAfsDiscreteWord1[2];
+
+  // FCU Shim
+  // These variables are legacy variables and are driven by a shim from the new FCU to the old vars.
+  std::unique_ptr<LocalVariable> idFcuShimLeftNavaid1Mode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNavaid2Mode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdMode;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdRange;
+  std::unique_ptr<LocalVariable> idFcuShimLeftNdFilterOption;
+  std::unique_ptr<LocalVariable> idFcuShimLeftLsActive;
+  std::unique_ptr<LocalVariable> idFcuShimLeftBaroMode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNavaid1Mode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNavaid2Mode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdMode;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdRange;
+  std::unique_ptr<LocalVariable> idFcuShimRightNdFilterOption;
+  std::unique_ptr<LocalVariable> idFcuShimRightLsActive;
+  std::unique_ptr<LocalVariable> idFcuShimRightBaroMode;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -637,7 +695,7 @@ class FlyByWireInterface {
   bool updateAircraftSpecificData(double sampleTime);
 
   bool updateFlyByWire(double sampleTime);
-  bool updateAutothrust(double sampleTime);
+  bool updateFadec(double sampleTime, int fadecIndex);
 
   bool updateRa(int raIndex);
 
@@ -654,6 +712,8 @@ class FlyByWireInterface {
   bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateFcu(double sampleTime, int fcuIndex);
+
+  bool updateFcuAfsLvars();
 
   bool updateFcuShim();
 

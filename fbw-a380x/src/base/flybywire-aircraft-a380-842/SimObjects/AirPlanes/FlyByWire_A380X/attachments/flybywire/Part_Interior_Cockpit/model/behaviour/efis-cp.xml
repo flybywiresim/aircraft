@@ -318,27 +318,27 @@
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_ROSE_LS_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>0</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>1</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_ROSE_VOR_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>1</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>2</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_ROSE_NAV_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>2</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>3</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_ROSE_ARC_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>3</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>4</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_ROSE_PLAN_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>4</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>5</SIMVAR_VALUE>
                 </UseTemplate>
             </Component>
 
@@ -361,42 +361,42 @@
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_ZOOM_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>0</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>1</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_10_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>1</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>2</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_20_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>2</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>3</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_40_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>3</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>4</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_80_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>4</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>5</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_160_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>5</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>6</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_320_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>6</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>7</SIMVAR_VALUE>
                 </UseTemplate>
                 <UseTemplate Name="FBW_A380X_ND_Setting_Label_Template">
                     <NODE_ID>EFIS_#SIDE_NODE_GROUP#_RANGE_640_SEQ1</NODE_ID>
                     <SIMVAR_SIDE>#SIDE_SIMVAR_GROUP#</SIMVAR_SIDE>
-                    <SIMVAR_VALUE>7</SIMVAR_VALUE>
+                    <SIMVAR_VALUE>8</SIMVAR_VALUE>
                 </UseTemplate>
             </Component>
         </Component>

@@ -10,6 +10,7 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
+#include "../model/A380FadecComputer_types.h"
 #include "../model/A380FcuComputer_types.h"
 #include "../model/A380PrimComputerGeneralLogic_types.h"
 #include "../model/A380SecComputer_types.h"
@@ -129,6 +130,9 @@ class SimConnectInterface {
     A32NX_FCU_EFIS_R_TERR_PUSH,
     A32NX_FCU_EFIS_R_TRAF_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    A32NX_FMGC_PRESET_SPD_ACTIVATE,
+    A32NX_FMGC_SPD_MODE_ACTIVATE,
+    A32NX_FMGC_MACH_MODE_ACTIVATE,
     A32NX_EFIS_L_CHRONO_PUSHED,
     A32NX_EFIS_R_CHRONO_PUSHED,
     AP_AIRSPEED_ON,
@@ -255,12 +259,15 @@ class SimConnectInterface {
 
   ~SimConnectInterface() = default;
 
-  bool connect(int primDisabled,
+  bool connect(bool clientDataEnabled,
+               int primDisabled,
                bool primGeneralLogicDisabled,
                bool primFctlDisabled,
                bool primFeDisabled,
+               bool primFgDisabled,
                int secDisabled,
                int fcuDisabled,
+               int fadecDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                double keyChangeAileron,
@@ -328,10 +335,11 @@ class SimConnectInterface {
 
   bool setClientDataPrimDiscretes(base_prim_discrete_inputs& output);
   bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
-  bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
   bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
   bool setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output);
+  bool setClientDataPrimFgLogicOutput(const base_prim_fg_logic_output& output);
+  bool setClientDataPrimFgLawsOutput(const base_prim_fg_laws_outputs& output);
   bool setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
@@ -339,6 +347,8 @@ class SimConnectInterface {
   base_prim_out_bus& getClientDataPrimBusOutput();
   base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
   base_prim_flight_envelope_outputs& getClientDataPrimFlightEnvelopeOutput();
+  base_prim_fg_logic_output& getClientDataPrimFgLogicOutput();
+  base_prim_fg_laws_outputs& getClientDataPrimFgLawsOutput();
   base_prim_fctl_logic_outputs& getClientDataPrimFctlLogicOutput();
 
   bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
@@ -355,11 +365,17 @@ class SimConnectInterface {
   base_fcu_discrete_outputs& getClientDataFcuDiscreteOutput();
   base_fcu_bus& getClientDataFcuBusOutput();
 
+  bool setClientDataFadecData(athr_data& output);
+  bool setClientDataFadecInput(athr_input& output);
+
+  athr_output& getClientDataFadecOutput();
+
   bool setClientDataAdr(base_adr_bus& output, int adrIndex);
   bool setClientDataIr(base_ir_bus& output, int irIndex);
   bool setClientDataRa(base_ra_bus& output, int raIndex);
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
+  bool setClientDataFadec(base_eec& output, int fadecIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -380,7 +396,6 @@ class SimConnectInterface {
   enum ClientData {
     PRIM_DISCRETE_INPUTS,
     PRIM_ANALOG_INPUTS,
-    PRIM_TEMPORARY_AP_INPUTS,
     PRIM_DISCRETE_OUTPUTS,
     PRIM_ANALOG_OUTPUTS,
     PRIM_1_BUS_OUTPUT,
@@ -388,6 +403,8 @@ class SimConnectInterface {
     PRIM_3_BUS_OUTPUT,
     PRIM_GENERAL_LOGIC_OUTPUT,
     PRIM_FLIGHT_ENVELOPE_OUTPUT,
+    PRIM_FLIGHT_FG_LOGIC_OUTPUT,
+    PRIM_FLIGHT_FG_LAWS_OUTPUT,
     PRIM_FCTL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
@@ -400,6 +417,13 @@ class SimConnectInterface {
     FCU_DISCRETE_OUTPUTS,
     FCU_1_BUS_OUTPUT,
     FCU_2_BUS_OUTPUT,
+    FADEC_DATA,
+    FADEC_INPUTS,
+    FADEC_OUTPUTS,
+    FADEC_1_BUS,
+    FADEC_2_BUS,
+    FADEC_3_BUS,
+    FADEC_4_BUS,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -429,8 +453,10 @@ class SimConnectInterface {
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
   bool primFeDisabled = false;
+  bool primFgDisabled = false;
   int secDisabled = -1;
   int fcuDisabled = -1;
+  int fadecDisabled = -1;
 
   long pauseState = 0;
 
@@ -458,6 +484,8 @@ class SimConnectInterface {
   base_prim_out_bus clientDataPrimBusOutputs = {};
   base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
   base_prim_flight_envelope_outputs clientDataPrimFlightEnvelopeOutput = {};
+  base_prim_fg_logic_output clientDataPrimFgLogicOutput = {};
+  base_prim_fg_laws_outputs clientDataPrimFgLawsOutput = {};
   base_prim_fctl_logic_outputs clientDataPrimFctlLogicOutput = {};
 
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
@@ -466,6 +494,8 @@ class SimConnectInterface {
 
   base_fcu_discrete_outputs clientDataFcuDiscreteOutputs = {};
   base_fcu_bus clientDataFcuBusOutputs = {};
+
+  athr_output clientDataFadecOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;

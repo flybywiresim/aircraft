@@ -19,6 +19,7 @@ import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
 import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
 import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
+import { PrimFgBusPublisher } from '@shared/publishers/PrimFgPublisher';
 
 import './style.scss';
 
@@ -69,6 +70,8 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
 
+  private readonly primFgPublisher = new PrimFgBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -98,6 +101,7 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addInstrument('PrimChoiceProvider', this.primChoiceProvider);
     this.backplane.addPublisher('PrimFePublisher', this.primFePublisher);
     this.backplane.addPublisher('PrimFctlPublisher', this.primFctlPublisher);
+    this.backplane.addPublisher('PrimFgPublisher', this.primFgPublisher);
   }
 
   get templateID(): string {

@@ -84,8 +84,6 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
-  base_arinc_429 fe_status_word;
-  base_arinc_429 fg_status_word;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
@@ -110,6 +108,48 @@ struct base_prim_fe_out_bus
   base_arinc_429 v_max_kn;
   base_arinc_429 v_fe_next_kn;
   base_arinc_429 discrete_word_1;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_fg_out_bus_
+
+struct base_prim_fg_out_bus
+{
+  base_arinc_429 pfd_spd_tgt_kts;
+  base_arinc_429 pfd_short_term_mngd_spd_kts;
+  base_arinc_429 selected_spd_kts;
+  base_arinc_429 selected_mach_kts;
+  base_arinc_429 selected_hdg_deg;
+  base_arinc_429 selected_trk_deg;
+  base_arinc_429 selected_alt_ft;
+  base_arinc_429 selected_vs_ft_min;
+  base_arinc_429 selected_fpa_deg;
+  base_arinc_429 runway_hdg_memorized_deg;
+  base_arinc_429 preset_mach_from_fms;
+  base_arinc_429 preset_speed_from_fms_kts;
+  base_arinc_429 roll_fd_command_1;
+  base_arinc_429 pitch_fd_command_1;
+  base_arinc_429 yaw_fd_command_1;
+  base_arinc_429 roll_fd_command_2;
+  base_arinc_429 pitch_fd_command_2;
+  base_arinc_429 yaw_fd_command_2;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 fm_alt_constraint_ft;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 ats_fma_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_6;
+  base_arinc_429 low_target_speed_margin_kts;
+  base_arinc_429 high_target_speed_margin_kts;
+  base_arinc_429 nosewheel_cmd_deg;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 flx_to_temp_deg_c;
+  base_arinc_429 discrete_word_7;
 };
 
 #endif
@@ -271,7 +311,8 @@ struct base_sim_data
 struct base_adr_bus
 {
   base_arinc_429 altitude_standard_ft;
-  base_arinc_429 altitude_corrected_ft;
+  base_arinc_429 altitude_corrected_1_ft;
+  base_arinc_429 altitude_corrected_2_ft;
   base_arinc_429 mach;
   base_arinc_429 airspeed_computed_kn;
   base_arinc_429 airspeed_true_kn;
@@ -343,6 +384,7 @@ struct base_prim_out_bus
 {
   base_prim_fctl_out_bus fctl;
   base_prim_fe_out_bus fe;
+  base_prim_fg_out_bus fg;
 };
 
 #endif

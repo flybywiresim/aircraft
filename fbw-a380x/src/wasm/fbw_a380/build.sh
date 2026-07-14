@@ -113,8 +113,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/Autothrust_data.cpp" \
-  "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/A380PrimComputerGeneralLogic_data.cpp" \
@@ -123,8 +121,12 @@ clang++ \
   "${DIR}/src/model/A380PrimComputerFctl.cpp" \
   "${DIR}/src/model/A380PrimComputerFe_data.cpp" \
   "${DIR}/src/model/A380PrimComputerFe.cpp" \
+  "${DIR}/src/model/A380PrimComputerFg_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFg.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
   "${DIR}/src/model/A380SecComputer.cpp" \
+  "${DIR}/src/model/A380FadecComputer_data.cpp" \
+  "${DIR}/src/model/A380FadecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
   "${DIR}/src/model/A380PitchAlternateLaw.cpp" \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \

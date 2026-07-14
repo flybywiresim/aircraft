@@ -15,15 +15,46 @@ enum class a380_efis_mode_selection
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
-#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#ifndef DEFINED_TYPEDEF_FOR_a380_efis_range_selection_
+#define DEFINED_TYPEDEF_FOR_a380_efis_range_selection_
 
-enum class SignStatusMatrix
+enum class a380_efis_range_selection
   : int32_T {
-  FailureWarning = 0,
-  NoComputedData,
-  FunctionalTest,
-  NormalOperation
+  RANGE_ZOOM_POINT_2 = 0,
+  RANGE_ZOOM_POINT_5,
+  RANGE_ZOOM_1,
+  RANGE_ZOOM_2,
+  RANGE_10,
+  RANGE_20,
+  RANGE_40,
+  RANGE_80,
+  RANGE_160,
+  RANGE_320,
+  RANGE_640
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_surv_filter_selection_
+#define DEFINED_TYPEDEF_FOR_a380_surv_filter_selection_
+
+enum class a380_surv_filter_selection
+  : int32_T {
+  NONE = 0,
+  TERR,
+  WX
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_efis_navaid_selection_
+#define DEFINED_TYPEDEF_FOR_a380_efis_navaid_selection_
+
+enum class a380_efis_navaid_selection
+  : int32_T {
+  NONE = 0,
+  ADF,
+  VOR
 };
 
 #endif
@@ -41,14 +72,15 @@ enum class a380_efis_filter_selection
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_surv_filter_selection_
-#define DEFINED_TYPEDEF_FOR_a380_surv_filter_selection_
+#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
-enum class a380_surv_filter_selection
+enum class SignStatusMatrix
   : int32_T {
-  NONE = 0,
-  TERR,
-  WX
+  FailureWarning = 0,
+  NoComputedData,
+  FunctionalTest,
+  NormalOperation
 };
 
 #endif
@@ -113,14 +145,142 @@ struct base_fcu_afs_panel_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_efis_navaid_selection_
-#define DEFINED_TYPEDEF_FOR_a380_efis_navaid_selection_
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
-enum class a380_efis_navaid_selection
-  : int32_T {
-  NONE = 0,
-  ADF,
-  VOR
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fctl_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_fctl_out_bus_
+
+struct base_prim_fctl_out_bus
+{
+  base_arinc_429 left_inboard_aileron_command_deg;
+  base_arinc_429 right_inboard_aileron_command_deg;
+  base_arinc_429 left_midboard_aileron_command_deg;
+  base_arinc_429 right_midboard_aileron_command_deg;
+  base_arinc_429 left_outboard_aileron_command_deg;
+  base_arinc_429 right_outboard_aileron_command_deg;
+  base_arinc_429 left_spoiler_1_command_deg;
+  base_arinc_429 right_spoiler_1_command_deg;
+  base_arinc_429 left_spoiler_2_command_deg;
+  base_arinc_429 right_spoiler_2_command_deg;
+  base_arinc_429 left_spoiler_3_command_deg;
+  base_arinc_429 right_spoiler_3_command_deg;
+  base_arinc_429 left_spoiler_4_command_deg;
+  base_arinc_429 right_spoiler_4_command_deg;
+  base_arinc_429 left_spoiler_5_command_deg;
+  base_arinc_429 right_spoiler_5_command_deg;
+  base_arinc_429 left_spoiler_6_command_deg;
+  base_arinc_429 right_spoiler_6_command_deg;
+  base_arinc_429 left_spoiler_7_command_deg;
+  base_arinc_429 right_spoiler_7_command_deg;
+  base_arinc_429 left_spoiler_8_command_deg;
+  base_arinc_429 right_spoiler_8_command_deg;
+  base_arinc_429 left_inboard_elevator_command_deg;
+  base_arinc_429 right_inboard_elevator_command_deg;
+  base_arinc_429 left_outboard_elevator_command_deg;
+  base_arinc_429 right_outboard_elevator_command_deg;
+  base_arinc_429 ths_command_deg;
+  base_arinc_429 upper_rudder_command_deg;
+  base_arinc_429 lower_rudder_command_deg;
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_position_deg;
+  base_arinc_429 right_spoiler_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 radio_height_1_ft;
+  base_arinc_429 radio_height_2_ft;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 discrete_status_word_1;
+  base_arinc_429 v_alpha_lim_kn;
+  base_arinc_429 v_alpha_prot_kn;
+  base_arinc_429 v_alpha_stall_warn_kn;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fe_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_fe_out_bus_
+
+struct base_prim_fe_out_bus
+{
+  base_arinc_429 gamma_a_deg;
+  base_arinc_429 gamma_t_deg;
+  base_arinc_429 sideslip_target_deg;
+  base_arinc_429 v_ls_kn;
+  base_arinc_429 v_stall_kn;
+  base_arinc_429 speed_trend_kn;
+  base_arinc_429 v_3_kn;
+  base_arinc_429 v_4_kn;
+  base_arinc_429 v_man_kn;
+  base_arinc_429 v_max_kn;
+  base_arinc_429 v_fe_next_kn;
+  base_arinc_429 discrete_word_1;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_fg_out_bus_
+
+struct base_prim_fg_out_bus
+{
+  base_arinc_429 pfd_spd_tgt_kts;
+  base_arinc_429 pfd_short_term_mngd_spd_kts;
+  base_arinc_429 selected_spd_kts;
+  base_arinc_429 selected_mach_kts;
+  base_arinc_429 selected_hdg_deg;
+  base_arinc_429 selected_trk_deg;
+  base_arinc_429 selected_alt_ft;
+  base_arinc_429 selected_vs_ft_min;
+  base_arinc_429 selected_fpa_deg;
+  base_arinc_429 runway_hdg_memorized_deg;
+  base_arinc_429 preset_mach_from_fms;
+  base_arinc_429 preset_speed_from_fms_kts;
+  base_arinc_429 roll_fd_command_1;
+  base_arinc_429 pitch_fd_command_1;
+  base_arinc_429 yaw_fd_command_1;
+  base_arinc_429 roll_fd_command_2;
+  base_arinc_429 pitch_fd_command_2;
+  base_arinc_429 yaw_fd_command_2;
+  base_arinc_429 discrete_word_5;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 fm_alt_constraint_ft;
+  base_arinc_429 ats_discrete_word;
+  base_arinc_429 ats_fma_discrete_word;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_6;
+  base_arinc_429 low_target_speed_margin_kts;
+  base_arinc_429 high_target_speed_margin_kts;
+  base_arinc_429 nosewheel_cmd_deg;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 flx_to_temp_deg_c;
+  base_arinc_429 discrete_word_7;
 };
 
 #endif
@@ -130,7 +290,8 @@ enum class a380_efis_navaid_selection
 
 enum class a380_efis_panel_range_selection
   : int32_T {
-  RANGE_ZOOM = 0,
+  NONE = 0,
+  RANGE_ZOOM,
   RANGE_10,
   RANGE_20,
   RANGE_40,
@@ -138,6 +299,21 @@ enum class a380_efis_panel_range_selection
   RANGE_160,
   RANGE_320,
   RANGE_640
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_efis_panel_mode_selection_
+#define DEFINED_TYPEDEF_FOR_a380_efis_panel_mode_selection_
+
+enum class a380_efis_panel_mode_selection
+  : int32_T {
+  NONE = 0,
+  ROSE_ILS,
+  ROSE_VOR,
+  ROSE_NAV,
+  ARC,
+  PLAN
 };
 
 #endif
@@ -161,7 +337,7 @@ struct base_fcu_efis_panel_outputs
   a380_efis_navaid_selection navaid_1_mode;
   a380_efis_navaid_selection navaid_2_mode;
   a380_efis_panel_range_selection efis_range;
-  a380_efis_mode_selection efis_mode;
+  a380_efis_panel_mode_selection efis_mode;
   boolean_T baro_is_inhg;
   boolean_T baro_is_std;
   real32_T baro_value;
@@ -199,56 +375,16 @@ struct base_fcu_afs_panel_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
+#define DEFINED_TYPEDEF_FOR_base_fcu_bus_
 
-struct base_arinc_429
+struct base_fcu_bus
 {
-  uint32_T SSM;
-  real32_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-#define DEFINED_TYPEDEF_FOR_base_fmgc_a_bus_
-
-struct base_fmgc_a_bus
-{
-  base_arinc_429 pfd_sel_spd_kts;
-  base_arinc_429 runway_hdg_memorized_deg;
-  base_arinc_429 preset_mach_from_mcdu;
-  base_arinc_429 preset_speed_from_mcdu_kts;
-  base_arinc_429 roll_fd_command;
-  base_arinc_429 pitch_fd_command;
-  base_arinc_429 yaw_fd_command;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
-  base_arinc_429 fm_alt_constraint_ft;
-  base_arinc_429 altitude_ft;
-  base_arinc_429 mach;
-  base_arinc_429 cas_kts;
-  base_arinc_429 flx_to_temp_deg_c;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_6;
-  base_arinc_429 synchro_spd_mach_value;
-  base_arinc_429 low_target_speed_margin_kts;
-  base_arinc_429 high_target_speed_margin_kts;
-  base_arinc_429 delta_p_ail_voted_cmd_deg;
-  base_arinc_429 delta_p_splr_voted_cmd_deg;
-  base_arinc_429 delta_r_voted_cmd_deg;
-  base_arinc_429 delta_nosewheel_voted_cmd_deg;
-  base_arinc_429 delta_q_voted_cmd_deg;
-  base_arinc_429 track_deg;
-  base_arinc_429 heading_deg;
-  base_arinc_429 fpa_deg;
-  base_arinc_429 n1_command_percent;
-  base_arinc_429 vertical_speed_ft_min;
-  base_arinc_429 discrete_word_7;
+  base_arinc_429 efis_discrete_word_1;
+  base_arinc_429 efis_discrete_word_2;
+  base_arinc_429 baro_setting_hpa;
+  base_arinc_429 baro_setting_inhg;
+  base_arinc_429 afs_discrete_word_1;
 };
 
 #endif
@@ -259,36 +395,6 @@ struct base_fmgc_a_bus
 struct base_fcu_sim_input
 {
   real32_T baro_setting_hpa;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
-#define DEFINED_TYPEDEF_FOR_base_fcu_bus_
-
-struct base_fcu_bus
-{
-  base_arinc_429 selected_hdg_deg;
-  base_arinc_429 selected_alt_ft;
-  base_arinc_429 selected_spd_kts;
-  base_arinc_429 selected_vz_ft_min;
-  base_arinc_429 selected_mach;
-  base_arinc_429 selected_trk_deg;
-  base_arinc_429 selected_fpa_deg;
-  base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 fcu_flex_to_temp_deg_c;
-  base_arinc_429 ats_discrete_word;
-  base_arinc_429 eis_discrete_word_1_left;
-  base_arinc_429 eis_discrete_word_1_right;
-  base_arinc_429 eis_discrete_word_2_left;
-  base_arinc_429 eis_discrete_word_2_right;
-  base_arinc_429 baro_setting_left_hpa;
-  base_arinc_429 baro_setting_right_hpa;
-  base_arinc_429 baro_setting_left_inhg;
-  base_arinc_429 baro_setting_right_inhg;
-  base_arinc_429 fcu_discrete_word_2;
-  base_arinc_429 fcu_discrete_word_1;
-  base_arinc_429 n1_cmd_percent;
 };
 
 #endif
@@ -339,13 +445,25 @@ struct base_fcu_discrete_inputs
 {
   boolean_T fcu_switched_off;
   boolean_T efis_backup_activated;
-  boolean_T prim_1_healthy;
-  boolean_T prim_2_healthy;
-  boolean_T prim_3_healthy;
+  boolean_T selected_by_prim_1;
+  boolean_T selected_by_prim_2;
+  boolean_T selected_by_prim_3;
   boolean_T lights_test;
   boolean_T pin_prog_qfe_avail;
   base_fcu_efis_panel_inputs efis_inputs;
   base_fcu_afs_panel_inputs afs_inputs;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+
+struct base_prim_out_bus
+{
+  base_prim_fctl_out_bus fctl;
+  base_prim_fe_out_bus fe;
+  base_prim_fg_out_bus fg;
 };
 
 #endif
@@ -355,8 +473,9 @@ struct base_fcu_discrete_inputs
 
 struct base_fcu_bus_inputs
 {
-  base_fmgc_a_bus fmgc_1_bus;
-  base_fmgc_a_bus fmgc_2_bus;
+  base_prim_out_bus prim_1_bus;
+  base_prim_out_bus prim_2_bus;
+  base_prim_out_bus prim_3_bus;
 };
 
 #endif
@@ -380,7 +499,7 @@ struct fcu_inputs
 
 struct base_afs_logic_outputs
 {
-  boolean_T fmgc_1_has_priority;
+  uint8_T master_prim;
   boolean_T ap_1_engaged;
   boolean_T ap_2_engaged;
   boolean_T athr_engaged;
@@ -408,26 +527,9 @@ struct base_afs_logic_outputs
   boolean_T alt_pushed;
   boolean_T appr_pushed;
   boolean_T spd_mach_switching_pushed;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_a380_efis_range_selection_
-#define DEFINED_TYPEDEF_FOR_a380_efis_range_selection_
-
-enum class a380_efis_range_selection
-  : int32_T {
-  RANGE_ZOOM_POINT_2 = 0,
-  RANGE_ZOOM_POINT_5,
-  RANGE_ZOOM_1,
-  RANGE_ZOOM_2,
-  RANGE_10,
-  RANGE_20,
-  RANGE_40,
-  RANGE_80,
-  RANGE_160,
-  RANGE_320,
-  RANGE_640
+  boolean_T trk_fpa_switching_pushed;
+  boolean_T true_mag_switching_pushed;
+  boolean_T metric_alt_switching_pushed;
 };
 
 #endif
@@ -458,6 +560,7 @@ struct base_fcu_efis_logic_outputs
   real32_T baro_value_hpa;
   real32_T baro_value_inhg;
   boolean_T baro_preset_active;
+  boolean_T efis_cp_panel_activate;
 };
 
 #endif

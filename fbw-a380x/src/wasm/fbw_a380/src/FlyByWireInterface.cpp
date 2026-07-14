@@ -27,11 +27,11 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  bool success =
-      simConnectInterface.connect(primDisabled, primGeneralLogicDisabled, primFctlDisabled, primFeDisabled, secDisabled, fcuDisabled,
-                                  throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator,
-                                  flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode,
-                                  idMinimumSimulationRate->get(), idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+  bool success = simConnectInterface.connect(
+      clientDataEnabled, primDisabled, primGeneralLogicDisabled, primFctlDisabled, primFeDisabled, primFgDisabled, secDisabled, fcuDisabled,
+      fadecDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator,
+      flightControlsKeyChangeRudder, disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
+      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
     std::cout << "WASM: Request data failed!" << std::endl;
@@ -90,9 +90,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update fly-by-wire
   result &= updateFlyByWire(calculatedSampleTime);
 
-  // get throttle data and process it
-  result &= updateAutothrust(calculatedSampleTime);
-
   for (int i = 0; i < 3; i++) {
     result &= updateRa(i);
   }
@@ -113,6 +110,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFcu(calculatedSampleTime, i);
   }
 
+  result &= updateFcuAfsLvars();
+
+  // result &= updateFcuShim();
+
   for (int i = 0; i < 3; i++) {
     result &= updatePrim(calculatedSampleTime, i);
   }
@@ -123,6 +124,10 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   for (int i = 0; i < 2; i++) {
     result &= updateFcdc(calculatedSampleTime, i);
+  }
+
+  for (int i = 0; i < 4; i++) {
+    result &= updateFadec(calculatedSampleTime, i);
   }
 
   result &= updateServoSolenoidStatus();
@@ -167,12 +172,14 @@ void FlyByWireInterface::loadConfiguration() {
   primGeneralLogicDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_GENERAL_LOGIC_DISABLED", false);
   primFctlDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FCTL_DISABLED", false);
   primFeDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FE_DISABLED", false);
+  primFgDisabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "PRIM_FG_DISABLED", false);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
   fcuDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FCU_DISABLED", -1);
+  fadecDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FADEC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || fcuDisabled != -1);
+  clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || fcuDisabled != -1 || fadecDisabled != -1);
 
   // print configuration into console
   std::cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << std::endl;
@@ -180,8 +187,10 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = " << primGeneralLogicDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
   std::cout << "WASM: MODEL     : PRIM_FE_DISABLED                     = " << primFeDisabled << std::endl;
+  std::cout << "WASM: MODEL     : PRIM_FG_DISABLED                     = " << primFgDisabled << std::endl;
   std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
   std::cout << "WASM: MODEL     : FCU_DISABLED                         = " << fcuDisabled << std::endl;
+  std::cout << "WASM: MODEL     : FADEC_DISABLED                       = " << fadecDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
 
   // --------------------------------------------------------------------------
@@ -199,13 +208,11 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - autothrust
-  autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
-
-  // initialize local variable for reverse
-  idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
+  autothrustThrustLimitReversePercentageToga =
+      INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", 0.813);
 
   // print configuration into console
-  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << std::endl;
+  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = " << autothrustThrustLimitReversePercentageToga << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -361,8 +368,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
   idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
-  idFmgcV_LS = std::make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
-  idFmgcV_MAX = std::make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
+  idFmsManagedSpeedTarget = std::make_unique<LocalVariable>("A32NX_SPEEDS_MANAGED_PFD");
+  idFmsPresetMach = std::make_unique<LocalVariable>("A32NX_MachPreselVal");
+  idFmsPresetSpeed = std::make_unique<LocalVariable>("A32NX_SpeedPreselVal");
 
   idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   // FIXME consider FM1/FM2
@@ -375,12 +383,17 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
+  idFmsLsCourse = std::make_unique<LocalVariable>("A32NX_FM_LS_COURSE");
+  idFmsSpeedMarginHigh = std::make_unique<LocalVariable>("A32NX_PFD_UPPER_SPEED_MARGIN");
+  idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
+  idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
 
   idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFmTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFmPhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
   idFmPhiLimit = std::make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
+  idFmVerticalProfileAvail = std::make_unique<LocalVariable>("A32NX_FM_VERTICAL_PROFILE_AVAIL");
   idFmRequestedVerticalMode = std::make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
   idFmTargetAltitude = std::make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
   idFmTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
@@ -414,10 +427,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuModeReversionTrkFpaActive = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
   idFcuModeReversionTargetFpm = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
-  idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
-  idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
-  idThrottlePosition3d_3 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_3");
-  idThrottlePosition3d_4 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_4");
+  for (int i = 0; i < 4; i++) {
+    std::string idString = std::to_string(i + 1);
+
+    idThrottlePosition3d[i] = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_" + idString);
+    thrustLeverAngle[i] = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:" + idString);
+    idAutothrustN1_TLA[i] = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:" + idString);
+    idAutothrustReverse[i] = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:" + idString);
+    idAutothrustN1_c[i] = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:" + idString);
+  }
 
   idAutothrustStatus = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
@@ -438,22 +456,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustThrustLimitMCT = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
   idAutothrustThrustLimitFLX = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
   idAutothrustThrustLimitTOGA = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
-  thrustLeverAngle_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
-  thrustLeverAngle_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
-  thrustLeverAngle_3 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:3");
-  thrustLeverAngle_4 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:4");
-  idAutothrustN1_TLA_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
-  idAutothrustN1_TLA_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:2");
-  idAutothrustN1_TLA_3 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:3");
-  idAutothrustN1_TLA_4 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:4");
-  idAutothrustReverse_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:1");
-  idAutothrustReverse_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
-  idAutothrustReverse_3 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:3");
-  idAutothrustReverse_4 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:4");
-  idAutothrustN1_c_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
-  idAutothrustN1_c_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
-  idAutothrustN1_c_3 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:3");
-  idAutothrustN1_c_4 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:4");
 
   idMasterWarning = std::make_unique<LocalVariable>("A32NX_MASTER_WARNING");
   idMasterCaution = std::make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
@@ -526,7 +528,8 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idAdrAltitudeStandard[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
-    idAdrAltitudeCorrected[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_1");
+    idAdrAltitudeCorrected1[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_1");
+    idAdrAltitudeCorrected2[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_2");
     idAdrMach[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
     idAdrAirspeedComputed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
     idAdrAirspeedTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
@@ -605,9 +608,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idPrimPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PUSHBUTTON_PRESSED");
     idPrimHealthy[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_HEALTHY");
-    idPrimApAuthorised[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_AP_AUTHORISED");
+    idPrimApEngaged[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_AP_ENGAGED");
+
     idPrimFctlLawStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FCTL_LAW_STATUS_WORD");
-    idPrimFeStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FE_STATUS_WORD");
 
     idPrimGammaA[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GAMMA_A");
     idPrimGammaT[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GAMMA_T");
@@ -623,6 +626,41 @@ void FlyByWireInterface::setupLocalVariables() {
     idPrimVMan[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_V_MAN");
     idPrimVMax[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_V_MAX");
     idPrimVFeNext[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_V_FE_NEXT");
+
+    idPrimPfdSpdTgt[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PFD_SELECTED_SPEED");
+    idPrimPfdShortTermMngdSpd[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PFD_SHORT_TERM_MANAGED_SPEED");
+    idPrimSelectedSpd[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_AIRSPEED");
+    idPrimSelectedMach[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_MACH");
+    idPrimSelectedHdg[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_HEADING");
+    idPrimSelectedTrk[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_TRACK");
+    idPrimSelectedAlt[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_ALTITUDE");
+    idPrimSelectedVs[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_VERTICAL_SPEED");
+    idPrimSelectedFpa[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SELECTED_FPA");
+    idPrimPreselMach[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PRESEL_MACH");
+    idPrimPreselSpeed[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PRESEL_SPEED");
+    idPrimRwyHdgMemo[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_RWY_HDG_MEMO");
+    idPrimRollFd1Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_ROLL_FD_COMMAND_1");
+    idPrimPitchFd1Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PITCH_FD_COMMAND_1");
+    idPrimYawFd1Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_YAW_FD_COMMAND_1");
+    idPrimRollFd2Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_ROLL_FD_COMMAND_2");
+    idPrimPitchFd2Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PITCH_FD_COMMAND_2");
+    idPrimYawFd2Command[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_YAW_FD_COMMAND_2");
+    idPrimDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_DISCRETE_WORD_5");
+    idPrimDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_DISCRETE_WORD_4");
+    idPrimFmAltConstraint[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FM_ALTITUDE_CONSTRAINT");
+    idPrimAtsDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_ATS_DISCRETE_WORD");
+    idPrimAtsFmaDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_ATS_FMA_DISCRETE_WORD");
+    idPrimDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_3");
+    idPrimDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_1");
+    idPrimDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_2");
+    idPrimDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_6");
+    idPrimDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_3");
+    idPrimDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_1");
+    idPrimDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_2");
+    idPrimDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_6");
+    idPrimDiscreteWord7[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FG_DISCRETE_WORD_7");
+    idPrimSpeedMarginHigh[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SPEED_MARGIN_HIGH");
+    idPrimSpeedMarginLow[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SPEED_MARGIN_LOW");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -759,6 +797,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
 
+  idAttHdgSwtgKnob = std::make_unique<LocalVariable>("A32NX_ATT_HDG_SWITCHING_KNOB");
+  idAirDataSwtgKnob = std::make_unique<LocalVariable>("A32NX_AIR_DATA_SWITCHING_KNOB");
+
   // CPIOM available
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
@@ -786,11 +827,13 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // FCU
   idLightsTest = std::make_unique<LocalVariable>("A32NX_OVHD_INTLT_ANN");
+  idFcuSwitchedOff = std::make_unique<LocalVariable>("A32NX_FCU_SWITCHED_OFF");
 
   for (int i = 0; i < 2; i++) {
     std::string idString = i == 0 ? "L" : "R";
 
     idFcuEisPanelBaroIsInhg[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BARO_IS_INHG");
+    idFcuEisCpBackupActive[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BACKUP_ACTIVE");
 
     idFcuEisDisplayBaroIsInhg[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_IS_INHG");
     idFcuEisDisplayBaroIsStd[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISPLAY_BARO_IS_STD");
@@ -815,6 +858,13 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcuEisPanelTerrLightOn[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_TERR_LIGHT_ON");
 
     idFcuEisCpActive[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_CP_ACTIVE");
+
+    idFcuEisDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISCRETE_WORD_1");
+    idFcuEisDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_DISCRETE_WORD_2");
+    idFcuEisBaro[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BARO");
+    idFcuEisBaroHpa[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BARO_HPA");
+
+    idFcuAfsDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCU_AFS_" + idString + "_DISCRETE_WORD_1");
   }
   idFcuAfsPanelAltIncrement1000 = std::make_unique<LocalVariable>("A32NX_FCU_ALT_INCREMENT_1000");
 
@@ -1180,10 +1230,10 @@ bool FlyByWireInterface::updateAircraftSpecificData(double sampleTime) {
   aircraftSpecificData.simulation_input_throttle_lever_2_pos = simData.throttle_lever_2_pos;
   aircraftSpecificData.simulation_input_throttle_lever_3_pos = simData.throttle_lever_3_pos;
   aircraftSpecificData.simulation_input_throttle_lever_4_pos = simData.throttle_lever_4_pos;
-  aircraftSpecificData.simulation_input_throttle_lever_1_angle = thrustLeverAngle_1->get();
-  aircraftSpecificData.simulation_input_throttle_lever_2_angle = thrustLeverAngle_2->get();
-  aircraftSpecificData.simulation_input_throttle_lever_3_angle = thrustLeverAngle_3->get();
-  aircraftSpecificData.simulation_input_throttle_lever_4_angle = thrustLeverAngle_4->get();
+  aircraftSpecificData.simulation_input_throttle_lever_1_angle = thrustLeverAngle[0]->get();
+  aircraftSpecificData.simulation_input_throttle_lever_2_angle = thrustLeverAngle[1]->get();
+  aircraftSpecificData.simulation_input_throttle_lever_3_angle = thrustLeverAngle[2]->get();
+  aircraftSpecificData.simulation_input_throttle_lever_4_angle = thrustLeverAngle[3]->get();
   aircraftSpecificData.aircraft_engine_1_N1_percent = simData.corrected_engine_N1_1_percent;
   aircraftSpecificData.aircraft_engine_2_N1_percent = simData.corrected_engine_N1_2_percent;
   aircraftSpecificData.aircraft_engine_3_N1_percent = simData.corrected_engine_N1_3_percent;
@@ -1252,7 +1302,8 @@ bool FlyByWireInterface::updateSfcc(int sfccIndex) {
 
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].altitude_standard_ft = Arinc429Utils::fromSimVar(idAdrAltitudeStandard[adirsIndex]->get());
-  adrBusOutputs[adirsIndex].altitude_corrected_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
+  adrBusOutputs[adirsIndex].altitude_corrected_1_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected1[adirsIndex]->get());
+  adrBusOutputs[adirsIndex].altitude_corrected_2_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected2[adirsIndex]->get());
   adrBusOutputs[adirsIndex].mach = Arinc429Utils::fromSimVar(idAdrMach[adirsIndex]->get());
   adrBusOutputs[adirsIndex].airspeed_computed_kn = Arinc429Utils::fromSimVar(idAdrAirspeedComputed[adirsIndex]->get());
   adrBusOutputs[adirsIndex].airspeed_true_kn = Arinc429Utils::fromSimVar(idAdrAirspeedTrue[adirsIndex]->get());
@@ -1301,6 +1352,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
   SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
 
   double leftAileron1Position;
   double rightAileron1Position;
@@ -1378,6 +1430,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     ra2Bus = raBusOutputs[1];
   }
 
+  bool athr_instinctive_disc = simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
+
   auto& modelInputs = prims[primIndex].externalInputs();
 
   modelInputs.in.time.dt = sampleTime;
@@ -1396,16 +1450,18 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
   modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
   modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-  modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
-  modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
-  modelInputs.in.discrete_inputs.fcu_healthy = true;
-  modelInputs.in.discrete_inputs.athr_pushbutton = false;
-  modelInputs.in.discrete_inputs.ir_3_on_capt = false;
-  modelInputs.in.discrete_inputs.ir_3_on_fo = false;
-  modelInputs.in.discrete_inputs.adr_3_on_capt = false;
-  modelInputs.in.discrete_inputs.adr_3_on_fo = false;
+  modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = simInputAutopilot.AP_1_push;
+  modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = simInputAutopilot.AP_2_push;
+  modelInputs.in.discrete_inputs.fcu_1_healthy = true;
+  modelInputs.in.discrete_inputs.fcu_2_healthy = true;
+  modelInputs.in.discrete_inputs.athr_pushbutton = simConnectInterface.getSimInputThrottles().ATHR_push;
+  modelInputs.in.discrete_inputs.ir_3_on_capt = idAttHdgSwtgKnob->get() == 0;
+  modelInputs.in.discrete_inputs.ir_3_on_fo = idAttHdgSwtgKnob->get() == 2;
+  modelInputs.in.discrete_inputs.adr_3_on_capt = idAirDataSwtgKnob->get() == 0;
+  modelInputs.in.discrete_inputs.adr_3_on_fo = idAirDataSwtgKnob->get() == 2;
   modelInputs.in.discrete_inputs.rat_deployed = primIndex == 0 ? idRatPosition->get() > 0.9 : false;
   modelInputs.in.discrete_inputs.rat_contactor_closed = primIndex == 0 ? idRatContactorClosed->get() : false;
+  modelInputs.in.discrete_inputs.athr_instinctive_disc = athr_instinctive_disc;
   modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
   modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
@@ -1416,10 +1472,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
   modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   modelInputs.in.analog_inputs.speed_brake_lever_pos = spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
-  modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
-  modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
-  modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
-  modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
+  modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle[0]->get();
+  modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle[1]->get();
+  modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle[2]->get();
+  modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle[3]->get();
   modelInputs.in.analog_inputs.elevator_1_pos_deg = -30. * elevator1Position;
   modelInputs.in.analog_inputs.elevator_2_pos_deg = -30. * elevator2Position;
   modelInputs.in.analog_inputs.elevator_3_pos_deg = -30. * elevator3Position;
@@ -1466,8 +1522,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
   modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
-  modelInputs.in.bus_inputs.fcu_own_bus = {};
-  modelInputs.in.bus_inputs.fcu_opp_bus = {};
+  modelInputs.in.bus_inputs.fcu_1_bus = fcuBusOutputs[0];
+  modelInputs.in.bus_inputs.fcu_2_bus = fcuBusOutputs[1];
   if (primIndex == 0) {
     modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[1];
     modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
@@ -1483,21 +1539,50 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
   modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
-  modelInputs.in.temporary_ap_input.ap_engaged = false;
-  modelInputs.in.temporary_ap_input.ap_1_engaged = false;
-  modelInputs.in.temporary_ap_input.ap_2_engaged = false;
-  modelInputs.in.temporary_ap_input.athr_engaged = false;
-  modelInputs.in.temporary_ap_input.roll_command = 0;
-  modelInputs.in.temporary_ap_input.pitch_command = 0;
-  modelInputs.in.temporary_ap_input.yaw_command = 0;
-  modelInputs.in.temporary_ap_input.lateral_mode = 0;
-  modelInputs.in.temporary_ap_input.lateral_mode_armed = 0;
-  modelInputs.in.temporary_ap_input.vertical_mode = 0;
-  modelInputs.in.temporary_ap_input.vertical_mode_armed = 0;
-  modelInputs.in.temporary_ap_input.weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get()).Data * 2.205;
-  modelInputs.in.temporary_ap_input.cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get()).Data / 100;
+  modelInputs.in.adcn_inputs.fms.fm_valid = true;
+  modelInputs.in.adcn_inputs.fms.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
+  modelInputs.in.adcn_inputs.fms.selected_approach_type = idFmRnavAppSelected->get() ? fmgc_approach_type::RNAV : fmgc_approach_type::ILS;
+  modelInputs.in.adcn_inputs.fms.backbeam_selected = idFm1BackbeamSelected->get();
+  modelInputs.in.adcn_inputs.fms.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;
+  modelInputs.in.adcn_inputs.fms.fms_unrealistic_gs_angle_deg = (simData.nav_gs_valid != 0) ? -simData.nav_gs_deg : 0;
+  modelInputs.in.adcn_inputs.fms.fms_weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get()).Data * 2.205;
+  modelInputs.in.adcn_inputs.fms.fms_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get()).Data / 100;
+  modelInputs.in.adcn_inputs.fms.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
+  modelInputs.in.adcn_inputs.fms.nav_capture_condition = idFmNavCaptureCondition->get();
+  modelInputs.in.adcn_inputs.fms.phi_c_deg = idFmPhiCommand->get();
+  modelInputs.in.adcn_inputs.fms.xtk_nmi = idFmCrossTrackError->get();
+  modelInputs.in.adcn_inputs.fms.tke_deg = idFmTrackAngleError->get();
+  modelInputs.in.adcn_inputs.fms.phi_limit_deg = idFmPhiLimit->get();
+  modelInputs.in.adcn_inputs.fms.direct_to_nav_engage = simInputAutopilot.DIR_TO_trigger;
+  modelInputs.in.adcn_inputs.fms.vertical_flight_plan_valid = idFmVerticalProfileAvail->get();
+  modelInputs.in.adcn_inputs.fms.final_app_can_engage = idFmFinalCanEngage->get();
+  modelInputs.in.adcn_inputs.fms.next_alt_cstr_ft = idFmgcAltitudeConstraint->get();
+  modelInputs.in.adcn_inputs.fms.requested_des_submode = static_cast<fmgc_des_submode>(idFmRequestedVerticalMode->get());
+  modelInputs.in.adcn_inputs.fms.alt_profile_tgt_ft = idFmTargetAltitude->get();
+  modelInputs.in.adcn_inputs.fms.vs_target_ft_min = idFmTargetVerticalSpeed->get();
+  modelInputs.in.adcn_inputs.fms.v_2_kts = idFmgcV2->get();
+  modelInputs.in.adcn_inputs.fms.v_app_kts = idFmgcV_APP->get();
+  modelInputs.in.adcn_inputs.fms.v_managed_kts = idFmsManagedSpeedTarget->get();
+  modelInputs.in.adcn_inputs.fms.v_upper_margin_kts = idFmsSpeedMarginHigh->get();
+  modelInputs.in.adcn_inputs.fms.v_lower_margin_kts = idFmsSpeedMarginLow->get();
+  modelInputs.in.adcn_inputs.fms.show_speed_margins = idFmsSpeedMarginVisible->get();
+  modelInputs.in.adcn_inputs.fms.preset_spd_kts = idFmsPresetSpeed->get();
+  modelInputs.in.adcn_inputs.fms.preset_mach = idFmsPresetMach->get();
+  modelInputs.in.adcn_inputs.fms.preset_spd_mach_activate = simInputAutopilot.preset_spd_activate;
+  modelInputs.in.adcn_inputs.fms.fms_spd_mode_activate = simInputAutopilot.spd_mode_activate;
+  modelInputs.in.adcn_inputs.fms.fms_mach_mode_activate = simInputAutopilot.mach_mode_activate;
+  modelInputs.in.adcn_inputs.fms.flex_temp_deg_c = idFmgcFlexTemperature->get();
+  modelInputs.in.adcn_inputs.fms.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
+  modelInputs.in.adcn_inputs.fms.acceleration_alt_eo_ft = fmAccelerationAltitudeEngineOut->valueOr(0);
+  modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
+  modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
+  modelInputs.in.adcn_inputs.fqms = {};
+  modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
+  modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
+  modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];
+  modelInputs.in.adcn_inputs.eec_4 = fadecBusOutputs[3];
 
-  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || fcuDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
@@ -1513,17 +1598,17 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
   prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable,
                           simConnectInterface, primIndex == primDisabled && primGeneralLogicDisabled,
-                          primIndex == primDisabled && primFctlDisabled, primIndex == primDisabled && primFeDisabled);
+                          primIndex == primDisabled && primFctlDisabled, primIndex == primDisabled && primFeDisabled,
+                          primIndex == primDisabled && primFgDisabled);
 
   primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
   primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
   primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
-  idPrimApAuthorised[primIndex]->set(
-      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[primIndex].fctl.fe_status_word)->bitFromValueOr(11, true));
+  idPrimApEngaged[primIndex]->set(primsDiscreteOutputs[primIndex].ap_engaged);
+
   idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fctl_law_status_word));
-  idPrimFeStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fe_status_word));
 
   idPrimGammaA[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.gamma_a_deg));
   idPrimGammaT[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.gamma_t_deg));
@@ -1539,6 +1624,37 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   idPrimVMan[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.v_man_kn));
   idPrimVMax[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.v_max_kn));
   idPrimVFeNext[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.v_fe_next_kn));
+
+  idPrimPfdSpdTgt[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.pfd_spd_tgt_kts));
+  idPrimPfdShortTermMngdSpd[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.pfd_short_term_mngd_spd_kts));
+  idPrimSelectedSpd[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_spd_kts));
+  idPrimSelectedMach[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_mach_kts));
+  idPrimSelectedHdg[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_hdg_deg));
+  idPrimSelectedTrk[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_trk_deg));
+  idPrimSelectedAlt[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_alt_ft));
+  idPrimSelectedVs[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_vs_ft_min));
+  idPrimSelectedFpa[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.selected_fpa_deg));
+  idPrimPreselMach[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.preset_mach_from_fms));
+  idPrimPreselSpeed[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.preset_speed_from_fms_kts));
+  idPrimRwyHdgMemo[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.runway_hdg_memorized_deg));
+  idPrimRollFd1Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.roll_fd_command_1));
+  idPrimPitchFd1Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.pitch_fd_command_1));
+  idPrimYawFd1Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.yaw_fd_command_1));
+  idPrimRollFd2Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.roll_fd_command_2));
+  idPrimPitchFd2Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.pitch_fd_command_2));
+  idPrimYawFd2Command[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.yaw_fd_command_2));
+  idPrimDiscreteWord5[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_5));
+  idPrimDiscreteWord4[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_4));
+  idPrimFmAltConstraint[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.fm_alt_constraint_ft));
+  idPrimAtsDiscreteWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.ats_discrete_word));
+  idPrimAtsFmaDiscreteWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.ats_fma_discrete_word));
+  idPrimDiscreteWord3[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_3));
+  idPrimDiscreteWord1[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_1));
+  idPrimDiscreteWord2[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_2));
+  idPrimDiscreteWord6[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_6));
+  idPrimDiscreteWord7[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.discrete_word_7));
+  idPrimSpeedMarginHigh[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.high_target_speed_margin_kts));
+  idPrimSpeedMarginLow[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fg.low_target_speed_margin_kts));
 
   return true;
 }
@@ -1867,11 +1983,14 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   fcus[fcuIndex].modelInputs.in.sim_input.baro_setting_hpa =
       fcuIndex == 0 ? simInputAutopilot.baro_left_set : simInputAutopilot.baro_right_set;
 
-  fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = false;
-  fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = false;
-  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_1_healthy = false;
-  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_2_healthy = false;
-  fcus[fcuIndex].modelInputs.in.discrete_inputs.prim_3_healthy = false;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = idFcuSwitchedOff->get();
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = idFcuEisCpBackupActive[fcuIndex]->get();
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.selected_by_prim_1 =
+      fcuIndex == 0 ? primsDiscreteOutputs[0].fcu_1_select : primsDiscreteOutputs[0].fcu_2_select;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.selected_by_prim_2 =
+      fcuIndex == 0 ? primsDiscreteOutputs[1].fcu_1_select : primsDiscreteOutputs[1].fcu_2_select;
+  fcus[fcuIndex].modelInputs.in.discrete_inputs.selected_by_prim_3 =
+      fcuIndex == 0 ? primsDiscreteOutputs[2].fcu_1_select : primsDiscreteOutputs[2].fcu_2_select;
   fcus[fcuIndex].modelInputs.in.discrete_inputs.lights_test = idLightsTest->get();
   fcus[fcuIndex].modelInputs.in.discrete_inputs.pin_prog_qfe_avail = false;
 
@@ -1880,47 +1999,34 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   fcus[fcuIndex].modelInputs.in.discrete_inputs.afs_inputs = simConnectInterface.getFcuAfsPanelInputs();
   fcus[fcuIndex].modelInputs.in.discrete_inputs.afs_inputs.alt_increment_1000 = idFcuAfsPanelAltIncrement1000->get();
 
-  // fcu.modelInputs.in.bus_inputs.fmgc_1_bus = fmgcsBusOutputs[0].fmgc_a_bus;
-  // fcu.modelInputs.in.bus_inputs.fmgc_2_bus = fmgcsBusOutputs[1].fmgc_a_bus;
+  fcus[fcuIndex].modelInputs.in.bus_inputs.prim_1_bus = primsBusOutputs[0];
+  fcus[fcuIndex].modelInputs.in.bus_inputs.prim_2_bus = primsBusOutputs[1];
+  fcus[fcuIndex].modelInputs.in.bus_inputs.prim_3_bus = primsBusOutputs[2];
 
   base_fcu_discrete_outputs discreteOutputs = fcus[fcuIndex].getDiscreteOutputs();
 
   if (fcuDisabled == fcuIndex) {
     simConnectInterface.setClientDataFcuDiscretes(fcus[fcuIndex].modelInputs.in.discrete_inputs);
-    fcuBusOutputs = simConnectInterface.getClientDataFcuBusOutput();
+    fcuBusOutputs[fcuIndex] = simConnectInterface.getClientDataFcuBusOutput();
     discreteOutputs = simConnectInterface.getClientDataFcuDiscreteOutput();
   } else {
     fcus[fcuIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(fcuIndex == 0 ? Failures::Fcu1 : Failures::Fcu2),
                           fcuIndex == 0 ? idElecDcEssBusPowered->get() : idElecDc2BusPowered->get());
-    fcuBusOutputs = fcus[fcuIndex].getBusOutputs();
+    fcuBusOutputs[fcuIndex] = fcus[fcuIndex].getBusOutputs();
   }
 
-  fcuHealthy = discreteOutputs.fcu_healthy;
-
-  // if (fmgcDisabled != -1 || fadecDisabled != -1) {
-  //   simConnectInterface.setClientDataFcuBus(fcuBusOutputs);
-  // }
+  if (primDisabled != -1) {
+    simConnectInterface.setClientDataFcuBus(fcuBusOutputs[fcuIndex], fcuIndex);
+  }
 
   // idFcuHealthy->set(discreteOutputs.fcu_healthy);
 
-  // idFcuSelectedHeading->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_hdg_deg));
-  // idFcuSelectedAltitude->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_alt_ft));
-  // idFcuSelectedAirspeed->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_spd_kts));
-  // idFcuSelectedVerticalSpeed->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_vz_ft_min));
-  // idFcuSelectedTrack->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_trk_deg));
-  // idFcuSelectedFpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.selected_fpa_deg));
-  // idFcuAtsDiscreteWord->set(Arinc429Utils::toSimVar(fcuBusOutputs.ats_discrete_word));
-  // idFcuAtsFmaDiscreteWord->set(Arinc429Utils::toSimVar(fcuBusOutputs.ats_fma_discrete_word));
-  // idFcuEisLeftDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_1_left));
-  // idFcuEisLeftDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_2_left));
-  // idFcuEisLeftBaro->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_left_inhg));
-  // idFcuEisLeftBaroHpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_left_hpa));
-  // idFcuEisRightDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_1_right));
-  // idFcuEisRightDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.eis_discrete_word_2_right));
-  // idFcuEisRightBaro->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_right_inhg));
-  // idFcuEisRightBaroHpa->set(Arinc429Utils::toSimVar(fcuBusOutputs.baro_setting_right_hpa));
-  // idFcuDiscreteWord1->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_1));
-  // idFcuDiscreteWord2->set(Arinc429Utils::toSimVar(fcuBusOutputs.fcu_discrete_word_2));
+  idFcuEisDiscreteWord1[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].efis_discrete_word_1));
+  idFcuEisDiscreteWord2[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].efis_discrete_word_2));
+  idFcuEisBaro[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].baro_setting_inhg));
+  idFcuEisBaroHpa[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].baro_setting_hpa));
+
+  idFcuAfsDiscreteWord1[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].afs_discrete_word_1));
 
   base_fcu_efis_panel_outputs efisPanelOutputs = discreteOutputs.efis_outputs;
 
@@ -1947,66 +2053,38 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   idFcuEisDisplayBaroPresetVisible[fcuIndex]->set(efisPanelOutputs.baro_preset_visible);
   idFcuEisCpActive[fcuIndex]->set(efisPanelOutputs.efis_cp_active);
 
-  idFcuAfsPanelAp1LightOn->set(discreteOutputs.afs_outputs.ap_1_light_on);
-  idFcuAfsPanelAp2LightOn->set(discreteOutputs.afs_outputs.ap_2_light_on);
-  idFcuAfsPanelAthrLightOn->set(discreteOutputs.afs_outputs.athr_light_on);
-  idFcuAfsPanelLocLightOn->set(discreteOutputs.afs_outputs.loc_light_on);
-  idFcuAfsPanelAltLightOn->set(discreteOutputs.afs_outputs.alt_light_on);
-  idFcuAfsPanelApprLightOn->set(discreteOutputs.afs_outputs.appr_light_on);
+  return true;
+}
 
-  idFcuAfsDisplayTrkFpaMode->set(discreteOutputs.afs_outputs.trk_fpa_mode);
-  idFcuAfsDisplayMachMode->set(discreteOutputs.afs_outputs.mach_mode);
-  idFcuAfsDisplaySpdMachValue->set(discreteOutputs.afs_outputs.spd_mach_value);
-  idFcuAfsDisplaySpdMachDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes);
-  idFcuAfsDisplayHdgTrkValue->set(discreteOutputs.afs_outputs.hdg_trk_value);
-  idFcuAfsDisplayHdgTrkDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes);
-  idFcuAfsDisplayAltValue->set(discreteOutputs.afs_outputs.alt_value);
-  idFcuAfsDisplayVsFpaValue->set(discreteOutputs.afs_outputs.vs_fpa_value);
-  idFcuAfsDisplayVsFpaDashes->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+bool FlyByWireInterface::updateFcuAfsLvars() {
+  auto fcu1Afs = fcus[0].getDiscreteOutputs().afs_outputs;
+  auto fcu2Afs = fcus[1].getDiscreteOutputs().afs_outputs;
 
-  // Update AFS CP variables (Sim AP vars and legacy Lvars)
-  // The speed var comes from the FMGC, do a simple check of FMGC health to select the FMGC to use
-  /*simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_SPD_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
-                                   fmgcsBusOutputs[fmgcsDiscreteOutputs[0].fmgc_healthy ? 0 : 1].fmgc_a_bus.pfd_sel_spd_kts.Data, 0);
-  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_SPEED_SLOT_INDEX_SET, discreteOutputs.afs_outputs.spd_mach_managed ? 2 :
-  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimSpdDashes->set(discreteOutputs.afs_outputs.spd_mach_dashes ||
-  !discreteOutputs.fcu_healthy); idFcuShimSpdDot->set(discreteOutputs.afs_outputs.spd_mach_managed); if
-  (discreteOutputs.afs_outputs.spd_mach_dashes || !discreteOutputs.fcu_healthy) { idFcuShimSpdValue->set(-1.); } else {
-    idFcuShimSpdValue->set(discreteOutputs.afs_outputs.spd_mach_value);
-  }
+  bool fcu1Active = fcu1Afs.afs_cp_active;
 
-  idFcuShimTrkFpaActive->set(discreteOutputs.afs_outputs.trk_fpa_mode);
+  idFcuAfsCpActive->set(fcu1Afs.afs_cp_active || fcu2Afs.afs_cp_active);
 
-  simConnectInterface.sendEventEx1(SimConnectInterface::Events::HEADING_BUG_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
-                                   discreteOutputs.afs_outputs.hdg_trk_value, 1);
-  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_HEADING_SLOT_INDEX_SET, discreteOutputs.afs_outputs.hdg_trk_managed ? 2 :
-  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimHdgValue1->set( discreteOutputs.afs_outputs.hdg_trk_dashes ||
-  !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value); idFcuShimHdgValue2->set(
-      discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy ? -1 : discreteOutputs.afs_outputs.hdg_trk_value);
-  idFcuShimShowHdg->set(!discreteOutputs.afs_outputs.hdg_trk_dashes && discreteOutputs.fcu_healthy);
-  idFcuShimHdgDashes->set(discreteOutputs.afs_outputs.hdg_trk_dashes || !discreteOutputs.fcu_healthy);
-  idFcuShimHdgDot->set(discreteOutputs.afs_outputs.hdg_trk_managed);
+  idFcuAfsPanelAp1LightOn->set(fcu1Afs.ap_1_light_on || fcu2Afs.ap_1_light_on);
+  idFcuAfsPanelAp2LightOn->set(fcu1Afs.ap_2_light_on || fcu2Afs.ap_2_light_on);
+  idFcuAfsPanelFdLightOn->set(fcu1Afs.fd_light_on || fcu2Afs.fd_light_on);
+  idFcuAfsPanelAthrLightOn->set(fcu1Afs.athr_light_on || fcu2Afs.athr_light_on);
+  idFcuAfsPanelLocLightOn->set(fcu1Afs.loc_light_on || fcu2Afs.loc_light_on);
+  idFcuAfsPanelAltLightOn->set(fcu1Afs.alt_light_on || fcu2Afs.alt_light_on);
+  idFcuAfsPanelApprLightOn->set(fcu1Afs.appr_light_on || fcu2Afs.appr_light_on);
 
-  simConnectInterface.sendEventEx1(SimConnectInterface::Events::AP_ALT_VAR_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
-                                   discreteOutputs.afs_outputs.alt_value, 3);
-  simConnectInterface.sendEvent(SimConnectInterface::Events::AP_ALTITUDE_SLOT_INDEX_SET, discreteOutputs.afs_outputs.lvl_ch_managed ? 2 :
-  1, SIMCONNECT_GROUP_PRIORITY_STANDARD); idFcuShimAltManaged->set(discreteOutputs.afs_outputs.lvl_ch_managed);
+  auto selectedFcuAfs = fcu1Active ? fcu1Afs : fcu2Afs;
 
-  idFcuShimVsValue->set(discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
-  idFcuShimFpaValue->set(!discreteOutputs.afs_outputs.trk_fpa_mode ? 0 : discreteOutputs.afs_outputs.vs_fpa_value);
-  idFcuShimVsManaged->set(discreteOutputs.afs_outputs.vs_fpa_dashes);
+  idFcuAfsDisplayTrkFpaMode->set(selectedFcuAfs.trk_fpa_mode);
+  idFcuAfsDisplayMachMode->set(selectedFcuAfs.mach_mode);
+  idFcuAfsDisplayTrueMode->set(selectedFcuAfs.true_mode);
+  idFcuAfsDisplaySpdMachValue->set(selectedFcuAfs.spd_mach_value);
+  idFcuAfsDisplaySpdMachDashes->set(selectedFcuAfs.spd_mach_dashes);
+  idFcuAfsDisplayHdgTrkValue->set(selectedFcuAfs.hdg_trk_value);
+  idFcuAfsDisplayHdgTrkDashes->set(selectedFcuAfs.hdg_trk_dashes);
+  idFcuAfsDisplayAltValue->set(selectedFcuAfs.alt_value);
+  idFcuAfsDisplayVsFpaValue->set(selectedFcuAfs.vs_fpa_value);
+  idFcuAfsDisplayVsFpaDashes->set(selectedFcuAfs.vs_fpa_dashes);
 
-  // Shim Hevents
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 13, false)) {
-    execute_calculator_code("(>H:A320_Neo_CDU_AP_DEC_ALT)", nullptr, nullptr, nullptr);
-  }
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 17, false)) {
-    execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
-  }
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.fcu_discrete_word_1, 18, false)) {
-    execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
-  }
-*/
   return true;
 }
 
@@ -2183,184 +2261,119 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateAutothrust(double sampleTime) {
+bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
   // get sim data
   SimData simData = simConnectInterface.getSimData();
 
   // set ground / flight for throttle handling
   if (idLgciuLeftMainGearCompressed[0]->get() || idLgciuLeftMainGearCompressed[1]->get() || idLgciuRightMainGearCompressed[0]->get() ||
       idLgciuRightMainGearCompressed[1]->get()) {
-    throttleAxis[1]->setOnGround();
-    throttleAxis[2]->setOnGround();
+    throttleAxis[fadecIndex]->setOnGround();
   } else {
-    throttleAxis[1]->setInFlight();
-    throttleAxis[2]->setInFlight();
+    throttleAxis[fadecIndex]->setInFlight();
   }
-  throttleAxis[0]->setInFlight();
-  throttleAxis[3]->setInFlight();
 
   // set position for 3D animation
-  idThrottlePosition3d_1->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_1->get()));
-  idThrottlePosition3d_2->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_2->get()));
-  idThrottlePosition3d_3->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_3->get()));
-  idThrottlePosition3d_4->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_4->get()));
+  idThrottlePosition3d[fadecIndex]->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle[fadecIndex]->get()));
 
-  real32_T v_ls = 0, v_max = 0;
-  if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[0].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[0].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[1].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  } else if (reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-    v_ls = primsBusOutputs[2].fe.v_ls_kn.Data;
-    v_max = primsBusOutputs[1].fe.v_max_kn.Data;
-  }
+  // update reverser thrust limit
+  idAutothrustThrustLimitREV->set(idAutothrustThrustLimitTOGA->get() * autothrustThrustLimitReversePercentageToga);
 
-  autoThrustInput.in.time.dt = sampleTime;
-  autoThrustInput.in.time.simulation_time = simData.simulationTime;
+  fadecInputs[fadecIndex].in.time.dt = sampleTime;
+  fadecInputs[fadecIndex].in.time.simulation_time = simData.simulationTime;
 
-  autoThrustInput.in.data.nz_g = simData.nz_g;
-  autoThrustInput.in.data.Theta_deg = simData.Theta_deg;
-  autoThrustInput.in.data.Phi_deg = simData.Phi_deg;
-  autoThrustInput.in.data.V_ias_kn = simData.V_ias_kn;
-  autoThrustInput.in.data.V_tas_kn = simData.V_tas_kn;
-  autoThrustInput.in.data.V_mach = simData.V_mach;
-  autoThrustInput.in.data.V_gnd_kn = simData.V_gnd_kn;
-  autoThrustInput.in.data.alpha_deg = simData.alpha_deg;
-  autoThrustInput.in.data.H_ft = simData.H_ft;
-  autoThrustInput.in.data.H_ind_ft = simData.H_ind_ft;
-  autoThrustInput.in.data.H_radio_ft = simData.H_radio_ft;
-  autoThrustInput.in.data.H_dot_fpm = simData.H_dot_fpm;
-  autoThrustInput.in.data.bx_m_s2 = simData.bx_m_s2;
-  autoThrustInput.in.data.by_m_s2 = simData.by_m_s2;
-  autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
-  autoThrustInput.in.data.Psi_magnetic_deg = simData.Psi_magnetic_deg;
-  autoThrustInput.in.data.Psi_magnetic_track_deg = simData.Psi_magnetic_track_deg;
-  autoThrustInput.in.data.gear_strut_compression_1 =
-      std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
-  autoThrustInput.in.data.gear_strut_compression_2 =
-      std::max(simData.contact_point_compression_2 * 0.5 + 0.5, simData.contact_point_compression_4 * 0.5 + 0.5);
-  autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
-  autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
-  autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
-  autoThrustInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
-  autoThrustInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
-  autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
-  autoThrustInput.in.data.commanded_engine_N1_2_percent = simData.commanded_engine_N1_2_percent;
-  autoThrustInput.in.data.commanded_engine_N1_3_percent = simData.commanded_engine_N1_3_percent;
-  autoThrustInput.in.data.commanded_engine_N1_4_percent = simData.commanded_engine_N1_4_percent;
-  autoThrustInput.in.data.engine_N1_1_percent = simData.engine_N1_1_percent;
-  autoThrustInput.in.data.engine_N1_2_percent = simData.engine_N1_2_percent;
-  autoThrustInput.in.data.engine_N1_3_percent = simData.engine_N1_3_percent;
-  autoThrustInput.in.data.engine_N1_4_percent = simData.engine_N1_4_percent;
-  autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
-  autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
-  autoThrustInput.in.data.corrected_engine_N1_3_percent = simData.corrected_engine_N1_3_percent;
-  autoThrustInput.in.data.corrected_engine_N1_4_percent = simData.corrected_engine_N1_4_percent;
-  autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
-  autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
-  autoThrustInput.in.data.ambient_density_kg_per_m3 = simData.ambient_density_kg_per_m3;
+  fadecInputs[fadecIndex].in.data.V_ias_kn = simData.V_ias_kn;
+  fadecInputs[fadecIndex].in.data.V_tas_kn = simData.V_tas_kn;
+  fadecInputs[fadecIndex].in.data.V_mach = simData.V_mach;
+  fadecInputs[fadecIndex].in.data.V_gnd_kn = simData.V_gnd_kn;
+  fadecInputs[fadecIndex].in.data.alpha_deg = simData.alpha_deg;
+  fadecInputs[fadecIndex].in.data.H_ft = simData.H_ft;
+  fadecInputs[fadecIndex].in.data.H_ind_ft = simData.H_ind_ft;
+  fadecInputs[fadecIndex].in.data.H_radio_ft = simData.H_radio_ft;
+  fadecInputs[fadecIndex].in.data.H_dot_fpm = simData.H_dot_fpm;
+  fadecInputs[fadecIndex].in.data.on_ground =
+      idLgciuLeftMainGearCompressed[fadecIndex]->get() && idLgciuRightMainGearCompressed[fadecIndex]->get();
+  fadecInputs[fadecIndex].in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
+  fadecInputs[fadecIndex].in.data.is_engine_operative = fadecIndex == 0 ? simData.engine_combustion_1 : simData.engine_combustion_2;
+  fadecInputs[fadecIndex].in.data.commanded_engine_N1_percent =
+      fadecIndex == 0 ? simData.commanded_engine_N1_1_percent + simData.engine_N1_1_percent - simData.corrected_engine_N1_1_percent
+                      : simData.commanded_engine_N1_2_percent + simData.engine_N1_2_percent - simData.corrected_engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.engine_N2_percent = 0;
+  fadecInputs[fadecIndex].in.data.engine_N1_percent = fadecIndex == 0 ? simData.engine_N1_1_percent : simData.engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.TAT_degC = simData.total_air_temperature_celsius;
+  fadecInputs[fadecIndex].in.data.OAT_degC = simData.ambient_temperature_celsius;
 
-  autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
-  autoThrustInput.in.input.ATHR_disconnect =
+  fadecInputs[fadecIndex].in.input.ATHR_disconnect =
       simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
-  autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
-  autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
-  autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
-  autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
-  autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-  autoThrustInput.in.input.V_LS_kn = v_ls;
-  autoThrustInput.in.input.V_MAX_kn = v_max;
-  autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
-  autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
-  autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
-  autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
-  autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
-  autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
-  autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
-  autoThrustInput.in.input.mode_requested = 0;
-  autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
-  autoThrustInput.in.input.alpha_floor_condition =
-      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[0].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[1].fe.discrete_word_1)->bitFromValueOr(11, false) ||
-      reinterpret_cast<Arinc429DiscreteWord*>(&primsBusOutputs[2].fe.discrete_word_1)->bitFromValueOr(11, false);
-  autoThrustInput.in.input.is_approach_mode_active = false;
-  autoThrustInput.in.input.is_SRS_TO_mode_active = false;
-  autoThrustInput.in.input.is_SRS_GA_mode_active = false;
-  autoThrustInput.in.input.is_LAND_mode_active = false;
-  autoThrustInput.in.input.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
-  autoThrustInput.in.input.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
-  autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
-  autoThrustInput.in.input.is_alt_soft_mode_active = false;
-  autoThrustInput.in.input.is_anti_ice_wing_active = idWingAntiIce->get() == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_3_active = simData.engineAntiIce_3 == 1;
-  autoThrustInput.in.input.is_anti_ice_engine_4_active = simData.engineAntiIce_4 == 1;
-  autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
-  autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-  autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
-  autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
-  autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
-  autoThrustInput.in.input.target_TCAS_RA_rate_fpm = 0;
+  fadecInputs[fadecIndex].in.input.TLA_deg = thrustLeverAngle[fadecIndex]->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
+  fadecInputs[fadecIndex].in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
+  fadecInputs[fadecIndex].in.input.is_anti_ice_active = simData.engineAntiIce_1 == 1;
+  fadecInputs[fadecIndex].in.input.is_air_conditioning_active = idAirConditioningPack_1->get();
+  fadecInputs[fadecIndex].in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
 
-  // step the model -------------------------------------------------------------------------------------------------
-  autoThrust.setExternalInputs(&autoThrustInput);
-  autoThrust.step();
+  fadecInputs[fadecIndex].in.prim_1 = primsBusOutputs[0];
+  fadecInputs[fadecIndex].in.prim_2 = primsBusOutputs[1];
+  fadecInputs[fadecIndex].in.prim_3 = primsBusOutputs[2];
 
-  // get output from model ------------------------------------------------------------------------------------------
-  autoThrustOutput = autoThrust.getExternalOutputs().out.output;
+  if (fadecIndex == fadecDisabled) {
+    simConnectInterface.setClientDataFadecData(fadecInputs[fadecIndex].in.data);
+    simConnectInterface.setClientDataFadecInput(fadecInputs[fadecIndex].in.input);
 
-  // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
-  idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
-
-  // write output to sim --------------------------------------------------------------------------------------------
-  SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
-                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
-                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_3_pos),
-                                           fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_4_pos),
-                                           autoThrustOutput.sim_thrust_mode_1,
-                                           autoThrustOutput.sim_thrust_mode_2,
-                                           autoThrustOutput.sim_thrust_mode_3,
-                                           autoThrustOutput.sim_thrust_mode_4};
-  if (!simConnectInterface.sendData(simOutputThrottles)) {
-    std::cout << "WASM: Write data failed!" << std::endl;
-    return false;
-  }
-
-  // update local variables
-  idAutothrustN1_TLA_1->set(autoThrustOutput.N1_TLA_1_percent);
-  idAutothrustN1_TLA_2->set(autoThrustOutput.N1_TLA_2_percent);
-  idAutothrustN1_TLA_3->set(autoThrustOutput.N1_TLA_3_percent);
-  idAutothrustN1_TLA_4->set(autoThrustOutput.N1_TLA_4_percent);
-  idAutothrustReverse_1->set(autoThrustOutput.is_in_reverse_1);
-  idAutothrustReverse_2->set(autoThrustOutput.is_in_reverse_2);
-  idAutothrustReverse_3->set(autoThrustOutput.is_in_reverse_3);
-  idAutothrustReverse_4->set(autoThrustOutput.is_in_reverse_4);
-  idAutothrustThrustLimitType->set(static_cast<double>(autoThrustOutput.thrust_limit_type));
-  idAutothrustThrustLimit->set(autoThrustOutput.thrust_limit_percent);
-  idAutothrustN1_c_1->set(autoThrustOutput.N1_c_1_percent);
-  idAutothrustN1_c_2->set(autoThrustOutput.N1_c_2_percent);
-  idAutothrustN1_c_3->set(autoThrustOutput.N1_c_3_percent);
-  idAutothrustN1_c_4->set(autoThrustOutput.N1_c_4_percent);
-  idAutothrustStatus->set(static_cast<double>(autoThrustOutput.status));
-  idAutothrustMode->set(static_cast<double>(autoThrustOutput.mode));
-  idAutothrustModeMessage->set(static_cast<double>(autoThrustOutput.mode_message));
-
-  // update warnings
-  auto fwcFlightPhase = idFwcFlightPhase->get();
-  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 5 || fwcFlightPhase == 10 ||
-      fwcFlightPhase == 11) {
-    idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
-    idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
+    fadecOutputs[fadecIndex] = simConnectInterface.getClientDataFadecOutput();
   } else {
-    idAutothrustThrustLeverWarningFlex->set(0);
-    idAutothrustThrustLeverWarningToga->set(0);
+    // step the model -------------------------------------------------------------------------------------------------
+    fadecs[fadecIndex].setExternalInputs(&fadecInputs[fadecIndex]);
+    fadecs[fadecIndex].step();
+
+    // get output from model ------------------------------------------------------------------------------------------
+    fadecOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.output;
+    fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
 
-  // reset button state
-  simConnectInterface.resetSimInputThrottles();
+  if (primDisabled != -1) {
+    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
+  }
+
+  // write output to sim (only after both FADECs have been updated) -------------------------------------------------
+  if (fadecIndex == 1) {
+    SimOutputThrottles simOutputThrottles = {std::fmin(99.9999999999999, fadecOutputs[0].sim_throttle_lever_pos),
+                                             std::fmin(99.9999999999999, fadecOutputs[1].sim_throttle_lever_pos),
+                                             std::fmin(99.9999999999999, fadecOutputs[2].sim_throttle_lever_pos),
+                                             std::fmin(99.9999999999999, fadecOutputs[3].sim_throttle_lever_pos),
+                                             fadecOutputs[0].sim_thrust_mode,
+                                             fadecOutputs[1].sim_thrust_mode,
+                                             fadecOutputs[2].sim_thrust_mode,
+                                             fadecOutputs[3].sim_thrust_mode};
+    if (!simConnectInterface.sendData(simOutputThrottles)) {
+      std::cout << "WASM: Write data failed!" << std::endl;
+      return false;
+    }
+
+    // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
+    idAutothrustDisabled->set(fadecs[0].getExternalOutputs().out.data_computed.ATHR_disabled ||
+                              fadecs[1].getExternalOutputs().out.data_computed.ATHR_disabled);
+
+    // update local variables
+    idAutothrustN1_TLA[0]->set(fadecOutputs[0].N1_TLA_percent);
+    idAutothrustN1_TLA[1]->set(fadecOutputs[1].N1_TLA_percent);
+    idAutothrustN1_TLA[2]->set(fadecOutputs[2].N1_TLA_percent);
+    idAutothrustN1_TLA[3]->set(fadecOutputs[3].N1_TLA_percent);
+    idAutothrustReverse[0]->set(fadecOutputs[0].is_in_reverse);
+    idAutothrustReverse[1]->set(fadecOutputs[1].is_in_reverse);
+    idAutothrustReverse[2]->set(fadecOutputs[2].is_in_reverse);
+    idAutothrustReverse[3]->set(fadecOutputs[3].is_in_reverse);
+    idAutothrustThrustLimitType->set(static_cast<int32_t>(fadecOutputs[0].thrust_limit_type));
+    idAutothrustThrustLimit->set(fadecOutputs[0].thrust_limit_percent);
+    idAutothrustN1_c[0]->set(fadecOutputs[0].N1_c_percent);
+    idAutothrustN1_c[1]->set(fadecOutputs[1].N1_c_percent);
+    idAutothrustN1_c[2]->set(fadecOutputs[2].N1_c_percent);
+    idAutothrustN1_c[3]->set(fadecOutputs[3].N1_c_percent);
+  }
 
   // success
   return true;
