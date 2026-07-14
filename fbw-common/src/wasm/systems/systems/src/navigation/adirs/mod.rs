@@ -19,10 +19,7 @@ impl From<f64> for AirDataAttHdgSwitchingKnobPosition {
             0 => AirDataAttHdgSwitchingKnobPosition::CaptOn3,
             1 => AirDataAttHdgSwitchingKnobPosition::Norm,
             2 => AirDataAttHdgSwitchingKnobPosition::FoOn3,
-            i => panic!(
-                "Cannot convert from {} to AirDataAttHdgSwitchingKnobPosition.",
-                i
-            ),
+            _ => AirDataAttHdgSwitchingKnobPosition::Norm,
         }
     }
 }
