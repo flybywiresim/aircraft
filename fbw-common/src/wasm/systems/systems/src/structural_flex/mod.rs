@@ -5,7 +5,9 @@ pub mod wing_flex;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::simulation::{SurfaceTypeMsfs, UpdateContext};
 
-use crate::shared::{random_from_normal_distribution, random_from_range};
+use crate::shared::{
+    fallback_on_unexpected_discrete, random_from_normal_distribution, random_from_range,
+};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -62,7 +64,7 @@ fn to_surface_vibration_coeff(surface: SurfaceTypeMsfs) -> f64 {
         SurfaceTypeMsfs::Tarmac => 1.2,
         SurfaceTypeMsfs::Asphalt => 1.,
         SurfaceTypeMsfs::Macadam => 1.5,
-        _ => 3.,
+        unexpected => fallback_on_unexpected_discrete("SurfaceTypeMsfs", unexpected as u64, 3.),
     }
 }
 
