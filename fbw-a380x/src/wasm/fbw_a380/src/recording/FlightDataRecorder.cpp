@@ -29,7 +29,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 const AircraftSpecificData& aircraftSpecificData,
                                 Prim (&prims)[3],
                                 Sec (&secs)[3],
-                                Fac (&facs)[2],
                                 const AutopilotStateMachine& autopilotStateMachine,
                                 const AutopilotLawsModelClass& autopilotLaws,
                                 const Autothrust& autoThrust,
@@ -56,11 +55,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
   // write SEC data
   for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
     writeSec(secs[i]);
-  }
-
-  // write Pseudo FACs data
-  for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
-    writeFac(facs[i]);
   }
 
   // write AP state machine data
@@ -94,15 +88,6 @@ void FlightDataRecorder::writeSec(Sec& sec) {
   auto discrete_outputs = sec.getDiscreteOutputs();
   fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
   auto analog_outputs = sec.getAnalogOutputs();
-  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
-}
-
-void FlightDataRecorder::writeFac(Fac& fac) {
-  auto bus_outputs = fac.getBusOutputs();
-  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
-  auto discrete_outputs = fac.getDiscreteOutputs();
-  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
-  auto analog_outputs = fac.getAnalogOutputs();
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 
