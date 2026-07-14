@@ -1643,12 +1643,12 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.engine_1_state = reader.read_discrete_or_fallback(
             &self.engine_1_state_id,
-            "EngineState",
+            "EngineState1",
             EngineState::Off,
         );
         self.engine_2_state = reader.read_discrete_or_fallback(
             &self.engine_2_state_id,
-            "EngineState",
+            "EngineState2",
             EngineState::Off,
         );
         self.engine_mode_selector1_position = reader.read_discrete_or_fallback(
