@@ -2,6 +2,9 @@ use std::cell::RefCell;
 
 use rustc_hash::FxHashSet;
 
+type OptionalFunction = Option<Box<dyn Fn(&str) + 'static>>;
+type MutableOptionalFunction = RefCell<OptionalFunction>;
+
 thread_local! {
 
     // log context and value pairs of unexpected values to avoid flooding the log
@@ -10,7 +13,7 @@ thread_local! {
 
 
     // as this sits in the sim agnostic module the msfs layer can register the commbus reporter here
-    static DIAGNOSTICS_REPORTER: RefCell<Option<Box<dyn Fn(&str)>>> = const { RefCell::new(None) };
+    static DIAGNOSTICS_REPORTER: MutableOptionalFunction = const { RefCell::new(None) };
 }
 
 pub fn set_diagnostics_reporter(reporter: impl Fn(&str) + 'static) {
@@ -18,7 +21,7 @@ pub fn set_diagnostics_reporter(reporter: impl Fn(&str) + 'static) {
 }
 
 fn report_diagnostic(message: &str) {
-    DIAGNOSTICS_REPORTER.with(|reporter: &RefCell<Option<Box<dyn Fn(&str) + 'static>>>| {
+    DIAGNOSTICS_REPORTER.with(|reporter: &MutableOptionalFunction| {
         match reporter.borrow().as_ref() {
             Some(reporter) => reporter(message),
             None => println!("{message}"),
