@@ -266,9 +266,12 @@ pub(crate) struct A380AdirsElectricalHarness {
 impl A380AdirsElectricalHarness {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            adiru_1_electrical_harness: A380AdiruElectricalHarness::new(context, 1),
-            adiru_2_electrical_harness: A380AdiruElectricalHarness::new(context, 2),
-            adiru_3_electrical_harness: A380AdiruElectricalHarness::new(context, 3),
+            adiru_1_electrical_harness: A380AdiruElectricalHarness::new(context, AdiruNumber::One),
+            adiru_2_electrical_harness: A380AdiruElectricalHarness::new(context, AdiruNumber::Two),
+            adiru_3_electrical_harness: A380AdiruElectricalHarness::new(
+                context,
+                AdiruNumber::Three,
+            ),
 
             probes_1_3_switching_relay_closed: false,
 
@@ -440,7 +443,7 @@ pub(crate) struct A380AdiruElectricalHarness {
     ir_discrete_input: IrDiscreteInputs,
     adr_discrete_input: AdrDiscreteInputs,
 
-    num: usize,
+    num: AdiruNumber,
 
     // Powersupply
     relay_time_delay_opening: ConfirmationNode,
@@ -487,7 +490,7 @@ pub(crate) struct A380AdiruElectricalHarness {
 impl A380AdiruElectricalHarness {
     const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_mins(5);
 
-    pub fn new(context: &mut InitContext, num: usize) -> Self {
+    pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
         let is_powered = context.has_engines_running();
 
         let mut result = Self {
@@ -498,31 +501,27 @@ impl A380AdiruElectricalHarness {
 
             relay_time_delay_opening: ConfirmationNode::new_falling(Self::RELAY_OPENING_TIME_DELAY),
             primary_powersupply: match num {
-                1 => ElectricalBusType::AlternatingCurrentEssential,
-                2 => ElectricalBusType::AlternatingCurrent(4),
-                3 => ElectricalBusType::AlternatingCurrentEssential,
-                _ => panic!("ADIRU Harness: Impossible installation position"),
+                AdiruNumber::One => ElectricalBusType::AlternatingCurrentEssential,
+                AdiruNumber::Two => ElectricalBusType::AlternatingCurrent(4),
+                AdiruNumber::Three => ElectricalBusType::AlternatingCurrentEssential,
             },
             primary_powered: is_powered,
             primary_powersupply_2: match num {
-                1 => None,
-                2 => None,
-                3 => Some(ElectricalBusType::AlternatingCurrent(1)),
-                _ => panic!("ADIRU Harness: Impossible installation position"),
+                AdiruNumber::One => None,
+                AdiruNumber::Two => None,
+                AdiruNumber::Three => Some(ElectricalBusType::AlternatingCurrent(1)),
             },
             primary_2_powered: is_powered,
 
             backup_powersupply: match num {
-                1 => ElectricalBusType::DirectCurrentHot(1),
-                2 => ElectricalBusType::DirectCurrent(2),
-                3 => ElectricalBusType::DirectCurrentHot(3),
-                _ => panic!("ADIRU Harness: Impossible installation position"),
+                AdiruNumber::One => ElectricalBusType::DirectCurrentHot(1),
+                AdiruNumber::Two => ElectricalBusType::DirectCurrent(2),
+                AdiruNumber::Three => ElectricalBusType::DirectCurrentHot(3),
             },
             backup_powersupply_relay_switching: match num {
-                1 => Some(ElectricalBusType::DirectCurrentEssential),
-                2 => None,
-                3 => Some(ElectricalBusType::DirectCurrentEssential),
-                _ => panic!("ADIRU Harness: Impossible installation position"),
+                AdiruNumber::One => Some(ElectricalBusType::DirectCurrentEssential),
+                AdiruNumber::Two => None,
+                AdiruNumber::Three => Some(ElectricalBusType::DirectCurrentEssential),
             },
             backup_powered: is_powered,
             backup_powersupply_relay_switching_powered: is_powered,
@@ -534,20 +533,21 @@ impl A380AdiruElectricalHarness {
             air_data_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition::Norm,
 
             adr_off_command_id: context
-                .get_identifier(format!("OVHD_ADIRS_ADR_{}_ON_OFF_COMMAND", num)),
+                .get_identifier(format!("OVHD_ADIRS_ADR_{}_ON_OFF_COMMAND", num as usize)),
             ir_off_command_id: context
-                .get_identifier(format!("OVHD_ADIRS_IR_{}_ON_OFF_COMMAND", num)),
+                .get_identifier(format!("OVHD_ADIRS_IR_{}_ON_OFF_COMMAND", num as usize)),
             mode_selector_position_id: context
-                .get_identifier(format!("OVHD_ADIRS_IR_{}_MODE_SELECTOR_KNOB", num)),
+                .get_identifier(format!("OVHD_ADIRS_IR_{}_MODE_SELECTOR_KNOB", num as usize)),
 
-            adr_off_light_id: context.get_identifier(format!("OVHD_ADIRS_ADR_{}_OFF", num)),
-            ir_off_light_id: context.get_identifier(format!("OVHD_ADIRS_IR_{}_OFF", num)),
+            adr_off_light_id: context
+                .get_identifier(format!("OVHD_ADIRS_ADR_{}_OFF", num as usize)),
+            ir_off_light_id: context.get_identifier(format!("OVHD_ADIRS_IR_{}_OFF", num as usize)),
             adr_fault_warn_id: context
-                .get_identifier(format!("ADIRS_ADR_{}_FAULT_WARN_DISCRETE", num)),
+                .get_identifier(format!("ADIRS_ADR_{}_FAULT_WARN_DISCRETE", num as usize)),
             ir_fault_warn_id: context
-                .get_identifier(format!("ADIRS_IR_{}_FAULT_WARN_DISCRETE", num)),
+                .get_identifier(format!("ADIRS_IR_{}_FAULT_WARN_DISCRETE", num as usize)),
             ir_align_discrete_id: context
-                .get_identifier(format!("ADIRS_IR_{}_ALIGN_DISCRETE", num)),
+                .get_identifier(format!("ADIRS_IR_{}_ALIGN_DISCRETE", num as usize)),
 
             adr_off_light: false,
             ir_off_light: false,
@@ -599,25 +599,27 @@ impl A380AdiruElectricalHarness {
         adiru.set_powered(ac_powered, self.backup_powered && backup_relay_closed);
 
         // Update IR DADS and GPS input discretes
-        self.ir_discrete_input.auto_dads_select = if self.num == 1 || self.num == 2 {
-            // IR 1 and 2 always have AUTO DADS SELECT grounded.
-            true
-        } else {
-            // IR 3 has AUTO DADS SELECT grounded only if IR SWTG is NORM, or if
-            // ADR and IR SWTG is on the same position.
-            self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::Norm
-                || self.att_hdg_swtg_knob_position == self.air_data_swtg_knob_position
-        };
+        self.ir_discrete_input.auto_dads_select =
+            if self.num == AdiruNumber::One || self.num == AdiruNumber::Two {
+                // IR 1 and 2 always have AUTO DADS SELECT grounded.
+                true
+            } else {
+                // IR 3 has AUTO DADS SELECT grounded only if IR SWTG is NORM, or if
+                // ADR and IR SWTG is on the same position.
+                self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::Norm
+                    || self.att_hdg_swtg_knob_position == self.air_data_swtg_knob_position
+            };
 
-        self.ir_discrete_input.manual_dads_select = if self.num == 1 || self.num == 2 {
-            // IR 1 and 2 are irrelevant since AUTO DADS SELECT is grounded.
-            false
-        } else {
-            // Open: Input port 1 is used, Grounded: Input port 2 is used (if AUTO DADS is Open)
-            // MANUAL DADS SELECT is open unless IR SWTG is FO, and ADR SWTG is NORM or CAPT
-            self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::FoOn3
-                && self.air_data_swtg_knob_position != AirDataAttHdgSwitchingKnobPosition::FoOn3
-        };
+        self.ir_discrete_input.manual_dads_select =
+            if self.num == AdiruNumber::One || self.num == AdiruNumber::Two {
+                // IR 1 and 2 are irrelevant since AUTO DADS SELECT is grounded.
+                false
+            } else {
+                // Open: Input port 1 is used, Grounded: Input port 2 is used (if AUTO DADS is Open)
+                // MANUAL DADS SELECT is open unless IR SWTG is FO, and ADR SWTG is NORM or CAPT
+                self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::FoOn3
+                    && self.air_data_swtg_knob_position != AirDataAttHdgSwitchingKnobPosition::FoOn3
+            };
     }
 
     pub fn update_after_adirus(
