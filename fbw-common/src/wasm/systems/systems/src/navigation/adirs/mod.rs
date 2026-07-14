@@ -2,10 +2,45 @@ use crate::{
     shared::arinc429::Arinc429Word,
     simulation::{Read, Reader, Write, Writer},
 };
+use std::array::IntoIter;
 use uom::si::f64::*;
 
 pub mod air_data_sensors;
 pub mod hw_block3_adiru;
+
+#[derive(Clone, Copy, PartialEq, Debug, Eq, Hash, Default)]
+pub enum AdiruNumber {
+    #[default]
+    One = 1,
+    Two,
+    Three,
+}
+impl AdiruNumber {
+    pub fn into_iter() -> IntoIter<AdiruNumber, 3> {
+        [AdiruNumber::One, AdiruNumber::Two, AdiruNumber::Three].into_iter()
+    }
+}
+impl TryFrom<usize> for AdiruNumber {
+    type Error = usize;
+
+    fn try_from(value: usize) -> Result<Self, usize> {
+        match value {
+            1 => Ok(Self::One),
+            2 => Ok(Self::Two),
+            3 => Ok(Self::Three),
+            i => Err(i),
+        }
+    }
+}
+impl From<AdiruNumber> for usize {
+    fn from(value: AdiruNumber) -> Self {
+        match value {
+            AdiruNumber::One => 1,
+            AdiruNumber::Two => 2,
+            AdiruNumber::Three => 3,
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AirDataAttHdgSwitchingKnobPosition {
