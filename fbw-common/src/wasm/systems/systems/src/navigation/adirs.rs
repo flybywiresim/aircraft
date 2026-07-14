@@ -212,6 +212,7 @@ impl TryFrom<f64> for InertialReferenceMode {
 
     fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
+            0 => Ok(InertialReferenceMode::Off),
             1 => Ok(InertialReferenceMode::Navigation),
             2 => Ok(InertialReferenceMode::Attitude),
             i => Err(i),
