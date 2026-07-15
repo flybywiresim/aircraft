@@ -93,7 +93,10 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
           <path
             d="m0,0 l6,8 l-6,8 l-6,-8 z"
             class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} Fill`)}
-            transform={this.rudderTrim.map((rudderTrim) => `translate(${deflectionToXOffset(-rudderTrim)} 0)`)}
+            transform={this.rudderTrim.map((rudderTrim) => `translate(${deflectionToXOffset(-rudderTrim.value)} 0)`)}
+            visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
+              deflectionInfoValid ? 'visible' : 'hidden',
+            )}
           />
 
           <text
@@ -110,6 +113,9 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
             x={159}
             y={17}
             class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F22 EndAlign`)}
+            visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
+              deflectionInfoValid ? 'visible' : 'hidden',
+            )}
           >
             {this.rudderTrim.map((rudderTrim) => Math.abs(rudderTrim.valueOr(0)).toFixed(1).padStart(4, '\xa0'))}
           </text>
