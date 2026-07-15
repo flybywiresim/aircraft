@@ -31,7 +31,9 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
     (thsPositionRadians) => thsPositionRadians * MathUtils.RADIANS_TO_DEGREES,
   );
 
-  private readonly thsPositionSplit = this.thsPosition.map((thsPosition) => thsPosition.toFixed(1).split('.'));
+  private readonly thsPositionSplit = this.thsPosition.map((thsPosition) =>
+    Math.abs(thsPosition).toFixed(1).split('.'),
+  );
 
   private readonly thsJam = Subject.create(false);
 
@@ -66,14 +68,19 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
   render() {
     return (
       <g id="ths" transform={`translate(${this.props.x} ${this.props.y})`}>
+        <path class="White SW4 LineRound" d="m0,0 v119 M-10,0 h20 M-10,118 h20 M-10,98 h20" />
         <path
-          class={this.hydraulicAvailable.map((hydraulicAvailable) =>
-            hydraulicAvailable ? 'Green SW2 LineRound LineJoinRound' : ' Green SW2 LineRound LineJoinRound',
-          )}
+          class={{
+            SW2: true,
+            LineRound: true,
+            LineJoinRound: true,
+            NoFill: true,
+            Green: this.hydraulicAvailable,
+            Amber: this.hydraulicAvailable.map(SubscribableMapFunctions.not()),
+          }}
           d="m-5,98 l-21,-11 v23 l21,-11 z"
           transform={this.thsPosition.map((thsPosition) => `translate (0 ${-thsPosition * 10})`)}
         />
-        <path class="White SW4 LineRound" d="m0,0 v119 M-10,0 h20 M-10,118 h20 M-10,98 h20" />
 
         <text x={57} y={-6} class={this.pitchTrimTitleClass}>
           PITCH
