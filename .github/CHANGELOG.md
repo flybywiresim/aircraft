@@ -53,6 +53,7 @@
 1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
 1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
+1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
