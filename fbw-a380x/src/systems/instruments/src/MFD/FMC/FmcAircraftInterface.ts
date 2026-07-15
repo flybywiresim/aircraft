@@ -47,6 +47,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -243,15 +244,13 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
-  private readonly fcuEis2DiscreteWordLeft = Arinc429Register.empty();
-  private readonly fcuEis2DiscreteWordRight = Arinc429Register.empty();
-  private readonly fcuEis2DiscreteWordLeftVar = RegisteredSimVar.create<number>(
-    'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2',
-    SimVarValueType.Enum,
+  private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
+    Arinc429Register.empty().rawWord,
   );
-  private readonly fcuEis2DiscreteWordRightVar = RegisteredSimVar.create<number>(
-    'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_2',
-    SimVarValueType.Enum,
+  private readonly fcuRightDiscreteWord1Right = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_right'),
+    Arinc429Register.empty().rawWord,
   );
 
   constructor(
@@ -2275,9 +2274,9 @@ export class FmcAircraftInterface {
 
   isInchesSelectedOnFcu(side: EfisSide): boolean {
     if (side == 'L') {
-      return this.fcuEis2DiscreteWordLeft.set(this.fcuEis2DiscreteWordLeftVar.get()).bitValueOr(11, false);
+      return this.fcuLeftDiscreteWord1Left.get().bitValueOr(11, false);
     } else {
-      return this.fcuEis2DiscreteWordRight.set(this.fcuEis2DiscreteWordRightVar.get()).bitValueOr(11, false);
+      return this.fcuRightDiscreteWord1Right.get().bitValueOr(11, false);
     }
   }
 }
