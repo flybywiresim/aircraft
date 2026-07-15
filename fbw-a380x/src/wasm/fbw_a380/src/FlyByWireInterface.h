@@ -10,7 +10,6 @@
 #include "RateLimiter.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
-#include "fac/Fac.h"
 #include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
 #include "interface/SimConnectInterface.h"
@@ -57,8 +56,8 @@ class FlyByWireInterface {
   int primDisabled = -1;
   bool primGeneralLogicDisabled = false;
   bool primFctlDisabled = false;
+  bool primFeDisabled = false;
   int secDisabled = -1;
-  int facDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
@@ -125,8 +124,6 @@ class FlyByWireInterface {
 
   base_sfcc_bus sfccBusOutputs[2] = {};
 
-  base_fmgc_b_bus fmgcBBusOutputs = {};
-
   base_adr_bus adrBusOutputs[3] = {};
   base_ir_bus irBusOutputs[3] = {};
 
@@ -143,11 +140,6 @@ class FlyByWireInterface {
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
   FcdcBus fcdcsBusOutputs[2] = {};
-
-  Fac facs[2] = {Fac(true), Fac(false)};
-  base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
-  base_fac_analog_outputs facsAnalogOutputs[2] = {};
-  base_fac_bus facsBusOutputs[2] = {};
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -475,6 +467,22 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
   std::unique_ptr<LocalVariable> idPrimFeStatusWord[3];
 
+  // PRIM bus FE output Lvars
+  std::unique_ptr<LocalVariable> idPrimGammaA[3];
+  std::unique_ptr<LocalVariable> idPrimGammaT[3];
+  std::unique_ptr<LocalVariable> idPrimSideslipTarget[3];
+  std::unique_ptr<LocalVariable> idPrimVAlphaLim[3];
+  std::unique_ptr<LocalVariable> idPrimVLs[3];
+  std::unique_ptr<LocalVariable> idPrimVStall[3];
+  std::unique_ptr<LocalVariable> idPrimVAlphaProt[3];
+  std::unique_ptr<LocalVariable> idPrimVStallWarn[3];
+  std::unique_ptr<LocalVariable> idPrimSpeedTrend[3];
+  std::unique_ptr<LocalVariable> idPrimV3[3];
+  std::unique_ptr<LocalVariable> idPrimV4[3];
+  std::unique_ptr<LocalVariable> idPrimVMan[3];
+  std::unique_ptr<LocalVariable> idPrimVMax[3];
+  std::unique_ptr<LocalVariable> idPrimVFeNext[3];
+
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
@@ -519,38 +527,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
   std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActualPosition;
-
-  // FAC discrete input Lvars
-  std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
-  // FAC discrete output Lvars
-  std::unique_ptr<LocalVariable> idFacHealthy[2];
-
-  std::unique_ptr<LocalVariable> idFacDiscreteWord1[2];
-  std::unique_ptr<LocalVariable> idFacGammaA[2];
-  std::unique_ptr<LocalVariable> idFacGammaT[2];
-  std::unique_ptr<LocalVariable> idFacWeight[2];
-  std::unique_ptr<LocalVariable> idFacCenterOfGravity[2];
-  std::unique_ptr<LocalVariable> idFacSideslipTarget[2];
-  std::unique_ptr<LocalVariable> idFacSlatAngle[2];
-  std::unique_ptr<LocalVariable> idFacFlapAngle[2];
-  std::unique_ptr<LocalVariable> idFacDiscreteWord2[2];
-  std::unique_ptr<LocalVariable> idFacRudderTravelLimitCommand[2];
-  std::unique_ptr<LocalVariable> idFacDeltaRYawDamperVoted[2];
-  std::unique_ptr<LocalVariable> idFacEstimatedSideslip[2];
-  std::unique_ptr<LocalVariable> idFacVAlphaLim[2];
-  std::unique_ptr<LocalVariable> idFacVLs[2];
-  std::unique_ptr<LocalVariable> idFacVStall[2];
-  std::unique_ptr<LocalVariable> idFacVAlphaProt[2];
-  std::unique_ptr<LocalVariable> idFacVStallWarn[2];
-  std::unique_ptr<LocalVariable> idFacSpeedTrend[2];
-  std::unique_ptr<LocalVariable> idFacV3[2];
-  std::unique_ptr<LocalVariable> idFacV4[2];
-  std::unique_ptr<LocalVariable> idFacVMan[2];
-  std::unique_ptr<LocalVariable> idFacVMax[2];
-  std::unique_ptr<LocalVariable> idFacVFeNext[2];
-  std::unique_ptr<LocalVariable> idFacDiscreteWord3[2];
-  std::unique_ptr<LocalVariable> idFacDiscreteWord4[2];
-  std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
 
   std::unique_ptr<LocalVariable> idLeftAileronInwardPosition;
   std::unique_ptr<LocalVariable> idLeftAileronMiddlePosition;
@@ -638,8 +614,6 @@ class FlyByWireInterface {
   bool updateSec(double sampleTime, int secIndex);
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
-
-  bool updateFac(double sampleTime, int facIndex);
 
   bool updateServoSolenoidStatus();
 

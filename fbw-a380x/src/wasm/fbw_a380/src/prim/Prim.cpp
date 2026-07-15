@@ -40,14 +40,15 @@ void Prim::update(double deltaTime,
                   bool isPowered,
                   SimConnectInterface& simConnectInterface,
                   bool generalLogicDisabled,
-                  bool fctlDisabled) {
+                  bool fctlDisabled,
+                  bool feDisabled) {
   monitorPowerSupply(deltaTime, isPowered);
   monitorButtonStatus();
 
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  if (generalLogicDisabled || fctlDisabled) {
+  if (generalLogicDisabled || fctlDisabled || feDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.analog_inputs);
     simConnectInterface.setClientDataPrimTemporaryAp(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.temporary_ap_input);
@@ -55,16 +56,43 @@ void Prim::update(double deltaTime,
 
   primGeneralLogic.A380PrimComputerGeneralLogic_U.in.sim_data.computer_running = monitoringHealthy;
 
+  // --------------- General Logic Step -----------------
+
   if (!generalLogicDisabled) {
     primGeneralLogic.step();
-    primFctl.A380PrimComputerFctl_U.in = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
   } else {
+    primGeneralLogic.A380PrimComputerGeneralLogic_Y = {};
+    primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.data = primGeneralLogic.A380PrimComputerGeneralLogic_U.in;
     primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic = simConnectInterface.getClientDataPrimGeneralLogicOutput();
   }
+  primFe.A380PrimComputerFe_U.in = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
 
-  if (fctlDisabled) {
+  if (fctlDisabled || feDisabled) {
     simConnectInterface.setClientDataPrimGeneralLogicOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic);
   }
+
+  // --------------- FE Step -----------------
+
+  // Add loopback input (one cycle delay) from F/CTL logic
+  if (!fctlDisabled) {
+    primFe.A380PrimComputerFe_U.in.fctl_logic = primFctl.A380PrimComputerFctl_Y.out.fctl_logic;
+  } else {
+    primFe.A380PrimComputerFe_U.in.fctl_logic = simConnectInterface.getClientDataPrimFctlLogicOutput();
+  }
+
+  if (!feDisabled) {
+    primFe.step();
+  } else {
+    primFe.A380PrimComputerFe_Y.out = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
+    primFe.A380PrimComputerFe_Y.out.flight_envelope = simConnectInterface.getClientDataPrimFlightEnvelopeOutput();
+  }
+  primFctl.A380PrimComputerFctl_U.in = primFe.A380PrimComputerFe_Y.out;
+
+  if (fctlDisabled) {
+    simConnectInterface.setClientDataPrimFlightEnvelopeOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.flight_envelope);
+  }
+
+  // --------------- FCTL Step -----------------
 
   if (!fctlDisabled) {
     primFctl.step();
@@ -72,6 +100,11 @@ void Prim::update(double deltaTime,
     primFctl.A380PrimComputerFctl_Y.out.discrete_outputs = simConnectInterface.getClientDataPrimDiscretesOutput();
     primFctl.A380PrimComputerFctl_Y.out.analog_outputs = simConnectInterface.getClientDataPrimAnalogsOutput();
     primFctl.A380PrimComputerFctl_Y.out.bus_outputs = simConnectInterface.getClientDataPrimBusOutput();
+  }
+
+  // Set client data loopback if any other model is disabled
+  if (feDisabled) {
+    simConnectInterface.setClientDataPrimFctlLogicOutput(primFctl.A380PrimComputerFctl_Y.out.fctl_logic);
   }
 }
 
@@ -143,67 +176,12 @@ void Prim::updateSelfTest(double deltaTime) {
 // Write the bus output data and return it.
 base_prim_out_bus Prim::getBusOutputs() {
   base_prim_out_bus output = {};
-  const auto& modelOutputs = primFctl.A380PrimComputerFctl_Y.out;
 
   if (!monitoringHealthy) {
-    output.left_inboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_inboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_midboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_midboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_outboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_outboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_1_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_1_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_2_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_2_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_3_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_3_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_4_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_4_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_5_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_5_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_6_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_6_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_7_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_7_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_8_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_8_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_inboard_elevator_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_inboard_elevator_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_outboard_elevator_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_outboard_elevator_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.ths_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.upper_rudder_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.lower_rudder_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.rudder_pedal_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.aileron_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_aileron_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_aileron_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_aileron_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_aileron_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.spoiler_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.elevator_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.elevator_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.elevator_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.elevator_3_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.ths_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.rudder_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.rudder_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.rudder_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.discrete_status_word_1.SSM = Arinc429SignStatus::FailureWarning;
-    output.fe_status_word.SSM = Arinc429SignStatus::FailureWarning;
-    output.fg_status_word.SSM = Arinc429SignStatus::FailureWarning;
-
     return output;
   }
 
+  const auto& modelOutputs = primFctl.A380PrimComputerFctl_Y.out;
   output = modelOutputs.bus_outputs;
 
   return output;
