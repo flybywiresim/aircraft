@@ -51,6 +51,9 @@
 1. [A380X/PRIM] Move FE to PRIM and add SPD LIM flag - @lukecologne (luke)
 1. [A380X/PRIM] Improve speed trend behaviour - @lukecologne (luke)
 1. [A380X/FWS] Add NAV UNRELIABLE AIRSPEED INDICATION procedure - @matze-tech (matze2346)
+1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
+1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
+1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
 1. [A32NX/FLIGHT MODEL] Reduce touchdown rate of descent for autoland - @donstim (donbikes)
 
 ## 2024.1.0
