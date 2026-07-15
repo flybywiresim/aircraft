@@ -220,13 +220,10 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['upperRudderDeflection', { name: 'L:A32NX_HYD_UPPER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
     ['lowerRudderDeflection', { name: 'L:A32NX_HYD_LOWER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
     ['lowerRudderDeflection', { name: 'L:A32NX_HYD_LOWER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
-    [
-      'greenPressureSwitch',
-      { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Number },
-    ],
+    ['greenPressureSwitch', { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool }],
     [
       'yellowPressureSwitch',
-      { name: 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Number },
+      { name: 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
     ],
     ['acEssPowered', { name: 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
     ['ac1Powered', { name: 'L:A32NX_ELEC_AC_1_BUS_IS_POWERED', type: SimVarValueType.Bool }],
