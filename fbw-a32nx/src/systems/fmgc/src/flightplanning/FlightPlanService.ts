@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -22,6 +21,7 @@ import {
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
+import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -35,7 +35,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
-    private config = FpmConfigs.A320_HONEYWELL_H3,
+    private readonly config = FpmConfigs.A320_HONEYWELL_H4,
     master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
@@ -44,6 +44,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.performanceDataInit,
       this.syncClientID,
       master,
+      config.DRAFT_ON_WIND_EDIT,
     );
   }
 
@@ -321,6 +322,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   private prepareDestructiveModification(planIndex: FlightPlanIndex) {
     let finalIndex = planIndex;
     if (planIndex === FlightPlanIndex.Active) {
+      const active = this.flightPlanManager.has(FlightPlanIndex.Active)
+        ? this.flightPlanManager.get(FlightPlanIndex.Active)
+        : null;
+      if (active && active.hasDraftWindEntries()) {
+        active.insertDraftWindEntries();
+        this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
+      }
       this.ensureTemporaryExists();
 
       finalIndex = FlightPlanIndex.Temporary;
@@ -626,7 +634,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     constraint?: AltitudeConstraint,
-    planIndex?: FlightPlanIndex,
+    planIndex = FlightPlanIndex.Active,
     alternate?: boolean,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
@@ -642,8 +650,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     speed?: number,
-    planIndex?: FlightPlanIndex,
-    alternate?: boolean,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
@@ -931,31 +939,26 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex = FlightPlanIndex.Active) {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.propagateWindsAt(atIndex, result, this.config.NUM_CRUISE_WIND_LEVELS);
   }
 
   addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.addCruiseWindEntry(atIndex, entry, this.config.NUM_CRUISE_WIND_LEVELS);
   }
 
   deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteCruiseWindEntry(atIndex, altitude);
   }
 
   editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
   }
 
   setClimbWindEntry(altitude: number, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
   }
 
@@ -966,16 +969,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     shouldUpdateTwrWind: boolean = true,
   ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS, shouldUpdateTwrWind);
   }
 
   async deleteAllClimbWindEntries() {
     this.deleteClimbWindEntries(FlightPlanIndex.Active);
-
     for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const sec = this.secondary(i);
-
       if (sec.isActiveOrCopiedFromActive()) {
         this.deleteClimbWindEntries(sec.index);
       }
@@ -984,19 +984,16 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   deleteClimbWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteClimbWindEntries();
   }
 
   deleteDescentWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteDescentWindEntries();
   }
 
   setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.setAlternateWind(entry);
   }
 

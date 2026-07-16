@@ -1,4 +1,4 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -93,7 +93,11 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
 
   render(): VNode {
     return (
-      <span ref={this.spanRef} class="mfd-icon-button" style={`${this.props.containerStyle}`}>
+      <span
+        ref={this.spanRef}
+        class={{ 'mfd-icon-button': true, disabled: this.props.disabled ?? false }}
+        style={`${this.props.containerStyle}`}
+      >
         {this.props.icon === 'single-up' && (
           <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>

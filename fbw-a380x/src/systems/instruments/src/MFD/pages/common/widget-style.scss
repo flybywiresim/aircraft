@@ -134,6 +134,10 @@
   border: 2px outset $display-cyan;
 }
 
+.mfd-icon-button.disabled:hover {
+  border-color: $display-light-grey;
+}
+
 .mfd-dropdown-container {
   position: relative;
 }
@@ -294,6 +298,7 @@
   flex-direction: column;
   flex: 1 1 auto;
   margin: 2px;
+  margin-left: 9px;
 }
 
 .mfd-navigator-container {

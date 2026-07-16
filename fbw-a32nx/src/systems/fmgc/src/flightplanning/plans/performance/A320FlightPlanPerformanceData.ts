@@ -123,13 +123,13 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
     cloned.climbWindEntries.set(
       this.climbWindEntries.get().map(({ vector, ...rest }) => ({
-        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        vector: vector !== undefined ? Vec2Math.copy(vector, Vec2Math.create()) : undefined,
         ...rest,
       })),
     );
     cloned.descentWindEntries.set(
       this.descentWindEntries.get().map(({ vector, ...rest }) => ({
-        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        vector: vector !== undefined ? Vec2Math.copy(vector, Vec2Math.create()) : undefined,
         ...rest,
       })),
     );

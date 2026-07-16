@@ -3,6 +3,8 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+import { FmcServiceInterface } from '../FMC/FmcServiceInterface';
+import { NXSystemMessages } from './NXSystemMessages';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -50,9 +52,12 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
 }
 
 export const noPositionAvailableText = '--°--.--/---°--.--';
-
 export const showReturnButtonUriExtra = 'withReturn';
-
+export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
+export const fmsActivePagePrefix = 'fms/active/';
+export const fmsSec1PagePrefix = 'fms/sec1/';
+export const fmsSec2PagePrefix = 'fms/sec2/';
+export const fmsSec3PagePrefix = 'fms/sec3/';
 export const flightPlanUriPage = 'f-pln';
 export const lateralRevisionHoldPage = 'f-pln-hold';
 export const dataStatusUri = 'fms/data/status';
@@ -64,12 +69,15 @@ export const lateralRevisionPage = 'f-pln-lat-rev';
 export const departurePage = 'f-pln-departure';
 export const arrivalPage = 'f-pln-arrival';
 export const airwaysPage = 'f-pln-airways';
-
 export const secIndexPageUri = 'fms/sec/index';
-export const activeFlightPlanPageUri = 'fms/active/' + flightPlanUriPage;
-export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
-export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;
-export const fixInfoUri = 'fms/active/f-pln-fix-info';
-export const dirToUri = 'fms/active/f-pln-direct-to';
+export const windPage = 'wind';
+export const activeFlightPlanPageUri = fmsActivePagePrefix + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
+export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
+export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
 
-export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
+/** Adds ENTRY NOT IN LIST scratchpad message. */
+export function onEntryNotInList(fmc: FmcServiceInterface): void {
+  fmc.master.addMessageToQueue(NXSystemMessages.EntryNotInList, undefined, undefined);
+}

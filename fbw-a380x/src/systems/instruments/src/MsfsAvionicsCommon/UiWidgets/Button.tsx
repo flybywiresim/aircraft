@@ -69,7 +69,10 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private onClick() {
     if (!this.disabled.get()) {
-      this.props.onClick();
+      const menuItems = this.props.menuItems?.get();
+      if (menuItems === undefined || menuItems.length === 0) {
+        this.props.onClick();
+      }
     }
   }
 

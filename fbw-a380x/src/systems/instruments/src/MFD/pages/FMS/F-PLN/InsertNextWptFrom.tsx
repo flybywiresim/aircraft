@@ -163,7 +163,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                 idPrefix={`${this.props.captOrFo}_MFD_insertNextWptDropdown`}
                 selectedIndex={this.selectedWaypointIndex}
                 values={this.availableWaypointsString}
-                freeTextAllowed
+                freeTextAllowed={true}
                 containerStyle="width: 175px;"
                 alignLabels="flex-start"
                 onModified={(i, text) => this.onModified(i, text)}
