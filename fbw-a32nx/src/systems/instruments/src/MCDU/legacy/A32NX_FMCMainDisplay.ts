@@ -98,14 +98,10 @@ import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
-<<<<<<< HEAD
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-=======
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
-
->>>>>>> upstream/master
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -6068,7 +6064,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-<<<<<<< HEAD
+  public clearEngineOutCondition(): void {
+    this.bus.getPublisher<EngineOutControlEvents>().pub('fms_engine_out_clear', undefined, false, false);
+  }
+
   /**
    * Checks if cost index modification is disabled based on flight phase and if the plan is active or copied from active
    * @param plan the flight plan to check cost index modification for
@@ -6128,9 +6127,5 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
         currentValue !== null)
     );
-=======
-  public clearEngineOutCondition(): void {
-    this.bus.getPublisher<EngineOutControlEvents>().pub('fms_engine_out_clear', undefined, false, false);
->>>>>>> upstream/master
   }
 }
