@@ -579,10 +579,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_elac_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 17; i++) {
-      result &=
-          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-    }
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_elac_out_bus));
 
     // request data to be updated when set
     if (i == elacDisabled) {
@@ -934,7 +931,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_fmgc_discrete_inputs));
+                                                 sizeof(base_fmgc_discrete_outputs));
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, ClientData::FMGC_DISCRETE_OUTPUTS,

@@ -25,6 +25,33 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+
+struct base_fac_analog_outputs
+{
+  real_T yaw_damper_order_deg;
+  real_T rudder_trim_order_deg;
+  real_T rudder_travel_limit_order_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
 #define DEFINED_TYPEDEF_FOR_base_fac_bus_
 
@@ -58,33 +85,6 @@ struct base_fac_bus
   base_arinc_429 discrete_word_5;
   base_arinc_429 delta_r_rudder_trim_deg;
   base_arinc_429 rudder_trim_pos_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-
-struct base_fac_analog_outputs
-{
-  real_T yaw_damper_order_deg;
-  real_T rudder_trim_order_deg;
-  real_T rudder_travel_limit_order_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
 };
 
 #endif
@@ -292,6 +292,7 @@ struct base_elac_out_bus
   base_arinc_429 speedbrake_extension_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
+  base_arinc_429 discrete_status_word_3;
 };
 
 #endif
@@ -399,10 +400,10 @@ struct base_fac_logic_outputs
   real32_T slat_flap_actual_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
-  boolean_T double_self_detected_adr_failure;
-  boolean_T double_self_detected_ir_failure;
-  boolean_T double_not_self_detected_adr_failure;
-  boolean_T double_not_self_detected_ir_failure;
+  boolean_T double_adr_failure;
+  boolean_T double_ir_failure;
+  boolean_T all_adr_valid;
+  boolean_T all_ir_valid;
   base_fac_adr_computation_data adr_computation_data;
   base_fac_ir_computation_data ir_computation_data;
   boolean_T all_ra_failed;
@@ -410,9 +411,11 @@ struct base_fac_logic_outputs
   boolean_T yaw_damper_engaged;
   boolean_T yaw_damper_can_engage;
   boolean_T yaw_damper_has_priority;
+  boolean_T yaw_damper_auto_mode_avail;
   boolean_T rudder_trim_engaged;
   boolean_T rudder_trim_can_engage;
   boolean_T rudder_trim_has_priority;
+  boolean_T rudder_trim_auto_mode_avail;
   boolean_T rudder_travel_lim_engaged;
   boolean_T rudder_travel_lim_can_engage;
   boolean_T rudder_travel_lim_has_priority;

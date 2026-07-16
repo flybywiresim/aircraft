@@ -333,6 +333,7 @@ struct base_elac_out_bus
   base_arinc_429 speedbrake_extension_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
+  base_arinc_429 discrete_status_word_3;
 };
 
 #endif
@@ -493,10 +494,16 @@ struct base_elac_logic_outputs
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
+  boolean_T adr_1_rejected;
+  boolean_T adr_2_rejected;
+  boolean_T adr_3_rejected;
   boolean_T double_adr_failure;
   boolean_T triple_adr_failure;
   boolean_T cas_or_mach_disagree;
   boolean_T alpha_disagree;
+  boolean_T ir_1_rejected;
+  boolean_T ir_2_rejected;
+  boolean_T ir_3_rejected;
   boolean_T double_ir_failure;
   boolean_T triple_ir_failure;
   boolean_T ir_failure_not_self_detected;

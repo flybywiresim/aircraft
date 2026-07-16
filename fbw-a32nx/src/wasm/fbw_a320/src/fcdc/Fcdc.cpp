@@ -560,6 +560,14 @@ FcdcBus Fcdc::getBusOutputs() {
   bool rightElev2Fault = (!discreteInputs.elac2Valid || bitFromValueOr(busInputs.elac2.discrete_status_word_1, 21, false)) &&
                          (!discreteInputs.sec2Valid || bitFromValueOr(busInputs.sec2.discrete_status_word_1, 14, false));
 
+  const bool elac1DoubleIrFailure = bitFromValueOr(busInputs.elac1.discrete_status_word_3, 17, false);
+  const bool elac2DoubleIrFailure = bitFromValueOr(busInputs.elac2.discrete_status_word_3, 17, false);
+  const bool elac1IrDisagree = bitFromValueOr(busInputs.elac1.discrete_status_word_3, 18, false);
+  const bool elac2IrDisagree = bitFromValueOr(busInputs.elac2.discrete_status_word_3, 18, false);
+
+  const bool elac1CheckIr = elac1DoubleIrFailure && elac1IrDisagree;
+  const bool elac2CheckIr = elac2DoubleIrFailure && elac2IrDisagree;
+
   output.efcsStatus2.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus2.setBit(11, bitFromValueOr(busInputs.elac1.discrete_status_word_1, 11, true));
   output.efcsStatus2.setBit(12, bitFromValueOr(busInputs.elac2.discrete_status_word_1, 11, true));
@@ -575,11 +583,21 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus2.setBit(22, false);
   output.efcsStatus2.setBit(23, false);
   output.efcsStatus2.setBit(24, false);
-  output.efcsStatus2.setBit(25, false);
+  output.efcsStatus2.setBit(25, elac1CheckIr || elac2CheckIr);
   output.efcsStatus2.setBit(26, false);
   output.efcsStatus2.setBit(27, false);
   output.efcsStatus2.setBit(28, leftSidestickDisabled);
   output.efcsStatus2.setBit(29, rightSidestickDisabled);
+
+  const bool elac1DoubleAdrFailure = bitFromValueOr(busInputs.elac1.discrete_status_word_3, 11, false);
+  const bool elac2DoubleAdrFailure = bitFromValueOr(busInputs.elac2.discrete_status_word_3, 11, false);
+  const bool elac1AdrCasMachDisagree = bitFromValueOr(busInputs.elac1.discrete_status_word_3, 12, false);
+  const bool elac2AdrCasMachDisagree = bitFromValueOr(busInputs.elac2.discrete_status_word_3, 12, false);
+  const bool elac1AdrAoaDisagree = bitFromValueOr(busInputs.elac1.discrete_status_word_3, 13, false);
+  const bool elac2AdrAoaDisagree = bitFromValueOr(busInputs.elac2.discrete_status_word_3, 13, false);
+
+  const bool elac1CheckAdr = elac1DoubleAdrFailure && (elac1AdrCasMachDisagree || elac1AdrAoaDisagree);
+  const bool elac2CheckAdr = elac2DoubleAdrFailure && (elac2AdrCasMachDisagree || elac2AdrAoaDisagree);
 
   output.efcsStatus3.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus3.setBit(11, bitFromValueOr(busInputs.elac1.discrete_status_word_1, 15, false));
@@ -601,7 +619,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(23, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 15, false));
   output.efcsStatus3.setBit(24, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 16, false));
   output.efcsStatus3.setBit(25, bitFromValueOr(busInputs.sec2.discrete_status_word_1, 15, false));
-  output.efcsStatus3.setBit(26, false);
+  output.efcsStatus3.setBit(26, elac1CheckAdr || elac2CheckAdr);
   output.efcsStatus3.setBit(27, discreteInputs.sec1Off);
   output.efcsStatus3.setBit(28, discreteInputs.sec2Off);
   output.efcsStatus3.setBit(29, discreteInputs.sec3Off);

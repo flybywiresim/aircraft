@@ -52,6 +52,15 @@ class FacComputer final
     boolean_T pY_not_empty;
   };
 
+  struct BlockIO_FacComputer_T {
+    real32_T u;
+    real32_T u_m;
+    real32_T u_m4;
+    real32_T u_e;
+    real32_T u_e3;
+    real32_T u_e3l;
+  };
+
   struct D_Work_FacComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_d;
@@ -61,16 +70,28 @@ class FacComputer final
     uint8_T is_active_c15_FacComputer;
     uint8_T is_c15_FacComputer;
     boolean_T Memory_PreviousInput;
+    boolean_T Memory_PreviousInput_a;
+    boolean_T Memory_PreviousInput_e;
+    boolean_T Memory_PreviousInput_az;
+    boolean_T Memory_PreviousInput_f;
+    boolean_T Memory_PreviousInput_e5;
+    boolean_T Memory_PreviousInput_o;
     boolean_T icLoad;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_jf;
     rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_md;
-    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_cu;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_cux;
     rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_le;
     rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_ax;
     rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_p4;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_ie;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_bn;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_bv;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_gd;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_c3;
+    rtDW_MATLABFunction_FacComputer_g_T sf_MATLABFunction_o0;
     rtDW_WashoutFilter_FacComputer_T sf_WashoutFilter_i;
     rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_f;
     rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_l;
@@ -174,6 +195,7 @@ class FacComputer final
     real_T BitfromLabel1_bit_no;
     real_T BitfromLabel3_bit_k;
     real_T BitfromLabel4_bit_k;
+    real_T SourceMonitoringbyVote_confirmTime;
     real_T CompareToConstant_const;
     real_T CompareToConstant4_const;
     real_T CompareToConstant2_const;
@@ -197,11 +219,13 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs_lo_p;
     real_T MTrigNode1_retriggerable;
     real_T MTrigNode_retriggerable;
+    real_T SourceMonitoringbyVote_threshold;
     real_T ConfirmNode_timeDelay;
+    real_T ConfirmNode_timeDelay_a;
     real_T ConfirmNode_timeDelay_m;
+    real_T SourceMonitoringPairwise_timeDelay;
     real_T ConfirmNode_timeDelay_h;
     real_T ConfirmNode1_timeDelay;
-    real_T ConfirmNode_timeDelay_a;
     real_T ConfirmNode_timeDelay_l;
     real_T ConfirmNode_timeDelay_lf;
     real_T ConfirmNode_timeDelay_an;
@@ -227,12 +251,25 @@ class FacComputer final
     real32_T CompareToConstant_const_h;
     real32_T CompareToConstant1_const_n;
     real32_T CompareToConstant2_const_d;
+    real32_T SourceMonitoringPairwise_threshold;
+    boolean_T SRFlipFlop2_initial_condition;
+    boolean_T SRFlipFlop1_initial_condition;
     boolean_T SRFlipFlop_initial_condition;
+    boolean_T SRFlipFlop2_initial_condition_g;
+    boolean_T SRFlipFlop1_initial_condition_h;
+    boolean_T SRFlipFlop_initial_condition_b;
+    boolean_T SRFlipFlop_initial_condition_bk;
     boolean_T ConfirmNode_isRisingEdge;
-    boolean_T ConfirmNode_isRisingEdge_a;
-    boolean_T ConfirmNode_isRisingEdge_o;
-    boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge_m;
+    boolean_T ConfirmNode_isRisingEdge_a;
+    boolean_T ConfirmNode_isRisingEdge_mu;
+    boolean_T ConfirmNode1_isRisingEdge;
+    boolean_T ConfirmNode2_isRisingEdge;
+    boolean_T ConfirmNode_isRisingEdge_d;
+    boolean_T ConfirmNode1_isRisingEdge_d;
+    boolean_T ConfirmNode2_isRisingEdge_p;
+    boolean_T ConfirmNode_isRisingEdge_o;
+    boolean_T ConfirmNode1_isRisingEdge_j;
     boolean_T ConfirmNode_isRisingEdge_o2;
     boolean_T ConfirmNode_isRisingEdge_i;
     boolean_T ConfirmNode_isRisingEdge_mq;
@@ -349,8 +386,13 @@ class FacComputer final
     real_T Saturation_LowerSat_f;
     real_T Constant_Value_b;
     real_T Switch7_Threshold;
-    real_T Switch6_Threshold;
-    real32_T Switch6_Threshold_n;
+    real32_T Switch6_Threshold;
+    real32_T Y_Y0;
+    real32_T Y_Y0_p;
+    real32_T Y_Y0_k;
+    real32_T Y_Y0_h;
+    real32_T Y_Y0_l;
+    real32_T Y_Y0_e;
     real32_T Constant2_Value_k;
     real32_T Constant3_Value_d;
     real32_T Constant6_Value;
@@ -366,8 +408,13 @@ class FacComputer final
     uint32_T alphastallwarn_maxIndex[2];
     uint32_T uDLookupTable_maxIndex[2];
     boolean_T Constant_Value_c;
-    boolean_T Constant_Value_h;
-    boolean_T Constant_Value_b5;
+    boolean_T Constant_Value_kt;
+    boolean_T Logic_table[16];
+    boolean_T Logic_table_j[16];
+    boolean_T Logic_table_a[16];
+    boolean_T Logic_table_e[16];
+    boolean_T Logic_table_ex[16];
+    boolean_T Logic_table_aw[16];
     boolean_T reset_Value;
     boolean_T reset_Value_k;
     boolean_T reset_Value_o;
@@ -375,13 +422,12 @@ class FacComputer final
     boolean_T reset_Value_i;
     boolean_T reset_Value_k5;
     boolean_T reset_Value_m;
-    boolean_T Logic_table[16];
+    boolean_T Logic_table_h[16];
     boolean_T Constant2_Value_o;
     boolean_T Constant1_Value_d;
     boolean_T Constant10_Value;
     boolean_T Constant18_Value;
     boolean_T Constant9_Value;
-    boolean_T Constant19_Value;
   };
 
   FacComputer(FacComputer const&) = delete;
@@ -406,6 +452,7 @@ class FacComputer final
  private:
   ExternalInputs_FacComputer_T FacComputer_U;
   ExternalOutputs_FacComputer_T FacComputer_Y;
+  BlockIO_FacComputer_T FacComputer_B;
   D_Work_FacComputer_T FacComputer_DWork;
   static Parameters_FacComputer_T FacComputer_P;
   static void FacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
