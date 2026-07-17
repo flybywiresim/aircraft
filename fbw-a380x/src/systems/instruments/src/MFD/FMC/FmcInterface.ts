@@ -303,6 +303,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   clearCheckSpeedModeMessage(): void;
 
+  /** Returns whether inches is selected on the FCU of the associated side */
+  inchesSelectedOnFcu(side: EfisSide): boolean;
+
   reset(): void;
 
   /** Clean up all subscriptions */
