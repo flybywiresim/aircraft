@@ -1,7 +1,9 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { FbwAircraftSentryClient } from '@flybywiresim/fbw-sdk';
 import { FsBaseInstrument } from '@microsoft/msfs-sdk';
+
 import { McduFsInstrument } from './McduFsInstrument';
 
 /**
@@ -15,6 +17,12 @@ export class McduBaseInstrument extends FsBaseInstrument<McduFsInstrument> {
 
   /** @inheritdoc */
   public constructInstrument(): McduFsInstrument {
+    new FbwAircraftSentryClient().onInstrumentLoaded({
+      dsn: process.env.SENTRY_DSN,
+      buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
+      root: false,
+    });
+
     return new McduFsInstrument(this);
   }
 
