@@ -53,6 +53,7 @@
 1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
 1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
+1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
 
 ## 2024.1.0
 
