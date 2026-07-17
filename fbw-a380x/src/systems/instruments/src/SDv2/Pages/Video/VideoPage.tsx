@@ -1,22 +1,20 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import '../../../index.scss';
-
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
-
 import { PageTitle } from '../Generic/PageTitle';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
+import '../../../index.scss';
 import { SdPageProps } from '../../SD';
 
 export class VideoPage extends DestroyableComponent<SdPageProps> {
-  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(this.topSvgStyle);
+    this.subscriptions.push(this.topSvgDisplay);
   }
 
   destroy(): void {
@@ -30,7 +28,7 @@ export class VideoPage extends DestroyableComponent<SdPageProps> {
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 768 1024"
-        style={this.topSvgStyle}
+        style={{ display: this.topSvgDisplay }}
       >
         <PageTitle x={6} y={29}>
           VIDEO
