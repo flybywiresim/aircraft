@@ -4,21 +4,26 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
-  HEvent,
   MappedSubject,
   Subject,
+  Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from './PFD';
-import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private readonly altitude = Arinc429ConsumerSubject.create(
-    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
-  );
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FcuEfisCpBusEvents>();
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButtonPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
   private lsButtonPressedVisibility = false;
 
@@ -47,17 +52,20 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & HEvent & Arinc429Values>();
+    const isFo = getDisplayIndex() === 2;
 
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((lsButton) => {
-        this.lsButtonPressedVisibility = lsButton;
-        this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-        this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility ? 'none' : 'inline';
-        this.handleGsReferenceLine();
-      });
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
+
+    this.lsButtonPressed.sub((lsButton) => {
+      this.lsButtonPressedVisibility = lsButton;
+      this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+      this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility ? 'none' : 'inline';
+      this.handleGsReferenceLine();
+    }, true);
+
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
     this.altitude.sub(this.handleGsReferenceLine.bind(this), true);
 
@@ -89,7 +97,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
     return (
       <>
         <g id="LSGroup" ref={this.lsGroupRef} style="display: none">
-          <LandingSystemInfo bus={this.props.bus} />
+          <LandingSystemInfo bus={this.props.bus} isVisible={this.lsButtonPressed} />
 
           <g id="LSGroup">
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -117,7 +125,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
   }
 }
 
-class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
+class LandingSystemInfo extends DisplayComponent<{ bus: EventBus; isVisible: Subscribable<boolean> }> {
   private hasDme = false;
 
   private identText = Subject.create('');
@@ -134,24 +142,10 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   private destRef = FSComponent.createRef<SVGTextElement>();
 
-  private lsInfoGroup = FSComponent.createRef<SVGGElement>();
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    sub
-      .on('hasLoc')
-      .whenChanged()
-      .handle((hasLoc) => {
-        if (hasLoc) {
-          this.lsInfoGroup.instance.style.display = 'inline';
-        } else {
-          this.lsInfoGroup.instance.style.display = 'none';
-        }
-      });
 
     sub
       .on('hasDme')
@@ -219,7 +213,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" ref={this.lsInfoGroup}>
+      <g id="LSInfoGroup" class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}>
         <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="143.11522">
           {this.identText}
         </text>
@@ -615,11 +609,15 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsTitle extends DisplayComponent<{ bus: EventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
   private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
 
   private readonly hasLoc = ConsumerSubject.create(null, false);
-
-  private readonly lsButton = ConsumerSubject.create(null, false);
 
   private readonly ilsTitleShown = MappedSubject.create(
     ([hasLoc, lsButton]) => hasLoc && lsButton,
@@ -630,10 +628,15 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
+
     const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
     this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
-    this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
     this.ilsTitleShown.sub((it) => {
@@ -655,7 +658,11 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
   private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
 
@@ -663,8 +670,6 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
   private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false);
 
   private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
-
-  private readonly lsButton = ConsumerSubject.create(null, false);
 
   private readonly lsReminderVisible = MappedSubject.create(
     ([locPushed, approachModePushed, lsPushed]) => {
@@ -677,7 +682,6 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.lsButton.setConsumer(this.sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button'));
     this.lsReminderVisible.sub((v) => {
       if (v) {
         this.lsReminder.instance.style.display = 'inline';

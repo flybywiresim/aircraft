@@ -680,6 +680,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuShimRightLsActive;
   std::unique_ptr<LocalVariable> idFcuShimRightBaroMode;
 
+  std::unique_ptr<LocalVariable> idFcuShimLeftBaroCorrectionAdirs;
+  std::unique_ptr<LocalVariable> idFcuShimRightBaroCorrectionAdirs;
+
   void loadConfiguration();
   void setupLocalVariables();
 

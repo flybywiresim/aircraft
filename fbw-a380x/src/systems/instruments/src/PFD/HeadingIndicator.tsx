@@ -6,6 +6,8 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -48,6 +50,12 @@ export class HeadingTape extends DisplayComponent<HeadingTapeProps> {
 }
 
 export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
   private normalRef = FSComponent.createRef<SVGGElement>();
 
   private abnormalRef = FSComponent.createRef<SVGGElement>();
@@ -56,10 +64,14 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
 
   private ILSCourse = Subject.create(0);
 
-  private lsPressed = Subject.create(false);
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & HEvent>();
 
@@ -80,13 +92,6 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
       .whenChanged()
       .handle((n) => {
         this.ILSCourse.set(n);
-      });
-
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((lsButton) => {
-        this.lsPressed.set(lsButton);
       });
   }
 

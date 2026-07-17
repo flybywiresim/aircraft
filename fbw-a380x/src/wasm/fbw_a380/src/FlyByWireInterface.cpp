@@ -112,7 +112,7 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   result &= updateFcuAfsLvars();
 
-  // result &= updateFcuShim();
+  result &= updateFcuShim();
 
   for (int i = 0; i < 3; i++) {
     result &= updatePrim(calculatedSampleTime, i);
@@ -887,6 +887,25 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuAfsDisplayVsFpaValue = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_VS_FPA_VALUE");
   idFcuAfsDisplayVsFpaDashes = std::make_unique<LocalVariable>("A32NX_FCU_AFS_DISPLAY_VS_FPA_DASHES");
   idFcuAfsCpActive = std::make_unique<LocalVariable>("A32NX_FCU_AFS_CP_ACTIVE");
+
+  // FCU Shim
+  idFcuShimLeftNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_L_NAVAID_1_MODE");
+  idFcuShimLeftNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_L_NAVAID_2_MODE");
+  idFcuShimLeftNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_MODE");
+  idFcuShimLeftNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_RANGE");
+  idFcuShimLeftNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_L_OPTION");
+  idFcuShimLeftLsActive = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idFcuShimLeftBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro1_Mode");
+  idFcuShimRightNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_1_MODE");
+  idFcuShimRightNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_2_MODE");
+  idFcuShimRightNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_MODE");
+  idFcuShimRightNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_RANGE");
+  idFcuShimRightNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_OPTION");
+  idFcuShimRightLsActive = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idFcuShimRightBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro2_Mode");
+
+  idFcuShimLeftBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_LEFT_EIS_BARO_HPA");
+  idFcuShimRightBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_RIGHT_EIS_BARO_HPA");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -2086,6 +2105,98 @@ bool FlyByWireInterface::updateFcuAfsLvars() {
   idFcuAfsDisplayAltValue->set(selectedFcuAfs.alt_value);
   idFcuAfsDisplayVsFpaValue->set(selectedFcuAfs.vs_fpa_value);
   idFcuAfsDisplayVsFpaDashes->set(selectedFcuAfs.vs_fpa_dashes);
+
+  return true;
+}
+
+bool FlyByWireInterface::updateFcuShim() {
+  // update the FCU Shim EFIS Lvars
+  auto getNavaidMode = [](bool adfBit, bool vorBit) {
+    if (adfBit) {
+      return 1;
+    } else if (vorBit) {
+      return 2;
+    } else {
+      return 0;
+    }
+  };
+
+  auto getNdMode = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    if (bit5) {
+      return 0;
+    } else if (bit4) {
+      return 1;
+    } else if (bit3) {
+      return 2;
+    } else if (bit2) {
+      return 3;
+    } else if (bit1) {
+      return 4;
+    } else {
+      // We should never be getting here anyways
+      return 0;
+    }
+  };
+
+  auto getNdRange = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    if (bit1) {
+      return 0;
+    } else if (bit2) {
+      return 1;
+    } else if (bit3) {
+      return 2;
+    } else if (bit4) {
+      return 3;
+    } else if (bit5) {
+      return 4;
+    } else {
+      return 5;
+    }
+  };
+
+  auto getNdFilter = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+    return bit1 << 0 | bit2 << 2 | bit3 << 1 | bit4 << 3 | bit5 << 4;
+  };
+
+  auto getBaroMode = [](bool bit1, bool bit2) {
+    if (bit1) {
+      return 3;
+    } else if (bit2) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+
+  SimData simData = simConnectInterface.getSimData();
+
+  idFcuShimLeftNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 26, false),
+                                              Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 28, true)));
+  idFcuShimLeftNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 27, true),
+                                              Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 29, false)));
+  idFcuShimLeftLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 14, true));
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs[0].baro_setting_hpa, 1013) * 16, 1);
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs[1].baro_setting_hpa, 1013) * 16, 2);
+  SimOutputAltimeter stdOutputLeft = {Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 11, true)};
+  simConnectInterface.sendData(stdOutputLeft, 1);
+  SimOutputAltimeter stdOutputRight = {Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 11, true)};
+  simConnectInterface.sendData(stdOutputRight, 2);
+  idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 11, true),
+                                         Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 12, false)));
+
+  idFcuShimRightNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 26, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 28, true)));
+  idFcuShimRightNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 27, true),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 29, false)));
+  idFcuShimRightLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 14, true));
+  idFcuShimRightBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 11, true),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 12, false)));
+
+  // Pipe baro corrections to LVar ADIRS expects
+  idFcuShimLeftBaroCorrectionAdirs->set(Arinc429Utils::toSimVar(fcuBusOutputs[0].baro_setting_hpa));
+  idFcuShimRightBaroCorrectionAdirs->set(Arinc429Utils::toSimVar(fcuBusOutputs[1].baro_setting_hpa));
 
   return true;
 }

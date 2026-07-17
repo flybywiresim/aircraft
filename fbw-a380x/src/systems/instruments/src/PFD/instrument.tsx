@@ -10,7 +10,7 @@ import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
@@ -57,8 +57,6 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
 
-  private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
-
   private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
 
   private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
@@ -74,6 +72,8 @@ class A380X_PFD extends BaseInstrument {
   private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
 
   private readonly primFgPublisher = new PrimFgBusPublisher(this.bus);
+
+  private readonly efisCpBusPublisher = new FcuEfisCpBusPublisher(this.bus);
 
   constructor() {
     super();
@@ -96,7 +96,6 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('SecPublisher', this.secPublisher);
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
-    this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
     this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
     this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
@@ -106,6 +105,8 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('PrimFePublisher', this.primFePublisher);
     this.backplane.addPublisher('PrimFctlPublisher', this.primFctlPublisher);
     this.backplane.addPublisher('PrimFgPublisher', this.primFgPublisher);
+
+    this.backplane.addPublisher('EfisCpPublisher', this.efisCpBusPublisher);
   }
 
   get templateID(): string {

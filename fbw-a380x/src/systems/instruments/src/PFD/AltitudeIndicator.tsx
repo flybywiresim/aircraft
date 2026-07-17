@@ -23,7 +23,7 @@ import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValuePro
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 600;
@@ -133,7 +133,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
 }
 
 class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
 
   private readonly altitude = Arinc429ConsumerSubject.create(
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
@@ -158,8 +158,8 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
   private landingElevation = new Arinc429Word(0);
 
   private updateIndication(): void {
-    const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
-    const isQfe = !isQnh && !this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+    const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(12, false);
+    const isQfe = !isQnh && !this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
 
     this.qnhLandingAltValid =
       !this.landingElevation.isFailureWarning() &&
@@ -192,7 +192,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     const isFo = getDisplayIndex() === 2;
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
@@ -355,7 +355,7 @@ interface SelectedAltIndicatorProps {
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
 
   private readonly altitude = Arinc429ConsumerSubject.create(
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
@@ -491,7 +491,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     const isFo = getDisplayIndex() === 2;
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
@@ -535,7 +535,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     }, true);
 
     this.fcuEisDiscreteWord2.sub(() => {
-      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
 
       if (isStd) {
         this.selectedAltLowerFLText.instance.style.visibility = 'visible';
@@ -573,7 +573,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private setText() {
     let boxLength = 19.14;
     let text = '0';
-    const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+    const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
     if (isStd) {
       text = Math.round(this.shownTargetAltitude / 100)
         .toString()
@@ -665,9 +665,7 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
-
-  private readonly fcuEisDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
@@ -675,7 +673,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private readonly fcuBaroCorrectionHpa = Arinc429LocalVarConsumerSubject.create(null);
 
-  private readonly isHg = this.fcuEisDiscreteWord1.map((v) => v.bitValueOr(11, false));
+  private readonly isHg = this.fcuEisDiscreteWord2.map((v) => v.bitValueOr(13, false));
 
   private readonly text = Subject.create('');
 
@@ -710,22 +708,19 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     const isFo = getDisplayIndex() === 2;
 
-    this.fcuEisDiscreteWord1.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_1_right' : 'a380x_fcu_eis_discrete_word_1_left'),
-    );
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
-    this.fcuBaroCorrectionHg.setConsumer(this.sub.on(isFo ? 'a380x_fcu_eis_baro_right' : 'a380x_fcu_eis_baro_left'));
-    this.fcuBaroCorrectionHpa.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_baro_hpa_right' : 'a380x_fcu_eis_baro_hpa_left'),
+    this.fcuBaroCorrectionHg.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_baro_setting_inhg' : 'fcu_efis_l_baro_setting_inhg'),
     );
+    this.fcuBaroCorrectionHpa.setConsumer(this.sub.on(isFo ? 'fcu_efis_r_baro_setting' : 'fcu_efis_l_baro_setting'));
 
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
 
     this.fcuEisDiscreteWord2.sub(() => {
-      const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
-      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+      const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(12, false);
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
       const isQfe = !isQnh && !isStd;
 
       if (isQfe) {

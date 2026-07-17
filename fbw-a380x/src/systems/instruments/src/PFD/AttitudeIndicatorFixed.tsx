@@ -2,7 +2,6 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from './PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -162,7 +161,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
           <FlightPathVector bus={this.props.bus} />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
 
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} />

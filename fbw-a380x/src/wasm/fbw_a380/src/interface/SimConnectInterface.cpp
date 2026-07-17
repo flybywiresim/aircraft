@@ -1401,6 +1401,25 @@ bool SimConnectInterface::sendData(SimOutputAltimeter output) {
   return sendData(7, sizeof(output), &output);
 }
 
+bool SimConnectInterface::sendData(SimOutputAltimeter output, int altimeterIndex) {
+  // write data and return result
+  SIMCONNECT_DATA_DEFINITION_ID dataDefId;
+  switch (altimeterIndex) {
+    case 1:
+      dataDefId = 8;
+      break;
+    case 2:
+      dataDefId = 9;
+      break;
+    case 4:
+      dataDefId = 7;
+      break;
+    default:
+      return false;
+  }
+  return sendData(dataDefId, sizeof(output), &output);
+}
+
 bool SimConnectInterface::sendEvent(Events eventId) {
   return sendEvent(eventId, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 }

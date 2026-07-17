@@ -11,11 +11,12 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429ConsumerSubject, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { getDisplayIndex } from '../MsfsAvionicsCommon/CdsDisplayUnit';
+import { getDisplayIndex } from './PFD';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -29,15 +30,14 @@ interface FlightPathVectorData {
 
 // FIXME should get smaller when FD is on
 export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly isTrkFpaActive = ConsumerSubject.create(this.sub.on('trkFpaActive'), false);
   private readonly isBirdBlack = this.isTrkFpaActive.map(SubscribableMapFunctions.not());
 
-  private readonly isVelocityVectorActive = ConsumerSubject.create(
-    this.sub.on(getDisplayIndex() === 3 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
-    false,
-  );
+  private readonly isVelocityVectorActive = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(15, true));
 
   private readonly data: FlightPathVectorData = {
     roll: Arinc429ConsumerSubject.create(this.sub.on('rollAr')),
@@ -81,6 +81,12 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
 
     const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
       this.moveBird.bind(this),

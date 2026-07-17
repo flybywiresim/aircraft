@@ -108,8 +108,6 @@ export interface PFDSimvars {
   autoBrakeDecel: boolean;
   fpaRaw: number;
   daRaw: number;
-  ls1Button: boolean;
-  ls2Button: boolean;
   xtk: number;
   ldevRequestLeft: boolean;
   ldevRequestRight: boolean;
@@ -134,8 +132,6 @@ export interface PFDSimvars {
   cgPercent: number;
   spoilersCommanded: number;
   spoilersArmed: boolean;
-  fcuLeftVelocityVectorOn: boolean;
-  fcuRightVelocityVectorOn: boolean;
   btvExitMissed: boolean;
   fcuApproachModeActive: boolean;
   fcuLocModeActive: boolean;
@@ -249,8 +245,6 @@ export enum PFDVars {
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-  ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
-  ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
   ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
   ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
@@ -274,8 +268,6 @@ export enum PFDVars {
   trimPosition = 'ELEVATOR TRIM POSITION',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
-  fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
-  fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
   btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
   fcuApproachModeActive = 'L:A32NX_FCU_APPR_MODE_ACTIVE',
   fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
@@ -390,8 +382,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
     ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
-    ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
-    ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
     ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
     ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
@@ -415,8 +405,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['trimPosition', { name: PFDVars.trimPosition, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
-    ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
-    ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
     ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
     ['fcuApproachModeActive', { name: PFDVars.fcuApproachModeActive, type: SimVarValueType.Bool }],
     ['fcuLocModeActive', { name: PFDVars.fcuLocModeActive, type: SimVarValueType.Bool }],

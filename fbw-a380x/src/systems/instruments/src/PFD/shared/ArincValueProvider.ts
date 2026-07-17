@@ -21,7 +21,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 export interface Arinc429Values {
   pitchAr: Arinc429Word;
@@ -50,7 +50,7 @@ export interface Arinc429Values {
   lgciuDiscreteWord1: Arinc429Word;
 }
 export class ArincValueProvider implements Instrument {
-  private readonly sub = this.bus.getSubscriber<A380XFcuBusEvents & ClockEvents & PFDSimvars & SimplaneValues>();
+  private readonly sub = this.bus.getSubscriber<FcuEfisCpBusEvents & ClockEvents & PFDSimvars & SimplaneValues>();
 
   private roll = new Arinc429Word(0);
 
@@ -121,7 +121,7 @@ export class ArincValueProvider implements Instrument {
     const isFo = getDisplayIndex() === 2;
 
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
     const publisher = this.bus.getPublisher<Arinc429Values>();
@@ -152,7 +152,7 @@ export class ArincValueProvider implements Instrument {
     this.altitude.sub((v) => publisher.pub('altitudeAr', v));
 
     this.fcuEisDiscreteWord2.sub((v) => {
-      const isStd = v.bitValueOr(28, true);
+      const isStd = v.bitValueOr(11, true);
       if (isStd) {
         this.baroAltitudePipe.pause();
         this.pressureAltitudePipe.resume(true);

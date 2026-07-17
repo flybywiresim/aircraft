@@ -2433,9 +2433,9 @@ void A380FcuComputer::step()
     rtb_VectorConcatenate[18] = A380FcuComputer_P.Constant20_Value;
     A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_e3);
     if (A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.spd_knob.turns < -8) {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns = -8;
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns = -8;
     } else {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns =
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns =
         A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.spd_knob.turns;
     }
 
@@ -2447,9 +2447,9 @@ void A380FcuComputer::step()
     }
 
     if (A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.alt_knob.turns < -8) {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns = -8;
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns = -8;
     } else {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns =
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns =
         A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.alt_knob.turns;
     }
 
@@ -2459,16 +2459,16 @@ void A380FcuComputer::step()
       rtb_DataTypeConversion_j = A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.vs_fpa_knob.turns;
     }
 
-    if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns > 7) {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns = 7;
+    if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns > 7) {
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns = 7;
     }
 
     if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns > 7) {
       rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns = 7;
     }
 
-    if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns > 7) {
-      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns = 7;
+    if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns > 7) {
+      rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns = 7;
     }
 
     if (rtb_DataTypeConversion_j > 7) {
@@ -2476,9 +2476,9 @@ void A380FcuComputer::step()
     }
 
     rtb_DataTypeConversion1_j = (static_cast<uint32_T>
-      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns) & 15U) << 10 | (static_cast<uint32_T>
+      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns) & 15U) << 10 | (static_cast<uint32_T>
       (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns) & 15U) << 14 | (static_cast<uint32_T>
-      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns) & 15U) << 18 | (static_cast<uint32_T>
+      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns) & 15U) << 18 | (static_cast<uint32_T>
       (rtb_DataTypeConversion_j) & 15U) << 22;
     std::memcpy((void *)&rtb_y, (void *)&rtb_DataTypeConversion1_j, (uint32_T)((size_t)1 * sizeof(real32_T)));
     A380FcuComputer_Y.out = A380FcuComputer_B.BusAssignment;
