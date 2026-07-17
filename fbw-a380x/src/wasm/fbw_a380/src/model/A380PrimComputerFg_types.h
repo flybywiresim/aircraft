@@ -18,6 +18,30 @@ enum class fms_flight_phase
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+
+enum class fmgc_approach_type
+  : int32_T {
+  None = 0,
+  ILS,
+  RNAV
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_tcas_submode_
+#define DEFINED_TYPEDEF_FOR_tcas_submode_
+
+enum class tcas_submode
+  : int32_T {
+  VS = 0,
+  ALT_ACQ,
+  ALT_HOLD
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_fmgc_des_submode_
 #define DEFINED_TYPEDEF_FOR_fmgc_des_submode_
 
@@ -311,18 +335,6 @@ struct base_prim_fg_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
-#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
-
-enum class fmgc_approach_type
-  : int32_T {
-  None = 0,
-  ILS,
-  RNAV
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
 #define DEFINED_TYPEDEF_FOR_base_ils_bus_
 
@@ -417,7 +429,7 @@ struct base_prim_longitudinal_modes
   boolean_T fma_dash_display;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
-  boolean_T final_des_active;
+  boolean_T app_des_active;
   boolean_T flare_active;
   boolean_T cruise_active;
   boolean_T tcas_active;
@@ -434,11 +446,13 @@ struct base_prim_armed_modes
   boolean_T alt_acq_arm_possible;
   boolean_T nav_armed;
   boolean_T loc_armed;
+  boolean_T rwy_armed;
   boolean_T land_armed;
   boolean_T glide_armed;
-  boolean_T final_des_armed;
+  boolean_T app_des_armed;
   boolean_T clb_armed;
   boolean_T des_armed;
+  boolean_T op_clb_armed;
   boolean_T tcas_armed;
 };
 
@@ -520,14 +534,15 @@ enum class a380_athr_fma_message
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_tcas_submode_
-#define DEFINED_TYPEDEF_FOR_tcas_submode_
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
-enum class tcas_submode
-  : int32_T {
-  VS = 0,
-  ALT_ACQ,
-  ALT_HOLD
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -563,19 +578,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -1111,6 +1113,8 @@ struct base_prim_fg_logic_output
   boolean_T all_fcu_failure;
   boolean_T fcu_1_chosen;
   boolean_T fcu_2_chosen;
+  base_arinc_429 chosen_fcu_discrete_word_1;
+  base_arinc_429 chosen_fcu_discrete_word_2;
   boolean_T ils_failure;
   boolean_T both_ils_valid;
   base_ils_bus ils_computation_data;
@@ -1148,7 +1152,7 @@ struct base_prim_ap_fd_logic_outputs
   real_T pfd_spd_target_kts;
   boolean_T alt_cstr_applicable;
   real_T alt_sel_or_cstr;
-  boolean_T fmgc_opp_mode_sync;
+  boolean_T mode_sync_active;
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;
@@ -1183,12 +1187,12 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T true_active;
   boolean_T trk_fpa_active;
   boolean_T metric_alt_active;
-  real32_T spd_mach_display_value;
+  real32_T selected_spd_mach;
   boolean_T spd_mach_dashes;
-  real32_T hdg_trk_display_value;
+  real32_T selected_hdg_trk;
   boolean_T hdg_trk_dashes;
-  real32_T alt_display_value;
-  real32_T vs_fpa_display_value;
+  real32_T selected_alt;
+  real32_T selected_vs_fpa;
   boolean_T vs_fpa_dashes;
 };
 
@@ -1289,10 +1293,10 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_9f5quenlDrcqTo1EOF8l7G_
-#define DEFINED_TYPEDEF_FOR_struct_9f5quenlDrcqTo1EOF8l7G_
+#ifndef DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
+#define DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
 
-struct struct_9f5quenlDrcqTo1EOF8l7G
+struct struct_sHDyyIym2nhzMY8qs6JrkG
 {
   base_prim_lateral_modes lateral_modes;
   base_prim_longitudinal_modes longitudinal_modes;
@@ -1315,7 +1319,7 @@ struct struct_9f5quenlDrcqTo1EOF8l7G
   real_T pfd_spd_target_kts;
   boolean_T alt_cstr_applicable;
   real_T alt_sel_or_cstr;
-  boolean_T fmgc_opp_mode_sync;
+  boolean_T mode_sync_active;
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;
@@ -1350,12 +1354,12 @@ struct struct_9f5quenlDrcqTo1EOF8l7G
   boolean_T true_active;
   boolean_T trk_fpa_active;
   boolean_T metric_alt_active;
-  boolean_T spd_mach_display_value;
+  boolean_T selected_spd_mach;
   boolean_T spd_mach_dashes;
-  boolean_T hdg_trk_display_value;
+  boolean_T selected_hdg_trk;
   boolean_T hdg_trk_dashes;
-  boolean_T alt_display_value;
-  boolean_T vs_fpa_display_value;
+  boolean_T selected_alt;
+  boolean_T selected_vs_fpa;
   boolean_T vs_fpa_dashes;
 };
 
