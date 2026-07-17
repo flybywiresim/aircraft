@@ -17,7 +17,12 @@ Prim::Prim(const Prim& obj) : isUnit1(obj.isUnit1), isUnit2(obj.isUnit2), isUnit
   primFg.initialize();
 }
 
-void Prim::clearMemory() {}
+void Prim::clearMemory() {
+  primGeneralLogic.initialize();
+  primFctl.initialize();
+  primFe.initialize();
+  primFg.initialize();
+}
 
 // If the power supply is valid, perform the self-test-sequence.
 // If at least one hydraulic source is pressurised, perform a short test.
@@ -143,6 +148,7 @@ A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& Pri
 void Prim::monitorSelf(bool faultActive) {
   if (faultActive || powerSupplyFault || !selfTestComplete ||
       !primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.prim_overhead_button_pressed) {
+    clearMemory();
     monitoringHealthy = false;
   } else {
     monitoringHealthy = true;
