@@ -4,8 +4,8 @@
 
 import { VdSymbol, NdSymbolTypeFlags, NdPwpSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 
-import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
-import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
+import { VerticalDisplayMapLayer } from './VerticalDisplayMapLayer';
+import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
 
 // eslint-disable-next-line max-len
 const DECEL_PATH = new Path2D(

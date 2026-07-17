@@ -47,6 +47,14 @@ global.SimVar.SetSimVarValue = vitest.fn((name, _, value, __) => {
   });
 });
 
+global.SimVar.GetGlobalVarValue = vitest.fn((name, _, __) => {
+  if (Object.prototype.hasOwnProperty.call(values, name)) {
+    return values[name];
+  } else {
+    return 0;
+  }
+});
+
 global.Facilities = {
   getMagVar(_lat, _lon) {
     return 0; // FIXME ship magnetic model

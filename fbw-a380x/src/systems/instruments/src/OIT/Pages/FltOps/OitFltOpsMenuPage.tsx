@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { AbstractOitFltOpsPageProps } from '../../OIT';
 
 interface OitFltOpsMenuPageProps extends AbstractOitFltOpsPageProps {}

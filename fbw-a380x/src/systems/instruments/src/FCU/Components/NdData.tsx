@@ -10,7 +10,7 @@ import {
   VNode,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { FcuEvents } from 'instruments/src/FCU/Publishers/FcuPublisher';
+import { FcuEvents } from '../Publishers/FcuPublisher';
 import { OverheadEvents } from '../../MsfsAvionicsCommon/providers/OverheadPublisher';
 
 export interface NdDataProps {

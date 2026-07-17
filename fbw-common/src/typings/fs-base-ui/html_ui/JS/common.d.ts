@@ -626,7 +626,7 @@ declare global {
             on(name: string, callback: (...args: any[]) => void, context?: any): void;
             trigger(name: string, ...args: any[]): void;
             triggerToAllSubscribers(event: any, ...args: any[]): void;
-            call(arg0: string, arg1: string, arg2: string);
+            call(name: string, ...args: any[]);
         }
 
         class ViewListenerMgr {

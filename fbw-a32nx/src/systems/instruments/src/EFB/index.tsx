@@ -9,7 +9,7 @@ import { A320FailureDefinitions } from '@failures';
 import { A320251NLandingCalculator } from '@shared/performance/a32nx_landing';
 import { A320251NTakeoffPerformanceCalculator } from '@shared/performance/a32nx_takeoff';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
-import { a32nxSyncedSettings } from 'instruments/src/EFB/settingsSync';
+import { a32nxSyncedSettings } from './settingsSync';
 
 import './Efb.scss';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -73,6 +73,8 @@ render(
         },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
+      hashFile: '/Data/a32nx_hashes.json',
+      hashSeed: 320,
     }}
   >
     <EfbWrapper failures={A320FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />

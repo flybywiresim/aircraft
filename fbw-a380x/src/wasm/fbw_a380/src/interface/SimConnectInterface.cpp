@@ -16,8 +16,10 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   bool autopilotLawsEnabled,
                                   bool flyByWireEnabled,
                                   int primDisabled,
+                                  bool primGeneralLogicDisabled,
+                                  bool primFctlDisabled,
+                                  bool primFeDisabled,
                                   int secDisabled,
-                                  int facDisabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   double keyChangeAileron,
@@ -49,8 +51,10 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store is client data is enabled
     this->clientDataEnabled = clientDataEnabled;
     this->primDisabled = primDisabled;
+    this->primGeneralLogicDisabled = primGeneralLogicDisabled;
+    this->primFctlDisabled = primFctlDisabled;
+    this->primFeDisabled = primFeDisabled;
     this->secDisabled = secDisabled;
-    this->facDisabled = facDisabled;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
@@ -164,6 +168,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALT ABOVE GROUND MINUS CG", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "VELOCITY WORLD Y", "FEET PER MINUTE");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CG PERCENT", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TOTAL WEIGHT", "KILOGRAMS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:0", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
@@ -284,6 +289,11 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:9", "GALLONS");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:10", "GALLONS");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:11", "GALLONS");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:12", "GALLONS");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:13", "GALLONS");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:14", "GALLONS");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:15", "GALLONS");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TANK QUANTITY:16", "GALLONS");
 
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:1", "GALLONS PER HOUR");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:2", "GALLONS PER HOUR");
@@ -438,6 +448,25 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:151", "GALLONS PER HOUR");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:152", "GALLONS PER HOUR");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:153", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:154", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:155", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:156", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:157", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:158", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:159", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:160", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:161", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:162", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:163", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:164", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:165", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:166", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:167", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:168", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:169", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:170", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:171", "GALLONS PER HOUR");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM LINE FUEL FLOW:172", "GALLONS PER HOUR");
 
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:2", "NUMBER");
@@ -452,6 +481,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:11", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:12", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:13", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:14", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:15", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:16", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM JUNCTION SETTING:17", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:1", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:2", "PERCENT OVER 100");
@@ -512,7 +545,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:57", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:58", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:59", "PERCENT OVER 100");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM VALVE OPEN:60", "PERCENT OVER 100");
 
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:2", "NUMBER");
@@ -535,6 +567,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:19", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:20", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:21", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:22", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:23", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:24", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM PUMP ACTIVE:25", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:2", "NUMBER");
@@ -578,6 +614,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:40", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:41", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:42", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:43", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:44", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:45", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:46", "NUMBER");
 
   return result;
 }
@@ -809,8 +849,21 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 }
 
 bool SimConnectInterface::prepareClientDataDefinitions() {
-  // variable for result
-  HRESULT result;
+  struct HresultAccumulator {
+    bool success = true;
+
+    HresultAccumulator& operator=(HRESULT hr) {
+      success = SUCCEEDED(hr);
+      return *this;
+    }
+
+    HresultAccumulator& operator&=(HRESULT hr) {
+      success = success && SUCCEEDED(hr);
+      return *this;
+    }
+
+    operator bool() const { return success; }
+  } result;
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -938,6 +991,59 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  // map client id
+  result &=
+      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_GENERAL_LOGIC_OUTPUT", ClientData::PRIM_GENERAL_LOGIC_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_GENERAL_LOGIC_OUTPUT, sizeof(base_prim_general_logic_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_GENERAL_LOGIC_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_general_logic_outputs));
+
+  if (primGeneralLogicDisabled) {
+    // request data to be updated when set
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_GENERAL_LOGIC_OUTPUT, ClientData::PRIM_GENERAL_LOGIC_OUTPUT,
+                                           ClientData::PRIM_GENERAL_LOGIC_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_FLIGHT_ENVELOPE_OUTPUT",
+                                             ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, sizeof(base_prim_flight_envelope_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_flight_envelope_outputs));
+
+  if (primFeDisabled) {
+    // request data to be updated when set
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT,
+                                           ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_FCTL_LOGIC_OUTPUT", ClientData::PRIM_FCTL_LOGIC_OUTPUT);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, sizeof(base_prim_fctl_logic_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_fctl_logic_outputs));
+
+  if (primFctlDisabled) {
+    // request data to be updated when set
+    result &= SimConnect_RequestClientData(hSimConnect, ClientData::PRIM_FCTL_LOGIC_OUTPUT, ClientData::PRIM_FCTL_LOGIC_OUTPUT,
+                                           ClientData::PRIM_FCTL_LOGIC_OUTPUT, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   for (int i = 0; i < 3; i++) {
     auto defineId = ClientData::PRIM_1_BUS_OUTPUT + i;
 
@@ -1020,19 +1126,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
-  for (int i = 0; i < 2; i++) {
-    auto defineId = ClientData::FMGC_1_B_BUS + i;
-    // map client id
-    result &=
-        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FMGC_" + std::to_string(i + 1) + "_B_BUS").c_str(), defineId);
-    // create client data
-    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fmgc_b_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-    // add data definitions
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_fmgc_b_bus));
-  }
-
-  // ------------------------------------------------------------------------------------------------------------------
-
   // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_A380_SEC_DISCRETE_INPUT", ClientData::SEC_DISCRETE_INPUTS);
   // create client data
@@ -1105,76 +1198,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FAC_DISCRETE_INPUT", ClientData::FAC_DISCRETE_INPUTS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FAC_DISCRETE_INPUTS, sizeof(base_fac_discrete_inputs),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FAC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_fac_discrete_inputs));
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FAC_ANALOG_INPUT", ClientData::FAC_ANALOG_INPUTS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FAC_ANALOG_INPUTS, sizeof(base_fac_analog_inputs),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FAC_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_fac_analog_inputs));
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FAC_DISCRETES_OUTPUT", ClientData::FAC_DISCRETE_OUTPUTS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FAC_DISCRETE_OUTPUTS, sizeof(base_fac_discrete_outputs),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FAC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_fac_discrete_outputs));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::FAC_DISCRETE_OUTPUTS, ClientData::FAC_DISCRETE_OUTPUTS,
-                                         ClientData::FAC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FAC_ANALOGS_OUTPUT", ClientData::FAC_ANALOG_OUTPUTS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FAC_ANALOG_OUTPUTS, sizeof(base_fac_analog_outputs),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FAC_ANALOG_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_fac_analog_outputs));
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::FAC_ANALOG_OUTPUTS, ClientData::FAC_ANALOG_OUTPUTS,
-                                         ClientData::FAC_ANALOG_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  for (int i = 0; i < 2; i++) {
-    auto defineId = ClientData::FAC_1_BUS_OUTPUT + i;
-
-    // map client id
-    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_FAC_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
-    // create client data
-    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_fac_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-    // add data definitions
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_fac_bus));
-
-    // request data to be updated when set
-    if (i == facDisabled) {
-      result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES", ClientData::LOCAL_VARIABLES);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
@@ -1198,7 +1221,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // return result
-  return SUCCEEDED(result);
+  return result;
 }
 
 bool SimConnectInterface::requestData() {
@@ -1406,6 +1429,18 @@ bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus& output, i
   return sendClientData(ClientData::PRIM_1_BUS_OUTPUT + primIndex, sizeof(output), &output);
 }
 
+bool SimConnectInterface::setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output) {
+  return sendClientData(ClientData::PRIM_GENERAL_LOGIC_OUTPUT, sizeof(output), const_cast<base_prim_general_logic_outputs*>(&output));
+}
+
+bool SimConnectInterface::setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output) {
+  return sendClientData(ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT, sizeof(output), const_cast<base_prim_flight_envelope_outputs*>(&output));
+}
+
+bool SimConnectInterface::setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output) {
+  return sendClientData(ClientData::PRIM_FCTL_LOGIC_OUTPUT, sizeof(output), const_cast<base_prim_fctl_logic_outputs*>(&output));
+}
+
 bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs& output) {
   return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
 }
@@ -1416,18 +1451,6 @@ bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs& output)
 
 bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus& output, int secIndex) {
   return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs& output) {
-  return sendClientData(ClientData::FAC_DISCRETE_INPUTS, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataFacAnalog(base_fac_analog_inputs& output) {
-  return sendClientData(ClientData::FAC_ANALOG_INPUTS, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataFacBus(base_fac_bus& output, int facIndex) {
-  return sendClientData(ClientData::FAC_1_BUS_OUTPUT + facIndex, sizeof(output), &output);
 }
 
 base_prim_discrete_outputs& SimConnectInterface::getClientDataPrimDiscretesOutput() {
@@ -1442,6 +1465,18 @@ base_prim_out_bus& SimConnectInterface::getClientDataPrimBusOutput() {
   return clientDataPrimBusOutputs;
 }
 
+base_prim_general_logic_outputs& SimConnectInterface::getClientDataPrimGeneralLogicOutput() {
+  return clientDataPrimGeneralLogicOutput;
+}
+
+base_prim_flight_envelope_outputs& SimConnectInterface::getClientDataPrimFlightEnvelopeOutput() {
+  return clientDataPrimFlightEnvelopeOutput;
+}
+
+base_prim_fctl_logic_outputs& SimConnectInterface::getClientDataPrimFctlLogicOutput() {
+  return clientDataPrimFctlLogicOutput;
+}
+
 base_sec_discrete_outputs& SimConnectInterface::getClientDataSecDiscretesOutput() {
   return clientDataSecDiscreteOutputs;
 }
@@ -1452,18 +1487,6 @@ base_sec_analog_outputs& SimConnectInterface::getClientDataSecAnalogsOutput() {
 
 base_sec_out_bus& SimConnectInterface::getClientDataSecBusOutput() {
   return clientDataSecBusOutputs;
-}
-
-base_fac_discrete_outputs& SimConnectInterface::getClientDataFacDiscretesOutput() {
-  return clientDataFacDiscreteOutputs;
-}
-
-base_fac_analog_outputs& SimConnectInterface::getClientDataFacAnalogsOutput() {
-  return clientDataFacAnalogOutputs;
-}
-
-base_fac_bus& SimConnectInterface::getClientDataFacBusOutput() {
-  return clientDataFacBusOutputs;
 }
 
 bool SimConnectInterface::setClientDataAdr(base_adr_bus& output, int adrIndex) {
@@ -1484,10 +1507,6 @@ bool SimConnectInterface::setClientDataLgciu(base_lgciu_bus& output, int lgciuIn
 
 bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus& output, int sfccIndex) {
   return sendClientData(ClientData::SFCC_1_BUS + sfccIndex, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex) {
-  return sendClientData(ClientData::FMGC_1_B_BUS + fmgcIndex, sizeof(output), &output);
 }
 
 void SimConnectInterface::setLoggingFlightControlsEnabled(bool enabled) {
@@ -3183,6 +3202,21 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
       clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
       return;
 
+    case ClientData::PRIM_GENERAL_LOGIC_OUTPUT:
+      // store aircraft data
+      clientDataPrimGeneralLogicOutput = *((base_prim_general_logic_outputs*)&data->dwData);
+      return;
+
+    case ClientData::PRIM_FLIGHT_ENVELOPE_OUTPUT:
+      // store aircraft data
+      clientDataPrimFlightEnvelopeOutput = *((base_prim_flight_envelope_outputs*)&data->dwData);
+      return;
+
+    case ClientData::PRIM_FCTL_LOGIC_OUTPUT:
+      // store aircraft data
+      clientDataPrimFctlLogicOutput = *((base_prim_fctl_logic_outputs*)&data->dwData);
+      return;
+
     case ClientData::SEC_DISCRETE_OUTPUTS:
       // store aircraft data
       clientDataSecDiscreteOutputs = *((base_sec_discrete_outputs*)&data->dwData);
@@ -3206,26 +3240,6 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::SEC_3_BUS_OUTPUT:
       // store aircraft data
       clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
-      return;
-
-    case ClientData::FAC_DISCRETE_OUTPUTS:
-      // store aircraft data
-      clientDataFacDiscreteOutputs = *((base_fac_discrete_outputs*)&data->dwData);
-      return;
-
-    case ClientData::FAC_ANALOG_OUTPUTS:
-      // store aircraft data
-      clientDataFacAnalogOutputs = *((base_fac_analog_outputs*)&data->dwData);
-      return;
-
-    case ClientData::FAC_1_BUS_OUTPUT:
-      // store aircraft data
-      clientDataFacBusOutputs = *((base_fac_bus*)&data->dwData);
-      return;
-
-    case ClientData::FAC_2_BUS_OUTPUT:
-      // store aircraft data
-      clientDataFacBusOutputs = *((base_fac_bus*)&data->dwData);
       return;
 
     default:

@@ -4,7 +4,7 @@
 
 import './style.scss';
 import React from 'react';
-import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { render } from '../Common';
 
 const RTPIDisplay = () => {

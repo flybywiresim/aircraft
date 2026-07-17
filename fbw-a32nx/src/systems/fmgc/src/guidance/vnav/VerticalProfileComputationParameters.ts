@@ -73,7 +73,7 @@ export class VerticalProfileComputationParametersObserver {
   }
 
   update() {
-    const efobKgs = this.fmgc.getDestEFOB(false);
+    const efobTonnes = this.fmgc.getDestEFOB(false);
     this.parameters = {
       presentPosition: this.getPresentPosition(),
 
@@ -100,7 +100,7 @@ export class VerticalProfileComputationParametersObserver {
       fuelOnBoard: this.getFuelOnBoard(),
       v2Speed: this.getV2Speed(),
       tropoPause: this.fmgc.getTropoPause(),
-      perfFactor: 0, // FIXME: Use actual value,
+      perfFactor: this.fmgc.getPerformanceFactorPercent() ?? 0,
       departureElevation: this.fmgc.getDepartureElevation() ?? DefaultVerticalProfileParameters.departureElevation,
       /**
        * This differs from the altitude I use to start building the descent profile.
@@ -122,7 +122,7 @@ export class VerticalProfileComputationParametersObserver {
       preselectedClbSpeed: this.fmgc.getPreSelectedClbSpeed(),
       preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
       takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting() ?? DefaultVerticalProfileParameters.flapsSetting,
-      estimatedDestinationFuel: efobKgs !== null ? UnitType.TONNE.convertTo(efobKgs, UnitType.POUND) : null,
+      estimatedDestinationFuel: efobTonnes !== null ? UnitType.TONNE.convertTo(efobTonnes, UnitType.POUND) : null,
 
       approachQnh: this.fmgc.getApproachQnh(),
       approachTemperature: this.fmgc.getApproachTemperature(),

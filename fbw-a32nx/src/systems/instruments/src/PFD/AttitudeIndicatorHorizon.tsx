@@ -12,7 +12,7 @@ import {
   Arinc429RegisterSubject,
   Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
@@ -25,7 +25,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;

@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
-import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
-import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
   Units,
   MetarParserType,
   useSimVar,
   usePersistentProperty,
   parseMetar,
-  ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
@@ -27,6 +24,7 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import { fetchRawMetarBySource } from '../../Service/WeatherService';
 import {
   isValidIcao,
   isWindMagnitudeAndDirection,
@@ -71,7 +69,6 @@ export const LandingWidget = () => {
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
   const { usingMetric } = Units;
 
@@ -104,7 +101,7 @@ export const LandingWidget = () => {
     displayedRunwayLength,
   } = useAppSelector((state) => state.performance.landing);
 
-  const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+  const { arrivingAirport, arrivingMetar, arrivingRunway } = useAppSelector((state) => state.simbrief.data);
 
   useEffect(() => {
     // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
@@ -177,28 +174,11 @@ export const LandingWidget = () => {
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
-    // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
-      let metar: MsfsMetar;
-      try {
-        metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-        if (metar.icao !== icao.toUpperCase()) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(metar.metarString);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else {
-      try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
-        if (!response.metar) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
+    try {
+      const rawMetar = await fetchRawMetarBySource(icao);
+      parsedMetar = parseMetar(rawMetar);
+    } catch (err) {
+      toast.error(err.message);
     }
 
     if (parsedMetar === undefined) {
@@ -219,8 +199,65 @@ export const LandingWidget = () => {
           pressure: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
+    }
+  };
+
+  const syncValuesWithOfp = async () => {
+    try {
+      const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
+
+      const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+      if (!isValidIcao(arrivingAirport)) {
+        toast.error('OFP airport is invalid');
+        return;
+      }
+
+      const values: Partial<typeof initialState.landing> = {
+        icao: arrivingAirport,
+        weight: weightKgs,
+        windDirection,
+        windMagnitude: parsedMetar.wind.speed_kts,
+        windEntry: undefined,
+        temperature: parsedMetar.temperature.celsius,
+        pressure: parsedMetar.barometer.mb,
+      };
+
+      try {
+        values.availableRunways = await getRunways(arrivingAirport);
+        const magvar = await getAirportMagVar(arrivingAirport);
+
+        const runwayIndex = values.availableRunways.findIndex((r) => r.ident === arrivingRunway);
+        if (runwayIndex >= 0) {
+          const newRunway = values.availableRunways[runwayIndex];
+          const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+
+          values.windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+          values.selectedRunwayIndex = runwayIndex;
+          values.runwayHeading = newRunway.magneticBearing;
+          values.runwayLength = newRunway.length;
+          values.slope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+          values.elevation = newRunway.elevation;
+        } else {
+          toast.error('Could not find OFP runway!');
+        }
+      } catch (e) {
+        toast.error(e);
+      }
+
+      dispatch(setLandingValues(values));
+    } catch (_err) {
+      showModal(
+        <PromptModal
+          title={t('Performance.Landing.MetarErrorDialogTitle')}
+          bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
+          cancelText="No"
+          confirmText="Yes"
+          onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
+        />,
+      );
     }
   };
 
@@ -484,33 +521,7 @@ export const LandingWidget = () => {
     if (autoFillSource === 'METAR') {
       syncValuesWithApiMetar(icao);
     } else {
-      try {
-        const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
-
-        const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
-
-        dispatch(
-          setLandingValues({
-            weight: weightKgs,
-            windDirection: parsedMetar.wind.degrees,
-            windMagnitude: parsedMetar.wind.speed_kts,
-            temperature: parsedMetar.temperature.celsius,
-            pressure: parsedMetar.barometer.mb,
-          }),
-        );
-      } catch (err) {
-        showModal(
-          <PromptModal
-            title={t('Performance.Landing.MetarErrorDialogTitle')}
-            bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
-            cancelText="No"
-            confirmText="Yes"
-            onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
-          />,
-        );
-      }
-
-      dispatch(setLandingValues({ icao: arrivingAirport }));
+      syncValuesWithOfp();
     }
   };
 
@@ -746,8 +757,8 @@ export const LandingWidget = () => {
                       value={temperatureUnit}
                       className="w-20 rounded-l-none"
                       options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
+                        { value: 'C', displayValue: '°C' },
+                        { value: 'F', displayValue: '°F' },
                       ]}
                       onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
                     />

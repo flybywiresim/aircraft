@@ -27,7 +27,7 @@ export interface ISimbriefData {
   text: string;
 }
 
-interface INavlogFix {
+export interface INavlogFix {
   ident: string;
   name: string;
   type: string;
@@ -75,7 +75,7 @@ interface IFixWind {
   level: IWindLevel[];
 }
 
-interface IWindLevel {
+export interface IWindLevel {
   altitude: string;
   wind_dir: string;
   wind_spd: string;
@@ -133,6 +133,7 @@ interface IAlternate {
   transLevel: number;
   averageWindDirection: number;
   averageWindSpeed: number;
+  cruiseAltitude: number;
 }
 
 interface ITimes {

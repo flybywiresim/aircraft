@@ -2,8 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OisDomain } from '../../OIT';
 import { OitUiService } from '../../OitUiService';
 

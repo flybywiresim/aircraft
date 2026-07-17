@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
-import { PressureIndicator } from 'instruments/src/ISIS/PressureIndicator';
+import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk-react';
+import { PressureIndicator } from './PressureIndicator';
 
 enum DisplayUnitState {
   On,

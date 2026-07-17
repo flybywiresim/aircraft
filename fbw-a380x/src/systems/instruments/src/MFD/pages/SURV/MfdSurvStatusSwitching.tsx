@@ -10,13 +10,13 @@ import {
 
 import './MfdSurvStatusSwitching.scss';
 
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvStatusButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
-import { SurvStatusItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
+import { MfdSurvEvents } from '../../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
+import { SurvStatusButton } from '../../../MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
+import { SurvStatusItem } from '../../../MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
 
@@ -31,8 +31,6 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
   private readonly subs = [] as Subscription[];
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
-
-  private readonly eoActive = Subject.create<boolean>(false);
 
   private readonly tcas1Failed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
@@ -82,9 +80,6 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
       this.activeSystemGroupWxrTaws,
       this.wxrTaws1Active,
       this.wxrTaws2Active,
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
     );
   }
 
@@ -100,12 +95,7 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('STATUS & SWITCHING')}
-          offset={Subject.create('')}
-          eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('STATUS & SWITCHING')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">
@@ -251,7 +241,12 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

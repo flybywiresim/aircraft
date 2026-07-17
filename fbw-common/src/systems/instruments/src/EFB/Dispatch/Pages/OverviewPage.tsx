@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import React, { FC } from 'react';
-import { useSimVar, Units, AirframeType } from '@flybywiresim/fbw-sdk';
+import { useSimVar, Units, AirframeType } from '@flybywiresim/fbw-sdk-react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
 import { t, A320NoseOutline, A380NoseOutline, useAppSelector, getMaxPax } from '@flybywiresim/flypad';

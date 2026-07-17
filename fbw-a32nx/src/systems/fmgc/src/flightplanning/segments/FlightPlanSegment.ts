@@ -68,6 +68,17 @@ export abstract class FlightPlanSegment {
   abstract clone(forPlan: BaseFlightPlan, options?: number): FlightPlanSegment;
 
   /**
+   * Updates this segment based on data from a serialized segment
+   * @param serialized the serialized segment
+   */
+  async setFromSerializedSegment(serialized: SerializedFlightPlanSegment): Promise<void> {
+    this.strung = true;
+    this.allLegs = serialized.allLegs.map((it) =>
+      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
+    );
+  }
+
+  /**
    * Inserts an element at a specified index
    *
    * @param index   the index to insert the element at
@@ -109,6 +120,10 @@ export abstract class FlightPlanSegment {
       // Move legs after cut to enroute
       const removed = this.allLegs.splice(atPoint);
 
+      if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+        this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+      }
+
       this.flightPlan.syncSegmentLegsChange(this);
       this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
       return removed;
@@ -136,7 +151,11 @@ export abstract class FlightPlanSegment {
    * @param to   end of the range, exclusive
    */
   removeRange(from: number, to: number) {
-    this.allLegs.splice(from, to - from);
+    const removed = this.allLegs.splice(from, to - from);
+
+    if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.flightPlan.syncSegmentLegsChange(this);
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -149,7 +168,10 @@ export abstract class FlightPlanSegment {
    */
   removeBefore(before: number) {
     for (let i = 0; i < before; i++) {
-      this.allLegs.shift();
+      const removed = this.allLegs.shift();
+      if (removed.isDiscontinuity === false && removed.definition.isEngineOutBranch) {
+        this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+      }
     }
 
     this.flightPlan.syncSegmentLegsChange(this);
@@ -162,7 +184,11 @@ export abstract class FlightPlanSegment {
    * @param from start of the range, inclusive
    */
   removeAfter(from: number) {
-    this.allLegs.splice(from);
+    const removed = this.allLegs.splice(from);
+
+    if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.flightPlan.syncSegmentLegsChange(this);
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -170,6 +196,10 @@ export abstract class FlightPlanSegment {
 
   clear(): FlightPlanElement[] {
     const legs = this.allLegs.slice();
+
+    if (legs.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.allLegs.length = 0;
     this.flightPlan.syncSegmentLegsChange(this);
@@ -236,7 +266,10 @@ export abstract class FlightPlanSegment {
 
     return -1;
   }
-
+  /**
+   * Serializes this flight plan segment
+   * @returns a serialized flight plan segment
+   */
   serialize(): SerializedFlightPlanSegment {
     return { allLegs: this.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it)) };
   }
@@ -244,6 +277,8 @@ export abstract class FlightPlanSegment {
 
 export interface SerializedFlightPlanSegment {
   allLegs: (SerializedFlightPlanLeg | Discontinuity)[];
-  facilityDatabaseID?: string;
+  facilityIdent?: string;
+  runwayIdent?: string;
   procedureIdent?: string;
+  procedureDatabaseId?: string;
 }

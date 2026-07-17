@@ -13,13 +13,13 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_DEFLECTION"),
-        |value| -1. * (value * 2. - 1.),
+        |value| -(value * 2. - 1.),
         Variable::named("HYD_AILERON_LEFT_DEFLECTION"),
     );
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_RIGHT_DEFLECTION"),
-        |value| (value * 2. - 1.),
+        |value| value * 2. - 1.,
         Variable::named("HYD_AILERON_RIGHT_DEFLECTION"),
     );
 

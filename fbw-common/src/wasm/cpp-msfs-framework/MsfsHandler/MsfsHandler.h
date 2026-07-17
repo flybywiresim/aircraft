@@ -213,6 +213,11 @@ class MsfsHandler {
    * @return the current tick counter
    */
   [[nodiscard]] UINT64 getTickCounter() const { return tickCounter; }
+
+  /**
+   * @return the current pause state
+   */
+  [[nodiscard]] UINT64 getPauseState() const { return a32nxPauseDetected->getAsInt64(); }
 };
 
 #endif  // FLYBYWIRE_MSFSHANDLER_H

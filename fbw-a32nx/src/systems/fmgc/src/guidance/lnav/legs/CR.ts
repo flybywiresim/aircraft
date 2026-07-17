@@ -18,15 +18,14 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { distanceTo, placeBearingIntersection } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
-import { VhfNavaid } from '@flybywiresim/fbw-sdk';
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { MagVar, VhfNavaid } from '@flybywiresim/fbw-sdk';
 
 export class CRLeg extends Leg {
   private computedPath: PathVector[] = [];
 
   private readonly thetaTrue = this.recommendedNavaid.trueReferenced
     ? this.theta
-    : A32NX_Util.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
+    : MagVar.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
 
   constructor(
     public readonly course: DegreesTrue,

@@ -39,6 +39,20 @@ export interface FpmConfig {
    * that does not have a taxi fuel value entered, is performed
    */
   PERSIST_TAXI_FUEL_ON_SEC_SWAP: boolean;
+
+  /**
+   * Number of secondary flight plans supported by the aircraft
+   */
+  NUM_SECONDARY_FLIGHT_PLANS: number;
+
+  /** The number of different flight levels for which cruise wind entries may be made */
+  NUM_CRUISE_WIND_LEVELS: number;
+
+  /** The number of different flight levels for which climb wind entries may be made */
+  NUM_CLIMB_WIND_LEVELS: number;
+
+  /** The number of different flight levels for which descent wind entries may be made */
+  NUM_DESCENT_WIND_LEVELS: number;
 }
 
 export class FpmConfigs {
@@ -53,6 +67,10 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: true,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: true,
+    NUM_SECONDARY_FLIGHT_PLANS: 3,
+    NUM_CRUISE_WIND_LEVELS: 4,
+    NUM_CLIMB_WIND_LEVELS: 5,
+    NUM_DESCENT_WIND_LEVELS: 5,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -66,5 +84,10 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: false,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: false,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: false,
+    NUM_SECONDARY_FLIGHT_PLANS: 1,
+    NUM_CRUISE_WIND_LEVELS: 4,
+    NUM_CLIMB_WIND_LEVELS: 5,
+    // Normally 5, 10 with the 4D RTA option
+    NUM_DESCENT_WIND_LEVELS: 10,
   };
 }

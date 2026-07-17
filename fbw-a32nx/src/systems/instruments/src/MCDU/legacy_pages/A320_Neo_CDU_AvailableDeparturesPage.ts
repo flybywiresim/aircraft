@@ -46,7 +46,8 @@ export class CDUAvailableDeparturesPage {
     const selectedSid = targetPlan.originDeparture;
     const selectedTransition = targetPlan.departureEnrouteTransition;
 
-    const showEosid = selectedRunway && sidSelection;
+    const eoSidIdent =
+      selectedRunway && sidSelection ? targetPlan.engineOutDepartureSegment?.procedureIdent ?? 'NONE' : undefined;
 
     const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
@@ -297,23 +298,23 @@ export class CDUAvailableDeparturesPage {
     if (editingTmpy) {
       mcdu.onLeftInput[5] = () => {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
       mcdu.onRightInput[5] = () => {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateConstraints();
           mcdu.onToRwyChanged();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 
-    if (showEosid) {
+    if (eoSidIdent) {
       rows[7][2] = 'EOSID';
     }
 
@@ -342,7 +343,7 @@ export class CDUAvailableDeparturesPage {
       [
         editingTmpy ? '{ERASE[color]amber' : '{RETURN',
         editingTmpy ? 'INSERT*[color]amber' : '',
-        showEosid ? `{${selectedColour}}{sp}NONE{end}` : '',
+        eoSidIdent ? `{${selectedColour}}{sp}${eoSidIdent}{end}` : '',
       ],
     ]);
     mcdu.onPrevPage = () => {

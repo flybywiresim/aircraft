@@ -1,4 +1,4 @@
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { Position, CabinDoorProps } from '@instruments/common/types';
 import React from 'react';
 

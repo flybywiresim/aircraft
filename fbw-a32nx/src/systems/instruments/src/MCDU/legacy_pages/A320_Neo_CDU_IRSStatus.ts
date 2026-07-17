@@ -9,120 +9,102 @@ import { FmsFormatters } from '../legacy/FmsFormatters';
 export class CDUIRSStatus {
   private static frozen = false;
 
-  private static readonly ir1LatitudeVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_1_LATITUDE',
-    SimVarValueType.Enum,
-  );
-  private static readonly ir1LongitudeVar = RegisteredSimVar.create<number>(
+  private static readonly ir1LatitudeVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_1_LATITUDE', SimVarValueType.Enum);
+  private static readonly ir1LongitudeVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_LONGITUDE',
     SimVarValueType.Enum,
   );
-  private static readonly ir2LatitudeVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_2_LATITUDE',
-    SimVarValueType.Enum,
-  );
+  private static readonly ir2LatitudeVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_2_LATITUDE', SimVarValueType.Enum);
 
-  private static readonly ir2LongitudeVar = RegisteredSimVar.create<number>(
+  private static readonly ir2LongitudeVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_LONGITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3LatitudeVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_3_LATITUDE',
-    SimVarValueType.Enum,
-  );
+  private static readonly ir3LatitudeVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_3_LATITUDE', SimVarValueType.Enum);
 
-  private static readonly ir3LongitudeVar = RegisteredSimVar.create<number>(
+  private static readonly ir3LongitudeVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_LONGITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir1TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir1TrueTrackVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir2TrueTrackVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_TRUE_TRACK',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir3TrueTrackVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_TRUE_TRACK',
     SimVarValueType.Enum,
   );
 
-  private static ir1TrueHeadingVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
-    SimVarValueType.Enum,
-  );
+  private static ir1TrueHeadingVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_1_TRUE_HEADING', SimVarValueType.Enum);
 
-  private static ir2TrueHeadingVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_2_TRUE_HEADING',
-    SimVarValueType.Enum,
-  );
+  private static ir2TrueHeadingVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_2_TRUE_HEADING', SimVarValueType.Enum);
 
-  private static ir3TrueHeadingVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_3_TRUE_HEADING',
-    SimVarValueType.Enum,
-  );
+  private static ir3TrueHeadingVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_3_TRUE_HEADING', SimVarValueType.Enum);
 
-  private static readonly ir1WindDirectionVar = RegisteredSimVar.create<number>(
+  private static readonly ir1WindDirectionVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_WIND_DIRECTION',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2WindDirectionVar = RegisteredSimVar.create<number>(
+  private static readonly ir2WindDirectionVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_WIND_DIRECTION',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3WindDirectionVar = RegisteredSimVar.create<number>(
+  private static readonly ir3WindDirectionVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_WIND_DIRECTION',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir1WindSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir1WindSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_WIND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2WindSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir2WindSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_WIND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3WindSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir3WindSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_WIND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir1GroundSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir1GroundSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2GroundSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir2GroundSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_GROUND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3GroundSpeedVar = RegisteredSimVar.create<number>(
+  private static readonly ir3GroundSpeedVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_GROUND_SPEED',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir1MagneticHeadingVar = RegisteredSimVar.create<number>(
+  private static readonly ir1MagneticHeadingVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_HEADING',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2MagneticHeadingVar = RegisteredSimVar.create<number>(
+  private static readonly ir2MagneticHeadingVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_HEADING',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3MagneticHeadingVar = RegisteredSimVar.create<number>(
+  private static readonly ir3MagneticHeadingVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_HEADING',
     SimVarValueType.Enum,
   );

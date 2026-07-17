@@ -7,6 +7,7 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -19,7 +20,7 @@ export class CDUProgressPage {
 
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
-    const flightNo = plan.flightNumber ?? '';
+    const flightNo = plan.flightNumber.get() ?? '';
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
     const recMaxFl = mcdu.getMaxFlCorrected();
     const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;
@@ -195,9 +196,9 @@ export class CDUProgressPage {
     }
 
     mcdu.setTemplate([
-      ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
+      [...FormatLine(new Column(11, flightPhase, Column.green, { alignRight: true }), new Column(13, flightNo))],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
-      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0{end}'],
+      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0'],
       [''],
       ['<REPORT', vDevCell],
       [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],

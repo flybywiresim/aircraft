@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AFloor } from './AFloor';
 import { Egt } from './EGT';
@@ -20,19 +20,7 @@ interface UpperDisplayProps {
   bus: EventBus;
 }
 export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
-  private usingMetric = Subject.create(false);
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    NXDataStore.getAndSubscribeLegacy(
-      'CONFIG_USING_METRIC_UNIT',
-      (_k, v) => {
-        this.usingMetric.set(v === '1');
-      },
-      '1',
-    );
-  }
+  private usingMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
 
   render(): VNode {
     return (

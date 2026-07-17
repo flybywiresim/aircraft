@@ -4,7 +4,7 @@
 
 import { MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
 export enum FwsLimitationsPhases {
   AllPhases,
@@ -71,6 +71,16 @@ export class FwsLimitations {
     },
     290400002: {
       simVarIsActive: this.fws.allFlapSysFault,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
+    800400002: {
+      // LDG DIST AFFECTED
+      simVarIsActive: this.fws.ldgDistAffected,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
+    800400003: {
+      // LDG PERF AFFECTED
+      simVarIsActive: this.fws.ldgPerfAffected,
       phase: FwsLimitationsPhases.ApprLdg,
     },
   };

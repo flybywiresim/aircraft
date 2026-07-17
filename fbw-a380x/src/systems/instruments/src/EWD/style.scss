@@ -1,4 +1,5 @@
 @import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/animations";
 @import "../MsfsAvionicsCommon/gauges";
 @import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
@@ -454,6 +455,38 @@ text, tspan, span {
   color: $display-green;
 }
 
+.EclLine.Underline {
+  text-decoration: none;
+  border-bottom: 2px solid currentColor;
+}
+
+.EclTableRow {
+  flex: 1;
+
+  .EclTableLeft {
+    flex: 1.5;
+    text-align: left;
+    border-right: 2px solid currentColor;
+    padding-right: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .EclTableRight {
+    flex: 1;
+    padding-left: 6px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .EclTableRightHeader {
+    flex: 1;
+    padding-left: 6px;
+    text-align: left;
+    white-space: nowrap;
+  }
+}
+
 .EclLine.Cyan {
   color: $display-cyan;
 }
@@ -464,6 +497,10 @@ text, tspan, span {
 
 .EclLine.White {
   color: $display-white;
+}
+
+.EclLine.Red {
+  color: $display-red;
 }
 
 .EclLine.Selected {
@@ -581,4 +618,10 @@ text, tspan, span {
   right: 3px;
   display: flex;
   flex-direction: column;
+}
+
+.PulseAmberInfinite {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
 }

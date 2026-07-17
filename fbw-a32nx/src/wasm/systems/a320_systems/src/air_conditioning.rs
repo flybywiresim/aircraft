@@ -924,14 +924,14 @@ impl PressurizationSystemInterfaceUnit {
             self.discrete_word = Arinc429Word::new(0, SignStatus::FailureWarning);
         } else {
             self.discrete_word = Arinc429Word::new(0, SignStatus::NormalOperation);
-        }
 
-        self.discrete_word.set_bit(11, cpc.is_active());
-        self.discrete_word.set_bit(12, cpc.has_fault());
-        self.discrete_word.set_bit(14, cpc.is_excessive_alt());
-        self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
-        self.discrete_word
-            .set_bit(17, !cpc.landing_elevation_is_auto());
+            self.discrete_word.set_bit(11, cpc.is_active());
+            self.discrete_word.set_bit(12, cpc.has_fault());
+            self.discrete_word.set_bit(14, cpc.is_excessive_alt());
+            self.discrete_word.set_bit(15, cpc.is_low_diff_pressure());
+            self.discrete_word
+                .set_bit(17, !cpc.landing_elevation_is_auto());
+        }
     }
 }
 

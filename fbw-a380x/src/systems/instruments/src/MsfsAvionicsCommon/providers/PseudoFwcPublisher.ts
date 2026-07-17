@@ -25,7 +25,6 @@ type BasePseudoFwcSimvars = {
   hyd_yellow_sys_pressurized: boolean;
   throttle_position: number;
   ths_position: number;
-  gw_cg_percent: number;
 };
 
 type IndexedTopics = 'engine_master' | 'engine_state' | 'adr_cas_word' | 'throttle_position';
@@ -59,7 +58,6 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
       ],
       ['throttle_position', { name: 'L:A32NX_AUTOTHRUST_TLA:#index#', type: SimVarValueType.Number, indexed: true }],
       ['ths_position', { name: 'ELEVATOR TRIM POSITION', type: SimVarValueType.Radians }],
-      ['gw_cg_percent', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
     ];
 
     super(new Map(simvars), bus, pacer);

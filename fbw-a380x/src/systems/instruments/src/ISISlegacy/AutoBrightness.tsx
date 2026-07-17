@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useInterval, MathUtils, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInterval, MathUtils, useInteractionEvent } from '@flybywiresim/fbw-sdk-react';
 
 type AutoBrightnessProps = {
   bugsActive: boolean;
 };
 
 export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, children }) => {
-  const minBrightness = 0.15;
+  const minBrightness = 0.03;
   const maxBrightness = 0.99;
   const dayBrightness = 0.85;
-  const nightBrightness = 0.25;
-  const brightnessGranularity = 0.05;
+  const nightBrightness = 0.2;
+  const brightnessGranularity = 0.025;
 
   const [rawAutoBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
   const [autoBrightness, setAutoBrightness] = useState(0.5);
@@ -58,7 +58,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
 
   useEffect(() => {
     setAutoBrightness(
-      Avionics.Utils.lerpAngle(nightBrightness, dayBrightness, Math.max(0, autoBrightness - 0.15 / 0.85)),
+      Avionics.Utils.lerpAngle(nightBrightness, dayBrightness, Math.max(0, autoBrightness - 0.3 / 0.85)),
     );
     setManualOffset(MathUtils.clamp(manualOffset, minBrightness - autoBrightness, maxBrightness - autoBrightness));
   }, [rawAutoBrightness]);

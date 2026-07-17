@@ -206,8 +206,7 @@ export class TransitionPicker {
       return new CourseCaptureTransition(from, to);
     }
     if (to instanceof CFLeg) {
-      // FIXME fixed radius / revert to path capture
-      return new PathCaptureTransition(from, to);
+      return new FixedRadiusTransition(from, to);
     }
     if (to instanceof DFLeg) {
       return new DirectToFixTransition(from, to);

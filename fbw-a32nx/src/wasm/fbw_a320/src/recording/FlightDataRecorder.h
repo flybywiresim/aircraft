@@ -14,7 +14,7 @@
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 3200005;
+  const uint64_t INTERFACE_VERSION = 3200006;
 
   const uint32_t NUMBER_OF_ELAC_TO_WRITE = 2;
   const uint32_t NUMBER_OF_SEC_TO_WRITE = 3;
@@ -38,9 +38,9 @@ class FlightDataRecorder {
   const std::string CONFIGURATION_FILEPATH = "\\work\\FlightDataRecorder.ini";
 
   std::unique_ptr<LocalVariable> idIsEnabled;
-  std::unique_ptr<LocalVariable> idMaximumSampleCounter;
-  std::unique_ptr<LocalVariable> idMaximumFileCount;
   int sampleCounter = 0;
+  int maximumSampleCounter = 864000;
+  int maximumFileCount = 15;
   std::shared_ptr<gzofstream> fileStream;
 
   void manageFlightDataRecorderFiles();
@@ -50,8 +50,6 @@ class FlightDataRecorder {
   void cleanUpFlightDataRecorderFiles();
 
   void loadConfiguration();
-
-  void writeConfiguration();
 
   void writeElac(Elac& elac);
 

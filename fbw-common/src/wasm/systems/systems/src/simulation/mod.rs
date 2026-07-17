@@ -10,7 +10,7 @@ use crate::{
     shared::arinc825::{from_arinc825, to_arinc825, Arinc825Word},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
@@ -36,6 +36,7 @@ pub trait SimulatorReaderWriter {
 
 pub trait VariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier;
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier;
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
@@ -61,13 +62,14 @@ impl VariableIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
 pub enum StartState {
     Hangar,
     Apron,
     Taxi,
     Runway,
     Climb,
+    #[default]
     Cruise,
     Approach,
     Final,
@@ -105,12 +107,6 @@ impl From<StartState> for f64 {
     }
 }
 
-impl Default for StartState {
-    fn default() -> Self {
-        Self::Cruise
-    }
-}
-
 pub struct InitContext<'a> {
     start_state: StartState,
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
@@ -132,6 +128,10 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn get_unprefixed_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get_unprefixed(name)
     }
 
     pub fn start_state(&self) -> StartState {
@@ -419,6 +419,10 @@ impl<T: Aircraft> Simulation<T> {
     /// # impl VariableRegistry for MyVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         Default::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
     /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();
@@ -850,8 +854,8 @@ mod tests {
 
     mod start_state {
         use super::*;
-        use fxhash::FxHashMap;
         use ntest::assert_about_eq;
+        use rustc_hash::FxHashMap;
 
         #[rstest]
         #[case(1., StartState::Hangar)]

@@ -62,13 +62,14 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
       throw new Error(`[FMS/FPM] Can't find arrival procedure '${databaseId}' for ${destinationAirport.ident}`);
     }
 
+    this.arrival = matchingArrival;
+
     if (skipUpdateLegs) {
       return;
     }
 
     const legs = [...matchingArrival.commonLegs];
 
-    this.arrival = matchingArrival;
     this.allLegs.length = 0;
     this.strung = false;
 

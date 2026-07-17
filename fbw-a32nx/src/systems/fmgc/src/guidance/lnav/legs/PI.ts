@@ -6,12 +6,12 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import {
   arcDistanceToGo,
   arcGuidance,
   courseToFixDistanceToGo,
   courseToFixGuidance,
+  getRollAnticipationDistance,
   maxBank,
 } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs';
@@ -21,7 +21,7 @@ import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lna
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentType } from '@fmgc/wtsdk';
 import { bearingTo, distanceTo, placeBearingIntersection, smallCircleGreatCircleIntersection } from 'msfs-geo';
-import { Fix, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Fix, TurnDirection, Waypoint, MathUtils, MagVar } from '@flybywiresim/fbw-sdk';
 
 interface Segment {
   itp?: Coordinates;
@@ -94,7 +94,7 @@ export class PILeg extends Leg {
     const distToCf = distanceTo(this.fix.location, this.nextLeg.fix.location);
 
     const cfInverseCrs = (this.nextLeg.course + 180) % 360;
-    this.outbound.course = this.metadata.flightPlanLegDefinition.magneticCourse; // TODO true ?
+    this.outbound.course = MagVar.getLegTrueCourse(this.metadata.flightPlanLegDefinition);
 
     this.straight.itp = this.fix.location;
     this.straight.course = cfInverseCrs;
@@ -331,7 +331,7 @@ export class PILeg extends Leg {
         return [0, 0];
     }
 
-    return [Geometry.getRollAnticipationDistance(gs, currentBank, nextBank), nextBank];
+    return [getRollAnticipationDistance(gs, currentBank, nextBank), nextBank];
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: number, tas: number, gs: number): GuidanceParameters {

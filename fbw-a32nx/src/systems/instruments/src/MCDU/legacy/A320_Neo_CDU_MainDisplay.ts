@@ -18,6 +18,9 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
+import { EngineOutTargetPage } from '@fmgc/events/EngineOutEvents';
+import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
+import { CDUPerformancePage } from '../legacy_pages/A320_Neo_CDU_PerformancePage';
 
 export class A320_Neo_CDU_MainDisplay
   extends FMCMainDisplay
@@ -184,6 +187,14 @@ export class A320_Neo_CDU_MainDisplay
     AOCFreeText: 76,
     StepAltsPage: 77,
     ATCDepartReq: 78,
+    ATCCommMenu: 79,
+    ATCText: 80,
+    ATCProcedureRequest: 81,
+    ATCVertRequest: 82,
+    ATCLatRequest: 83,
+    ATCMessageModifyUM131: 84,
+    ATCContactRequest: 85,
+    RTAPage: 86,
   };
 
   private mcduServerClient?: McduServerClient;
@@ -411,6 +422,19 @@ export class A320_Neo_CDU_MainDisplay
 
     // sync annunciator simvar state
     this.updateAnnunciators(true);
+
+    this.sub.on('fms_engine_out_page_request').handle((target) => {
+      if (this.activeSystem === 'FMGC') {
+        switch (target) {
+          case EngineOutTargetPage.FlightPlan:
+            CDUFlightPlanPage.ShowPage(this);
+            break;
+          case EngineOutTargetPage.Perf:
+            CDUPerformancePage.ShowPage(this);
+            break;
+        }
+      }
+    });
   }
 
   public requestUpdate() {
@@ -1302,8 +1326,8 @@ export class A320_Neo_CDU_MainDisplay
       case AtsuStatusCodes.CallsignInUse:
         this.atsuScratchpad.setMessage(NXFictionalMessages.fltNbrInUse);
         break;
-      case AtsuStatusCodes.NoHoppieConnection:
-        this.atsuScratchpad.setMessage(NXFictionalMessages.noHoppieConnection);
+      case AtsuStatusCodes.NoAcarsConnection:
+        this.atsuScratchpad.setMessage(NXFictionalMessages.noAcarsConnection);
         break;
       case AtsuStatusCodes.ComFailed:
         this.atsuScratchpad.setMessage(NXSystemMessages.comUnavailable);
@@ -1537,7 +1561,7 @@ export class A320_Neo_CDU_MainDisplay
     if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
       try {
         this.mcduServerClient.send(message);
-      } catch (e) {
+      } catch (_e) {
         /** ignore **/
       }
     }

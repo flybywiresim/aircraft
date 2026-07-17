@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,7 +13,6 @@ import {
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { Predictions, StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { WindComponent } from '@fmgc/guidance/vnav/wind';
 
 export interface DescentStrategy {
   /**
@@ -31,7 +30,7 @@ export interface DescentStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 
@@ -49,7 +48,7 @@ export interface DescentStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 
@@ -67,7 +66,7 @@ export interface DescentStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 }
@@ -135,7 +134,7 @@ export class DesModeStrategy implements DescentStrategy {
     speed: number,
     mach: number,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults {
     return this.descentStrategy.predictToAltitude(
@@ -155,7 +154,7 @@ export class DesModeStrategy implements DescentStrategy {
     speed: number,
     mach: number,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults {
     return this.descentStrategy.predictToDistance(
@@ -175,7 +174,7 @@ export class DesModeStrategy implements DescentStrategy {
     initialSpeed: number,
     mach: number,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults {
     return this.decelerationStrategy.predictToSpeed(
@@ -204,7 +203,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     speed: number,
     mach: number,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: Partial<AircraftCtlSurfcConfiguration> = this.defaultConfig,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -225,13 +224,13 @@ export class IdleDescentStrategy implements DescentStrategy {
       predictedN1,
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -241,7 +240,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     speed: number,
     mach: number,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: Partial<AircraftCtlSurfcConfiguration> = this.defaultConfig,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -261,13 +260,13 @@ export class IdleDescentStrategy implements DescentStrategy {
       predictedN1,
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -277,7 +276,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: Partial<AircraftCtlSurfcConfiguration> = this.defaultConfig,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -302,13 +301,13 @@ export class IdleDescentStrategy implements DescentStrategy {
       predictedN1,
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       gearExtended,
       flapConfig,
       speedbrakesExtended,
-      perfFactor,
     );
   }
 }

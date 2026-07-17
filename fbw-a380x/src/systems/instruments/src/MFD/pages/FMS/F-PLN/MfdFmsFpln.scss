@@ -85,20 +85,10 @@
   align-items: center;
   font-size: 22px;
   color: $display-green;
-}
-
-.mfd-fms-fpln-label-small-clickable {
-  height: 72px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
-  color: $display-green;
   border: 2px solid transparent;
 }
 
-.mfd-fms-fpln-label-small-clickable:hover {
+.mfd-fms-fpln-label-small.clickable:hover {
   border: 2px solid $display-cyan;
 }
 

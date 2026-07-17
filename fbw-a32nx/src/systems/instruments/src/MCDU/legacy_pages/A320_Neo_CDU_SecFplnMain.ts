@@ -20,11 +20,11 @@ export class CDUSecFplnMain {
     mcdu.activeSystem = 'FMGC';
     mcdu.page.Current = mcdu.page.SecFplnMain;
 
-    mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-    mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+    mcdu.efisInterfaces.L.setSecRelatedPageOpen(1);
+    mcdu.efisInterfaces.R.setSecRelatedPageOpen(1);
     mcdu.onUnload = () => {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
     };
 
     mcdu.SelfPtr = setTimeout(() => {
@@ -98,7 +98,7 @@ export class CDUSecFplnMain {
         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
       }
 
-      CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
+      CDUFlightPlanPage.ShowPage(mcdu, 0, false, FlightPlanIndex.FirstSecondary);
     };
 
     // INIT>
@@ -121,7 +121,7 @@ export class CDUSecFplnMain {
       if (!hasSecondary) {
         await mcdu.flightPlanService.secondaryInit(1);
       }
-      CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
+      CDUFlightPlanPage.ShowPage(mcdu, 0, false, FlightPlanIndex.FirstSecondary);
     };
 
     // PERF>

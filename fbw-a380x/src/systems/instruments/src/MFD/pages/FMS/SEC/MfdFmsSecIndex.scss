@@ -1,0 +1,89 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-sec-index-title-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 75px;
+}
+
+.mfd-sec-index-title-line1 {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+}
+
+.mfd-sec-index-title-line2 {
+  flex: 1;
+  display: flex;
+  align-self: flex-start;
+  font-size: 20px;
+}
+
+.mfd-sec-index-table {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-sec-index-table.upper {
+  height: 500px;
+}
+
+.mfd-sec-index-table.lower {
+  flex-grow: 1;
+}
+
+.mfd-sec-index-table-left {
+  flex: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-sec-index-table-left.route {
+  padding: 20px 5px 20px 5px;
+  border: 1px solid $display-light-grey;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-sec-index-table-right {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-sec-index-table-lower-button-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell {
+  border-bottom: 1px solid $display-light-grey;
+  height: 28px;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell.leg-ident {
+  font-size: 22px;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell.fix-ident {
+  font-size: 26px;
+}

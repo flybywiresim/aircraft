@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -18,12 +18,8 @@ import { MathUtils, EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fb
 import { NDSimvars } from '../NDSimvarPublisher';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
-import {
-  ArmedLateralMode,
-  GenericFlightGuidanceEvents,
-  LateralMode,
-  isArmed,
-} from '../types/GenericFlightGuidanceEvents';
+import { GenericFlightGuidanceEvents } from '../types/GenericFlightGuidanceEvents';
+import { FmsSymbolsData } from '../FmsSymbolsPublisher';
 
 export interface TrackLineProps {
   bus: EventBus;
@@ -39,18 +35,14 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
   private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
   private readonly sub = this.props.bus.getSubscriber<
-    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents
+    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents & FmsSymbolsData
   >();
 
   private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
 
-  private headingWord = Arinc429ConsumerSubject.create(null);
+  private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
-  private trackWord = Arinc429ConsumerSubject.create(null);
-
-  private lateralModeSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode').whenChanged(), null);
-
-  private lateralArmedSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask').whenChanged(), null);
+  private readonly trackWord = Arinc429ConsumerSubject.create(null);
 
   private readonly visibility = Subject.create('hidden');
 
@@ -80,6 +72,10 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.y,
   );
 
+  private readonly areActiveVectorsTransmitted = ConsumerSubject.create(this.sub.on('vectorsActive'), []).map(
+    (vectors) => vectors !== undefined && vectors !== null,
+  );
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -88,9 +84,8 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
     this.headingWord.sub(() => this.handleLineVisibility(), true);
     this.trackWord.sub(() => this.handleLineVisibility(), true);
-    this.lateralModeSub.sub(() => this.handleLineVisibility(), true);
-    this.lateralArmedSub.sub(() => this.handleLineVisibility(), true);
     this.ndMode.sub(() => this.handleLineVisibility(), true);
+    this.areActiveVectorsTransmitted.sub(() => this.handleLineVisibility(), true);
   }
 
   private handleLineVisibility() {
@@ -99,28 +94,15 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     const headingInvalid = !this.headingWord.get().isNormalOperation();
     const trackInvalid = !this.trackWord.get().isNormalOperation();
 
-    const lateralMode = this.lateralModeSub.get();
-    const lateralArmed = this.lateralArmedSub.get();
+    const areActiveVectorsTransmitted = this.areActiveVectorsTransmitted.get();
 
-    const shouldShowLine = TrackLine.shouldShowTrackLine(lateralMode, lateralArmed);
+    const shouldShowLine = !areActiveVectorsTransmitted;
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
       this.visibility.set('hidden');
     } else {
       this.visibility.set('inherit');
     }
-  }
-
-  public static shouldShowTrackLine(lateralMode: LateralMode, lateralArmed: number) {
-    return (
-      (lateralMode === LateralMode.NONE ||
-        lateralMode === LateralMode.HDG ||
-        lateralMode === LateralMode.TRACK ||
-        lateralMode === LateralMode.RWY ||
-        lateralMode === LateralMode.RWY_TRACK ||
-        lateralMode === LateralMode.GA_TRACK) &&
-      !isArmed(lateralArmed, ArmedLateralMode.NAV)
-    );
   }
 
   render(): VNode | null {

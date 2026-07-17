@@ -9,6 +9,7 @@ import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReportAtis } from './A320_Neo_CDU_ATC_ReportAtis';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcAtisMenu {
   static CreateDataBlock(mcdu: LegacyAtsuPageInterface) {
@@ -257,5 +258,6 @@ export class CDUAtcAtisMenu {
         CDUAtcAtisMenu.ShowPage(mcdu, airports, true);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

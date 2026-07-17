@@ -5,7 +5,6 @@
 
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
-import { dumpFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { testFms } from '@fmgc/flightplanning/test/TestFms';
 import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
@@ -24,8 +23,6 @@ describe('simBrief uplink adapter', () => {
     await testFlightPlanService.setArrival('ELRU4B');
     await testFlightPlanService.setApproach('R23-Z');
     await testFlightPlanService.setApproachVia('ATKIL');
-
-    console.log(dumpFlightPlan(testFlightPlanService.activeOrTemporary));
   });
 
   it('can download an OFP', async ({ skip }) => {
@@ -43,7 +40,5 @@ describe('simBrief uplink adapter', () => {
     skip();
     const ofp = await SimBriefUplinkAdapter.downloadOfpForUserID('506130');
     await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(testFms, testFlightPlanService, ofp, {});
-
-    console.log(dumpFlightPlan(testFlightPlanService.uplink));
   });
 });

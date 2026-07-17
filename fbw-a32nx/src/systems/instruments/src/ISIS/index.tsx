@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useInteractionSimVar, useSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import { useInteractionSimVar, useSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk-react';
 import { render } from '../Common';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';

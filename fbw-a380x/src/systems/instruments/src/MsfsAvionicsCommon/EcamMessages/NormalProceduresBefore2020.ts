@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 // Left this one here if we decide to also implement the older ECL from before 2020.
-import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistLineStyle, NormalProcedure } from './';
 
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */

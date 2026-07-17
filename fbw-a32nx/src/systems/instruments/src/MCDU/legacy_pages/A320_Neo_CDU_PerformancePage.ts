@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,22 +9,26 @@ import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanManager';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
+import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 
 export class CDUPerformancePage {
   private static _timer: number | undefined = undefined;
   private static _lastPhase: FmgcFlightPhase | undefined = undefined;
 
-  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, _phase = undefined) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active, _phase = undefined) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
     mcdu.activeSystem = 'FMGC';
@@ -265,7 +269,7 @@ export class CDUPerformancePage {
     };
 
     // eng out acceleration altitude
-    const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
+    const engOutAcc = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
       if (mcdu.trySetEngineOutAcceleration(value, forPlan)) {
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
@@ -407,12 +411,28 @@ export class CDUPerformancePage {
       };
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     const titleCell = `${titlePrefix}TAKE\xa0OFF\xa0RWY\xa0{green}${runway.padStart(3, '\xa0')}{end}\xa0\xa0\xa0\xa0[color]${titleColor}`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['\xa0V1\xa0\xa0FLP RETR', ''],
-      [v1 + v1Check + '\xa0F=' + flpRetrCell, ''],
+      ['\xa0V1\xa0\xa0FLP RETR', eoClrTitle],
+      [v1 + v1Check + '\xa0F=' + flpRetrCell, eoClrText],
       ['\xa0VR\xa0\xa0SLT RETR', 'TO SHIFT\xa0'],
       [vR + vRCheck + '\xa0S=' + sltRetrCell, toShiftCell],
       ['\xa0V2\xa0\xa0\xa0\xa0\xa0CLEAN', 'FLAPS/THS'],
@@ -420,7 +440,7 @@ export class CDUPerformancePage {
       ['TRANS ALT', 'FLEX TO TEMP'],
       [`{cyan}${transAltCell}{end}`, flexTakeOffTempCell],
       ['THR\xa0RED/ACC', 'ENG\xa0OUT\xa0ACC'],
-      [`{${altitudeColour}}${thrRedAcc}{end}`, `{${altitudeColour}}${engOut}{end}`],
+      [`{${altitudeColour}}${thrRedAcc}{end}`, `{${altitudeColour}}${engOutAcc}{end}`],
       ['\xa0UPLINK[color]inop', next],
       ['<TO DATA[color]inop', nextPhase],
     ]);
@@ -499,6 +519,8 @@ export class CDUPerformancePage {
 
     if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+        mcdu,
+        forPlan,
         vnavDriver.ndProfile,
         altitudeToPredict,
         true,
@@ -507,6 +529,8 @@ export class CDUPerformancePage {
     if (shouldShowExpedite && vnavDriver) {
       [expeditePredToDistanceCell, expeditePredToTimeCell] =
         CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+          mcdu,
+          forPlan,
           vnavDriver.expediteProfile,
           altitudeToPredict,
           true,
@@ -612,12 +636,28 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
     };
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CLB{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE'],
-      [`${actModeCell}[color]green`],
+      ['ACT MODE', eoClrTitle],
+      [`${actModeCell}[color]green`, eoClrText],
       ['CI'],
       [costIndexCell, predToCell, predToLabel],
       ['MANAGED', toDistLabel, toUtcLabel],
@@ -719,13 +759,11 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel = isFlying && targetPlan.isActiveOrCopiedFromActive() ? '\xa0UTC' : 'TIME';
-
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
-    const [toReasonCell, toDistCell, toTimeCell] = shouldShowToTdInformation
+    const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
       ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu, forPlan)
-      : ['', '', ''];
+      : ['', '', '', ''];
 
     const desCabinRateCell = shouldShowCabinRate ? '{small}-350{end}' : '';
 
@@ -808,13 +846,29 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowDESPage(mcdu, forPlan);
     };
 
+    let destEfobEoClrTitle: string;
+    let destEfobEoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      destEfobEoClrTitle = '{amber}EO\xa0{end}';
+      destEfobEoClrText = '{amber}CLR*{end}';
+    } else {
+      destEfobEoClrTitle = 'DEST EFOB';
+      destEfobEoClrText = destEfobCell;
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CRZ{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
-      [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
-      ['CI'],
+      ['ACT MODE', destEfobEoClrTitle, mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
+      [`${actModeCell}[color]green`, destEfobEoClrText, destTimeCell],
+      ['CI', stepWaypoint],
       [costIndexCell, toReasonCell],
       ['MANAGED', toDistLabel, toUtcLabel],
       [managedSpeedCell, toDistCell, toTimeCell],
@@ -881,6 +935,8 @@ export class CDUPerformancePage {
 
     if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
+        mcdu,
+        forPlan,
         vnavDriver.ndProfile,
         altitudeToPredict,
         false,
@@ -921,7 +977,7 @@ export class CDUPerformancePage {
       isPhaseActive,
       isSelected,
     );
-    const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+    const timeLabel = mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0');
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
@@ -990,12 +1046,28 @@ export class CDUPerformancePage {
       CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
     };
 
+    let destEfobEoClrTitle: string;
+    let destEfobEoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[0] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[0] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      destEfobEoClrTitle = '{amber}EO\xa0{end}';
+      destEfobEoClrText = '{amber}CLR*{end}';
+    } else {
+      destEfobEoClrTitle = 'DEST EFOB';
+      destEfobEoClrText = destEfobCell;
+    }
+
     const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}DES{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
-      [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
+      ['ACT MODE', destEfobEoClrTitle, timeLabel],
+      [`${actModeCell}[color]green`, destEfobEoClrText, destTimeCell],
       ['CI'],
       [costIndexCell, predToCell, predToLabel],
       ['MANAGED', toDistLabel, toUtcLabel],
@@ -1225,6 +1297,22 @@ export class CDUPerformancePage {
       titleCell += '\xa0'.repeat(24 - 10);
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[3] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[3] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '';
+      eoClrText = '';
+    }
+
     mcdu.setTemplate([
       /* t  */ [titleCell],
       /* 1l */ ['QNH'],
@@ -1236,8 +1324,8 @@ export class CDUPerformancePage {
         `{cyan}${magWindHeadingCell}°/${magWindSpeedCell}{end}\xa0\xa0S=${sltRetrCell}`,
         radioCell + '[color]cyan',
       ],
-      /* 4l */ ['TRANS ALT'],
-      /* 4L */ [`{cyan}${transAltCell}{end}${'\xa0'.repeat(5)}F=${flpRetrCell}`],
+      /* 4l */ ['TRANS ALT', eoClrTitle],
+      /* 4L */ [`{cyan}${transAltCell}{end}${'\xa0'.repeat(5)}F=${flpRetrCell}`, eoClrText],
       /* 5l */ ['VAPP\xa0\xa0\xa0VLS', 'LDG CONF\xa0'],
       /* 5L */ [
         `${vappCell}${'\xa0'.repeat(4)}${vlsCell}`,
@@ -1371,10 +1459,26 @@ export class CDUPerformancePage {
       };
     }
 
+    let eoClrTitle: string;
+    let eoClrText: string;
+    if (mcdu.isEngineOutCondition.get()) {
+      mcdu.rightInputDelay[3] = () => mcdu.getDelayBasic();
+      mcdu.onRightInput[3] = () => {
+        mcdu.clearEngineOutCondition();
+        CDUPerformancePage.ShowPage(mcdu, forPlan);
+      };
+
+      eoClrTitle = '{amber}EO\xa0{end}';
+      eoClrText = '{amber}CLR*{end}';
+    } else {
+      eoClrTitle = '\xa0\xa0\xa0';
+      eoClrText = '\xa0\xa0\xa0\xa0';
+    }
+
     mcdu.setTemplate([
       [`{${titleColor}}\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0GO\xa0AROUND\xa0\xa0\xa0\xa0\xa0\xa0{end}`],
-      ['', '', '\xa0\xa0\xa0\xa0\xa0FLP\xa0RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
-      ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0F=${flpRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`],
+      ['', '', `\xa0\xa0\xa0\xa0\xa0FLP\xa0RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${eoClrTitle}`],
+      ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0F=${flpRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${eoClrText}`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0SLT RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
       ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0S=${sltRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0CLEAN\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
@@ -1453,9 +1557,11 @@ export class CDUPerformancePage {
   }
 
   static getTimeAndDistancePredictionsFromGeometryProfile(
-    geometryProfile,
-    altitudeToPredict,
-    isClimbVsDescent,
+    mcdu: LegacyFmsPageInterface,
+    forPlan: FlightPlanIndex,
+    geometryProfile: BaseGeometryProfile,
+    altitudeToPredict: number,
+    isClimbVsDescent: boolean,
     printSmall = false,
   ) {
     let predToDistanceCell = '---';
@@ -1479,8 +1585,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(predictions.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        const predToTimeCellText = FmsFormatters.secondsToUTC(utcTime + predictions.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(predictions.secondsFromPresent, forPlan);
 
         if (printSmall) {
           predToTimeCell = '{small}' + predToTimeCellText + '{end}[color]green';
@@ -1508,11 +1613,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(destinationPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-        const predToTimeCellText = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
-          : FmsFormatters.secondsTohhmm(destinationPrediction.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(destinationPrediction.secondsFromPresent, forPlan);
 
         destTimeCell = predToTimeCellText + '[color]green';
       }
@@ -1521,34 +1622,50 @@ export class CDUPerformancePage {
     return [destEfobCell, destTimeCell];
   }
 
-  static formatToReasonDistanceAndTime(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+  static formatToReasonDistanceAndTime(
+    mcdu: LegacyFmsPageInterface,
+    forPlan: FlightPlanIndex,
+  ): [string, string, string, string] {
     // TODO sec - handle non active flight plan
     const toPrediction =
       forPlan === FlightPlanIndex.Active ? mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction() : undefined;
 
-    let reasonCell = '(T/D)';
-    let distCell = '---';
-    let timeCell = '----';
+    const nextLegWithStep = mcdu.flightPlanService.active.allLegs
+      .filter((it) => it.isDiscontinuity === false)
+      .find((it) => it.cruiseStep !== undefined);
+
+    let flightLevel = '';
+    if (nextLegWithStep?.cruiseStep?.toAltitude !== undefined) {
+      flightLevel = Math.round(nextLegWithStep.cruiseStep.toAltitude / 100).toString();
+    }
+
+    let stepWaypoint = '';
+    let toReasonCell = '';
+    let toDistCell = '---';
+    let toTimeCell = '----';
 
     if (toPrediction) {
       if (Number.isFinite(toPrediction.distanceFromPresentPosition)) {
-        distCell = Math.round(toPrediction.distanceFromPresentPosition) + '[color]green';
+        toDistCell = Math.round(toPrediction.distanceFromPresentPosition) + '[color]green';
       }
 
       if (Number.isFinite(toPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-        timeCell = FmsFormatters.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
+        toTimeCell = mcdu.getTimePrediction(toPrediction.secondsFromPresent, forPlan) + '[color]green';
       }
 
-      if (toPrediction.reason === 'StepClimb') {
-        reasonCell = '(S/C)';
-      } else if (toPrediction.reason === 'StepDescent') {
-        reasonCell = '(S/D)';
+      // Check if we have a downstream cruise step
+      if (
+        nextLegWithStep?.cruiseStep &&
+        (toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent')
+      ) {
+        stepWaypoint = `{small}AT\xa0\xa0 {green}${nextLegWithStep.ident}{end}`;
+        toReasonCell = `{white}{small}STEP TO{end} {green}FL${flightLevel}{end}`;
+      } else if (toPrediction.reason === 'TopOfDescent') {
+        toReasonCell = `{white}{small}TO{end}\xa0{green}(T/D){end}`;
       }
     }
 
-    return ['{small}TO{end}\xa0{green}' + reasonCell + '{end}', distCell, timeCell];
+    return [toReasonCell, toDistCell, toTimeCell, stepWaypoint];
   }
 
   static formatCostIndexCell(

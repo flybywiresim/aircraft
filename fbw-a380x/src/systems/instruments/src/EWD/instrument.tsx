@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import '../index.scss';
+import './style.scss';
+
 import { Clock, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
-import '../index.scss';
-import './style.scss';
-import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
+import { EngineWarningDisplay } from './EWD';
 import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
-import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -28,6 +30,8 @@ class A380X_EWD extends BaseInstrument {
   private readonly adrPublisher = new AdrBusPublisher(this.bus);
   private readonly irPublisher = new IrBusPublisher(this.bus);
 
+  private readonly fgPublisher = new FGDataPublisher(this.bus);
+
   private readonly clock = new Clock(this.bus);
 
   constructor() {
@@ -39,6 +43,7 @@ class A380X_EWD extends BaseInstrument {
     this.backplane.addPublisher('FCDC', this.fcdcPublisher);
     this.backplane.addPublisher('ADR', this.adrPublisher);
     this.backplane.addPublisher('IR', this.irPublisher);
+    this.backplane.addPublisher('FG', this.fgPublisher);
   }
 
   get templateID(): string {

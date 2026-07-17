@@ -493,8 +493,21 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 }
 
 bool SimConnectInterface::prepareClientDataDefinitions() {
-  // variable for result
-  HRESULT result;
+  struct HresultAccumulator {
+    bool success = true;
+
+    HresultAccumulator& operator=(HRESULT hr) {
+      success = SUCCEEDED(hr);
+      return *this;
+    }
+
+    HresultAccumulator& operator&=(HRESULT hr) {
+      success = success && SUCCEEDED(hr);
+      return *this;
+    }
+
+    operator bool() const { return success; }
+  } result;
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -1005,7 +1018,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // return result
-  return SUCCEEDED(result);
+  return result;
 }
 
 bool SimConnectInterface::requestData() {

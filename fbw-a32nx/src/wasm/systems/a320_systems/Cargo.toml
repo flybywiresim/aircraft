@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 uom.workspace = true
-nalgebra = "0.33.0"
+nalgebra.workspace = true
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]

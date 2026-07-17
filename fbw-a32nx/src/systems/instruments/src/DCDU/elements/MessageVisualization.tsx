@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState, memo } from 'react';
-import { useInteractionEvents } from '@flybywiresim/fbw-sdk';
+import { useInteractionEvents } from '@flybywiresim/fbw-sdk-react';
 import { MailboxStatusMessage } from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 

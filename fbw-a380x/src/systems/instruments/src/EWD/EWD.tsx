@@ -15,20 +15,22 @@ import {
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { ArincEventBus, CpiomData } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
-import { EngineGauge } from 'instruments/src/EWD/elements/EngineGauge';
-import { Idle } from 'instruments/src/EWD/elements/Idle';
-import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
-import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
-import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
-import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
-import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
-import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { EngineGauge } from './elements/EngineGauge';
+import { Idle } from './elements/Idle';
+import { BleedSupply } from './elements/BleedSupply';
+import { WdMemos } from './elements/WdMemos';
+import { WdLimitations } from './elements/WdLimitations';
+import { WdNormalChecklists } from './elements/WdNormalChecklists';
+import { FwsEvents } from '../MsfsAvionicsCommon/providers/FwsPublisher';
+import { WdAbnormalSensedProcedures } from './elements/WdAbnormalSensedProcedures';
+import { WdAbnormalNonSensedProcedures } from './elements/WdAbnormalNonSensed';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
+import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars>();
 
   private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
   private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus, this.fwsAvailChecker);
@@ -149,6 +151,27 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
 
+  private readonly autoThrustMode = ConsumerSubject.create(this.sub.on('fg.athr.mode'), AutoThrustMode.NONE);
+
+  private readonly alphaFloorHiddenElement = this.autoThrustMode.map(
+    (v) => v !== AutoThrustMode.A_FLOOR && v !== AutoThrustMode.TOGA_LK,
+  );
+
+  private readonly autoThrustModeMessage = ConsumerSubject.create(
+    this.sub.on('fg.athr.message'),
+    AutoThrustModeMessage.None,
+  );
+
+  private readonly thrustLockActive = this.autoThrustModeMessage.map((v) => v === AutoThrustModeMessage.ThrustLock);
+
+  private readonly thrustLockHiddenElement = this.thrustLockActive.map((v) => !v);
+
+  private readonly n1LimitHidden = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.reverserSelected,
+    this.thrustLockActive,
+  );
+
   private readonly deferredProcedures = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
   private readonly stsIndicationLabel = MappedSubject.create(
     ([sts, deferred]) => (sts && deferred.length > 0 ? 'STS & DEFRD PROC' : 'STS'),
@@ -183,6 +206,12 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
       this.advIndicationVisibility,
       this.fwsAvailChecker.fwsAvail,
       this.fwsAvailChecker.fwsFailed,
+      this.alphaFloorHiddenElement,
+      this.thrustLockActive,
+      this.thrustLockHiddenElement,
+      this.n1LimitHidden,
+      this.autoThrustMode,
+      this.autoThrustModeMessage,
     );
   }
 
@@ -197,14 +226,29 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
         <div class="ewd-main">
           <div class="EngineDisplayArea">
             <svg class="ewd-svg" version="1.1" viewBox="0 0 768 375" xmlns="http://www.w3.org/2000/svg">
-              <text x={20} y={30} class="Amber F26" visibility="hidden">
-                A FLOOR
+              <text x={20} y={30} class={{ F26: true, Amber: true, HiddenElement: this.alphaFloorHiddenElement }}>
+                A.FLOOR
               </text>
+
+              <text
+                x={387}
+                y={30}
+                class={{
+                  Huge: true,
+                  End: true,
+                  Amber: true,
+                  HiddenElement: this.thrustLockHiddenElement,
+                  PulseAmberInfinite: true,
+                }}
+              >
+                THR LK
+              </text>
+
               <N1Limit
                 x={330}
                 y={30}
                 active={this.engineRunningOrIgnitionOn}
-                hidden={this.reverserSelected}
+                hidden={this.n1LimitHidden}
                 bus={this.props.bus}
               />
               <BleedSupply bus={this.props.bus} x={750} y={30} hidden={this.reverserSelected} />

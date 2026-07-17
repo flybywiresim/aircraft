@@ -1,6 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type OitSimvars = {
@@ -22,15 +23,12 @@ export type OitSimvars = {
   nssDataToAvncsOff: boolean;
   parkBrakeSet: boolean;
   cabinDoorOpen: number;
-  fuelTotalQuantity: number;
-  /** in pounds */
-  fuelWeightPerGallon: number;
   hydGreenPressurized: boolean;
   hydYellowPressurized: boolean;
 };
 
 export type InternalKbdKeyEvent = {
-  kbdKeyEvent: string;
+  kbdKeyEvent: [EfisSide, string];
 };
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -54,8 +52,6 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['nssDataToAvncsOff', { name: 'L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE', type: SimVarValueType.Bool }],
     ['parkBrakeSet', { name: 'L:A32NX_PARK_BRAKE_LEVER_POS', type: SimVarValueType.Bool }],
     ['cabinDoorOpen', { name: 'INTERACTIVE POINT OPEN:0', type: SimVarValueType.PercentOver100 }],
-    ['fuelTotalQuantity', { name: 'L:A32NX_TOTAL_FUEL_VOLUME', type: SimVarValueType.GAL }],
-    ['fuelWeightPerGallon', { name: 'FUEL WEIGHT PER GALLON', type: SimVarValueType.Number }],
     ['hydGreenPressurized', { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool }],
     [
       'hydYellowPressurized',

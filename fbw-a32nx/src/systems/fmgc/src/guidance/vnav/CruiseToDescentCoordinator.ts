@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -11,7 +11,6 @@ import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
@@ -34,7 +33,10 @@ export class CruiseToDescentCoordinator {
 
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
     this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     this.lastEstimatedTimeAtDestination = 0;
   }
@@ -42,8 +44,6 @@ export class CruiseToDescentCoordinator {
   buildCruiseAndDescentPath(
     profile: NavGeometryProfile,
     speedProfile: SpeedProfile,
-    cruiseWinds: HeadwindProfile,
-    descentWinds: HeadwindProfile,
     stepClimbStrategy: ClimbStrategy,
     stepDescentStrategy: DescentStrategy,
   ) {
@@ -77,7 +77,6 @@ export class CruiseToDescentCoordinator {
       descentPath = this.approachPathBuilder.computeApproachPath(
         profile,
         speedProfile,
-        descentWinds,
         this.lastEstimatedFuelAtDestination,
         this.lastEstimatedTimeAtDestination,
       );
@@ -92,7 +91,6 @@ export class CruiseToDescentCoordinator {
         descentPath,
         profile,
         speedProfile,
-        descentWinds,
         this.cruisePathBuilder.getFinalCruiseAltitude(profile.cruiseSteps),
       );
 
@@ -128,7 +126,6 @@ export class CruiseToDescentCoordinator {
               stepClimbStrategy,
               stepDescentStrategy,
               speedProfile,
-              cruiseWinds,
             );
 
             console.error(
@@ -166,7 +163,6 @@ export class CruiseToDescentCoordinator {
         stepClimbStrategy,
         stepDescentStrategy,
         speedProfile,
-        cruiseWinds,
       );
 
       if (!cruisePath) {

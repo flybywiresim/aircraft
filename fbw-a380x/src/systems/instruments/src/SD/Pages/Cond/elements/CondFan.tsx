@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { Triangle } from '@instruments/common/Shapes';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 export const CondFan = () => {
   const vcsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');

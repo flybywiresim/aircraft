@@ -18,6 +18,7 @@
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+  - [Landing Gear ATA 32](#landing-gear-ata-32)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -926,7 +927,7 @@
       |:---:|:---------------------------------:|
       | 11  | Capability Downgrade triple click |
       | 12  | Mode reversion triple click       |
-      | 13  | BTV Exit Missed triple click      |
+      | 13  | BTV triple click                  |
       | 14  | AP 1 INOP                         |
       | 15  | AP 2 INOP                         |
       | 16  | FD 1 INOP                         |
@@ -982,6 +983,98 @@
 - A32NX_TOTAL_FUEL_VOLUME
   - Number in Gallons
   - The total physical volume of fuel in the tanks
+
+- A32NX_FQMS_STATUS_WORD
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | FMS Data unavailable |
+    | 12   | FMS Data disagrees   |
+    | 13   | |
+    | 14   | |
+    | 15   | |
+    | 16   | |
+    | 17   | |
+    | 18   | |
+    | 19   | |
+    | 20   | |
+    | 21  | |
+    | 22  | |
+    | 23  | |
+    | 24  | |
+    | 25  | |
+    | 26  | |
+    | 27  | |
+    | 28  | |
+    | 29  | |
+
+- A32NX_FQMS_TOTAL_FUEL_ON_BOARD
+  - Arinc429<Kilogram>
+  - The total quantity of fuel in the tanks
+
+- A32NX_FQMS_GROSS_WEIGHT
+  - Arinc429<Kilogram>
+  - The total weight of the aircraft
+
+- A32NX_FQMS_CENTER_OF_GRAVITY_MAC
+  - Arinc429<Percent>
+  - The center of gravity of the aircraft
+
+- A32NX_FQMS_{tank}_TANK_QUANTITY
+  - Arinc429<Kilogram>
+  - The fuel quantity in a specific tank
+  -{tank}
+    - FEED_1
+    - FEED_2
+    - FEED_3
+    - FEED_4
+    - LEFT_OUTER
+    - LEFT_MID
+    - LEFT_INNER
+    - RIGHT_OUTER
+    - RIGHT_MID
+    - RIGHT_INNER
+    - TRIM
+
+- A32NX_FQMS_{side}_FUEL_PUMP_RUNNING_WORD
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - {side}
+    - LEFT
+    - RIGHT
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | Main Feed Pump 1/3 running |
+    | 12   | Standby Feed Pump 1/3 running |
+    | 13   | Main Feed Pump 2/4 running |
+    | 14   | Standby Feed Pump 2/4 running |
+    | 15   | {side} Outer Pump running |
+    | 16   | {side} Mid Fwd Pump running |
+    | 17   | {side} Mid Aft Pump running |
+    | 18   | {side} Inner Fwd Pump running |
+    | 19   | {side} Inner Aft Pump running |
+    | 20   | {side} Trim Pump running |
+    | 21-29 | Unused |
+
+- A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
+  - Arinc429<Kilogram>
+  - The fuel quantity in a specific tank (AGP value)
+  - {id}
+    - 1
+    - 2
+  -{tank}
+    - FEED_1
+    - FEED_2
+    - FEED_3
+    - FEED_4
+    - LEFT_OUTER
+    - LEFT_MID
+    - LEFT_INNER
+    - RIGHT_OUTER
+    - RIGHT_MID
+    - RIGHT_INNER
+    - TRIM
 
 ## Indicating-Recording ATA 31
 
@@ -1132,6 +1225,19 @@
     - Pre-selected QNH when in STD mode, or 0 when not displayed.
     - Not for FBW systems use!
     - {side} = L or R
+
+## Landing Gear ATA 32
+
+- A32NX_BTV_STATE
+    - Boolean
+    - Indicates the current state of the BTV system
+    - | State             | Value |
+      |-------------------|-------|
+      | DISABLED          | 0     |
+      | ARMED             | 1     |
+      | ROT OPTIMIZATION  | 2     |
+      | DECEL             | 3     |
+      | END OF BRAKING    | 4     |
 
 ## Bleed Air ATA 36
 

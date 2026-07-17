@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useRef, useState, useEffect } from 'react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 
 import {

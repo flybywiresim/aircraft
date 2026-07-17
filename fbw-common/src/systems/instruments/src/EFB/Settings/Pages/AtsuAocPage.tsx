@@ -5,43 +5,77 @@
 /* eslint-disable max-len */
 import React from 'react';
 
-import { usePersistentProperty, SENTRY_CONSENT_KEY, SentryConsentState, isMsfs2024 } from '@flybywiresim/fbw-sdk';
+import {
+  usePersistentProperty,
+  SENTRY_CONSENT_KEY,
+  SentryConsentState,
+  usePersistentSetting,
+  NXDataStoreSettings,
+  useSimVar,
+  ConfigAtisSource,
+  ConfigMetarSource,
+  ConfigTafSource,
+  ConfigWeatherMap,
+  CONFIG_ATIS_WEATHER_SOURCES,
+  CONFIG_METAR_WEATHER_SOURCES,
+  CONFIG_TAF_WEATHER_SOURCES,
+} from '@flybywiresim/fbw-sdk-react';
 
-import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { HoppieConnector } from '../../../../../datalink/router/src';
+import { SettingItem, SettingsPage } from '../Settings';
+import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
+
+const CONFIG_WEATHER_SOURCE_LABELS: Record<ConfigWeatherMap, string> = {
+  [ConfigWeatherMap.FAA]: 'FAA (US)',
+  [ConfigWeatherMap.IVAO]: 'IVAO',
+  [ConfigWeatherMap.MSFS]: 'MSFS',
+  [ConfigWeatherMap.NOAA]: 'NOAA',
+  [ConfigWeatherMap.PILOTEDGE]: 'PilotEdge',
+  [ConfigWeatherMap.VATSIM]: 'VATSIM',
+  [ConfigWeatherMap.BEYONDATC]: 'BeyondATC',
+  [ConfigWeatherMap.SAI]: 'SayIntentions.AI',
+};
 
 export const AtsuAocPage = () => {
-  const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-  const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-  const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+  const [atisSource, setAtisSource] = usePersistentSetting('CONFIG_ATIS_SRC');
+  const [metarSource, setMetarSource] = usePersistentSetting('CONFIG_METAR_SRC');
+  const [tafSource, setTafSource] = usePersistentSetting('CONFIG_TAF_SRC');
   const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-  const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+  const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
+
+  const [acarsProvider, setAcarsProvider] = usePersistentSetting('ACARS_PROVIDER');
+  const [acarsState] = useSimVar('L:A32NX_ACARS_ACTIVE', 'boolean', 1000);
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-  const getHoppieResponse = (value: string): Promise<any> =>
+  const isUnavailableAcarsWeatherSource = (source: ConfigAtisSource | ConfigMetarSource) =>
+    (source === ConfigWeatherMap.SAI && acarsProvider !== 'SAI') ||
+    (source === ConfigWeatherMap.BEYONDATC && acarsProvider !== 'BATC');
+
+  const createWeatherSourceButtons = <T extends ConfigAtisSource | ConfigMetarSource | ConfigTafSource>(
+    sources: readonly T[],
+  ) => sources.map((source) => ({ name: CONFIG_WEATHER_SOURCE_LABELS[source], setting: source }));
+
+  const getAcarsResponse = (value: string): Promise<any> =>
     new Promise((resolve, reject) => {
       if (!value || value === '') {
         resolve(value);
       }
 
       const body = {
-        logon: value,
         from: 'FBWA32NX',
         to: 'SERVER',
         type: 'ping',
         packet: '',
       };
-      return Hoppie.sendRequest(body).then((resp) => {
+      return AcarsClient.getData(body).then((resp) => {
         if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
@@ -50,51 +84,57 @@ export const AtsuAocPage = () => {
       });
     });
 
-  const handleHoppieUsernameInput = (value: string) => {
-    getHoppieResponse(value)
+  const formatAcarsMessage = (messageKey: string) =>
+    t(messageKey).replace(
+      '{acarsid}',
+      acarsProvider === 'SAI' ? t('Settings.AtsuAoc.SAIApiKey') : t('Settings.AtsuAoc.HoppieUserId'),
+    );
+
+  const handleAcarsUsernameInput = (value: string) => {
+    getAcarsResponse(value)
       .then((response) => {
         if (!value) {
-          toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenRemoved')} ${response}`);
+          toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenRemoved')} ${response}`);
           return;
         }
-        toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenValidated')} ${response}`);
+        toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
+        AcarsConnector.activateAcars();
       })
-      .catch((_error) => {
-        toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourHoppieID'));
+      .catch(() => {
+        toast.error(formatAcarsMessage('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));
       });
   };
 
-  const handleHoppieEnabled = (toggleValue: boolean) => {
-    if (toggleValue) {
-      setHoppieEnabled('ENABLED');
-      HoppieConnector.activateHoppie();
+  const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
+    setAcarsProvider(provider);
+    if (provider === 'SAI') {
+      setAtisSource(ConfigWeatherMap.SAI);
+      setMetarSource(ConfigWeatherMap.SAI);
+    } else if (provider === 'BATC') {
+      setAtisSource(ConfigWeatherMap.BEYONDATC);
+      setMetarSource(ConfigWeatherMap.BEYONDATC);
     } else {
-      setHoppieEnabled('DISABLED');
-      HoppieConnector.deactivateHoppie();
+      setAtisSource(ConfigWeatherMap.FAA);
+      setMetarSource(ConfigWeatherMap.MSFS);
+    }
+    if (provider == 'NONE') {
+      AcarsConnector.deactivateAcars();
+    } else {
+      AcarsConnector.activateAcars();
     }
   };
 
-  const atisSourceButtons: ButtonType[] = [
-    { name: 'FAA (US)', setting: 'FAA' },
-    { name: 'PilotEdge', setting: 'PILOTEDGE' },
-    { name: 'IVAO', setting: 'IVAO' },
-    { name: 'VATSIM', setting: 'VATSIM' },
-  ];
+  const atisSourceButtons = createWeatherSourceButtons(CONFIG_ATIS_WEATHER_SOURCES);
+  const metarSourceButtons = createWeatherSourceButtons(CONFIG_METAR_WEATHER_SOURCES);
 
-  const metarSourceButtons: ButtonType[] = [
-    { name: 'MSFS', setting: 'MSFS' },
-    { name: 'NOAA', setting: 'NOAA' },
-    { name: 'PilotEdge', setting: 'PILOTEDGE' },
-    { name: 'VATSIM', setting: 'VATSIM' },
-  ];
+  const tafSourceButtons = createWeatherSourceButtons(CONFIG_TAF_WEATHER_SOURCES);
 
-  let tafSourceButtons: ButtonType[] = [
-    { name: 'MSFS', setting: 'MSFS' },
-    { name: 'NOAA', setting: 'NOAA' },
-  ];
-  if (!isMsfs2024()) {
-    tafSourceButtons = tafSourceButtons.slice(1);
-  }
+  const acarsProviderButtons = [
+    { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderHoppie'), setting: 'HOPPIE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderBatc'), setting: 'BATC' },
+    { name: t('Settings.AtsuAoc.AcarsProviderSai'), setting: 'SAI' },
+  ] as const;
 
   const { showModal } = useModals();
 
@@ -129,60 +169,103 @@ export const AtsuAocPage = () => {
     }
   };
 
-  function handleWeatherSource(source: string, type: string) {
-    if (type !== 'TAF') {
-      HoppieConnector.deactivateHoppie();
-    }
+  const handleAtisSource = (source: ConfigAtisSource) => {
+    setAtisSource(source);
+  };
 
-    if (type === 'ATIS') {
-      setAtisSource(source);
-    } else if (type === 'METAR') {
-      setMetarSource(source);
-    } else if (type === 'TAF') {
-      setTafSource(source);
-    }
+  const handleMetarSource = (source: ConfigMetarSource) => {
+    setMetarSource(source);
+  };
 
-    if (type !== 'TAF') {
-      HoppieConnector.activateHoppie();
-    }
-  }
+  const handleTafSource = (source: ConfigTafSource) => {
+    setTafSource(source);
+  };
 
   return (
     <SettingsPage name={t('Settings.AtsuAoc.Title')}>
+      <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
+        <div className="flex items-center">
+          {acarsProvider !== 'NONE' && (
+            <span className="mr-6 flex items-center">
+              {acarsState ? t('Settings.AtsuAoc.AcarsConnected') : t('Settings.AtsuAoc.WaitingForConnection')}
+              <span
+                className={`ml-2 inline-block h-4 w-4 rounded-full ${acarsState ? 'bg-green-600' : 'bg-orange-600'}`}
+              />
+            </span>
+          )}
+          <SelectGroup>
+            {acarsProviderButtons.map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleAcarsProviderChange(button.setting)}
+                selected={acarsProvider === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </div>
+      </SettingItem>
+      {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
+        <SettingItem name={acarsProvider === 'SAI' ? 'SAI API Key' : t('Settings.AtsuAoc.HoppieUserId')}>
+          <SimpleInput
+            className="w-30 text-center"
+            value={acarsProvider === 'SAI' ? saiLogonKey : hoppieUserId}
+            onBlur={(value) => {
+              const trimmed = value.replace(/\s/g, '');
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(trimmed);
+              } else {
+                setHoppieUserId(trimmed);
+              }
+              handleAcarsUsernameInput(trimmed);
+            }}
+            onChange={(value) => {
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(value);
+              } else {
+                setHoppieUserId(value);
+              }
+            }}
+          />
+        </SettingItem>
+      )}
       <SettingItem name={t('Settings.AtsuAoc.AtisAtcSource')}>
         <SelectGroup>
-          {atisSourceButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
-              selected={atisSource === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
+          {atisSourceButtons
+            .filter((button) => !isUnavailableAcarsWeatherSource(button.setting))
+            .map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleAtisSource(button.setting)}
+                selected={atisSource === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
         <SelectGroup>
-          {metarSourceButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'METAR')}
-              selected={metarSource === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
+          {metarSourceButtons
+            .filter((button) => !isUnavailableAcarsWeatherSource(button.setting))
+            .map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleMetarSource(button.setting)}
+                selected={metarSource === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
         <SelectGroup>
           {tafSourceButtons.map((button) => (
             <SelectItem
               key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'TAF')}
+              onSelect={() => handleTafSource(button.setting)}
               selected={tafSource === button.setting}
             >
               {button.name}
@@ -190,29 +273,14 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
         <Toggle
           value={sentryEnabled === SentryConsentState.Given}
           onToggle={(toggleValue) => handleSentryToggle(toggleValue)}
         />
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.Telex')}>
         <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
-      </SettingItem>
-
-      <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
-        <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
-      </SettingItem>
-
-      <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
-        <SimpleInput
-          className="w-30 text-center"
-          value={hoppieUserId}
-          onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
-          onChange={(value) => setHoppieUserId(value)}
-        />
       </SettingItem>
     </SettingsPage>
   );

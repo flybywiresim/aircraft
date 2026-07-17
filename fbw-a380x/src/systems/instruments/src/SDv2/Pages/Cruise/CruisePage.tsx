@@ -1,35 +1,27 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import '../../../index.scss';
-
-import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
-
-import { fuelForDisplay } from '../../../Common/FuelFunctions';
+import { ConsumerSubject, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../Generic/PageTitle';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
+
+import '../../../index.scss';
+import { fuelForDisplay } from '../../../Common/FuelFunctions';
 import A380XCruise from './elements/A380Cruise';
 import CruisePressure from './elements/CruisePressure';
 import CruiseCond from './elements/CruiseCond';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { SDSimvars } from '../../SDSimvarPublisher';
-
 import { SdPageProps } from '../../SD';
+import { SDSimvars } from '../../SDSimvarPublisher';
 
 export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
 
-  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
-  private readonly usingMetric = Subject.create(true);
-
-  private readonly metricUnitSubscription = NXDataStore.getAndSubscribeLegacy(
-    'CONFIG_USING_METRIC_UNIT',
-    (_k, v) => {
-      this.usingMetric.set(v === '1');
-    },
-    '1',
-  );
+  private readonly usingMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
+  private readonly weightUnit = this.usingMetric.map((v) => (v ? 'KG' : 'LBS'));
+  private readonly fuelFlowUnit = this.usingMetric.map((v) => (v ? 'KG/H' : 'LBS/H'));
 
   private readonly enginesFuelUsed = [
     ConsumerSubject.create(this.sub.on('engineFuelUsed_1'), 0),
@@ -63,7 +55,9 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.topSvgStyle,
+      this.weightUnit,
+      this.fuelFlowUnit,
+      this.topSvgDisplay,
       this.engineTotalFuelUsedDisplay,
       ...this.enginesFuelUsed,
       ...this.enginesFuelFlow,
@@ -73,8 +67,6 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
   }
 
   destroy(): void {
-    this.metricUnitSubscription();
-
     super.destroy();
   }
 
@@ -85,7 +77,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 768 1024"
-        style={this.topSvgStyle}
+        style={{ display: this.topSvgDisplay }}
       >
         <PageTitle x={6} y={29}>
           CRUISE
@@ -118,7 +110,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
           FF
         </text>
         <text class="F22 MiddleAlign Cyan" x={383} y={131}>
-          KG/H
+          {this.fuelFlowUnit}
         </text>
 
         {/* Fuel Used */}
@@ -150,7 +142,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
           {this.engineTotalFuelUsedDisplay}
         </text>
         <text class="F22 MiddleAlign Cyan" x={383} y={285}>
-          KG
+          {this.weightUnit}
         </text>
 
         <text class="F29 Underline White" x={18} y={330} style="text-decoration: underline;">

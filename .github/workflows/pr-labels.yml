@@ -1,0 +1,31 @@
+name: PR Labels
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  simulator:
+    name: Simulator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add MSFS2020/MSFS2024 labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR="${{ github.event.pull_request.number }}"
+          BASE="${{ github.event.pull_request.base.ref }}"
+
+          LABELS=$(gh pr view "$PR" --repo ${{ github.repository }} --json labels --jq '.labels[].name')
+
+          if [ "$BASE" = "master" ]; then
+            echo "$LABELS" | grep -qx "MSFS2020" && gh pr edit "$PR" --repo ${{ github.repository }} --remove-label "MSFS2020"
+            echo "$LABELS" | grep -qx "MSFS2024" || gh pr edit "$PR" --repo ${{ github.repository }} --add-label "MSFS2024"
+
+          elif [ "$BASE" = "fs2020-master" ]; then
+            echo "$LABELS" | grep -qx "MSFS2024" && gh pr edit "$PR" --repo ${{ github.repository }} --remove-label "MSFS2024"
+            echo "$LABELS" | grep -qx "MSFS2020" || gh pr edit "$PR" --repo ${{ github.repository }} --add-label "MSFS2020"
+          fi

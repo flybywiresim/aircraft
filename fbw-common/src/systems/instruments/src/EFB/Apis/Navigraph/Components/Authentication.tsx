@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { DeviceFlowParams } from 'navigraph/auth';
 import QRCode from 'qrcode.react';
-import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk';
+import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sdk-react';
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';
@@ -120,7 +120,8 @@ export const NavigraphAuthUI = () => {
     }
   }, 1000);
 
-  const hasQr = !!params?.verification_uri_complete;
+  const verificationUrl = params?.verification_uri_complete ?? '';
+  const hasQr = !!verificationUrl;
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
@@ -133,7 +134,12 @@ export const NavigraphAuthUI = () => {
 
         <p className="mt-6 w-2/3 text-center">
           {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
-          <span className="text-theme-highlight">{params?.verification_uri_complete ?? ''}</span>{' '}
+          <span
+            className="text-theme-highlight"
+            onClick={() => verificationUrl && Coherent.call('OPEN_WEB_BROWSER', verificationUrl)}
+          >
+            {verificationUrl}
+          </span>{' '}
           {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
         </p>
 
