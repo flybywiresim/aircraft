@@ -9,7 +9,6 @@ import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
@@ -38,8 +37,6 @@ class A380X_PFD extends BaseInstrument {
   private readonly simVarPublisher = new PFDSimvarPublisher(this.bus);
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
-
-  private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
   private readonly adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
 
@@ -87,7 +84,6 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
     this.backplane.addInstrument('ArincProvider', this.arincProvider);
-    this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('AdirsProvider', this.adirsValueProvider);
     this.backplane.addPublisher('DmcPublisher', this.dmcPublisher);
     this.backplane.addPublisher('FmsDataPublisher', this.fmsDataPublisher);

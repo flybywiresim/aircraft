@@ -1,6 +1,5 @@
 // @ts-strict-ignore
 import {
-  ConsumerSubject,
   CssTransformBuilder,
   DisplayComponent,
   EventBus,
@@ -14,9 +13,9 @@ import {
 import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { getDisplayIndex } from './PFD';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -30,11 +29,13 @@ interface FlightPathVectorData {
 
 // FIXME should get smaller when FD is on
 export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & FcuEfisCpBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & PrimFgBusBaseEvents & FcuEfisCpBusEvents>();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
-  private readonly isTrkFpaActive = ConsumerSubject.create(this.sub.on('trkFpaActive'), false);
+  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
+
+  private readonly isTrkFpaActive = this.primFgDiscreteWord5.map((word) => word.bitValueOr(11, true));
   private readonly isBirdBlack = this.isTrkFpaActive.map(SubscribableMapFunctions.not());
 
   private readonly isVelocityVectorActive = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(15, true));

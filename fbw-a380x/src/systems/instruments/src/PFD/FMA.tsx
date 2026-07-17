@@ -16,7 +16,6 @@ import {
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
@@ -65,7 +64,7 @@ export class FMA extends DisplayComponent<{
   readonly isAttExcessive: Subscribable<boolean>;
   readonly fcdcData: FcdcValueProvider;
 }> {
-  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues & DmcLogicEvents & FGVars>();
+  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents & FGVars>();
 
   private activeLateralMode: LateralMode = LateralMode.NONE;
 

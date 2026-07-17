@@ -491,16 +491,15 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idPrimRollFd2Command[3];
   std::unique_ptr<LocalVariable> idPrimPitchFd2Command[3];
   std::unique_ptr<LocalVariable> idPrimYawFd2Command[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord5[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord4[3];
   std::unique_ptr<LocalVariable> idPrimFmAltConstraint[3];
   std::unique_ptr<LocalVariable> idPrimAtsDiscreteWord[3];
   std::unique_ptr<LocalVariable> idPrimAtsFmaDiscreteWord[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord3[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord1[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord2[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord6[3];
-  std::unique_ptr<LocalVariable> idPrimDiscreteWord7[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord1[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord2[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord3[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord4[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord5[3];
+  std::unique_ptr<LocalVariable> idPrimFgDiscreteWord6[3];
   std::unique_ptr<LocalVariable> idPrimSpeedMarginHigh[3];
   std::unique_ptr<LocalVariable> idPrimSpeedMarginLow[3];
 

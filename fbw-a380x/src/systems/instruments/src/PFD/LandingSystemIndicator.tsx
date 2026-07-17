@@ -15,6 +15,8 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FcuEfisCpBusEvents>();
@@ -658,44 +660,48 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuEfisCpBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & FcuEfisCpBusEvents>();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
+
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
+
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
+
   private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
-  private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
-
-  // TODO replace with proper FG signals once implemented
-  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false);
-
-  private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
+  private readonly approachModeSelected = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord2, primFgDiscreteWord4]) => {
+      return (
+        primFgDiscreteWord1.bitValueOr(23, false) || // LAND active
+        primFgDiscreteWord2.bitValueOr(28, false) || // LAND armed
+        primFgDiscreteWord2.bitValueOr(23, false) || // (F)LOC Armed
+        primFgDiscreteWord4.bitValueOr(13, false) || // (F)LOC* active
+        primFgDiscreteWord4.bitValueOr(14, false) // (F)LOC Active
+      ); // TODO Check if LOC or G/S scales are invalid (MMR words)
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord2,
+    this.primFgDiscreteWord4,
+  );
 
   private readonly lsReminderVisible = MappedSubject.create(
-    ([locPushed, approachModePushed, lsPushed]) => {
-      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
+    ([approachModeSelected, lsPushed]) => {
+      return approachModeSelected && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
     },
-    this.locPushed,
-    this.approachModePushed,
+    this.approachModeSelected,
     this.lsButton,
   );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    this.lsReminderVisible.sub((v) => {
-      if (v) {
-        this.lsReminder.instance.style.display = 'inline';
-      } else {
-        this.lsReminder.instance.style.display = 'none';
-      }
-    }, true);
-  }
-
   render(): VNode {
     return (
-      <text class="FontLargest Amber Blink9Seconds" x="104.33" y="124.8" ref={this.lsReminder}>
-        LS
-      </text>
+      <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
+        <text class="FontLargest Amber" x="104.33" y="124.8">
+          LS
+        </text>
+      </FlashOneHertz>
     );
   }
 }

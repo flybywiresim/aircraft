@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from '../PFD';
 
 import {
@@ -50,7 +49,7 @@ export interface Arinc429Values {
   lgciuDiscreteWord1: Arinc429Word;
 }
 export class ArincValueProvider implements Instrument {
-  private readonly sub = this.bus.getSubscriber<FcuEfisCpBusEvents & ClockEvents & PFDSimvars & SimplaneValues>();
+  private readonly sub = this.bus.getSubscriber<FcuEfisCpBusEvents & ClockEvents & PFDSimvars>();
 
   private roll = new Arinc429Word(0);
 
