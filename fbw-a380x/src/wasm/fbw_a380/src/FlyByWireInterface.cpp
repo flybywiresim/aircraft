@@ -865,6 +865,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcuEisBaroHpa[i] = std::make_unique<LocalVariable>("A32NX_FCU_EFIS_" + idString + "_BARO_HPA");
 
     idFcuAfsDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCU_AFS_" + idString + "_DISCRETE_WORD_1");
+    idFcuAfsDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCU_AFS_" + idString + "_DISCRETE_WORD_2");
   }
   idFcuAfsPanelAltIncrement1000 = std::make_unique<LocalVariable>("A32NX_FCU_ALT_INCREMENT_1000");
 
@@ -2027,6 +2028,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   idFcuEisBaroHpa[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].baro_setting_hpa));
 
   idFcuAfsDiscreteWord1[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].afs_discrete_word_1));
+  idFcuAfsDiscreteWord2[fcuIndex]->set(Arinc429Utils::toSimVar(fcuBusOutputs[fcuIndex].afs_discrete_word_2));
 
   base_fcu_efis_panel_outputs efisPanelOutputs = discreteOutputs.efis_outputs;
 

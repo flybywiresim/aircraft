@@ -661,6 +661,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuEisBaroHpa[2];
 
   std::unique_ptr<LocalVariable> idFcuAfsDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFcuAfsDiscreteWord2[2];
 
   // FCU Shim
   // These variables are legacy variables and are driven by a shim from the new FCU to the old vars.
