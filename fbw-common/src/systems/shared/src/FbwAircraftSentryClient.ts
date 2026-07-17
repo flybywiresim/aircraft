@@ -4,12 +4,9 @@
 
 /* eslint-disable no-console */
 
-import * as Sentry from '@sentry/browser';
-import { BrowserTracing } from '@sentry/tracing';
-import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
-import { Integration } from '@sentry/types';
 import { NXDataStore } from './persistence';
 import { PopUpDialog } from './LegacyPopupTypes';
+import { SentryReporter } from './SentryReporter';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
 
@@ -23,17 +20,12 @@ export interface FbwAircraftSentryClientConfiguration {
   /**
    * Sentry DSN
    */
-  dsn: string;
+  dsn?: string;
 
   /**
    * Prefix of `build_info.json` file, for fetching commit SHA
    */
-  buildInfoFilePrefix: string;
-
-  /**
-   * Whether to enable interaction tracing
-   */
-  enableTracing: boolean;
+  buildInfoFilePrefix?: string;
 
   /**
    * Whether this is the root client (ONLY SET THIS ONCE)
@@ -45,6 +37,12 @@ export interface FbwAircraftSentryClientConfiguration {
  * FBW sentry.io client for aircraft use
  */
 export class FbwAircraftSentryClient {
+  private static reporter: SentryReporter | undefined;
+
+  private static initializationPromise: Promise<void> | undefined;
+
+  private static lifecycleGeneration = 0;
+
   /**
    * Method called when a panel is initialized. If root client, runs the normal flow (ask for consent if state is unknown). Otherwise,
    * wait for `DataStore` property changes.
@@ -110,7 +108,8 @@ export class FbwAircraftSentryClient {
         // It seems that for some people, spawning the popup / writing to NXDataStore can cause a CTD if the flight is not fully loaded.
         // So instead, we wait for a bit after the FlightStart event to show it and gather consent.
         return new Promise((resolve, reject) => {
-          const instrument = document.querySelector('vcockpit-panel > *');
+          // FIXME find a consent solution that works for FS2024
+          const instrument = null; // document.querySelector('vcockpit-panel > *');
 
           if (instrument) {
             resolve(
@@ -189,7 +188,9 @@ export class FbwAircraftSentryClient {
    * Closes the Sentry client
    */
   private static closeSentry() {
-    Sentry.close();
+    FbwAircraftSentryClient.lifecycleGeneration += 1;
+    FbwAircraftSentryClient.reporter?.close();
+    FbwAircraftSentryClient.reporter = undefined;
 
     console.log('[SentryClient] Sentry closed');
   }
@@ -200,35 +201,63 @@ export class FbwAircraftSentryClient {
    * @param config a {@link FbwAircraftSentryClientConfiguration} object
    */
   private static async initializeSentry(config: FbwAircraftSentryClientConfiguration) {
+    if (FbwAircraftSentryClient.reporter) {
+      return;
+    }
+
+    if (FbwAircraftSentryClient.initializationPromise) {
+      return FbwAircraftSentryClient.initializationPromise;
+    }
+
+    const generation = FbwAircraftSentryClient.lifecycleGeneration;
+    const initializationPromise = FbwAircraftSentryClient.doInitializeSentry(config, generation);
+    FbwAircraftSentryClient.initializationPromise = initializationPromise;
+
+    try {
+      await initializationPromise;
+    } finally {
+      if (FbwAircraftSentryClient.initializationPromise === initializationPromise) {
+        FbwAircraftSentryClient.initializationPromise = undefined;
+      }
+    }
+  }
+
+  private static async doInitializeSentry(config: FbwAircraftSentryClientConfiguration, generation: number) {
+    if (!config.buildInfoFilePrefix || !config.dsn) {
+      console.log('[SentryClient] Sentry not initialised due to missing config.');
+      return;
+    }
+
     let release = 'unknown';
+    let clientVersion = 'unknown';
     try {
       const manifest = await (await fetch(`/VFS/${config.buildInfoFilePrefix}_build_info.json`)).json();
 
-      release = manifest.pretty_release_name;
+      if (typeof manifest.pretty_release_name === 'string' && manifest.pretty_release_name) {
+        release = manifest.pretty_release_name;
+      }
+      if (typeof manifest.version === 'string' && manifest.version) {
+        clientVersion = manifest.version;
+      }
     } catch (_e) {
       console.warn(
         `[SentryClient] Could not load ${config.buildInfoFilePrefix}_build_info.json. Using 'unknown' as release name`,
       );
     }
 
-    const integrations: Integration[] = [new CaptureConsoleIntegration({ levels: ['error'] })];
-
-    if (config.enableTracing) {
-      integrations.push(new BrowserTracing());
+    if (generation !== FbwAircraftSentryClient.lifecycleGeneration) {
+      return;
     }
 
-    Sentry.init({
-      dsn: config.dsn,
-      release,
-      integrations,
-      sampleRate: 0.1,
-    });
+    const reporter = new SentryReporter(config.dsn, release, clientVersion);
+    reporter.start();
+    FbwAircraftSentryClient.reporter = reporter;
 
     console.log('[SentryClient] Sentry initialized');
 
     NXDataStore.getAndSubscribeLegacy('A32NX_SENTRY_SESSION_ID', (_, value) => {
       if (value) {
-        Sentry.setTag('session_id', value);
+        reporter.setSessionId(value);
         console.log('[SentryClient] Sentry tag "session_id" set to', value);
       }
     });
