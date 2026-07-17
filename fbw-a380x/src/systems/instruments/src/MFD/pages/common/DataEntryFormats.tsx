@@ -850,6 +850,12 @@ export class TripWindFormat implements DataEntryFormat<number> {
 }
 
 export class QnhFormat extends SubscriptionCollector implements DataEntryFormat<number> {
+  /** 1-4 digits */
+  static readonly QNH_REGEX_HPA = /^\d{1,4}$/;
+
+  /** 4 digits or with a decimal point (NN.NN) */
+  static readonly QNH_REGEX_INCHES = /^\d{2}\.{0,1}\d{2}$/;
+
   static readonly HPA_PLACE_HOLDER = '----';
 
   static readonly INHG_PLACE_HOLDER = '--.--';
@@ -876,7 +882,7 @@ export class QnhFormat extends SubscriptionCollector implements DataEntryFormat<
       this.isHpa.sub((isHpa) => {
         this.placeholder = isHpa ? QnhFormat.HPA_PLACE_HOLDER : QnhFormat.INHG_PLACE_HOLDER;
         this.reFormatTrigger?.notify();
-      }),
+      }, true),
     );
   }
 
@@ -892,28 +898,33 @@ export class QnhFormat extends SubscriptionCollector implements DataEntryFormat<
       return null;
     }
 
-    const nbr = Number.parseFloat(input);
+    const parsedInput = Number.parseFloat(input);
 
-    if (Number.isNaN(nbr)) {
+    if (Number.isNaN(parsedInput)) {
       throw getFormattedFormatError(this.requiredFormat);
     }
 
-    const containsDecimal = input.indexOf('.') !== -1;
-    const inputConvertedToInchesPrecision = containsDecimal ? nbr : nbr / 100;
-    // Check inches first, then hpa
-    if (inputConvertedToInchesPrecision <= this.maxInHgValue && inputConvertedToInchesPrecision >= this.minInHgValue) {
-      return inputConvertedToInchesPrecision;
-    } else {
-      // Check if is valid hpa
-      if (nbr <= this.maxHpaValue && nbr >= this.minHpaValue) {
-        return nbr;
-      } else {
-        throw getFormattedEntryOutOfRangeError(
-          containsDecimal ? this.minInHgValue.toFixed(2) : this.minHpaValue.toString(),
-          containsDecimal ? this.maxInHgValue.toFixed(2) : this.maxHpaValue.toString(),
-        );
+    // Test inches first (NNNN or NN.NN)
+    if (QnhFormat.QNH_REGEX_INCHES.test(input)) {
+      const containsDecimal = input.indexOf('.') !== -1;
+      const inchesInDecimal = containsDecimal ? parsedInput : parsedInput / 100;
+      const isValidInches = inchesInDecimal <= this.maxInHgValue && inchesInDecimal >= this.minInHgValue;
+      if (isValidInches) {
+        return inchesInDecimal;
+      } else if (containsDecimal) {
+        // If it contains a decimal we consider inches entry and quit early, otherwise we need to continue as NNNN is valid hpa.
+        throw getFormattedEntryOutOfRangeError(this.minInHgValue.toFixed(2), this.maxInHgValue.toFixed(2));
       }
     }
+
+    // N, NN, NNN or NNNN
+    if (QnhFormat.QNH_REGEX_HPA.test(input)) {
+      if (parsedInput > this.maxHpaValue || parsedInput < this.minHpaValue) {
+        throw getFormattedEntryOutOfRangeError(this.minHpaValue.toString(), this.maxHpaValue.toString());
+      }
+      return parsedInput;
+    }
+    throw getFormattedFormatError(this.requiredFormat);
   }
 }
 
