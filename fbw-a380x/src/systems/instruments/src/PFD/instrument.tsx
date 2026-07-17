@@ -3,6 +3,7 @@ import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } fro
 import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
@@ -29,6 +30,8 @@ class A380X_PFD extends BaseInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clock = new Clock(this.bus);
+
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus, Subject.create(true));
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
@@ -80,6 +83,7 @@ class A380X_PFD extends BaseInstrument {
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
     this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('PfdSimVars', this.simVarPublisher);
     this.backplane.addInstrument('ArincProvider', this.arincProvider);
