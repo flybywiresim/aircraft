@@ -23,6 +23,7 @@ import { FmsMessagePublisher } from '../MsfsAvionicsCommon/providers/FmsMessageP
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { dataStatusUri } from './shared/utils';
+import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -44,6 +45,8 @@ class MfdInstrument implements FsInstrument {
   private readonly radioAltimeterPublisher = new RaBusPublisher(this.bus);
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
+  private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
@@ -68,6 +71,7 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
     this.backplane.addPublisher('fqms', this.fqmsPublisher);
+    this.backplane.addPublisher('fcu', this.fcuBusPublisher);
 
     this.fmcService = new FmcService(
       this.bus,

@@ -19,6 +19,7 @@
 1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
 1. [FMS] Automatically delete minimums when the approach is changed - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Fix LS field remaining blank on F-PLN arrival page when no landing system is available or selected - @matze-tech (matze2346)
+1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
 
 ## 2020.15.0
 
