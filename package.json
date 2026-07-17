@@ -30,7 +30,6 @@
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "node fbw-a32nx/src/systems/fmgc/build.js",
     "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
-    "build-a32nx:sentry-client": "node fbw-a32nx/src/systems/sentry-client/build.js",
     "build-a32nx:simbridge-client": "node fbw-a32nx/src/systems/simbridge-client/build.js",
     "build-a32nx:systems-host": "node fbw-a32nx/src/systems/systems-host/build.js",
     "build-a32nx:tcas": "node fbw-a32nx/src/systems/tcas/build.js",
