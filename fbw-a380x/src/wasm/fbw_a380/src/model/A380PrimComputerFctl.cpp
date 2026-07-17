@@ -3899,53 +3899,53 @@ void A380PrimComputerFctl::step()
       A380PrimComputerFctl_B.SSM_lbo = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_lateral_mode_engaged &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active) &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active)) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.any_lateral_mode_engaged &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active) &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active)) {
       A380PrimComputerFctl_B.SSM_p5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_p5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_longitudinal_mode_engaged &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active)) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.any_longitudinal_mode_engaged &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active)) {
       A380PrimComputerFctl_B.SSM_mk = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_mk = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active ||
-        A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active ||
-        A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.align_submode_active) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active ||
+        A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active ||
+        A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.align_submode_active) {
       A380PrimComputerFctl_B.SSM_mu = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_mu = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_lateral_mode_engaged &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active) &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active)) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.any_lateral_mode_engaged &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active) &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active)) {
       A380PrimComputerFctl_B.SSM_cbl = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_cbl = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_longitudinal_mode_engaged &&
-        (!A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active)) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.any_longitudinal_mode_engaged &&
+        (!A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active)) {
       A380PrimComputerFctl_B.SSM_gzd = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_gzd = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active ||
-        A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active ||
-        A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.align_submode_active) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active ||
+        A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active ||
+        A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.align_submode_active) {
       A380PrimComputerFctl_B.SSM_mo = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_mo = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
     }
 
-    if (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.alt_cstr_applicable) {
+    if (A380PrimComputerFctl_U.in.fg_mode_logic.alt_cstr_applicable) {
       A380PrimComputerFctl_B.SSM_me = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     } else {
       A380PrimComputerFctl_B.SSM_me = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
@@ -3986,18 +3986,15 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.SSM_df = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     A380PrimComputerFctl_B.SSM_oe = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
     A380PrimComputerFctl_B.SSM_ha = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
-    A380PrimComputerFctl_B.SSM_op = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
-    A380PrimComputerFctl_B.Data_od = static_cast<real32_T>
-      (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.pfd_spd_target_kts);
-    A380PrimComputerFctl_B.Data_ez = static_cast<real32_T>
-      (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.pfd_spd_target_kts);
-    A380PrimComputerFctl_B.Data_pw = 0.0F;
-    A380PrimComputerFctl_B.Data_m2 = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.spd_mach_display_value;
-    A380PrimComputerFctl_B.Data_ek = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.hdg_trk_display_value;
-    A380PrimComputerFctl_B.Data_iy = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.hdg_trk_display_value;
-    A380PrimComputerFctl_B.Data_lk = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.alt_display_value;
-    A380PrimComputerFctl_B.Data_ca = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.vs_fpa_dashes;
-    A380PrimComputerFctl_B.Data_pix = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.vs_fpa_dashes;
+    A380PrimComputerFctl_B.Data_od = static_cast<real32_T>(A380PrimComputerFctl_U.in.fg_mode_logic.pfd_spd_target_kts);
+    A380PrimComputerFctl_B.Data_ez = static_cast<real32_T>(A380PrimComputerFctl_U.in.fg_mode_logic.pfd_spd_target_kts);
+    A380PrimComputerFctl_B.Data_pw = A380PrimComputerFctl_U.in.fg_mode_logic.selected_spd_mach;
+    A380PrimComputerFctl_B.Data_m2 = A380PrimComputerFctl_U.in.fg_mode_logic.selected_spd_mach;
+    A380PrimComputerFctl_B.Data_ek = A380PrimComputerFctl_U.in.fg_mode_logic.selected_hdg_trk;
+    A380PrimComputerFctl_B.Data_iy = A380PrimComputerFctl_U.in.fg_mode_logic.selected_hdg_trk;
+    A380PrimComputerFctl_B.Data_lk = A380PrimComputerFctl_U.in.fg_mode_logic.selected_alt;
+    A380PrimComputerFctl_B.Data_ca = A380PrimComputerFctl_U.in.fg_mode_logic.selected_vs_fpa;
+    A380PrimComputerFctl_B.Data_pix = A380PrimComputerFctl_U.in.fg_mode_logic.selected_vs_fpa;
     A380PrimComputerFctl_B.Data_di = static_cast<real32_T>(A380PrimComputerFctl_U.in.fg_logic.rwy_hdg_memo);
     A380PrimComputerFctl_B.Data_lz = static_cast<real32_T>(A380PrimComputerFctl_U.in.data.adcn_inputs.fms.preset_mach);
     A380PrimComputerFctl_B.Data_lu = static_cast<real32_T>(A380PrimComputerFctl_U.in.data.adcn_inputs.fms.preset_spd_kts);
@@ -4011,30 +4008,51 @@ void A380PrimComputerFctl::step()
       (A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Phi_c_deg);
     A380PrimComputerFctl_B.Data_dg = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Theta_c_deg);
+    A380PrimComputerFctl_B.Data_fp = static_cast<real32_T>
+      (A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Beta_c_deg);
     A380PrimComputerFctl_B.Data_e1 = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Beta_c_deg);
-    A380PrimComputerFctl_B.Data_ns = 0.0F;
-    A380PrimComputerFctl_B.Data_fp = 0.0F;
-    rtb_VectorConcatenate_kt[8] = A380PrimComputerFctl_P.Constant1_Value_h;
-    rtb_VectorConcatenate_kt[9] = A380PrimComputerFctl_P.Constant1_Value_h;
-    rtb_VectorConcatenate_kt[10] = A380PrimComputerFctl_P.Constant1_Value_h;
-    rtb_VectorConcatenate_kt[11] = A380PrimComputerFctl_P.Constant1_Value_h;
-    rtb_VectorConcatenate_kt[12] = A380PrimComputerFctl_P.Constant1_Value_h;
-    rtb_VectorConcatenate_kt[0] = A380PrimComputerFctl_U.in.fg_logic.ap_1_engaged;
-    rtb_VectorConcatenate_kt[1] = A380PrimComputerFctl_U.in.fg_logic.ap_2_engaged;
-    rtb_VectorConcatenate_kt[2] = A380PrimComputerFctl_U.in.fg_logic.fd_1_engaged;
-    rtb_VectorConcatenate_kt[3] = A380PrimComputerFctl_U.in.fg_logic.fd_2_engaged;
-    rtb_VectorConcatenate_kt[4] = A380PrimComputerFctl_U.in.fg_logic.ap_1_inop;
-    rtb_VectorConcatenate_kt[5] = A380PrimComputerFctl_U.in.fg_logic.ap_2_inop;
-    rtb_VectorConcatenate_kt[6] = A380PrimComputerFctl_U.in.fg_logic.fd_1_inop;
-    rtb_VectorConcatenate_kt[7] = A380PrimComputerFctl_U.in.fg_logic.fd_2_inop;
-    rtb_VectorConcatenate_kt[13] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_2_capability;
-    rtb_VectorConcatenate_kt[14] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_passive_capability;
-    rtb_VectorConcatenate_kt[15] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_op_capability;
-    rtb_VectorConcatenate_kt[16] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_2_inop;
-    rtb_VectorConcatenate_kt[17] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_passive_inop;
-    rtb_VectorConcatenate_kt[18] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_op_inop;
-    A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_kt, &A380PrimComputerFctl_B.Data_ns);
+    rtb_VectorConcatenate_kt[4] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[5] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[8] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[9] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[11] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[12] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[13] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[14] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_kt[0] = A380PrimComputerFctl_U.in.fg_mode_logic.trk_fpa_active;
+    rtb_VectorConcatenate_kt[1] = A380PrimComputerFctl_U.in.fg_mode_logic.mach_control_active;
+    rtb_VectorConcatenate_kt[2] = A380PrimComputerFctl_U.in.fg_mode_logic.true_active;
+    rtb_VectorConcatenate_kt[3] = A380PrimComputerFctl_U.in.fg_mode_logic.metric_alt_active;
+    rtb_VectorConcatenate_kt[6] = A380PrimComputerFctl_U.in.fg_mode_logic.auto_spd_control_active;
+    rtb_VectorConcatenate_kt[7] = A380PrimComputerFctl_U.in.fg_mode_logic.manual_spd_control_active;
+    rtb_VectorConcatenate_kt[10] = A380PrimComputerFctl_U.in.fg_logic.ils_tune_inhibit;
+    rtb_VectorConcatenate_kt[15] = A380PrimComputerFctl_U.in.fg_mode_logic.pitch_fd_bars_flashing;
+    rtb_VectorConcatenate_kt[16] = A380PrimComputerFctl_U.in.fg_mode_logic.roll_fd_bars_flashing;
+    rtb_VectorConcatenate_kt[17] = A380PrimComputerFctl_U.in.fg_mode_logic.ap_fd_mode_reversion;
+    rtb_VectorConcatenate_kt[18] = A380PrimComputerFctl_U.in.fg_mode_logic.vs_target_not_held;
+    A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_kt, &A380PrimComputerFctl_B.Data_fp);
+    rtb_VectorConcatenate_kt[9] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[10] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[11] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[12] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[13] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[16] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[17] = A380PrimComputerFctl_P.Constant8_Value_h3;
+    rtb_VectorConcatenate_kt[0] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_active;
+    rtb_VectorConcatenate_kt[1] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.nav_active;
+    rtb_VectorConcatenate_kt[2] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.loc_cpt_active;
+    rtb_VectorConcatenate_kt[3] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.loc_trk_active;
+    rtb_VectorConcatenate_kt[4] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.roll_goaround_active;
+    rtb_VectorConcatenate_kt[5] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.hdg_active;
+    rtb_VectorConcatenate_kt[6] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.trk_active;
+    rtb_VectorConcatenate_kt[7] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active;
+    rtb_VectorConcatenate_kt[8] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_trk_submode_active;
+    rtb_VectorConcatenate_kt[14] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.align_submode_active;
+    rtb_VectorConcatenate_kt[15] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active;
+    rtb_VectorConcatenate_kt[18] = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.backbeam_selected;
+    A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_kt, &A380PrimComputerFctl_B.Data_lg);
+    A380PrimComputerFctl_B.Data_ns = A380PrimComputerFctl_B.Data_lg;
     A380PrimComputerFctl_B.Data_oj = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.data.adcn_inputs.fms.next_alt_cstr_ft);
     A380PrimComputerFctl_B.Data_m3 = static_cast<real32_T>
@@ -4050,259 +4068,257 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_kt[17] = A380PrimComputerFctl_P.Constant4_Value_o;
     rtb_VectorConcatenate_kt[18] = A380PrimComputerFctl_P.Constant4_Value_o;
     rtb_VectorConcatenate_kt[0] = A380PrimComputerFctl_U.in.fg_logic.athr_engaged;
-    rtb_VectorConcatenate_kt[1] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.athr_active;
+    rtb_VectorConcatenate_kt[1] = A380PrimComputerFctl_U.in.fg_mode_logic.athr_active;
     rtb_VectorConcatenate_kt[2] = A380PrimComputerFctl_U.in.fg_logic.athr_inop;
-    rtb_VectorConcatenate_kt[3] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.athr_limited;
-    rtb_VectorConcatenate_kt[7] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.speed_mach_mode_active;
-    rtb_VectorConcatenate_kt[8] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.retard_mode_active;
-    rtb_VectorConcatenate_kt[9] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.thrust_mode_active;
-    rtb_VectorConcatenate_kt[13] = A380PrimComputerFctl_U.in.fg_logic.athr_logic.alpha_floor_mode_active;
+    rtb_VectorConcatenate_kt[3] = A380PrimComputerFctl_U.in.fg_mode_logic.athr_limited;
+    rtb_VectorConcatenate_kt[7] = A380PrimComputerFctl_U.in.fg_mode_logic.speed_mach_mode_active;
+    rtb_VectorConcatenate_kt[8] = A380PrimComputerFctl_U.in.fg_mode_logic.retard_mode_active;
+    rtb_VectorConcatenate_kt[9] = A380PrimComputerFctl_U.in.fg_mode_logic.thrust_mode_active;
+    rtb_VectorConcatenate_kt[13] = A380PrimComputerFctl_U.in.fg_mode_logic.alpha_floor_mode_active;
     rtb_VectorConcatenate_kt[14] = false;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_kt, &A380PrimComputerFctl_B.Data_oj);
-    rtb_VectorConcatenate_g[0] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::MAN_TOGA);
-    rtb_VectorConcatenate_g[1] = ((A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::MAN_MCT) ||
-      (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_MCT));
-    rtb_VectorConcatenate_g[2] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::MAN_FLEX);
-    rtb_VectorConcatenate_g[3] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_CLB);
-    rtb_VectorConcatenate_g[4] = ((A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::MAN_THR) ||
-      (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_LVR));
-    rtb_VectorConcatenate_g[5] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_IDLE);
-    rtb_VectorConcatenate_g[6] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::A_FLOOR);
-    rtb_VectorConcatenate_g[7] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::TOGA_LK);
-    rtb_VectorConcatenate_g[8] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::SPEED);
-    rtb_VectorConcatenate_g[9] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::MACH);
-    rtb_VectorConcatenate_g[10] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_DCLB);
-    rtb_VectorConcatenate_g[11] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::NOISE);
-    rtb_VectorConcatenate_g[12] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode == athr_fma_mode::THR_DES);
+    rtb_VectorConcatenate_g[0] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::MAN_TOGA);
+    rtb_VectorConcatenate_g[1] = ((A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::MAN_MCT)
+      || (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_MCT));
+    rtb_VectorConcatenate_g[2] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::MAN_FLEX);
+    rtb_VectorConcatenate_g[3] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_CLB);
+    rtb_VectorConcatenate_g[4] = ((A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::MAN_THR)
+      || (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_LVR));
+    rtb_VectorConcatenate_g[5] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_IDLE);
+    rtb_VectorConcatenate_g[6] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::A_FLOOR);
+    rtb_VectorConcatenate_g[7] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::TOGA_LK);
+    rtb_VectorConcatenate_g[8] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::SPEED);
+    rtb_VectorConcatenate_g[9] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::MACH);
+    rtb_VectorConcatenate_g[10] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_DCLB);
+    rtb_VectorConcatenate_g[11] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::NOISE);
+    rtb_VectorConcatenate_g[12] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode == a380_athr_fma_mode::THR_DES);
     rtb_VectorConcatenate_g[13] = false;
-    rtb_VectorConcatenate_g[14] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_message == athr_fma_message::
+    rtb_VectorConcatenate_g[14] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_message == a380_athr_fma_message::
       LVR_ASYM);
-    rtb_VectorConcatenate_g[15] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_message == athr_fma_message::
+    rtb_VectorConcatenate_g[15] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_message == a380_athr_fma_message::
       LVR_CLB);
-    rtb_VectorConcatenate_g[16] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_message == athr_fma_message::
+    rtb_VectorConcatenate_g[16] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_message == a380_athr_fma_message::
       LVR_MCT);
-    rtb_VectorConcatenate_g[17] = (A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_message == athr_fma_message::
+    rtb_VectorConcatenate_g[17] = (A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_message == a380_athr_fma_message::
       LVR_TOGA);
     rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant5_Value_c;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
     A380PrimComputerFctl_B.Data_jy = A380PrimComputerFctl_B.Data_lg;
-    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant6_Value_o;
-    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.alt_acq_armed;
-    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.alt_acq_arm_possible;
-    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.nav_armed;
-    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.loc_armed;
-    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.backbeam_selected;
-    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.land_armed;
-    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.glide_armed;
-    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.final_des_armed;
-    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.clb_armed;
-    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.des_armed;
-    A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
-    A380PrimComputerFctl_B.Data_j1 = A380PrimComputerFctl_B.Data_lg;
-    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_P.Constant7_Value_p;
     rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_P.Constant7_Value_p;
     rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant7_Value_p;
-    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_P.Constant7_Value_p;
     rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant7_Value_p;
-    rtb_VectorConcatenate_g[0] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.clb_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_clb_active);
-    rtb_VectorConcatenate_g[1] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.des_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_des_active);
-    rtb_VectorConcatenate_g[3] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_des_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_clb_active);
-    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.pitch_takeoff_active;
-    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.pitch_goaround_active;
-    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.vs_active;
-    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.fpa_active;
-    rtb_VectorConcatenate_g[8] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_acq_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_hold_active);
-    rtb_VectorConcatenate_g[9] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_trk_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_hold_active);
-    rtb_VectorConcatenate_g[10] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_acq_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_capt_active);
-    rtb_VectorConcatenate_g[11] = (A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_trk_active ||
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_capt_active);
-    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.final_des_active;
-    rtb_VectorConcatenate_g[13] = false;
-    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.flare_active;
+    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.clb_active;
+    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.des_active;
+    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.op_clb_active;
+    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.op_des_active;
+    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.pitch_takeoff_active;
+    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.pitch_goaround_active;
+    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.vs_active;
+    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.fpa_active;
+    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.alt_acq_active;
+    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.alt_hold_active;
+    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.gs_capt_active;
+    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.gs_trk_active;
+    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.app_des_active;
+    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.flare_active;
+    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.tcas_active;
+    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_U.in.fg_mode_logic.alt_cstr_applicable;
+    A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
+    A380PrimComputerFctl_B.Data_j1 = A380PrimComputerFctl_B.Data_lg;
+    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_U.in.fg_logic.ap_1_engaged;
+    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_logic.ap_2_engaged;
+    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_logic.fd_1_engaged;
+    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_logic.fd_2_engaged;
+    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_U.in.fg_logic.ap_1_inop;
+    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_logic.ap_2_inop;
+    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_U.in.fg_logic.fd_1_inop;
+    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_U.in.fg_logic.fd_2_inop;
+    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.land_active;
+    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_U.in.fg_mode_logic.land_2_capability;
+    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_passive_capability;
+    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_op_capability;
+    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_U.in.fg_mode_logic.land_2_inop;
+    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_passive_inop;
+    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_op_inop;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
     A380PrimComputerFctl_B.Data_fc = A380PrimComputerFctl_B.Data_lg;
-    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant8_Value_h3;
-    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_active;
-    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.nav_active;
-    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.loc_cpt_active;
-    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.loc_trk_active;
-    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.roll_goaround_active;
-    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.hdg_active;
-    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.trk_active;
-    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active;
-    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_trk_submode_active;
-    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.align_submode_active;
-    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active;
-    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.roll_fd_bars_flashing;
+    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant6_Value_o;
+    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.alt_acq_armed;
+    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.alt_acq_arm_possible;
+    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.glide_armed;
+    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.app_des_armed;
+    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.clb_armed;
+    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.des_armed;
+    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.op_clb_armed;
+    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.tcas_armed;
+    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.nav_armed;
+    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.loc_armed;
+    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.rwy_armed;
+    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.land_armed;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
     A380PrimComputerFctl_B.Data_of = A380PrimComputerFctl_B.Data_lg;
-    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_P.Constant9_Value_f;
-    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant9_Value_f;
+    rtb_VectorConcatenate_g[4] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[5] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[6] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[7] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[8] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[9] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[10] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[11] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[12] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[13] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[14] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[15] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[16] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[17] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[18] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_g[0] = A380PrimComputerFctl_U.in.fg_mode_logic.longi_large_box_tcas;
+    rtb_VectorConcatenate_g[1] = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_ra_inhibited;
+    rtb_VectorConcatenate_g[2] = A380PrimComputerFctl_U.in.fg_mode_logic.trk_fpa_deselected;
+    rtb_VectorConcatenate_g[3] = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_ra_corrective;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_g, &A380PrimComputerFctl_B.Data_lg);
     A380PrimComputerFctl_B.Data_n4 = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_lower_margin_kts);
     A380PrimComputerFctl_B.Data_ot = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_upper_margin_kts);
-    A380PrimComputerFctl_B.SSM_a50 = 0U;
+    A380PrimComputerFctl_B.SSM_op = 0U;
     A380PrimComputerFctl_B.Data_gv = 0.0F;
     A380PrimComputerFctl_B.Data_ou = static_cast<real32_T>(A380PrimComputerFctl_U.in.fg_laws.n_1_c_percent);
     A380PrimComputerFctl_B.Data_dh = static_cast<real32_T>
       (A380PrimComputerFctl_U.in.data.adcn_inputs.fms.flex_temp_deg_c);
+    A380PrimComputerFctl_B.SSM_a50 = 0U;
     A380PrimComputerFctl_B.Data_ph = 0.0F;
     A380PrimComputerFctl_B.dt = A380PrimComputerFctl_U.in.data.time.dt;
     A380PrimComputerFctl_B.prim_overhead_button_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.prim_overhead_button_pressed;
     A380PrimComputerFctl_B.SSM_og =
       A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.SSM;
-    A380PrimComputerFctl_B.Data_gs = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_ref_percent.Data;
-    A380PrimComputerFctl_B.SSM_a4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM;
-    A380PrimComputerFctl_B.Data_fd4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data;
-    A380PrimComputerFctl_B.SSM_bv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_1.SSM;
-    A380PrimComputerFctl_B.Data_hm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_bo = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_2.SSM;
-    A380PrimComputerFctl_B.Data_i2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_2.Data;
-    A380PrimComputerFctl_B.SSM_d1 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_3.SSM;
-    A380PrimComputerFctl_B.Data_og = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_3.Data;
-    A380PrimComputerFctl_B.SSM_hy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_limit_percent.SSM;
-    A380PrimComputerFctl_B.Data_fv =
+    A380PrimComputerFctl_B.fqms = A380PrimComputerFctl_U.in.data.adcn_inputs.fqms;
+    A380PrimComputerFctl_B.SSM_a4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_tla_deg.SSM;
+    A380PrimComputerFctl_B.Data_gs = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_tla_deg.Data;
+    A380PrimComputerFctl_B.SSM_bv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_ref_percent.SSM;
+    A380PrimComputerFctl_B.Data_fd4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_ref_percent.Data;
+    A380PrimComputerFctl_B.SSM_bo = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM;
+    A380PrimComputerFctl_B.Data_hm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data;
+    A380PrimComputerFctl_B.SSM_d1 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_1.SSM;
+    A380PrimComputerFctl_B.Data_i2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_1.Data;
+    A380PrimComputerFctl_B.SSM_hy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_2.SSM;
+    A380PrimComputerFctl_B.Data_og =
       A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.Data;
-    A380PrimComputerFctl_B.Data_oc = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_limit_percent.Data;
-    A380PrimComputerFctl_B.SSM_gi = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_maximum_percent.SSM;
-    A380PrimComputerFctl_B.Data_kq = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_maximum_percent.Data;
-    A380PrimComputerFctl_B.SSM_pp = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_ne = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_iab = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_it = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_jtv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_ch = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_fy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM;
+    A380PrimComputerFctl_B.Data_fv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_2.Data;
+    A380PrimComputerFctl_B.SSM_gi = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_3.SSM;
+    A380PrimComputerFctl_B.Data_oc = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_status_word_3.Data;
+    A380PrimComputerFctl_B.SSM_pp = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_limit_percent.SSM;
+    A380PrimComputerFctl_B.Data_kq = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_limit_percent.Data;
+    A380PrimComputerFctl_B.SSM_iab = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_maximum_percent.SSM;
+    A380PrimComputerFctl_B.Data_ne = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_maximum_percent.Data;
+    A380PrimComputerFctl_B.SSM_jtv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_it = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_fy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM;
     A380PrimComputerFctl_B.SSM_d4 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_standard_ft.SSM;
-    A380PrimComputerFctl_B.Data_bb = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data;
-    A380PrimComputerFctl_B.SSM_ars = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_tla_deg.SSM;
-    A380PrimComputerFctl_B.Data_ol = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_tla_deg.Data;
-    A380PrimComputerFctl_B.SSM_din = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_ref_percent.SSM;
-    A380PrimComputerFctl_B.Data_hw = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_ref_percent.Data;
-    A380PrimComputerFctl_B.SSM_m3 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM;
-    A380PrimComputerFctl_B.Data_hs = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data;
-    A380PrimComputerFctl_B.SSM_np = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_1.SSM;
-    A380PrimComputerFctl_B.Data_fj = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_ax = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_2.SSM;
-    A380PrimComputerFctl_B.Data_ky = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
-    A380PrimComputerFctl_B.Data_h5 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_2.Data;
-    A380PrimComputerFctl_B.SSM_cl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_3.SSM;
-    A380PrimComputerFctl_B.Data_ku = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_3.Data;
-    A380PrimComputerFctl_B.SSM_es = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_limit_percent.SSM;
-    A380PrimComputerFctl_B.Data_jp = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_limit_percent.Data;
-    A380PrimComputerFctl_B.SSM_gi1 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_maximum_percent.SSM;
-    A380PrimComputerFctl_B.Data_nu = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_maximum_percent.Data;
-    A380PrimComputerFctl_B.SSM_jz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_br = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_kt = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_ch = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_ars = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_bb = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_din = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM;
+    A380PrimComputerFctl_B.Data_ol = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data;
+    A380PrimComputerFctl_B.SSM_m3 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_tla_deg.SSM;
+    A380PrimComputerFctl_B.Data_hw = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_tla_deg.Data;
+    A380PrimComputerFctl_B.SSM_np = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_ref_percent.SSM;
+    A380PrimComputerFctl_B.Data_hs = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_ref_percent.Data;
+    A380PrimComputerFctl_B.SSM_ax = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM;
+    A380PrimComputerFctl_B.Data_fj = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
+    A380PrimComputerFctl_B.Data_ky = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data;
+    A380PrimComputerFctl_B.SSM_cl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_1.SSM;
+    A380PrimComputerFctl_B.Data_h5 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_1.Data;
+    A380PrimComputerFctl_B.SSM_es = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_2.SSM;
+    A380PrimComputerFctl_B.Data_ku = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_2.Data;
+    A380PrimComputerFctl_B.SSM_gi1 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_3.SSM;
+    A380PrimComputerFctl_B.Data_jp = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_status_word_3.Data;
+    A380PrimComputerFctl_B.SSM_jz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_limit_percent.SSM;
+    A380PrimComputerFctl_B.Data_nu = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_limit_percent.Data;
+    A380PrimComputerFctl_B.SSM_kt = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_maximum_percent.SSM;
     A380PrimComputerFctl_B.SSM_ds = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.SSM;
-    A380PrimComputerFctl_B.Data_ae = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_eg = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_pe = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_a0 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM;
-    A380PrimComputerFctl_B.Data_fy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data;
-    A380PrimComputerFctl_B.SSM_cv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_tla_deg.SSM;
-    A380PrimComputerFctl_B.Data_na = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_tla_deg.Data;
-    A380PrimComputerFctl_B.SSM_ea = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_ref_percent.SSM;
-    A380PrimComputerFctl_B.Data_my = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_ref_percent.Data;
-    A380PrimComputerFctl_B.SSM_p4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM;
-    A380PrimComputerFctl_B.Data_i4 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data;
-    A380PrimComputerFctl_B.Data_cx = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data;
-    A380PrimComputerFctl_B.SSM_m2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_1.SSM;
-    A380PrimComputerFctl_B.Data_nz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_bt0 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_2.SSM;
-    A380PrimComputerFctl_B.Data_id = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_2.Data;
-    A380PrimComputerFctl_B.SSM_nr = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_3.SSM;
-    A380PrimComputerFctl_B.Data_o2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_3.Data;
-    A380PrimComputerFctl_B.SSM_fr = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_limit_percent.SSM;
-    A380PrimComputerFctl_B.Data_gqq = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_limit_percent.Data;
-    A380PrimComputerFctl_B.SSM_cc = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_maximum_percent.SSM;
+    A380PrimComputerFctl_B.Data_br = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_maximum_percent.Data;
+    A380PrimComputerFctl_B.SSM_eg = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_ae = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_a0 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_pe = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_cv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_fy = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_ea = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM;
+    A380PrimComputerFctl_B.Data_na = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data;
+    A380PrimComputerFctl_B.SSM_p4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_tla_deg.SSM;
+    A380PrimComputerFctl_B.Data_my = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data;
+    A380PrimComputerFctl_B.Data_i4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_tla_deg.Data;
+    A380PrimComputerFctl_B.SSM_m2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_ref_percent.SSM;
+    A380PrimComputerFctl_B.Data_cx = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_ref_percent.Data;
+    A380PrimComputerFctl_B.SSM_bt0 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM;
+    A380PrimComputerFctl_B.Data_nz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data;
+    A380PrimComputerFctl_B.SSM_nr = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_1.SSM;
+    A380PrimComputerFctl_B.Data_id = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_1.Data;
+    A380PrimComputerFctl_B.SSM_fr = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_2.SSM;
+    A380PrimComputerFctl_B.Data_o2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_2.Data;
+    A380PrimComputerFctl_B.SSM_cc = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_3.SSM;
     A380PrimComputerFctl_B.SSM_lm = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.SSM;
-    A380PrimComputerFctl_B.Data_md = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_maximum_percent.Data;
-    A380PrimComputerFctl_B.SSM_mkm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_cz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_jhd = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_pm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_av = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_bj = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_ira = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM;
-    A380PrimComputerFctl_B.Data_ox = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data;
-    A380PrimComputerFctl_B.SSM_ge = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_tla_deg.SSM;
-    A380PrimComputerFctl_B.Data_pe5 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data;
-    A380PrimComputerFctl_B.Data_jj = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_tla_deg.Data;
-    A380PrimComputerFctl_B.SSM_lv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_ref_percent.SSM;
-    A380PrimComputerFctl_B.Data_p5 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_ref_percent.Data;
-    A380PrimComputerFctl_B.SSM_cg = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM;
-    A380PrimComputerFctl_B.Data_ekl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data;
-    A380PrimComputerFctl_B.SSM_be = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_1.SSM;
-    A380PrimComputerFctl_B.Data_nd = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_axb = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_2.SSM;
-    A380PrimComputerFctl_B.Data_n2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_2.Data;
-    A380PrimComputerFctl_B.SSM_nz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_3.SSM;
+    A380PrimComputerFctl_B.Data_gqq = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_status_word_3.Data;
+    A380PrimComputerFctl_B.SSM_mkm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_limit_percent.SSM;
+    A380PrimComputerFctl_B.Data_md = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_limit_percent.Data;
+    A380PrimComputerFctl_B.SSM_jhd = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_maximum_percent.SSM;
+    A380PrimComputerFctl_B.Data_cz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_maximum_percent.Data;
+    A380PrimComputerFctl_B.SSM_av = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_pm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_ira = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_bj = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_ge = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_ox = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data;
+    A380PrimComputerFctl_B.Data_pe5 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_lv = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM;
+    A380PrimComputerFctl_B.Data_jj = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data;
+    A380PrimComputerFctl_B.SSM_cg = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_tla_deg.SSM;
+    A380PrimComputerFctl_B.Data_p5 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_tla_deg.Data;
+    A380PrimComputerFctl_B.SSM_be = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_ref_percent.SSM;
+    A380PrimComputerFctl_B.Data_ekl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_ref_percent.Data;
+    A380PrimComputerFctl_B.SSM_axb = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM;
+    A380PrimComputerFctl_B.Data_nd = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data;
+    A380PrimComputerFctl_B.SSM_nz = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_1.SSM;
     A380PrimComputerFctl_B.SSM_cx = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.mach.SSM;
-    A380PrimComputerFctl_B.Data_dl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_3.Data;
-    A380PrimComputerFctl_B.SSM_gh = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_limit_percent.SSM;
-    A380PrimComputerFctl_B.Data_gs2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_limit_percent.Data;
-    A380PrimComputerFctl_B.SSM_ks = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_maximum_percent.SSM;
-    A380PrimComputerFctl_B.Data_h4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_maximum_percent.Data;
-    A380PrimComputerFctl_B.SSM_pw = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_e3 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_fh = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_f5h = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_gzn = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM;
-    A380PrimComputerFctl_B.Data_an = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.mach.Data;
-    A380PrimComputerFctl_B.Data_i4o = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data;
-    A380PrimComputerFctl_B.SSM_oo = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM;
-    A380PrimComputerFctl_B.Data_af = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data;
+    A380PrimComputerFctl_B.Data_n2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_1.Data;
+    A380PrimComputerFctl_B.SSM_gh = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_2.SSM;
+    A380PrimComputerFctl_B.Data_dl = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_2.Data;
+    A380PrimComputerFctl_B.SSM_ks = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_3.SSM;
+    A380PrimComputerFctl_B.Data_gs2 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_status_word_3.Data;
+    A380PrimComputerFctl_B.SSM_pw = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_limit_percent.SSM;
+    A380PrimComputerFctl_B.Data_h4 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_limit_percent.Data;
+    A380PrimComputerFctl_B.SSM_fh = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_maximum_percent.SSM;
+    A380PrimComputerFctl_B.Data_e3 = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_maximum_percent.Data;
+    A380PrimComputerFctl_B.SSM_gzn = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_f5h = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.mach.Data;
+    A380PrimComputerFctl_B.Data_an = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_oo = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_i4o = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_evh = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM;
+    A380PrimComputerFctl_B.Data_af = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data;
+    A380PrimComputerFctl_B.SSM_cn = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM;
+    A380PrimComputerFctl_B.Data_bm = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data;
     A380PrimComputerFctl_B.on_ground = A380PrimComputerFctl_U.in.general_logic.on_ground;
     A380PrimComputerFctl_B.tracking_mode_on = A380PrimComputerFctl_U.in.general_logic.tracking_mode_on;
     A380PrimComputerFctl_B.double_adr_failure = A380PrimComputerFctl_U.in.general_logic.double_adr_failure;
+    A380PrimComputerFctl_B.is_unit_1 = A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_1;
+    A380PrimComputerFctl_B.SSM_co = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM;
     A380PrimComputerFctl_B.triple_adr_failure = A380PrimComputerFctl_U.in.general_logic.triple_adr_failure;
     A380PrimComputerFctl_B.cas_or_mach_disagree = A380PrimComputerFctl_U.in.general_logic.cas_or_mach_disagree;
     A380PrimComputerFctl_B.alpha_disagree = A380PrimComputerFctl_U.in.general_logic.alpha_disagree;
     A380PrimComputerFctl_B.double_ir_failure = A380PrimComputerFctl_U.in.general_logic.double_ir_failure;
-    A380PrimComputerFctl_B.is_unit_1 = A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_1;
-    A380PrimComputerFctl_B.SSM_evh = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM;
     A380PrimComputerFctl_B.triple_ir_failure = A380PrimComputerFctl_U.in.general_logic.triple_ir_failure;
     A380PrimComputerFctl_B.ir_failure_not_self_detected =
       A380PrimComputerFctl_U.in.general_logic.ir_failure_not_self_detected;
@@ -4310,34 +4326,34 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.V_tas_kn = A380PrimComputerFctl_U.in.general_logic.adr_computation_data.V_tas_kn;
     A380PrimComputerFctl_B.mach = A380PrimComputerFctl_U.in.general_logic.adr_computation_data.mach;
     A380PrimComputerFctl_B.alpha_deg = A380PrimComputerFctl_U.in.general_logic.adr_computation_data.alpha_deg;
+    A380PrimComputerFctl_B.Data_dk = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
     A380PrimComputerFctl_B.p_s_c_hpa = A380PrimComputerFctl_U.in.general_logic.adr_computation_data.p_s_c_hpa;
     A380PrimComputerFctl_B.altitude_standard_ft =
       A380PrimComputerFctl_U.in.general_logic.adr_computation_data.altitude_standard_ft;
     A380PrimComputerFctl_B.theta_deg = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_deg;
     A380PrimComputerFctl_B.phi_deg = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.phi_deg;
-    A380PrimComputerFctl_B.Data_bm = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
     A380PrimComputerFctl_B.q_deg_s = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.q_deg_s;
     A380PrimComputerFctl_B.r_deg_s = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.r_deg_s;
     A380PrimComputerFctl_B.n_x_g = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.n_x_g;
     A380PrimComputerFctl_B.n_y_g = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.n_y_g;
     A380PrimComputerFctl_B.n_z_g = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.n_z_g;
     A380PrimComputerFctl_B.theta_dot_deg_s = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_dot_deg_s;
+    A380PrimComputerFctl_B.SSM_pe = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM;
     A380PrimComputerFctl_B.phi_dot_deg_s = A380PrimComputerFctl_U.in.general_logic.ir_computation_data.phi_dot_deg_s;
     A380PrimComputerFctl_B.ra_computation_data_ft = A380PrimComputerFctl_U.in.general_logic.ra_computation_data_ft;
     A380PrimComputerFctl_B.two_ra_failure = A380PrimComputerFctl_U.in.general_logic.two_ra_failure;
     A380PrimComputerFctl_B.all_ra_failure = A380PrimComputerFctl_U.in.general_logic.all_ra_failure;
-    A380PrimComputerFctl_B.SSM_cn = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM;
     A380PrimComputerFctl_B.all_sfcc_lost = A380PrimComputerFctl_U.in.general_logic.all_sfcc_lost;
     A380PrimComputerFctl_B.flap_handle_index = A380PrimComputerFctl_U.in.general_logic.flap_handle_index;
     A380PrimComputerFctl_B.flap_angle_deg = A380PrimComputerFctl_U.in.general_logic.flap_angle_deg;
     A380PrimComputerFctl_B.slat_angle_deg = A380PrimComputerFctl_U.in.general_logic.slat_angle_deg;
     A380PrimComputerFctl_B.slat_flap_actual_pos = A380PrimComputerFctl_U.in.general_logic.slat_flap_actual_pos;
     A380PrimComputerFctl_B.flap_surface_angle_deg = A380PrimComputerFctl_U.in.general_logic.flap_surface_angle_deg;
+    A380PrimComputerFctl_B.Data_nv = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
     A380PrimComputerFctl_B.slat_surface_angle_deg = A380PrimComputerFctl_U.in.general_logic.slat_surface_angle_deg;
     A380PrimComputerFctl_B.double_lgciu_failure = A380PrimComputerFctl_U.in.general_logic.double_lgciu_failure;
     A380PrimComputerFctl_B.slats_locked = A380PrimComputerFctl_U.in.general_logic.slats_locked;
     A380PrimComputerFctl_B.flaps_locked = A380PrimComputerFctl_U.in.general_logic.flaps_locked;
-    A380PrimComputerFctl_B.Data_dk = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
     A380PrimComputerFctl_B.landing_gear_down = A380PrimComputerFctl_U.in.general_logic.landing_gear_down;
     A380PrimComputerFctl_B.one_engine_out = A380PrimComputerFctl_U.in.general_logic.one_engine_out;
     A380PrimComputerFctl_B.engine_running = A380PrimComputerFctl_U.in.general_logic.engine_running;
@@ -4346,238 +4362,226 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.is_green_hydraulic_power_avail =
       A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail;
     A380PrimComputerFctl_B.beta_target_deg = A380PrimComputerFctl_U.in.flight_envelope.beta_target_deg;
+    A380PrimComputerFctl_B.SSM_cgz = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM;
     A380PrimComputerFctl_B.beta_target_visible = A380PrimComputerFctl_U.in.flight_envelope.beta_target_visible;
     A380PrimComputerFctl_B.alpha_floor_condition = A380PrimComputerFctl_U.in.flight_envelope.alpha_floor_condition;
     A380PrimComputerFctl_B.computed_weight_lbs = A380PrimComputerFctl_U.in.flight_envelope.computed_weight_lbs;
     A380PrimComputerFctl_B.computed_cg_percent = A380PrimComputerFctl_U.in.flight_envelope.computed_cg_percent;
-    A380PrimComputerFctl_B.SSM_co = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM;
     A380PrimComputerFctl_B.speed_scale_lost = A380PrimComputerFctl_U.in.flight_envelope.speed_scale_lost;
     A380PrimComputerFctl_B.speed_scale_visible = A380PrimComputerFctl_U.in.flight_envelope.speed_scale_visible;
     A380PrimComputerFctl_B.v_ls_kn = A380PrimComputerFctl_U.in.flight_envelope.v_ls_kn;
     A380PrimComputerFctl_B.v_stall_kn = A380PrimComputerFctl_U.in.flight_envelope.v_stall_kn;
     A380PrimComputerFctl_B.v_3_kn = A380PrimComputerFctl_U.in.flight_envelope.v_3_kn;
     A380PrimComputerFctl_B.v_3_visible = A380PrimComputerFctl_U.in.flight_envelope.v_3_visible;
+    A380PrimComputerFctl_B.Data_jpf = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data;
     A380PrimComputerFctl_B.v_4_kn = A380PrimComputerFctl_U.in.flight_envelope.v_4_kn;
     A380PrimComputerFctl_B.v_4_visible = A380PrimComputerFctl_U.in.flight_envelope.v_4_visible;
     A380PrimComputerFctl_B.v_man_kn = A380PrimComputerFctl_U.in.flight_envelope.v_man_kn;
     A380PrimComputerFctl_B.v_man_visible = A380PrimComputerFctl_U.in.flight_envelope.v_man_visible;
-    A380PrimComputerFctl_B.Data_nv = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data;
     A380PrimComputerFctl_B.v_max_kn = A380PrimComputerFctl_U.in.flight_envelope.v_max_kn;
     A380PrimComputerFctl_B.v_fe_next_kn = A380PrimComputerFctl_U.in.flight_envelope.v_fe_next_kn;
     A380PrimComputerFctl_B.v_fe_next_visible = A380PrimComputerFctl_U.in.flight_envelope.v_fe_next_visible;
     A380PrimComputerFctl_B.v_c_trend_kn = A380PrimComputerFctl_U.in.flight_envelope.v_c_trend_kn;
     A380PrimComputerFctl_B.gamma_a_deg = A380PrimComputerFctl_U.in.flight_envelope.gamma_a_deg;
     A380PrimComputerFctl_B.gamma_t_deg = A380PrimComputerFctl_U.in.flight_envelope.gamma_t_deg;
+    A380PrimComputerFctl_B.SSM_fw = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM;
     A380PrimComputerFctl_B.pitch_pitch_warning_active =
       A380PrimComputerFctl_U.in.flight_envelope.pitch_pitch_warning_active;
     A380PrimComputerFctl_B.low_energy_warning_active =
       A380PrimComputerFctl_U.in.flight_envelope.low_energy_warning_active;
-    A380PrimComputerFctl_B.SSM_pe = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM;
-    A380PrimComputerFctl_B.Data_jpf = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
-    A380PrimComputerFctl_B.SSM_cgz =
+    A380PrimComputerFctl_B.Data_i5 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
+    A380PrimComputerFctl_B.SSM_h4 =
       A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.SSM;
-    A380PrimComputerFctl_B.Data_i5 =
+    A380PrimComputerFctl_B.Data_k2 =
       A380PrimComputerFctl_U.in.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.Data;
     A380PrimComputerFctl_B.is_unit_2 = A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_2;
-    A380PrimComputerFctl_B.SSM_fw = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_k2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_h4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_as = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.latitude_deg.Data;
-    A380PrimComputerFctl_B.SSM_cb3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_gk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.longitude_deg.Data;
-    A380PrimComputerFctl_B.SSM_pj = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
-    A380PrimComputerFctl_B.Data_jl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
-    A380PrimComputerFctl_B.SSM_dv = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_e32 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_cb3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_as = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_pj = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_gk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.latitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_dv = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_jl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.longitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_i4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
+    A380PrimComputerFctl_B.Data_e32 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+    A380PrimComputerFctl_B.SSM_fm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_ih = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
     A380PrimComputerFctl_B.is_unit_3 = A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_3;
-    A380PrimComputerFctl_B.SSM_i4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
+    A380PrimComputerFctl_B.SSM_e5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
     A380PrimComputerFctl_B.gnd_eng_stop_flt_5s = A380PrimComputerFctl_U.in.fg_logic.gnd_eng_stop_flt_5s;
     A380PrimComputerFctl_B.ap_fd_common_condition = A380PrimComputerFctl_U.in.fg_logic.ap_fd_common_condition;
     A380PrimComputerFctl_B.fd_1_engaged = A380PrimComputerFctl_U.in.fg_logic.fd_1_engaged;
+    A380PrimComputerFctl_B.Data_du = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
     A380PrimComputerFctl_B.fd_2_engaged = A380PrimComputerFctl_U.in.fg_logic.fd_2_engaged;
     A380PrimComputerFctl_B.ap_1_engaged = A380PrimComputerFctl_U.in.fg_logic.ap_1_engaged;
     A380PrimComputerFctl_B.ap_2_engaged = A380PrimComputerFctl_U.in.fg_logic.ap_2_engaged;
     A380PrimComputerFctl_B.athr_engaged = A380PrimComputerFctl_U.in.fg_logic.athr_engaged;
-    A380PrimComputerFctl_B.Data_ih = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
     A380PrimComputerFctl_B.fd_1_inop = A380PrimComputerFctl_U.in.fg_logic.fd_1_inop;
     A380PrimComputerFctl_B.fd_2_inop = A380PrimComputerFctl_U.in.fg_logic.fd_2_inop;
     A380PrimComputerFctl_B.ap_1_inop = A380PrimComputerFctl_U.in.fg_logic.ap_1_inop;
     A380PrimComputerFctl_B.ap_2_inop = A380PrimComputerFctl_U.in.fg_logic.ap_2_inop;
     A380PrimComputerFctl_B.athr_inop = A380PrimComputerFctl_U.in.fg_logic.athr_inop;
     A380PrimComputerFctl_B.fmgc_opp_priority = A380PrimComputerFctl_U.in.fg_logic.fmgc_opp_priority;
-    A380PrimComputerFctl_B.SSM_fm = A380PrimComputerFctl_U.in.fg_logic.altitude_indicated_ft.SSM;
-    A380PrimComputerFctl_B.Data_du = A380PrimComputerFctl_U.in.fg_logic.altitude_indicated_ft.Data;
+    A380PrimComputerFctl_B.SSM_bf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
+    A380PrimComputerFctl_B.SSM_fd = A380PrimComputerFctl_U.in.fg_logic.altitude_indicated_ft.SSM;
+    A380PrimComputerFctl_B.Data_nx = A380PrimComputerFctl_U.in.fg_logic.altitude_indicated_ft.Data;
     A380PrimComputerFctl_B.all_fcu_failure = A380PrimComputerFctl_U.in.fg_logic.all_fcu_failure;
     A380PrimComputerFctl_B.fcu_1_chosen = A380PrimComputerFctl_U.in.fg_logic.fcu_1_chosen;
-    A380PrimComputerFctl_B.SSM_e5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
     A380PrimComputerFctl_B.fcu_2_chosen = A380PrimComputerFctl_U.in.fg_logic.fcu_2_chosen;
+    A380PrimComputerFctl_B.SSM_fv = A380PrimComputerFctl_U.in.fg_logic.chosen_fcu_discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_n0 = A380PrimComputerFctl_U.in.fg_logic.chosen_fcu_discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_dt = A380PrimComputerFctl_U.in.fg_logic.chosen_fcu_discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_eqi = A380PrimComputerFctl_U.in.fg_logic.chosen_fcu_discrete_word_2.Data;
     A380PrimComputerFctl_B.ils_failure = A380PrimComputerFctl_U.in.fg_logic.ils_failure;
-    A380PrimComputerFctl_B.both_ils_valid = A380PrimComputerFctl_U.in.fg_logic.both_ils_valid;
-    A380PrimComputerFctl_B.SSM_bf = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.runway_heading_deg.SSM;
-    A380PrimComputerFctl_B.Data_nx = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.runway_heading_deg.Data;
-    A380PrimComputerFctl_B.SSM_fd = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.ils_frequency_mhz.SSM;
-    A380PrimComputerFctl_B.Data_n0 = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.ils_frequency_mhz.Data;
-    A380PrimComputerFctl_B.SSM_fv = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.localizer_deviation_deg.SSM;
-    A380PrimComputerFctl_B.Data_eqi =
-      A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.localizer_deviation_deg.Data;
-    A380PrimComputerFctl_B.SSM_dt = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.glideslope_deviation_deg.SSM;
     A380PrimComputerFctl_B.Data_om = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_speed_kn.Data;
-    A380PrimComputerFctl_B.Data_nr =
+    A380PrimComputerFctl_B.both_ils_valid = A380PrimComputerFctl_U.in.fg_logic.both_ils_valid;
+    A380PrimComputerFctl_B.SSM_j5 = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.runway_heading_deg.SSM;
+    A380PrimComputerFctl_B.Data_nr = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.runway_heading_deg.Data;
+    A380PrimComputerFctl_B.SSM_ng = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.ils_frequency_mhz.SSM;
+    A380PrimComputerFctl_B.Data_p3 = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.ils_frequency_mhz.Data;
+    A380PrimComputerFctl_B.SSM_cs = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.localizer_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_nb =
+      A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.localizer_deviation_deg.Data;
+    A380PrimComputerFctl_B.SSM_ls = A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.glideslope_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_hd =
       A380PrimComputerFctl_U.in.fg_logic.ils_computation_data.glideslope_deviation_deg.Data;
     A380PrimComputerFctl_B.ils_tune_inhibit = A380PrimComputerFctl_U.in.fg_logic.ils_tune_inhibit;
+    A380PrimComputerFctl_B.SSM_dg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
     A380PrimComputerFctl_B.rwy_hdg_memo = A380PrimComputerFctl_U.in.fg_logic.rwy_hdg_memo;
     A380PrimComputerFctl_B.tcas_failure = A380PrimComputerFctl_U.in.fg_logic.tcas_failure;
     A380PrimComputerFctl_B.tcas_mode_available = A380PrimComputerFctl_U.in.fg_logic.tcas_mode_available;
-    A380PrimComputerFctl_B.rwy_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_active;
-    A380PrimComputerFctl_B.nav_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.nav_active;
-    A380PrimComputerFctl_B.loc_cpt_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.loc_cpt_active;
-    A380PrimComputerFctl_B.loc_trk_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.loc_trk_active;
+    A380PrimComputerFctl_B.rwy_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_active;
+    A380PrimComputerFctl_B.nav_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.nav_active;
+    A380PrimComputerFctl_B.loc_cpt_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.loc_cpt_active;
+    A380PrimComputerFctl_B.loc_trk_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.loc_trk_active;
     A380PrimComputerFctl_B.roll_goaround_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.roll_goaround_active;
-    A380PrimComputerFctl_B.SSM_j5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
-    A380PrimComputerFctl_B.hdg_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.hdg_active;
-    A380PrimComputerFctl_B.trk_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.trk_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.roll_goaround_active;
+    A380PrimComputerFctl_B.hdg_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.hdg_active;
+    A380PrimComputerFctl_B.trk_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.trk_active;
+    A380PrimComputerFctl_B.Data_al = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
     A380PrimComputerFctl_B.rwy_loc_submode_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_loc_submode_active;
     A380PrimComputerFctl_B.rwy_trk_submode_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rwy_trk_submode_active;
-    A380PrimComputerFctl_B.land_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.land_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rwy_trk_submode_active;
+    A380PrimComputerFctl_B.land_active = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.land_active;
     A380PrimComputerFctl_B.align_submode_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.align_submode_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.align_submode_active;
     A380PrimComputerFctl_B.rollout_submode_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active;
-    A380PrimComputerFctl_B.clb_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.clb_active;
-    A380PrimComputerFctl_B.des_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.des_active;
-    A380PrimComputerFctl_B.op_clb_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_clb_active;
-    A380PrimComputerFctl_B.Data_p3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
-    A380PrimComputerFctl_B.op_des_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.op_des_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.lateral_modes.rollout_submode_active;
+    A380PrimComputerFctl_B.clb_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.clb_active;
+    A380PrimComputerFctl_B.des_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.des_active;
+    A380PrimComputerFctl_B.op_clb_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.op_clb_active;
+    A380PrimComputerFctl_B.op_des_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.op_des_active;
     A380PrimComputerFctl_B.pitch_takeoff_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.pitch_takeoff_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.pitch_takeoff_active;
+    A380PrimComputerFctl_B.SSM_d3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
     A380PrimComputerFctl_B.pitch_goaround_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.pitch_goaround_active;
-    A380PrimComputerFctl_B.vs_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.vs_active;
-    A380PrimComputerFctl_B.fpa_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.fpa_active;
-    A380PrimComputerFctl_B.alt_acq_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_acq_active;
-    A380PrimComputerFctl_B.alt_hold_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.alt_hold_active;
+      A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.pitch_goaround_active;
+    A380PrimComputerFctl_B.vs_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.vs_active;
+    A380PrimComputerFctl_B.fpa_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.fpa_active;
+    A380PrimComputerFctl_B.alt_acq_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.alt_acq_active;
+    A380PrimComputerFctl_B.alt_hold_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.alt_hold_active;
     A380PrimComputerFctl_B.fma_dash_display =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.fma_dash_display;
-    A380PrimComputerFctl_B.gs_capt_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_capt_active;
-    A380PrimComputerFctl_B.gs_trk_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.gs_trk_active;
-    A380PrimComputerFctl_B.SSM_ng = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.final_des_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.final_des_active;
-    A380PrimComputerFctl_B.flare_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.flare_active;
-    A380PrimComputerFctl_B.cruise_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.cruise_active;
-    A380PrimComputerFctl_B.tcas_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_modes.tcas_active;
-    A380PrimComputerFctl_B.alt_acq_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.alt_acq_armed;
+      A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.fma_dash_display;
+    A380PrimComputerFctl_B.gs_capt_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.gs_capt_active;
+    A380PrimComputerFctl_B.gs_trk_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.gs_trk_active;
+    A380PrimComputerFctl_B.app_des_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.app_des_active;
+    A380PrimComputerFctl_B.flare_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.flare_active;
+    A380PrimComputerFctl_B.Data_gu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
+    A380PrimComputerFctl_B.cruise_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.cruise_active;
+    A380PrimComputerFctl_B.tcas_active = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_modes.tcas_active;
+    A380PrimComputerFctl_B.alt_acq_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.alt_acq_armed;
     A380PrimComputerFctl_B.alt_acq_arm_possible =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.alt_acq_arm_possible;
-    A380PrimComputerFctl_B.nav_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.nav_armed;
-    A380PrimComputerFctl_B.loc_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.loc_armed;
-    A380PrimComputerFctl_B.land_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.land_armed;
-    A380PrimComputerFctl_B.glide_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.glide_armed;
-    A380PrimComputerFctl_B.Data_nb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
-    A380PrimComputerFctl_B.final_des_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.final_des_armed;
-    A380PrimComputerFctl_B.clb_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.clb_armed;
-    A380PrimComputerFctl_B.des_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.des_armed;
-    A380PrimComputerFctl_B.tcas_armed = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.armed_modes.tcas_armed;
-    A380PrimComputerFctl_B.active_lateral_law = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.active_lateral_law;
-    A380PrimComputerFctl_B.active_longitudinal_law =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.active_longitudinal_law;
-    A380PrimComputerFctl_B.auto_spd_control_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.auto_spd_control_active;
-    A380PrimComputerFctl_B.manual_spd_control_active =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.manual_spd_control_active;
-    A380PrimComputerFctl_B.mach_control_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.mach_control_active;
-    A380PrimComputerFctl_B.spd_target_kts = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.spd_target_kts;
-    A380PrimComputerFctl_B.SSM_cs = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.pfd_spd_target_kts = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.pfd_spd_target_kts;
-    A380PrimComputerFctl_B.alt_cstr_applicable = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.alt_cstr_applicable;
-    A380PrimComputerFctl_B.alt_sel_or_cstr = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.alt_sel_or_cstr;
-    A380PrimComputerFctl_B.fmgc_opp_mode_sync = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.fmgc_opp_mode_sync;
-    A380PrimComputerFctl_B.any_ap_fd_engaged = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_ap_fd_engaged;
-    A380PrimComputerFctl_B.any_lateral_mode_engaged =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_lateral_mode_engaged;
-    A380PrimComputerFctl_B.any_longitudinal_mode_engaged =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.any_longitudinal_mode_engaged;
-    A380PrimComputerFctl_B.lateral_mode_reset = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_mode_reset;
-    A380PrimComputerFctl_B.longitudinal_mode_reset =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_mode_reset;
-    A380PrimComputerFctl_B.hdg_trk_preset_available =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.hdg_trk_preset_available;
-    A380PrimComputerFctl_B.Data_hd = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data;
-    A380PrimComputerFctl_B.alt_soft_mode_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.alt_soft_mode_active;
-    A380PrimComputerFctl_B.fd_auto_disengage = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.fd_auto_disengage;
-    A380PrimComputerFctl_B.ap_fd_mode_reversion = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.ap_fd_mode_reversion;
-    A380PrimComputerFctl_B.lateral_mode_reversion =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.lateral_mode_reversion;
-    A380PrimComputerFctl_B.longitudinal_mode_reversion_vs =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_mode_reversion_vs;
-    A380PrimComputerFctl_B.longitudinal_mode_reversion_op_clb =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longitudinal_mode_reversion_op_clb;
-    A380PrimComputerFctl_B.pitch_fd_bars_flashing =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.pitch_fd_bars_flashing;
-    A380PrimComputerFctl_B.roll_fd_bars_flashing = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.roll_fd_bars_flashing;
-    A380PrimComputerFctl_B.loc_bc_selection = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.loc_bc_selection;
-    A380PrimComputerFctl_B.vs_target_not_held = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.vs_target_not_held;
+      A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.alt_acq_arm_possible;
+    A380PrimComputerFctl_B.nav_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.nav_armed;
+    A380PrimComputerFctl_B.loc_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.loc_armed;
+    A380PrimComputerFctl_B.rwy_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.rwy_armed;
+    A380PrimComputerFctl_B.land_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.land_armed;
+    A380PrimComputerFctl_B.glide_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.glide_armed;
+    A380PrimComputerFctl_B.app_des_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.app_des_armed;
+    A380PrimComputerFctl_B.SSM_p2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
+    A380PrimComputerFctl_B.clb_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.clb_armed;
+    A380PrimComputerFctl_B.des_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.des_armed;
+    A380PrimComputerFctl_B.op_clb_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.op_clb_armed;
+    A380PrimComputerFctl_B.tcas_armed = A380PrimComputerFctl_U.in.fg_mode_logic.armed_modes.tcas_armed;
+    A380PrimComputerFctl_B.active_lateral_law = A380PrimComputerFctl_U.in.fg_mode_logic.active_lateral_law;
+    A380PrimComputerFctl_B.active_longitudinal_law = A380PrimComputerFctl_U.in.fg_mode_logic.active_longitudinal_law;
+    A380PrimComputerFctl_B.auto_spd_control_active = A380PrimComputerFctl_U.in.fg_mode_logic.auto_spd_control_active;
+    A380PrimComputerFctl_B.manual_spd_control_active = A380PrimComputerFctl_U.in.fg_mode_logic.manual_spd_control_active;
+    A380PrimComputerFctl_B.mach_control_active = A380PrimComputerFctl_U.in.fg_mode_logic.mach_control_active;
+    A380PrimComputerFctl_B.athr_active = A380PrimComputerFctl_U.in.fg_mode_logic.athr_active;
+    A380PrimComputerFctl_B.Data_ix = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data;
+    A380PrimComputerFctl_B.athr_limited = A380PrimComputerFctl_U.in.fg_mode_logic.athr_limited;
+    A380PrimComputerFctl_B.alpha_floor_mode_active = A380PrimComputerFctl_U.in.fg_mode_logic.alpha_floor_mode_active;
+    A380PrimComputerFctl_B.thrust_mode_active = A380PrimComputerFctl_U.in.fg_mode_logic.thrust_mode_active;
+    A380PrimComputerFctl_B.thrust_target_idle = A380PrimComputerFctl_U.in.fg_mode_logic.thrust_target_idle;
+    A380PrimComputerFctl_B.speed_mach_mode_active = A380PrimComputerFctl_U.in.fg_mode_logic.speed_mach_mode_active;
+    A380PrimComputerFctl_B.retard_mode_active = A380PrimComputerFctl_U.in.fg_mode_logic.retard_mode_active;
+    A380PrimComputerFctl_B.athr_fma_mode = A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_mode;
+    A380PrimComputerFctl_B.athr_fma_message = A380PrimComputerFctl_U.in.fg_mode_logic.athr_fma_message;
+    A380PrimComputerFctl_B.spd_target_kts = A380PrimComputerFctl_U.in.fg_mode_logic.spd_target_kts;
+    A380PrimComputerFctl_B.pfd_spd_target_kts = A380PrimComputerFctl_U.in.fg_mode_logic.pfd_spd_target_kts;
     A380PrimComputerFctl_B.capt_priority_takeover_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.capt_priority_takeover_pressed;
-    A380PrimComputerFctl_B.SSM_ls = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM;
-    A380PrimComputerFctl_B.tcas_vs_target = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tcas_vs_target;
-    A380PrimComputerFctl_B.tcas_ra_corrective = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tcas_ra_corrective;
-    A380PrimComputerFctl_B.active_tcas_submode = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.active_tcas_submode;
-    A380PrimComputerFctl_B.tcas_alt_acq_cond = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tcas_alt_acq_cond;
-    A380PrimComputerFctl_B.tcas_alt_hold_cond = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tcas_alt_hold_cond;
-    A380PrimComputerFctl_B.tcas_ra_inhibited = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tcas_ra_inhibited;
-    A380PrimComputerFctl_B.trk_fpa_deselected = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.trk_fpa_deselected;
-    A380PrimComputerFctl_B.longi_large_box_tcas = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.longi_large_box_tcas;
-    A380PrimComputerFctl_B.land_2_capability = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_2_capability;
+    A380PrimComputerFctl_B.SSM_bo0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM;
+    A380PrimComputerFctl_B.alt_cstr_applicable = A380PrimComputerFctl_U.in.fg_mode_logic.alt_cstr_applicable;
+    A380PrimComputerFctl_B.alt_sel_or_cstr = A380PrimComputerFctl_U.in.fg_mode_logic.alt_sel_or_cstr;
+    A380PrimComputerFctl_B.mode_sync_active = A380PrimComputerFctl_U.in.fg_mode_logic.mode_sync_active;
+    A380PrimComputerFctl_B.any_ap_fd_engaged = A380PrimComputerFctl_U.in.fg_mode_logic.any_ap_fd_engaged;
+    A380PrimComputerFctl_B.any_lateral_mode_engaged = A380PrimComputerFctl_U.in.fg_mode_logic.any_lateral_mode_engaged;
+    A380PrimComputerFctl_B.any_longitudinal_mode_engaged =
+      A380PrimComputerFctl_U.in.fg_mode_logic.any_longitudinal_mode_engaged;
+    A380PrimComputerFctl_B.lateral_mode_reset = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_mode_reset;
+    A380PrimComputerFctl_B.longitudinal_mode_reset = A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_mode_reset;
+    A380PrimComputerFctl_B.hdg_trk_preset_available = A380PrimComputerFctl_U.in.fg_mode_logic.hdg_trk_preset_available;
+    A380PrimComputerFctl_B.alt_soft_mode_active = A380PrimComputerFctl_U.in.fg_mode_logic.alt_soft_mode_active;
+    A380PrimComputerFctl_B.Data_do = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.drift_angle_deg.Data;
+    A380PrimComputerFctl_B.fd_auto_disengage = A380PrimComputerFctl_U.in.fg_mode_logic.fd_auto_disengage;
+    A380PrimComputerFctl_B.ap_fd_mode_reversion = A380PrimComputerFctl_U.in.fg_mode_logic.ap_fd_mode_reversion;
+    A380PrimComputerFctl_B.lateral_mode_reversion = A380PrimComputerFctl_U.in.fg_mode_logic.lateral_mode_reversion;
+    A380PrimComputerFctl_B.longitudinal_mode_reversion_vs =
+      A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_mode_reversion_vs;
+    A380PrimComputerFctl_B.longitudinal_mode_reversion_op_clb =
+      A380PrimComputerFctl_U.in.fg_mode_logic.longitudinal_mode_reversion_op_clb;
+    A380PrimComputerFctl_B.pitch_fd_bars_flashing = A380PrimComputerFctl_U.in.fg_mode_logic.pitch_fd_bars_flashing;
+    A380PrimComputerFctl_B.roll_fd_bars_flashing = A380PrimComputerFctl_U.in.fg_mode_logic.roll_fd_bars_flashing;
+    A380PrimComputerFctl_B.loc_bc_selection = A380PrimComputerFctl_U.in.fg_mode_logic.loc_bc_selection;
+    A380PrimComputerFctl_B.vs_target_not_held = A380PrimComputerFctl_U.in.fg_mode_logic.vs_target_not_held;
+    A380PrimComputerFctl_B.tcas_vs_target = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_vs_target;
+    A380PrimComputerFctl_B.SSM_bc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM;
+    A380PrimComputerFctl_B.tcas_ra_corrective = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_ra_corrective;
+    A380PrimComputerFctl_B.active_tcas_submode = A380PrimComputerFctl_U.in.fg_mode_logic.active_tcas_submode;
+    A380PrimComputerFctl_B.tcas_alt_acq_cond = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_alt_acq_cond;
+    A380PrimComputerFctl_B.tcas_alt_hold_cond = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_alt_hold_cond;
+    A380PrimComputerFctl_B.tcas_ra_inhibited = A380PrimComputerFctl_U.in.fg_mode_logic.tcas_ra_inhibited;
+    A380PrimComputerFctl_B.trk_fpa_deselected = A380PrimComputerFctl_U.in.fg_mode_logic.trk_fpa_deselected;
+    A380PrimComputerFctl_B.longi_large_box_tcas = A380PrimComputerFctl_U.in.fg_mode_logic.longi_large_box_tcas;
+    A380PrimComputerFctl_B.land_2_capability = A380PrimComputerFctl_U.in.fg_mode_logic.land_2_capability;
     A380PrimComputerFctl_B.land_3_fail_passive_capability =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_passive_capability;
-    A380PrimComputerFctl_B.Data_al = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.drift_angle_deg.Data;
-    A380PrimComputerFctl_B.land_3_fail_op_capability =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_op_capability;
-    A380PrimComputerFctl_B.land_2_inop = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_2_inop;
-    A380PrimComputerFctl_B.land_3_fail_passive_inop =
-      A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_passive_inop;
-    A380PrimComputerFctl_B.land_3_fail_op_inop = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.land_3_fail_op_inop;
-    A380PrimComputerFctl_B.tla_to_ga_set = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.tla_to_ga_set;
-    A380PrimComputerFctl_B.true_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.true_active;
-    A380PrimComputerFctl_B.trk_fpa_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.trk_fpa_active;
-    A380PrimComputerFctl_B.metric_alt_active = A380PrimComputerFctl_U.in.fg_logic.ap_fd_logic.metric_alt_active;
-    A380PrimComputerFctl_B.athr_active = A380PrimComputerFctl_U.in.fg_logic.athr_logic.athr_active;
-    A380PrimComputerFctl_B.athr_limited = A380PrimComputerFctl_U.in.fg_logic.athr_logic.athr_limited;
-    A380PrimComputerFctl_B.SSM_dg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM;
-    A380PrimComputerFctl_B.alpha_floor_mode_active =
-      A380PrimComputerFctl_U.in.fg_logic.athr_logic.alpha_floor_mode_active;
-    A380PrimComputerFctl_B.thrust_mode_active = A380PrimComputerFctl_U.in.fg_logic.athr_logic.thrust_mode_active;
-    A380PrimComputerFctl_B.thrust_target_idle = A380PrimComputerFctl_U.in.fg_logic.athr_logic.thrust_target_idle;
-    A380PrimComputerFctl_B.speed_mach_mode_active = A380PrimComputerFctl_U.in.fg_logic.athr_logic.speed_mach_mode_active;
-    A380PrimComputerFctl_B.retard_mode_active = A380PrimComputerFctl_U.in.fg_logic.athr_logic.retard_mode_active;
-    A380PrimComputerFctl_B.fma_mode = A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_mode;
-    A380PrimComputerFctl_B.fma_message = A380PrimComputerFctl_U.in.fg_logic.athr_logic.fma_message;
-    A380PrimComputerFctl_B.spd_mach_display_value = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.spd_mach_display_value;
-    A380PrimComputerFctl_B.spd_mach_dashes = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.spd_mach_dashes;
-    A380PrimComputerFctl_B.hdg_trk_display_value = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.hdg_trk_display_value;
-    A380PrimComputerFctl_B.Data_gu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data;
-    A380PrimComputerFctl_B.hdg_trk_dashes = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.hdg_trk_dashes;
-    A380PrimComputerFctl_B.alt_display_value = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.alt_display_value;
-    A380PrimComputerFctl_B.vs_fpa_display_value = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.vs_fpa_display_value;
-    A380PrimComputerFctl_B.vs_fpa_dashes = A380PrimComputerFctl_U.in.fg_logic.fcu_logic.vs_fpa_dashes;
+      A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_passive_capability;
+    A380PrimComputerFctl_B.land_3_fail_op_capability = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_op_capability;
+    A380PrimComputerFctl_B.Data_hu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data;
+    A380PrimComputerFctl_B.land_2_inop = A380PrimComputerFctl_U.in.fg_mode_logic.land_2_inop;
+    A380PrimComputerFctl_B.land_3_fail_passive_inop = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_passive_inop;
+    A380PrimComputerFctl_B.land_3_fail_op_inop = A380PrimComputerFctl_U.in.fg_mode_logic.land_3_fail_op_inop;
+    A380PrimComputerFctl_B.tla_to_ga_set = A380PrimComputerFctl_U.in.fg_mode_logic.tla_to_ga_set;
+    A380PrimComputerFctl_B.true_active = A380PrimComputerFctl_U.in.fg_mode_logic.true_active;
+    A380PrimComputerFctl_B.trk_fpa_active = A380PrimComputerFctl_U.in.fg_mode_logic.trk_fpa_active;
+    A380PrimComputerFctl_B.metric_alt_active = A380PrimComputerFctl_U.in.fg_mode_logic.metric_alt_active;
+    A380PrimComputerFctl_B.selected_spd_mach = A380PrimComputerFctl_U.in.fg_mode_logic.selected_spd_mach;
+    A380PrimComputerFctl_B.spd_mach_dashes = A380PrimComputerFctl_U.in.fg_mode_logic.spd_mach_dashes;
+    A380PrimComputerFctl_B.selected_hdg_trk = A380PrimComputerFctl_U.in.fg_mode_logic.selected_hdg_trk;
+    A380PrimComputerFctl_B.SSM_h0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM;
+    A380PrimComputerFctl_B.hdg_trk_dashes = A380PrimComputerFctl_U.in.fg_mode_logic.hdg_trk_dashes;
+    A380PrimComputerFctl_B.selected_alt = A380PrimComputerFctl_U.in.fg_mode_logic.selected_alt;
+    A380PrimComputerFctl_B.selected_vs_fpa = A380PrimComputerFctl_U.in.fg_mode_logic.selected_vs_fpa;
+    A380PrimComputerFctl_B.vs_fpa_dashes = A380PrimComputerFctl_U.in.fg_mode_logic.vs_fpa_dashes;
     A380PrimComputerFctl_B.Phi_loc_c = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.Phi_loc_c;
     A380PrimComputerFctl_B.Nosewheel_c = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.Nosewheel_c;
     A380PrimComputerFctl_B.Theta_c_deg = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.flight_director.Theta_c_deg;
     A380PrimComputerFctl_B.Phi_c_deg = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.flight_director.Phi_c_deg;
     A380PrimComputerFctl_B.Beta_c_deg = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.flight_director.Beta_c_deg;
     A380PrimComputerFctl_B.Theta_c_deg_n = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.autopilot.Theta_c_deg;
-    A380PrimComputerFctl_B.SSM_d3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_pm1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data;
     A380PrimComputerFctl_B.Phi_c_deg_h = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.autopilot.Phi_c_deg;
     A380PrimComputerFctl_B.Beta_c_deg_b = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.autopilot.Beta_c_deg;
     A380PrimComputerFctl_B.condition_Flare = A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.flare_law.condition_Flare;
@@ -4590,7 +4594,7 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.delta_Theta_beta_c_deg =
       A380PrimComputerFctl_U.in.fg_laws.ap_fd_1.flare_law.delta_Theta_beta_c_deg;
     A380PrimComputerFctl_B.Phi_loc_c_j = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.Phi_loc_c;
-    A380PrimComputerFctl_B.Data_ix = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_giz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM;
     A380PrimComputerFctl_B.Nosewheel_c_f = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.Nosewheel_c;
     A380PrimComputerFctl_B.Theta_c_deg_n0 = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Theta_c_deg;
     A380PrimComputerFctl_B.Phi_c_deg_hj = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flight_director.Phi_c_deg;
@@ -4601,7 +4605,7 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.condition_Flare_n = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.condition_Flare;
     A380PrimComputerFctl_B.H_dot_radio_fpm_p = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.H_dot_radio_fpm;
     A380PrimComputerFctl_B.H_dot_c_fpm_j = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.H_dot_c_fpm;
-    A380PrimComputerFctl_B.SSM_p2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_i2y = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
     A380PrimComputerFctl_B.delta_Theta_H_dot_deg_l =
       A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.delta_Theta_H_dot_deg;
     A380PrimComputerFctl_B.delta_Theta_bz_deg_a = A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.delta_Theta_bz_deg;
@@ -4609,196 +4613,195 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.delta_Theta_beta_c_deg_g =
       A380PrimComputerFctl_U.in.fg_laws.ap_fd_2.flare_law.delta_Theta_beta_c_deg;
     A380PrimComputerFctl_B.n_1_c_percent = A380PrimComputerFctl_U.in.fg_laws.n_1_c_percent;
-    A380PrimComputerFctl_B.Data_do = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_bo0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM;
+    A380PrimComputerFctl_B.SSM_mqp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_pg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_angle_deg.Data;
     A380PrimComputerFctl_B.fcu_1_select = A380PrimComputerFctl_U.in.fg_logic.fcu_1_chosen;
     A380PrimComputerFctl_B.fcu_2_select = A380PrimComputerFctl_U.in.fg_logic.fcu_2_chosen;
-    A380PrimComputerFctl_B.Data_hu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_angle_deg.Data;
     A380PrimComputerFctl_B.fo_priority_takeover_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.fo_priority_takeover_pressed;
-    A380PrimComputerFctl_B.SSM_bc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_pm1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_h0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_i2y = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_giz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_pg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_mqp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_ni = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_long_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_ba = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_fr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_in = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
-    A380PrimComputerFctl_B.Data_cn = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
-    A380PrimComputerFctl_B.SSM_ff = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
+    A380PrimComputerFctl_B.SSM_ba = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_ni = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_in = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_fr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_ff = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_cn = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_ic = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_nxl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_long_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_fs = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_jh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data;
     A380PrimComputerFctl_B.ap_1_pushbutton_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.ap_1_pushbutton_pressed;
-    A380PrimComputerFctl_B.SSM_ic = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_nxl = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
-    A380PrimComputerFctl_B.Data_jh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_fs = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_gl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_ja = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_gn = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_js = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_myb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_is3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM;
-    A380PrimComputerFctl_B.Data_l2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data;
+    A380PrimComputerFctl_B.SSM_ja = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM;
+    A380PrimComputerFctl_B.SSM_js = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
+    A380PrimComputerFctl_B.Data_gl = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
+    A380PrimComputerFctl_B.SSM_is3 = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
+    A380PrimComputerFctl_B.Data_gn = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
+    A380PrimComputerFctl_B.Data_myb = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
+    A380PrimComputerFctl_B.SSM_ag = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_l2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_f5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_o5o = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_ph = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_l5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_jw = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM;
+    A380PrimComputerFctl_B.Data_dc2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data;
     A380PrimComputerFctl_B.ap_2_pushbutton_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.ap_2_pushbutton_pressed;
-    A380PrimComputerFctl_B.SSM_ag = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_o5o = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_f5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_l5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_ph = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_dc2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.vertical_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_jw = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.SSM;
-    A380PrimComputerFctl_B.Data_gr =
+    A380PrimComputerFctl_B.SSM_jy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_gr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_j1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_gp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_ov = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_i3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.vertical_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_mx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.SSM;
+    A380PrimComputerFctl_B.Data_et =
       A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data;
-    A380PrimComputerFctl_B.SSM_jy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_gp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_b4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_mc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data;
     A380PrimComputerFctl_B.fcu_1_healthy = A380PrimComputerFctl_U.in.data.discrete_inputs.fcu_1_healthy;
-    A380PrimComputerFctl_B.SSM_j1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_i3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data;
-    A380PrimComputerFctl_B.SSM_ov = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_et = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_mx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.latitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_mc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.latitude_deg.Data;
-    A380PrimComputerFctl_B.SSM_b4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.longitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_k3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.longitude_deg.Data;
-    A380PrimComputerFctl_B.SSM_gb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM;
-    A380PrimComputerFctl_B.Data_f2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.ground_speed_kn.Data;
+    A380PrimComputerFctl_B.SSM_gb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_k3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_oh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_f2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_mm5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.latitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_gh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.latitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_br = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.longitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_ed = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.longitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_c2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM;
+    A380PrimComputerFctl_B.Data_o2j = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.ground_speed_kn.Data;
     A380PrimComputerFctl_B.fcu_2_healthy = A380PrimComputerFctl_U.in.data.discrete_inputs.fcu_2_healthy;
-    A380PrimComputerFctl_B.SSM_oh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_gh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data;
-    A380PrimComputerFctl_B.SSM_mm5 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_ed = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_true_deg.Data;
-    A380PrimComputerFctl_B.SSM_br = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM;
-    A380PrimComputerFctl_B.Data_o2j = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_speed_kn.Data;
-    A380PrimComputerFctl_B.SSM_c2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_i43 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data;
-    A380PrimComputerFctl_B.SSM_hc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.Data_ic = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data;
+    A380PrimComputerFctl_B.SSM_hc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_i43 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_ktr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_ic = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_gl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM;
+    A380PrimComputerFctl_B.Data_ak = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_speed_kn.Data;
+    A380PrimComputerFctl_B.SSM_my = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_jg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_j3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM;
+    A380PrimComputerFctl_B.Data_cu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data;
     A380PrimComputerFctl_B.simulation_time = A380PrimComputerFctl_U.in.data.time.simulation_time;
     A380PrimComputerFctl_B.athr_pushbutton = A380PrimComputerFctl_U.in.data.discrete_inputs.athr_pushbutton;
-    A380PrimComputerFctl_B.SSM_ktr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.Data_ak = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data;
-    A380PrimComputerFctl_B.SSM_gl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_jg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.drift_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_my = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_cu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_j3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_ep = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_go = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_d3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_go = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM;
+    A380PrimComputerFctl_B.Data_ep = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data;
+    A380PrimComputerFctl_B.SSM_e5c = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_d3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.drift_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_dk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_bt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_evc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_e0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_kk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_jl3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
     A380PrimComputerFctl_B.ir_3_on_capt = A380PrimComputerFctl_U.in.data.discrete_inputs.ir_3_on_capt;
-    A380PrimComputerFctl_B.SSM_e5c = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_bt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_dk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_e0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_evc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_jl3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_kk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_nm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_af = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_ia = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_long_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_af = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_nm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_npr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_ia = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_ew = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_j0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_lt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_bs = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_ger = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_hp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_long_accel_g.Data;
     A380PrimComputerFctl_B.ir_3_on_fo = A380PrimComputerFctl_U.in.data.discrete_inputs.ir_3_on_fo;
-    A380PrimComputerFctl_B.SSM_npr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_j0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_ew = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_bs = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_lt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_hp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_ger = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_ct = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_pxo = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_pc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_pxo = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_ct = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_co2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_pc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_ny = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_nzt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_l4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_c0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_nm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_ojg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data;
     A380PrimComputerFctl_B.adr_3_on_capt = A380PrimComputerFctl_U.in.data.discrete_inputs.adr_3_on_capt;
-    A380PrimComputerFctl_B.SSM_co2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM;
-    A380PrimComputerFctl_B.Data_nzt = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data;
-    A380PrimComputerFctl_B.SSM_ny = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_c0 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_l4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_ojg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_nm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_lm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.vertical_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_nh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.SSM;
-    A380PrimComputerFctl_B.Data_fz =
+    A380PrimComputerFctl_B.SSM_nh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM;
+    A380PrimComputerFctl_B.Data_lm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data;
+    A380PrimComputerFctl_B.SSM_dl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_fz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_dx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_oz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_a5h = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_gf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.vertical_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_fl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.SSM;
+    A380PrimComputerFctl_B.Data_nn =
       A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data;
     A380PrimComputerFctl_B.adr_3_on_fo = A380PrimComputerFctl_U.in.data.discrete_inputs.adr_3_on_fo;
-    A380PrimComputerFctl_B.SSM_dl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_oz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data;
-    A380PrimComputerFctl_B.SSM_dx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_gf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data;
-    A380PrimComputerFctl_B.SSM_a5h = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_nn = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_fl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.latitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_a0z = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.latitude_deg.Data;
-    A380PrimComputerFctl_B.SSM_p3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.longitude_deg.SSM;
-    A380PrimComputerFctl_B.Data_fk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.longitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_p3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_a0z = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_ns = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_fk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_bm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_bu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_nl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.latitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_o23 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.latitude_deg.Data;
+    A380PrimComputerFctl_B.SSM_grm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.longitude_deg.SSM;
+    A380PrimComputerFctl_B.Data_g3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.longitude_deg.Data;
     A380PrimComputerFctl_B.rat_deployed = A380PrimComputerFctl_U.in.data.discrete_inputs.rat_deployed;
-    A380PrimComputerFctl_B.SSM_ns = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM;
-    A380PrimComputerFctl_B.Data_bu = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.ground_speed_kn.Data;
-    A380PrimComputerFctl_B.SSM_bm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_o23 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data;
-    A380PrimComputerFctl_B.SSM_nl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_g3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_true_deg.Data;
-    A380PrimComputerFctl_B.SSM_grm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM;
-    A380PrimComputerFctl_B.Data_icc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_speed_kn.Data;
-    A380PrimComputerFctl_B.SSM_gzm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM;
-    A380PrimComputerFctl_B.Data_pwf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_gzm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM;
+    A380PrimComputerFctl_B.Data_icc = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.ground_speed_kn.Data;
+    A380PrimComputerFctl_B.SSM_oi = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_pwf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_aa = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_gvk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_true_deg.Data;
+    A380PrimComputerFctl_B.SSM_fvk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM;
+    A380PrimComputerFctl_B.Data_ln = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_speed_kn.Data;
+    A380PrimComputerFctl_B.SSM_lw = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM;
+    A380PrimComputerFctl_B.Data_ka = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data;
     A380PrimComputerFctl_B.rat_contactor_closed = A380PrimComputerFctl_U.in.data.discrete_inputs.rat_contactor_closed;
-    A380PrimComputerFctl_B.SSM_oi = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.Data_gvk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data;
-    A380PrimComputerFctl_B.SSM_aa = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM;
-    A380PrimComputerFctl_B.Data_ln = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data;
-    A380PrimComputerFctl_B.SSM_fvk = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_ka = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.drift_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_lw = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_mp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_fa = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_m4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_fa = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM;
+    A380PrimComputerFctl_B.Data_mp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data;
+    A380PrimComputerFctl_B.SSM_lbx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM;
+    A380PrimComputerFctl_B.Data_m4 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data;
+    A380PrimComputerFctl_B.SSM_n3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_fki = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.drift_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_a1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_bv = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_p1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_m21 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data;
     A380PrimComputerFctl_B.athr_instinctive_disc = A380PrimComputerFctl_U.in.data.discrete_inputs.athr_instinctive_disc;
-    A380PrimComputerFctl_B.SSM_lbx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_fki = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_n3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM;
-    A380PrimComputerFctl_B.Data_bv = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_angle_deg.Data;
-    A380PrimComputerFctl_B.SSM_a1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_m21 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_p1 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_nbg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_cn2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_l25 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_cn2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_nbg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_an3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM;
+    A380PrimComputerFctl_B.Data_l25 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_angle_deg.Data;
+    A380PrimComputerFctl_B.SSM_c3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_ki = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_dp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_p5p = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_boy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_nry = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data;
     A380PrimComputerFctl_B.pitch_trim_up_pressed = A380PrimComputerFctl_U.in.data.discrete_inputs.pitch_trim_up_pressed;
-    A380PrimComputerFctl_B.SSM_an3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_ki = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_long_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_c3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_p5p = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_dp = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_nry = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
-    A380PrimComputerFctl_B.SSM_boy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_mh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_lg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_ll = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_lg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_mh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_long_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_cm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_ll = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_hl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_hy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_irh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_j04 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_b42 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_pf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
     A380PrimComputerFctl_B.pitch_trim_down_pressed =
       A380PrimComputerFctl_U.in.data.discrete_inputs.pitch_trim_down_pressed;
-    A380PrimComputerFctl_B.SSM_cm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM;
-    A380PrimComputerFctl_B.Data_hy = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
-    A380PrimComputerFctl_B.SSM_hl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM;
-    A380PrimComputerFctl_B.Data_j04 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data;
-    A380PrimComputerFctl_B.SSM_irh = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_pf = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_b42 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM;
-    A380PrimComputerFctl_B.Data_pl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data;
-    A380PrimComputerFctl_B.SSM_anz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM;
-    A380PrimComputerFctl_B.Data_gb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.vertical_accel_g.Data;
+    A380PrimComputerFctl_B.SSM_anz = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM;
+    A380PrimComputerFctl_B.Data_pl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
+    A380PrimComputerFctl_B.SSM_d2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM;
+    A380PrimComputerFctl_B.Data_gb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data;
+    A380PrimComputerFctl_B.SSM_gov = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_hq = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_nb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM;
+    A380PrimComputerFctl_B.Data_ai = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data;
+    A380PrimComputerFctl_B.SSM_pe3 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM;
+    A380PrimComputerFctl_B.Data_gfr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.vertical_accel_g.Data;
     A380PrimComputerFctl_B.monotonic_time = A380PrimComputerFctl_U.in.data.time.monotonic_time;
     A380PrimComputerFctl_B.green_low_pressure = A380PrimComputerFctl_U.in.data.discrete_inputs.green_low_pressure;
-    A380PrimComputerFctl_B.SSM_d2 = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM;
-    A380PrimComputerFctl_B.Data_hq =
+    A380PrimComputerFctl_B.SSM_jj = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM;
+    A380PrimComputerFctl_B.Data_czp =
       A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data;
-    A380PrimComputerFctl_B.SSM_gov = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_ai = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data;
-    A380PrimComputerFctl_B.SSM_nb = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM;
-    A380PrimComputerFctl_B.Data_gfr = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_jx = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_fm = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data;
+    A380PrimComputerFctl_B.SSM_npl = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM;
+    A380PrimComputerFctl_B.Data_jsg = A380PrimComputerFctl_U.in.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data;
     A380PrimComputerFctl_B.isis_1_bus = A380PrimComputerFctl_U.in.data.bus_inputs.isis_1_bus;
     A380PrimComputerFctl_B.isis_2_bus = A380PrimComputerFctl_U.in.data.bus_inputs.isis_2_bus;
     A380PrimComputerFctl_B.rate_gyro_pitch_1_bus = A380PrimComputerFctl_U.in.data.bus_inputs.rate_gyro_pitch_1_bus;
@@ -4808,997 +4811,1008 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.rate_gyro_roll_2_bus = A380PrimComputerFctl_U.in.data.bus_inputs.rate_gyro_roll_2_bus;
     A380PrimComputerFctl_B.rate_gyro_yaw_1_bus = A380PrimComputerFctl_U.in.data.bus_inputs.rate_gyro_yaw_1_bus;
     A380PrimComputerFctl_B.rate_gyro_yaw_2_bus = A380PrimComputerFctl_U.in.data.bus_inputs.rate_gyro_yaw_2_bus;
-    A380PrimComputerFctl_B.SSM_pe3 = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
-    A380PrimComputerFctl_B.Data_czp = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
-    A380PrimComputerFctl_B.SSM_jj = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
-    A380PrimComputerFctl_B.Data_fm = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
-    A380PrimComputerFctl_B.SSM_jx = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM;
-    A380PrimComputerFctl_B.Data_jsg = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.runway_heading_deg.Data;
+    A380PrimComputerFctl_B.SSM_gf = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
+    A380PrimComputerFctl_B.Data_g1 = A380PrimComputerFctl_U.in.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
+    A380PrimComputerFctl_B.SSM_gbi = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
+    A380PrimComputerFctl_B.Data_j4 = A380PrimComputerFctl_U.in.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
+    A380PrimComputerFctl_B.SSM_fhm = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM;
+    A380PrimComputerFctl_B.Data_jyh = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.runway_heading_deg.Data;
     A380PrimComputerFctl_B.capt_pitch_stick_pos = A380PrimComputerFctl_U.in.data.analog_inputs.capt_pitch_stick_pos;
-    A380PrimComputerFctl_B.SSM_npl = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM;
-    A380PrimComputerFctl_B.Data_g1 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data;
-    A380PrimComputerFctl_B.SSM_gf = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM;
-    A380PrimComputerFctl_B.Data_j4 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data;
-    A380PrimComputerFctl_B.SSM_gbi = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM;
-    A380PrimComputerFctl_B.Data_jyh = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.Data;
-    A380PrimComputerFctl_B.SSM_fhm = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM;
-    A380PrimComputerFctl_B.Data_e4 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.runway_heading_deg.Data;
-    A380PrimComputerFctl_B.SSM_ltj = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM;
-    A380PrimComputerFctl_B.Data_ghs = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data;
+    A380PrimComputerFctl_B.SSM_ltj = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM;
+    A380PrimComputerFctl_B.Data_e4 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data;
+    A380PrimComputerFctl_B.SSM_hn = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_ghs = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data;
+    A380PrimComputerFctl_B.SSM_h3 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_bmk = A380PrimComputerFctl_U.in.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.Data;
+    A380PrimComputerFctl_B.SSM_bfs = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM;
+    A380PrimComputerFctl_B.Data_lzt = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.runway_heading_deg.Data;
+    A380PrimComputerFctl_B.SSM_p0 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM;
+    A380PrimComputerFctl_B.Data_kn = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data;
     A380PrimComputerFctl_B.fo_pitch_stick_pos = A380PrimComputerFctl_U.in.data.analog_inputs.fo_pitch_stick_pos;
-    A380PrimComputerFctl_B.SSM_hn = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM;
-    A380PrimComputerFctl_B.Data_bmk = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data;
-    A380PrimComputerFctl_B.SSM_h3 = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM;
-    A380PrimComputerFctl_B.Data_lzt = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data;
-    A380PrimComputerFctl_B.SSM_bfs =
+    A380PrimComputerFctl_B.SSM_fu = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_nab = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data;
+    A380PrimComputerFctl_B.SSM_hr = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM;
+    A380PrimComputerFctl_B.Data_lgf = A380PrimComputerFctl_U.in.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data;
+    A380PrimComputerFctl_B.SSM_bi =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
-    A380PrimComputerFctl_B.Data_kn =
+    A380PrimComputerFctl_B.Data_fpq =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
-    A380PrimComputerFctl_B.SSM_p0 =
+    A380PrimComputerFctl_B.SSM_bd =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
-    A380PrimComputerFctl_B.Data_nab =
+    A380PrimComputerFctl_B.Data_dt =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
-    A380PrimComputerFctl_B.SSM_fu =
+    A380PrimComputerFctl_B.SSM_omt =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
-    A380PrimComputerFctl_B.Data_lgf =
+    A380PrimComputerFctl_B.Data_b1 =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
     A380PrimComputerFctl_B.capt_roll_stick_pos = A380PrimComputerFctl_U.in.data.analog_inputs.capt_roll_stick_pos;
-    A380PrimComputerFctl_B.SSM_hr = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_fpq = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_bi = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_dt = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_bd =
+    A380PrimComputerFctl_B.SSM_la = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_nmr = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_l1 = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ea = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_dy =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
-    A380PrimComputerFctl_B.Data_b1 =
+    A380PrimComputerFctl_B.Data_nib =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
-    A380PrimComputerFctl_B.SSM_omt =
+    A380PrimComputerFctl_B.SSM_ie =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
-    A380PrimComputerFctl_B.Data_nmr =
+    A380PrimComputerFctl_B.Data_i2t =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
-    A380PrimComputerFctl_B.SSM_la =
+    A380PrimComputerFctl_B.SSM_kf =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
-    A380PrimComputerFctl_B.Data_ea =
+    A380PrimComputerFctl_B.Data_ng =
       A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
     A380PrimComputerFctl_B.fo_roll_stick_pos = A380PrimComputerFctl_U.in.data.analog_inputs.fo_roll_stick_pos;
-    A380PrimComputerFctl_B.SSM_l1 = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_nib = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_dy = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_i2t = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ie = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_ng = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_kf = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_h31 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_p5l = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
-    A380PrimComputerFctl_B.Data_ew = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
+    A380PrimComputerFctl_B.SSM_p5l = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_h31 = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_g3 = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ew = A380PrimComputerFctl_U.in.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_b3 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_j1s = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_dxv = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_j5 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_mxz = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
+    A380PrimComputerFctl_B.Data_cw = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
     A380PrimComputerFctl_B.speed_brake_lever_pos = A380PrimComputerFctl_U.in.data.analog_inputs.speed_brake_lever_pos;
-    A380PrimComputerFctl_B.SSM_g3 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
-    A380PrimComputerFctl_B.Data_j1s = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
-    A380PrimComputerFctl_B.SSM_b3 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_j5 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_dxv = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_cw = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_mxz = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
-    A380PrimComputerFctl_B.Data_gqa = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
-    A380PrimComputerFctl_B.SSM_kk4 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
-    A380PrimComputerFctl_B.Data_hz = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
+    A380PrimComputerFctl_B.SSM_kk4 = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
+    A380PrimComputerFctl_B.Data_gqa = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
+    A380PrimComputerFctl_B.SSM_cy = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_hz = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_ju = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_fri = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_ey = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
+    A380PrimComputerFctl_B.Data_cm = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
+    A380PrimComputerFctl_B.SSM_jr = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
+    A380PrimComputerFctl_B.Data_czj = A380PrimComputerFctl_U.in.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
     A380PrimComputerFctl_B.thr_lever_1_pos = A380PrimComputerFctl_U.in.data.analog_inputs.thr_lever_1_pos;
     A380PrimComputerFctl_B.irdc_1_bus = A380PrimComputerFctl_U.in.data.bus_inputs.irdc_1_bus;
     A380PrimComputerFctl_B.irdc_2_bus = A380PrimComputerFctl_U.in.data.bus_inputs.irdc_2_bus;
     A380PrimComputerFctl_B.irdc_3_bus = A380PrimComputerFctl_U.in.data.bus_inputs.irdc_3_bus;
     A380PrimComputerFctl_B.irdc_4_a_bus = A380PrimComputerFctl_U.in.data.bus_inputs.irdc_4_a_bus;
     A380PrimComputerFctl_B.irdc_4_b_bus = A380PrimComputerFctl_U.in.data.bus_inputs.irdc_4_b_bus;
-    A380PrimComputerFctl_B.SSM_cy = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_fri = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_ju = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_cm = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_ey = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM;
+    A380PrimComputerFctl_B.SSM_hs = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_mb = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_mx3 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_gk4 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_er = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM;
     A380PrimComputerFctl_B.thr_lever_2_pos = A380PrimComputerFctl_U.in.data.analog_inputs.thr_lever_2_pos;
-    A380PrimComputerFctl_B.Data_czj = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data;
-    A380PrimComputerFctl_B.SSM_jr = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM;
-    A380PrimComputerFctl_B.Data_mb = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data;
-    A380PrimComputerFctl_B.SSM_hs = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_gk4 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_mx3 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_gbt = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_er = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_p0 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_hm = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM;
+    A380PrimComputerFctl_B.Data_gbt = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data;
+    A380PrimComputerFctl_B.SSM_hm = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM;
+    A380PrimComputerFctl_B.Data_p0 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data;
+    A380PrimComputerFctl_B.SSM_dm = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_dn = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_fk = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_iyw = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_lm1 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_p5d = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_nc = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM;
     A380PrimComputerFctl_B.thr_lever_3_pos = A380PrimComputerFctl_U.in.data.analog_inputs.thr_lever_3_pos;
-    A380PrimComputerFctl_B.Data_dn = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data;
-    A380PrimComputerFctl_B.SSM_dm = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM;
-    A380PrimComputerFctl_B.Data_iyw = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data;
-    A380PrimComputerFctl_B.SSM_fk = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_p5d = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_lm1 =
+    A380PrimComputerFctl_B.Data_oo = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_e4 = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM;
+    A380PrimComputerFctl_B.Data_ho = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data;
+    A380PrimComputerFctl_B.SSM_bw = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM;
+    A380PrimComputerFctl_B.Data_kqr = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data;
+    A380PrimComputerFctl_B.SSM_na = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_omv = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_lf = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_mby = A380PrimComputerFctl_U.in.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_oz =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_oo =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_nc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ho =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_e4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM;
     A380PrimComputerFctl_B.slew_on = A380PrimComputerFctl_U.in.data.sim_data.slew_on;
     A380PrimComputerFctl_B.thr_lever_4_pos = A380PrimComputerFctl_U.in.data.analog_inputs.thr_lever_4_pos;
-    A380PrimComputerFctl_B.Data_kqr =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_bw =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_omv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_na =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_mby =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_lf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM;
     A380PrimComputerFctl_B.Data_hk =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_oz =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_hg =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_mub =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM;
-    A380PrimComputerFctl_B.elevator_1_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_1_pos_deg;
-    A380PrimComputerFctl_B.Data_bi =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_hg =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_li =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_i4u =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_bi =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_hcd =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ik =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_i4u =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_php =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_dq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ik =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ma =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_pv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.elevator_1_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_1_pos_deg;
+    A380PrimComputerFctl_B.Data_dq =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_jut =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM;
-    A380PrimComputerFctl_B.elevator_2_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_2_pos_deg;
-    A380PrimComputerFctl_B.Data_p1d =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_pv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data;
     A380PrimComputerFctl_B.SSM_kh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_lyv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_p1d =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data;
     A380PrimComputerFctl_B.SSM_h2 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ke =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_lyv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ago =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_cv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ke =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ep =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_pfh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM;
+    A380PrimComputerFctl_B.elevator_2_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_2_pos_deg;
+    A380PrimComputerFctl_B.Data_cv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data;
     A380PrimComputerFctl_B.SSM_kc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM;
-    A380PrimComputerFctl_B.elevator_3_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_3_pos_deg;
-    A380PrimComputerFctl_B.Data_jy4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_pfh =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data;
     A380PrimComputerFctl_B.SSM_cnf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_o1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_jy4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data;
     A380PrimComputerFctl_B.SSM_lwa =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ga =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_o1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data;
     A380PrimComputerFctl_B.SSM_aq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_kd =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ga =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ja2 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_fx =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM;
+    A380PrimComputerFctl_B.elevator_3_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.elevator_3_pos_deg;
+    A380PrimComputerFctl_B.Data_kd =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data;
     A380PrimComputerFctl_B.SSM_in3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.ths_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.ths_pos_deg;
-    A380PrimComputerFctl_B.Data_nml =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_fx =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ap =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_fa =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_nml =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data;
     A380PrimComputerFctl_B.SSM_mg =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_nh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_fa =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data;
     A380PrimComputerFctl_B.SSM_mw =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_nh =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_bu =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM;
+    A380PrimComputerFctl_B.ths_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.ths_pos_deg;
     A380PrimComputerFctl_B.Data_or =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_bu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_otn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data;
     A380PrimComputerFctl_B.SSM_cbb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM;
-    A380PrimComputerFctl_B.left_aileron_1_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_aileron_1_pos_deg;
-    A380PrimComputerFctl_B.Data_cam =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_otn =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data;
     A380PrimComputerFctl_B.SSM_iao =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_gsl =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_cam =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ip =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_amp =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_gsl =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data;
     A380PrimComputerFctl_B.SSM_f4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_mv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_amp =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data;
     A380PrimComputerFctl_B.SSM_id =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_gx =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_mqr =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.left_aileron_2_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_aileron_2_pos_deg;
-    A380PrimComputerFctl_B.Data_lb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.left_aileron_1_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_aileron_1_pos_deg;
+    A380PrimComputerFctl_B.Data_mv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_mqr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_gx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data;
     A380PrimComputerFctl_B.SSM_cm2 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_lb =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_ck =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM;
     A380PrimComputerFctl_B.Data_can =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ck = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM;
-    A380PrimComputerFctl_B.Data_gae = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data;
     A380PrimComputerFctl_B.SSM_pl =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_h1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_gae =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_d50 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_bc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.left_aileron_2_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_aileron_2_pos_deg;
+    A380PrimComputerFctl_B.Data_h1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_gs =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_bc =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_kse =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_fof =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_icj =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_nj =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ds4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM;
+    A380PrimComputerFctl_B.Data_i0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data;
+    A380PrimComputerFctl_B.SSM_gbf =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.right_aileron_1_pos_deg =
       A380PrimComputerFctl_U.in.data.analog_inputs.right_aileron_1_pos_deg;
-    A380PrimComputerFctl_B.Data_fof =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_kse =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_nj =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_icj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM;
-    A380PrimComputerFctl_B.Data_i0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data;
-    A380PrimComputerFctl_B.SSM_ds4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM;
     A380PrimComputerFctl_B.Data_lr =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_gbf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_opv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_k0s =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_opv = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_gha =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_m4b =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ple =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_e3r =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_h0n = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM;
+    A380PrimComputerFctl_B.Data_au = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data;
+    A380PrimComputerFctl_B.SSM_c1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM;
     A380PrimComputerFctl_B.right_aileron_2_pos_deg =
       A380PrimComputerFctl_U.in.data.analog_inputs.right_aileron_2_pos_deg;
-    A380PrimComputerFctl_B.Data_m4b =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data;
-    A380PrimComputerFctl_B.SSM_gha =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_e3r =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ple =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_au =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_h0n =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM;
     A380PrimComputerFctl_B.Data_czc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_c1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_itz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_dd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM;
-    A380PrimComputerFctl_B.left_spoiler_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_spoiler_pos_deg;
-    A380PrimComputerFctl_B.Data_nsk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data;
-    A380PrimComputerFctl_B.SSM_ai = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_dd =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_itz =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ai = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM;
+    A380PrimComputerFctl_B.Data_nsk =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data;
+    A380PrimComputerFctl_B.SSM_at =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_is =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_at = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_bz =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_pk =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_n0 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_B.left_spoiler_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.left_spoiler_pos_deg;
+    A380PrimComputerFctl_B.Data_f52 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_haz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_dg0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_hz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM;
+    A380PrimComputerFctl_B.Data_nru = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data;
+    A380PrimComputerFctl_B.SSM_hk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_d5 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_cvn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_oa =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_bz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM;
-    A380PrimComputerFctl_B.Data_f52 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data;
-    A380PrimComputerFctl_B.SSM_n0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM;
-    A380PrimComputerFctl_B.Data_dg0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data;
-    A380PrimComputerFctl_B.SSM_haz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_B.SSM_iy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM;
     A380PrimComputerFctl_B.pause_on = A380PrimComputerFctl_U.in.data.sim_data.pause_on;
     A380PrimComputerFctl_B.right_spoiler_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.right_spoiler_pos_deg;
-    A380PrimComputerFctl_B.Data_nru =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data;
-    A380PrimComputerFctl_B.SSM_hz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM;
-    A380PrimComputerFctl_B.Data_d5 =
+    A380PrimComputerFctl_B.Data_bp = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data;
+    A380PrimComputerFctl_B.SSM_jwz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM;
+    A380PrimComputerFctl_B.Data_cl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data;
+    A380PrimComputerFctl_B.SSM_o2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_B.Data_er = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data;
+    A380PrimComputerFctl_B.SSM_eig =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM;
+    A380PrimComputerFctl_B.Data_in =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_hk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM;
-    A380PrimComputerFctl_B.Data_oa = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data;
-    A380PrimComputerFctl_B.SSM_cvn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM;
-    A380PrimComputerFctl_B.Data_bp = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data;
-    A380PrimComputerFctl_B.SSM_iy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.SSM;
-    A380PrimComputerFctl_B.Data_cl =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.Data;
-    A380PrimComputerFctl_B.SSM_jwz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM;
+    A380PrimComputerFctl_B.SSM_jl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM;
+    A380PrimComputerFctl_B.Data_btl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data;
+    A380PrimComputerFctl_B.SSM_cci = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM;
     A380PrimComputerFctl_B.rudder_1_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.rudder_1_pos_deg;
-    A380PrimComputerFctl_B.Data_er = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data;
-    A380PrimComputerFctl_B.SSM_o2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM;
-    A380PrimComputerFctl_B.Data_in = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data;
-    A380PrimComputerFctl_B.SSM_eig = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM;
-    A380PrimComputerFctl_B.Data_btl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data;
-    A380PrimComputerFctl_B.SSM_jl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM;
-    A380PrimComputerFctl_B.Data_a5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data;
-    A380PrimComputerFctl_B.SSM_cci = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM;
-    A380PrimComputerFctl_B.Data_hyo = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data;
-    A380PrimComputerFctl_B.SSM_ow = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM;
+    A380PrimComputerFctl_B.Data_a5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data;
+    A380PrimComputerFctl_B.SSM_ow = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.SSM;
+    A380PrimComputerFctl_B.Data_hyo =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.Data;
+    A380PrimComputerFctl_B.SSM_bcj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM;
+    A380PrimComputerFctl_B.Data_bjx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data;
+    A380PrimComputerFctl_B.SSM_i5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM;
+    A380PrimComputerFctl_B.Data_ci = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data;
+    A380PrimComputerFctl_B.SSM_jww = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM;
+    A380PrimComputerFctl_B.Data_h2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data;
+    A380PrimComputerFctl_B.SSM_kkj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM;
     A380PrimComputerFctl_B.rudder_2_pos_deg = A380PrimComputerFctl_U.in.data.analog_inputs.rudder_2_pos_deg;
-    A380PrimComputerFctl_B.Data_bjx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data;
-    A380PrimComputerFctl_B.SSM_bcj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM;
-    A380PrimComputerFctl_B.Data_ci = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data;
-    A380PrimComputerFctl_B.SSM_i5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM;
-    A380PrimComputerFctl_B.Data_h2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data;
-    A380PrimComputerFctl_B.SSM_jww = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM;
-    A380PrimComputerFctl_B.Data_ce = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data;
-    A380PrimComputerFctl_B.SSM_kkj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM;
-    A380PrimComputerFctl_B.Data_dx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data;
-    A380PrimComputerFctl_B.SSM_ndh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM;
+    A380PrimComputerFctl_B.Data_ce = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data;
+    A380PrimComputerFctl_B.SSM_ndh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM;
+    A380PrimComputerFctl_B.Data_dx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data;
+    A380PrimComputerFctl_B.SSM_k1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM;
+    A380PrimComputerFctl_B.Data_fvi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data;
+    A380PrimComputerFctl_B.SSM_en3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM;
+    A380PrimComputerFctl_B.Data_gnm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data;
+    A380PrimComputerFctl_B.SSM_kl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM;
+    A380PrimComputerFctl_B.Data_e3y = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data;
+    A380PrimComputerFctl_B.SSM_po = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM;
     A380PrimComputerFctl_B.rudder_pedal_pos = A380PrimComputerFctl_U.in.data.analog_inputs.rudder_pedal_pos;
-    A380PrimComputerFctl_B.Data_fvi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data;
-    A380PrimComputerFctl_B.SSM_k1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_gnm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_en3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM;
-    A380PrimComputerFctl_B.Data_e3y = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data;
-    A380PrimComputerFctl_B.SSM_kl =
+    A380PrimComputerFctl_B.Data_ld = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data;
+    A380PrimComputerFctl_B.SSM_ie0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM;
+    A380PrimComputerFctl_B.Data_k3v = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data;
+    A380PrimComputerFctl_B.SSM_ay = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM;
+    A380PrimComputerFctl_B.Data_oi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data;
+    A380PrimComputerFctl_B.SSM_gsb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_oy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_mxy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM;
+    A380PrimComputerFctl_B.Data_nl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data;
+    A380PrimComputerFctl_B.SSM_gt =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.SSM;
-    A380PrimComputerFctl_B.Data_ld =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.Data;
-    A380PrimComputerFctl_B.SSM_po = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM;
-    A380PrimComputerFctl_B.Data_k3v = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data;
-    A380PrimComputerFctl_B.SSM_ie0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM;
     A380PrimComputerFctl_B.yellow_hyd_pressure_psi =
       A380PrimComputerFctl_U.in.data.analog_inputs.yellow_hyd_pressure_psi;
-    A380PrimComputerFctl_B.Data_oi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data;
-    A380PrimComputerFctl_B.SSM_ay = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM;
-    A380PrimComputerFctl_B.Data_oy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data;
-    A380PrimComputerFctl_B.SSM_gsb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM;
-    A380PrimComputerFctl_B.Data_nl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data;
-    A380PrimComputerFctl_B.SSM_mxy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM;
-    A380PrimComputerFctl_B.Data_aei = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data;
-    A380PrimComputerFctl_B.SSM_gt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM;
-    A380PrimComputerFctl_B.Data_jz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data;
-    A380PrimComputerFctl_B.SSM_cum = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM;
+    A380PrimComputerFctl_B.Data_aei =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.Data;
+    A380PrimComputerFctl_B.SSM_cum = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM;
+    A380PrimComputerFctl_B.Data_jz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data;
+    A380PrimComputerFctl_B.SSM_ka = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM;
+    A380PrimComputerFctl_B.Data_pwfb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data;
+    A380PrimComputerFctl_B.SSM_lu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM;
+    A380PrimComputerFctl_B.Data_la = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data;
+    A380PrimComputerFctl_B.SSM_c5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM;
+    A380PrimComputerFctl_B.Data_b0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data;
+    A380PrimComputerFctl_B.SSM_ol = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM;
     A380PrimComputerFctl_B.green_hyd_pressure_psi = A380PrimComputerFctl_U.in.data.analog_inputs.green_hyd_pressure_psi;
-    A380PrimComputerFctl_B.Data_pwfb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data;
-    A380PrimComputerFctl_B.SSM_ka = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.SSM;
-    A380PrimComputerFctl_B.Data_la =
+    A380PrimComputerFctl_B.Data_g5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data;
+    A380PrimComputerFctl_B.SSM_k2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM;
+    A380PrimComputerFctl_B.Data_os = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data;
+    A380PrimComputerFctl_B.SSM_gn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM;
+    A380PrimComputerFctl_B.Data_btc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data;
+    A380PrimComputerFctl_B.SSM_bdi =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.SSM;
+    A380PrimComputerFctl_B.Data_nhn =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.Data;
-    A380PrimComputerFctl_B.SSM_lu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM;
-    A380PrimComputerFctl_B.Data_b0 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data;
-    A380PrimComputerFctl_B.SSM_c5 =
+    A380PrimComputerFctl_B.SSM_lil = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM;
+    A380PrimComputerFctl_B.Data_im = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data;
+    A380PrimComputerFctl_B.SSM_lmv =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.SSM;
-    A380PrimComputerFctl_B.Data_g5 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.Data;
-    A380PrimComputerFctl_B.SSM_ol = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM;
-    A380PrimComputerFctl_B.Data_os = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_k2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM;
     A380PrimComputerFctl_B.vert_acc_1_g = A380PrimComputerFctl_U.in.data.analog_inputs.vert_acc_1_g;
-    A380PrimComputerFctl_B.Data_btc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_gn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM;
-    A380PrimComputerFctl_B.Data_nhn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_bdi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_im = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_lil = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_no = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_lmv = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_av = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_ig = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM;
+    A380PrimComputerFctl_B.Data_no =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.Data;
+    A380PrimComputerFctl_B.SSM_ig = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_av = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_ch = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_me = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_ef = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_hc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_dbs = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM;
+    A380PrimComputerFctl_B.Data_f5c = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_ilr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM;
     A380PrimComputerFctl_B.vert_acc_2_g = A380PrimComputerFctl_U.in.data.analog_inputs.vert_acc_2_g;
-    A380PrimComputerFctl_B.Data_me = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data;
-    A380PrimComputerFctl_B.SSM_ch = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM;
-    A380PrimComputerFctl_B.Data_hc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data;
-    A380PrimComputerFctl_B.SSM_ef = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM;
-    A380PrimComputerFctl_B.Data_f5c = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data;
-    A380PrimComputerFctl_B.SSM_dbs = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM;
-    A380PrimComputerFctl_B.Data_iu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data;
-    A380PrimComputerFctl_B.SSM_ilr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM;
-    A380PrimComputerFctl_B.Data_ihf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data;
-    A380PrimComputerFctl_B.SSM_ch3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM;
+    A380PrimComputerFctl_B.Data_iu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_ch3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM;
+    A380PrimComputerFctl_B.Data_ihf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_ozd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM;
+    A380PrimComputerFctl_B.Data_ao = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data;
+    A380PrimComputerFctl_B.SSM_ob = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM;
+    A380PrimComputerFctl_B.Data_c2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data;
+    A380PrimComputerFctl_B.SSM_dd4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM;
+    A380PrimComputerFctl_B.Data_f1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data;
+    A380PrimComputerFctl_B.SSM_ps = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM;
     A380PrimComputerFctl_B.vert_acc_3_g = A380PrimComputerFctl_U.in.data.analog_inputs.vert_acc_3_g;
-    A380PrimComputerFctl_B.Data_ao = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data;
-    A380PrimComputerFctl_B.SSM_ozd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_c2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_ob = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_f1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_dd4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM;
-    A380PrimComputerFctl_B.Data_nst = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data;
-    A380PrimComputerFctl_B.SSM_ps =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.SSM;
-    A380PrimComputerFctl_B.Data_fq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data;
-    A380PrimComputerFctl_B.SSM_agc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM;
+    A380PrimComputerFctl_B.Data_nst = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data;
+    A380PrimComputerFctl_B.SSM_agc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM;
+    A380PrimComputerFctl_B.Data_fq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data;
+    A380PrimComputerFctl_B.SSM_nt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM;
+    A380PrimComputerFctl_B.Data_amc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data;
+    A380PrimComputerFctl_B.SSM_oa = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_nn1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_oj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_b0d = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_lq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM;
     A380PrimComputerFctl_B.lat_acc_1_g = A380PrimComputerFctl_U.in.data.analog_inputs.lat_acc_1_g;
-    A380PrimComputerFctl_B.Data_amc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data;
-    A380PrimComputerFctl_B.SSM_nt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM;
-    A380PrimComputerFctl_B.Data_nn1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data;
-    A380PrimComputerFctl_B.SSM_oa = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_b0d = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_oj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM;
-    A380PrimComputerFctl_B.Data_bri = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data;
-    A380PrimComputerFctl_B.SSM_lq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM;
-    A380PrimComputerFctl_B.Data_nmx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data;
+    A380PrimComputerFctl_B.Data_bri = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data;
     A380PrimComputerFctl_B.SSM_fc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.SSM;
+    A380PrimComputerFctl_B.Data_nmx =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data;
+    A380PrimComputerFctl_B.SSM_do =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM;
+    A380PrimComputerFctl_B.Data_oal =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data;
+    A380PrimComputerFctl_B.SSM_eu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM;
+    A380PrimComputerFctl_B.Data_dmb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data;
+    A380PrimComputerFctl_B.SSM_pjf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_nf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_gu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM;
     A380PrimComputerFctl_B.tracking_mode_on_override = A380PrimComputerFctl_U.in.data.sim_data.tracking_mode_on_override;
     A380PrimComputerFctl_B.lat_acc_2_g = A380PrimComputerFctl_U.in.data.analog_inputs.lat_acc_2_g;
-    A380PrimComputerFctl_B.Data_oal =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_do =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_dmb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_eu =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_nf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_pjf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_anh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_gu =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_idf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_jsu =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM;
-    A380PrimComputerFctl_B.lat_acc_3_g = A380PrimComputerFctl_U.in.data.analog_inputs.lat_acc_3_g;
-    A380PrimComputerFctl_B.Data_gm =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data;
+    A380PrimComputerFctl_B.Data_anh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data;
+    A380PrimComputerFctl_B.SSM_jsu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM;
+    A380PrimComputerFctl_B.Data_idf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data;
     A380PrimComputerFctl_B.SSM_eb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_jqv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_gm =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dbu =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ni3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_jqv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_hh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_d1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ni3 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_jsuo =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_dv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.lat_acc_3_g = A380PrimComputerFctl_U.in.data.analog_inputs.lat_acc_3_g;
+    A380PrimComputerFctl_B.Data_d1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dj =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM;
-    A380PrimComputerFctl_B.left_body_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.left_body_wheel_speed;
-    A380PrimComputerFctl_B.Data_oq4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_dv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_oio =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_fb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_oq4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ewd =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_bsv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_fb =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data;
     A380PrimComputerFctl_B.SSM_pjk =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_nt =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_bsv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data;
     A380PrimComputerFctl_B.SSM_j3l =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ac =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM;
+    A380PrimComputerFctl_B.left_body_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.left_body_wheel_speed;
+    A380PrimComputerFctl_B.Data_nt =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ceq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM;
-    A380PrimComputerFctl_B.left_wing_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.left_wing_wheel_speed;
-    A380PrimComputerFctl_B.Data_dcn =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ac =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data;
     A380PrimComputerFctl_B.SSM_d4h =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_joe =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_dcn =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_nol =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_joe =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data;
     A380PrimComputerFctl_B.SSM_obg =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_bun =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_nol =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data;
     A380PrimComputerFctl_B.SSM_b5 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ge =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM;
+    A380PrimComputerFctl_B.left_wing_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.left_wing_wheel_speed;
+    A380PrimComputerFctl_B.Data_bun =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data;
     A380PrimComputerFctl_B.SSM_al =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM;
-    A380PrimComputerFctl_B.right_body_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.right_body_wheel_speed;
-    A380PrimComputerFctl_B.Data_mj =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ge =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data;
     A380PrimComputerFctl_B.SSM_hib =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_naq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_mj =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dbe =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_j43 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_naq =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data;
     A380PrimComputerFctl_B.SSM_b1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_po =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_j43 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data;
     A380PrimComputerFctl_B.SSM_d0 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ey =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM;
+    A380PrimComputerFctl_B.right_body_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.right_body_wheel_speed;
+    A380PrimComputerFctl_B.Data_po =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data;
     A380PrimComputerFctl_B.SSM_m5 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM;
-    A380PrimComputerFctl_B.right_wing_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.right_wing_wheel_speed;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ey =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_jli =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM;
     A380PrimComputerFctl_B.Data_a3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_jli = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_pey = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data;
     A380PrimComputerFctl_B.SSM_mxc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_kf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_pey =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data;
     A380PrimComputerFctl_B.SSM_ogm =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_hk1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_kf =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data;
     A380PrimComputerFctl_B.SSM_nlt =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_grt =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.right_wing_wheel_speed = A380PrimComputerFctl_U.in.data.analog_inputs.right_wing_wheel_speed;
+    A380PrimComputerFctl_B.Data_hk1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dz =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.SSM_oiy = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_grt =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_oiy =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM;
     A380PrimComputerFctl_B.Data_cmi =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_jsb =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_eyi =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_jsb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_eyi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data;
     A380PrimComputerFctl_B.SSM_i5w =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM;
     A380PrimComputerFctl_B.Data_jr =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data;
     A380PrimComputerFctl_B.SSM_my5 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM;
+    A380PrimComputerFctl_B.SSM_lp = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
     A380PrimComputerFctl_B.Data_hom =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_lp = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM;
-    A380PrimComputerFctl_B.Data_je = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data;
     A380PrimComputerFctl_B.SSM_hlu =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_k5 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
-    A380PrimComputerFctl_B.Data_hux =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_je =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_hu3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_ima =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_k5 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_d5s =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_c4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_hux =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data;
     A380PrimComputerFctl_B.SSM_n4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_ima =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_gg =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_c4 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
     A380PrimComputerFctl_B.Data_bk =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_gg = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM;
-    A380PrimComputerFctl_B.Data_fb4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data;
-    A380PrimComputerFctl_B.SSM_kkj5 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM;
-    A380PrimComputerFctl_B.SSM_cr = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_kkj5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM;
+    A380PrimComputerFctl_B.Data_fb4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data;
+    A380PrimComputerFctl_B.SSM_cr =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_jf =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data;
     A380PrimComputerFctl_B.SSM_nx =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_mz =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ebo = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ebo =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_p3h =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data;
     A380PrimComputerFctl_B.SSM_po3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_B.SSM_o0 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM;
     A380PrimComputerFctl_B.Data_kv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_o0 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_bv1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_mt =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_g4 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_mt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM;
+    A380PrimComputerFctl_B.Data_bv1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data;
+    A380PrimComputerFctl_B.SSM_o5 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_g4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_mkz =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM;
     A380PrimComputerFctl_B.Data_iyr =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_o5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_otv = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_mkz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM;
-    A380PrimComputerFctl_B.Data_kqu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data;
-    A380PrimComputerFctl_B.SSM_dqh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_dqh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM;
+    A380PrimComputerFctl_B.Data_otv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data;
+    A380PrimComputerFctl_B.SSM_ki =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_kqu = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data;
     A380PrimComputerFctl_B.Data_n4p =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ki = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ez =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_n3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ez = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_k4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ma =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ac = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_gsd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_klm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM;
+    A380PrimComputerFctl_B.Data_ij = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data;
+    A380PrimComputerFctl_B.SSM_iz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM;
     A380PrimComputerFctl_B.tailstrike_protection_on = A380PrimComputerFctl_U.in.data.sim_data.tailstrike_protection_on;
-    A380PrimComputerFctl_B.SSM_k4 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM;
-    A380PrimComputerFctl_B.Data_ma = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data;
-    A380PrimComputerFctl_B.SSM_ac = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM;
-    A380PrimComputerFctl_B.Data_gsd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data;
-    A380PrimComputerFctl_B.SSM_klm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM;
-    A380PrimComputerFctl_B.Data_ij = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data;
-    A380PrimComputerFctl_B.SSM_iz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM;
+    A380PrimComputerFctl_B.SSM_b4c = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM;
     A380PrimComputerFctl_B.Data_ogy =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data;
-    A380PrimComputerFctl_B.SSM_b4c = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM;
-    A380PrimComputerFctl_B.Data_hc3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data;
-    A380PrimComputerFctl_B.SSM_gn1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM;
-    A380PrimComputerFctl_B.Data_m5 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data;
-    A380PrimComputerFctl_B.Data_mcz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data;
-    A380PrimComputerFctl_B.SSM_p0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_gn1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_hc3 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_p0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM;
+    A380PrimComputerFctl_B.Data_m5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data;
+    A380PrimComputerFctl_B.SSM_iet = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM;
+    A380PrimComputerFctl_B.Data_mcz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data;
+    A380PrimComputerFctl_B.SSM_omi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM;
     A380PrimComputerFctl_B.Data_cxq =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data;
+    A380PrimComputerFctl_B.SSM_bdv =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM;
+    A380PrimComputerFctl_B.Data_oat = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data;
+    A380PrimComputerFctl_B.Data_f4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data;
+    A380PrimComputerFctl_B.SSM_hhc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM;
+    A380PrimComputerFctl_B.Data_itt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data;
+    A380PrimComputerFctl_B.SSM_apw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM;
+    A380PrimComputerFctl_B.Data_hr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data;
+    A380PrimComputerFctl_B.SSM_e2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM;
+    A380PrimComputerFctl_B.Data_cta =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.Data;
-    A380PrimComputerFctl_B.SSM_iet = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM;
-    A380PrimComputerFctl_B.Data_oat = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data;
-    A380PrimComputerFctl_B.SSM_omi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM;
-    A380PrimComputerFctl_B.Data_f4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data;
-    A380PrimComputerFctl_B.SSM_bdv = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM;
-    A380PrimComputerFctl_B.Data_itt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data;
-    A380PrimComputerFctl_B.SSM_hhc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM;
-    A380PrimComputerFctl_B.SSM_apw = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.mach.SSM;
-    A380PrimComputerFctl_B.Data_hr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data;
-    A380PrimComputerFctl_B.SSM_e2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM;
-    A380PrimComputerFctl_B.Data_cta = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data;
-    A380PrimComputerFctl_B.SSM_crl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM;
-    A380PrimComputerFctl_B.Data_kn3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data;
-    A380PrimComputerFctl_B.SSM_goz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM;
-    A380PrimComputerFctl_B.Data_aj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data;
-    A380PrimComputerFctl_B.SSM_mku = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM;
-    A380PrimComputerFctl_B.Data_ml = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data;
-    A380PrimComputerFctl_B.SSM_k24 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM;
-    A380PrimComputerFctl_B.Data_l55 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.mach.Data;
-    A380PrimComputerFctl_B.Data_g5n = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data;
-    A380PrimComputerFctl_B.SSM_l2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM;
-    A380PrimComputerFctl_B.Data_hi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data;
-    A380PrimComputerFctl_B.SSM_lfy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM;
-    A380PrimComputerFctl_B.Data_ad = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data;
-    A380PrimComputerFctl_B.SSM_aj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_lyc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_he = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM;
-    A380PrimComputerFctl_B.Data_kw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data;
-    A380PrimComputerFctl_B.SSM_hkw =
+    A380PrimComputerFctl_B.SSM_crl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM;
+    A380PrimComputerFctl_B.Data_kn3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data;
+    A380PrimComputerFctl_B.SSM_goz = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM;
+    A380PrimComputerFctl_B.SSM_mku = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.mach.SSM;
+    A380PrimComputerFctl_B.Data_aj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data;
+    A380PrimComputerFctl_B.SSM_k24 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM;
+    A380PrimComputerFctl_B.Data_ml = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data;
+    A380PrimComputerFctl_B.SSM_l2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM;
+    A380PrimComputerFctl_B.Data_l55 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data;
+    A380PrimComputerFctl_B.SSM_lfy = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM;
+    A380PrimComputerFctl_B.Data_g5n = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data;
+    A380PrimComputerFctl_B.SSM_aj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM;
+    A380PrimComputerFctl_B.Data_hi = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data;
+    A380PrimComputerFctl_B.SSM_he = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM;
+    A380PrimComputerFctl_B.Data_ad = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.mach.Data;
+    A380PrimComputerFctl_B.Data_lyc = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data;
+    A380PrimComputerFctl_B.SSM_hkw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM;
+    A380PrimComputerFctl_B.Data_kw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data;
+    A380PrimComputerFctl_B.SSM_m2q = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM;
+    A380PrimComputerFctl_B.Data_oue = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data;
+    A380PrimComputerFctl_B.SSM_bg = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM;
+    A380PrimComputerFctl_B.Data_njd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data;
+    A380PrimComputerFctl_B.SSM_n2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM;
+    A380PrimComputerFctl_B.Data_n1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data;
+    A380PrimComputerFctl_B.SSM_nq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.SSM_hng = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
+    A380PrimComputerFctl_B.Data_ihk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_pd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM;
+    A380PrimComputerFctl_B.Data_hiq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data;
+    A380PrimComputerFctl_B.SSM_or =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.SSM;
-    A380PrimComputerFctl_B.SSM_m2q = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
-    A380PrimComputerFctl_B.Data_oue =
+    A380PrimComputerFctl_B.Data_lb2 =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.Data;
-    A380PrimComputerFctl_B.SSM_bg = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM;
-    A380PrimComputerFctl_B.Data_njd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data;
-    A380PrimComputerFctl_B.SSM_n2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM;
-    A380PrimComputerFctl_B.Data_n1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data;
-    A380PrimComputerFctl_B.SSM_nq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM;
-    A380PrimComputerFctl_B.Data_ihk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data;
-    A380PrimComputerFctl_B.SSM_hng = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM;
-    A380PrimComputerFctl_B.Data_hiq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data;
-    A380PrimComputerFctl_B.SSM_pd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM;
-    A380PrimComputerFctl_B.Data_lb2 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
-    A380PrimComputerFctl_B.Data_dr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data;
-    A380PrimComputerFctl_B.SSM_or = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM;
-    A380PrimComputerFctl_B.Data_l5t = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data;
-    A380PrimComputerFctl_B.SSM_ao = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM;
-    A380PrimComputerFctl_B.Data_p5q = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data;
-    A380PrimComputerFctl_B.SSM_e4y =
+    A380PrimComputerFctl_B.SSM_ao = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM;
+    A380PrimComputerFctl_B.Data_dr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data;
+    A380PrimComputerFctl_B.SSM_e4y = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM;
+    A380PrimComputerFctl_B.Data_l5t = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data;
+    A380PrimComputerFctl_B.SSM_lk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM;
+    A380PrimComputerFctl_B.Data_p5q = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
+    A380PrimComputerFctl_B.Data_by = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data;
+    A380PrimComputerFctl_B.SSM_cmh = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM;
+    A380PrimComputerFctl_B.Data_fz4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data;
+    A380PrimComputerFctl_B.SSM_fb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM;
+    A380PrimComputerFctl_B.Data_bf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data;
+    A380PrimComputerFctl_B.SSM_jwb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM;
+    A380PrimComputerFctl_B.Data_o3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data;
+    A380PrimComputerFctl_B.SSM_pb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM;
+    A380PrimComputerFctl_B.Data_b0i = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data;
+    A380PrimComputerFctl_B.SSM_lqf =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.SSM;
-    A380PrimComputerFctl_B.Data_by =
+    A380PrimComputerFctl_B.SSM_f4j = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
+    A380PrimComputerFctl_B.Data_ki2 =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.Data;
-    A380PrimComputerFctl_B.SSM_lk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM;
-    A380PrimComputerFctl_B.Data_fz4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.Data;
-    A380PrimComputerFctl_B.SSM_cmh =
+    A380PrimComputerFctl_B.SSM_a0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM;
+    A380PrimComputerFctl_B.Data_adu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.Data;
+    A380PrimComputerFctl_B.SSM_hj =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.SSM;
-    A380PrimComputerFctl_B.SSM_fb = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
-    A380PrimComputerFctl_B.Data_bf =
+    A380PrimComputerFctl_B.Data_h4h =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.Data;
-    A380PrimComputerFctl_B.SSM_jwb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM;
-    A380PrimComputerFctl_B.Data_o3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_pb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM;
-    A380PrimComputerFctl_B.Data_b0i = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_lqf = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM;
-    A380PrimComputerFctl_B.Data_ki2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data;
-    A380PrimComputerFctl_B.SSM_f4j = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_adu = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_a0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_h4h = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
-    A380PrimComputerFctl_B.Data_c0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_hj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM;
-    A380PrimComputerFctl_B.Data_dod = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data;
-    A380PrimComputerFctl_B.SSM_nrk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM;
-    A380PrimComputerFctl_B.Data_fqj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data;
-    A380PrimComputerFctl_B.SSM_bl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM;
-    A380PrimComputerFctl_B.Data_hgw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data;
-    A380PrimComputerFctl_B.SSM_gx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM;
-    A380PrimComputerFctl_B.Data_dko = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.Data;
-    A380PrimComputerFctl_B.SSM_i3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM;
-    A380PrimComputerFctl_B.SSM_nx2 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
-    A380PrimComputerFctl_B.Data_iga = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data;
-    A380PrimComputerFctl_B.SSM_jm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM;
-    A380PrimComputerFctl_B.Data_hds = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.Data;
-    A380PrimComputerFctl_B.SSM_kr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM;
-    A380PrimComputerFctl_B.Data_dqt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data;
-    A380PrimComputerFctl_B.SSM_khm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM;
-    A380PrimComputerFctl_B.Data_pd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data;
-    A380PrimComputerFctl_B.SSM_m1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM;
-    A380PrimComputerFctl_B.Data_i0g = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data;
-    A380PrimComputerFctl_B.SSM_ek = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM;
-    A380PrimComputerFctl_B.Data_jzm = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
-    A380PrimComputerFctl_B.Data_li = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data;
-    A380PrimComputerFctl_B.SSM_g1 =
+    A380PrimComputerFctl_B.SSM_nrk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_c0z = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_bl = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_dod = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_gx = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM;
+    A380PrimComputerFctl_B.Data_fqj = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
+    A380PrimComputerFctl_B.Data_hgw = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data;
+    A380PrimComputerFctl_B.SSM_i3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM;
+    A380PrimComputerFctl_B.Data_dko = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_nx2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM;
+    A380PrimComputerFctl_B.Data_iga = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_jm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM;
+    A380PrimComputerFctl_B.Data_hds = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data;
+    A380PrimComputerFctl_B.SSM_kr = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM;
+    A380PrimComputerFctl_B.Data_dqt = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data;
+    A380PrimComputerFctl_B.SSM_khm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM;
+    A380PrimComputerFctl_B.SSM_m1 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
+    A380PrimComputerFctl_B.Data_pd = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data;
+    A380PrimComputerFctl_B.SSM_ek = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM;
+    A380PrimComputerFctl_B.Data_i0g = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.Data;
+    A380PrimComputerFctl_B.SSM_g1 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM;
+    A380PrimComputerFctl_B.Data_jzm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data;
+    A380PrimComputerFctl_B.SSM_c4 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM;
+    A380PrimComputerFctl_B.Data_li = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.Data;
+    A380PrimComputerFctl_B.SSM_kj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM;
+    A380PrimComputerFctl_B.Data_bs3 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data;
+    A380PrimComputerFctl_B.SSM_fn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM;
+    A380PrimComputerFctl_B.Data_ko = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
+    A380PrimComputerFctl_B.Data_nq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data;
+    A380PrimComputerFctl_B.SSM_jb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM;
+    A380PrimComputerFctl_B.Data_ita = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data;
+    A380PrimComputerFctl_B.SSM_ku = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM;
+    A380PrimComputerFctl_B.Data_pn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data;
+    A380PrimComputerFctl_B.SSM_irk =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.SSM;
-    A380PrimComputerFctl_B.Data_bs3 =
+    A380PrimComputerFctl_B.Data_lgm =
       A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.Data;
-    A380PrimComputerFctl_B.SSM_c4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.SSM;
-    A380PrimComputerFctl_B.Data_ko =
-      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data;
-    A380PrimComputerFctl_B.SSM_kj = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM;
-    A380PrimComputerFctl_B.Data_nq = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data;
-    A380PrimComputerFctl_B.SSM_fn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM;
-    A380PrimComputerFctl_B.Data_ita = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data;
-    A380PrimComputerFctl_B.SSM_jb = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM;
-    A380PrimComputerFctl_B.computer_running = A380PrimComputerFctl_U.in.data.sim_data.computer_running;
-    A380PrimComputerFctl_B.SSM_ku = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
-    A380PrimComputerFctl_B.Data_pn = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data;
-    A380PrimComputerFctl_B.SSM_irk = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM;
-    A380PrimComputerFctl_B.Data_lgm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data;
     A380PrimComputerFctl_B.SSM_f5q =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.SSM;
     A380PrimComputerFctl_B.Data_ir =
+      A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data;
+    A380PrimComputerFctl_B.SSM_nca = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM;
+    A380PrimComputerFctl_B.computer_running = A380PrimComputerFctl_U.in.data.sim_data.computer_running;
+    A380PrimComputerFctl_B.SSM_im = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
+    A380PrimComputerFctl_B.Data_jv = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data;
+    A380PrimComputerFctl_B.SSM_j2 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM;
+    A380PrimComputerFctl_B.Data_ore = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data;
+    A380PrimComputerFctl_B.SSM_ba5 = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM;
+    A380PrimComputerFctl_B.Data_ijm = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data;
+    A380PrimComputerFctl_B.SSM_p4l = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM;
+    A380PrimComputerFctl_B.Data_jet = A380PrimComputerFctl_U.in.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data;
+    A380PrimComputerFctl_B.SSM_l25 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_jo0 =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_nca =
+    A380PrimComputerFctl_B.SSM_e4o =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_jv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_im =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ore =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_j2 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ijm = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-    A380PrimComputerFctl_B.Data_jet =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_ba5 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_jo0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_p4l = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.aileron_status_word.SSM;
-    A380PrimComputerFctl_B.Data_bn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.aileron_status_word.Data;
-    A380PrimComputerFctl_B.SSM_l25 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_bn = A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
     A380PrimComputerFctl_B.Data_izj =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_e4o = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_pdd =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_d1a =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_pdd =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data;
     A380PrimComputerFctl_B.SSM_bol =
-      A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM;
     A380PrimComputerFctl_B.Data_bjv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_mi = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_lye =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_cyd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM;
-    A380PrimComputerFctl_B.Data_ft = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.spoiler_status_word.Data;
-    A380PrimComputerFctl_B.SSM_py = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_a2 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_mi = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_lye = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_cyd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.aileron_status_word.SSM;
+    A380PrimComputerFctl_B.Data_ft = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.aileron_status_word.Data;
+    A380PrimComputerFctl_B.SSM_py = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.SSM_lp0 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.SSM;
+    A380PrimComputerFctl_B.Data_a2 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_f0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_ii =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_f0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_gj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_of3 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ncq =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_k4 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ix = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM;
+    A380PrimComputerFctl_B.Data_pj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.spoiler_status_word.Data;
+    A380PrimComputerFctl_B.SSM_gle = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_es =
+      A380PrimComputerFctl_U.in.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.Data;
+    A380PrimComputerFctl_B.Data_mly =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_h21 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_p3m =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_cf = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ijw =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_gj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_pj =
+    A380PrimComputerFctl_B.SSM_ghc =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_fqp =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ncq = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_status_word.SSM;
-    A380PrimComputerFctl_B.Data_es = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_status_word.Data;
-    A380PrimComputerFctl_B.SSM_ix = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_mly = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_gle = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_p3m = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_h21 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM;
-    A380PrimComputerFctl_B.SSM_cf = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
-    A380PrimComputerFctl_B.Data_ijw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ghc = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.ths_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_fqp = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.ths_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ai4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_status_word.SSM;
-    A380PrimComputerFctl_B.Data_liu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_status_word.Data;
-    A380PrimComputerFctl_B.SSM_lj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_ki1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_nsn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_byo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ovo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.SSM;
-    A380PrimComputerFctl_B.Data_cwz = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
-    A380PrimComputerFctl_B.Data_ixn =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data;
-    A380PrimComputerFctl_B.SSM_nst = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM;
-    A380PrimComputerFctl_B.Data_k2d = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data;
-    A380PrimComputerFctl_B.SSM_iv = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM;
-    A380PrimComputerFctl_B.Data_h5f = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.misc_data_status_word.Data;
-    A380PrimComputerFctl_B.SSM_pq =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_c0o =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_ii =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_db =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_olh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.SSM_fkb = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM;
+    A380PrimComputerFctl_B.SSM_ai4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_status_word.SSM;
+    A380PrimComputerFctl_B.Data_liu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_status_word.Data;
+    A380PrimComputerFctl_B.SSM_lj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM;
+    A380PrimComputerFctl_B.SSM_nsn = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
+    A380PrimComputerFctl_B.Data_ki1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ovo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_byo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_nst = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_cwz = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_iv = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.ths_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ixn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.ths_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_pq = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_status_word.SSM;
+    A380PrimComputerFctl_B.Data_k2d = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_status_word.Data;
+    A380PrimComputerFctl_B.SSM_ii = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_h5f = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
+    A380PrimComputerFctl_B.Data_c0o = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_olh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_db = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_fkb = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.SSM;
     A380PrimComputerFctl_B.Data_dcz =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_gev =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_ork =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_j2m = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_f11 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_jp = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.aileron_status_word.SSM;
-    A380PrimComputerFctl_B.Data_hyn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.aileron_status_word.Data;
-    A380PrimComputerFctl_B.SSM_iu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data;
+    A380PrimComputerFctl_B.SSM_gev = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_B.Data_ork = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data;
+    A380PrimComputerFctl_B.SSM_j2m = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM;
+    A380PrimComputerFctl_B.Data_f11 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_1_bus.misc_data_status_word.Data;
+    A380PrimComputerFctl_B.SSM_jp =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.SSM_iu = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM;
+    A380PrimComputerFctl_B.Data_hyn =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_bew =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.SSM;
     A380PrimComputerFctl_B.Data_cg =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_bew = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_mor = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data;
-    A380PrimComputerFctl_B.Data_i1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.Data;
     A380PrimComputerFctl_B.SSM_eie =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_l1 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_nk = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_ms =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_buw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM;
-    A380PrimComputerFctl_B.Data_ag = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.spoiler_status_word.Data;
-    A380PrimComputerFctl_B.SSM_ht = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_mor =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_nk =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_i1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_buw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_l1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ht = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.aileron_status_word.SSM;
+    A380PrimComputerFctl_B.Data_ms = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data;
+    A380PrimComputerFctl_B.Data_ag = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.aileron_status_word.Data;
+    A380PrimComputerFctl_B.SSM_io = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_epm =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_io = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM;
-    A380PrimComputerFctl_B.SSM_igr = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_igr = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_pp =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_np1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_np1 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_nek =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data;
     A380PrimComputerFctl_B.SSM_fc4 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_cho =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_hkwh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM;
+    A380PrimComputerFctl_B.SSM_ahu = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM;
+    A380PrimComputerFctl_B.Data_aet = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.spoiler_status_word.Data;
+    A380PrimComputerFctl_B.SSM_ka4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_oxr =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_k2r =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_oq5 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_i0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ihw =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_jes =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_cuh =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_hkwh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_status_word.SSM;
-    A380PrimComputerFctl_B.Data_aet = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_status_word.Data;
-    A380PrimComputerFctl_B.SSM_ahu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_oxr = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ka4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_oq5 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data;
-    A380PrimComputerFctl_B.Data_ihw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_k2r = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_cuh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_i0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.ths_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_jlt = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.ths_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_jes = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_status_word.SSM;
-    A380PrimComputerFctl_B.Data_jm = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_status_word.Data;
-    A380PrimComputerFctl_B.SSM_kg = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_fg = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_frj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.SSM_kg = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_status_word.SSM;
+    A380PrimComputerFctl_B.Data_jlt = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data;
+    A380PrimComputerFctl_B.Data_jm = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_status_word.Data;
+    A380PrimComputerFctl_B.SSM_frj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_fg = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ej = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_np = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ok = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_pmi = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_m4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.ths_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_b2 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.ths_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_iyk = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_status_word.SSM;
     A380PrimComputerFctl_B.alignment_dummy_h = A380PrimComputerFctl_U.in.data.discrete_inputs.alignment_dummy;
-    A380PrimComputerFctl_B.SSM_ej = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.mach.SSM;
-    A380PrimComputerFctl_B.Data_np = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_ok = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM;
-    A380PrimComputerFctl_B.Data_pmi =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data;
-    A380PrimComputerFctl_B.SSM_m4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM;
-    A380PrimComputerFctl_B.Data_b2 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data;
-    A380PrimComputerFctl_B.SSM_iyk = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM;
-    A380PrimComputerFctl_B.Data_ogu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.misc_data_status_word.Data;
-    A380PrimComputerFctl_B.SSM_mv =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_lw =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_f4l =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_f44 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.mach.Data;
+    A380PrimComputerFctl_B.SSM_mv = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.mach.SSM;
+    A380PrimComputerFctl_B.Data_ogu = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_status_word.Data;
+    A380PrimComputerFctl_B.SSM_f4l = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_lw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_mtx = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_f44 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_ahy = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM;
     A380PrimComputerFctl_B.Data_buw =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_mtx =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_oau =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_ahy =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM;
-    A380PrimComputerFctl_B.Data_aoh =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data;
-    A380PrimComputerFctl_B.SSM_ovo2 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_mon = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_hsq = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.aileron_status_word.SSM;
-    A380PrimComputerFctl_B.Data_i4t = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.aileron_status_word.Data;
-    A380PrimComputerFctl_B.SSM_nxn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM;
-    A380PrimComputerFctl_B.SSM_nnx = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data;
+    A380PrimComputerFctl_B.SSM_ovo2 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_B.Data_oau = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data;
+    A380PrimComputerFctl_B.SSM_hsq = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM;
+    A380PrimComputerFctl_B.Data_aoh = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.mach.Data;
+    A380PrimComputerFctl_B.Data_mon = A380PrimComputerFctl_U.in.data.bus_inputs.sec_2_bus.misc_data_status_word.Data;
+    A380PrimComputerFctl_B.SSM_nxn =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_B.Data_i4t =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_nnx =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.SSM;
     A380PrimComputerFctl_B.Data_mt =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_lo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_lo =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.SSM;
     A380PrimComputerFctl_B.Data_jh0 =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.Data;
     A380PrimComputerFctl_B.SSM_dir =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM;
     A380PrimComputerFctl_B.Data_nvn =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_apz =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_b0e =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_fi = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM;
-    A380PrimComputerFctl_B.Data_f22 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.spoiler_status_word.Data;
-    A380PrimComputerFctl_B.SSM_iw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_dn0 = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_B.SSM_apz = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_B.SSM_fi = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
+    A380PrimComputerFctl_B.Data_b0e = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_iw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.aileron_status_word.SSM;
+    A380PrimComputerFctl_B.Data_f22 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.aileron_status_word.Data;
+    A380PrimComputerFctl_B.SSM_dfj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_dn0 =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_e1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM;
     A380PrimComputerFctl_B.Data_ctc =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_dfj =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_mp = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM;
     A380PrimComputerFctl_B.Data_ngo =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_e1 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_bkg =
-      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_mp = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM;
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_k2j =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_bkg = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
     A380PrimComputerFctl_B.Data_ora =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_eyo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM;
+    A380PrimComputerFctl_B.Data_cd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.spoiler_status_word.Data;
+    A380PrimComputerFctl_B.SSM_ceqr =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_inj =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_c3y =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_fno =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_eib = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_dd =
+      A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_em = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_B.SSM_cre = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
+    A380PrimComputerFctl_B.Data_jff =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_k2j = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_status_word.SSM;
-    A380PrimComputerFctl_B.Data_cd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_status_word.Data;
-    A380PrimComputerFctl_B.SSM_eyo = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM;
-    A380PrimComputerFctl_B.SSM_ceqr = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
-    A380PrimComputerFctl_B.Data_inj = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_c3y = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_fno = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_eib = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_dd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_em = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.ths_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_jff = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.ths_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_cre = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_status_word.SSM;
-    A380PrimComputerFctl_B.Data_fh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_status_word.Data;
-    A380PrimComputerFctl_B.SSM_lfz = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_kc = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
-    A380PrimComputerFctl_B.Data_cd0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_pji = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM;
-    A380PrimComputerFctl_B.Data_odm = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data;
-    A380PrimComputerFctl_B.SSM_hbr = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.SSM;
-    A380PrimComputerFctl_B.Data_h5r =
+    A380PrimComputerFctl_B.SSM_lfz = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_status_word.SSM;
+    A380PrimComputerFctl_B.Data_fh = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_status_word.Data;
+    A380PrimComputerFctl_B.SSM_pji = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_kc = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_hbr = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_cd0 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_p2n = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_odm = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_lc = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.ths_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_h5r = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
+    A380PrimComputerFctl_B.Data_pb = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.ths_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_haw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_status_word.SSM;
+    A380PrimComputerFctl_B.Data_ma4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_status_word.Data;
+    A380PrimComputerFctl_B.SSM_km = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_hwb = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_chn = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_B.Data_ndk = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data;
+    A380PrimComputerFctl_B.SSM_bqd = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.SSM;
+    A380PrimComputerFctl_B.Data_e1h =
       A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.Data;
-    A380PrimComputerFctl_B.SSM_p2n = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM;
-    A380PrimComputerFctl_B.Data_pb = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data;
-    A380PrimComputerFctl_B.SSM_lc = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM;
-    A380PrimComputerFctl_B.Data_ma4 = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.misc_data_status_word.Data;
+    A380PrimComputerFctl_B.SSM_cz = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_B.SSM_dby = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
+    A380PrimComputerFctl_B.Data_gw = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data;
+    A380PrimComputerFctl_B.SSM_gsl = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM;
+    A380PrimComputerFctl_B.Data_pr = A380PrimComputerFctl_U.in.data.bus_inputs.sec_3_bus.misc_data_status_word.Data;
     A380PrimComputerFctl_B.fm_valid = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fm_valid;
-    A380PrimComputerFctl_B.SSM_haw = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
-    A380PrimComputerFctl_B.fms_flight_phase = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_flight_phase;
+    A380PrimComputerFctl_B.active_fms_flight_phase =
+      A380PrimComputerFctl_U.in.data.adcn_inputs.fms.active_fms_flight_phase;
     A380PrimComputerFctl_B.selected_approach_type =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.selected_approach_type;
     A380PrimComputerFctl_B.backbeam_selected = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.backbeam_selected;
@@ -5806,12 +5820,12 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.fms_unrealistic_gs_angle_deg =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_unrealistic_gs_angle_deg;
     A380PrimComputerFctl_B.fms_weight_lbs = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_weight_lbs;
+    A380PrimComputerFctl_B.Data_jmc = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
     A380PrimComputerFctl_B.fms_cg_percent = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_cg_percent;
     A380PrimComputerFctl_B.lateral_flight_plan_valid =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.lateral_flight_plan_valid;
     A380PrimComputerFctl_B.nav_capture_condition = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.nav_capture_condition;
     A380PrimComputerFctl_B.phi_c_deg = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.phi_c_deg;
-    A380PrimComputerFctl_B.Data_hwb = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
     A380PrimComputerFctl_B.xtk_nmi = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.xtk_nmi;
     A380PrimComputerFctl_B.tke_deg = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.tke_deg;
     A380PrimComputerFctl_B.phi_limit_deg = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.phi_limit_deg;
@@ -5819,23 +5833,23 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.vertical_flight_plan_valid =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.vertical_flight_plan_valid;
     A380PrimComputerFctl_B.final_app_can_engage = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.final_app_can_engage;
+    A380PrimComputerFctl_B.SSM_lgb = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
     A380PrimComputerFctl_B.next_alt_cstr_ft = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.next_alt_cstr_ft;
     A380PrimComputerFctl_B.requested_des_submode = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.requested_des_submode;
     A380PrimComputerFctl_B.alt_profile_tgt_ft = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.alt_profile_tgt_ft;
     A380PrimComputerFctl_B.vs_target_ft_min = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.vs_target_ft_min;
-    A380PrimComputerFctl_B.SSM_km = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
     A380PrimComputerFctl_B.v_2_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_2_kts;
     A380PrimComputerFctl_B.v_app_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_app_kts;
     A380PrimComputerFctl_B.v_managed_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_managed_kts;
     A380PrimComputerFctl_B.v_upper_margin_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_upper_margin_kts;
     A380PrimComputerFctl_B.v_lower_margin_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.v_lower_margin_kts;
     A380PrimComputerFctl_B.show_speed_margins = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.show_speed_margins;
+    A380PrimComputerFctl_B.Data_n1l = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
     A380PrimComputerFctl_B.preset_spd_kts = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.preset_spd_kts;
     A380PrimComputerFctl_B.preset_mach = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.preset_mach;
     A380PrimComputerFctl_B.preset_spd_mach_activate =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.preset_spd_mach_activate;
     A380PrimComputerFctl_B.fms_spd_mode_activate = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_spd_mode_activate;
-    A380PrimComputerFctl_B.Data_ndk = A380PrimComputerFctl_U.in.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
     A380PrimComputerFctl_B.fms_mach_mode_activate =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.fms_mach_mode_activate;
     A380PrimComputerFctl_B.flex_temp_deg_c = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.flex_temp_deg_c;
@@ -5845,10 +5859,6 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.thrust_reduction_alt_ft =
       A380PrimComputerFctl_U.in.data.adcn_inputs.fms.thrust_reduction_alt_ft;
     A380PrimComputerFctl_B.cruise_alt_ft = A380PrimComputerFctl_U.in.data.adcn_inputs.fms.cruise_alt_ft;
-    A380PrimComputerFctl_B.fqms = A380PrimComputerFctl_U.in.data.adcn_inputs.fqms;
-    A380PrimComputerFctl_B.SSM_chn = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_tla_deg.SSM;
-    A380PrimComputerFctl_B.Data_e1h = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.selected_tla_deg.Data;
-    A380PrimComputerFctl_B.SSM_bqd = A380PrimComputerFctl_U.in.data.adcn_inputs.eec_1.n1_ref_percent.SSM;
     A380PrimComputerFctl_DWork.Delay_DSTATE_e = A380PrimComputerFctl_DWork.Memory_PreviousInput_j;
     A380PrimComputerFctl_DWork.Delay_DSTATE_c = A380PrimComputerFctl_B.left_sidestick_priority_locked;
     A380PrimComputerFctl_DWork.Delay1_DSTATE = A380PrimComputerFctl_B.right_sidestick_priority_locked;
@@ -5929,1133 +5939,1136 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.data.analog_inputs.left_wing_wheel_speed = A380PrimComputerFctl_B.left_wing_wheel_speed;
   A380PrimComputerFctl_Y.out.data.analog_inputs.right_body_wheel_speed = A380PrimComputerFctl_B.right_body_wheel_speed;
   A380PrimComputerFctl_Y.out.data.analog_inputs.right_wing_wheel_speed = A380PrimComputerFctl_B.right_wing_wheel_speed;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM = A380PrimComputerFctl_B.SSM_oiy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_k5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM = A380PrimComputerFctl_B.SSM_cr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_g4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM = A380PrimComputerFctl_B.SSM_k4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_m5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.mach.SSM = A380PrimComputerFctl_B.SSM_apw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.mach.Data = A380PrimComputerFctl_B.Data_l55;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_m2q;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_lb2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_fb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_h4h;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_nx2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_jzm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_ku;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_ijm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM = A380PrimComputerFctl_B.SSM_lp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_c4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM = A380PrimComputerFctl_B.SSM_o0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_kqu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM = A380PrimComputerFctl_B.SSM_b4c;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_oat;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.mach.SSM = A380PrimComputerFctl_B.SSM_mku;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.mach.Data = A380PrimComputerFctl_B.Data_ad;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_hng;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_p5q;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_f4j;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_fqj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_m1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_ko;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_im;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_bn;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.SSM =
-    A380PrimComputerFctl_B.SSM_bol;
+    A380PrimComputerFctl_B.SSM_lp0;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.Data =
-    A380PrimComputerFctl_B.Data_of3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM = A380PrimComputerFctl_B.SSM_cf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_cwz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM = A380PrimComputerFctl_B.SSM_fkb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_mor;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM = A380PrimComputerFctl_B.SSM_igr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_oq5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.mach.SSM = A380PrimComputerFctl_B.SSM_ej;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.mach.Data = A380PrimComputerFctl_B.Data_f44;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_nnx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_dn0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_ceqr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_kc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_haw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_hwb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_km;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_ndk;
+    A380PrimComputerFctl_B.Data_es;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM = A380PrimComputerFctl_B.SSM_nsn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_h5f;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM = A380PrimComputerFctl_B.SSM_iu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_ms;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM = A380PrimComputerFctl_B.SSM_ahu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_jlt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.mach.SSM = A380PrimComputerFctl_B.SSM_mv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.mach.Data = A380PrimComputerFctl_B.Data_aoh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_fi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_bkg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_cre;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_h5r;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_dby;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_jmc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_lgb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_n1l;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.SSM =
     A380PrimComputerFctl_B.SSM_og;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.Data =
-    A380PrimComputerFctl_B.Data_fv;
+    A380PrimComputerFctl_B.Data_og;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_standard_ft.SSM = A380PrimComputerFctl_B.SSM_d4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_ky;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data = A380PrimComputerFctl_B.Data_fj;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.SSM = A380PrimComputerFctl_B.SSM_ds;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_i4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data = A380PrimComputerFctl_B.Data_my;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.SSM = A380PrimComputerFctl_B.SSM_lm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_pe5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data = A380PrimComputerFctl_B.Data_ox;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.mach.SSM = A380PrimComputerFctl_B.SSM_cx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.mach.Data = A380PrimComputerFctl_B.Data_an;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_evh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_bm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_cn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_dk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_co;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_nv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_pe;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_jpf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.mach.Data = A380PrimComputerFctl_B.Data_f5h;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM = A380PrimComputerFctl_B.SSM_co;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data = A380PrimComputerFctl_B.Data_dk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM = A380PrimComputerFctl_B.SSM_pe;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data = A380PrimComputerFctl_B.Data_nv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM = A380PrimComputerFctl_B.SSM_cgz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data = A380PrimComputerFctl_B.Data_jpf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM = A380PrimComputerFctl_B.SSM_fw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data = A380PrimComputerFctl_B.Data_i5;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.SSM =
-    A380PrimComputerFctl_B.SSM_cgz;
+    A380PrimComputerFctl_B.SSM_h4;
   A380PrimComputerFctl_Y.out.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.Data =
-    A380PrimComputerFctl_B.Data_i5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_fw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_k2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_h4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_as;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_cb3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_gk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_pj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_jl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_dv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_e32;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_i4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_ih;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_e5;
+    A380PrimComputerFctl_B.Data_k2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_cb3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_as;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_pj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_gk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_dv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_jl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_i4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_e32;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_fm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_ih;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_e5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_du;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_bf;
   A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.Data = A380PrimComputerFctl_B.Data_om;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_j5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_p3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_ng;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_nb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_cs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_hd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_ls;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_al;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_dg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_gu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_d3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_ix;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_p2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_do;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_bo0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_hu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_bc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_pm1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_h0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_i2y;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_giz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_pg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_mqp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_ni;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_ba;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_fr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_ic;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_jh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_fs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_gl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ja;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_gn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_js;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_myb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_is3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_l2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_ag;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_o5o;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_f5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_l5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_ph;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_dc2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_jw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data = A380PrimComputerFctl_B.Data_gr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_jy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_gp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_j1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_i3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_ov;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_et;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_mx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_mc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_b4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_k3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_gb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_f2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_oh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_gh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_mm5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_ed;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_br;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_speed_kn.Data = A380PrimComputerFctl_B.Data_o2j;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_c2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_i43;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_hc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_ic;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_ktr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_ak;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_gl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_jg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_my;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_cu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_j3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_ep;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_go;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_d3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_e5c;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_bt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_dk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_e0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_evc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_jl3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_kk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_nm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_af;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_ia;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_npr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_j0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_ew;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_bs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_lt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_hp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ger;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ct;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_pxo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_pc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_co2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_nzt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_ny;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_c0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_l4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_ojg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_nm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_lm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_nh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data = A380PrimComputerFctl_B.Data_fz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_dl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_oz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_dx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_gf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_a5h;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_nn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_fl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_a0z;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_p3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_fk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_ns;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_bu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_bm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_o23;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_nl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_g3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_grm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_speed_kn.Data = A380PrimComputerFctl_B.Data_icc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_gzm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_pwf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_oi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_gvk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_aa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_ln;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_fvk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_ka;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_lw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_mp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_fa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_m4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_lbx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_fki;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_n3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_bv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_a1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_m21;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_p1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_nbg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_cn2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_l25;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_an3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_ki;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_c3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_p5p;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_dp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_nry;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_boy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_mh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_lg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ll;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_cm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_hy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_hl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_j04;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_irh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_pf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_b42;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_pl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_anz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_gb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_d2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data = A380PrimComputerFctl_B.Data_hq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_gov;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_ai;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_nb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_gfr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_1_bus.radio_height_ft.SSM = A380PrimComputerFctl_B.SSM_pe3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_1_bus.radio_height_ft.Data = A380PrimComputerFctl_B.Data_czp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_2_bus.radio_height_ft.SSM = A380PrimComputerFctl_B.SSM_jj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_2_bus.radio_height_ft.Data = A380PrimComputerFctl_B.Data_fm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_jx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_jsg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_npl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_g1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_gf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data = A380PrimComputerFctl_B.Data_j4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_gbi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.Data = A380PrimComputerFctl_B.Data_jyh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_fhm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_e4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_ltj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_ghs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_hn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data = A380PrimComputerFctl_B.Data_bmk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_h3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data = A380PrimComputerFctl_B.Data_lzt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_dg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_al;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_d3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_gu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_p2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_ix;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_bo0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_do;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_bc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_hu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_h0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_pm1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_giz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_i2y;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_mqp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_pg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ba;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ni;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_in;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_fr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ff;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_cn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_ic;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_nxl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_fs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_jh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_ja;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_gn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ag;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_l2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_f5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_o5o;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ph;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_l5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_jw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_dc2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_jy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_gr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_j1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_gp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_ov;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_i3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_mx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data = A380PrimComputerFctl_B.Data_et;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_b4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_mc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_gb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_k3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_oh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_f2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_mm5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_gh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_br;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_ed;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_c2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_o2j;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_hc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_i43;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_ktr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_ic;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_gl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_speed_kn.Data = A380PrimComputerFctl_B.Data_ak;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_my;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_jg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_j3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_cu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_go;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_ep;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_e5c;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_d3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_dk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_bt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_evc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_e0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_kk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_jl3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_af;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_nm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_npr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ia;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ew;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_j0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_lt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_bs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_ger;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_hp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_pxo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_ct;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_co2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_pc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_ny;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_nzt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_l4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_c0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_nm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ojg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_nh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_lm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_dl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_fz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_dx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_oz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_a5h;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_gf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_fl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data = A380PrimComputerFctl_B.Data_nn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_p3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_a0z;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_ns;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_fk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_bm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_bu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.latitude_deg.SSM = A380PrimComputerFctl_B.SSM_nl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.latitude_deg.Data = A380PrimComputerFctl_B.Data_o23;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.longitude_deg.SSM = A380PrimComputerFctl_B.SSM_grm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.longitude_deg.Data = A380PrimComputerFctl_B.Data_g3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM = A380PrimComputerFctl_B.SSM_gzm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.ground_speed_kn.Data = A380PrimComputerFctl_B.Data_icc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM = A380PrimComputerFctl_B.SSM_oi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data = A380PrimComputerFctl_B.Data_pwf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_true_deg.SSM = A380PrimComputerFctl_B.SSM_aa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_true_deg.Data = A380PrimComputerFctl_B.Data_gvk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM = A380PrimComputerFctl_B.SSM_fvk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_speed_kn.Data = A380PrimComputerFctl_B.Data_ln;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM = A380PrimComputerFctl_B.SSM_lw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data = A380PrimComputerFctl_B.Data_ka;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_fa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data = A380PrimComputerFctl_B.Data_mp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM = A380PrimComputerFctl_B.SSM_lbx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data = A380PrimComputerFctl_B.Data_m4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM = A380PrimComputerFctl_B.SSM_n3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.drift_angle_deg.Data = A380PrimComputerFctl_B.Data_fki;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM = A380PrimComputerFctl_B.SSM_a1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data = A380PrimComputerFctl_B.Data_bv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM = A380PrimComputerFctl_B.SSM_p1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data = A380PrimComputerFctl_B.Data_m21;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM = A380PrimComputerFctl_B.SSM_cn2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data = A380PrimComputerFctl_B.Data_nbg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM = A380PrimComputerFctl_B.SSM_an3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_angle_deg.Data = A380PrimComputerFctl_B.Data_l25;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_c3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data = A380PrimComputerFctl_B.Data_ki;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_dp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data = A380PrimComputerFctl_B.Data_p5p;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_boy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data = A380PrimComputerFctl_B.Data_nry;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM = A380PrimComputerFctl_B.SSM_lg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_long_accel_g.Data = A380PrimComputerFctl_B.Data_mh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM = A380PrimComputerFctl_B.SSM_cm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data = A380PrimComputerFctl_B.Data_ll;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM = A380PrimComputerFctl_B.SSM_hl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data = A380PrimComputerFctl_B.Data_hy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_irh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data = A380PrimComputerFctl_B.Data_j04;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_b42;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_pf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM = A380PrimComputerFctl_B.SSM_anz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data = A380PrimComputerFctl_B.Data_pl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM = A380PrimComputerFctl_B.SSM_d2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data = A380PrimComputerFctl_B.Data_gb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_gov;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_hq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM = A380PrimComputerFctl_B.SSM_nb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data = A380PrimComputerFctl_B.Data_ai;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM = A380PrimComputerFctl_B.SSM_pe3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.vertical_accel_g.Data = A380PrimComputerFctl_B.Data_gfr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM = A380PrimComputerFctl_B.SSM_jj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data =
+    A380PrimComputerFctl_B.Data_czp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_jx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data = A380PrimComputerFctl_B.Data_fm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM = A380PrimComputerFctl_B.SSM_npl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data = A380PrimComputerFctl_B.Data_jsg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_1_bus.radio_height_ft.SSM = A380PrimComputerFctl_B.SSM_gf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_1_bus.radio_height_ft.Data = A380PrimComputerFctl_B.Data_g1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_2_bus.radio_height_ft.SSM = A380PrimComputerFctl_B.SSM_gbi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ra_2_bus.radio_height_ft.Data = A380PrimComputerFctl_B.Data_j4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_fhm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_jyh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_ltj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_e4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_hn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data = A380PrimComputerFctl_B.Data_ghs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_h3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.Data = A380PrimComputerFctl_B.Data_bmk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_bfs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_lzt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_p0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_kn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_fu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data = A380PrimComputerFctl_B.Data_nab;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_hr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data = A380PrimComputerFctl_B.Data_lgf;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM =
-    A380PrimComputerFctl_B.SSM_bfs;
+    A380PrimComputerFctl_B.SSM_bi;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data =
-    A380PrimComputerFctl_B.Data_kn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM = A380PrimComputerFctl_B.SSM_p0;
+    A380PrimComputerFctl_B.Data_fpq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM = A380PrimComputerFctl_B.SSM_bd;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data =
-    A380PrimComputerFctl_B.Data_nab;
+    A380PrimComputerFctl_B.Data_dt;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM =
-    A380PrimComputerFctl_B.SSM_fu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data =
-    A380PrimComputerFctl_B.Data_lgf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_hr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data = A380PrimComputerFctl_B.Data_fpq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_bi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data = A380PrimComputerFctl_B.Data_dt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM =
-    A380PrimComputerFctl_B.SSM_bd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data =
-    A380PrimComputerFctl_B.Data_b1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM =
     A380PrimComputerFctl_B.SSM_omt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data =
+    A380PrimComputerFctl_B.Data_b1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_la;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data = A380PrimComputerFctl_B.Data_nmr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_l1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data = A380PrimComputerFctl_B.Data_ea;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM =
+    A380PrimComputerFctl_B.SSM_dy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data =
+    A380PrimComputerFctl_B.Data_nib;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM = A380PrimComputerFctl_B.SSM_ie;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data =
-    A380PrimComputerFctl_B.Data_nmr;
+    A380PrimComputerFctl_B.Data_i2t;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM =
-    A380PrimComputerFctl_B.SSM_la;
+    A380PrimComputerFctl_B.SSM_kf;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data =
-    A380PrimComputerFctl_B.Data_ea;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_l1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data = A380PrimComputerFctl_B.Data_nib;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_dy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data = A380PrimComputerFctl_B.Data_i2t;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_ie;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_ng;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_kf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data = A380PrimComputerFctl_B.Data_h31;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_p5l;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data = A380PrimComputerFctl_B.Data_ew;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_g3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data = A380PrimComputerFctl_B.Data_j1s;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_b3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_j5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_dxv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data = A380PrimComputerFctl_B.Data_cw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_mxz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data = A380PrimComputerFctl_B.Data_gqa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_kk4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data = A380PrimComputerFctl_B.Data_hz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_cy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data = A380PrimComputerFctl_B.Data_fri;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_ju;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data = A380PrimComputerFctl_B.Data_cm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM = A380PrimComputerFctl_B.SSM_ey;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data = A380PrimComputerFctl_B.Data_czj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM = A380PrimComputerFctl_B.SSM_jr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data = A380PrimComputerFctl_B.Data_mb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_hs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data = A380PrimComputerFctl_B.Data_gk4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_mx3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data = A380PrimComputerFctl_B.Data_gbt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_er;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data = A380PrimComputerFctl_B.Data_p0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM = A380PrimComputerFctl_B.SSM_hm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data = A380PrimComputerFctl_B.Data_dn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM = A380PrimComputerFctl_B.SSM_dm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data = A380PrimComputerFctl_B.Data_iyw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_fk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data = A380PrimComputerFctl_B.Data_p5d;
+    A380PrimComputerFctl_B.Data_ng;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_p5l;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data = A380PrimComputerFctl_B.Data_h31;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM = A380PrimComputerFctl_B.SSM_g3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data = A380PrimComputerFctl_B.Data_ew;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_b3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_j1s;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_dxv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data = A380PrimComputerFctl_B.Data_j5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_mxz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data = A380PrimComputerFctl_B.Data_cw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_kk4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data = A380PrimComputerFctl_B.Data_gqa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_cy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data = A380PrimComputerFctl_B.Data_hz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_ju;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data = A380PrimComputerFctl_B.Data_fri;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_ey;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data = A380PrimComputerFctl_B.Data_cm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_jr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data = A380PrimComputerFctl_B.Data_czj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_hs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data = A380PrimComputerFctl_B.Data_mb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_mx3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data = A380PrimComputerFctl_B.Data_gk4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM = A380PrimComputerFctl_B.SSM_er;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data = A380PrimComputerFctl_B.Data_gbt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM = A380PrimComputerFctl_B.SSM_hm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data = A380PrimComputerFctl_B.Data_p0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_dm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data = A380PrimComputerFctl_B.Data_dn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_fk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.Data = A380PrimComputerFctl_B.Data_iyw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_lm1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data = A380PrimComputerFctl_B.Data_p5d;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_nc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data = A380PrimComputerFctl_B.Data_oo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM = A380PrimComputerFctl_B.SSM_e4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data = A380PrimComputerFctl_B.Data_ho;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM = A380PrimComputerFctl_B.SSM_bw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data = A380PrimComputerFctl_B.Data_kqr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_na;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data = A380PrimComputerFctl_B.Data_omv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_lf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.Data = A380PrimComputerFctl_B.Data_mby;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_lm1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_oo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_nc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ho;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_e4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_kqr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_bw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_omv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_na;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_mby;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_lf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_hk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_oz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data =
-    A380PrimComputerFctl_B.Data_hg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_hk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_mub;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data =
-    A380PrimComputerFctl_B.Data_bi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_hg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_li;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data =
-    A380PrimComputerFctl_B.Data_i4u;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_bi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_hcd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ik;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_i4u;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_php;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data =
-    A380PrimComputerFctl_B.Data_dq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ik;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ma;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data =
-    A380PrimComputerFctl_B.Data_pv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_dq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_jut;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data =
-    A380PrimComputerFctl_B.Data_p1d;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data =
+    A380PrimComputerFctl_B.Data_pv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_kh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data =
-    A380PrimComputerFctl_B.Data_lyv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data =
+    A380PrimComputerFctl_B.Data_p1d;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_h2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ke;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data =
+    A380PrimComputerFctl_B.Data_lyv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ago;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data =
-    A380PrimComputerFctl_B.Data_cv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ke;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ep;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data =
-    A380PrimComputerFctl_B.Data_pfh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data =
+    A380PrimComputerFctl_B.Data_cv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_kc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data =
-    A380PrimComputerFctl_B.Data_jy4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data =
+    A380PrimComputerFctl_B.Data_pfh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_cnf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data =
-    A380PrimComputerFctl_B.Data_o1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data =
+    A380PrimComputerFctl_B.Data_jy4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_lwa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ga;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data =
+    A380PrimComputerFctl_B.Data_o1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_aq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data =
-    A380PrimComputerFctl_B.Data_kd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ga;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ja2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data =
-    A380PrimComputerFctl_B.Data_fx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data =
+    A380PrimComputerFctl_B.Data_kd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_in3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_nml;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data =
+    A380PrimComputerFctl_B.Data_fx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ap;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_fa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data =
+    A380PrimComputerFctl_B.Data_nml;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_mg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_nh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data =
+    A380PrimComputerFctl_B.Data_fa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_mw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data =
+    A380PrimComputerFctl_B.Data_nh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_bu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data =
     A380PrimComputerFctl_B.Data_or;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM = A380PrimComputerFctl_B.SSM_bu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data = A380PrimComputerFctl_B.Data_otn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_cbb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data =
-    A380PrimComputerFctl_B.Data_cam;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data =
+    A380PrimComputerFctl_B.Data_otn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_iao;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data =
-    A380PrimComputerFctl_B.Data_gsl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_cam;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ip;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_amp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_gsl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_f4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_mv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_amp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_id;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_gx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_mqr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_lb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_mv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM = A380PrimComputerFctl_B.SSM_mqr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data = A380PrimComputerFctl_B.Data_gx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_cm2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data =
+    A380PrimComputerFctl_B.Data_lb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_ck;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data =
     A380PrimComputerFctl_B.Data_can;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_ck;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data = A380PrimComputerFctl_B.Data_gae;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_pl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_h1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data =
+    A380PrimComputerFctl_B.Data_gae;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_d50;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_bc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data =
+    A380PrimComputerFctl_B.Data_h1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_gs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_fof;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data =
+    A380PrimComputerFctl_B.Data_bc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_kse;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data =
+    A380PrimComputerFctl_B.Data_fof;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_icj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data =
     A380PrimComputerFctl_B.Data_nj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_icj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_i0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM =
-    A380PrimComputerFctl_B.SSM_ds4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data =
-    A380PrimComputerFctl_B.Data_lr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_ds4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data = A380PrimComputerFctl_B.Data_i0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM =
     A380PrimComputerFctl_B.SSM_gbf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_lr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_opv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_k0s;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_opv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data = A380PrimComputerFctl_B.Data_m4b;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM =
     A380PrimComputerFctl_B.SSM_gha;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_e3r;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_m4b;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM =
     A380PrimComputerFctl_B.SSM_ple;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_au;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM =
-    A380PrimComputerFctl_B.SSM_h0n;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_e3r;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_h0n;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_au;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_c1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data =
     A380PrimComputerFctl_B.Data_czc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_c1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data = A380PrimComputerFctl_B.Data_itz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_dd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data = A380PrimComputerFctl_B.Data_nsk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ai;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_is;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_at;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_pk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_bz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_f52;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_n0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_dg0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_haz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_nru;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM = A380PrimComputerFctl_B.SSM_hz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_dd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data =
+    A380PrimComputerFctl_B.Data_itz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_ai;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data = A380PrimComputerFctl_B.Data_nsk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_at;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_is;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_bz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_pk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_n0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data =
+    A380PrimComputerFctl_B.Data_f52;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_haz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data = A380PrimComputerFctl_B.Data_dg0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_hz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data = A380PrimComputerFctl_B.Data_nru;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_hk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_d5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_cvn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_oa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_iy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_bp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_jwz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_cl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_o2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_er;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM = A380PrimComputerFctl_B.SSM_eig;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.Data =
-    A380PrimComputerFctl_B.Data_d5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM = A380PrimComputerFctl_B.SSM_hk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data = A380PrimComputerFctl_B.Data_oa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM = A380PrimComputerFctl_B.SSM_cvn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data = A380PrimComputerFctl_B.Data_bp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.SSM = A380PrimComputerFctl_B.SSM_iy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.Data = A380PrimComputerFctl_B.Data_cl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM = A380PrimComputerFctl_B.SSM_jwz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data = A380PrimComputerFctl_B.Data_er;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM = A380PrimComputerFctl_B.SSM_o2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data = A380PrimComputerFctl_B.Data_in;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM = A380PrimComputerFctl_B.SSM_eig;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data = A380PrimComputerFctl_B.Data_btl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM = A380PrimComputerFctl_B.SSM_jl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data = A380PrimComputerFctl_B.Data_a5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM = A380PrimComputerFctl_B.SSM_cci;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data = A380PrimComputerFctl_B.Data_hyo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM = A380PrimComputerFctl_B.SSM_ow;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data = A380PrimComputerFctl_B.Data_bjx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM = A380PrimComputerFctl_B.SSM_bcj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data = A380PrimComputerFctl_B.Data_ci;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM = A380PrimComputerFctl_B.SSM_i5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data = A380PrimComputerFctl_B.Data_h2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM = A380PrimComputerFctl_B.SSM_jww;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data = A380PrimComputerFctl_B.Data_ce;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM = A380PrimComputerFctl_B.SSM_kkj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data = A380PrimComputerFctl_B.Data_dx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM = A380PrimComputerFctl_B.SSM_ndh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data = A380PrimComputerFctl_B.Data_fvi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_k1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data = A380PrimComputerFctl_B.Data_gnm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM = A380PrimComputerFctl_B.SSM_en3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data = A380PrimComputerFctl_B.Data_e3y;
+    A380PrimComputerFctl_B.Data_in;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM = A380PrimComputerFctl_B.SSM_jl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data = A380PrimComputerFctl_B.Data_btl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM = A380PrimComputerFctl_B.SSM_cci;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data = A380PrimComputerFctl_B.Data_a5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.SSM = A380PrimComputerFctl_B.SSM_ow;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.Data =
+    A380PrimComputerFctl_B.Data_hyo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM = A380PrimComputerFctl_B.SSM_bcj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data = A380PrimComputerFctl_B.Data_bjx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM = A380PrimComputerFctl_B.SSM_i5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data = A380PrimComputerFctl_B.Data_ci;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM = A380PrimComputerFctl_B.SSM_jww;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data = A380PrimComputerFctl_B.Data_h2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM = A380PrimComputerFctl_B.SSM_kkj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data = A380PrimComputerFctl_B.Data_ce;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM = A380PrimComputerFctl_B.SSM_ndh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data = A380PrimComputerFctl_B.Data_dx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM = A380PrimComputerFctl_B.SSM_k1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data = A380PrimComputerFctl_B.Data_fvi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM = A380PrimComputerFctl_B.SSM_en3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data = A380PrimComputerFctl_B.Data_gnm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM = A380PrimComputerFctl_B.SSM_kl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data = A380PrimComputerFctl_B.Data_e3y;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM = A380PrimComputerFctl_B.SSM_po;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data = A380PrimComputerFctl_B.Data_ld;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM = A380PrimComputerFctl_B.SSM_ie0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data = A380PrimComputerFctl_B.Data_k3v;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM = A380PrimComputerFctl_B.SSM_ay;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data = A380PrimComputerFctl_B.Data_oi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_gsb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data = A380PrimComputerFctl_B.Data_oy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM = A380PrimComputerFctl_B.SSM_mxy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data = A380PrimComputerFctl_B.Data_nl;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.SSM =
-    A380PrimComputerFctl_B.SSM_kl;
+    A380PrimComputerFctl_B.SSM_gt;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.Data =
-    A380PrimComputerFctl_B.Data_ld;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM = A380PrimComputerFctl_B.SSM_po;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data = A380PrimComputerFctl_B.Data_k3v;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM = A380PrimComputerFctl_B.SSM_ie0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data = A380PrimComputerFctl_B.Data_oi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM = A380PrimComputerFctl_B.SSM_ay;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data = A380PrimComputerFctl_B.Data_oy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM = A380PrimComputerFctl_B.SSM_gsb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data = A380PrimComputerFctl_B.Data_nl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM = A380PrimComputerFctl_B.SSM_mxy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data = A380PrimComputerFctl_B.Data_aei;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM = A380PrimComputerFctl_B.SSM_gt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data = A380PrimComputerFctl_B.Data_jz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM = A380PrimComputerFctl_B.SSM_cum;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data = A380PrimComputerFctl_B.Data_pwfb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.SSM = A380PrimComputerFctl_B.SSM_ka;
+    A380PrimComputerFctl_B.Data_aei;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM = A380PrimComputerFctl_B.SSM_cum;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data = A380PrimComputerFctl_B.Data_jz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM = A380PrimComputerFctl_B.SSM_ka;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data = A380PrimComputerFctl_B.Data_pwfb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM = A380PrimComputerFctl_B.SSM_lu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data = A380PrimComputerFctl_B.Data_la;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM = A380PrimComputerFctl_B.SSM_c5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data = A380PrimComputerFctl_B.Data_b0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM = A380PrimComputerFctl_B.SSM_ol;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data = A380PrimComputerFctl_B.Data_g5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM = A380PrimComputerFctl_B.SSM_k2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data = A380PrimComputerFctl_B.Data_os;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM = A380PrimComputerFctl_B.SSM_gn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data = A380PrimComputerFctl_B.Data_btc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.SSM = A380PrimComputerFctl_B.SSM_bdi;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.Data =
-    A380PrimComputerFctl_B.Data_la;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM = A380PrimComputerFctl_B.SSM_lu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data = A380PrimComputerFctl_B.Data_b0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.SSM = A380PrimComputerFctl_B.SSM_c5;
+    A380PrimComputerFctl_B.Data_nhn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM = A380PrimComputerFctl_B.SSM_lil;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data = A380PrimComputerFctl_B.Data_im;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.SSM =
+    A380PrimComputerFctl_B.SSM_lmv;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.Data =
-    A380PrimComputerFctl_B.Data_g5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_ol;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data = A380PrimComputerFctl_B.Data_os;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_k2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data = A380PrimComputerFctl_B.Data_btc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_gn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data = A380PrimComputerFctl_B.Data_nhn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_bdi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data = A380PrimComputerFctl_B.Data_im;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_lil;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data = A380PrimComputerFctl_B.Data_no;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_lmv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data = A380PrimComputerFctl_B.Data_av;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM = A380PrimComputerFctl_B.SSM_ig;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data = A380PrimComputerFctl_B.Data_me;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_ch;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data = A380PrimComputerFctl_B.Data_hc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM = A380PrimComputerFctl_B.SSM_ef;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data = A380PrimComputerFctl_B.Data_f5c;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM = A380PrimComputerFctl_B.SSM_dbs;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data = A380PrimComputerFctl_B.Data_iu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM = A380PrimComputerFctl_B.SSM_ilr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data = A380PrimComputerFctl_B.Data_ihf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_ch3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data = A380PrimComputerFctl_B.Data_ao;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_ozd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data = A380PrimComputerFctl_B.Data_c2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_ob;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data = A380PrimComputerFctl_B.Data_f1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM = A380PrimComputerFctl_B.SSM_dd4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data = A380PrimComputerFctl_B.Data_nst;
+    A380PrimComputerFctl_B.Data_no;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_ig;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data = A380PrimComputerFctl_B.Data_av;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_ch;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data = A380PrimComputerFctl_B.Data_me;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_ef;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data = A380PrimComputerFctl_B.Data_hc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_dbs;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data = A380PrimComputerFctl_B.Data_f5c;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_ilr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data = A380PrimComputerFctl_B.Data_iu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_ch3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data = A380PrimComputerFctl_B.Data_ihf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM = A380PrimComputerFctl_B.SSM_ozd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data = A380PrimComputerFctl_B.Data_ao;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_ob;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data = A380PrimComputerFctl_B.Data_c2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM = A380PrimComputerFctl_B.SSM_dd4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data = A380PrimComputerFctl_B.Data_f1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM = A380PrimComputerFctl_B.SSM_ps;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data = A380PrimComputerFctl_B.Data_nst;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM = A380PrimComputerFctl_B.SSM_agc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data = A380PrimComputerFctl_B.Data_fq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_nt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data = A380PrimComputerFctl_B.Data_amc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_oa;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data = A380PrimComputerFctl_B.Data_nn1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_oj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data = A380PrimComputerFctl_B.Data_b0d;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM = A380PrimComputerFctl_B.SSM_lq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data = A380PrimComputerFctl_B.Data_bri;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.SSM =
-    A380PrimComputerFctl_B.SSM_ps;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data =
-    A380PrimComputerFctl_B.Data_fq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM =
-    A380PrimComputerFctl_B.SSM_agc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data =
-    A380PrimComputerFctl_B.Data_amc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_nt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data = A380PrimComputerFctl_B.Data_nn1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_oa;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data = A380PrimComputerFctl_B.Data_b0d;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM = A380PrimComputerFctl_B.SSM_oj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data = A380PrimComputerFctl_B.Data_bri;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_lq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data = A380PrimComputerFctl_B.Data_nmx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_fc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_oal;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data =
+    A380PrimComputerFctl_B.Data_nmx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM =
     A380PrimComputerFctl_B.SSM_do;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_dmb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_eu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_nf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_pjf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_anh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_gu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_idf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_jsu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data =
-    A380PrimComputerFctl_B.Data_gm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data =
+    A380PrimComputerFctl_B.Data_oal;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_eu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data = A380PrimComputerFctl_B.Data_dmb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_pjf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data = A380PrimComputerFctl_B.Data_nf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM = A380PrimComputerFctl_B.SSM_gu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data = A380PrimComputerFctl_B.Data_anh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_jsu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data = A380PrimComputerFctl_B.Data_idf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_eb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data =
-    A380PrimComputerFctl_B.Data_jqv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_gm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_dbu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ni3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_jqv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_hh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data =
-    A380PrimComputerFctl_B.Data_d1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ni3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_jsuo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data =
-    A380PrimComputerFctl_B.Data_dv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_d1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_dj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data =
-    A380PrimComputerFctl_B.Data_oq4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_dv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_oio;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data =
-    A380PrimComputerFctl_B.Data_fb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data =
+    A380PrimComputerFctl_B.Data_oq4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ewd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data =
-    A380PrimComputerFctl_B.Data_bsv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data =
+    A380PrimComputerFctl_B.Data_fb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_pjk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data =
-    A380PrimComputerFctl_B.Data_nt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data =
+    A380PrimComputerFctl_B.Data_bsv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_j3l;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ac;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data =
+    A380PrimComputerFctl_B.Data_nt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ceq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data =
-    A380PrimComputerFctl_B.Data_dcn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ac;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_d4h;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data =
-    A380PrimComputerFctl_B.Data_joe;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data =
+    A380PrimComputerFctl_B.Data_dcn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_dc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data =
-    A380PrimComputerFctl_B.Data_nol;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data =
+    A380PrimComputerFctl_B.Data_joe;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_obg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data =
-    A380PrimComputerFctl_B.Data_bun;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data =
+    A380PrimComputerFctl_B.Data_nol;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_b5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ge;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data =
+    A380PrimComputerFctl_B.Data_bun;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_al;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data =
-    A380PrimComputerFctl_B.Data_mj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ge;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_hib;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data =
-    A380PrimComputerFctl_B.Data_naq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data =
+    A380PrimComputerFctl_B.Data_mj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_dbe;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_j43;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data =
+    A380PrimComputerFctl_B.Data_naq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_b1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_po;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data =
+    A380PrimComputerFctl_B.Data_j43;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_d0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ey;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data =
+    A380PrimComputerFctl_B.Data_po;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_m5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ey;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_jli;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data =
     A380PrimComputerFctl_B.Data_a3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM = A380PrimComputerFctl_B.SSM_jli;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data = A380PrimComputerFctl_B.Data_pey;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_mxc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data =
-    A380PrimComputerFctl_B.Data_kf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data =
+    A380PrimComputerFctl_B.Data_pey;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_ogm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data =
-    A380PrimComputerFctl_B.Data_hk1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_kf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_nlt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_grt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_hk1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_dz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data =
+    A380PrimComputerFctl_B.Data_grt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_oiy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data =
     A380PrimComputerFctl_B.Data_cmi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_jsb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_eyi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM = A380PrimComputerFctl_B.SSM_jsb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data = A380PrimComputerFctl_B.Data_eyi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_i5w;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data =
     A380PrimComputerFctl_B.Data_jr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_my5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data =
     A380PrimComputerFctl_B.Data_hom;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_lp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data = A380PrimComputerFctl_B.Data_je;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_hlu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_hux;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data =
+    A380PrimComputerFctl_B.Data_je;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_hu3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_ima;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data =
+    A380PrimComputerFctl_B.Data_k5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_d5s;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_c4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data =
+    A380PrimComputerFctl_B.Data_hux;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_n4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data =
+    A380PrimComputerFctl_B.Data_ima;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_gg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data =
     A380PrimComputerFctl_B.Data_bk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_gg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_fb4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM =
-    A380PrimComputerFctl_B.SSM_kkj5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_kkj5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data = A380PrimComputerFctl_B.Data_fb4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_cr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_jf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM =
     A380PrimComputerFctl_B.SSM_nx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_mz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_ebo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data = A380PrimComputerFctl_B.Data_p3h;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_ebo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_p3h;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM =
     A380PrimComputerFctl_B.SSM_po3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_kv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_o0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_bv1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_mt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_mt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_bv1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_o5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data =
+    A380PrimComputerFctl_B.Data_g4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM =
+    A380PrimComputerFctl_B.SSM_mkz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data =
     A380PrimComputerFctl_B.Data_iyr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_o5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data = A380PrimComputerFctl_B.Data_otv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_mkz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data = A380PrimComputerFctl_B.Data_kqu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_dqh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_dqh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data = A380PrimComputerFctl_B.Data_otv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ki;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_n4p;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ki;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_n3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_ez;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_ma;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_ac;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_gsd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_klm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_ij;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM = A380PrimComputerFctl_B.SSM_iz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ez;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_n3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_k4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data =
+    A380PrimComputerFctl_B.Data_ma;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_ac;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data = A380PrimComputerFctl_B.Data_gsd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_klm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data = A380PrimComputerFctl_B.Data_ij;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_iz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_ogy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM = A380PrimComputerFctl_B.SSM_b4c;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data = A380PrimComputerFctl_B.Data_hc3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM = A380PrimComputerFctl_B.SSM_gn1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data = A380PrimComputerFctl_B.Data_mcz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM = A380PrimComputerFctl_B.SSM_p0z;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_gn1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_hc3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_p0z;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_m5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_iet;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_mcz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_omi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_cxq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM = A380PrimComputerFctl_B.SSM_bdv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data =
+    A380PrimComputerFctl_B.Data_f4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM = A380PrimComputerFctl_B.SSM_hhc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data = A380PrimComputerFctl_B.Data_itt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM = A380PrimComputerFctl_B.SSM_apw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data = A380PrimComputerFctl_B.Data_hr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM = A380PrimComputerFctl_B.SSM_e2;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.Data =
-    A380PrimComputerFctl_B.Data_cxq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM = A380PrimComputerFctl_B.SSM_iet;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data = A380PrimComputerFctl_B.Data_oat;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM = A380PrimComputerFctl_B.SSM_omi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data = A380PrimComputerFctl_B.Data_f4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM = A380PrimComputerFctl_B.SSM_bdv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data = A380PrimComputerFctl_B.Data_itt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM = A380PrimComputerFctl_B.SSM_hhc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data = A380PrimComputerFctl_B.Data_hr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM = A380PrimComputerFctl_B.SSM_e2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data = A380PrimComputerFctl_B.Data_cta;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM = A380PrimComputerFctl_B.SSM_crl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data = A380PrimComputerFctl_B.Data_kn3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM = A380PrimComputerFctl_B.SSM_goz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data = A380PrimComputerFctl_B.Data_aj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM = A380PrimComputerFctl_B.SSM_mku;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data = A380PrimComputerFctl_B.Data_ml;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM = A380PrimComputerFctl_B.SSM_k24;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data = A380PrimComputerFctl_B.Data_g5n;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM = A380PrimComputerFctl_B.SSM_l2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data = A380PrimComputerFctl_B.Data_hi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM = A380PrimComputerFctl_B.SSM_lfy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data = A380PrimComputerFctl_B.Data_ad;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_aj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data = A380PrimComputerFctl_B.Data_lyc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM = A380PrimComputerFctl_B.SSM_he;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data = A380PrimComputerFctl_B.Data_kw;
+    A380PrimComputerFctl_B.Data_cta;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM = A380PrimComputerFctl_B.SSM_crl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data = A380PrimComputerFctl_B.Data_kn3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM = A380PrimComputerFctl_B.SSM_goz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data = A380PrimComputerFctl_B.Data_aj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM = A380PrimComputerFctl_B.SSM_k24;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data = A380PrimComputerFctl_B.Data_ml;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM = A380PrimComputerFctl_B.SSM_l2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data = A380PrimComputerFctl_B.Data_l55;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM = A380PrimComputerFctl_B.SSM_lfy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data = A380PrimComputerFctl_B.Data_g5n;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM = A380PrimComputerFctl_B.SSM_aj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data = A380PrimComputerFctl_B.Data_hi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM = A380PrimComputerFctl_B.SSM_he;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data = A380PrimComputerFctl_B.Data_lyc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM = A380PrimComputerFctl_B.SSM_hkw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data = A380PrimComputerFctl_B.Data_kw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM = A380PrimComputerFctl_B.SSM_m2q;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data = A380PrimComputerFctl_B.Data_oue;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM = A380PrimComputerFctl_B.SSM_bg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data = A380PrimComputerFctl_B.Data_njd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM = A380PrimComputerFctl_B.SSM_n2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data = A380PrimComputerFctl_B.Data_n1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_nq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data = A380PrimComputerFctl_B.Data_ihk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM = A380PrimComputerFctl_B.SSM_pd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data = A380PrimComputerFctl_B.Data_hiq;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.SSM =
-    A380PrimComputerFctl_B.SSM_hkw;
+    A380PrimComputerFctl_B.SSM_or;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.Data =
-    A380PrimComputerFctl_B.Data_oue;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM = A380PrimComputerFctl_B.SSM_bg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data = A380PrimComputerFctl_B.Data_njd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM = A380PrimComputerFctl_B.SSM_n2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data = A380PrimComputerFctl_B.Data_n1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM = A380PrimComputerFctl_B.SSM_nq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data = A380PrimComputerFctl_B.Data_ihk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM = A380PrimComputerFctl_B.SSM_hng;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data = A380PrimComputerFctl_B.Data_hiq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM = A380PrimComputerFctl_B.SSM_pd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data = A380PrimComputerFctl_B.Data_dr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM = A380PrimComputerFctl_B.SSM_or;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data = A380PrimComputerFctl_B.Data_l5t;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM = A380PrimComputerFctl_B.SSM_ao;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data = A380PrimComputerFctl_B.Data_p5q;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.SSM = A380PrimComputerFctl_B.SSM_e4y;
+    A380PrimComputerFctl_B.Data_lb2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM = A380PrimComputerFctl_B.SSM_ao;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data = A380PrimComputerFctl_B.Data_dr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM = A380PrimComputerFctl_B.SSM_e4y;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data = A380PrimComputerFctl_B.Data_l5t;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM = A380PrimComputerFctl_B.SSM_lk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data = A380PrimComputerFctl_B.Data_by;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM = A380PrimComputerFctl_B.SSM_cmh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data = A380PrimComputerFctl_B.Data_fz4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM = A380PrimComputerFctl_B.SSM_fb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data = A380PrimComputerFctl_B.Data_bf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM = A380PrimComputerFctl_B.SSM_jwb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data = A380PrimComputerFctl_B.Data_o3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM = A380PrimComputerFctl_B.SSM_pb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data = A380PrimComputerFctl_B.Data_b0i;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.SSM = A380PrimComputerFctl_B.SSM_lqf;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.Data =
-    A380PrimComputerFctl_B.Data_by;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM = A380PrimComputerFctl_B.SSM_lk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.Data = A380PrimComputerFctl_B.Data_fz4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.SSM =
-    A380PrimComputerFctl_B.SSM_cmh;
+    A380PrimComputerFctl_B.Data_ki2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM = A380PrimComputerFctl_B.SSM_a0z;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.Data = A380PrimComputerFctl_B.Data_adu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.SSM = A380PrimComputerFctl_B.SSM_hj;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.Data =
-    A380PrimComputerFctl_B.Data_bf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_jwb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data = A380PrimComputerFctl_B.Data_o3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_pb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data = A380PrimComputerFctl_B.Data_b0i;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_lqf;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data = A380PrimComputerFctl_B.Data_ki2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_f4j;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data = A380PrimComputerFctl_B.Data_adu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_a0z;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data = A380PrimComputerFctl_B.Data_c0z;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_hj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data = A380PrimComputerFctl_B.Data_dod;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM = A380PrimComputerFctl_B.SSM_nrk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data = A380PrimComputerFctl_B.Data_fqj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_bl;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data = A380PrimComputerFctl_B.Data_hgw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM = A380PrimComputerFctl_B.SSM_gx;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.Data = A380PrimComputerFctl_B.Data_dko;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM = A380PrimComputerFctl_B.SSM_i3;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data = A380PrimComputerFctl_B.Data_iga;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM = A380PrimComputerFctl_B.SSM_jm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.Data = A380PrimComputerFctl_B.Data_hds;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_kr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data = A380PrimComputerFctl_B.Data_dqt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_khm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data = A380PrimComputerFctl_B.Data_pd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_m1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data = A380PrimComputerFctl_B.Data_i0g;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM = A380PrimComputerFctl_B.SSM_ek;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data = A380PrimComputerFctl_B.Data_li;
+    A380PrimComputerFctl_B.Data_h4h;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_nrk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data = A380PrimComputerFctl_B.Data_c0z;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_bl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data = A380PrimComputerFctl_B.Data_dod;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM = A380PrimComputerFctl_B.SSM_gx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data = A380PrimComputerFctl_B.Data_hgw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_i3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data = A380PrimComputerFctl_B.Data_dko;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_nx2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data = A380PrimComputerFctl_B.Data_iga;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM = A380PrimComputerFctl_B.SSM_jm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data = A380PrimComputerFctl_B.Data_hds;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM = A380PrimComputerFctl_B.SSM_kr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data = A380PrimComputerFctl_B.Data_dqt;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM = A380PrimComputerFctl_B.SSM_khm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data = A380PrimComputerFctl_B.Data_pd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM = A380PrimComputerFctl_B.SSM_ek;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.Data = A380PrimComputerFctl_B.Data_i0g;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM = A380PrimComputerFctl_B.SSM_g1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data = A380PrimComputerFctl_B.Data_jzm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM = A380PrimComputerFctl_B.SSM_c4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.Data = A380PrimComputerFctl_B.Data_li;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM = A380PrimComputerFctl_B.SSM_kj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data = A380PrimComputerFctl_B.Data_bs3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_fn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data = A380PrimComputerFctl_B.Data_nq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_jb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data = A380PrimComputerFctl_B.Data_ita;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM = A380PrimComputerFctl_B.SSM_ku;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data = A380PrimComputerFctl_B.Data_pn;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.SSM =
-    A380PrimComputerFctl_B.SSM_g1;
+    A380PrimComputerFctl_B.SSM_irk;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.Data =
-    A380PrimComputerFctl_B.Data_bs3;
+    A380PrimComputerFctl_B.Data_lgm;
   A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.SSM =
-    A380PrimComputerFctl_B.SSM_c4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data =
-    A380PrimComputerFctl_B.Data_ko;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_kj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data = A380PrimComputerFctl_B.Data_nq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_fn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data = A380PrimComputerFctl_B.Data_ita;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM = A380PrimComputerFctl_B.SSM_jb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data = A380PrimComputerFctl_B.Data_pn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_irk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data = A380PrimComputerFctl_B.Data_lgm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM =
     A380PrimComputerFctl_B.SSM_f5q;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data =
     A380PrimComputerFctl_B.Data_ir;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_nca;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data = A380PrimComputerFctl_B.Data_jv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_j2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data = A380PrimComputerFctl_B.Data_ore;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM = A380PrimComputerFctl_B.SSM_ba5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data = A380PrimComputerFctl_B.Data_ijm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_p4l;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data = A380PrimComputerFctl_B.Data_jet;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_l25;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.Data =
+    A380PrimComputerFctl_B.Data_jo0;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_nca;
+    A380PrimComputerFctl_B.SSM_e4o;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_jv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_im;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ore;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_j2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_jet;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_ba5;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_jo0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_p4l;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_bn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_l25;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_izj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_e4o;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_d1a;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data =
     A380PrimComputerFctl_B.Data_pdd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_d1a;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_bol;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data =
     A380PrimComputerFctl_B.Data_bjv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_mi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_mi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_lye;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_cyd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_ft;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_py;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data = A380PrimComputerFctl_B.Data_a2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_f0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data = A380PrimComputerFctl_B.Data_ii;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_gj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_of3;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ncq;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_lye;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_cyd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_ft;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_py;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data = A380PrimComputerFctl_B.Data_a2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_lp0;
+    A380PrimComputerFctl_B.Data_k4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_ix;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_pj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_gle;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_mly;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_h21;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_ii;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_f0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.Data = A380PrimComputerFctl_B.Data_k4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_gj;
+    A380PrimComputerFctl_B.Data_p3m;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_cf;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_ijw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ghc;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_pj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_ncq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_es;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ix;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_mly;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_gle;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_p3m;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_h21;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_ijw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_ghc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_fqp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_ai4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_liu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_lj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_ki1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_nsn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_byo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_ovo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_ixn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_nst;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_k2d;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_iv;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_h5f;
+    A380PrimComputerFctl_B.Data_fqp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_ai4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_liu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_lj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_ki1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ovo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_byo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_nst;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_cwz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_iv;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_ixn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_pq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_k2d;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ii;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_c0o;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_olh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_db;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_fkb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_dcz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_gev;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_ork;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_j2m;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_1_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_f11;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_pq;
+    A380PrimComputerFctl_B.SSM_jp;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_c0o;
+    A380PrimComputerFctl_B.Data_hyn;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_ii;
+    A380PrimComputerFctl_B.SSM_bew;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_db;
+    A380PrimComputerFctl_B.Data_cg;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_olh;
+    A380PrimComputerFctl_B.SSM_eie;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_dcz;
+    A380PrimComputerFctl_B.Data_mor;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_gev;
+    A380PrimComputerFctl_B.SSM_nk;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_ork;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_j2m;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_f11;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_jp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_hyn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_iu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data = A380PrimComputerFctl_B.Data_cg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_bew;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data = A380PrimComputerFctl_B.Data_i1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_eie;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_l1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_nk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_ms;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_buw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_ag;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ht;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_i1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_buw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_l1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_ht;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_ag;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_io;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_epm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_io;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data =
-    A380PrimComputerFctl_B.Data_pp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_np1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_igr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data = A380PrimComputerFctl_B.Data_pp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_np1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_nek;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_fc4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_fc4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_cho;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_hkwh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_aet;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ahu;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_oxr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ka4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_ihw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_k2r;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_cuh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_i0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_jlt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_jes;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_jm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_kg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_fg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_frj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_np;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_ok;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_pmi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_m4;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_b2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_iyk;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_ogu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_hkwh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_aet;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ka4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_oxr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_k2r;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_oq5;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_i0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_ihw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_jes;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_cuh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_kg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_jm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_frj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_fg;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_ej;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_np;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_ok;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_pmi;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_m4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_b2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_iyk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_ogu;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_f4l;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_lw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_mtx;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_f44;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_ahy;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_buw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_ovo2;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_oau;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_hsq;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_2_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_mon;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_mv;
+    A380PrimComputerFctl_B.SSM_nxn;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_lw;
+    A380PrimComputerFctl_B.Data_i4t;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_f4l;
+    A380PrimComputerFctl_B.SSM_nnx;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.Data =
-    A380PrimComputerFctl_B.Data_buw;
+    A380PrimComputerFctl_B.Data_mt;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_mtx;
+    A380PrimComputerFctl_B.SSM_lo;
   A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_oau;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM =
-    A380PrimComputerFctl_B.SSM_ahy;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data =
-    A380PrimComputerFctl_B.Data_aoh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_ovo2;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_mon;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_hsq;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_i4t;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_nxn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data = A380PrimComputerFctl_B.Data_mt;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_lo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_jh0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_dir;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM =
+    A380PrimComputerFctl_B.SSM_dir;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data =
     A380PrimComputerFctl_B.Data_nvn;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_apz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_b0e;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_fi;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_f22;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_iw;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM = A380PrimComputerFctl_B.SSM_apz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data = A380PrimComputerFctl_B.Data_b0e;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.aileron_status_word.SSM = A380PrimComputerFctl_B.SSM_iw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.aileron_status_word.Data = A380PrimComputerFctl_B.Data_f22;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_dfj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_dn0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_e1;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_ctc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_dfj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_mp;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data =
     A380PrimComputerFctl_B.Data_ngo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_e1;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data =
-    A380PrimComputerFctl_B.Data_bkg;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_mp;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.Data =
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_k2j;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data =
     A380PrimComputerFctl_B.Data_ora;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_k2j;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_cd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_eyo;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_inj;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_c3y;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_fno;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_eib;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_dd;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_em;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_jff;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_cre;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_fh;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_lfz;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_cd0;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_pji;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_odm;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_hbr;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_h5r;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_p2n;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_pb;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_lc;
-  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_ma4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM = A380PrimComputerFctl_B.SSM_eyo;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.spoiler_status_word.Data = A380PrimComputerFctl_B.Data_cd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_ceqr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_inj;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_c3y;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data =
+    A380PrimComputerFctl_B.Data_fno;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_eib;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data = A380PrimComputerFctl_B.Data_dd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_em;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.Data =
+    A380PrimComputerFctl_B.Data_jff;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_status_word.SSM = A380PrimComputerFctl_B.SSM_lfz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_status_word.Data = A380PrimComputerFctl_B.Data_fh;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_pji;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data = A380PrimComputerFctl_B.Data_kc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_hbr;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data = A380PrimComputerFctl_B.Data_cd0;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM = A380PrimComputerFctl_B.SSM_p2n;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data = A380PrimComputerFctl_B.Data_odm;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.ths_position_deg.SSM = A380PrimComputerFctl_B.SSM_lc;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.ths_position_deg.Data = A380PrimComputerFctl_B.Data_pb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_status_word.SSM = A380PrimComputerFctl_B.SSM_haw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_status_word.Data = A380PrimComputerFctl_B.Data_ma4;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM = A380PrimComputerFctl_B.SSM_km;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_hwb;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_chn;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_ndk;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.SSM = A380PrimComputerFctl_B.SSM_bqd;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.Data = A380PrimComputerFctl_B.Data_e1h;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_cz;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_gw;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM = A380PrimComputerFctl_B.SSM_gsl;
+  A380PrimComputerFctl_Y.out.data.bus_inputs.sec_3_bus.misc_data_status_word.Data = A380PrimComputerFctl_B.Data_pr;
   A380PrimComputerFctl_Y.out.data.bus_inputs.isis_1_bus = A380PrimComputerFctl_B.isis_1_bus;
   A380PrimComputerFctl_Y.out.data.bus_inputs.isis_2_bus = A380PrimComputerFctl_B.isis_2_bus;
   A380PrimComputerFctl_Y.out.data.bus_inputs.rate_gyro_pitch_1_bus = A380PrimComputerFctl_B.rate_gyro_pitch_1_bus;
@@ -7070,7 +7083,8 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.data.bus_inputs.irdc_4_a_bus = A380PrimComputerFctl_B.irdc_4_a_bus;
   A380PrimComputerFctl_Y.out.data.bus_inputs.irdc_4_b_bus = A380PrimComputerFctl_B.irdc_4_b_bus;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.fm_valid = A380PrimComputerFctl_B.fm_valid;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.fms_flight_phase = A380PrimComputerFctl_B.fms_flight_phase;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.active_fms_flight_phase =
+    A380PrimComputerFctl_B.active_fms_flight_phase;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.selected_approach_type = A380PrimComputerFctl_B.selected_approach_type;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.backbeam_selected = A380PrimComputerFctl_B.backbeam_selected;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.fms_loc_distance = A380PrimComputerFctl_B.fms_loc_distance;
@@ -7111,102 +7125,102 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.thrust_reduction_alt_ft =
     A380PrimComputerFctl_B.thrust_reduction_alt_ft;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fms.cruise_alt_ft = A380PrimComputerFctl_B.cruise_alt_ft;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_chn;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_e1h;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_bqd;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_gs;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_a4;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_fd4;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_bv;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_hm;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_bo;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_i2;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_d1;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_og;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_hy;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_oc;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_gi;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_kq;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_pp;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_command_percent.Data = A380PrimComputerFctl_B.Data_ne;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_iab;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_it;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_jtv;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_ch;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_fy;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_bb;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_ars;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_ol;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_din;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_hw;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_m3;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_hs;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_np;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_fj;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_ax;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_h5;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_cl;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_ku;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_es;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_jp;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_gi1;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_nu;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_jz;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_command_percent.Data = A380PrimComputerFctl_B.Data_br;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_kt;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_ae;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_eg;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_pe;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_a0;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_fy;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_cv;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_na;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_ea;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_my;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_p4;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_cx;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_m2;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_nz;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_bt0;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_id;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_nr;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_o2;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_fr;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_gqq;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_cc;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_md;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_mkm;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_command_percent.Data = A380PrimComputerFctl_B.Data_cz;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_jhd;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_pm;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_av;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_bj;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_ira;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_ox;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_ge;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_jj;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_lv;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_p5;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_cg;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_ekl;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_be;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_nd;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_axb;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_n2;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_nz;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_dl;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_gh;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_gs2;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_ks;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_h4;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_pw;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_command_percent.Data = A380PrimComputerFctl_B.Data_e3;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_fh;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_f5h;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_gzn;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_i4o;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_oo;
-  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_af;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_a4;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_gs;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_bv;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_fd4;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_bo;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_hm;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_d1;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_i2;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_hy;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_fv;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_gi;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_oc;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_pp;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_kq;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_iab;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_ne;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_jtv;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.n1_command_percent.Data = A380PrimComputerFctl_B.Data_it;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_fy;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_ch;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_ars;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_bb;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_din;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_ol;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_m3;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_hw;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_np;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_hs;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_ax;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_ky;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_cl;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_h5;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_es;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_ku;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_gi1;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_jp;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_jz;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_nu;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_kt;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_br;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_eg;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.n1_command_percent.Data = A380PrimComputerFctl_B.Data_ae;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_a0;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_pe;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_cv;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_fy;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_ea;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_na;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_p4;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_i4;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_m2;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_cx;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_bt0;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_nz;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_nr;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_id;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_fr;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_o2;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_cc;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_gqq;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_mkm;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_md;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_jhd;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_cz;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_av;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.n1_command_percent.Data = A380PrimComputerFctl_B.Data_pm;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_ira;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_bj;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_ge;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_pe5;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_lv;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_jj;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_tla_deg.SSM = A380PrimComputerFctl_B.SSM_cg;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_tla_deg.Data = A380PrimComputerFctl_B.Data_p5;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_ref_percent.SSM = A380PrimComputerFctl_B.SSM_be;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_ref_percent.Data = A380PrimComputerFctl_B.Data_ekl;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM = A380PrimComputerFctl_B.SSM_axb;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data = A380PrimComputerFctl_B.Data_nd;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_1.SSM = A380PrimComputerFctl_B.SSM_nz;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_1.Data = A380PrimComputerFctl_B.Data_n2;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_2.SSM = A380PrimComputerFctl_B.SSM_gh;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_2.Data = A380PrimComputerFctl_B.Data_dl;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_3.SSM = A380PrimComputerFctl_B.SSM_ks;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_status_word_3.Data = A380PrimComputerFctl_B.Data_gs2;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_limit_percent.SSM = A380PrimComputerFctl_B.SSM_pw;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_limit_percent.Data = A380PrimComputerFctl_B.Data_h4;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_maximum_percent.SSM = A380PrimComputerFctl_B.SSM_fh;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_maximum_percent.Data = A380PrimComputerFctl_B.Data_e3;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_gzn;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.n1_command_percent.Data = A380PrimComputerFctl_B.Data_an;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM = A380PrimComputerFctl_B.SSM_oo;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data = A380PrimComputerFctl_B.Data_i4o;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM = A380PrimComputerFctl_B.SSM_evh;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data = A380PrimComputerFctl_B.Data_af;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM = A380PrimComputerFctl_B.SSM_cn;
+  A380PrimComputerFctl_Y.out.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data = A380PrimComputerFctl_B.Data_bm;
   A380PrimComputerFctl_Y.out.data.adcn_inputs.fqms = A380PrimComputerFctl_B.fqms;
   A380PrimComputerFctl_Y.out.general_logic.adr_computation_data.V_ias_kn = A380PrimComputerFctl_B.V_ias_kn;
   A380PrimComputerFctl_Y.out.general_logic.adr_computation_data.V_tas_kn = A380PrimComputerFctl_B.V_tas_kn;
@@ -7506,147 +7520,21 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_B.high_speed_prot_lo_thresh_kn;
   A380PrimComputerFctl_Y.out.fctl_logic.high_speed_prot_hi_thresh_kn =
     A380PrimComputerFctl_B.high_speed_prot_hi_thresh_kn;
-  A380PrimComputerFctl_Y.out.fg_logic.altitude_indicated_ft.SSM = A380PrimComputerFctl_B.SSM_fm;
-  A380PrimComputerFctl_Y.out.fg_logic.altitude_indicated_ft.Data = A380PrimComputerFctl_B.Data_du;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_bf;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_nx;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_fd;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_n0;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_fv;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.localizer_deviation_deg.Data =
-    A380PrimComputerFctl_B.Data_eqi;
-  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_dt;
+  A380PrimComputerFctl_Y.out.fg_logic.altitude_indicated_ft.SSM = A380PrimComputerFctl_B.SSM_fd;
+  A380PrimComputerFctl_Y.out.fg_logic.altitude_indicated_ft.Data = A380PrimComputerFctl_B.Data_nx;
+  A380PrimComputerFctl_Y.out.fg_logic.chosen_fcu_discrete_word_1.SSM = A380PrimComputerFctl_B.SSM_fv;
+  A380PrimComputerFctl_Y.out.fg_logic.chosen_fcu_discrete_word_1.Data = A380PrimComputerFctl_B.Data_n0;
+  A380PrimComputerFctl_Y.out.fg_logic.chosen_fcu_discrete_word_2.SSM = A380PrimComputerFctl_B.SSM_dt;
+  A380PrimComputerFctl_Y.out.fg_logic.chosen_fcu_discrete_word_2.Data = A380PrimComputerFctl_B.Data_eqi;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.runway_heading_deg.SSM = A380PrimComputerFctl_B.SSM_j5;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.runway_heading_deg.Data = A380PrimComputerFctl_B.Data_nr;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.ils_frequency_mhz.SSM = A380PrimComputerFctl_B.SSM_ng;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.ils_frequency_mhz.Data = A380PrimComputerFctl_B.Data_p3;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.localizer_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_cs;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.localizer_deviation_deg.Data = A380PrimComputerFctl_B.Data_nb;
+  A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.glideslope_deviation_deg.SSM = A380PrimComputerFctl_B.SSM_ls;
   A380PrimComputerFctl_Y.out.fg_logic.ils_computation_data.glideslope_deviation_deg.Data =
-    A380PrimComputerFctl_B.Data_nr;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.rwy_active = A380PrimComputerFctl_B.rwy_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.nav_active = A380PrimComputerFctl_B.nav_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.loc_cpt_active = A380PrimComputerFctl_B.loc_cpt_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.loc_trk_active = A380PrimComputerFctl_B.loc_trk_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.roll_goaround_active =
-    A380PrimComputerFctl_B.roll_goaround_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.hdg_active = A380PrimComputerFctl_B.hdg_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.trk_active = A380PrimComputerFctl_B.trk_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active =
-    A380PrimComputerFctl_B.rwy_loc_submode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.rwy_trk_submode_active =
-    A380PrimComputerFctl_B.rwy_trk_submode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.land_active = A380PrimComputerFctl_B.land_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.align_submode_active =
-    A380PrimComputerFctl_B.align_submode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active =
-    A380PrimComputerFctl_B.rollout_submode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.clb_active = A380PrimComputerFctl_B.clb_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.des_active = A380PrimComputerFctl_B.des_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.op_clb_active =
-    A380PrimComputerFctl_B.op_clb_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.op_des_active =
-    A380PrimComputerFctl_B.op_des_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.pitch_takeoff_active =
-    A380PrimComputerFctl_B.pitch_takeoff_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.pitch_goaround_active =
-    A380PrimComputerFctl_B.pitch_goaround_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.vs_active = A380PrimComputerFctl_B.vs_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.fpa_active = A380PrimComputerFctl_B.fpa_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.alt_acq_active =
-    A380PrimComputerFctl_B.alt_acq_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.alt_hold_active =
-    A380PrimComputerFctl_B.alt_hold_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.fma_dash_display =
-    A380PrimComputerFctl_B.fma_dash_display;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.gs_capt_active =
-    A380PrimComputerFctl_B.gs_capt_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.gs_trk_active =
-    A380PrimComputerFctl_B.gs_trk_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.final_des_active =
-    A380PrimComputerFctl_B.final_des_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.flare_active = A380PrimComputerFctl_B.flare_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.cruise_active =
-    A380PrimComputerFctl_B.cruise_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_modes.tcas_active = A380PrimComputerFctl_B.tcas_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.alt_acq_armed = A380PrimComputerFctl_B.alt_acq_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.alt_acq_arm_possible =
-    A380PrimComputerFctl_B.alt_acq_arm_possible;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.nav_armed = A380PrimComputerFctl_B.nav_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.loc_armed = A380PrimComputerFctl_B.loc_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.land_armed = A380PrimComputerFctl_B.land_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.glide_armed = A380PrimComputerFctl_B.glide_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.final_des_armed = A380PrimComputerFctl_B.final_des_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.clb_armed = A380PrimComputerFctl_B.clb_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.des_armed = A380PrimComputerFctl_B.des_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.armed_modes.tcas_armed = A380PrimComputerFctl_B.tcas_armed;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.active_lateral_law = A380PrimComputerFctl_B.active_lateral_law;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.active_longitudinal_law =
-    A380PrimComputerFctl_B.active_longitudinal_law;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.auto_spd_control_active =
-    A380PrimComputerFctl_B.auto_spd_control_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.manual_spd_control_active =
-    A380PrimComputerFctl_B.manual_spd_control_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.mach_control_active = A380PrimComputerFctl_B.mach_control_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.spd_target_kts = A380PrimComputerFctl_B.spd_target_kts;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.pfd_spd_target_kts = A380PrimComputerFctl_B.pfd_spd_target_kts;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.alt_cstr_applicable = A380PrimComputerFctl_B.alt_cstr_applicable;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.alt_sel_or_cstr = A380PrimComputerFctl_B.alt_sel_or_cstr;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.fmgc_opp_mode_sync = A380PrimComputerFctl_B.fmgc_opp_mode_sync;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.any_ap_fd_engaged = A380PrimComputerFctl_B.any_ap_fd_engaged;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.any_lateral_mode_engaged =
-    A380PrimComputerFctl_B.any_lateral_mode_engaged;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.any_longitudinal_mode_engaged =
-    A380PrimComputerFctl_B.any_longitudinal_mode_engaged;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_mode_reset = A380PrimComputerFctl_B.lateral_mode_reset;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_mode_reset =
-    A380PrimComputerFctl_B.longitudinal_mode_reset;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.hdg_trk_preset_available =
-    A380PrimComputerFctl_B.hdg_trk_preset_available;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.alt_soft_mode_active = A380PrimComputerFctl_B.alt_soft_mode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.fd_auto_disengage = A380PrimComputerFctl_B.fd_auto_disengage;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.ap_fd_mode_reversion = A380PrimComputerFctl_B.ap_fd_mode_reversion;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.lateral_mode_reversion = A380PrimComputerFctl_B.lateral_mode_reversion;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_mode_reversion_vs =
-    A380PrimComputerFctl_B.longitudinal_mode_reversion_vs;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longitudinal_mode_reversion_op_clb =
-    A380PrimComputerFctl_B.longitudinal_mode_reversion_op_clb;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.pitch_fd_bars_flashing = A380PrimComputerFctl_B.pitch_fd_bars_flashing;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.roll_fd_bars_flashing = A380PrimComputerFctl_B.roll_fd_bars_flashing;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.loc_bc_selection = A380PrimComputerFctl_B.loc_bc_selection;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.vs_target_not_held = A380PrimComputerFctl_B.vs_target_not_held;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tcas_vs_target = A380PrimComputerFctl_B.tcas_vs_target;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tcas_ra_corrective = A380PrimComputerFctl_B.tcas_ra_corrective;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.active_tcas_submode = A380PrimComputerFctl_B.active_tcas_submode;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tcas_alt_acq_cond = A380PrimComputerFctl_B.tcas_alt_acq_cond;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tcas_alt_hold_cond = A380PrimComputerFctl_B.tcas_alt_hold_cond;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tcas_ra_inhibited = A380PrimComputerFctl_B.tcas_ra_inhibited;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.trk_fpa_deselected = A380PrimComputerFctl_B.trk_fpa_deselected;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.longi_large_box_tcas = A380PrimComputerFctl_B.longi_large_box_tcas;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_2_capability = A380PrimComputerFctl_B.land_2_capability;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_3_fail_passive_capability =
-    A380PrimComputerFctl_B.land_3_fail_passive_capability;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_3_fail_op_capability =
-    A380PrimComputerFctl_B.land_3_fail_op_capability;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_2_inop = A380PrimComputerFctl_B.land_2_inop;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_3_fail_passive_inop =
-    A380PrimComputerFctl_B.land_3_fail_passive_inop;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.land_3_fail_op_inop = A380PrimComputerFctl_B.land_3_fail_op_inop;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.tla_to_ga_set = A380PrimComputerFctl_B.tla_to_ga_set;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.true_active = A380PrimComputerFctl_B.true_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.trk_fpa_active = A380PrimComputerFctl_B.trk_fpa_active;
-  A380PrimComputerFctl_Y.out.fg_logic.ap_fd_logic.metric_alt_active = A380PrimComputerFctl_B.metric_alt_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.athr_active = A380PrimComputerFctl_B.athr_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.athr_limited = A380PrimComputerFctl_B.athr_limited;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.alpha_floor_mode_active =
-    A380PrimComputerFctl_B.alpha_floor_mode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.thrust_mode_active = A380PrimComputerFctl_B.thrust_mode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.thrust_target_idle = A380PrimComputerFctl_B.thrust_target_idle;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.speed_mach_mode_active = A380PrimComputerFctl_B.speed_mach_mode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.retard_mode_active = A380PrimComputerFctl_B.retard_mode_active;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.fma_mode = A380PrimComputerFctl_B.fma_mode;
-  A380PrimComputerFctl_Y.out.fg_logic.athr_logic.fma_message = A380PrimComputerFctl_B.fma_message;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.spd_mach_display_value = A380PrimComputerFctl_B.spd_mach_display_value;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.spd_mach_dashes = A380PrimComputerFctl_B.spd_mach_dashes;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.hdg_trk_display_value = A380PrimComputerFctl_B.hdg_trk_display_value;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.hdg_trk_dashes = A380PrimComputerFctl_B.hdg_trk_dashes;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.alt_display_value = A380PrimComputerFctl_B.alt_display_value;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.vs_fpa_display_value = A380PrimComputerFctl_B.vs_fpa_display_value;
-  A380PrimComputerFctl_Y.out.fg_logic.fcu_logic.vs_fpa_dashes = A380PrimComputerFctl_B.vs_fpa_dashes;
+    A380PrimComputerFctl_B.Data_hd;
   A380PrimComputerFctl_Y.out.fg_logic.gnd_eng_stop_flt_5s = A380PrimComputerFctl_B.gnd_eng_stop_flt_5s;
   A380PrimComputerFctl_Y.out.fg_logic.ap_fd_common_condition = A380PrimComputerFctl_B.ap_fd_common_condition;
   A380PrimComputerFctl_Y.out.fg_logic.fd_1_engaged = A380PrimComputerFctl_B.fd_1_engaged;
@@ -7669,6 +7557,119 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.fg_logic.rwy_hdg_memo = A380PrimComputerFctl_B.rwy_hdg_memo;
   A380PrimComputerFctl_Y.out.fg_logic.tcas_failure = A380PrimComputerFctl_B.tcas_failure;
   A380PrimComputerFctl_Y.out.fg_logic.tcas_mode_available = A380PrimComputerFctl_B.tcas_mode_available;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.rwy_active = A380PrimComputerFctl_B.rwy_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.nav_active = A380PrimComputerFctl_B.nav_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.loc_cpt_active = A380PrimComputerFctl_B.loc_cpt_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.loc_trk_active = A380PrimComputerFctl_B.loc_trk_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.roll_goaround_active =
+    A380PrimComputerFctl_B.roll_goaround_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.hdg_active = A380PrimComputerFctl_B.hdg_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.trk_active = A380PrimComputerFctl_B.trk_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.rwy_loc_submode_active =
+    A380PrimComputerFctl_B.rwy_loc_submode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.rwy_trk_submode_active =
+    A380PrimComputerFctl_B.rwy_trk_submode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.land_active = A380PrimComputerFctl_B.land_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.align_submode_active =
+    A380PrimComputerFctl_B.align_submode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_modes.rollout_submode_active =
+    A380PrimComputerFctl_B.rollout_submode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.clb_active = A380PrimComputerFctl_B.clb_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.des_active = A380PrimComputerFctl_B.des_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.op_clb_active = A380PrimComputerFctl_B.op_clb_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.op_des_active = A380PrimComputerFctl_B.op_des_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.pitch_takeoff_active =
+    A380PrimComputerFctl_B.pitch_takeoff_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.pitch_goaround_active =
+    A380PrimComputerFctl_B.pitch_goaround_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.vs_active = A380PrimComputerFctl_B.vs_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.fpa_active = A380PrimComputerFctl_B.fpa_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.alt_acq_active = A380PrimComputerFctl_B.alt_acq_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.alt_hold_active = A380PrimComputerFctl_B.alt_hold_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.fma_dash_display = A380PrimComputerFctl_B.fma_dash_display;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.gs_capt_active = A380PrimComputerFctl_B.gs_capt_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.gs_trk_active = A380PrimComputerFctl_B.gs_trk_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.app_des_active = A380PrimComputerFctl_B.app_des_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.flare_active = A380PrimComputerFctl_B.flare_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.cruise_active = A380PrimComputerFctl_B.cruise_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_modes.tcas_active = A380PrimComputerFctl_B.tcas_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.alt_acq_armed = A380PrimComputerFctl_B.alt_acq_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.alt_acq_arm_possible =
+    A380PrimComputerFctl_B.alt_acq_arm_possible;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.nav_armed = A380PrimComputerFctl_B.nav_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.loc_armed = A380PrimComputerFctl_B.loc_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.rwy_armed = A380PrimComputerFctl_B.rwy_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.land_armed = A380PrimComputerFctl_B.land_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.glide_armed = A380PrimComputerFctl_B.glide_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.app_des_armed = A380PrimComputerFctl_B.app_des_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.clb_armed = A380PrimComputerFctl_B.clb_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.des_armed = A380PrimComputerFctl_B.des_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.op_clb_armed = A380PrimComputerFctl_B.op_clb_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.armed_modes.tcas_armed = A380PrimComputerFctl_B.tcas_armed;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.active_lateral_law = A380PrimComputerFctl_B.active_lateral_law;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.active_longitudinal_law = A380PrimComputerFctl_B.active_longitudinal_law;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.auto_spd_control_active = A380PrimComputerFctl_B.auto_spd_control_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.manual_spd_control_active = A380PrimComputerFctl_B.manual_spd_control_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.mach_control_active = A380PrimComputerFctl_B.mach_control_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.athr_active = A380PrimComputerFctl_B.athr_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.athr_limited = A380PrimComputerFctl_B.athr_limited;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.alpha_floor_mode_active = A380PrimComputerFctl_B.alpha_floor_mode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.thrust_mode_active = A380PrimComputerFctl_B.thrust_mode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.thrust_target_idle = A380PrimComputerFctl_B.thrust_target_idle;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.speed_mach_mode_active = A380PrimComputerFctl_B.speed_mach_mode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.retard_mode_active = A380PrimComputerFctl_B.retard_mode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.athr_fma_mode = A380PrimComputerFctl_B.athr_fma_mode;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.athr_fma_message = A380PrimComputerFctl_B.athr_fma_message;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.spd_target_kts = A380PrimComputerFctl_B.spd_target_kts;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.pfd_spd_target_kts = A380PrimComputerFctl_B.pfd_spd_target_kts;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.alt_cstr_applicable = A380PrimComputerFctl_B.alt_cstr_applicable;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.alt_sel_or_cstr = A380PrimComputerFctl_B.alt_sel_or_cstr;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.mode_sync_active = A380PrimComputerFctl_B.mode_sync_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.any_ap_fd_engaged = A380PrimComputerFctl_B.any_ap_fd_engaged;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.any_lateral_mode_engaged = A380PrimComputerFctl_B.any_lateral_mode_engaged;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.any_longitudinal_mode_engaged =
+    A380PrimComputerFctl_B.any_longitudinal_mode_engaged;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_mode_reset = A380PrimComputerFctl_B.lateral_mode_reset;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_mode_reset = A380PrimComputerFctl_B.longitudinal_mode_reset;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.hdg_trk_preset_available = A380PrimComputerFctl_B.hdg_trk_preset_available;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.alt_soft_mode_active = A380PrimComputerFctl_B.alt_soft_mode_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.fd_auto_disengage = A380PrimComputerFctl_B.fd_auto_disengage;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.ap_fd_mode_reversion = A380PrimComputerFctl_B.ap_fd_mode_reversion;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.lateral_mode_reversion = A380PrimComputerFctl_B.lateral_mode_reversion;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_mode_reversion_vs =
+    A380PrimComputerFctl_B.longitudinal_mode_reversion_vs;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longitudinal_mode_reversion_op_clb =
+    A380PrimComputerFctl_B.longitudinal_mode_reversion_op_clb;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.pitch_fd_bars_flashing = A380PrimComputerFctl_B.pitch_fd_bars_flashing;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.roll_fd_bars_flashing = A380PrimComputerFctl_B.roll_fd_bars_flashing;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.loc_bc_selection = A380PrimComputerFctl_B.loc_bc_selection;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.vs_target_not_held = A380PrimComputerFctl_B.vs_target_not_held;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tcas_vs_target = A380PrimComputerFctl_B.tcas_vs_target;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tcas_ra_corrective = A380PrimComputerFctl_B.tcas_ra_corrective;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.active_tcas_submode = A380PrimComputerFctl_B.active_tcas_submode;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tcas_alt_acq_cond = A380PrimComputerFctl_B.tcas_alt_acq_cond;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tcas_alt_hold_cond = A380PrimComputerFctl_B.tcas_alt_hold_cond;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tcas_ra_inhibited = A380PrimComputerFctl_B.tcas_ra_inhibited;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.trk_fpa_deselected = A380PrimComputerFctl_B.trk_fpa_deselected;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.longi_large_box_tcas = A380PrimComputerFctl_B.longi_large_box_tcas;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_2_capability = A380PrimComputerFctl_B.land_2_capability;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_3_fail_passive_capability =
+    A380PrimComputerFctl_B.land_3_fail_passive_capability;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_3_fail_op_capability = A380PrimComputerFctl_B.land_3_fail_op_capability;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_2_inop = A380PrimComputerFctl_B.land_2_inop;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_3_fail_passive_inop = A380PrimComputerFctl_B.land_3_fail_passive_inop;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.land_3_fail_op_inop = A380PrimComputerFctl_B.land_3_fail_op_inop;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.tla_to_ga_set = A380PrimComputerFctl_B.tla_to_ga_set;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.true_active = A380PrimComputerFctl_B.true_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.trk_fpa_active = A380PrimComputerFctl_B.trk_fpa_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.metric_alt_active = A380PrimComputerFctl_B.metric_alt_active;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.selected_spd_mach = A380PrimComputerFctl_B.selected_spd_mach;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.spd_mach_dashes = A380PrimComputerFctl_B.spd_mach_dashes;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.selected_hdg_trk = A380PrimComputerFctl_B.selected_hdg_trk;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.hdg_trk_dashes = A380PrimComputerFctl_B.hdg_trk_dashes;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.selected_alt = A380PrimComputerFctl_B.selected_alt;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.selected_vs_fpa = A380PrimComputerFctl_B.selected_vs_fpa;
+  A380PrimComputerFctl_Y.out.fg_mode_logic.vs_fpa_dashes = A380PrimComputerFctl_B.vs_fpa_dashes;
   A380PrimComputerFctl_Y.out.fg_laws.ap_fd_1.flight_director.Theta_c_deg = A380PrimComputerFctl_B.Theta_c_deg;
   A380PrimComputerFctl_Y.out.fg_laws.ap_fd_1.flight_director.Phi_c_deg = A380PrimComputerFctl_B.Phi_c_deg;
   A380PrimComputerFctl_Y.out.fg_laws.ap_fd_1.flight_director.Beta_c_deg = A380PrimComputerFctl_B.Beta_c_deg;
@@ -7858,10 +7859,10 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.rudder_1_position_deg.Data = A380PrimComputerFctl_B.Data_pu;
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.rudder_2_position_deg.SSM = A380PrimComputerFctl_B.SSM_bp;
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.rudder_2_position_deg.Data = A380PrimComputerFctl_B.Data_ly;
-  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_in;
-  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_cn;
-  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_ff;
-  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_nxl;
+  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_1_ft.SSM = A380PrimComputerFctl_B.SSM_js;
+  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_1_ft.Data = A380PrimComputerFctl_B.Data_gl;
+  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_2_ft.SSM = A380PrimComputerFctl_B.SSM_is3;
+  A380PrimComputerFctl_Y.out.bus_outputs.fctl.radio_height_2_ft.Data = A380PrimComputerFctl_B.Data_myb;
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.fctl_law_status_word.SSM = A380PrimComputerFctl_B.SSM_hb;
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.fctl_law_status_word.Data = A380PrimComputerFctl_B.Data_j2;
   A380PrimComputerFctl_Y.out.bus_outputs.fctl.discrete_status_word_1.SSM = A380PrimComputerFctl_B.SSM_gz;
@@ -7954,13 +7955,13 @@ void A380PrimComputerFctl::step()
   A380PrimComputerFctl_Y.out.bus_outputs.fg.low_target_speed_margin_kts.Data = A380PrimComputerFctl_B.Data_n4;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.high_target_speed_margin_kts.SSM = A380PrimComputerFctl_B.SSM_a5;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.high_target_speed_margin_kts.Data = A380PrimComputerFctl_B.Data_ot;
-  A380PrimComputerFctl_Y.out.bus_outputs.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_a50;
+  A380PrimComputerFctl_Y.out.bus_outputs.fg.nosewheel_cmd_deg.SSM = A380PrimComputerFctl_B.SSM_op;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.nosewheel_cmd_deg.Data = A380PrimComputerFctl_B.Data_gv;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.n1_command_percent.SSM = A380PrimComputerFctl_B.SSM_ha;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.n1_command_percent.Data = A380PrimComputerFctl_B.Data_ou;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.flx_to_temp_deg_c.SSM = A380PrimComputerFctl_B.SSM_bt;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.flx_to_temp_deg_c.Data = A380PrimComputerFctl_B.Data_dh;
-  A380PrimComputerFctl_Y.out.bus_outputs.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_op;
+  A380PrimComputerFctl_Y.out.bus_outputs.fg.discrete_word_7.SSM = A380PrimComputerFctl_B.SSM_a50;
   A380PrimComputerFctl_Y.out.bus_outputs.fg.discrete_word_7.Data = A380PrimComputerFctl_B.Data_ph;
 }
 
@@ -8065,258 +8066,258 @@ void A380PrimComputerFctl::initialize()
     A380PrimComputerFctl_P.out_Y0.data.analog_inputs.right_body_wheel_speed;
   A380PrimComputerFctl_B.right_wing_wheel_speed =
     A380PrimComputerFctl_P.out_Y0.data.analog_inputs.right_wing_wheel_speed;
-  A380PrimComputerFctl_B.SSM_oiy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
-  A380PrimComputerFctl_B.Data_k5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
-  A380PrimComputerFctl_B.SSM_cr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_g4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data;
-  A380PrimComputerFctl_B.SSM_k4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_m5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data;
-  A380PrimComputerFctl_B.SSM_apw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.mach.SSM;
-  A380PrimComputerFctl_B.Data_l55 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.mach.Data;
-  A380PrimComputerFctl_B.SSM_m2q = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
-  A380PrimComputerFctl_B.Data_lb2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
-  A380PrimComputerFctl_B.SSM_fb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
-  A380PrimComputerFctl_B.Data_h4h = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
-  A380PrimComputerFctl_B.SSM_nx2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
-  A380PrimComputerFctl_B.Data_jzm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
-  A380PrimComputerFctl_B.SSM_ku = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
-  A380PrimComputerFctl_B.Data_ijm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-  A380PrimComputerFctl_B.SSM_bol =
+  A380PrimComputerFctl_B.SSM_lp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
+  A380PrimComputerFctl_B.Data_c4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
+  A380PrimComputerFctl_B.SSM_o0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.SSM;
+  A380PrimComputerFctl_B.Data_kqu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_1_ft.Data;
+  A380PrimComputerFctl_B.SSM_b4c = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.SSM;
+  A380PrimComputerFctl_B.Data_oat = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_2_ft.Data;
+  A380PrimComputerFctl_B.SSM_mku = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.mach.SSM;
+  A380PrimComputerFctl_B.Data_ad = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.mach.Data;
+  A380PrimComputerFctl_B.SSM_hng = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
+  A380PrimComputerFctl_B.Data_p5q = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
+  A380PrimComputerFctl_B.SSM_f4j = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
+  A380PrimComputerFctl_B.Data_fqj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
+  A380PrimComputerFctl_B.SSM_m1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
+  A380PrimComputerFctl_B.Data_ko = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
+  A380PrimComputerFctl_B.SSM_im = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
+  A380PrimComputerFctl_B.Data_bn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
+  A380PrimComputerFctl_B.SSM_lp0 =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.SSM;
-  A380PrimComputerFctl_B.Data_of3 =
+  A380PrimComputerFctl_B.Data_es =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_1_bus.corrected_average_static_pressure.Data;
-  A380PrimComputerFctl_B.SSM_cf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
-  A380PrimComputerFctl_B.Data_cwz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
-  A380PrimComputerFctl_B.SSM_fkb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_mor = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data;
-  A380PrimComputerFctl_B.SSM_igr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_oq5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data;
-  A380PrimComputerFctl_B.SSM_ej = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.mach.SSM;
-  A380PrimComputerFctl_B.Data_f44 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.mach.Data;
-  A380PrimComputerFctl_B.SSM_nnx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
-  A380PrimComputerFctl_B.Data_dn0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
-  A380PrimComputerFctl_B.SSM_ceqr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
-  A380PrimComputerFctl_B.Data_kc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
-  A380PrimComputerFctl_B.SSM_haw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
-  A380PrimComputerFctl_B.Data_hwb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
-  A380PrimComputerFctl_B.SSM_km = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
-  A380PrimComputerFctl_B.Data_ndk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
+  A380PrimComputerFctl_B.SSM_nsn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
+  A380PrimComputerFctl_B.Data_h5f = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
+  A380PrimComputerFctl_B.SSM_iu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.SSM;
+  A380PrimComputerFctl_B.Data_ms = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_1_ft.Data;
+  A380PrimComputerFctl_B.SSM_ahu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.SSM;
+  A380PrimComputerFctl_B.Data_jlt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_2_ft.Data;
+  A380PrimComputerFctl_B.SSM_mv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.mach.SSM;
+  A380PrimComputerFctl_B.Data_aoh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.mach.Data;
+  A380PrimComputerFctl_B.SSM_fi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
+  A380PrimComputerFctl_B.Data_bkg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
+  A380PrimComputerFctl_B.SSM_cre = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
+  A380PrimComputerFctl_B.Data_h5r = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
+  A380PrimComputerFctl_B.SSM_dby = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
+  A380PrimComputerFctl_B.Data_jmc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
+  A380PrimComputerFctl_B.SSM_lgb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
+  A380PrimComputerFctl_B.Data_n1l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
   A380PrimComputerFctl_B.SSM_og =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.SSM;
-  A380PrimComputerFctl_B.Data_fv =
+  A380PrimComputerFctl_B.Data_og =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_2_bus.corrected_average_static_pressure.Data;
   A380PrimComputerFctl_B.SSM_d4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_standard_ft.SSM;
-  A380PrimComputerFctl_B.Data_ky = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
+  A380PrimComputerFctl_B.Data_fj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
   A380PrimComputerFctl_B.SSM_ds = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_i4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data;
+  A380PrimComputerFctl_B.Data_my = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_1_ft.Data;
   A380PrimComputerFctl_B.SSM_lm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_pe5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data;
+  A380PrimComputerFctl_B.Data_ox = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.altitude_corrected_2_ft.Data;
   A380PrimComputerFctl_B.SSM_cx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.mach.SSM;
-  A380PrimComputerFctl_B.Data_an = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.mach.Data;
-  A380PrimComputerFctl_B.SSM_evh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM;
-  A380PrimComputerFctl_B.Data_bm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
-  A380PrimComputerFctl_B.SSM_cn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM;
-  A380PrimComputerFctl_B.Data_dk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
-  A380PrimComputerFctl_B.SSM_co = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM;
-  A380PrimComputerFctl_B.Data_nv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data;
-  A380PrimComputerFctl_B.SSM_pe = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM;
-  A380PrimComputerFctl_B.Data_jpf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
-  A380PrimComputerFctl_B.SSM_cgz =
+  A380PrimComputerFctl_B.Data_f5h = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.mach.Data;
+  A380PrimComputerFctl_B.SSM_co = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM;
+  A380PrimComputerFctl_B.Data_dk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
+  A380PrimComputerFctl_B.SSM_pe = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_true_kn.SSM;
+  A380PrimComputerFctl_B.Data_nv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
+  A380PrimComputerFctl_B.SSM_cgz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.SSM;
+  A380PrimComputerFctl_B.Data_jpf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.vertical_speed_ft_min.Data;
+  A380PrimComputerFctl_B.SSM_fw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM;
+  A380PrimComputerFctl_B.Data_i5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
+  A380PrimComputerFctl_B.SSM_h4 =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.SSM;
-  A380PrimComputerFctl_B.Data_i5 =
+  A380PrimComputerFctl_B.Data_k2 =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.adr_3_bus.corrected_average_static_pressure.Data;
-  A380PrimComputerFctl_B.SSM_fw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_k2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_h4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_as = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_cb3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_gk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_pj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
-  A380PrimComputerFctl_B.Data_jl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_dv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_e32 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_i4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_ih = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_e5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
+  A380PrimComputerFctl_B.SSM_cb3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_as = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_pj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_gk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_dv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_jl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_i4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
+  A380PrimComputerFctl_B.Data_e32 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+  A380PrimComputerFctl_B.SSM_fm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_ih = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_e5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_du = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_bf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
   A380PrimComputerFctl_B.Data_om = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_j5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_p3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_ng = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_nb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_cs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_hd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_ls = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_al = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_dg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_gu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_d3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_ix = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_p2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_do = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_bo0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_hu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_bc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_pm1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_h0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_i2y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_giz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_pg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_mqp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_ni = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_long_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_ba = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_fr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_ic = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_jh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_fs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_gl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_ja = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_gn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_js = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_myb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_is3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM;
-  A380PrimComputerFctl_B.Data_l2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data;
-  A380PrimComputerFctl_B.SSM_ag = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_o5o = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_f5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_l5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_ph = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_dc2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.vertical_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_jw =
+  A380PrimComputerFctl_B.SSM_dg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_al = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_d3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_gu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_p2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_ix = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_bo0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_do = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_bc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_hu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_h0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_pm1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.flight_path_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_giz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_i2y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_mqp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_pg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_ba = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_ni = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_in = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_fr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_roll_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_ff = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_cn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_ic = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_long_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_nxl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_long_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_fs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_lat_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_jh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_lat_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_ja = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_normal_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_gn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_ag = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_l2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_f5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_o5o = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_ph = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_l5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_jw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_alt_ft.SSM;
+  A380PrimComputerFctl_B.Data_dc2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_alt_ft.Data;
+  A380PrimComputerFctl_B.SSM_jy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_gr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.along_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_j1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_gp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.cross_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_ov = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.vertical_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_i3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.vertical_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_mx =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.SSM;
-  A380PrimComputerFctl_B.Data_gr =
+  A380PrimComputerFctl_B.Data_et =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data;
-  A380PrimComputerFctl_B.SSM_jy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_gp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data;
-  A380PrimComputerFctl_B.SSM_j1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_i3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data;
-  A380PrimComputerFctl_B.SSM_ov = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_et = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_mx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.latitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_mc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.latitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_b4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.longitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_k3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.longitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_gb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM;
-  A380PrimComputerFctl_B.Data_f2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.ground_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_oh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_gh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_mm5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_ed = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_br = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM;
-  A380PrimComputerFctl_B.Data_o2j = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_c2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_i43 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_hc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_ic = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_ktr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_ak = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_gl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_jg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.drift_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_my = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_cu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_j3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_ep = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_go = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_d3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_e5c = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_bt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_dk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_e0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_evc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_jl3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_kk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_nm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_af = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_ia = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_long_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_npr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_j0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_ew = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_bs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_lt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_hp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_ger = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_ct = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_pxo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_pc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_co2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM;
-  A380PrimComputerFctl_B.Data_nzt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data;
-  A380PrimComputerFctl_B.SSM_ny = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_c0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_l4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_ojg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_nm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_lm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.vertical_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_nh =
+  A380PrimComputerFctl_B.SSM_b4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.north_south_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_mc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.north_south_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_gb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.east_west_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_k3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_1_bus.east_west_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_oh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_f2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_mm5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.latitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_gh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.latitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_br = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.longitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_ed = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.longitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_c2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.ground_speed_kn.SSM;
+  A380PrimComputerFctl_B.Data_o2j = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.ground_speed_kn.Data;
+  A380PrimComputerFctl_B.SSM_hc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_i43 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_ktr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_ic = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_gl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_speed_kn.SSM;
+  A380PrimComputerFctl_B.Data_ak = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_speed_kn.Data;
+  A380PrimComputerFctl_B.SSM_my = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_direction_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_jg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.wind_direction_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_j3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_cu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_go = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_ep = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.heading_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_e5c = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.drift_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_d3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.drift_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_dk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_bt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_evc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_e0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.flight_path_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_kk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_jl3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_af = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_nm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_npr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_ia = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_ew = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_j0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_roll_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_lt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_bs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_ger = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_long_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_hp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_long_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_pxo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_lat_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_ct = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_lat_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_co2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_normal_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_pc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.body_normal_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_ny = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_nzt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.track_angle_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_l4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_c0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_nm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_ojg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_nh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_alt_ft.SSM;
+  A380PrimComputerFctl_B.Data_lm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_alt_ft.Data;
+  A380PrimComputerFctl_B.SSM_dl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_fz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.along_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_dx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_oz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.cross_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_a5h = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.vertical_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_gf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.vertical_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_fl =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.SSM;
-  A380PrimComputerFctl_B.Data_fz =
+  A380PrimComputerFctl_B.Data_nn =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data;
-  A380PrimComputerFctl_B.SSM_dl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_oz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data;
-  A380PrimComputerFctl_B.SSM_dx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_gf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data;
-  A380PrimComputerFctl_B.SSM_a5h = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_nn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_fl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.latitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_a0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.latitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_p3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.longitude_deg.SSM;
-  A380PrimComputerFctl_B.Data_fk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.longitude_deg.Data;
-  A380PrimComputerFctl_B.SSM_ns = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM;
-  A380PrimComputerFctl_B.Data_bu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.ground_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_bm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_o23 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_nl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_g3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_grm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM;
-  A380PrimComputerFctl_B.Data_icc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_speed_kn.Data;
-  A380PrimComputerFctl_B.SSM_gzm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM;
-  A380PrimComputerFctl_B.Data_pwf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data;
-  A380PrimComputerFctl_B.SSM_oi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_gvk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_aa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM;
-  A380PrimComputerFctl_B.Data_ln = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data;
-  A380PrimComputerFctl_B.SSM_fvk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_ka = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.drift_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_lw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_mp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_fa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_m4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_lbx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_fki = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_n3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM;
-  A380PrimComputerFctl_B.Data_bv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_angle_deg.Data;
-  A380PrimComputerFctl_B.SSM_a1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_m21 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_p1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_nbg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_cn2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_l25 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_an3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_ki = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_long_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_c3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_p5p = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_dp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_nry = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_boy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_mh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_lg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_ll = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_cm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM;
-  A380PrimComputerFctl_B.Data_hy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
-  A380PrimComputerFctl_B.SSM_hl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM;
-  A380PrimComputerFctl_B.Data_j04 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data;
-  A380PrimComputerFctl_B.SSM_irh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_pf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_b42 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM;
-  A380PrimComputerFctl_B.Data_pl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data;
-  A380PrimComputerFctl_B.SSM_anz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM;
-  A380PrimComputerFctl_B.Data_gb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.vertical_accel_g.Data;
-  A380PrimComputerFctl_B.SSM_d2 =
+  A380PrimComputerFctl_B.SSM_p3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.north_south_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_a0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.north_south_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_ns = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.east_west_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_fk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_2_bus.east_west_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_bm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_bu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_nl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.latitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_o23 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.latitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_grm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.longitude_deg.SSM;
+  A380PrimComputerFctl_B.Data_g3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.longitude_deg.Data;
+  A380PrimComputerFctl_B.SSM_gzm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.ground_speed_kn.SSM;
+  A380PrimComputerFctl_B.Data_icc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.ground_speed_kn.Data;
+  A380PrimComputerFctl_B.SSM_oi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_pwf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_aa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_gvk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_fvk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_speed_kn.SSM;
+  A380PrimComputerFctl_B.Data_ln = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_speed_kn.Data;
+  A380PrimComputerFctl_B.SSM_lw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_direction_true_deg.SSM;
+  A380PrimComputerFctl_B.Data_ka = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.wind_direction_true_deg.Data;
+  A380PrimComputerFctl_B.SSM_fa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_mp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_lbx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_magnetic_deg.SSM;
+  A380PrimComputerFctl_B.Data_m4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.heading_magnetic_deg.Data;
+  A380PrimComputerFctl_B.SSM_n3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.drift_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_fki = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.drift_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_a1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_bv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_p1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_m21 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.flight_path_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_cn2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_nbg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_an3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_angle_deg.SSM;
+  A380PrimComputerFctl_B.Data_l25 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_angle_deg.Data;
+  A380PrimComputerFctl_B.SSM_c3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_ki = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_dp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_p5p = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_roll_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_boy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_nry = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_yaw_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_lg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_long_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_mh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_long_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_cm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_lat_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_ll = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_lat_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_hl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_normal_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_hy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_irh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_j04 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.track_angle_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_b42 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_pf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_anz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM;
+  A380PrimComputerFctl_B.Data_pl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
+  A380PrimComputerFctl_B.SSM_d2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_alt_ft.SSM;
+  A380PrimComputerFctl_B.Data_gb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_alt_ft.Data;
+  A380PrimComputerFctl_B.SSM_gov = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_hq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.along_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_nb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.SSM;
+  A380PrimComputerFctl_B.Data_ai = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.cross_track_horiz_acc_g.Data;
+  A380PrimComputerFctl_B.SSM_pe3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.vertical_accel_g.SSM;
+  A380PrimComputerFctl_B.Data_gfr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.vertical_accel_g.Data;
+  A380PrimComputerFctl_B.SSM_jj =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.SSM;
-  A380PrimComputerFctl_B.Data_hq =
+  A380PrimComputerFctl_B.Data_czp =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data;
-  A380PrimComputerFctl_B.SSM_gov = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_ai = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data;
-  A380PrimComputerFctl_B.SSM_nb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM;
-  A380PrimComputerFctl_B.Data_gfr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_jx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.north_south_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_fm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.north_south_velocity_kn.Data;
+  A380PrimComputerFctl_B.SSM_npl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.east_west_velocity_kn.SSM;
+  A380PrimComputerFctl_B.Data_jsg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ir_3_bus.east_west_velocity_kn.Data;
   A380PrimComputerFctl_B.isis_1_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.isis_1_bus;
   A380PrimComputerFctl_B.isis_2_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.isis_2_bus;
   A380PrimComputerFctl_B.rate_gyro_pitch_1_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.rate_gyro_pitch_1_bus;
@@ -8325,975 +8326,977 @@ void A380PrimComputerFctl::initialize()
   A380PrimComputerFctl_B.rate_gyro_roll_2_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.rate_gyro_roll_2_bus;
   A380PrimComputerFctl_B.rate_gyro_yaw_1_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.rate_gyro_yaw_1_bus;
   A380PrimComputerFctl_B.rate_gyro_yaw_2_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.rate_gyro_yaw_2_bus;
-  A380PrimComputerFctl_B.SSM_pe3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
-  A380PrimComputerFctl_B.Data_czp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
-  A380PrimComputerFctl_B.SSM_jj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
-  A380PrimComputerFctl_B.Data_fm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
-  A380PrimComputerFctl_B.SSM_jx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM;
-  A380PrimComputerFctl_B.Data_jsg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.runway_heading_deg.Data;
-  A380PrimComputerFctl_B.SSM_npl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM;
-  A380PrimComputerFctl_B.Data_g1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data;
-  A380PrimComputerFctl_B.SSM_gf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_j4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data;
-  A380PrimComputerFctl_B.SSM_gbi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_jyh =
+  A380PrimComputerFctl_B.SSM_gf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_1_bus.radio_height_ft.SSM;
+  A380PrimComputerFctl_B.Data_g1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_1_bus.radio_height_ft.Data;
+  A380PrimComputerFctl_B.SSM_gbi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_2_bus.radio_height_ft.SSM;
+  A380PrimComputerFctl_B.Data_j4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ra_2_bus.radio_height_ft.Data;
+  A380PrimComputerFctl_B.SSM_fhm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.runway_heading_deg.SSM;
+  A380PrimComputerFctl_B.Data_jyh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.runway_heading_deg.Data;
+  A380PrimComputerFctl_B.SSM_ltj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.ils_frequency_mhz.SSM;
+  A380PrimComputerFctl_B.Data_e4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.ils_frequency_mhz.Data;
+  A380PrimComputerFctl_B.SSM_hn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.localizer_deviation_deg.SSM;
+  A380PrimComputerFctl_B.Data_ghs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.localizer_deviation_deg.Data;
+  A380PrimComputerFctl_B.SSM_h3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.SSM;
+  A380PrimComputerFctl_B.Data_bmk =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_1_bus.glideslope_deviation_deg.Data;
-  A380PrimComputerFctl_B.SSM_fhm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM;
-  A380PrimComputerFctl_B.Data_e4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.runway_heading_deg.Data;
-  A380PrimComputerFctl_B.SSM_ltj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM;
-  A380PrimComputerFctl_B.Data_ghs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data;
-  A380PrimComputerFctl_B.SSM_hn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_bmk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data;
-  A380PrimComputerFctl_B.SSM_h3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_lzt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data;
-  A380PrimComputerFctl_B.SSM_bfs =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
-  A380PrimComputerFctl_B.Data_kn =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
-  A380PrimComputerFctl_B.SSM_p0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
-  A380PrimComputerFctl_B.Data_nab =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
-  A380PrimComputerFctl_B.SSM_fu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
+  A380PrimComputerFctl_B.SSM_bfs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.runway_heading_deg.SSM;
+  A380PrimComputerFctl_B.Data_lzt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.runway_heading_deg.Data;
+  A380PrimComputerFctl_B.SSM_p0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.ils_frequency_mhz.SSM;
+  A380PrimComputerFctl_B.Data_kn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.ils_frequency_mhz.Data;
+  A380PrimComputerFctl_B.SSM_fu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.localizer_deviation_deg.SSM;
+  A380PrimComputerFctl_B.Data_nab = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.localizer_deviation_deg.Data;
+  A380PrimComputerFctl_B.SSM_hr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.SSM;
   A380PrimComputerFctl_B.Data_lgf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
-  A380PrimComputerFctl_B.SSM_hr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.ils_2_bus.glideslope_deviation_deg.Data;
+  A380PrimComputerFctl_B.SSM_bi =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
   A380PrimComputerFctl_B.Data_fpq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_bi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_dt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
   A380PrimComputerFctl_B.SSM_bd =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
-  A380PrimComputerFctl_B.Data_b1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
+  A380PrimComputerFctl_B.Data_dt =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
   A380PrimComputerFctl_B.SSM_omt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
+  A380PrimComputerFctl_B.Data_b1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
+  A380PrimComputerFctl_B.SSM_la = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
   A380PrimComputerFctl_B.Data_nmr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
-  A380PrimComputerFctl_B.SSM_la =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_l1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
   A380PrimComputerFctl_B.Data_ea =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
-  A380PrimComputerFctl_B.SSM_l1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_dy =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
   A380PrimComputerFctl_B.Data_nib =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_dy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
+  A380PrimComputerFctl_B.SSM_ie =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
   A380PrimComputerFctl_B.Data_i2t =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
+  A380PrimComputerFctl_B.SSM_kf =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
+  A380PrimComputerFctl_B.Data_ng =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
+  A380PrimComputerFctl_B.SSM_p5l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_h31 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_g3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ew =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ie = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_ng = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_kf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_h31 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_p5l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
-  A380PrimComputerFctl_B.Data_ew = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
-  A380PrimComputerFctl_B.SSM_g3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
-  A380PrimComputerFctl_B.Data_j1s = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
-  A380PrimComputerFctl_B.SSM_b3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_j5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_dxv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_cw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_mxz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
-  A380PrimComputerFctl_B.Data_gqa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
-  A380PrimComputerFctl_B.SSM_kk4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
-  A380PrimComputerFctl_B.Data_hz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
+  A380PrimComputerFctl_B.SSM_b3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_j1s = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_dxv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_j5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_mxz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
+  A380PrimComputerFctl_B.Data_cw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
+  A380PrimComputerFctl_B.SSM_kk4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
+  A380PrimComputerFctl_B.Data_gqa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
+  A380PrimComputerFctl_B.SSM_cy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_hz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_ju = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_fri = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_ey = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
+  A380PrimComputerFctl_B.Data_cm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
+  A380PrimComputerFctl_B.SSM_jr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
+  A380PrimComputerFctl_B.Data_czj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
   A380PrimComputerFctl_B.irdc_1_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.irdc_1_bus;
   A380PrimComputerFctl_B.irdc_2_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.irdc_2_bus;
   A380PrimComputerFctl_B.irdc_3_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.irdc_3_bus;
   A380PrimComputerFctl_B.irdc_4_a_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.irdc_4_a_bus;
   A380PrimComputerFctl_B.irdc_4_b_bus = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.irdc_4_b_bus;
-  A380PrimComputerFctl_B.SSM_cy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_fri = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_ju = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_cm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_ey = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM;
-  A380PrimComputerFctl_B.Data_czj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data;
-  A380PrimComputerFctl_B.SSM_jr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM;
-  A380PrimComputerFctl_B.Data_mb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data;
-  A380PrimComputerFctl_B.SSM_hs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_gk4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_mx3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_gbt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_er = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_p0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_hm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM;
-  A380PrimComputerFctl_B.Data_dn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data;
-  A380PrimComputerFctl_B.SSM_dm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM;
-  A380PrimComputerFctl_B.Data_iyw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data;
-  A380PrimComputerFctl_B.SSM_fk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_p5d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_lm1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_oo =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_nc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ho =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_e4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_kqr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_bw =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_omv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_na =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_mby =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_lf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_hk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_hs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_mb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_mx3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_gk4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.efis_discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_er = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_hpa.SSM;
+  A380PrimComputerFctl_B.Data_gbt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_hpa.Data;
+  A380PrimComputerFctl_B.SSM_hm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_inhg.SSM;
+  A380PrimComputerFctl_B.Data_p0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.baro_setting_inhg.Data;
+  A380PrimComputerFctl_B.SSM_dm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_dn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_fk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_iyw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_1_bus.afs_discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_lm1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_p5d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_nc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_oo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.efis_discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_e4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_hpa.SSM;
+  A380PrimComputerFctl_B.Data_ho = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_hpa.Data;
+  A380PrimComputerFctl_B.SSM_bw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_inhg.SSM;
+  A380PrimComputerFctl_B.Data_kqr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.baro_setting_inhg.Data;
+  A380PrimComputerFctl_B.SSM_na = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_omv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_lf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_mby = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.fcu_2_bus.afs_discrete_word_2.Data;
   A380PrimComputerFctl_B.SSM_oz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_hg =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_hk =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_mub =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_bi =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_hg =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_li =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_i4u =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_bi =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_midboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_hcd =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ik =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_i4u =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_midboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_php =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_dq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ik =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ma =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_pv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_dq =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_jut =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_p1d =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_pv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_1_command_deg.Data;
   A380PrimComputerFctl_B.SSM_kh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_lyv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_p1d =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_1_command_deg.Data;
   A380PrimComputerFctl_B.SSM_h2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ke =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_lyv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_2_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ago =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_cv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ke =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_2_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ep =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_pfh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_cv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_3_command_deg.Data;
   A380PrimComputerFctl_B.SSM_kc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_jy4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_pfh =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_3_command_deg.Data;
   A380PrimComputerFctl_B.SSM_cnf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_o1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_jy4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_4_command_deg.Data;
   A380PrimComputerFctl_B.SSM_lwa =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ga =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_o1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_4_command_deg.Data;
   A380PrimComputerFctl_B.SSM_aq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_kd =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ga =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_5_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ja2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_fx =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_kd =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_5_command_deg.Data;
   A380PrimComputerFctl_B.SSM_in3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_nml =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_fx =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_6_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ap =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_fa =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_nml =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_6_command_deg.Data;
   A380PrimComputerFctl_B.SSM_mg =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_nh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_fa =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_7_command_deg.Data;
   A380PrimComputerFctl_B.SSM_mw =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_nh =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_7_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_bu =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.SSM;
   A380PrimComputerFctl_B.Data_or =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_bu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_otn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_8_command_deg.Data;
   A380PrimComputerFctl_B.SSM_cbb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_cam =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_otn =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_8_command_deg.Data;
   A380PrimComputerFctl_B.SSM_iao =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_gsl =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_cam =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_inboard_elevator_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ip =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_amp =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_gsl =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_inboard_elevator_command_deg.Data;
   A380PrimComputerFctl_B.SSM_f4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_mv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_amp =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_outboard_elevator_command_deg.Data;
   A380PrimComputerFctl_B.SSM_id =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_gx =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_mqr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_lb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_mv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_outboard_elevator_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_mqr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_gx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_command_deg.Data;
   A380PrimComputerFctl_B.SSM_cm2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_lb =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.upper_rudder_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_ck =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.SSM;
   A380PrimComputerFctl_B.Data_can =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ck = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM;
-  A380PrimComputerFctl_B.Data_gae =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.lower_rudder_command_deg.Data;
   A380PrimComputerFctl_B.SSM_pl =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_h1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_gae =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_d50 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_bc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_h1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_gs =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_fof =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_bc =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_sidestick_roll_command_deg.Data;
   A380PrimComputerFctl_B.SSM_kse =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_fof =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_icj =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.SSM;
   A380PrimComputerFctl_B.Data_nj =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_icj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_pedal_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ds4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.SSM;
   A380PrimComputerFctl_B.Data_i0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data;
-  A380PrimComputerFctl_B.SSM_ds4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_lr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.aileron_status_word.Data;
   A380PrimComputerFctl_B.SSM_gbf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_k0s =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_lr =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_opv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM;
-  A380PrimComputerFctl_B.Data_m4b =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_k0s =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_aileron_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_gha =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_e3r =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_m4b =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_ple =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_e3r =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_aileron_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_h0n = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.SSM;
   A380PrimComputerFctl_B.Data_au =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_h0n =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.spoiler_status_word.Data;
+  A380PrimComputerFctl_B.SSM_c1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.SSM;
   A380PrimComputerFctl_B.Data_czc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_c1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_itz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_dd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.left_spoiler_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_dd =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_itz =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.right_spoiler_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ai = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.SSM;
   A380PrimComputerFctl_B.Data_nsk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data;
-  A380PrimComputerFctl_B.SSM_ai =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_is =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_status_word.Data;
   A380PrimComputerFctl_B.SSM_at =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_is =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_bz =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_pk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_bz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_f52 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data;
-  A380PrimComputerFctl_B.SSM_n0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_dg0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data;
-  A380PrimComputerFctl_B.SSM_haz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_n0 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_f52 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.elevator_3_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_haz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_dg0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.ths_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_hz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.SSM;
   A380PrimComputerFctl_B.Data_nru =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data;
-  A380PrimComputerFctl_B.SSM_hz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_status_word.Data;
+  A380PrimComputerFctl_B.SSM_hk =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_d5 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_cvn =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_oa =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.rudder_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_iy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.SSM;
+  A380PrimComputerFctl_B.Data_bp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_1_ft.Data;
+  A380PrimComputerFctl_B.SSM_jwz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.SSM;
+  A380PrimComputerFctl_B.Data_cl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.radio_height_2_ft.Data;
+  A380PrimComputerFctl_B.SSM_o2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.SSM;
+  A380PrimComputerFctl_B.Data_er =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.fctl_law_status_word.Data;
+  A380PrimComputerFctl_B.SSM_eig =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_in =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.discrete_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_hk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM;
-  A380PrimComputerFctl_B.Data_oa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data;
-  A380PrimComputerFctl_B.SSM_cvn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM;
-  A380PrimComputerFctl_B.Data_bp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data;
-  A380PrimComputerFctl_B.SSM_iy =
+  A380PrimComputerFctl_B.SSM_jl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.SSM;
+  A380PrimComputerFctl_B.Data_btl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_lim_kn.Data;
+  A380PrimComputerFctl_B.SSM_cci = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.SSM;
+  A380PrimComputerFctl_B.Data_a5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_prot_kn.Data;
+  A380PrimComputerFctl_B.SSM_ow =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.SSM;
-  A380PrimComputerFctl_B.Data_cl =
+  A380PrimComputerFctl_B.Data_hyo =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fctl.v_alpha_stall_warn_kn.Data;
-  A380PrimComputerFctl_B.SSM_jwz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM;
-  A380PrimComputerFctl_B.Data_er = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data;
-  A380PrimComputerFctl_B.SSM_o2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM;
-  A380PrimComputerFctl_B.Data_in = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data;
-  A380PrimComputerFctl_B.SSM_eig = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM;
-  A380PrimComputerFctl_B.Data_btl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data;
-  A380PrimComputerFctl_B.SSM_jl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM;
-  A380PrimComputerFctl_B.Data_a5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data;
-  A380PrimComputerFctl_B.SSM_cci = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM;
-  A380PrimComputerFctl_B.Data_hyo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data;
-  A380PrimComputerFctl_B.SSM_ow = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM;
-  A380PrimComputerFctl_B.Data_bjx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data;
-  A380PrimComputerFctl_B.SSM_bcj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM;
-  A380PrimComputerFctl_B.Data_ci = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data;
-  A380PrimComputerFctl_B.SSM_i5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM;
-  A380PrimComputerFctl_B.Data_h2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data;
-  A380PrimComputerFctl_B.SSM_jww = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM;
-  A380PrimComputerFctl_B.Data_ce = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data;
-  A380PrimComputerFctl_B.SSM_kkj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM;
-  A380PrimComputerFctl_B.Data_dx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data;
-  A380PrimComputerFctl_B.SSM_ndh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM;
-  A380PrimComputerFctl_B.Data_fvi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data;
-  A380PrimComputerFctl_B.SSM_k1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_gnm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_en3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM;
-  A380PrimComputerFctl_B.Data_e3y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data;
-  A380PrimComputerFctl_B.SSM_kl =
+  A380PrimComputerFctl_B.SSM_bcj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.SSM;
+  A380PrimComputerFctl_B.Data_bjx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_a_deg.Data;
+  A380PrimComputerFctl_B.SSM_i5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.SSM;
+  A380PrimComputerFctl_B.Data_ci = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.gamma_t_deg.Data;
+  A380PrimComputerFctl_B.SSM_jww = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.SSM;
+  A380PrimComputerFctl_B.Data_h2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.sideslip_target_deg.Data;
+  A380PrimComputerFctl_B.SSM_kkj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_ls_kn.SSM;
+  A380PrimComputerFctl_B.Data_ce = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_ls_kn.Data;
+  A380PrimComputerFctl_B.SSM_ndh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_stall_kn.SSM;
+  A380PrimComputerFctl_B.Data_dx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_stall_kn.Data;
+  A380PrimComputerFctl_B.SSM_k1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.SSM;
+  A380PrimComputerFctl_B.Data_fvi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.speed_trend_kn.Data;
+  A380PrimComputerFctl_B.SSM_en3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_3_kn.SSM;
+  A380PrimComputerFctl_B.Data_gnm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_3_kn.Data;
+  A380PrimComputerFctl_B.SSM_kl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_4_kn.SSM;
+  A380PrimComputerFctl_B.Data_e3y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_4_kn.Data;
+  A380PrimComputerFctl_B.SSM_po = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_man_kn.SSM;
+  A380PrimComputerFctl_B.Data_ld = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_man_kn.Data;
+  A380PrimComputerFctl_B.SSM_ie0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_max_kn.SSM;
+  A380PrimComputerFctl_B.Data_k3v = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_max_kn.Data;
+  A380PrimComputerFctl_B.SSM_ay = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.SSM;
+  A380PrimComputerFctl_B.Data_oi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.v_fe_next_kn.Data;
+  A380PrimComputerFctl_B.SSM_gsb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_oy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fe.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_mxy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.SSM;
+  A380PrimComputerFctl_B.Data_nl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_spd_tgt_kts.Data;
+  A380PrimComputerFctl_B.SSM_gt =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.SSM;
-  A380PrimComputerFctl_B.Data_ld =
+  A380PrimComputerFctl_B.Data_aei =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pfd_short_term_mngd_spd_kts.Data;
-  A380PrimComputerFctl_B.SSM_po = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM;
-  A380PrimComputerFctl_B.Data_k3v = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data;
-  A380PrimComputerFctl_B.SSM_ie0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM;
-  A380PrimComputerFctl_B.Data_oi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data;
-  A380PrimComputerFctl_B.SSM_ay = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM;
-  A380PrimComputerFctl_B.Data_oy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data;
-  A380PrimComputerFctl_B.SSM_gsb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM;
-  A380PrimComputerFctl_B.Data_nl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data;
-  A380PrimComputerFctl_B.SSM_mxy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM;
-  A380PrimComputerFctl_B.Data_aei = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data;
-  A380PrimComputerFctl_B.SSM_gt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM;
-  A380PrimComputerFctl_B.Data_jz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data;
-  A380PrimComputerFctl_B.SSM_cum = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM;
-  A380PrimComputerFctl_B.Data_pwfb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data;
-  A380PrimComputerFctl_B.SSM_ka =
+  A380PrimComputerFctl_B.SSM_cum = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.SSM;
+  A380PrimComputerFctl_B.Data_jz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_spd_kts.Data;
+  A380PrimComputerFctl_B.SSM_ka = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.SSM;
+  A380PrimComputerFctl_B.Data_pwfb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_mach_kts.Data;
+  A380PrimComputerFctl_B.SSM_lu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.SSM;
+  A380PrimComputerFctl_B.Data_la = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_hdg_deg.Data;
+  A380PrimComputerFctl_B.SSM_c5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.SSM;
+  A380PrimComputerFctl_B.Data_b0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_trk_deg.Data;
+  A380PrimComputerFctl_B.SSM_ol = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.SSM;
+  A380PrimComputerFctl_B.Data_g5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_alt_ft.Data;
+  A380PrimComputerFctl_B.SSM_k2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.SSM;
+  A380PrimComputerFctl_B.Data_os = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_vs_ft_min.Data;
+  A380PrimComputerFctl_B.SSM_gn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.SSM;
+  A380PrimComputerFctl_B.Data_btc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.selected_fpa_deg.Data;
+  A380PrimComputerFctl_B.SSM_bdi =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.SSM;
-  A380PrimComputerFctl_B.Data_la =
+  A380PrimComputerFctl_B.Data_nhn =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.runway_hdg_memorized_deg.Data;
-  A380PrimComputerFctl_B.SSM_lu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM;
-  A380PrimComputerFctl_B.Data_b0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data;
-  A380PrimComputerFctl_B.SSM_c5 =
+  A380PrimComputerFctl_B.SSM_lil = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.SSM;
+  A380PrimComputerFctl_B.Data_im = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_mach_from_fms.Data;
+  A380PrimComputerFctl_B.SSM_lmv =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.SSM;
-  A380PrimComputerFctl_B.Data_g5 =
+  A380PrimComputerFctl_B.Data_no =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.preset_speed_from_fms_kts.Data;
-  A380PrimComputerFctl_B.SSM_ol = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_os = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_k2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_btc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_gn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_nhn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_bdi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_im = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_lil = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_no = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_lmv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_av = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_ig = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM;
-  A380PrimComputerFctl_B.Data_me = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data;
-  A380PrimComputerFctl_B.SSM_ch = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM;
-  A380PrimComputerFctl_B.Data_hc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data;
-  A380PrimComputerFctl_B.SSM_ef = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM;
-  A380PrimComputerFctl_B.Data_f5c =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data;
-  A380PrimComputerFctl_B.SSM_dbs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM;
-  A380PrimComputerFctl_B.Data_iu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data;
-  A380PrimComputerFctl_B.SSM_ilr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM;
-  A380PrimComputerFctl_B.Data_ihf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data;
-  A380PrimComputerFctl_B.SSM_ch3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM;
-  A380PrimComputerFctl_B.Data_ao = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data;
-  A380PrimComputerFctl_B.SSM_ozd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_c2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_ob = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_f1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_dd4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM;
-  A380PrimComputerFctl_B.Data_nst = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data;
-  A380PrimComputerFctl_B.SSM_ps =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.SSM;
+  A380PrimComputerFctl_B.SSM_ig = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_av = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_ch = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_me = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_ef = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_hc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_dbs = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_f5c = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.roll_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_ilr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_iu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.pitch_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_ch3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_ihf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.yaw_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_ozd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_5.SSM;
+  A380PrimComputerFctl_B.Data_ao = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_5.Data;
+  A380PrimComputerFctl_B.SSM_ob = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_4.SSM;
+  A380PrimComputerFctl_B.Data_c2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_4.Data;
+  A380PrimComputerFctl_B.SSM_dd4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.SSM;
+  A380PrimComputerFctl_B.Data_f1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.fm_alt_constraint_ft.Data;
+  A380PrimComputerFctl_B.SSM_ps = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.SSM;
+  A380PrimComputerFctl_B.Data_nst = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_discrete_word.Data;
+  A380PrimComputerFctl_B.SSM_agc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.SSM;
   A380PrimComputerFctl_B.Data_fq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data;
-  A380PrimComputerFctl_B.SSM_agc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM;
-  A380PrimComputerFctl_B.Data_amc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data;
-  A380PrimComputerFctl_B.SSM_nt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM;
-  A380PrimComputerFctl_B.Data_nn1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data;
-  A380PrimComputerFctl_B.SSM_oa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_b0d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_oj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM;
-  A380PrimComputerFctl_B.Data_bri = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data;
-  A380PrimComputerFctl_B.SSM_lq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM;
-  A380PrimComputerFctl_B.Data_nmx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.ats_fma_discrete_word.Data;
+  A380PrimComputerFctl_B.SSM_nt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_3.SSM;
+  A380PrimComputerFctl_B.Data_amc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_3.Data;
+  A380PrimComputerFctl_B.SSM_oa = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_nn1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_oj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_b0d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_lq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_6.SSM;
+  A380PrimComputerFctl_B.Data_bri = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_6.Data;
   A380PrimComputerFctl_B.SSM_fc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_oal =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.SSM;
+  A380PrimComputerFctl_B.Data_nmx =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.low_target_speed_margin_kts.Data;
   A380PrimComputerFctl_B.SSM_do =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_dmb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_eu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_nf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_pjf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_anh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_gu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_idf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_jsu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_gm =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.SSM;
+  A380PrimComputerFctl_B.Data_oal =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.high_target_speed_margin_kts.Data;
+  A380PrimComputerFctl_B.SSM_eu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.SSM;
+  A380PrimComputerFctl_B.Data_dmb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.nosewheel_cmd_deg.Data;
+  A380PrimComputerFctl_B.SSM_pjf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_nf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_gu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.SSM;
+  A380PrimComputerFctl_B.Data_anh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.flx_to_temp_deg_c.Data;
+  A380PrimComputerFctl_B.SSM_jsu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_7.SSM;
+  A380PrimComputerFctl_B.Data_idf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_x_bus.fg.discrete_word_7.Data;
   A380PrimComputerFctl_B.SSM_eb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_jqv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_gm =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dbu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ni3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_jqv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_hh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_d1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ni3 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_midboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_jsuo =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_dv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_d1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_midboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dj =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_oq4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_dv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_oio =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_fb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_oq4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_aileron_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ewd =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_bsv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_fb =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_1_command_deg.Data;
   A380PrimComputerFctl_B.SSM_pjk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_nt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_bsv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_1_command_deg.Data;
   A380PrimComputerFctl_B.SSM_j3l =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ac =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_nt =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_2_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ceq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_dcn =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ac =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_2_command_deg.Data;
   A380PrimComputerFctl_B.SSM_d4h =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_joe =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_dcn =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_3_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_nol =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_joe =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_3_command_deg.Data;
   A380PrimComputerFctl_B.SSM_obg =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_bun =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_nol =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_4_command_deg.Data;
   A380PrimComputerFctl_B.SSM_b5 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ge =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_bun =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_4_command_deg.Data;
   A380PrimComputerFctl_B.SSM_al =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_mj =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ge =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_5_command_deg.Data;
   A380PrimComputerFctl_B.SSM_hib =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_naq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_mj =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_5_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dbe =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_j43 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_naq =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_6_command_deg.Data;
   A380PrimComputerFctl_B.SSM_b1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_po =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_j43 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_6_command_deg.Data;
   A380PrimComputerFctl_B.SSM_d0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ey =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_po =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_7_command_deg.Data;
   A380PrimComputerFctl_B.SSM_m5 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ey =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_7_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_jli =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.SSM;
   A380PrimComputerFctl_B.Data_a3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_jli = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_pey = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_8_command_deg.Data;
   A380PrimComputerFctl_B.SSM_mxc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_kf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_pey =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_8_command_deg.Data;
   A380PrimComputerFctl_B.SSM_ogm =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_hk1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_kf =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_inboard_elevator_command_deg.Data;
   A380PrimComputerFctl_B.SSM_nlt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_grt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_hk1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_inboard_elevator_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_grt =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_outboard_elevator_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_oiy =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.SSM;
   A380PrimComputerFctl_B.Data_cmi =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_jsb =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_eyi =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_outboard_elevator_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_jsb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_eyi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_command_deg.Data;
   A380PrimComputerFctl_B.SSM_i5w =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.SSM;
   A380PrimComputerFctl_B.Data_jr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.upper_rudder_command_deg.Data;
   A380PrimComputerFctl_B.SSM_my5 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.SSM;
   A380PrimComputerFctl_B.Data_hom =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_lp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM;
-  A380PrimComputerFctl_B.Data_je =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.lower_rudder_command_deg.Data;
   A380PrimComputerFctl_B.SSM_hlu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_hux =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_je =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_hu3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ima =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_k5 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_d5s =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_c4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_hux =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_sidestick_roll_command_deg.Data;
   A380PrimComputerFctl_B.SSM_n4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_ima =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_gg =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.SSM;
   A380PrimComputerFctl_B.Data_bk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_gg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM;
-  A380PrimComputerFctl_B.Data_fb4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_pedal_position_deg.Data;
   A380PrimComputerFctl_B.SSM_kkj5 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.SSM;
+  A380PrimComputerFctl_B.Data_fb4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.aileron_status_word.Data;
+  A380PrimComputerFctl_B.SSM_cr =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_jf =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_nx =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_mz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_aileron_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_ebo =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_p3h =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_po3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_kv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_o0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_aileron_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_mt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.SSM;
   A380PrimComputerFctl_B.Data_bv1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_mt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.spoiler_status_word.Data;
+  A380PrimComputerFctl_B.SSM_o5 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_g4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.left_spoiler_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_mkz =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.SSM;
   A380PrimComputerFctl_B.Data_iyr =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_o5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_otv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_mkz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM;
-  A380PrimComputerFctl_B.Data_kqu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.right_spoiler_position_deg.Data;
   A380PrimComputerFctl_B.SSM_dqh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_n4p =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.SSM;
+  A380PrimComputerFctl_B.Data_otv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_status_word.Data;
   A380PrimComputerFctl_B.SSM_ki =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_n4p =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ez =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_n3 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ez = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_ma = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data;
-  A380PrimComputerFctl_B.SSM_ac = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_gsd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data;
-  A380PrimComputerFctl_B.SSM_klm =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM;
-  A380PrimComputerFctl_B.Data_ij =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_k4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ma =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.elevator_3_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ac = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_gsd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.ths_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_klm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ij = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_status_word.Data;
   A380PrimComputerFctl_B.SSM_iz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_ogy =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_b4c = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM;
-  A380PrimComputerFctl_B.Data_hc3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data;
-  A380PrimComputerFctl_B.SSM_gn1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM;
-  A380PrimComputerFctl_B.Data_mcz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data;
-  A380PrimComputerFctl_B.SSM_p0z =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_gn1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_hc3 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.rudder_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_p0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.SSM;
+  A380PrimComputerFctl_B.Data_m5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_1_ft.Data;
+  A380PrimComputerFctl_B.SSM_iet = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.SSM;
+  A380PrimComputerFctl_B.Data_mcz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.radio_height_2_ft.Data;
+  A380PrimComputerFctl_B.SSM_omi =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.SSM;
   A380PrimComputerFctl_B.Data_cxq =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.fctl_law_status_word.Data;
+  A380PrimComputerFctl_B.SSM_bdv =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_f4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.discrete_status_word_1.Data;
+  A380PrimComputerFctl_B.SSM_hhc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.SSM;
+  A380PrimComputerFctl_B.Data_itt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_lim_kn.Data;
+  A380PrimComputerFctl_B.SSM_apw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.SSM;
+  A380PrimComputerFctl_B.Data_hr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_prot_kn.Data;
+  A380PrimComputerFctl_B.SSM_e2 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.SSM;
+  A380PrimComputerFctl_B.Data_cta =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fctl.v_alpha_stall_warn_kn.Data;
-  A380PrimComputerFctl_B.SSM_iet = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM;
-  A380PrimComputerFctl_B.Data_oat = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data;
-  A380PrimComputerFctl_B.SSM_omi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM;
-  A380PrimComputerFctl_B.Data_f4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data;
-  A380PrimComputerFctl_B.SSM_bdv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM;
-  A380PrimComputerFctl_B.Data_itt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data;
-  A380PrimComputerFctl_B.SSM_hhc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM;
-  A380PrimComputerFctl_B.Data_hr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data;
-  A380PrimComputerFctl_B.SSM_e2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM;
-  A380PrimComputerFctl_B.Data_cta = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data;
-  A380PrimComputerFctl_B.SSM_crl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM;
-  A380PrimComputerFctl_B.Data_kn3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data;
-  A380PrimComputerFctl_B.SSM_goz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM;
-  A380PrimComputerFctl_B.Data_aj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data;
-  A380PrimComputerFctl_B.SSM_mku = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM;
-  A380PrimComputerFctl_B.Data_ml = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data;
-  A380PrimComputerFctl_B.SSM_k24 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM;
-  A380PrimComputerFctl_B.Data_g5n = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data;
-  A380PrimComputerFctl_B.SSM_l2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM;
-  A380PrimComputerFctl_B.Data_hi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data;
-  A380PrimComputerFctl_B.SSM_lfy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM;
-  A380PrimComputerFctl_B.Data_ad = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data;
-  A380PrimComputerFctl_B.SSM_aj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_lyc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_he = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM;
-  A380PrimComputerFctl_B.Data_kw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data;
-  A380PrimComputerFctl_B.SSM_hkw =
+  A380PrimComputerFctl_B.SSM_crl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.SSM;
+  A380PrimComputerFctl_B.Data_kn3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_a_deg.Data;
+  A380PrimComputerFctl_B.SSM_goz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.SSM;
+  A380PrimComputerFctl_B.Data_aj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.gamma_t_deg.Data;
+  A380PrimComputerFctl_B.SSM_k24 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.SSM;
+  A380PrimComputerFctl_B.Data_ml = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.sideslip_target_deg.Data;
+  A380PrimComputerFctl_B.SSM_l2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_ls_kn.SSM;
+  A380PrimComputerFctl_B.Data_l55 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_ls_kn.Data;
+  A380PrimComputerFctl_B.SSM_lfy = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_stall_kn.SSM;
+  A380PrimComputerFctl_B.Data_g5n = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_stall_kn.Data;
+  A380PrimComputerFctl_B.SSM_aj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.SSM;
+  A380PrimComputerFctl_B.Data_hi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.speed_trend_kn.Data;
+  A380PrimComputerFctl_B.SSM_he = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_3_kn.SSM;
+  A380PrimComputerFctl_B.Data_lyc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_3_kn.Data;
+  A380PrimComputerFctl_B.SSM_hkw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_4_kn.SSM;
+  A380PrimComputerFctl_B.Data_kw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_4_kn.Data;
+  A380PrimComputerFctl_B.SSM_m2q = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_man_kn.SSM;
+  A380PrimComputerFctl_B.Data_oue = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_man_kn.Data;
+  A380PrimComputerFctl_B.SSM_bg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_max_kn.SSM;
+  A380PrimComputerFctl_B.Data_njd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_max_kn.Data;
+  A380PrimComputerFctl_B.SSM_n2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.SSM;
+  A380PrimComputerFctl_B.Data_n1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.v_fe_next_kn.Data;
+  A380PrimComputerFctl_B.SSM_nq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_ihk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fe.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_pd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.SSM;
+  A380PrimComputerFctl_B.Data_hiq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_spd_tgt_kts.Data;
+  A380PrimComputerFctl_B.SSM_or =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.SSM;
-  A380PrimComputerFctl_B.Data_oue =
+  A380PrimComputerFctl_B.Data_lb2 =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pfd_short_term_mngd_spd_kts.Data;
-  A380PrimComputerFctl_B.SSM_bg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM;
-  A380PrimComputerFctl_B.Data_njd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data;
-  A380PrimComputerFctl_B.SSM_n2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM;
-  A380PrimComputerFctl_B.Data_n1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data;
-  A380PrimComputerFctl_B.SSM_nq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM;
-  A380PrimComputerFctl_B.Data_ihk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data;
-  A380PrimComputerFctl_B.SSM_hng = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM;
-  A380PrimComputerFctl_B.Data_hiq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data;
-  A380PrimComputerFctl_B.SSM_pd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM;
-  A380PrimComputerFctl_B.Data_dr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data;
-  A380PrimComputerFctl_B.SSM_or = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM;
-  A380PrimComputerFctl_B.Data_l5t = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data;
-  A380PrimComputerFctl_B.SSM_ao = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM;
-  A380PrimComputerFctl_B.Data_p5q = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data;
-  A380PrimComputerFctl_B.SSM_e4y =
+  A380PrimComputerFctl_B.SSM_ao = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.SSM;
+  A380PrimComputerFctl_B.Data_dr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_spd_kts.Data;
+  A380PrimComputerFctl_B.SSM_e4y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.SSM;
+  A380PrimComputerFctl_B.Data_l5t = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_mach_kts.Data;
+  A380PrimComputerFctl_B.SSM_lk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.SSM;
+  A380PrimComputerFctl_B.Data_by = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_hdg_deg.Data;
+  A380PrimComputerFctl_B.SSM_cmh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.SSM;
+  A380PrimComputerFctl_B.Data_fz4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_trk_deg.Data;
+  A380PrimComputerFctl_B.SSM_fb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.SSM;
+  A380PrimComputerFctl_B.Data_bf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_alt_ft.Data;
+  A380PrimComputerFctl_B.SSM_jwb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.SSM;
+  A380PrimComputerFctl_B.Data_o3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_vs_ft_min.Data;
+  A380PrimComputerFctl_B.SSM_pb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.SSM;
+  A380PrimComputerFctl_B.Data_b0i = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.selected_fpa_deg.Data;
+  A380PrimComputerFctl_B.SSM_lqf =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.SSM;
-  A380PrimComputerFctl_B.Data_by =
+  A380PrimComputerFctl_B.Data_ki2 =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.runway_hdg_memorized_deg.Data;
-  A380PrimComputerFctl_B.SSM_lk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM;
-  A380PrimComputerFctl_B.Data_fz4 =
+  A380PrimComputerFctl_B.SSM_a0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.SSM;
+  A380PrimComputerFctl_B.Data_adu =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.preset_mach_from_fms.Data;
-  A380PrimComputerFctl_B.SSM_cmh =
+  A380PrimComputerFctl_B.SSM_hj =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.SSM;
-  A380PrimComputerFctl_B.Data_bf =
+  A380PrimComputerFctl_B.Data_h4h =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.preset_speed_from_fms_kts.Data;
-  A380PrimComputerFctl_B.SSM_jwb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_o3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_pb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_b0i = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_lqf = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM;
-  A380PrimComputerFctl_B.Data_ki2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data;
-  A380PrimComputerFctl_B.SSM_f4j = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_adu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_a0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_c0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_hj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM;
-  A380PrimComputerFctl_B.Data_dod = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data;
-  A380PrimComputerFctl_B.SSM_nrk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM;
-  A380PrimComputerFctl_B.Data_fqj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data;
-  A380PrimComputerFctl_B.SSM_bl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM;
-  A380PrimComputerFctl_B.Data_hgw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data;
-  A380PrimComputerFctl_B.SSM_gx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM;
-  A380PrimComputerFctl_B.Data_dko =
+  A380PrimComputerFctl_B.SSM_nrk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_c0z = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_bl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_dod = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_gx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.SSM;
+  A380PrimComputerFctl_B.Data_hgw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_1.Data;
+  A380PrimComputerFctl_B.SSM_i3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_dko = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.roll_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_nx2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_iga = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.pitch_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_jm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.SSM;
+  A380PrimComputerFctl_B.Data_hds = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.yaw_fd_command_2.Data;
+  A380PrimComputerFctl_B.SSM_kr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_5.SSM;
+  A380PrimComputerFctl_B.Data_dqt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_5.Data;
+  A380PrimComputerFctl_B.SSM_khm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_4.SSM;
+  A380PrimComputerFctl_B.Data_pd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_4.Data;
+  A380PrimComputerFctl_B.SSM_ek = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.SSM;
+  A380PrimComputerFctl_B.Data_i0g =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.fm_alt_constraint_ft.Data;
-  A380PrimComputerFctl_B.SSM_i3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM;
-  A380PrimComputerFctl_B.Data_iga = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data;
-  A380PrimComputerFctl_B.SSM_jm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM;
-  A380PrimComputerFctl_B.Data_hds =
+  A380PrimComputerFctl_B.SSM_g1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.SSM;
+  A380PrimComputerFctl_B.Data_jzm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_discrete_word.Data;
+  A380PrimComputerFctl_B.SSM_c4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.SSM;
+  A380PrimComputerFctl_B.Data_li =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.ats_fma_discrete_word.Data;
-  A380PrimComputerFctl_B.SSM_kr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM;
-  A380PrimComputerFctl_B.Data_dqt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data;
-  A380PrimComputerFctl_B.SSM_khm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM;
-  A380PrimComputerFctl_B.Data_pd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data;
-  A380PrimComputerFctl_B.SSM_m1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM;
-  A380PrimComputerFctl_B.Data_i0g = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data;
-  A380PrimComputerFctl_B.SSM_ek = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM;
-  A380PrimComputerFctl_B.Data_li = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data;
-  A380PrimComputerFctl_B.SSM_g1 =
+  A380PrimComputerFctl_B.SSM_kj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_3.SSM;
+  A380PrimComputerFctl_B.Data_bs3 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_3.Data;
+  A380PrimComputerFctl_B.SSM_fn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_nq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_jb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_ita = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_2.Data;
+  A380PrimComputerFctl_B.SSM_ku = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_6.SSM;
+  A380PrimComputerFctl_B.Data_pn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_6.Data;
+  A380PrimComputerFctl_B.SSM_irk =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.SSM;
-  A380PrimComputerFctl_B.Data_bs3 =
+  A380PrimComputerFctl_B.Data_lgm =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.low_target_speed_margin_kts.Data;
-  A380PrimComputerFctl_B.SSM_c4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.SSM;
-  A380PrimComputerFctl_B.Data_ko =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data;
-  A380PrimComputerFctl_B.SSM_kj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM;
-  A380PrimComputerFctl_B.Data_nq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data;
-  A380PrimComputerFctl_B.SSM_fn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_ita = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_jb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM;
-  A380PrimComputerFctl_B.Data_pn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data;
-  A380PrimComputerFctl_B.SSM_irk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM;
-  A380PrimComputerFctl_B.Data_lgm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data;
   A380PrimComputerFctl_B.SSM_f5q =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.SSM;
   A380PrimComputerFctl_B.Data_ir =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_nca =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_jv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_im =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ore =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_j2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_jet =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_ba5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_jo0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_p4l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.aileron_status_word.SSM;
-  A380PrimComputerFctl_B.Data_bn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.aileron_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.high_target_speed_margin_kts.Data;
+  A380PrimComputerFctl_B.SSM_nca = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.SSM;
+  A380PrimComputerFctl_B.Data_jv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.nosewheel_cmd_deg.Data;
+  A380PrimComputerFctl_B.SSM_j2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_ore = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_ba5 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.SSM;
+  A380PrimComputerFctl_B.Data_ijm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.flx_to_temp_deg_c.Data;
+  A380PrimComputerFctl_B.SSM_p4l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_7.SSM;
+  A380PrimComputerFctl_B.Data_jet = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.prim_y_bus.fg.discrete_word_7.Data;
   A380PrimComputerFctl_B.SSM_l25 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_izj =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_jo0 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_e4o =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_pdd =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_izj =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_d1a =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_pdd =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_bol =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.SSM;
   A380PrimComputerFctl_B.Data_bjv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_mi =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_mi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.SSM;
   A380PrimComputerFctl_B.Data_lye =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_cyd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM;
-  A380PrimComputerFctl_B.Data_ft = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.spoiler_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_pedal_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_cyd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.aileron_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ft = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.aileron_status_word.Data;
   A380PrimComputerFctl_B.SSM_py =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_a2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_lp0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ii =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_f0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_k4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ii =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_aileron_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_gj =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_of3 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ncq =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_k4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_aileron_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ix = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.spoiler_status_word.SSM;
+  A380PrimComputerFctl_B.Data_pj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.spoiler_status_word.Data;
+  A380PrimComputerFctl_B.SSM_gle =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_mly =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_h21 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_p3m =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_cf =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ijw =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.left_spoiler_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ghc =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_pj =
+  A380PrimComputerFctl_B.Data_fqp =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.right_spoiler_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ncq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_status_word.SSM;
-  A380PrimComputerFctl_B.Data_es = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_status_word.Data;
-  A380PrimComputerFctl_B.SSM_ix = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_mly = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_gle = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_p3m = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_h21 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ijw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ghc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.ths_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_fqp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.ths_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ai4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_status_word.SSM;
-  A380PrimComputerFctl_B.Data_liu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_status_word.Data;
-  A380PrimComputerFctl_B.SSM_lj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ki1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_nsn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_byo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ovo =
+  A380PrimComputerFctl_B.SSM_ai4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_status_word.SSM;
+  A380PrimComputerFctl_B.Data_liu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_status_word.Data;
+  A380PrimComputerFctl_B.SSM_lj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ki1 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ovo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_byo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_nst = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_3_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_cwz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.elevator_3_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_iv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.ths_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ixn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.ths_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_pq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_status_word.SSM;
+  A380PrimComputerFctl_B.Data_k2d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_status_word.Data;
+  A380PrimComputerFctl_B.SSM_ii = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_c0o = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_olh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_db = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_fkb =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.SSM;
-  A380PrimComputerFctl_B.Data_ixn =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data;
-  A380PrimComputerFctl_B.SSM_nst = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM;
-  A380PrimComputerFctl_B.Data_k2d = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data;
-  A380PrimComputerFctl_B.SSM_iv = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM;
-  A380PrimComputerFctl_B.Data_h5f = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.misc_data_status_word.Data;
-  A380PrimComputerFctl_B.SSM_pq =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_c0o =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_ii =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_db =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_olh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.SSM;
   A380PrimComputerFctl_B.Data_dcz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_gev =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_ork =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_j2m = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_f11 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_jp = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.aileron_status_word.SSM;
-  A380PrimComputerFctl_B.Data_hyn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.aileron_status_word.Data;
-  A380PrimComputerFctl_B.SSM_iu =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_cg =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.rudder_trim_actual_pos_deg.Data;
+  A380PrimComputerFctl_B.SSM_gev = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.fctl_law_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ork = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.fctl_law_status_word.Data;
+  A380PrimComputerFctl_B.SSM_j2m = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.misc_data_status_word.SSM;
+  A380PrimComputerFctl_B.Data_f11 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_1_bus.misc_data_status_word.Data;
+  A380PrimComputerFctl_B.SSM_jp =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_hyn =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_bew =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_i1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_cg =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_eie =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_l1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_mor =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_sidestick_roll_command_deg.Data;
   A380PrimComputerFctl_B.SSM_nk =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ms =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_buw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM;
-  A380PrimComputerFctl_B.Data_ag = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.spoiler_status_word.Data;
-  A380PrimComputerFctl_B.SSM_ht =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_epm =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_i1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_buw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_l1 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_pedal_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ht = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.aileron_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ag = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.aileron_status_word.Data;
   A380PrimComputerFctl_B.SSM_io =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_epm =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_igr =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_pp =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_aileron_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_np1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.SSM;
   A380PrimComputerFctl_B.Data_nek =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_fc4 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_cho =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_aileron_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_hkwh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.spoiler_status_word.SSM;
+  A380PrimComputerFctl_B.Data_aet = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.spoiler_status_word.Data;
+  A380PrimComputerFctl_B.SSM_ka4 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_oxr =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_k2r =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_oq5 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_i0 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ihw =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.left_spoiler_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_jes =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_cuh =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.right_spoiler_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_hkwh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_status_word.SSM;
-  A380PrimComputerFctl_B.Data_aet = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_status_word.Data;
-  A380PrimComputerFctl_B.SSM_ahu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_oxr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ka4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ihw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_k2r = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_cuh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_i0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.ths_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_jlt = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.ths_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_jes = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_status_word.SSM;
-  A380PrimComputerFctl_B.Data_jm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_status_word.Data;
-  A380PrimComputerFctl_B.SSM_kg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_fg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_frj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_np = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_ok = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM;
-  A380PrimComputerFctl_B.Data_pmi =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data;
-  A380PrimComputerFctl_B.SSM_m4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM;
-  A380PrimComputerFctl_B.Data_b2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data;
-  A380PrimComputerFctl_B.SSM_iyk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM;
-  A380PrimComputerFctl_B.Data_ogu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.misc_data_status_word.Data;
-  A380PrimComputerFctl_B.SSM_mv =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_lw =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_f4l =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_buw =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_mtx =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_oau =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_kg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_status_word.SSM;
+  A380PrimComputerFctl_B.Data_jm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_status_word.Data;
+  A380PrimComputerFctl_B.SSM_frj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_fg = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ej = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_np = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_ok = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_3_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_pmi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.elevator_3_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_m4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.ths_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_b2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.ths_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_iyk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ogu = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_status_word.Data;
+  A380PrimComputerFctl_B.SSM_f4l = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_lw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_mtx = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_f44 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_ahy =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM;
-  A380PrimComputerFctl_B.Data_aoh =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data;
-  A380PrimComputerFctl_B.SSM_ovo2 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_mon =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_hsq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.aileron_status_word.SSM;
-  A380PrimComputerFctl_B.Data_i4t = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.aileron_status_word.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.SSM;
+  A380PrimComputerFctl_B.Data_buw =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.rudder_trim_actual_pos_deg.Data;
+  A380PrimComputerFctl_B.SSM_ovo2 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.fctl_law_status_word.SSM;
+  A380PrimComputerFctl_B.Data_oau = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.fctl_law_status_word.Data;
+  A380PrimComputerFctl_B.SSM_hsq = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.misc_data_status_word.SSM;
+  A380PrimComputerFctl_B.Data_mon = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_2_bus.misc_data_status_word.Data;
   A380PrimComputerFctl_B.SSM_nxn =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.SSM;
+  A380PrimComputerFctl_B.Data_i4t =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_pitch_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_nnx =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.SSM;
   A380PrimComputerFctl_B.Data_mt =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_pitch_command_deg.Data;
   A380PrimComputerFctl_B.SSM_lo =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.SSM;
   A380PrimComputerFctl_B.Data_jh0 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_sidestick_roll_command_deg.Data;
   A380PrimComputerFctl_B.SSM_dir =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.SSM;
   A380PrimComputerFctl_B.Data_nvn =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_apz =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_sidestick_roll_command_deg.Data;
+  A380PrimComputerFctl_B.SSM_apz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.SSM;
   A380PrimComputerFctl_B.Data_b0e =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_fi = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM;
-  A380PrimComputerFctl_B.Data_f22 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.spoiler_status_word.Data;
-  A380PrimComputerFctl_B.SSM_iw =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ctc =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_pedal_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_iw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.aileron_status_word.SSM;
+  A380PrimComputerFctl_B.Data_f22 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.aileron_status_word.Data;
   A380PrimComputerFctl_B.SSM_dfj =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_ngo =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_dn0 =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_e1 =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_bkg =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ctc =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_aileron_2_position_deg.Data;
   A380PrimComputerFctl_B.SSM_mp =
-    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM;
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ngo =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_k2j =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_ora =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_aileron_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_eyo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.spoiler_status_word.SSM;
+  A380PrimComputerFctl_B.Data_cd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.spoiler_status_word.Data;
+  A380PrimComputerFctl_B.SSM_ceqr =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_inj =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_c3y =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_fno =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_eib =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_dd =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.left_spoiler_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_em =
+    A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_jff =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.right_spoiler_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_k2j = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_status_word.SSM;
-  A380PrimComputerFctl_B.Data_cd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_status_word.Data;
-  A380PrimComputerFctl_B.SSM_eyo = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_inj = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_c3y = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_fno = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_eib = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_dd = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_em = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.ths_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_jff = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.ths_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_cre = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_status_word.SSM;
-  A380PrimComputerFctl_B.Data_fh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_status_word.Data;
-  A380PrimComputerFctl_B.SSM_lfz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_cd0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_pji = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM;
-  A380PrimComputerFctl_B.Data_odm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_hbr =
+  A380PrimComputerFctl_B.SSM_lfz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_status_word.SSM;
+  A380PrimComputerFctl_B.Data_fh = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_status_word.Data;
+  A380PrimComputerFctl_B.SSM_pji = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_kc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_hbr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_cd0 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_p2n = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_3_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_odm = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.elevator_3_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_lc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.ths_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_pb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.ths_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_haw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_status_word.SSM;
+  A380PrimComputerFctl_B.Data_ma4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_status_word.Data;
+  A380PrimComputerFctl_B.SSM_km = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_1_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_hwb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_1_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_chn = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_2_position_deg.SSM;
+  A380PrimComputerFctl_B.Data_ndk = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_2_position_deg.Data;
+  A380PrimComputerFctl_B.SSM_bqd =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.SSM;
-  A380PrimComputerFctl_B.Data_h5r =
+  A380PrimComputerFctl_B.Data_e1h =
     A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.rudder_trim_actual_pos_deg.Data;
-  A380PrimComputerFctl_B.SSM_p2n = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM;
-  A380PrimComputerFctl_B.Data_pb = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data;
-  A380PrimComputerFctl_B.SSM_lc = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM;
-  A380PrimComputerFctl_B.Data_ma4 = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.misc_data_status_word.Data;
+  A380PrimComputerFctl_B.SSM_cz = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.fctl_law_status_word.SSM;
+  A380PrimComputerFctl_B.Data_gw = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.fctl_law_status_word.Data;
+  A380PrimComputerFctl_B.SSM_gsl = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.misc_data_status_word.SSM;
+  A380PrimComputerFctl_B.Data_pr = A380PrimComputerFctl_P.out_Y0.data.bus_inputs.sec_3_bus.misc_data_status_word.Data;
   A380PrimComputerFctl_B.fm_valid = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.fm_valid;
-  A380PrimComputerFctl_B.fms_flight_phase = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.fms_flight_phase;
+  A380PrimComputerFctl_B.active_fms_flight_phase =
+    A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.active_fms_flight_phase;
   A380PrimComputerFctl_B.selected_approach_type =
     A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.selected_approach_type;
   A380PrimComputerFctl_B.backbeam_selected = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.backbeam_selected;
@@ -9341,102 +9344,102 @@ void A380PrimComputerFctl::initialize()
     A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.thrust_reduction_alt_ft;
   A380PrimComputerFctl_B.cruise_alt_ft = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fms.cruise_alt_ft;
   A380PrimComputerFctl_B.fqms = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.fqms;
-  A380PrimComputerFctl_B.SSM_chn = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_tla_deg.SSM;
-  A380PrimComputerFctl_B.Data_e1h = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_tla_deg.Data;
-  A380PrimComputerFctl_B.SSM_bqd = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_ref_percent.SSM;
-  A380PrimComputerFctl_B.Data_gs = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_ref_percent.Data;
-  A380PrimComputerFctl_B.SSM_a4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM;
-  A380PrimComputerFctl_B.Data_fd4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data;
-  A380PrimComputerFctl_B.SSM_bv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_1.SSM;
-  A380PrimComputerFctl_B.Data_hm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_bo = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_2.SSM;
-  A380PrimComputerFctl_B.Data_i2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_2.Data;
-  A380PrimComputerFctl_B.SSM_d1 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_3.SSM;
-  A380PrimComputerFctl_B.Data_og = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_3.Data;
-  A380PrimComputerFctl_B.SSM_hy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_limit_percent.SSM;
-  A380PrimComputerFctl_B.Data_oc = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_limit_percent.Data;
-  A380PrimComputerFctl_B.SSM_gi = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_maximum_percent.SSM;
-  A380PrimComputerFctl_B.Data_kq = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_maximum_percent.Data;
-  A380PrimComputerFctl_B.SSM_pp = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_ne = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_iab = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_it = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_jtv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_ch = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_fy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM;
-  A380PrimComputerFctl_B.Data_bb = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data;
-  A380PrimComputerFctl_B.SSM_ars = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_tla_deg.SSM;
-  A380PrimComputerFctl_B.Data_ol = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_tla_deg.Data;
-  A380PrimComputerFctl_B.SSM_din = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_ref_percent.SSM;
-  A380PrimComputerFctl_B.Data_hw = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_ref_percent.Data;
-  A380PrimComputerFctl_B.SSM_m3 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM;
-  A380PrimComputerFctl_B.Data_hs = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data;
-  A380PrimComputerFctl_B.SSM_np = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_1.SSM;
-  A380PrimComputerFctl_B.Data_fj = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_ax = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_2.SSM;
-  A380PrimComputerFctl_B.Data_h5 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_2.Data;
-  A380PrimComputerFctl_B.SSM_cl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_3.SSM;
-  A380PrimComputerFctl_B.Data_ku = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_3.Data;
-  A380PrimComputerFctl_B.SSM_es = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_limit_percent.SSM;
-  A380PrimComputerFctl_B.Data_jp = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_limit_percent.Data;
-  A380PrimComputerFctl_B.SSM_gi1 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_maximum_percent.SSM;
-  A380PrimComputerFctl_B.Data_nu = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_maximum_percent.Data;
-  A380PrimComputerFctl_B.SSM_jz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_br = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_kt = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_ae = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_eg = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_pe = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_a0 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM;
-  A380PrimComputerFctl_B.Data_fy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data;
-  A380PrimComputerFctl_B.SSM_cv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_tla_deg.SSM;
-  A380PrimComputerFctl_B.Data_na = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_tla_deg.Data;
-  A380PrimComputerFctl_B.SSM_ea = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_ref_percent.SSM;
-  A380PrimComputerFctl_B.Data_my = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_ref_percent.Data;
-  A380PrimComputerFctl_B.SSM_p4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM;
-  A380PrimComputerFctl_B.Data_cx = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data;
-  A380PrimComputerFctl_B.SSM_m2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_1.SSM;
-  A380PrimComputerFctl_B.Data_nz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_bt0 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_2.SSM;
-  A380PrimComputerFctl_B.Data_id = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_2.Data;
-  A380PrimComputerFctl_B.SSM_nr = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_3.SSM;
-  A380PrimComputerFctl_B.Data_o2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_3.Data;
-  A380PrimComputerFctl_B.SSM_fr = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_limit_percent.SSM;
-  A380PrimComputerFctl_B.Data_gqq = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_limit_percent.Data;
-  A380PrimComputerFctl_B.SSM_cc = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_maximum_percent.SSM;
-  A380PrimComputerFctl_B.Data_md = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_maximum_percent.Data;
-  A380PrimComputerFctl_B.SSM_mkm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_cz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_jhd = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_pm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_av = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_bj = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_ira = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM;
-  A380PrimComputerFctl_B.Data_ox = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data;
-  A380PrimComputerFctl_B.SSM_ge = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_tla_deg.SSM;
-  A380PrimComputerFctl_B.Data_jj = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_tla_deg.Data;
-  A380PrimComputerFctl_B.SSM_lv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_ref_percent.SSM;
-  A380PrimComputerFctl_B.Data_p5 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_ref_percent.Data;
-  A380PrimComputerFctl_B.SSM_cg = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM;
-  A380PrimComputerFctl_B.Data_ekl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data;
-  A380PrimComputerFctl_B.SSM_be = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_1.SSM;
-  A380PrimComputerFctl_B.Data_nd = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_1.Data;
-  A380PrimComputerFctl_B.SSM_axb = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_2.SSM;
-  A380PrimComputerFctl_B.Data_n2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_2.Data;
-  A380PrimComputerFctl_B.SSM_nz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_3.SSM;
-  A380PrimComputerFctl_B.Data_dl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_3.Data;
-  A380PrimComputerFctl_B.SSM_gh = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_limit_percent.SSM;
-  A380PrimComputerFctl_B.Data_gs2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_limit_percent.Data;
-  A380PrimComputerFctl_B.SSM_ks = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_maximum_percent.SSM;
-  A380PrimComputerFctl_B.Data_h4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_maximum_percent.Data;
-  A380PrimComputerFctl_B.SSM_pw = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_command_percent.SSM;
-  A380PrimComputerFctl_B.Data_e3 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_command_percent.Data;
-  A380PrimComputerFctl_B.SSM_fh = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_f5h = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_gzn = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM;
-  A380PrimComputerFctl_B.Data_i4o = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data;
-  A380PrimComputerFctl_B.SSM_oo = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM;
-  A380PrimComputerFctl_B.Data_af = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data;
+  A380PrimComputerFctl_B.SSM_a4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_tla_deg.SSM;
+  A380PrimComputerFctl_B.Data_gs = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_tla_deg.Data;
+  A380PrimComputerFctl_B.SSM_bv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_ref_percent.SSM;
+  A380PrimComputerFctl_B.Data_fd4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_ref_percent.Data;
+  A380PrimComputerFctl_B.SSM_bo = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_flex_temp_deg.SSM;
+  A380PrimComputerFctl_B.Data_hm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_flex_temp_deg.Data;
+  A380PrimComputerFctl_B.SSM_d1 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_i2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_1.Data;
+  A380PrimComputerFctl_B.SSM_hy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_2.SSM;
+  A380PrimComputerFctl_B.Data_fv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_2.Data;
+  A380PrimComputerFctl_B.SSM_gi = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_3.SSM;
+  A380PrimComputerFctl_B.Data_oc = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_status_word_3.Data;
+  A380PrimComputerFctl_B.SSM_pp = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_limit_percent.SSM;
+  A380PrimComputerFctl_B.Data_kq = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_limit_percent.Data;
+  A380PrimComputerFctl_B.SSM_iab = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_maximum_percent.SSM;
+  A380PrimComputerFctl_B.Data_ne = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_maximum_percent.Data;
+  A380PrimComputerFctl_B.SSM_jtv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_it = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_fy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n2_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_ch = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n2_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_ars = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n1_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_bb = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.selected_n1_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_din = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_maintenance_word_6.SSM;
+  A380PrimComputerFctl_B.Data_ol = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_1.ecu_maintenance_word_6.Data;
+  A380PrimComputerFctl_B.SSM_m3 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_tla_deg.SSM;
+  A380PrimComputerFctl_B.Data_hw = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_tla_deg.Data;
+  A380PrimComputerFctl_B.SSM_np = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_ref_percent.SSM;
+  A380PrimComputerFctl_B.Data_hs = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_ref_percent.Data;
+  A380PrimComputerFctl_B.SSM_ax = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_flex_temp_deg.SSM;
+  A380PrimComputerFctl_B.Data_ky = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_flex_temp_deg.Data;
+  A380PrimComputerFctl_B.SSM_cl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_h5 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_1.Data;
+  A380PrimComputerFctl_B.SSM_es = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_2.SSM;
+  A380PrimComputerFctl_B.Data_ku = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_2.Data;
+  A380PrimComputerFctl_B.SSM_gi1 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_3.SSM;
+  A380PrimComputerFctl_B.Data_jp = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_status_word_3.Data;
+  A380PrimComputerFctl_B.SSM_jz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_limit_percent.SSM;
+  A380PrimComputerFctl_B.Data_nu = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_limit_percent.Data;
+  A380PrimComputerFctl_B.SSM_kt = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_maximum_percent.SSM;
+  A380PrimComputerFctl_B.Data_br = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_maximum_percent.Data;
+  A380PrimComputerFctl_B.SSM_eg = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_ae = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_a0 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n2_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_pe = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n2_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_cv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n1_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_fy = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.selected_n1_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_ea = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_maintenance_word_6.SSM;
+  A380PrimComputerFctl_B.Data_na = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_2.ecu_maintenance_word_6.Data;
+  A380PrimComputerFctl_B.SSM_p4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_tla_deg.SSM;
+  A380PrimComputerFctl_B.Data_i4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_tla_deg.Data;
+  A380PrimComputerFctl_B.SSM_m2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_ref_percent.SSM;
+  A380PrimComputerFctl_B.Data_cx = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_ref_percent.Data;
+  A380PrimComputerFctl_B.SSM_bt0 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_flex_temp_deg.SSM;
+  A380PrimComputerFctl_B.Data_nz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_flex_temp_deg.Data;
+  A380PrimComputerFctl_B.SSM_nr = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_id = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_1.Data;
+  A380PrimComputerFctl_B.SSM_fr = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_2.SSM;
+  A380PrimComputerFctl_B.Data_o2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_2.Data;
+  A380PrimComputerFctl_B.SSM_cc = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_3.SSM;
+  A380PrimComputerFctl_B.Data_gqq = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_status_word_3.Data;
+  A380PrimComputerFctl_B.SSM_mkm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_limit_percent.SSM;
+  A380PrimComputerFctl_B.Data_md = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_limit_percent.Data;
+  A380PrimComputerFctl_B.SSM_jhd = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_maximum_percent.SSM;
+  A380PrimComputerFctl_B.Data_cz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_maximum_percent.Data;
+  A380PrimComputerFctl_B.SSM_av = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_pm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_ira = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n2_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_bj = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n2_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_ge = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n1_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_pe5 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.selected_n1_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_lv = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_maintenance_word_6.SSM;
+  A380PrimComputerFctl_B.Data_jj = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_3.ecu_maintenance_word_6.Data;
+  A380PrimComputerFctl_B.SSM_cg = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_tla_deg.SSM;
+  A380PrimComputerFctl_B.Data_p5 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_tla_deg.Data;
+  A380PrimComputerFctl_B.SSM_be = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_ref_percent.SSM;
+  A380PrimComputerFctl_B.Data_ekl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_ref_percent.Data;
+  A380PrimComputerFctl_B.SSM_axb = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_flex_temp_deg.SSM;
+  A380PrimComputerFctl_B.Data_nd = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_flex_temp_deg.Data;
+  A380PrimComputerFctl_B.SSM_nz = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_1.SSM;
+  A380PrimComputerFctl_B.Data_n2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_1.Data;
+  A380PrimComputerFctl_B.SSM_gh = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_2.SSM;
+  A380PrimComputerFctl_B.Data_dl = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_2.Data;
+  A380PrimComputerFctl_B.SSM_ks = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_3.SSM;
+  A380PrimComputerFctl_B.Data_gs2 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_status_word_3.Data;
+  A380PrimComputerFctl_B.SSM_pw = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_limit_percent.SSM;
+  A380PrimComputerFctl_B.Data_h4 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_limit_percent.Data;
+  A380PrimComputerFctl_B.SSM_fh = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_maximum_percent.SSM;
+  A380PrimComputerFctl_B.Data_e3 = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_maximum_percent.Data;
+  A380PrimComputerFctl_B.SSM_gzn = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_command_percent.SSM;
+  A380PrimComputerFctl_B.Data_an = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.n1_command_percent.Data;
+  A380PrimComputerFctl_B.SSM_oo = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n2_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_i4o = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n2_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_evh = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n1_actual_percent.SSM;
+  A380PrimComputerFctl_B.Data_af = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.selected_n1_actual_percent.Data;
+  A380PrimComputerFctl_B.SSM_cn = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_maintenance_word_6.SSM;
+  A380PrimComputerFctl_B.Data_bm = A380PrimComputerFctl_P.out_Y0.data.adcn_inputs.eec_4.ecu_maintenance_word_6.Data;
   A380PrimComputerFctl_B.on_ground = A380PrimComputerFctl_P.out_Y0.general_logic.on_ground;
   A380PrimComputerFctl_B.tracking_mode_on = A380PrimComputerFctl_P.out_Y0.general_logic.tracking_mode_on;
   A380PrimComputerFctl_B.double_adr_failure = A380PrimComputerFctl_P.out_Y0.general_logic.double_adr_failure;
@@ -9758,167 +9761,150 @@ void A380PrimComputerFctl::initialize()
   A380PrimComputerFctl_B.ap_2_inop = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_2_inop;
   A380PrimComputerFctl_B.athr_inop = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_inop;
   A380PrimComputerFctl_B.fmgc_opp_priority = A380PrimComputerFctl_P.out_Y0.fg_logic.fmgc_opp_priority;
-  A380PrimComputerFctl_B.SSM_fm = A380PrimComputerFctl_P.out_Y0.fg_logic.altitude_indicated_ft.SSM;
-  A380PrimComputerFctl_B.Data_du = A380PrimComputerFctl_P.out_Y0.fg_logic.altitude_indicated_ft.Data;
+  A380PrimComputerFctl_B.SSM_fd = A380PrimComputerFctl_P.out_Y0.fg_logic.altitude_indicated_ft.SSM;
+  A380PrimComputerFctl_B.Data_nx = A380PrimComputerFctl_P.out_Y0.fg_logic.altitude_indicated_ft.Data;
   A380PrimComputerFctl_B.all_fcu_failure = A380PrimComputerFctl_P.out_Y0.fg_logic.all_fcu_failure;
   A380PrimComputerFctl_B.fcu_1_chosen = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_1_chosen;
   A380PrimComputerFctl_B.fcu_2_chosen = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_2_chosen;
+  A380PrimComputerFctl_B.SSM_fv = A380PrimComputerFctl_P.out_Y0.fg_logic.chosen_fcu_discrete_word_1.SSM;
+  A380PrimComputerFctl_B.Data_n0 = A380PrimComputerFctl_P.out_Y0.fg_logic.chosen_fcu_discrete_word_1.Data;
+  A380PrimComputerFctl_B.SSM_dt = A380PrimComputerFctl_P.out_Y0.fg_logic.chosen_fcu_discrete_word_2.SSM;
+  A380PrimComputerFctl_B.Data_eqi = A380PrimComputerFctl_P.out_Y0.fg_logic.chosen_fcu_discrete_word_2.Data;
   A380PrimComputerFctl_B.ils_failure = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_failure;
   A380PrimComputerFctl_B.both_ils_valid = A380PrimComputerFctl_P.out_Y0.fg_logic.both_ils_valid;
-  A380PrimComputerFctl_B.SSM_bf = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.runway_heading_deg.SSM;
-  A380PrimComputerFctl_B.Data_nx = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.runway_heading_deg.Data;
-  A380PrimComputerFctl_B.SSM_fd = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.ils_frequency_mhz.SSM;
-  A380PrimComputerFctl_B.Data_n0 = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.ils_frequency_mhz.Data;
-  A380PrimComputerFctl_B.SSM_fv =
+  A380PrimComputerFctl_B.SSM_j5 = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.runway_heading_deg.SSM;
+  A380PrimComputerFctl_B.Data_nr = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.runway_heading_deg.Data;
+  A380PrimComputerFctl_B.SSM_ng = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.ils_frequency_mhz.SSM;
+  A380PrimComputerFctl_B.Data_p3 = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.ils_frequency_mhz.Data;
+  A380PrimComputerFctl_B.SSM_cs =
     A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.localizer_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_eqi =
+  A380PrimComputerFctl_B.Data_nb =
     A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.localizer_deviation_deg.Data;
-  A380PrimComputerFctl_B.SSM_dt =
+  A380PrimComputerFctl_B.SSM_ls =
     A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.glideslope_deviation_deg.SSM;
-  A380PrimComputerFctl_B.Data_nr =
+  A380PrimComputerFctl_B.Data_hd =
     A380PrimComputerFctl_P.out_Y0.fg_logic.ils_computation_data.glideslope_deviation_deg.Data;
   A380PrimComputerFctl_B.ils_tune_inhibit = A380PrimComputerFctl_P.out_Y0.fg_logic.ils_tune_inhibit;
   A380PrimComputerFctl_B.rwy_hdg_memo = A380PrimComputerFctl_P.out_Y0.fg_logic.rwy_hdg_memo;
   A380PrimComputerFctl_B.tcas_failure = A380PrimComputerFctl_P.out_Y0.fg_logic.tcas_failure;
   A380PrimComputerFctl_B.tcas_mode_available = A380PrimComputerFctl_P.out_Y0.fg_logic.tcas_mode_available;
-  A380PrimComputerFctl_B.rwy_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.rwy_active;
-  A380PrimComputerFctl_B.nav_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.nav_active;
-  A380PrimComputerFctl_B.loc_cpt_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.loc_cpt_active;
-  A380PrimComputerFctl_B.loc_trk_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.loc_trk_active;
+  A380PrimComputerFctl_B.rwy_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.rwy_active;
+  A380PrimComputerFctl_B.nav_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.nav_active;
+  A380PrimComputerFctl_B.loc_cpt_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.loc_cpt_active;
+  A380PrimComputerFctl_B.loc_trk_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.loc_trk_active;
   A380PrimComputerFctl_B.roll_goaround_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.roll_goaround_active;
-  A380PrimComputerFctl_B.hdg_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.hdg_active;
-  A380PrimComputerFctl_B.trk_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.trk_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.roll_goaround_active;
+  A380PrimComputerFctl_B.hdg_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.hdg_active;
+  A380PrimComputerFctl_B.trk_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.trk_active;
   A380PrimComputerFctl_B.rwy_loc_submode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.rwy_loc_submode_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.rwy_loc_submode_active;
   A380PrimComputerFctl_B.rwy_trk_submode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.rwy_trk_submode_active;
-  A380PrimComputerFctl_B.land_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.land_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.rwy_trk_submode_active;
+  A380PrimComputerFctl_B.land_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.land_active;
   A380PrimComputerFctl_B.align_submode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.align_submode_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.align_submode_active;
   A380PrimComputerFctl_B.rollout_submode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_modes.rollout_submode_active;
-  A380PrimComputerFctl_B.clb_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.clb_active;
-  A380PrimComputerFctl_B.des_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.des_active;
-  A380PrimComputerFctl_B.op_clb_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.op_clb_active;
-  A380PrimComputerFctl_B.op_des_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.op_des_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_modes.rollout_submode_active;
+  A380PrimComputerFctl_B.clb_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.clb_active;
+  A380PrimComputerFctl_B.des_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.des_active;
+  A380PrimComputerFctl_B.op_clb_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.op_clb_active;
+  A380PrimComputerFctl_B.op_des_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.op_des_active;
   A380PrimComputerFctl_B.pitch_takeoff_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.pitch_takeoff_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.pitch_takeoff_active;
   A380PrimComputerFctl_B.pitch_goaround_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.pitch_goaround_active;
-  A380PrimComputerFctl_B.vs_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.vs_active;
-  A380PrimComputerFctl_B.fpa_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.fpa_active;
-  A380PrimComputerFctl_B.alt_acq_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.alt_acq_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.pitch_goaround_active;
+  A380PrimComputerFctl_B.vs_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.vs_active;
+  A380PrimComputerFctl_B.fpa_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.fpa_active;
+  A380PrimComputerFctl_B.alt_acq_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.alt_acq_active;
   A380PrimComputerFctl_B.alt_hold_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.alt_hold_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.alt_hold_active;
   A380PrimComputerFctl_B.fma_dash_display =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.fma_dash_display;
-  A380PrimComputerFctl_B.gs_capt_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.gs_capt_active;
-  A380PrimComputerFctl_B.gs_trk_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.gs_trk_active;
-  A380PrimComputerFctl_B.final_des_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.final_des_active;
-  A380PrimComputerFctl_B.flare_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.flare_active;
-  A380PrimComputerFctl_B.cruise_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.cruise_active;
-  A380PrimComputerFctl_B.tcas_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_modes.tcas_active;
-  A380PrimComputerFctl_B.alt_acq_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.alt_acq_armed;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.fma_dash_display;
+  A380PrimComputerFctl_B.gs_capt_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.gs_capt_active;
+  A380PrimComputerFctl_B.gs_trk_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.gs_trk_active;
+  A380PrimComputerFctl_B.app_des_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.app_des_active;
+  A380PrimComputerFctl_B.flare_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.flare_active;
+  A380PrimComputerFctl_B.cruise_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.cruise_active;
+  A380PrimComputerFctl_B.tcas_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_modes.tcas_active;
+  A380PrimComputerFctl_B.alt_acq_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.alt_acq_armed;
   A380PrimComputerFctl_B.alt_acq_arm_possible =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.alt_acq_arm_possible;
-  A380PrimComputerFctl_B.nav_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.nav_armed;
-  A380PrimComputerFctl_B.loc_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.loc_armed;
-  A380PrimComputerFctl_B.land_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.land_armed;
-  A380PrimComputerFctl_B.glide_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.glide_armed;
-  A380PrimComputerFctl_B.final_des_armed =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.final_des_armed;
-  A380PrimComputerFctl_B.clb_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.clb_armed;
-  A380PrimComputerFctl_B.des_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.des_armed;
-  A380PrimComputerFctl_B.tcas_armed = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.armed_modes.tcas_armed;
-  A380PrimComputerFctl_B.active_lateral_law = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.active_lateral_law;
-  A380PrimComputerFctl_B.active_longitudinal_law =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.active_longitudinal_law;
-  A380PrimComputerFctl_B.auto_spd_control_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.auto_spd_control_active;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.alt_acq_arm_possible;
+  A380PrimComputerFctl_B.nav_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.nav_armed;
+  A380PrimComputerFctl_B.loc_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.loc_armed;
+  A380PrimComputerFctl_B.rwy_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.rwy_armed;
+  A380PrimComputerFctl_B.land_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.land_armed;
+  A380PrimComputerFctl_B.glide_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.glide_armed;
+  A380PrimComputerFctl_B.app_des_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.app_des_armed;
+  A380PrimComputerFctl_B.clb_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.clb_armed;
+  A380PrimComputerFctl_B.des_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.des_armed;
+  A380PrimComputerFctl_B.op_clb_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.op_clb_armed;
+  A380PrimComputerFctl_B.tcas_armed = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.armed_modes.tcas_armed;
+  A380PrimComputerFctl_B.active_lateral_law = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.active_lateral_law;
+  A380PrimComputerFctl_B.active_longitudinal_law = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.active_longitudinal_law;
+  A380PrimComputerFctl_B.auto_spd_control_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.auto_spd_control_active;
   A380PrimComputerFctl_B.manual_spd_control_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.manual_spd_control_active;
-  A380PrimComputerFctl_B.mach_control_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.mach_control_active;
-  A380PrimComputerFctl_B.spd_target_kts = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.spd_target_kts;
-  A380PrimComputerFctl_B.pfd_spd_target_kts = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.pfd_spd_target_kts;
-  A380PrimComputerFctl_B.alt_cstr_applicable = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.alt_cstr_applicable;
-  A380PrimComputerFctl_B.alt_sel_or_cstr = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.alt_sel_or_cstr;
-  A380PrimComputerFctl_B.fmgc_opp_mode_sync = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.fmgc_opp_mode_sync;
-  A380PrimComputerFctl_B.any_ap_fd_engaged = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.any_ap_fd_engaged;
-  A380PrimComputerFctl_B.any_lateral_mode_engaged =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.any_lateral_mode_engaged;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.manual_spd_control_active;
+  A380PrimComputerFctl_B.mach_control_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.mach_control_active;
+  A380PrimComputerFctl_B.athr_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.athr_active;
+  A380PrimComputerFctl_B.athr_limited = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.athr_limited;
+  A380PrimComputerFctl_B.alpha_floor_mode_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.alpha_floor_mode_active;
+  A380PrimComputerFctl_B.thrust_mode_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.thrust_mode_active;
+  A380PrimComputerFctl_B.thrust_target_idle = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.thrust_target_idle;
+  A380PrimComputerFctl_B.speed_mach_mode_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.speed_mach_mode_active;
+  A380PrimComputerFctl_B.retard_mode_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.retard_mode_active;
+  A380PrimComputerFctl_B.athr_fma_mode = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.athr_fma_mode;
+  A380PrimComputerFctl_B.athr_fma_message = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.athr_fma_message;
+  A380PrimComputerFctl_B.spd_target_kts = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.spd_target_kts;
+  A380PrimComputerFctl_B.pfd_spd_target_kts = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.pfd_spd_target_kts;
+  A380PrimComputerFctl_B.alt_cstr_applicable = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.alt_cstr_applicable;
+  A380PrimComputerFctl_B.alt_sel_or_cstr = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.alt_sel_or_cstr;
+  A380PrimComputerFctl_B.mode_sync_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.mode_sync_active;
+  A380PrimComputerFctl_B.any_ap_fd_engaged = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.any_ap_fd_engaged;
+  A380PrimComputerFctl_B.any_lateral_mode_engaged = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.any_lateral_mode_engaged;
   A380PrimComputerFctl_B.any_longitudinal_mode_engaged =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.any_longitudinal_mode_engaged;
-  A380PrimComputerFctl_B.lateral_mode_reset = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_mode_reset;
-  A380PrimComputerFctl_B.longitudinal_mode_reset =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_mode_reset;
-  A380PrimComputerFctl_B.hdg_trk_preset_available =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.hdg_trk_preset_available;
-  A380PrimComputerFctl_B.alt_soft_mode_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.alt_soft_mode_active;
-  A380PrimComputerFctl_B.fd_auto_disengage = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.fd_auto_disengage;
-  A380PrimComputerFctl_B.ap_fd_mode_reversion = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.ap_fd_mode_reversion;
-  A380PrimComputerFctl_B.lateral_mode_reversion =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.lateral_mode_reversion;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.any_longitudinal_mode_engaged;
+  A380PrimComputerFctl_B.lateral_mode_reset = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_mode_reset;
+  A380PrimComputerFctl_B.longitudinal_mode_reset = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_mode_reset;
+  A380PrimComputerFctl_B.hdg_trk_preset_available = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.hdg_trk_preset_available;
+  A380PrimComputerFctl_B.alt_soft_mode_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.alt_soft_mode_active;
+  A380PrimComputerFctl_B.fd_auto_disengage = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.fd_auto_disengage;
+  A380PrimComputerFctl_B.ap_fd_mode_reversion = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.ap_fd_mode_reversion;
+  A380PrimComputerFctl_B.lateral_mode_reversion = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.lateral_mode_reversion;
   A380PrimComputerFctl_B.longitudinal_mode_reversion_vs =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_mode_reversion_vs;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_mode_reversion_vs;
   A380PrimComputerFctl_B.longitudinal_mode_reversion_op_clb =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longitudinal_mode_reversion_op_clb;
-  A380PrimComputerFctl_B.pitch_fd_bars_flashing =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.pitch_fd_bars_flashing;
-  A380PrimComputerFctl_B.roll_fd_bars_flashing =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.roll_fd_bars_flashing;
-  A380PrimComputerFctl_B.loc_bc_selection = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.loc_bc_selection;
-  A380PrimComputerFctl_B.vs_target_not_held = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.vs_target_not_held;
-  A380PrimComputerFctl_B.tcas_vs_target = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tcas_vs_target;
-  A380PrimComputerFctl_B.tcas_ra_corrective = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tcas_ra_corrective;
-  A380PrimComputerFctl_B.active_tcas_submode = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.active_tcas_submode;
-  A380PrimComputerFctl_B.tcas_alt_acq_cond = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tcas_alt_acq_cond;
-  A380PrimComputerFctl_B.tcas_alt_hold_cond = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tcas_alt_hold_cond;
-  A380PrimComputerFctl_B.tcas_ra_inhibited = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tcas_ra_inhibited;
-  A380PrimComputerFctl_B.trk_fpa_deselected = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.trk_fpa_deselected;
-  A380PrimComputerFctl_B.longi_large_box_tcas = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.longi_large_box_tcas;
-  A380PrimComputerFctl_B.land_2_capability = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_2_capability;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longitudinal_mode_reversion_op_clb;
+  A380PrimComputerFctl_B.pitch_fd_bars_flashing = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.pitch_fd_bars_flashing;
+  A380PrimComputerFctl_B.roll_fd_bars_flashing = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.roll_fd_bars_flashing;
+  A380PrimComputerFctl_B.loc_bc_selection = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.loc_bc_selection;
+  A380PrimComputerFctl_B.vs_target_not_held = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.vs_target_not_held;
+  A380PrimComputerFctl_B.tcas_vs_target = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tcas_vs_target;
+  A380PrimComputerFctl_B.tcas_ra_corrective = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tcas_ra_corrective;
+  A380PrimComputerFctl_B.active_tcas_submode = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.active_tcas_submode;
+  A380PrimComputerFctl_B.tcas_alt_acq_cond = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tcas_alt_acq_cond;
+  A380PrimComputerFctl_B.tcas_alt_hold_cond = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tcas_alt_hold_cond;
+  A380PrimComputerFctl_B.tcas_ra_inhibited = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tcas_ra_inhibited;
+  A380PrimComputerFctl_B.trk_fpa_deselected = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.trk_fpa_deselected;
+  A380PrimComputerFctl_B.longi_large_box_tcas = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.longi_large_box_tcas;
+  A380PrimComputerFctl_B.land_2_capability = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_2_capability;
   A380PrimComputerFctl_B.land_3_fail_passive_capability =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_3_fail_passive_capability;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_3_fail_passive_capability;
   A380PrimComputerFctl_B.land_3_fail_op_capability =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_3_fail_op_capability;
-  A380PrimComputerFctl_B.land_2_inop = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_2_inop;
-  A380PrimComputerFctl_B.land_3_fail_passive_inop =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_3_fail_passive_inop;
-  A380PrimComputerFctl_B.land_3_fail_op_inop = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.land_3_fail_op_inop;
-  A380PrimComputerFctl_B.tla_to_ga_set = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.tla_to_ga_set;
-  A380PrimComputerFctl_B.true_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.true_active;
-  A380PrimComputerFctl_B.trk_fpa_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.trk_fpa_active;
-  A380PrimComputerFctl_B.metric_alt_active = A380PrimComputerFctl_P.out_Y0.fg_logic.ap_fd_logic.metric_alt_active;
-  A380PrimComputerFctl_B.athr_active = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.athr_active;
-  A380PrimComputerFctl_B.athr_limited = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.athr_limited;
-  A380PrimComputerFctl_B.alpha_floor_mode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.alpha_floor_mode_active;
-  A380PrimComputerFctl_B.thrust_mode_active = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.thrust_mode_active;
-  A380PrimComputerFctl_B.thrust_target_idle = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.thrust_target_idle;
-  A380PrimComputerFctl_B.speed_mach_mode_active =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.speed_mach_mode_active;
-  A380PrimComputerFctl_B.retard_mode_active = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.retard_mode_active;
-  A380PrimComputerFctl_B.fma_mode = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.fma_mode;
-  A380PrimComputerFctl_B.fma_message = A380PrimComputerFctl_P.out_Y0.fg_logic.athr_logic.fma_message;
-  A380PrimComputerFctl_B.spd_mach_display_value =
-    A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.spd_mach_display_value;
-  A380PrimComputerFctl_B.spd_mach_dashes = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.spd_mach_dashes;
-  A380PrimComputerFctl_B.hdg_trk_display_value = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.hdg_trk_display_value;
-  A380PrimComputerFctl_B.hdg_trk_dashes = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.hdg_trk_dashes;
-  A380PrimComputerFctl_B.alt_display_value = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.alt_display_value;
-  A380PrimComputerFctl_B.vs_fpa_display_value = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.vs_fpa_display_value;
-  A380PrimComputerFctl_B.vs_fpa_dashes = A380PrimComputerFctl_P.out_Y0.fg_logic.fcu_logic.vs_fpa_dashes;
+    A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_3_fail_op_capability;
+  A380PrimComputerFctl_B.land_2_inop = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_2_inop;
+  A380PrimComputerFctl_B.land_3_fail_passive_inop = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_3_fail_passive_inop;
+  A380PrimComputerFctl_B.land_3_fail_op_inop = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.land_3_fail_op_inop;
+  A380PrimComputerFctl_B.tla_to_ga_set = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.tla_to_ga_set;
+  A380PrimComputerFctl_B.true_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.true_active;
+  A380PrimComputerFctl_B.trk_fpa_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.trk_fpa_active;
+  A380PrimComputerFctl_B.metric_alt_active = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.metric_alt_active;
+  A380PrimComputerFctl_B.selected_spd_mach = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.selected_spd_mach;
+  A380PrimComputerFctl_B.spd_mach_dashes = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.spd_mach_dashes;
+  A380PrimComputerFctl_B.selected_hdg_trk = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.selected_hdg_trk;
+  A380PrimComputerFctl_B.hdg_trk_dashes = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.hdg_trk_dashes;
+  A380PrimComputerFctl_B.selected_alt = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.selected_alt;
+  A380PrimComputerFctl_B.selected_vs_fpa = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.selected_vs_fpa;
+  A380PrimComputerFctl_B.vs_fpa_dashes = A380PrimComputerFctl_P.out_Y0.fg_mode_logic.vs_fpa_dashes;
   A380PrimComputerFctl_B.Phi_loc_c = A380PrimComputerFctl_P.out_Y0.fg_laws.ap_fd_1.Phi_loc_c;
   A380PrimComputerFctl_B.Nosewheel_c = A380PrimComputerFctl_P.out_Y0.fg_laws.ap_fd_1.Nosewheel_c;
   A380PrimComputerFctl_B.Theta_c_deg = A380PrimComputerFctl_P.out_Y0.fg_laws.ap_fd_1.flight_director.Theta_c_deg;
@@ -10127,10 +10113,10 @@ void A380PrimComputerFctl::initialize()
   A380PrimComputerFctl_B.Data_pu = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.rudder_1_position_deg.Data;
   A380PrimComputerFctl_B.SSM_bp = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.rudder_2_position_deg.SSM;
   A380PrimComputerFctl_B.Data_ly = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.rudder_2_position_deg.Data;
-  A380PrimComputerFctl_B.SSM_in = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_1_ft.SSM;
-  A380PrimComputerFctl_B.Data_cn = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_1_ft.Data;
-  A380PrimComputerFctl_B.SSM_ff = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_2_ft.SSM;
-  A380PrimComputerFctl_B.Data_nxl = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_2_ft.Data;
+  A380PrimComputerFctl_B.SSM_js = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_1_ft.SSM;
+  A380PrimComputerFctl_B.Data_gl = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_1_ft.Data;
+  A380PrimComputerFctl_B.SSM_is3 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_2_ft.SSM;
+  A380PrimComputerFctl_B.Data_myb = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.radio_height_2_ft.Data;
   A380PrimComputerFctl_B.SSM_hb = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.fctl_law_status_word.SSM;
   A380PrimComputerFctl_B.Data_j2 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.fctl_law_status_word.Data;
   A380PrimComputerFctl_B.SSM_gz = A380PrimComputerFctl_P.out_Y0.bus_outputs.fctl.discrete_status_word_1.SSM;
@@ -10223,13 +10209,13 @@ void A380PrimComputerFctl::initialize()
   A380PrimComputerFctl_B.Data_n4 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.low_target_speed_margin_kts.Data;
   A380PrimComputerFctl_B.SSM_a5 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.high_target_speed_margin_kts.SSM;
   A380PrimComputerFctl_B.Data_ot = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.high_target_speed_margin_kts.Data;
-  A380PrimComputerFctl_B.SSM_a50 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.nosewheel_cmd_deg.SSM;
+  A380PrimComputerFctl_B.SSM_op = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.nosewheel_cmd_deg.SSM;
   A380PrimComputerFctl_B.Data_gv = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.nosewheel_cmd_deg.Data;
   A380PrimComputerFctl_B.SSM_ha = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.n1_command_percent.SSM;
   A380PrimComputerFctl_B.Data_ou = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.n1_command_percent.Data;
   A380PrimComputerFctl_B.SSM_bt = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.flx_to_temp_deg_c.SSM;
   A380PrimComputerFctl_B.Data_dh = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.flx_to_temp_deg_c.Data;
-  A380PrimComputerFctl_B.SSM_op = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.discrete_word_7.SSM;
+  A380PrimComputerFctl_B.SSM_a50 = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.discrete_word_7.SSM;
   A380PrimComputerFctl_B.Data_ph = A380PrimComputerFctl_P.out_Y0.bus_outputs.fg.discrete_word_7.Data;
 }
 

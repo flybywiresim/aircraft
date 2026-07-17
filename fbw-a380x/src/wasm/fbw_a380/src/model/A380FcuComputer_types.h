@@ -385,16 +385,7 @@ struct base_fcu_bus
   base_arinc_429 baro_setting_hpa;
   base_arinc_429 baro_setting_inhg;
   base_arinc_429 afs_discrete_word_1;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-
-struct base_fcu_sim_input
-{
-  real32_T baro_setting_hpa;
+  base_arinc_429 afs_discrete_word_2;
 };
 
 #endif
@@ -408,6 +399,16 @@ struct base_fcu_discrete_outputs
   base_fcu_afs_panel_outputs afs_outputs;
   boolean_T true_selected;
   boolean_T fcu_healthy;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+
+struct base_fcu_sim_input
+{
+  real32_T baro_setting_hpa;
 };
 
 #endif

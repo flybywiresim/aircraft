@@ -339,6 +339,7 @@ class SimConnectInterface {
   bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
   bool setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output);
   bool setClientDataPrimFgLogicOutput(const base_prim_fg_logic_output& output);
+  bool setClientDataPrimFgModeLogicOutput(const base_prim_ap_fd_logic_outputs& output);
   bool setClientDataPrimFgLawsOutput(const base_prim_fg_laws_outputs& output);
   bool setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output);
 
@@ -348,6 +349,7 @@ class SimConnectInterface {
   base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
   base_prim_flight_envelope_outputs& getClientDataPrimFlightEnvelopeOutput();
   base_prim_fg_logic_output& getClientDataPrimFgLogicOutput();
+  base_prim_ap_fd_logic_outputs& getClientDataPrimFgModeLogicOutput();
   base_prim_fg_laws_outputs& getClientDataPrimFgLawsOutput();
   base_prim_fctl_logic_outputs& getClientDataPrimFctlLogicOutput();
 
@@ -376,6 +378,7 @@ class SimConnectInterface {
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
   bool setClientDataFadec(base_eec& output, int fadecIndex);
+  bool setClientDataFms(base_fms_inputs& output);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -404,6 +407,7 @@ class SimConnectInterface {
     PRIM_GENERAL_LOGIC_OUTPUT,
     PRIM_FLIGHT_ENVELOPE_OUTPUT,
     PRIM_FLIGHT_FG_LOGIC_OUTPUT,
+    PRIM_FLIGHT_FG_MODE_LOGIC_OUTPUT,
     PRIM_FLIGHT_FG_LAWS_OUTPUT,
     PRIM_FCTL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
@@ -437,6 +441,7 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
+    FMS_INPUTS,
   };
 
   bool isConnected = false;
@@ -485,6 +490,7 @@ class SimConnectInterface {
   base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
   base_prim_flight_envelope_outputs clientDataPrimFlightEnvelopeOutput = {};
   base_prim_fg_logic_output clientDataPrimFgLogicOutput = {};
+  base_prim_ap_fd_logic_outputs clientDataPrimFgModeLogicOutput = {};
   base_prim_fg_laws_outputs clientDataPrimFgLawsOutput = {};
   base_prim_fctl_logic_outputs clientDataPrimFctlLogicOutput = {};
 

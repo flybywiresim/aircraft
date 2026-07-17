@@ -3,182 +3,144 @@
 A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380PrimComputerFg_P{
 
   {
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
+    {
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
 
     {
-      0.0,
-      0.0
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
     },
-    false,
-    false,
-    false,
-    false,
-    false,
 
     {
-      {
-        0.0,
-        0.0
-      },
-
-      {
-        0.0,
-        0.0
-      },
-
-      {
-        0.0,
-        0.0
-      },
-
-      {
-        0.0,
-        0.0
-      }
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
     },
+    lateral_law::NONE,
+    vertical_law::NONE,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    a380_athr_fma_mode::NONE,
+    a380_athr_fma_message::NONE,
+    0.0,
+    0.0,
     false,
     0.0,
     false,
     false,
-
-    {
-      {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      },
-
-      {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      },
-
-      {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      },
-      lateral_law::NONE,
-      vertical_law::NONE,
-      false,
-      false,
-      false,
-      0.0,
-      0.0,
-      false,
-      0.0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      0.0,
-      false,
-      tcas_submode::VS,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    },
-
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      athr_fma_mode::NONE,
-      athr_fma_message::NONE
-    },
-
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    }
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    false,
+    tcas_submode::VS,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
   },
+
+  19.0,
 
   23.0,
 
-  0.0,
+  20.0,
 
-  0.0,
+  21.0,
+
+  22.0,
+
+  27.0,
 
   700.0,
 
+  0.0,
+
+  0.0,
+
   20.0,
+
+  36.7,
+
+  36.7,
+
+  -10.0,
+
+  22.0,
+
+  40.0,
 
   36.7,
 
@@ -212,6 +174,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   0.0,
 
+  0.0,
+
   25.0,
 
   0.0,
@@ -226,15 +190,13 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   35.0,
 
-  34.0,
-
-  34.0,
-
   24.0,
 
   24.0,
 
-  1.0,
+  34.0,
+
+  34.0,
 
   1.0,
 
@@ -243,6 +205,14 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   1.0,
 
   1.0,
+
+  0.0,
+
+  0.0,
+
+  1.0,
+
+  0.0,
 
   0.0,
 
@@ -257,6 +227,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   5.0,
 
   0.72,
+
+  0.2,
 
   0.2,
 
@@ -284,17 +256,25 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   10.0,
 
+  0.5,
+
   fmgc_des_submode::SPEED_THRUST,
 
-  fmgc_flight_phase::Approach,
+  fms_flight_phase::Approach,
 
-  fmgc_flight_phase::Approach,
+  fms_flight_phase::Approach,
+
+  0.0F,
 
   0.0F,
 
   0.0F,
 
-  false,
+  0.0F,
+
+  0.0F,
+
+  0.0F,
 
   false,
 
@@ -320,51 +300,11 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   false,
 
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
+  false,
 
   false,
 
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
   false,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
 
   true,
 
@@ -392,7 +332,61 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   true,
 
+  true,
+
+  true,
+
   false,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  false,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  false,
+
+  true,
+
+  true,
 
   true,
 
@@ -402,7 +396,43 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   false,
 
+  false,
+
   true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  false,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  0,
+
+  0,
+
+  0,
+
+  0,
+
+  1,
+
+  2,
+
+  3,
 
 
   {
@@ -1290,10 +1320,20 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -2756,7 +2796,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       {
         {
           false,
-          fmgc_flight_phase::Preflight,
+          fms_flight_phase::Preflight,
           fmgc_approach_type::None,
           false,
           0.0,
@@ -3335,123 +3375,117 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       false,
       0.0,
       false,
+      false
+    },
+
+    {
+      {
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      },
+
+      {
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      },
+
+      {
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      },
+      lateral_law::NONE,
+      vertical_law::NONE,
       false,
-
-      {
-        {
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        },
-
-        {
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        },
-
-        {
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        },
-        lateral_law::NONE,
-        vertical_law::NONE,
-        false,
-        false,
-        false,
-        0.0,
-        0.0,
-        false,
-        0.0,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        0.0,
-        false,
-        tcas_submode::VS,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      },
-
-      {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        athr_fma_mode::NONE,
-        athr_fma_message::NONE
-      },
-
-      {
-        0.0F,
-        false,
-        0.0F,
-        false,
-        0.0F,
-        0.0F,
-        false
-      }
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      a380_athr_fma_mode::NONE,
+      a380_athr_fma_message::NONE,
+      0.0,
+      0.0,
+      false,
+      0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      0.0,
+      false,
+      tcas_submode::VS,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      0.0F,
+      false,
+      0.0F,
+      false,
+      0.0F,
+      0.0F,
+      false
     },
 
     {
@@ -4078,6 +4112,23 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   -1.0F,
 
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  0.0F,
+
+  -1.0F,
+
+  0.0F,
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
   false,
 
 
@@ -4095,8 +4146,15 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   false,
 
+  false,
+
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
 
   false,
 

@@ -44,6 +44,7 @@ class A380PrimComputerGeneralLogic final
   struct Parameters_A380PrimComputerGeneralLogic_T {
     struct_SypABsMe64R9KOFl2RjNgF prim_fctl_logic_output_MATLABStruct;
     base_prim_laws_outputs prim_laws_output_MATLABStruct;
+    struct_sHDyyIym2nhzMY8qs6JrkG prim_fg_mode_logic_output_MATLABStruct;
     base_prim_analog_outputs prim_analog_output_MATLABStruct;
     base_prim_discrete_outputs prim_discrete_output_MATLABStruct;
     real_T LagFilter_C1;
@@ -83,10 +84,10 @@ class A380PrimComputerGeneralLogic final
     boolean_T ConfirmNode2_isRisingEdge_k;
     prim_outputs out_Y0;
     base_prim_out_bus Constant4_Value;
-    base_prim_fg_logic_output Constant5_Value;
     base_prim_fg_laws_outputs Constant8_Value;
     base_prim_general_logic_outputs Constant6_Value;
     base_prim_flight_envelope_outputs Constant7_Value;
+    base_prim_fg_logic_output Constant5_Value;
     real32_T Constant2_Value;
     real32_T Constant3_Value;
     real32_T Constant6_Value_a;

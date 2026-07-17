@@ -1540,7 +1540,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
   modelInputs.in.adcn_inputs.fms.fm_valid = true;
-  modelInputs.in.adcn_inputs.fms.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
+  modelInputs.in.adcn_inputs.fms.active_fms_flight_phase = static_cast<fms_flight_phase>(idFmgcFlightPhase->get());
   modelInputs.in.adcn_inputs.fms.selected_approach_type = idFmRnavAppSelected->get() ? fmgc_approach_type::RNAV : fmgc_approach_type::ILS;
   modelInputs.in.adcn_inputs.fms.backbeam_selected = idFm1BackbeamSelected->get();
   modelInputs.in.adcn_inputs.fms.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;

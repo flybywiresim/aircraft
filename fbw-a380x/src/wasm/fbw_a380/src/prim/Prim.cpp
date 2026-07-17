@@ -61,6 +61,7 @@ void Prim::update(double deltaTime,
   if (generalLogicDisabled || fctlDisabled || feDisabled || fgDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.analog_inputs);
+    simConnectInterface.setClientDataFms(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.adcn_inputs.fms);
   }
 
   primGeneralLogic.A380PrimComputerGeneralLogic_U.in.sim_data.computer_running = monitoringHealthy;
@@ -115,12 +116,14 @@ void Prim::update(double deltaTime,
   } else {
     primFg.A380PrimComputerFg_Y.out = primFe.A380PrimComputerFe_Y.out;
     primFg.A380PrimComputerFg_Y.out.fg_logic = simConnectInterface.getClientDataPrimFgLogicOutput();
+    primFg.A380PrimComputerFg_Y.out.fg_mode_logic = simConnectInterface.getClientDataPrimFgModeLogicOutput();
     primFg.A380PrimComputerFg_Y.out.fg_laws = simConnectInterface.getClientDataPrimFgLawsOutput();
   }
   primFctl.A380PrimComputerFctl_U.in = primFg.A380PrimComputerFg_Y.out;
 
   if (fctlDisabled) {
     simConnectInterface.setClientDataPrimFgLogicOutput(primFg.A380PrimComputerFg_Y.out.fg_logic);
+    simConnectInterface.setClientDataPrimFgModeLogicOutput(primFg.A380PrimComputerFg_Y.out.fg_mode_logic);
     simConnectInterface.setClientDataPrimFgLawsOutput(primFg.A380PrimComputerFg_Y.out.fg_laws);
   }
 

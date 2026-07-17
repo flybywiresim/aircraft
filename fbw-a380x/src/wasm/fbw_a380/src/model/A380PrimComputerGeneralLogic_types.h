@@ -141,10 +141,10 @@ struct base_prim_fg_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_fmgc_flight_phase_
-#define DEFINED_TYPEDEF_FOR_fmgc_flight_phase_
+#ifndef DEFINED_TYPEDEF_FOR_fms_flight_phase_
+#define DEFINED_TYPEDEF_FOR_fms_flight_phase_
 
-enum class fmgc_flight_phase
+enum class fms_flight_phase
   : int32_T {
   Preflight = 0,
   Takeoff,
@@ -472,6 +472,7 @@ struct base_fcu_bus
   base_arinc_429 baro_setting_hpa;
   base_arinc_429 baro_setting_inhg;
   base_arinc_429 afs_discrete_word_1;
+  base_arinc_429 afs_discrete_word_2;
 };
 
 #endif
@@ -537,7 +538,7 @@ struct base_prim_bus_inputs
 struct base_fms_inputs
 {
   boolean_T fm_valid;
-  fmgc_flight_phase fms_flight_phase;
+  fms_flight_phase active_fms_flight_phase;
   fmgc_approach_type selected_approach_type;
   boolean_T backbeam_selected;
   real_T fms_loc_distance;
@@ -892,6 +893,41 @@ struct base_prim_fctl_logic_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
+#define DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
+
+struct base_prim_fg_logic_output
+{
+  boolean_T gnd_eng_stop_flt_5s;
+  boolean_T ap_fd_common_condition;
+  boolean_T fd_1_engaged;
+  boolean_T fd_2_engaged;
+  boolean_T ap_1_engaged;
+  boolean_T ap_2_engaged;
+  boolean_T athr_engaged;
+  boolean_T fd_1_inop;
+  boolean_T fd_2_inop;
+  boolean_T ap_1_inop;
+  boolean_T ap_2_inop;
+  boolean_T athr_inop;
+  boolean_T fmgc_opp_priority;
+  base_arinc_429 altitude_indicated_ft;
+  boolean_T all_fcu_failure;
+  boolean_T fcu_1_chosen;
+  boolean_T fcu_2_chosen;
+  base_arinc_429 chosen_fcu_discrete_word_1;
+  base_arinc_429 chosen_fcu_discrete_word_2;
+  boolean_T ils_failure;
+  boolean_T both_ils_valid;
+  base_ils_bus ils_computation_data;
+  boolean_T ils_tune_inhibit;
+  real_T rwy_hdg_memo;
+  boolean_T tcas_failure;
+  boolean_T tcas_mode_available;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_modes_
 #define DEFINED_TYPEDEF_FOR_base_prim_lateral_modes_
 
@@ -931,7 +967,7 @@ struct base_prim_longitudinal_modes
   boolean_T fma_dash_display;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
-  boolean_T final_des_active;
+  boolean_T app_des_active;
   boolean_T flare_active;
   boolean_T cruise_active;
   boolean_T tcas_active;
@@ -948,11 +984,13 @@ struct base_prim_armed_modes
   boolean_T alt_acq_arm_possible;
   boolean_T nav_armed;
   boolean_T loc_armed;
+  boolean_T rwy_armed;
   boolean_T land_armed;
   boolean_T glide_armed;
-  boolean_T final_des_armed;
+  boolean_T app_des_armed;
   boolean_T clb_armed;
   boolean_T des_armed;
+  boolean_T op_clb_armed;
   boolean_T tcas_armed;
 };
 
@@ -993,6 +1031,47 @@ enum class vertical_law
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_a380_athr_fma_mode_
+#define DEFINED_TYPEDEF_FOR_a380_athr_fma_mode_
+
+enum class a380_athr_fma_mode
+  : int32_T {
+  NONE = 0,
+  MAN_TOGA,
+  MAN_GA_SOFT,
+  MAN_FLEX,
+  MAN_DTO,
+  MAN_MCT,
+  MAN_THR,
+  SPEED,
+  MACH,
+  THR_MCT,
+  THR_CLB,
+  THR_LVR,
+  THR_IDLE,
+  A_FLOOR,
+  TOGA_LK,
+  THR_DCLB,
+  NOISE,
+  THR_DES
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_athr_fma_message_
+#define DEFINED_TYPEDEF_FOR_a380_athr_fma_message_
+
+enum class a380_athr_fma_message
+  : int32_T {
+  NONE = 0,
+  LVR_TOGA,
+  LVR_CLB,
+  LVR_MCT,
+  LVR_ASYM
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_tcas_submode_
 #define DEFINED_TYPEDEF_FOR_tcas_submode_
 
@@ -1018,11 +1097,20 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T auto_spd_control_active;
   boolean_T manual_spd_control_active;
   boolean_T mach_control_active;
+  boolean_T athr_active;
+  boolean_T athr_limited;
+  boolean_T alpha_floor_mode_active;
+  boolean_T thrust_mode_active;
+  boolean_T thrust_target_idle;
+  boolean_T speed_mach_mode_active;
+  boolean_T retard_mode_active;
+  a380_athr_fma_mode athr_fma_mode;
+  a380_athr_fma_message athr_fma_message;
   real_T spd_target_kts;
   real_T pfd_spd_target_kts;
   boolean_T alt_cstr_applicable;
   real_T alt_sel_or_cstr;
-  boolean_T fmgc_opp_mode_sync;
+  boolean_T mode_sync_active;
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;
@@ -1057,117 +1145,13 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T true_active;
   boolean_T trk_fpa_active;
   boolean_T metric_alt_active;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_fma_mode_
-#define DEFINED_TYPEDEF_FOR_athr_fma_mode_
-
-enum class athr_fma_mode
-  : int32_T {
-  NONE = 0,
-  MAN_TOGA,
-  MAN_GA_SOFT,
-  MAN_FLEX,
-  MAN_DTO,
-  MAN_MCT,
-  MAN_THR,
-  SPEED,
-  MACH,
-  THR_MCT,
-  THR_CLB,
-  THR_LVR,
-  THR_IDLE,
-  A_FLOOR,
-  TOGA_LK,
-  THR_DCLB,
-  NOISE,
-  THR_DES
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_fma_message_
-#define DEFINED_TYPEDEF_FOR_athr_fma_message_
-
-enum class athr_fma_message
-  : int32_T {
-  NONE = 0,
-  LVR_TOGA,
-  LVR_CLB,
-  LVR_MCT,
-  LVR_ASYM
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_athr_logic_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_athr_logic_outputs_
-
-struct base_prim_athr_logic_outputs
-{
-  boolean_T athr_active;
-  boolean_T athr_limited;
-  boolean_T alpha_floor_mode_active;
-  boolean_T thrust_mode_active;
-  boolean_T thrust_target_idle;
-  boolean_T speed_mach_mode_active;
-  boolean_T retard_mode_active;
-  athr_fma_mode fma_mode;
-  athr_fma_message fma_message;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_fcu_logic_output_
-#define DEFINED_TYPEDEF_FOR_base_prim_fg_fcu_logic_output_
-
-struct base_prim_fg_fcu_logic_output
-{
-  real32_T spd_mach_display_value;
+  real32_T selected_spd_mach;
   boolean_T spd_mach_dashes;
-  real32_T hdg_trk_display_value;
+  real32_T selected_hdg_trk;
   boolean_T hdg_trk_dashes;
-  real32_T alt_display_value;
-  real32_T vs_fpa_display_value;
+  real32_T selected_alt;
+  real32_T selected_vs_fpa;
   boolean_T vs_fpa_dashes;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
-#define DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
-
-struct base_prim_fg_logic_output
-{
-  boolean_T gnd_eng_stop_flt_5s;
-  boolean_T ap_fd_common_condition;
-  boolean_T fd_1_engaged;
-  boolean_T fd_2_engaged;
-  boolean_T ap_1_engaged;
-  boolean_T ap_2_engaged;
-  boolean_T athr_engaged;
-  boolean_T fd_1_inop;
-  boolean_T fd_2_inop;
-  boolean_T ap_1_inop;
-  boolean_T ap_2_inop;
-  boolean_T athr_inop;
-  boolean_T fmgc_opp_priority;
-  base_arinc_429 altitude_indicated_ft;
-  boolean_T all_fcu_failure;
-  boolean_T fcu_1_chosen;
-  boolean_T fcu_2_chosen;
-  boolean_T ils_failure;
-  boolean_T both_ils_valid;
-  base_ils_bus ils_computation_data;
-  boolean_T ils_tune_inhibit;
-  real_T rwy_hdg_memo;
-  boolean_T tcas_failure;
-  boolean_T tcas_mode_available;
-  base_prim_ap_fd_logic_outputs ap_fd_logic;
-  base_prim_athr_logic_outputs athr_logic;
-  base_prim_fg_fcu_logic_output fcu_logic;
 };
 
 #endif
@@ -1287,6 +1271,7 @@ struct prim_outputs
   base_prim_laws_outputs laws;
   base_prim_fctl_logic_outputs fctl_logic;
   base_prim_fg_logic_output fg_logic;
+  base_prim_ap_fd_logic_outputs fg_mode_logic;
   base_prim_fg_laws_outputs fg_laws;
   base_prim_discrete_outputs discrete_outputs;
   base_prim_analog_outputs analog_outputs;
@@ -1382,6 +1367,78 @@ struct struct_SypABsMe64R9KOFl2RjNgF
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
+#define DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
+
+struct struct_sHDyyIym2nhzMY8qs6JrkG
+{
+  base_prim_lateral_modes lateral_modes;
+  base_prim_longitudinal_modes longitudinal_modes;
+  base_prim_armed_modes armed_modes;
+  lateral_law active_lateral_law;
+  vertical_law active_longitudinal_law;
+  boolean_T auto_spd_control_active;
+  boolean_T manual_spd_control_active;
+  boolean_T mach_control_active;
+  boolean_T athr_active;
+  boolean_T athr_limited;
+  boolean_T alpha_floor_mode_active;
+  boolean_T thrust_mode_active;
+  boolean_T thrust_target_idle;
+  boolean_T speed_mach_mode_active;
+  boolean_T retard_mode_active;
+  a380_athr_fma_mode athr_fma_mode;
+  a380_athr_fma_message athr_fma_message;
+  real_T spd_target_kts;
+  real_T pfd_spd_target_kts;
+  boolean_T alt_cstr_applicable;
+  real_T alt_sel_or_cstr;
+  boolean_T mode_sync_active;
+  boolean_T any_ap_fd_engaged;
+  boolean_T any_lateral_mode_engaged;
+  boolean_T any_longitudinal_mode_engaged;
+  boolean_T lateral_mode_reset;
+  boolean_T longitudinal_mode_reset;
+  boolean_T hdg_trk_preset_available;
+  boolean_T alt_soft_mode_active;
+  boolean_T fd_auto_disengage;
+  boolean_T ap_fd_mode_reversion;
+  boolean_T lateral_mode_reversion;
+  boolean_T longitudinal_mode_reversion_vs;
+  boolean_T longitudinal_mode_reversion_op_clb;
+  boolean_T pitch_fd_bars_flashing;
+  boolean_T roll_fd_bars_flashing;
+  boolean_T loc_bc_selection;
+  boolean_T vs_target_not_held;
+  real_T tcas_vs_target;
+  boolean_T tcas_ra_corrective;
+  tcas_submode active_tcas_submode;
+  boolean_T tcas_alt_acq_cond;
+  boolean_T tcas_alt_hold_cond;
+  boolean_T tcas_ra_inhibited;
+  boolean_T trk_fpa_deselected;
+  boolean_T longi_large_box_tcas;
+  boolean_T land_2_capability;
+  boolean_T land_3_fail_passive_capability;
+  boolean_T land_3_fail_op_capability;
+  boolean_T land_2_inop;
+  boolean_T land_3_fail_passive_inop;
+  boolean_T land_3_fail_op_inop;
+  boolean_T tla_to_ga_set;
+  boolean_T true_active;
+  boolean_T trk_fpa_active;
+  boolean_T metric_alt_active;
+  boolean_T selected_spd_mach;
+  boolean_T spd_mach_dashes;
+  boolean_T selected_hdg_trk;
+  boolean_T hdg_trk_dashes;
+  boolean_T selected_alt;
+  boolean_T selected_vs_fpa;
+  boolean_T vs_fpa_dashes;
 };
 
 #endif

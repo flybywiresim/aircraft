@@ -27,7 +27,7 @@ class A380FcuComputer final
   };
 
   struct BlockIO_A380FcuComputer_T {
-    fcu_outputs BusAssignment_f;
+    fcu_outputs BusAssignment;
   };
 
   struct D_Work_A380FcuComputer_T {
@@ -48,7 +48,6 @@ class A380FcuComputer final
     boolean_T EFISLogic_MODE;
     rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_mt1;
     rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_kq;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_kj;
     rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_ce;
     rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_ij;
     rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_lf;
@@ -78,15 +77,15 @@ class A380FcuComputer final
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_g;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_k0;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_i4;
-    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_d;
+    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_dh;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_kh;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_on;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_c;
-    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_f;
+    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_cq;
+    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_fb;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_kr;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_m;
-    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_lu;
+    rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_l;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_bt;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_n;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_kn;
@@ -104,11 +103,23 @@ class A380FcuComputer final
   struct Parameters_A380FcuComputer_T {
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel_bit_n;
+    real_T BitfromLabel1_bit_m;
     real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel_bit_p;
+    real_T BitfromLabel1_bit_e;
+    real_T BitfromLabel2_bit_a;
+    real_T BitfromLabel3_bit_j;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel5_bit;
+    real_T BitfromLabel7_bit;
+    real_T BitfromLabel8_bit;
+    real_T BitfromLabel9_bit;
+    real_T BitfromLabel12_bit;
+    real_T BitfromLabel11_bit;
     real_T BitfromLabel6_bit;
+    real_T BitfromLabel10_bit;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode_isRisingEdge_a;
     real_T MTrigNode1_isRisingEdge;
@@ -201,10 +212,9 @@ class A380FcuComputer final
     boolean_T TFlipFlop1_init_p;
     boolean_T TFlipFlop2_init;
     boolean_T TFlipFlop2_init_n;
-    boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
-    boolean_T PulseNode_isRisingEdge_g;
+    boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_m;
     boolean_T PulseNode_isRisingEdge_o;
     boolean_T PulseNode2_isRisingEdge_l;
