@@ -16,6 +16,20 @@ interface A32NXFacBusBaseEvents {
    * Raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
+   * | 11  | Yaw Damper Own Engaged            |
+   * | 12  | Yaw Damper Opposite Engaged       |
+   * | 13  | Rudder Trim Own Engaged           |
+   * | 14  | Rudder Trim Opposite Engaged      |
+   * | 15  | Rudder Travel Limiter Own Engaged |
+   * | 16  | Rudder Travel Limiter Opp Engaged |
+   * |17-29| Spare                             |
+   */
+  a32nx_fac_discrete_word_2: number;
+  /**
+   * FAC Discrete word 3.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
    * | 11  | Low Energy Warning (SPEED x3)     |
    * | 12  | n/a                               |
    * | 13  | n/a                               |
@@ -24,6 +38,14 @@ interface A32NXFacBusBaseEvents {
    * |16-29| Spare                             |
    */
   a32nx_fac_discrete_word_3: number;
+  /**
+   * The rudder travel limiter command, in degrees. Raw ARINC word.
+   */
+  a32nx_fac_rudder_travel_lim_command: number;
+  /**
+   * The actual rudder trim position, in degrees. Raw ARINC word.
+   */
+  a32nx_fac_rudder_trim_position: number;
 }
 
 type IndexedTopics = keyof A32NXFacBusBaseEvents;
@@ -51,8 +73,20 @@ export class A32NXFacBusPublisher extends SimVarPublisher<A32NXFacBusPublisherEv
   public constructor(bus: EventBus, pacer?: PublishPacer<A32NXFacBusPublisherEvents>) {
     const simvars = new Map<keyof A32NXFacBusPublisherEvents, SimVarPublisherEntry<any>>([
       [
+        'a32nx_fac_discrete_word_2',
+        { name: 'L:A32NX_FAC_#index#_DISCRETE_WORD_2', type: SimVarValueType.Enum, indexed: true },
+      ],
+      [
         'a32nx_fac_discrete_word_3',
         { name: 'L:A32NX_FAC_#index#_DISCRETE_WORD_3', type: SimVarValueType.Enum, indexed: true },
+      ],
+      [
+        'a32nx_fac_rudder_travel_lim_command',
+        { name: 'L:A32NX_FAC_#index#_RUDDER_TRAVEL_LIMIT_COMMAND', type: SimVarValueType.Enum, indexed: true },
+      ],
+      [
+        'a32nx_fac_rudder_trim_position',
+        { name: 'L:A32NX_FAC_#index#_RUDDER_TRIM_POS', type: SimVarValueType.Enum, indexed: true },
       ],
     ]);
 
