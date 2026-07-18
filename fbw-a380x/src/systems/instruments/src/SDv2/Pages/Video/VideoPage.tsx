@@ -3,10 +3,9 @@
 
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../Generic/PageTitle';
-import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
-
 import '../../../index.scss';
 import { SdPageProps } from '../../SD';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
 export class VideoPage extends DestroyableComponent<SdPageProps> {
   private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));

@@ -12,6 +12,7 @@ import CruiseCond from './elements/CruiseCond';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SdPageProps } from '../../SD';
 import { SDSimvars } from '../../SDSimvarPublisher';
+import { PageTitle } from '../Generic/PageTitle';
 
 export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
