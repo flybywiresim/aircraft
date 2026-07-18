@@ -248,7 +248,7 @@ export class FmcAircraftInterface {
 
   private readonly vnavManagedSpeed = ConsumerValue.create(
     this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed'),
-    null
+    null,
   );
   private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
