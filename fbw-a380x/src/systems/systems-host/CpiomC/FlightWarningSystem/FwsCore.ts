@@ -805,7 +805,7 @@ export class FwsCore {
 
   public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => v !== 1);
 
-  public readonly fmsDestEfob = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
+  public readonly fmsDestEfobMemo = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
 
   /* 23 - COMMUNICATION */
   public readonly rmp1Fault = Subject.create(false);
