@@ -53,6 +53,8 @@
 1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
 1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
+1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
+1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)

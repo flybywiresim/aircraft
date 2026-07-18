@@ -1,6 +1,6 @@
 import { ConsumerSubject, FSComponent } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../Generic/PageTitle';
-import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 import '../../../index.scss';
 import { Flaps, Prims, Secs, Slats } from './elements/ComputerIndication';
