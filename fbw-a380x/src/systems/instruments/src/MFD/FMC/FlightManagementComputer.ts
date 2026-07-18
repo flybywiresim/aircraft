@@ -715,6 +715,11 @@ export class FlightManagementComputer implements FmcInterface {
     return null; // TODO secondary flight plans
   }
 
+  /** @inheritdoc */
+  inchesSelectedOnFcu(side: EfisSide): boolean {
+    return this.acInterface.isInchesSelectedOnFcu(side);
+  }
+
   private initSimVars() {
     // Reset SimVars
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
