@@ -571,7 +571,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private crzTablePredLine3 = Subject.create<string | null>(null);
 
-  private readonly destAirportIdent = Subject.create<string>('');
+  private readonly destAirportIdent = Subject.create<string>('----');
 
   private readonly destEta = Subject.create<string>('--:--');
 
@@ -669,7 +669,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly precisionApproachSelected = Subject.create<boolean>(false);
 
-  private readonly apprIdent = Subject.create<string>('');
+  private readonly apprIdent = Subject.create<string>('-------');
 
   private readonly towerHeadwind = Subject.create<number | null>(null);
 
@@ -762,7 +762,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     // V-speeds to be confirmed due to rwy change?
     this.shouldShowConfirmVSpeeds();
 
-    this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport?.ident ?? '');
+    this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport?.ident ?? '----');
 
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
@@ -770,6 +770,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       precisionApproach =
         this.loadedFlightPlan.approach.type === ApproachType.Ils ||
         this.loadedFlightPlan.approach.type === ApproachType.Gls;
+    } else {
+      this.apprIdent.set('-------');
     }
 
     this.precisionApproachSelected.set(precisionApproach);
