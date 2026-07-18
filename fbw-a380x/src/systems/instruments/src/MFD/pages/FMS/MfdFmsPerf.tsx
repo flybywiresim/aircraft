@@ -742,6 +742,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     v ? UnitType.METER : UnitType.FOOT,
   );
 
+  private readonly approachQnhFormatIsHpa = Subject.create<boolean>(true);
+
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
 
@@ -1363,6 +1365,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     } else {
       this.approachParametersMandatory.set(false);
     }
+    this.approachQnhFormatIsHpa.set(!this.props.fmcService.master.inchesSelectedOnFcu(this.props.mfd.side));
   }
 
   render(): VNode {
@@ -3127,7 +3130,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">QNH</span>
                         <InputField<number, number, false>
-                          dataEntryFormat={new QnhFormat()}
+                          dataEntryFormat={new QnhFormat(this.approachQnhFormatIsHpa)}
                           dataHandlerDuringValidation={async (v) => {
                             if (!v) {
                               return;

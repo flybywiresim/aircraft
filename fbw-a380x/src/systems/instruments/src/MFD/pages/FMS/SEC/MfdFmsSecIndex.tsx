@@ -2,7 +2,7 @@ import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
 import { FmsPage } from '../../common/FmsPage';
 import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 import {
   BitFlags,
