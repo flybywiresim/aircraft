@@ -15,6 +15,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from '../../MFD/pages/common/DataEntryFormats';
+import { shouldApplyMandatoryClass, shouldRenderMandatoryPlaceholder } from './InputFieldUtils';
 import { A380FmsError } from '../../MFD/shared/A380FmsError';
 import { FmsError } from '@fmgc/FmsError';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
@@ -144,12 +145,14 @@ export class InputField<
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
-      if (this.props.mandatory?.get()) {
-        this.textInputRef.getOrDefault()?.classList.remove('mandatory');
-      }
+      this.textInputRef.getOrDefault()?.classList.remove('mandatory');
     } else {
-      if (this.props.mandatory?.get()) {
+      // Only colour the placeholder amber for an active mandatory field; a disabled (or inactive)
+      // field keeps its grey/static colour (see #10843).
+      if (shouldApplyMandatoryClass(this.displayState())) {
         this.textInputRef.getOrDefault()?.classList.add('mandatory');
+      } else {
+        this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
     }
     this.updateDisplayElement();
@@ -367,12 +370,22 @@ export class InputField<
     }
   }
 
+  private displayState() {
+    return {
+      mandatory: this.props.mandatory?.get() ?? false,
+      disabled: this.props.disabled?.get() ?? false,
+      inactive: this.props.inactive?.get() ?? false,
+    };
+  }
+
   private populatePlaceholders() {
     const [formatted, unitLeading, unitTrailing] = this.props.dataEntryFormat.format(null);
     this.leadingUnit.set(unitLeading ?? '');
     this.trailingUnit.set(unitTrailing ?? '');
 
-    if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
+    // A disabled mandatory field must still show placeholder boxes (greyed out via the `disabled`
+    // class), not the raw amber dashes. Inactive fields are excluded as they render a static value.
+    if (shouldRenderMandatoryPlaceholder(this.displayState())) {
       this.textInputRef.instance.innerHTML =
         formatted?.replace(/-/gi, this.props.overrideEmptyMandatoryPlaceholder ?? '\u25AF') ?? '';
     } else {
@@ -501,8 +514,8 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.mandatory.sub((val) => {
-        if (val && this.readValue.get() === null) {
+      this.props.mandatory.sub(() => {
+        if (this.readValue.get() === null && shouldApplyMandatoryClass(this.displayState())) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
