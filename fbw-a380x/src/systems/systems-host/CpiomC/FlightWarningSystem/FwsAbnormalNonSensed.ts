@@ -647,5 +647,237 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    340900003: {
+      // NAV UNRELIABLE AIRSPEED INDICATION
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900003)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => {
+        const isGpsBelow10k = this.fws.gpsAltBelow10k.get();
+        const isGpsAbove10k = this.fws.gpsAltAbove10k.get();
+        const isGpsBelow25k = this.fws.gpsAltBelow25k.get();
+        const isGpsAbove25k = this.fws.gpsAltAbove25k.get();
+        const beforeThrustRed = this.fws.beforeThrustReduction.get();
+        const afterThrustRed = this.fws.afterThrustReduction.get();
+
+        return [
+          true, // [1]
+          true, // [2]
+          true, // [3]
+          true, // [4]
+          beforeThrustRed, // [5]
+          beforeThrustRed && isGpsBelow10k, // [6]
+          beforeThrustRed && isGpsAbove10k, // [7]
+          false, // [8] //TODO: if derated climb engaged
+          afterThrustRed, // [9]
+          afterThrustRed && isGpsBelow10k, // [10]
+          afterThrustRed && isGpsAbove10k && isGpsBelow25k, // [11]
+          afterThrustRed && isGpsAbove25k, // [12]
+          isGpsBelow25k, // [13]
+          isGpsBelow25k, // [14]
+          isGpsBelow25k, // [15]
+          isGpsBelow25k, // [16]
+          isGpsBelow25k, // [17]
+          isGpsBelow25k && this.fws.flapsHandle.get() === 4, // [18]
+          true, // [19]
+          true, // [20]
+          true, // [21]
+          true, // [22]
+          isGpsBelow25k, // [23]
+          isGpsBelow25k, // [24]
+          isGpsBelow25k, // [25]
+          isGpsBelow25k, // [26]
+          isGpsBelow25k, // [27]
+          isGpsBelow25k, // [28]
+          isGpsBelow25k, // [29]
+          isGpsBelow25k, // [30]
+          isGpsBelow25k, // [31]
+          isGpsBelow25k, // [32]
+          isGpsBelow25k, // [33]
+          isGpsBelow25k, // [34]
+          isGpsBelow25k, // [35]
+          isGpsBelow25k, // [36]
+          isGpsBelow25k, // [37]
+          isGpsBelow25k, // [38]
+          isGpsBelow25k, // [39]
+          isGpsBelow25k, // [40]
+          isGpsBelow25k, // [41]
+          isGpsBelow25k, // [42]
+          isGpsBelow25k, // [43]
+          false, // [44] //TODO check if at least two MFP heating failed
+          isGpsBelow25k, // [45]
+          isGpsBelow25k, // [46]
+          isGpsBelow25k, // [47]
+          isGpsBelow25k, // [48]
+          isGpsBelow25k, // [49]
+          isGpsBelow25k, // [50]
+          isGpsBelow25k, // [51]
+          false, // [52] //TODO check if soft GA is lost
+          isGpsAbove25k, // [53]
+          isGpsAbove25k, // [54]
+          isGpsAbove25k, // [55]
+          isGpsAbove25k, // [56]
+          isGpsAbove25k, // [57]
+          isGpsAbove25k, // [58]
+          isGpsAbove25k, // [59]
+          isGpsAbove25k, // [60]
+          isGpsAbove25k, // [61]
+          isGpsAbove25k, // [62]
+          isGpsAbove25k, // [63]
+          isGpsAbove25k, // [64]
+          isGpsAbove25k, // [65]
+          isGpsAbove25k, // [66]
+          isGpsAbove25k, // [67]
+          isGpsAbove25k, // [68]
+          isGpsAbove25k, // [69]
+          isGpsAbove25k, // [70]
+          isGpsAbove25k, // [71] //TODO check if soft GA is lost
+        ];
+      },
+      whichItemsChecked: () => [
+        false, // [1]
+        this.fws.apOff.get(), // [2]
+        this.fws.athrOff.get(), // [3]
+        this.fws.fdOff.get(), // [4]
+        this.fws.allThrottleToga.get(), // [5]
+        false, // [6]
+        false, // [7]
+        this.fws.allThrottleMct.get(), // [8]
+        this.fws.allThrottleClb.get(), // [9]
+        false, // [10]
+        false, // [11]
+        false, // [12]
+        false, // [13]
+        false, // [14]
+        false, // [15]
+        false, // [16]
+        false, // [17]
+        this.fws.flapsHandle.get() === 3, // [18]
+        false, // [19]
+        false, // [20]
+        false, // [21]
+        false, // [22]
+        false, // [23]
+        true, // [24]
+        this.fws.apOff.get(), // [25]
+        this.fws.athrOff.get(), // [26]
+        this.fws.fdOff.get(), // [27]
+        false, // [28]
+        false, // [29]
+        false, // [30]
+        false, // [31]
+        false, // [32]
+        false, // [33]
+        false, // [34]
+        false, // [35]
+        false, // [36]
+        false, // [37]
+        false, // [38]
+        false, // [39]
+        this.fws.allAdrPbsOff.get(), // [40]
+        false, // [41]
+        false, // [42]
+        false, // [43]
+        false, // [44]
+        this.fws.manCabinAltMode.get(), // [45]
+        false, // [46]
+        false, // [47]
+        false, // [48]
+        false, // [49]
+        false, // [50]
+        false, // [51]
+        false, // [52] //TODO check if soft GA is lost
+        true, // [53]
+        this.fws.apOff.get(), // [54]
+        this.fws.athrOff.get(), // [55]
+        this.fws.fdOff.get(), // [56]
+        false, // [57]
+        false, // [58]
+        false, // [59] RESULTING SPEED
+        false, // [60]
+        false, // [61]
+        false, // [62]
+        false, // [63]
+        false, // [64]
+        false, // [65]
+        false, // [66]
+        false, // [67]
+        false, // [68]
+        false, // [69]
+        false, // [70]
+        false, // [71]
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+      limitationsAllPhases: () => [],
+      inopSysAllPhases: () => [],
+      info: () => {
+        const isGpsBelow25k = this.fws.gpsAltBelow25k.get();
+        const isGpsAbove25k = this.fws.gpsAltAbove25k.get();
+        const allAdrOff = this.fws.allAdrPbsOff.get();
+
+        return [
+          '220200015',
+          isGpsBelow25k ? '340200007' : '',
+          allAdrOff ? '340200006' : '',
+          isGpsAbove25k ? '340200010' : '',
+          isGpsAbove25k ? '340200011' : '',
+          isGpsAbove25k ? '340200012' : '',
+          isGpsAbove25k ? '340200009' : '',
+          isGpsAbove25k ? '340200013' : '',
+          isGpsAbove25k ? '340200014' : '',
+          isGpsAbove25k ? '340200015' : '',
+          isGpsAbove25k ? '340200016' : '',
+          isGpsAbove25k ? '340200017' : '',
+          isGpsAbove25k ? '340200018' : '',
+          isGpsAbove25k ? '340200019' : '',
+        ];
+      },
+    },
+  };
+  public ewdDeferredProcs: EwdAbnormalDict = {
+    340700003: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.gpsAltBelow25k,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    340700002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.gpsAltAbove25k,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false, //TODO check if at least two MFP heating failed
+      ],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        this.fws.manCabinAltMode.get(),
+        false,
+        false,
+        this.fws.allAdrPbsOff.get(),
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
   };
 }

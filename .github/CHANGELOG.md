@@ -45,6 +45,16 @@
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
+1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
+1. [A380X/MFD] Fix LS field remaining blank on F-PLN arrival page when no landing system is available or selected - @matze-tech (matze2346)
+1. [A380X/PRIM] Move FE to PRIM and add SPD LIM flag - @lukecologne (luke)
+1. [A380X/PRIM] Improve speed trend behaviour - @lukecologne (luke)
+1. [A380X/FWS] Add NAV UNRELIABLE AIRSPEED INDICATION procedure - @matze-tech (matze2346)
+1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
+1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
+1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
+1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
+1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
 1. [FWS] Add Avionics Test Mode pin program to display flight phase number on EWD - @FozzieHi (fozzie)
 
 ## 2024.1.0
