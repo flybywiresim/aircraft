@@ -29,6 +29,7 @@
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
+1. [A32NX/FWS] Add `BARO VALUE DISAGREE` master caution, rename `ALTI DISCREPANCY` master caution to `ALT DISCREPANCY` - @FozzieHi (fozzie)
 
 ## 2020.15.0
 
