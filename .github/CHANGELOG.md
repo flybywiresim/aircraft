@@ -14,7 +14,7 @@
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
-1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
+1. [A380X/FMS] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
 1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 1. [A380X] Update aircraft to MSFS2024 native modular aircraft - @heclak (Heclak)
 1. [A380X/MODEL] Performance optimization of 3D model with reduced draw calls - @heclak (Heclak)
@@ -40,7 +40,7 @@
 1. [A32NX/FMS] Added full support for EOSIDs (engine out SID) - @tracernz (Mike)
 1. [A32NX/FMS] Improved engine out detection logic and added MCDU page EO CLR - @tracernz (Mike)
 1. [FMS] Automatically delete minimums when the approach is changed - @BravoMike99 (bruno_pt99)
-1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
+1. [A380X/FMS] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
@@ -55,6 +55,7 @@
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
 1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
 1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
 
 ## 2024.1.0

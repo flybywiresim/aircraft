@@ -1,18 +1,18 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
+
 import { ConsumerSubject, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
+import { PageTitle } from '../Generic/PageTitle';
 import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
+import '../../../index.scss';
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
-import { PageTitle } from '../Generic/PageTitle';
 import A380XCruise from './elements/A380Cruise';
 import CruisePressure from './elements/CruisePressure';
 import CruiseCond from './elements/CruiseCond';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { SDSimvars } from '../../SDSimvarPublisher';
 import { SdPageProps } from '../../SD';
-
-import '../../../index.scss';
+import { SDSimvars } from '../../SDSimvarPublisher';
 
 export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
