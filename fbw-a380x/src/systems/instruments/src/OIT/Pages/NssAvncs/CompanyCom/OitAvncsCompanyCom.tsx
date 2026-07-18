@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
 import { OitAvncsSubHeader } from '../OitAvncsSubHeader';
 import { OitAvncsCompanyComMenu } from './OitAvncsCompanyComMenu';
