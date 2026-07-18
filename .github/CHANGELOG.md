@@ -12,7 +12,6 @@
 
 ## 2024.2.0
 
-1. [A380X/MFD] Fix mandatory and disabled input fields showing amber dashes instead of grey placeholder boxes - @agarwalrahul2702 (Rahul Agarwal)
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
 1. [A380X/FMS] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
@@ -59,6 +58,7 @@
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/MFD] Fix mandatory and disabled input fields showing amber dashes instead of grey placeholder boxes - @agarwalrahul2702 (Rahul Agarwal)
 
 ## 2024.1.0
 
