@@ -12,7 +12,7 @@ pub fn set_diagnostics_reporter(reporter: DiagnosisReporter) {
     }
 }
 
-fn report_diagnostic(message: &str) {
+pub fn report_diagnostic(message: &str) {
     match DIAGNOSTICS_REPORTER.get() {
         Some(reporter) => reporter(message),
         None => println!("{message}"),
