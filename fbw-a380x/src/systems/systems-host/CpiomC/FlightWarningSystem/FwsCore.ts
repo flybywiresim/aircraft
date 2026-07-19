@@ -419,11 +419,11 @@ export class FwsCore {
 
   public readonly predWSOn = Subject.create(false);
 
-  public readonly seatBelt = Subject.create(false);
+  public readonly seatBeltsOn = Subject.create(false);
 
   public readonly seatBeltOnMemo = MappedSubject.create(
     ([seatBelt, memo]) => seatBelt && !memo,
-    this.seatBelt,
+    this.seatBeltsOn,
     this.takeoffOrLdgMemo,
   );
 
@@ -1777,8 +1777,8 @@ export class FwsCore {
   public readonly adr2Faulty = Subject.create(false);
   public readonly adr3Faulty = Subject.create(false);
 
-  private readonly adr3UsedLeft = Subject.create(false);
-  private readonly adr3UsedRight = Subject.create(false);
+  private adr3UsedLeft = false;
+  private adr3UsedRight = false;
 
   public readonly computedAirSpeedToNearest2 = MappedSubject.create(
     ([cas1, cas2, cas3, sideOn3]) =>
@@ -4620,14 +4620,15 @@ export class FwsCore {
 
     const adrKnob = SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum');
     this.airKnob.set(adrKnob);
-    this.adr3UsedLeft.set(adrKnob === 0);
-    this.adr3UsedRight.set(adrKnob === 2);
+    this.adr3UsedLeft = adrKnob === 0;
+    this.adr3UsedRight = adrKnob === 2;
     const attKnob = SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum');
     this.attKnob.set(attKnob);
     this.ir3UsedLeft = attKnob === 0;
     this.ir3UsedRight = attKnob === 2;
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') > 0);
+    //FIXME: Should be CIDS signal, not switch position.
+    this.seatBeltsOn.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1);
     this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
 
@@ -5165,10 +5166,10 @@ export class FwsCore {
 
     // TCAS fault SYS 1
     const oneUsedLeftAdrInop =
-      (adr1Fault && !this.adr3UsedLeft.get()) ||
+      (adr1Fault && !this.adr3UsedLeft) ||
       (adr3Fault &&
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
-        this.adr3UsedLeft.get());
+        this.adr3UsedLeft);
     const oneLeftUsedIrInop = (this.ir1Fault.get() && !this.ir3UsedLeft) || (this.ir3Fault.get() && this.ir3UsedLeft);
     const leftIrFaultyOrInAlign = this.ir3UsedLeft
       ? this.ir3Fault.get() || this.ir3Align.get()
@@ -5185,10 +5186,10 @@ export class FwsCore {
     const oneUsedRightAdrInop =
       (adr2Fault &&
         (adr2PressureAltitude.isFailureWarning() || adr2PressureAltitude.isNoComputedData()) &&
-        !this.adr3UsedRight.get()) ||
+        !this.adr3UsedRight) ||
       (adr3Fault &&
         (adr3PressureAltitude.isFailureWarning() || adr3PressureAltitude.isNoComputedData()) &&
-        this.adr3UsedRight.get());
+        this.adr3UsedRight);
     const oneUsedRightIrInop =
       (this.ir2Fault.get() && !this.ir3UsedRight) || (this.ir3Fault.get() && this.ir3UsedRight);
     const rightIrFaultyOrInAlign = this.ir3UsedRight
