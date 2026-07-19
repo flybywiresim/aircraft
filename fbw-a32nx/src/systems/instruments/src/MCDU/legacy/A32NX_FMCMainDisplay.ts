@@ -357,8 +357,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private static readonly MILISECONDS_IN_DAY = 86400000;
 
-  private readonly vnavManagedSpeed = ConsumerValue.create(
-    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed'),
+  private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
     null,
   );
 
@@ -1274,7 +1274,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = this.vnavManagedSpeed.get() ?? 0;
+          vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? 0;
           this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots');
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.

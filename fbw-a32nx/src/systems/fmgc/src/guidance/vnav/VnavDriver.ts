@@ -117,7 +117,7 @@ export class VnavDriver implements GuidanceComponent {
       this.acConfig,
     );
     this.vnavManagedSpeed.sub((v) => {
-      this.bus.getPublisher<VnavEvents>().pub('fms_vnav_managed_speed', v);
+      this.bus.getPublisher<VnavEvents>().pub('fms_vnav_managed_speed_descent_phase', v);
     });
   }
 

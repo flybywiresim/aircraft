@@ -246,8 +246,8 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
-  private readonly vnavManagedSpeed = ConsumerValue.create(
-    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed'),
+  private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
     null,
   );
   private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
@@ -1080,7 +1080,7 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = this.vnavManagedSpeed.get() ?? this.fmgc.getManagedDescentSpeed();
+          vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? this.fmgc.getManagedDescentSpeed();
           this.managedSpeedTarget = this.speedsManagedAthrVar.get();
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
