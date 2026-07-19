@@ -3,7 +3,7 @@
 
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { Arinc429Register, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 interface OitAvncsFbwSystemsAppLdgCapProps extends AbstractOitAvncsPageProps {
