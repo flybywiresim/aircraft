@@ -19,6 +19,7 @@
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Landing Gear ATA 32](#landing-gear-ata-32)
+  - [Lights ATA 33](#lights-ata-33)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -1238,6 +1239,24 @@
       | ROT OPTIMIZATION  | 2     |
       | DECEL             | 3     |
       | END OF BRAKING    | 4     |
+
+## Lights ATA 33
+
+- `L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB`
+    - Number
+    - Position of the main panel flood light knob (0-100)
+
+- `L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB`
+    - Number
+    - Position of the ambient light knob (0-100)
+
+- `L:A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL`
+    - Number
+    - Brightness of the main panel flood lights (0-100)
+
+- `L:A380X_PED_LIGHTING_AMBIENT_LT_LEVEL`
+    - Number
+    - Brightness of the ambient lights (0-100)
 
 ## Bleed Air ATA 36
 
