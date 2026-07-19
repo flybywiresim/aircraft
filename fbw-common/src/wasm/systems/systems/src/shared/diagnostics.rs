@@ -1,32 +1,22 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, sync::OnceLock};
 
 use rustc_hash::FxHashSet;
 
-type OptionalFunction = Option<Box<dyn Fn(&str) + 'static>>;
-type MutableOptionalFunction = RefCell<OptionalFunction>;
+type DiagnosisReporter = fn(&str);
 
-thread_local! {
+static DIAGNOSTICS_REPORTER: OnceLock<DiagnosisReporter> = OnceLock::new();
 
-    // log context and value pairs of unexpected values to avoid flooding the log
-    static LOGGED_UNEXPECTED_DISCRETES: RefCell<FxHashSet<(&'static str, u64)>> =
-        RefCell::new(FxHashSet::default());
-
-
-    // as this sits in the sim agnostic module the msfs layer can register the commbus reporter here
-    static DIAGNOSTICS_REPORTER: MutableOptionalFunction = const { RefCell::new(None) };
-}
-
-pub fn set_diagnostics_reporter(reporter: impl Fn(&str) + 'static) {
-    DIAGNOSTICS_REPORTER.with(|r| *r.borrow_mut() = Some(Box::new(reporter)));
+pub fn set_diagnostics_reporter(reporter: DiagnosisReporter) {
+    if DIAGNOSTICS_REPORTER.set(reporter).is_err() {
+        println!("WARNING: diagnostics reporter already set, ignoring");
+    }
 }
 
 fn report_diagnostic(message: &str) {
-    DIAGNOSTICS_REPORTER.with(|reporter: &MutableOptionalFunction| {
-        match reporter.borrow().as_ref() {
-            Some(reporter) => reporter(message),
-            None => println!("{message}"),
-        }
-    });
+    match DIAGNOSTICS_REPORTER.get() {
+        Some(reporter) => reporter(message),
+        None => println!("{message}"),
+    }
 }
 
 pub fn fallback_on_unexpected_discrete<T: std::fmt::Debug>(
@@ -34,6 +24,11 @@ pub fn fallback_on_unexpected_discrete<T: std::fmt::Debug>(
     value: u64,
     fallback: T,
 ) -> T {
+    thread_local! {
+        // log context and value pairs of unexpected values to avoid flooding the log
+        static LOGGED_UNEXPECTED_DISCRETES: RefCell<FxHashSet<(&'static str, u64)>> =
+            RefCell::new(FxHashSet::default());
+    }
     let first_report =
         LOGGED_UNEXPECTED_DISCRETES.with(|logged| logged.borrow_mut().insert((context, value)));
     if first_report {
