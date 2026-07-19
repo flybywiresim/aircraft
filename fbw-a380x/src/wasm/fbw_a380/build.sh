@@ -3,7 +3,7 @@
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm"
-OUTPUT="${DIR}/../../../out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
+OUTPUT="${DIR}/../../../out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fbw.wasm"
 
 if [ "$1" == "--debug" ]; then
   WASMLD_ARGS=""
@@ -100,8 +100,6 @@ clang++ \
   "${DIR}/src/prim/Prim.cpp" \
   -I "${DIR}/src/sec" \
   "${DIR}/src/sec/Sec.cpp" \
-  -I "${DIR}/src/fac" \
-  "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/fcdc" \
@@ -121,10 +119,12 @@ clang++ \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
-  "${DIR}/src/model/A380FacComputer_data.cpp" \
-  "${DIR}/src/model/A380FacComputer.cpp" \
-  "${DIR}/src/model/A380PrimComputer_data.cpp" \
-  "${DIR}/src/model/A380PrimComputer.cpp" \
+  "${DIR}/src/model/A380PrimComputerGeneralLogic_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerGeneralLogic.cpp" \
+  "${DIR}/src/model/A380PrimComputerFctl_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFctl.cpp" \
+  "${DIR}/src/model/A380PrimComputerFe_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFe.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
   "${DIR}/src/model/A380SecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
@@ -135,6 +135,7 @@ clang++ \
   "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
+  "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_iflf_binlxpw.cpp" \
   "${DIR}/src/model/maximum_Y6vyn2io.cpp" \

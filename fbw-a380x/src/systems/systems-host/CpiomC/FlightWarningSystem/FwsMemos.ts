@@ -318,8 +318,8 @@ export class FwsMemos {
     // 32 LANDING GEAR
     320000001: {
       // AUTO BRK OFF
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12],
-      simVarIsActive: this.fws.autoBrakeOff,
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.autoBrakeOffMemoAndAudio,
       whichCodeToReturn: () => 0,
       codesToReturn: ['320000001'],
       displayedOnPfd: PfdMemoDisplay.EWD_PFD,
