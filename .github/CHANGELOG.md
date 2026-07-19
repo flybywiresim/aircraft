@@ -61,6 +61,8 @@
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [A380X/EWD] Improve ordering of displayed FWS memos  - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add "RAM AIR" ECAM memo - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 

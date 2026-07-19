@@ -783,15 +783,15 @@ class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly availChecker = new FwsPfdAvailabilityChecker(this.sub);
 
   private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
-    (it) => EcamMemos[padMemoCode(it)] ?? '',
+    (it) => EcamMemos[padMemoCode(it)].text ?? '',
   );
 
   private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memo_line_2').whenChanged(), 0).map(
-    (it) => EcamMemos[padMemoCode(it)] ?? '',
+    (it) => EcamMemos[padMemoCode(it)].text ?? '',
   );
 
   private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memo_line_3').whenChanged(), 0).map(
-    (it) => EcamMemos[padMemoCode(it)] ?? '',
+    (it) => EcamMemos[padMemoCode(it)].text ?? '',
   );
 
   render(): VNode {

@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -536,7 +536,7 @@ export class FwsNormalChecklists {
 
   public sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, !!this.fws.seatBelt.get(), null],
+      whichItemsChecked: () => [null, null, this.fws.seatBeltsOn.get(), null],
     },
     1000002: {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
