@@ -70,7 +70,7 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
-import { FmsNavigationEvents } from '@fmgc/events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '@fmgc/events/NavigationEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -417,7 +417,7 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.bus
         .getSubscriber<FmsNavigationEvents>()
-        .on('pilot_rnp_greater_than_area_rnp')
+        .on('fms_pilot_rnp_greater_than_area_rnp')
         .handle((v) => {
           if (v !== undefined) {
             this.addMessageToQueue(NXSystemMessages.areaRnpis.getModifiedMessage(v.toFixed(2)));
@@ -427,7 +427,7 @@ export class FlightManagementComputer implements FmcInterface {
         }),
       this.bus
         .getSubscriber<FmsNavigationEvents>()
-        .on('pilot_rnp_greater_than_proc_rnp')
+        .on('fms_pilot_rnp_greater_than_procedure_rnp')
         .handle((v) => {
           if (v !== undefined) {
             this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(v.toFixed(2)));
@@ -1113,7 +1113,7 @@ export class FlightManagementComputer implements FmcInterface {
    * @param details text to be appended to the second line of the message if applicable
    */
   public addMessageToQueue(
-    _message: TypeIMessage | TypeIIMessage,
+    _message: TypeIMessage | TypeIIMessage, //FIXME: Type One messages should not be allowed here.
     _isResolvedOverride: (() => boolean) | undefined = undefined,
     _onClearOverride: (() => void) | undefined = undefined,
     details?: string,
@@ -1149,6 +1149,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   removeMessageFromQueueByType(message: TypeIMessage | TypeIIMessage) {
+    //FIXME: Type One messages should not be allowed here.
     const index = this.findMessageIndexInQueue(message);
     if (index !== -1) {
       this.fmsErrors.removeAt(index);

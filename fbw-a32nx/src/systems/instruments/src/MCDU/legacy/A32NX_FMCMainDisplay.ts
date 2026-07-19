@@ -102,11 +102,12 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
+import { FmsNavigationEvents } from '@fmgc/events/NavigationEvents';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
-  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & FmsNavigationEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
@@ -356,6 +357,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly ettCheckSub = this.sub.on('simTime').onlyAfter(1000).handle(this.checkEttExpired.bind(this), true);
 
   private static readonly MILISECONDS_IN_DAY = 86400000;
+
+  private readonly procedureRnpIs = ConsumerSubject.create(
+    this.sub.on('fms_pilot_rnp_greater_than_procedure_rnp'),
+    undefined,
+  ).sub((value) => {
+    if (value === undefined) {
+      this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs.text);
+    } else {
+      this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(value.toFixed(2)));
+    }
+  });
+
+  private readonly areaRnpIs = ConsumerSubject.create(
+    this.sub.on('fms_pilot_rnp_greater_than_area_rnp'),
+    undefined,
+  ).sub((value) => {
+    if (value === undefined) {
+      this.removeMessageFromQueue(NXSystemMessages.areaRnpIs.text);
+    } else {
+      this.addMessageToQueue(NXSystemMessages.areaRnpIs.getModifiedMessage(value.toFixed(2)));
+    }
+  });
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;

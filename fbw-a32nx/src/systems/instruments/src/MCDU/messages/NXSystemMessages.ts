@@ -1,6 +1,5 @@
 // Copyright (c) 2021-2023, 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-
 // FIXME move into FMGC
 
 export class McduMessage {
@@ -30,6 +29,8 @@ export class TypeIMessage extends McduMessage {
 export class TypeIIMessage extends McduMessage {
   public isTypeTwo = true;
 
+  private textIdentifier: string;
+
   constructor(
     text: string,
     isAmber = false,
@@ -38,6 +39,7 @@ export class TypeIIMessage extends McduMessage {
     public onClear = () => {},
   ) {
     super(text, isAmber, replace);
+    this.textIdentifier = text;
   }
 
   /**
@@ -47,13 +49,19 @@ export class TypeIIMessage extends McduMessage {
    * onClear {function} overrides present function
    */
   getModifiedMessage(t?: string | number, isResolved = undefined, onClear = undefined) {
-    return new TypeIIMessage(
+    const copy = new TypeIIMessage(
       t ? this.text.replace(this.replace, '' + t) : this.text,
       this.isAmber,
       this.replace,
       isResolved || this.isResolved,
       onClear || this.onClear,
     );
+    copy.textIdentifier = this.textIdentifier;
+    return copy;
+  }
+
+  public getTextIdentifier(): string {
+    return this.textIdentifier;
   }
 }
 
@@ -64,6 +72,7 @@ export const NXSystemMessages = {
   acPositionInvalid: new TypeIIMessage('A/C POSITION INVALID', true),
   aocActFplnUplink: new TypeIIMessage('AOC ACT F-PLN UPLINK'),
   aocSecFplnUplink: new TypeIIMessage('AOC SEC F-PLN UPLINK'),
+  areaRnpIs: new TypeIIMessage('AREA RNP IS XX.XX', true, 'XX.XX'),
   arptTypeAlreadyInUse: new TypeIMessage('ARPT/TYPE ALREADY USED'), // FIXME move out of FMS
   awyWptMismatch: new TypeIMessage('AWY/WPT MISMATCH'),
   cancelAtisUpdate: new TypeIMessage('CANCEL UPDATE BEFORE'), // FIXME move out of FMS
@@ -99,6 +108,7 @@ export const NXSystemMessages = {
   notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
   onlySpdEntryAllowed: new TypeIMessage('ONLY SPD ENTRY ALLOWED'),
+  procedureRnpIs: new TypeIIMessage('PROCEDURE RNP IS XX.XX', true, 'XX.XX'),
   rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
   selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'), // FIXME move out of FMS (is part of MCDU itself)
   setHoldSpeed: new TypeIIMessage('SET HOLD SPEED'),

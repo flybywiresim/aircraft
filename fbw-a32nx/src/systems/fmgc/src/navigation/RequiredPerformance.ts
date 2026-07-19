@@ -6,7 +6,7 @@ import { FlightArea } from './FlightArea';
 import { ConsumerValue, EventBus, Subject } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
-import { FmsNavigationEvents } from '../events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '../events/NavigationEvents';
 import { isLeg } from '../flightplanning/legs/FlightPlanLeg';
 
 const rnpDefaults: Record<FlightArea, number> = {
@@ -43,11 +43,11 @@ export class RequiredPerformance {
     private flightPlanService: FlightPlanService,
   ) {
     this.pilotRnpGreaterThanAreaRnp.sub((areaRnp) => {
-      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
+      this.rnpEventsPublisher.pub('fms_pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
     });
 
     this.pilotRnpGreaterThanProcedureRnp.sub((procedureRnp) => {
-      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_proc_rnp', procedureRnp, false, false);
+      this.rnpEventsPublisher.pub('fms_pilot_rnp_greater_than_procedure_rnp', procedureRnp, false, false);
     });
   }
 
