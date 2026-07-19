@@ -49,7 +49,7 @@ macro_rules! try_read_write_enum {
     ($t: ty) => {
         impl<T: Reader> Read<Result<$t, <$t as TryFrom<f64>>::Error>> for T {
             fn convert(&mut self, value: f64) -> Result<$t, <$t as TryFrom<f64>>::Error> {
-                <$t>::try_from(value)
+                value.try_into()
             }
         }
 

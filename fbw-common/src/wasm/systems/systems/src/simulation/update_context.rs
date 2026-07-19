@@ -12,10 +12,10 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
-use super::{Read, SimulatorReader};
+use super::{Read, Reader, SimulatorReader};
 use crate::{
-    shared::{fallback_on_unexpected_discrete, low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    shared::{low_pass_filter::LowPassFilter, MachNumber},
+    simulation::{InitContext, VariableIdentifier, Write, Writer},
 };
 use nalgebra::{Rotation3, Vector3};
 
