@@ -29,7 +29,6 @@ import {
   Fix,
   FMMessage,
   ISimbriefData,
-  isMsfs2024,
   logTroubleshootingError,
   NXDataStore,
   RegisteredSimVar,
@@ -338,7 +337,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
     // one FMC.
-    if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
+    if (this.operatingMode === FmcOperatingModes.Master) {
       this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanInterface);
     }
 
@@ -740,6 +739,11 @@ export class FlightManagementComputer implements FmcInterface {
       return this.#fmgc.data.approachVref.get();
     }
     return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  inchesSelectedOnFcu(side: EfisSide): boolean {
+    return this.acInterface.isInchesSelectedOnFcu(side);
   }
 
   private initSimVars() {

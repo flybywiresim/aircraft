@@ -23,6 +23,7 @@ import {
   FmArinc429OutputWord,
   RaBusEvents,
   RegisteredSimVar,
+  EfisSide,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -46,6 +47,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -242,7 +244,16 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
-  private readonly trueReference = RegisteredSimVar.createBoolean('L:A32NX_PUSH_TRUE_REF', SimVarValueType.Bool);
+  private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
+    Arinc429Register.empty().rawWord,
+  );
+  private readonly fcuRightDiscreteWord1Right = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_right'),
+    Arinc429Register.empty().rawWord,
+  );
+
+  private readonly trueReference = RegisteredSimVar.createBoolean('L:A32NX_PUSH_TRUE_REF');
 
   constructor(
     private bus: EventBus,
@@ -1465,7 +1476,7 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
       this.fmgc.data.approachGreenDotSpeed.set(Math.ceil(approachSpeeds.gd));
       this.fmgc.data.approachSlatRetractionSpeed.set(Math.ceil(approachSpeeds.s));
-      this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
+      this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f2));
       this.fmgc.data.approachVapp.set(pd.pilotVapp.get() ?? Math.ceil(approachSpeeds.vapp));
     } else {
       this.fmgc.data.approachVls.set(null);
@@ -2263,7 +2274,15 @@ export class FmcAircraftInterface {
     }
   }
 
-  istrueRefActive(): boolean {
+  isInchesSelectedOnFcu(side: EfisSide): boolean {
+    if (side == 'L') {
+      return this.fcuLeftDiscreteWord1Left.get().bitValueOr(11, false);
+    } else {
+      return this.fcuRightDiscreteWord1Right.get().bitValueOr(11, false);
+    }
+  }
+
+  isTrueRefActive(): boolean {
     return this.trueReference.get();
   }
 }

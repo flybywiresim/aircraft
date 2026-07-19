@@ -4008,6 +4008,34 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
    - Right DMC IRS 3 discrete word. Raw ARINC word.
    - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
 
+- `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`
+   - The left DMC discrete word 272. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     |     | ADIRU used for ADR                |
+     |     | ADR1 ADR2 ADR3                    |
+     | 13  | 1    0    1                       |
+     | 14  | 0    1    1                       |
+
+- `L:A32NX_DMC_DISCRETE_WORD_272_RIGHT`
+   - The right DMC discrete word 272. Raw ARINC word.
+   - Same as `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`.
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_LEFT`
+   - The left DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on CAPT side        |
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_RIGHT`
+   - The right DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on F/O side         |
+
 - `L:A32NX_DMC_DISCRETE_WORD_350_LEFT`
    - The left DMC discrete word. Raw ARINC word.
      | Bit |            Description            |
@@ -4021,6 +4049,14 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
      |:---:|:---------------------------------:|
      | 11  | STD baro mode                     |
      | 12  | QNH baro mode                     |
+
+- `L:A32NX_DMC_BARO_CORRECTION_LEFT`
+  - Left DMC BCD word 222, baro correction CAPT side. Raw ARINC word.
+  - Arinc429Word<hPa>
+
+- `L:A32NX_DMC_BARO_CORRECTION_RIGHT`
+  - Right DMC BCD word 223, baro correction F/O side. Raw ARINC word.
+  - Arinc429Word<hPa>
 
 - `L:A32NX_DMC_ALTITUDE_LEFT`
   - The left DMC displayed altitude feedback. Raw ARINC word.

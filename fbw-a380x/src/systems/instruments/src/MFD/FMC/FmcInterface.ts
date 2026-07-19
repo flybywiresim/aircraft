@@ -312,6 +312,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   engineOutActive(): boolean;
 
+  /** Returns whether inches is selected on the FCU of the associated side */
+  inchesSelectedOnFcu(side: EfisSide): boolean;
+
   /**
    * Indicates whether the true heading reference has been manually selected by the pilot.
    */
