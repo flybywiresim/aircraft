@@ -53,7 +53,7 @@ Face=1, 1, 1
 Blend Mode=2
 Bounce=0.00
 Color Start=255, 179, 117, 10
-Color End=248, 156, 106, 10
+Color End=246, 172, 132, 10
 Jitter Distance=0.00
 Jitter Time=0.00
 uv1=0.00, 0.00
@@ -66,10 +66,12 @@ Extrude Pitch Max=0.00
 Extrude Heading Max=0.00
 
 [LightAttributes.0]
-Type=omni
-Size=0.1
-Range=3
-Intensity=15
-Softness=1.0
+Type=spot
+Size=0.02
+Range=1.0
+Intensity=778
+Softness=0.1
+SpotInner=0
+SpotOuter=35
 Volumetric=0
-ScatDir=0.0
+ScatDir=1
