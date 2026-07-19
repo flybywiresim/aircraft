@@ -44,7 +44,9 @@ export class PseudoDmc implements Instrument {
     (v) => v === (this.isRightSide ? DmcSwitchingKnob.Fo : DmcSwitchingKnob.Capt),
   );
 
-  private readonly fcuDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly fcuEisDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly fcuEisBaroCorrection = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly adrSwitchingKnob = ConsumerSubject.create(this.sub.on('airKnob'), 0);
 
@@ -62,7 +64,9 @@ export class PseudoDmc implements Instrument {
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
 
   private readonly dmcDiscreteWord272 = Arinc429RegisterSubject.createEmpty();
+  private readonly dmcDiscreteWord276 = Arinc429RegisterSubject.createEmpty();
   private readonly dmcDiscreteWord350 = Arinc429RegisterSubject.createEmpty();
+  private readonly dmcBaroCorrection = Arinc429RegisterSubject.createEmpty();
   private readonly dmcAltitude = Arinc429RegisterSubject.createEmpty();
 
   private readonly selectedIrDiscreteWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('irMaintWordRaw'), 0);
@@ -88,7 +92,9 @@ export class PseudoDmc implements Instrument {
     this.dmcDiscreteWord271,
     this.dmcDiscreteWord313Backup,
     this.dmcDiscreteWord313Onside,
+    this.dmcDiscreteWord276,
     this.dmcDiscreteWord350,
+    this.dmcBaroCorrection,
     this.dmcAltitude,
     this.dmcPitchAngleWord324Onside,
     this.dmcPitchAngleWord324Backup,
@@ -109,18 +115,29 @@ export class PseudoDmc implements Instrument {
     this.isRightSide = this.instrument.instrumentIndex === 2;
 
     const outputSubs: Subscription[] = [
-      this.fcuDiscreteWord2.sub(
+      this.fcuEisDiscreteWord1.sub(
+        (v) => {
+          this.dmcDiscreteWord276.setBitValue(19, v.bitValue(11));
+          // Update below SSM if we add more bits?
+          this.dmcDiscreteWord276.setSsm(v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm);
+        },
+        true,
+        true,
+      ),
+      this.fcuEisDiscreteWord2.sub(
         (v) => {
           // STD
-          this.dmcDiscreteWord350.setBitValue(11, v.bitValueOr(28, false));
+          this.dmcDiscreteWord350.setBitValue(11, v.bitValue(28));
           // QNH
-          this.dmcDiscreteWord350.setBitValue(12, v.bitValueOr(29, false));
-          this.dmcDiscreteWord350.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+          this.dmcDiscreteWord350.setBitValue(12, v.bitValue(29));
+          // Update below SSM if we add more bits?
+          this.dmcDiscreteWord350.setSsm(v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm);
         },
         true,
         true,
       ),
       this.altitude.sub((v) => this.dmcAltitude.setWord(v.rawWord), true, true),
+      this.fcuEisBaroCorrection.sub((v) => this.dmcBaroCorrection.setWord(v.rawWord), true, true),
       this.selectedIrDiscreteWord.sub((v) => PseudoDmc.mapIrDiscreteToDmc(v, this.dmcDiscreteWord271), true, true),
       this.irDiscreteWordOnside.sub(
         (v) =>
@@ -205,11 +222,23 @@ export class PseudoDmc implements Instrument {
       (word) => word.writeToSimVar(this.isRightSide ? 'L:A32NX_DMC_ALTITUDE_RIGHT' : 'L:A32NX_DMC_ALTITUDE_LEFT'),
       true,
     );
+    this.dmcBaroCorrection.sub(
+      (word) =>
+        word.writeToSimVar(this.isRightSide ? 'L:A32NX_DMC_BARO_CORRECTION_RIGHT' : 'L:A32NX_DMC_BARO_CORRECTION_LEFT'),
+      true,
+    );
 
     this.dmcDiscreteWord271.sub(
       (word) =>
         word.writeToSimVar(
           this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_271_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_271_LEFT',
+        ),
+      true,
+    );
+    this.dmcDiscreteWord276.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_276_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_276_LEFT',
         ),
       true,
     );
@@ -260,8 +289,16 @@ export class PseudoDmc implements Instrument {
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_1_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),
     );
 
-    this.fcuDiscreteWord2.setConsumer(
+    this.fcuEisDiscreteWord2.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_fcu_eis_discrete_word_2_right' : 'a32nx_fcu_eis_discrete_word_2_left'),
+    );
+
+    this.fcuEisDiscreteWord1.setConsumer(
+      this.sub.on(this.isRightSide ? 'a32nx_fcu_eis_discrete_word_1_right' : 'a32nx_fcu_eis_discrete_word_1_left'),
+    );
+
+    this.fcuEisBaroCorrection.setConsumer(
+      this.sub.on(this.isRightSide ? 'a32nx_fcu_eis_baro_hpa_right' : 'a32nx_fcu_eis_baro_hpa_left'),
     );
 
     this.irDiscreteWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_maint_word_2' : 'ir_maint_word_1'));
