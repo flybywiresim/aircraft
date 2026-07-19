@@ -461,7 +461,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   isTrueRefActive(): boolean {
-    return this.acInterface.istrueRefActive();
+    return this.acInterface.isTrueRefActive();
   }
 
   destroy() {
