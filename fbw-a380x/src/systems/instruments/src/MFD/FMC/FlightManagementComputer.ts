@@ -498,28 +498,36 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** in kg */
-  public getLandingWeight(forPlan = FlightPlanIndex.Active): number | null {
-    const tow = this.getTakeoffWeight(forPlan);
-    const gw = this.fmgc.getGrossWeightKg();
-    const tf = this.getTripFuel(forPlan);
+ public getLandingWeight(forPlan = FlightPlanIndex.Active): number | null {
+  const plan = this.flightPlanInterface.get(forPlan);
+  const isActiveOrCopyOfActive = plan.isActiveOrCopiedFromActive();
+  const useLiveAircraftState = isActiveOrCopyOfActive && this.enginesWereStarted.get();
 
-    if (!this.enginesWereStarted.get()) {
-      // On ground, engines off
-      // LW = TOW - TRIP
-      return tow && tf ? tow - tf : null;
-    }
-    if (gw && tf && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-      // In flight
-      // LW = GW - TRIP
-      return gw - tf;
-    }
-    if (gw) {
-      // Preflight, engines on
-      // LW = GW - TRIP - TAXI
-      return gw - (tf ?? 0) - (this.flightPlanInterface.get(forPlan).performanceData.taxiFuel.get() ?? 0) * 1000;
-    }
-    return null;
+  const tow = this.getTakeoffWeight(forPlan);
+  const tf = this.getTripFuel(forPlan);
+  const phase = this.fmgc.getFlightPhase();
+
+  if (!useLiveAircraftState) {
+    // LW = TOW - TRIP
+    return tow !== null && tf !== null ? tow - tf : null;
   }
+
+  const gw = this.fmgc.getGrossWeightKg(forPlan);
+
+  if (gw !== null && isActiveOrCopyOfActive && phase === FmgcFlightPhase.Approach) {
+    // APPR active: LW is the present gross weight
+    return gw;
+  }
+  if (gw !== null && tf !== null && phase >= FmgcFlightPhase.Takeoff) {
+    // LW = GW - TRIP
+    return gw - tf;
+  }
+  if (gw !== null) {
+    // LW = GW - TRIP - TAXI
+    return gw - (tf ?? 0) - (plan.performanceData.taxiFuel.get() ?? 0) * 1000;
+  }
+  return null;
+}
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
     return this.flightPlanInterface.get(forPlan).performanceData.takeoffWeight?.get() ?? null;
