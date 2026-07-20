@@ -4,6 +4,8 @@
 #include "inih/ini.h"
 #include "inih/ini_type_conversion.h"
 
+#include <MathUtils.h>
+
 #include "Arinc429Utils.h"
 #include "FlyByWireInterface.h"
 #include "interface/SimConnectData.h"
@@ -100,6 +102,10 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   for (int i = 0; i < 2; i++) {
     result &= updateSfcc(i);
+  }
+
+  for (int i = 0; i < 2; i++) {
+    result &= updateIls(i);
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1315,6 +1321,44 @@ bool FlyByWireInterface::updateSfcc(int sfccIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateIls(int ilsIndex) {
+  SimData simData = simConnectInterface.getSimData();
+
+  bool nav_loc_valid;
+  double nav_loc_error_deg;
+  bool nav_gs_valid;
+  double nav_gs_error_deg;
+
+  if (idRadioReceiverUsageEnabled->get()) {
+    nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
+    nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
+    nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
+    nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
+  } else {
+    nav_loc_valid = (simData.nav_loc_valid != 0);
+    nav_loc_error_deg = simData.nav_loc_error_deg;
+    nav_gs_valid = (simData.nav_gs_valid != 0);
+    nav_gs_error_deg = simData.nav_gs_error_deg;
+  }
+
+  ilsBusOutputs[ilsIndex].runway_heading_deg.SSM = nav_loc_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
+  ilsBusOutputs[ilsIndex].runway_heading_deg.Data = std::fmod(std::fmod(idFmsLsCourse->get() - simData.nav_loc_magvar_deg, 360) + 360, 360);
+  ilsBusOutputs[ilsIndex].ils_frequency_mhz.SSM = Arinc429SignStatus::NormalOperation;
+  ilsBusOutputs[ilsIndex].ils_frequency_mhz.Data = 0;
+  ilsBusOutputs[ilsIndex].localizer_deviation_deg.SSM =
+      nav_loc_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
+  ilsBusOutputs[ilsIndex].localizer_deviation_deg.Data = MathUtils::correctMsfsLocaliserError(nav_loc_error_deg);
+  ilsBusOutputs[ilsIndex].glideslope_deviation_deg.SSM =
+      nav_gs_valid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
+  ilsBusOutputs[ilsIndex].glideslope_deviation_deg.Data = nav_gs_error_deg;
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataIls(ilsBusOutputs[ilsIndex], ilsIndex);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].altitude_standard_ft = Arinc429Utils::fromSimVar(idAdrAltitudeStandard[adirsIndex]->get());
   adrBusOutputs[adirsIndex].altitude_corrected_1_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected1[adirsIndex]->get());
@@ -1533,6 +1577,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
   modelInputs.in.bus_inputs.ra_1_bus = ra1Bus;
   modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
+  modelInputs.in.bus_inputs.ils_1_bus = ilsBusOutputs[0];
+  modelInputs.in.bus_inputs.ils_2_bus = ilsBusOutputs[1];
   modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
   modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];

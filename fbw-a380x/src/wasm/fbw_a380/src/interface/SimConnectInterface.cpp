@@ -1166,6 +1166,18 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::ILS_1_BUS + i;
+    // map client id
+    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_ILS_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_ils_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_ils_bus));
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FMS", ClientData::FMS_INPUTS);
   // create client data
@@ -1693,6 +1705,10 @@ bool SimConnectInterface::setClientDataLgciu(base_lgciu_bus& output, int lgciuIn
 
 bool SimConnectInterface::setClientDataSfcc(base_sfcc_bus& output, int sfccIndex) {
   return sendClientData(ClientData::SFCC_1_BUS + sfccIndex, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataIls(base_ils_bus& output, int ilsIndex) {
+  return sendClientData(ClientData::ILS_1_BUS + ilsIndex, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataFms(base_fms_inputs& output) {

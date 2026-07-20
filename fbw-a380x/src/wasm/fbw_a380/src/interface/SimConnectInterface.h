@@ -379,6 +379,7 @@ class SimConnectInterface {
   bool setClientDataRa(base_ra_bus& output, int raIndex);
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
+  bool setClientDataIls(base_ils_bus& output, int ilsIndex);
   bool setClientDataFadec(base_eec& output, int fadecIndex);
   bool setClientDataFms(base_fms_inputs& output);
 
@@ -443,6 +444,8 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
+    ILS_1_BUS,
+    ILS_2_BUS,
     FMS_INPUTS,
   };
 

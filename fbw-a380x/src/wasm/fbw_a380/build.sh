@@ -92,6 +92,7 @@ clang++ \
   -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
+  -I "${COMMON_DIR}/utils" \
   -I "${COMMON_DIR}/fbw_common/src" \
   -I "${COMMON_DIR}/fbw_common/src/inih" \
   -I "${DIR}/src/interface" \
