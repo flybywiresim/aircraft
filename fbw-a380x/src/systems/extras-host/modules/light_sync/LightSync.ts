@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 /* eslint-disable no-case-declarations */
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -74,18 +74,18 @@ export class LightSync implements Instrument {
     const isNight = autoBrightness < 50;
     const isColdAndDark = startState === 1 || startState === 2;
 
-    const ambientLightValue = isNight && isColdAndDark ? 20 : 0;
-    const pedFloodLightValue = isNight && isColdAndDark ? 20 : 0;
-    const mainPnlFloodLightValue = isNight ? 10 : 0;
-    const integralLightValue = isNight ? 15 : 0;
+    const ambientLtValue = isNight && isColdAndDark ? 20 : 0;
+    const pedFloodLtValue = isNight && isColdAndDark ? 20 : 0;
+    const mainPnlFloodLtValue = isNight ? 10 : 0;
+    const integralLtValue = isNight ? 15 : 0;
 
     // OVHD Reading Lights
     this.setPotentiometer(96, 0); // Capt
     this.setPotentiometer(97, 0); // F/O
 
     // Glareshield
-    this.setPotentiometer(84, integralLightValue); // Integral
-    this.setPotentiometer(87, autoBrightness); // LCD Brt
+    this.setPotentiometer(84, integralLtValue); // Integral
+    this.setPotentiometer(87, autoBrightness); // LCD
     this.setPotentiometer(10, 0); // Table Capt
     this.setPotentiometer(11, 0); // Table F/O
 
@@ -111,10 +111,10 @@ export class LightSync implements Instrument {
     this.setRmpBrightness(3, autoBrightness * 100); // RMP OVHD
     this.setPotentiometer(92, autoBrightness); // ECAM Upper
     this.setPotentiometer(93, autoBrightness); // ECAM Lower
-    this.setPotentiometer(76, pedFloodLightValue); // Ped Flood
-    this.setPotentiometer(83, mainPnlFloodLightValue); // Main Pnl Flood
-    this.setPotentiometer(85, integralLightValue); // Integral
-    this.setPotentiometer(7, ambientLightValue); // Ambient
+    this.setPotentiometer(76, pedFloodLtValue); // Ped Flood
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, mainPnlFloodLtValue / 100); // Main Pnl Flood
+    this.setPotentiometer(85, integralLtValue); // Integral
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, ambientLtValue / 100); // Ambient
   }
 
   public onUpdate(): void {}

@@ -54,11 +54,14 @@
 1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
 1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
-1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
+1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
+1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 
 ## 2024.1.0
 
