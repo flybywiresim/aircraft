@@ -1,9 +1,7 @@
 ---
 name: Check fdr2csv build
-description: Checks if fdr2csv builds successfully with the current PR changes.
 
-on:
-  workflow_call
+on: workflow_call
 
 jobs:
   check-fd2csv:
@@ -17,4 +15,4 @@ jobs:
           submodules: false
       - name: Build fdr2csv
         run: |
-          ./scripts/dev-env/run.sh cargo clippy --manifest-path=${{ github.workspace }}/tools/fdr2csv/Cargo.toml --all-targets --all-features -- -D warnings
+          ./scripts/dev-env/run.sh cargo clippy --manifest-path=/external/tools/fdr2csv/Cargo.toml --all-targets --all-features -- -D warnings
