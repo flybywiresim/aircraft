@@ -25,9 +25,6 @@ export interface PFDSimvars {
   vsInert: number;
   sideStickX: number;
   sideStickY: number;
-  fdYawCommand: number;
-  fdBank: number;
-  fdPitch: number;
   v1: number;
   vr: number;
   fwcFlightPhase: number;
@@ -134,9 +131,6 @@ export enum PFDVars {
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
   sideStickX = 'L:A32NX_SIDESTICK_POSITION_X',
   sideStickY = 'L:A32NX_SIDESTICK_POSITION_Y',
-  fdYawCommand = 'L:A32NX_FLIGHT_DIRECTOR_YAW',
-  fdBank = 'L:A32NX_FLIGHT_DIRECTOR_BANK',
-  fdPitch = 'L:A32NX_FLIGHT_DIRECTOR_PITCH',
   v1 = 'L:AIRLINER_V1_SPEED',
   vr = 'L:AIRLINER_VR_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
@@ -243,9 +237,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['vsInert', { name: PFDVars.vsInert, type: SimVarValueType.Number }],
     ['sideStickX', { name: PFDVars.sideStickX, type: SimVarValueType.Number }],
     ['sideStickY', { name: PFDVars.sideStickY, type: SimVarValueType.Number }],
-    ['fdYawCommand', { name: PFDVars.fdYawCommand, type: SimVarValueType.Number }],
-    ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number }],
-    ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number }],
     ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
     ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
     ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
