@@ -900,6 +900,9 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 
   result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
 
+  result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:1", "BOOL");
+  result &= addDataDefinition(hSimConnect, 9, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:2", "BOOL");
+
   return result;
 }
 
