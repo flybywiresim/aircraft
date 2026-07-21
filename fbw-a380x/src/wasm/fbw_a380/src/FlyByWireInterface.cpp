@@ -666,6 +666,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idPrimSpeedMarginLow[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SPEED_MARGIN_LOW");
   }
 
+  idStickLockActive = std::make_unique<LocalVariable>("A32NX_STICK_LOCK_ACTIVE");
+
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
 
@@ -2395,6 +2397,9 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
   SimOutputSpoilers out = {fmax(totalSpoilerDeflection - totalAssymmetricSpoilerDeflection, 0)};
   simConnectInterface.sendData(out);
+
+  // FIXME should technically be it's own discrete output, but I don't think it makes any difference
+  idStickLockActive->set(primsDiscreteOutputs[0].ap_engaged || primsDiscreteOutputs[1].ap_engaged || primsDiscreteOutputs[2].ap_engaged);
 
   return true;
 }

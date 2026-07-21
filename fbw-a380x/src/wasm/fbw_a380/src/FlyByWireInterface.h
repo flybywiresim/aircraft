@@ -507,6 +507,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idPrimSpeedMarginHigh[3];
   std::unique_ptr<LocalVariable> idPrimSpeedMarginLow[3];
 
+  std::unique_ptr<LocalVariable> idStickLockActive;
+
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
