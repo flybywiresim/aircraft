@@ -350,7 +350,7 @@ class Row2 extends DisplayComponent<{
   }
 }
 
-class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscribable<number> }> {
+class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscribable<A1A2Messages> }> {
   private text = Subject.create('');
 
   private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
@@ -404,7 +404,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
 
     this.props.A1A2CellMessage.sub((message) => {
       // ATHR mode overrides BRK LO and MED memo
-      if (message > 0 && message <= 6) {
+      if (message > A1A2Messages.NONE && message <= A1A2Messages.MAN_THR) {
         this.autoBrkRef.instance.style.visibility = 'hidden';
       } else {
         this.autoBrkRef.instance.style.visibility = 'visible';
