@@ -986,7 +986,8 @@ class B2Cell extends DisplayComponent<CellProps> {
     ([primFgDiscreteWord2, text1Sub]) => {
       const gsArmed = primFgDiscreteWord2.bitValueOr(13, false);
 
-      if (gsArmed && text1Sub.length !== 0) {
+      //TODO Improve this logic, very ugly
+      if (gsArmed && text1Sub !== '      G/S') {
         return '  G/S';
       } else if (primFgDiscreteWord2.bitValueOr(14, false)) {
         return 'APP-DES';
