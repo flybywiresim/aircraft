@@ -1649,7 +1649,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];
   modelInputs.in.adcn_inputs.eec_4 = fadecBusOutputs[3];
 
-  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || fcuDisabled != -1) {
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || fcuDisabled != -1 || fadecDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
