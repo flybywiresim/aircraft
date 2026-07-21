@@ -9,7 +9,6 @@
 #include "A380PitchDirectLaw.h"
 
 extern const real_T A380PrimComputerFctl_RGND;
-extern const boolean_T A380PrimComputerFctl_BGND;
 class A380PrimComputerFctl final
 {
  public:
@@ -423,8 +422,8 @@ class A380PrimComputerFctl final
     SignStatusMatrix EnumeratedConstant2_Value_l;
     SignStatusMatrix EnumeratedConstant1_Value_j;
     SignStatusMatrix EnumeratedConstant_Value_e;
-    SignStatusMatrix EnumeratedConstant1_Value_g;
     SignStatusMatrix EnumeratedConstant_Value_i;
+    SignStatusMatrix EnumeratedConstant1_Value_g;
     a380_lateral_efcs_law EnumeratedConstant_Value_g;
     a380_pitch_efcs_law EnumeratedConstant_Value_l;
     a380_pitch_efcs_law EnumeratedConstant_Value_j;

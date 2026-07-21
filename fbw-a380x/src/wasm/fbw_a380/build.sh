@@ -122,6 +122,7 @@ clang++ \
   "${DIR}/src/model/A380PrimComputerFctl.cpp" \
   "${DIR}/src/model/A380PrimComputerFe_data.cpp" \
   "${DIR}/src/model/A380PrimComputerFe.cpp" \
+  "${DIR}/src/model/A380FgOuterLoops.cpp" \
   "${DIR}/src/model/A380PrimComputerFg_data.cpp" \
   "${DIR}/src/model/A380PrimComputerFg.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \

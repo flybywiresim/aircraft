@@ -643,6 +643,13 @@ struct base_prim_general_logic_outputs
   boolean_T double_ir_failure;
   boolean_T triple_ir_failure;
   boolean_T ir_failure_not_self_detected;
+  boolean_T adr_1_rejected;
+  boolean_T adr_2_rejected;
+  boolean_T adr_3_rejected;
+  boolean_T isis_rejected;
+  boolean_T ir_1_rejected;
+  boolean_T ir_2_rejected;
+  boolean_T ir_3_rejected;
   base_elac_adr_computation_data adr_computation_data;
   base_elac_ir_computation_data ir_computation_data;
   real_T ra_computation_data_ft;
@@ -893,6 +900,24 @@ struct base_prim_fctl_logic_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_adirs_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_prim_fg_adirs_computation_data_
+
+struct base_prim_fg_adirs_computation_data
+{
+  real32_T heading_deg;
+  real32_T track_deg;
+  real32_T roll_angle_deg;
+  real32_T vertical_speed_ft_min;
+  real32_T flight_path_angle_deg;
+  real32_T altitude_indicated_ft;
+  real32_T static_pressure_hpa;
+  real32_T airspeed_computed_kn;
+  real32_T mach;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
 #define DEFINED_TYPEDEF_FOR_base_prim_fg_logic_output_
 
@@ -900,6 +925,8 @@ struct base_prim_fg_logic_output
 {
   boolean_T gnd_eng_stop_flt_5s;
   boolean_T ap_fd_common_condition;
+  boolean_T ap_fd_1_condition;
+  boolean_T ap_fd_2_condition;
   boolean_T fd_1_engaged;
   boolean_T fd_2_engaged;
   boolean_T ap_1_engaged;
@@ -911,7 +938,11 @@ struct base_prim_fg_logic_output
   boolean_T ap_2_inop;
   boolean_T athr_inop;
   boolean_T fmgc_opp_priority;
-  base_arinc_429 altitude_indicated_ft;
+  boolean_T ap_fd_1_on_adr_3;
+  boolean_T ap_fd_2_on_adr_3;
+  boolean_T ap_fd_1_on_ir_3;
+  boolean_T ap_fd_2_on_ir_3;
+  base_prim_fg_adirs_computation_data adirs_computation_data;
   boolean_T all_fcu_failure;
   boolean_T fcu_1_chosen;
   boolean_T fcu_2_chosen;

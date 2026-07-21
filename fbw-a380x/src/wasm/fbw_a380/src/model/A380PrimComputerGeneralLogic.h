@@ -98,8 +98,9 @@ class A380PrimComputerGeneralLogic final
     real32_T SlatFPPUtoSurfaceAngle_tableData[3];
     real32_T SlatFPPUtoSurfaceAngle_bp01Data[3];
     boolean_T Constant5_Value_i;
-    boolean_T Constant1_Value_b;
     boolean_T Constant_Value;
+    boolean_T Constant1_Value_b;
+    boolean_T Constant_Value_f;
   };
 
   A380PrimComputerGeneralLogic(A380PrimComputerGeneralLogic const&) = delete;

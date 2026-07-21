@@ -530,9 +530,9 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   SignStatusMatrix::NoComputedData,
 
-  SignStatusMatrix::NormalOperation,
-
   SignStatusMatrix::NoComputedData,
+
+  SignStatusMatrix::NormalOperation,
 
   a380_lateral_efcs_law::NormalLaw,
 
@@ -3235,6 +3235,13 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
 
       {
         0.0,
@@ -3480,9 +3487,22 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
 
       {
-        0U,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
+        0.0F,
         0.0F
       },
       false,

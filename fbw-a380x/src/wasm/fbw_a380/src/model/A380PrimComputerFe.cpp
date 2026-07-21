@@ -133,9 +133,9 @@ void A380PrimComputerFe::step()
       A380PrimComputerFe_U.in.data.time.dt, A380PrimComputerFe_P.LagFilter_C1, A380PrimComputerFe_U.in.data.time.dt,
       &rtb_vs1g, &A380PrimComputerFe_DWork.sf_LagFilter);
     if (A380PrimComputerFe_U.in.general_logic.all_ra_failure) {
-      rtb_Switch = A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft;
-    } else {
       rtb_Switch = A380PrimComputerFe_P.Constant_Value;
+    } else {
+      rtb_Switch = A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft;
     }
 
     if (A380PrimComputerFe_DWork.is_active_c15_A380PrimComputerFe == 0) {

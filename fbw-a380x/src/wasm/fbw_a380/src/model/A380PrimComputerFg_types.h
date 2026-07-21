@@ -335,6 +335,24 @@ struct base_prim_fg_out_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_fg_adirs_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_prim_fg_adirs_computation_data_
+
+struct base_prim_fg_adirs_computation_data
+{
+  real32_T heading_deg;
+  real32_T track_deg;
+  real32_T roll_angle_deg;
+  real32_T vertical_speed_ft_min;
+  real32_T flight_path_angle_deg;
+  real32_T altitude_indicated_ft;
+  real32_T static_pressure_hpa;
+  real32_T airspeed_computed_kn;
+  real32_T mach;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
 #define DEFINED_TYPEDEF_FOR_base_ils_bus_
 
@@ -543,6 +561,100 @@ struct base_lgciu_bus
   base_arinc_429 discrete_word_2;
   base_arinc_429 discrete_word_3;
   base_arinc_429 discrete_word_4;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
+#define DEFINED_TYPEDEF_FOR_ap_raw_time_
+
+struct ap_raw_time
+{
+  real_T dt;
+  real_T simulation_time;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_data_
+#define DEFINED_TYPEDEF_FOR_ap_raw_data_
+
+struct ap_raw_data
+{
+  real_T Theta_deg;
+  real_T Phi_deg;
+  real_T qk_deg_s;
+  real_T rk_deg_s;
+  real_T pk_deg_s;
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T V_mach;
+  real_T V_gnd_kn;
+  real_T alpha_deg;
+  real_T beta_deg;
+  real_T H_ft;
+  real_T H_ind_ft;
+  real_T H_radio_ft;
+  real_T H_dot_ft_min;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
+  real_T Psi_true_deg;
+  real_T Chi_true_deg;
+  real_T bx_m_s2;
+  real_T by_m_s2;
+  real_T bz_m_s2;
+  real_T nav_loc_deg;
+  real_T nav_gs_deg;
+  real_T nav_dme_nmi;
+  real_T nav_loc_magvar_deg;
+  real_T nav_loc_error_deg;
+  boolean_T nav_gs_valid;
+  real_T nav_gs_error_deg;
+  real_T fms_xtk_nmi;
+  real_T fms_tae_deg;
+  real_T fms_phi_deg;
+  real_T fms_phi_limit_deg;
+  real_T fms_H_c_profile_ft;
+  real_T fms_H_dot_c_profile_ft_min;
+  real_T VLS_kn;
+  real_T VMAX_kn;
+  boolean_T on_ground;
+  real_T zeta_deg;
+  real_T total_weight_kg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
+#define DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
+
+struct ap_raw_laws_input
+{
+  boolean_T ap_engaged;
+  real_T lateral_law;
+  real_T vertical_law;
+  real_T Psi_c_deg;
+  real_T Chi_c_deg;
+  real_T H_c_ft;
+  real_T H_dot_c_fpm;
+  real_T FPA_c_deg;
+  real_T V_c_kn;
+  boolean_T ALT_soft_mode_active;
+  boolean_T TCAS_mode_active;
+  boolean_T FINAL_DES_mode_active;
+  boolean_T GS_track_mode;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_laws_input_
+#define DEFINED_TYPEDEF_FOR_ap_laws_input_
+
+struct ap_laws_input
+{
+  ap_raw_time time;
+  ap_raw_data data;
+  ap_raw_laws_input input;
 };
 
 #endif
@@ -946,6 +1058,13 @@ struct base_prim_general_logic_outputs
   boolean_T double_ir_failure;
   boolean_T triple_ir_failure;
   boolean_T ir_failure_not_self_detected;
+  boolean_T adr_1_rejected;
+  boolean_T adr_2_rejected;
+  boolean_T adr_3_rejected;
+  boolean_T isis_rejected;
+  boolean_T ir_1_rejected;
+  boolean_T ir_2_rejected;
+  boolean_T ir_3_rejected;
   base_elac_adr_computation_data adr_computation_data;
   base_elac_ir_computation_data ir_computation_data;
   real_T ra_computation_data_ft;
@@ -1098,6 +1217,8 @@ struct base_prim_fg_logic_output
 {
   boolean_T gnd_eng_stop_flt_5s;
   boolean_T ap_fd_common_condition;
+  boolean_T ap_fd_1_condition;
+  boolean_T ap_fd_2_condition;
   boolean_T fd_1_engaged;
   boolean_T fd_2_engaged;
   boolean_T ap_1_engaged;
@@ -1109,7 +1230,11 @@ struct base_prim_fg_logic_output
   boolean_T ap_2_inop;
   boolean_T athr_inop;
   boolean_T fmgc_opp_priority;
-  base_arinc_429 altitude_indicated_ft;
+  boolean_T ap_fd_1_on_adr_3;
+  boolean_T ap_fd_2_on_adr_3;
+  boolean_T ap_fd_1_on_ir_3;
+  boolean_T ap_fd_2_on_ir_3;
+  base_prim_fg_adirs_computation_data adirs_computation_data;
   boolean_T all_fcu_failure;
   boolean_T fcu_1_chosen;
   boolean_T fcu_2_chosen;
