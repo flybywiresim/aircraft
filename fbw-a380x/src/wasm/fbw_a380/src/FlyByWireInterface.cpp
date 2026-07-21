@@ -979,6 +979,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   simConnectInterface.resetSimInputRudderTrim();
 
+  simConnectInterface.resetSimInputThrottles();
+
   // set logging options
   simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
   simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
