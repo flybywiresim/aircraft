@@ -551,7 +551,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idIrWindSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_VELOCITY");
     idIrWindDirectionTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
     idIrTrackAngleMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
+    idIrTrackAngleTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRUE_TRACK");
     idIrHeadingMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING");
+    idIrHeadingTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRUE_HEADING");
     idIrDriftAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_DRIFT_ANGLE");
     idIrFlightPathAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_FLIGHT_PATH_ANGLE");
     idIrPitchAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH");
@@ -1377,6 +1379,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   irBusOutputs[adirsIndex].latitude_deg = Arinc429Utils::fromSimVar(idIrLatitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].longitude_deg = Arinc429Utils::fromSimVar(idIrLongitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].ground_speed_kn = Arinc429Utils::fromSimVar(idIrGroundSpeed[adirsIndex]->get());
+  irBusOutputs[adirsIndex].track_angle_true_deg = Arinc429Utils::fromSimVar(idIrTrackAngleTrue[adirsIndex]->get());
+  irBusOutputs[adirsIndex].heading_true_deg = Arinc429Utils::fromSimVar(idIrHeadingTrue[adirsIndex]->get());
   irBusOutputs[adirsIndex].wind_speed_kn = Arinc429Utils::fromSimVar(idIrWindSpeed[adirsIndex]->get());
   irBusOutputs[adirsIndex].wind_direction_true_deg = Arinc429Utils::fromSimVar(idIrWindDirectionTrue[adirsIndex]->get());
   irBusOutputs[adirsIndex].track_angle_magnetic_deg = Arinc429Utils::fromSimVar(idIrTrackAngleMagnetic[adirsIndex]->get());
