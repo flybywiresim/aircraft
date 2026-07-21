@@ -2,6 +2,10 @@
 
 A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P{
 
+  21.0,
+
+  21.0,
+
   11.0,
 
   23.0,

@@ -101,6 +101,8 @@ class A380FcuComputer final
   };
 
   struct Parameters_A380FcuComputer_T {
+    real_T BitfromLabel6_bit;
+    real_T BitfromLabel7_bit;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
     real_T BitfromLabel_bit_n;
@@ -113,12 +115,12 @@ class A380FcuComputer final
     real_T BitfromLabel3_bit_j;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel5_bit;
-    real_T BitfromLabel7_bit;
+    real_T BitfromLabel7_bit_g;
     real_T BitfromLabel8_bit;
     real_T BitfromLabel9_bit;
     real_T BitfromLabel12_bit;
     real_T BitfromLabel11_bit;
-    real_T BitfromLabel6_bit;
+    real_T BitfromLabel6_bit_a;
     real_T BitfromLabel10_bit;
     real_T MTrigNode_isRisingEdge;
     real_T MTrigNode_isRisingEdge_a;
@@ -287,6 +289,7 @@ class A380FcuComputer final
   static void A380FcuComputer_MATLABFunction_mw_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
   static void A380FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_T *rty_y, boolean_T rtp_init,
     rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
+  static void A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380FcuComputer_MATLABFunction_a(const boolean_T rtu_u[19], real32_T *rty_y);
 };
 

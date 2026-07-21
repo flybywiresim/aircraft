@@ -1597,6 +1597,11 @@ void A380FcuComputer::A380FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_
   *rty_y = localDW->pY;
 }
 
+void A380FcuComputer::A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y)
+{
+  *rty_y = (rtu_u->SSM != static_cast<uint32_T>(SignStatusMatrix::FailureWarning));
+}
+
 void A380FcuComputer::A380FcuComputer_MATLABFunction_a(const boolean_T rtu_u[19], real32_T *rty_y)
 {
   uint32_T out;
@@ -1615,18 +1620,18 @@ void A380FcuComputer::step()
   const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_2;
   const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_3;
   const base_arinc_429 *rtb_MultiportSwitch_fg_discrete_word_5;
-  base_arinc_429 rtb_Switch;
-  base_arinc_429 rtb_Switch_j;
-  base_arinc_429 rtb_Switch_m;
+  base_arinc_429 rtb_Switch_h;
+  base_arinc_429 rtb_Switch_k;
+  base_arinc_429 rtb_Switch_or;
   int32_T tmp;
-  real32_T rtb_MultiportSwitch_j0_fg_selected_fpa_deg_Data;
-  real32_T rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data;
-  real32_T rtb_y;
-  real32_T rtb_y_b;
-  real32_T rtb_y_e3;
-  real32_T rtb_y_h;
-  uint32_T rtb_DataTypeConversion1_j;
-  uint32_T rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM;
+  real32_T rtb_MultiportSwitch_j_fg_selected_fpa_deg_Data;
+  real32_T rtb_MultiportSwitch_j_fg_selected_spd_kts_Data;
+  real32_T rtb_y_g5;
+  real32_T rtb_y_jv;
+  real32_T rtb_y_m;
+  real32_T rtb_y_n;
+  uint32_T rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM;
+  uint32_T rtb_y;
   int8_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns;
   int8_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns;
   int8_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns;
@@ -1635,7 +1640,7 @@ void A380FcuComputer::step()
   boolean_T rtb_VectorConcatenate[19];
   boolean_T rtb_BusAssignment_af_logic_afs_hdg_trk_dashes;
   boolean_T rtb_BusAssignment_ak_logic_afs_spd_mach_dashes;
-  boolean_T rtb_BusAssignment_ao_logic_afs_vs_fpa_dashes;
+  boolean_T rtb_BusAssignment_ao_logic_afs_ap_1_engaged;
   boolean_T rtb_BusAssignment_n_logic_efis_ls_auto_activate;
   boolean_T rtb_BusAssignment_n_logic_efis_vv_auto_deactivate;
   boolean_T rtb_BusAssignment_p_logic_afs_fd_pushed;
@@ -1655,11 +1660,11 @@ void A380FcuComputer::step()
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_pushed;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_4_BusCreator1_pulled;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_4_BusCreator1_pushed;
+  boolean_T rtb_Compare_ap;
   boolean_T rtb_Compare_j;
+  boolean_T rtb_DataTypeConversion_d;
   boolean_T rtb_DataTypeConversion_d3;
-  boolean_T rtb_DataTypeConversion_h;
   boolean_T rtb_DataTypeConversion_o;
-  boolean_T rtb_DataTypeConversion_p;
   boolean_T rtb_Equal1;
   boolean_T rtb_Equal2;
   boolean_T rtb_Equal7;
@@ -1804,17 +1809,15 @@ void A380FcuComputer::step()
     }
 
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel_bit_n,
-      &rtb_DataTypeConversion1_j);
-    rtb_BusAssignment_p_logic_afs_trk_fpa_active = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_BusAssignment_p_logic_afs_trk_fpa_active = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel1_bit_m,
-      &rtb_DataTypeConversion1_j);
-    rtb_BusAssignment_p_logic_afs_metric_alt_active = (rtb_DataTypeConversion1_j != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel2_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_BusAssignment_p_logic_afs_mach_active = (rtb_DataTypeConversion1_j != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel3_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_BusAssignment_p_logic_afs_true_active = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_BusAssignment_p_logic_afs_metric_alt_active = (rtb_y != 0U);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel2_bit, &rtb_y);
+    rtb_BusAssignment_p_logic_afs_mach_active = (rtb_y != 0U);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel3_bit, &rtb_y);
+    rtb_BusAssignment_p_logic_afs_true_active = (rtb_y != 0U);
     switch (rtb_masterPrim) {
      case 1:
       rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_4;
@@ -1842,178 +1845,177 @@ void A380FcuComputer::step()
     }
 
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel_bit_p,
-      &rtb_DataTypeConversion1_j);
-    rtb_DataTypeConversion_p = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_BusAssignment_ao_logic_afs_ap_1_engaged = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel1_bit_e,
-      &rtb_DataTypeConversion1_j);
-    rtb_DataTypeConversion_o = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_DataTypeConversion_o = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel2_bit_a,
-      &rtb_DataTypeConversion1_j);
-    rtb_OR = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_OR = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel3_bit_j,
-      &rtb_DataTypeConversion1_j);
-    rtb_OR = (rtb_OR || (rtb_DataTypeConversion1_j != 0U));
+      &rtb_y);
+    rtb_OR = (rtb_OR || (rtb_y != 0U));
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_ats_discrete_word, A380FcuComputer_P.BitfromLabel4_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_DataTypeConversion_d3 = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_DataTypeConversion_d3 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_3, A380FcuComputer_P.BitfromLabel5_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal2 = (rtb_DataTypeConversion1_j != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel7_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal1 = (rtb_DataTypeConversion1_j != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel8_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal8 = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_Equal2 = (rtb_y != 0U);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel7_bit_g,
+      &rtb_y);
+    rtb_Equal1 = (rtb_y != 0U);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel8_bit, &rtb_y);
+    rtb_Equal8 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel9_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_OR3 = (rtb_Equal1 || rtb_Equal8 || (rtb_DataTypeConversion1_j != 0U));
+      &rtb_y);
+    rtb_OR3 = (rtb_Equal1 || rtb_Equal8 || (rtb_y != 0U));
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel12_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal7 = (rtb_DataTypeConversion1_j != 0U);
+      &rtb_y);
+    rtb_Equal7 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel11_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal7 = (rtb_Equal7 || (rtb_DataTypeConversion1_j != 0U));
+      &rtb_y);
+    rtb_Equal7 = (rtb_Equal7 || (rtb_y != 0U));
     rtb_Equal8 = (rtb_OR3 && (!rtb_Equal7));
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel6_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_Equal1 = (rtb_DataTypeConversion1_j != 0U);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel6_bit_a,
+      &rtb_y);
+    rtb_Equal1 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_3, A380FcuComputer_P.BitfromLabel10_bit,
-      &rtb_DataTypeConversion1_j);
-    rtb_OR3 = (rtb_Equal7 || rtb_Equal1 || (rtb_DataTypeConversion1_j != 0U));
+      &rtb_y);
+    rtb_OR3 = (rtb_Equal7 || rtb_Equal1 || (rtb_y != 0U));
     switch (rtb_masterPrim) {
      case 1:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_spd_kts.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_spd_kts.SSM;
+      rtb_MultiportSwitch_j_fg_selected_spd_kts_Data =
         A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_spd_kts.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_mach_kts.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_mach_kts.Data;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_mach_kts.Data;
       break;
 
      case 2:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_spd_kts.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_spd_kts.SSM;
+      rtb_MultiportSwitch_j_fg_selected_spd_kts_Data =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_spd_kts.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_mach_kts.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_mach_kts.Data;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_mach_kts.Data;
       break;
 
      default:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_spd_kts.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_spd_kts.SSM;
+      rtb_MultiportSwitch_j_fg_selected_spd_kts_Data =
         A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_spd_kts.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_mach_kts.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_mach_kts.Data;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_mach_kts.Data;
       break;
     }
 
     if (rtb_BusAssignment_p_logic_afs_mach_active) {
-      rtb_Switch.SSM = rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM;
-      rtb_Switch.Data = rtb_y_h;
+      rtb_Switch_k.SSM = rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM;
+      rtb_Switch_k.Data = rtb_y_m;
     } else {
-      rtb_Switch.SSM = rtb_DataTypeConversion1_j;
-      rtb_Switch.Data = rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data;
+      rtb_Switch_k.SSM = rtb_y;
+      rtb_Switch_k.Data = rtb_MultiportSwitch_j_fg_selected_spd_kts_Data;
     }
 
-    A380FcuComputer_MATLABFunction(&rtb_Switch, A380FcuComputer_P.A429ValueOrDefault_defaultValue,
-      &rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data);
-    A380FcuComputer_MATLABFunction_m(&rtb_Switch, &rtb_Compare_j);
+    A380FcuComputer_MATLABFunction(&rtb_Switch_k, A380FcuComputer_P.A429ValueOrDefault_defaultValue,
+      &rtb_MultiportSwitch_j_fg_selected_spd_kts_Data);
+    A380FcuComputer_MATLABFunction_m(&rtb_Switch_k, &rtb_Compare_j);
     rtb_BusAssignment_ak_logic_afs_spd_mach_dashes = !rtb_Compare_j;
     switch (rtb_masterPrim) {
      case 1:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_hdg_deg.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_hdg_deg.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_hdg_deg.SSM;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_hdg_deg.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_trk_deg.SSM;
-      rtb_y_b = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_trk_deg.Data;
+      rtb_y_g5 = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_trk_deg.Data;
       break;
 
      case 2:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_hdg_deg.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_hdg_deg.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_hdg_deg.SSM;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_hdg_deg.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_trk_deg.SSM;
-      rtb_y_b = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_trk_deg.Data;
+      rtb_y_g5 = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_trk_deg.Data;
       break;
 
      default:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_hdg_deg.SSM;
-      rtb_y_h = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_hdg_deg.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_hdg_deg.SSM;
+      rtb_y_m = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_hdg_deg.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_trk_deg.SSM;
-      rtb_y_b = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_trk_deg.Data;
+      rtb_y_g5 = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_trk_deg.Data;
       break;
     }
 
     if (rtb_BusAssignment_p_logic_afs_trk_fpa_active) {
-      rtb_Switch_j.SSM = rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM;
-      rtb_Switch_j.Data = rtb_y_b;
+      rtb_Switch_or.SSM = rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM;
+      rtb_Switch_or.Data = rtb_y_g5;
     } else {
-      rtb_Switch_j.SSM = rtb_DataTypeConversion1_j;
-      rtb_Switch_j.Data = rtb_y_h;
+      rtb_Switch_or.SSM = rtb_y;
+      rtb_Switch_or.Data = rtb_y_m;
     }
 
-    A380FcuComputer_MATLABFunction(&rtb_Switch_j, A380FcuComputer_P.A429ValueOrDefault_defaultValue_j, &rtb_y_h);
-    A380FcuComputer_MATLABFunction_m(&rtb_Switch_j, &rtb_Compare_j);
+    A380FcuComputer_MATLABFunction(&rtb_Switch_or, A380FcuComputer_P.A429ValueOrDefault_defaultValue_j, &rtb_y_m);
+    A380FcuComputer_MATLABFunction_m(&rtb_Switch_or, &rtb_Compare_j);
     rtb_BusAssignment_af_logic_afs_hdg_trk_dashes = !rtb_Compare_j;
     switch (rtb_masterPrim) {
      case 1:
-      rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_alt_ft;
+      rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_alt_ft;
       break;
 
      case 2:
-      rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_alt_ft;
+      rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_alt_ft;
       break;
 
      default:
-      rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_alt_ft;
+      rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.selected_alt_ft;
       break;
     }
 
-    A380FcuComputer_MATLABFunction(&rtb_Switch, A380FcuComputer_P.A429ValueOrDefault_defaultValue_b, &rtb_y_b);
+    A380FcuComputer_MATLABFunction(&rtb_Switch_k, A380FcuComputer_P.A429ValueOrDefault_defaultValue_b, &rtb_y_g5);
     switch (rtb_masterPrim) {
      case 1:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_vs_ft_min.SSM;
-      rtb_y_e3 = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_vs_ft_min.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_vs_ft_min.SSM;
+      rtb_y_jv = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_vs_ft_min.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_fpa_deg.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_fpa_deg_Data =
+      rtb_MultiportSwitch_j_fg_selected_fpa_deg_Data =
         A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_fpa_deg.Data;
       break;
 
      case 2:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.SSM;
-      rtb_y_e3 = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.SSM;
+      rtb_y_jv = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_fpa_deg.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_fpa_deg_Data =
+      rtb_MultiportSwitch_j_fg_selected_fpa_deg_Data =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_fpa_deg.Data;
       break;
 
      default:
-      rtb_DataTypeConversion1_j = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.SSM;
-      rtb_y_e3 = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.Data;
-      rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM =
+      rtb_y = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.SSM;
+      rtb_y_jv = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_vs_ft_min.Data;
+      rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_fpa_deg.SSM;
-      rtb_MultiportSwitch_j0_fg_selected_fpa_deg_Data =
+      rtb_MultiportSwitch_j_fg_selected_fpa_deg_Data =
         A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.selected_fpa_deg.Data;
       break;
     }
 
     if (rtb_BusAssignment_p_logic_afs_trk_fpa_active) {
-      rtb_Switch_m.SSM = rtb_MultiportSwitch_j0_fg_selected_mach_kts_SSM;
-      rtb_Switch_m.Data = rtb_MultiportSwitch_j0_fg_selected_fpa_deg_Data;
+      rtb_Switch_h.SSM = rtb_MultiportSwitch_j_fg_selected_mach_kts_SSM;
+      rtb_Switch_h.Data = rtb_MultiportSwitch_j_fg_selected_fpa_deg_Data;
     } else {
-      rtb_Switch_m.SSM = rtb_DataTypeConversion1_j;
-      rtb_Switch_m.Data = rtb_y_e3;
+      rtb_Switch_h.SSM = rtb_y;
+      rtb_Switch_h.Data = rtb_y_jv;
     }
 
-    A380FcuComputer_MATLABFunction_m(&rtb_Switch_m, &rtb_Compare_j);
-    rtb_BusAssignment_ao_logic_afs_vs_fpa_dashes = !rtb_Compare_j;
-    A380FcuComputer_MATLABFunction(&rtb_Switch_m, A380FcuComputer_P.A429ValueOrDefault_defaultValue_e, &rtb_y_e3);
+    A380FcuComputer_MATLABFunction_m(&rtb_Switch_h, &rtb_Compare_j);
+    rtb_Compare_ap = !rtb_Compare_j;
+    A380FcuComputer_MATLABFunction(&rtb_Switch_h, A380FcuComputer_P.A429ValueOrDefault_defaultValue_e, &rtb_y_jv);
     if (!A380FcuComputer_U.in.discrete_inputs.efis_backup_activated) {
       if (!A380FcuComputer_DWork.EFISLogic_MODE) {
         A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_kq);
@@ -2055,30 +2057,33 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.EFISLogic_MODE = true;
       }
 
-      switch (rtb_masterPrim) {
-       case 1:
-        rtb_Switch_m = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_5;
-        rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
-        break;
-
-       case 2:
-        rtb_Switch_m = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_5;
-        rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
-        break;
-
-       default:
-        rtb_Switch_m = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_5;
-        rtb_Switch = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_2;
-        break;
+      A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_1_bus.fctl.fctl_law_status_word,
+        A380FcuComputer_P.BitfromLabel6_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_em(&A380FcuComputer_U.in.bus_inputs.prim_1_bus.fctl.fctl_law_status_word,
+        &rtb_Equal7);
+      rtb_Compare_j = ((rtb_y != 0U) && rtb_Equal7);
+      A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
+        A380FcuComputer_P.BitfromLabel7_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_em(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
+        &rtb_Equal7);
+      if (rtb_Compare_j) {
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_5;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
+      } else if ((rtb_y != 0U) && rtb_Equal7) {
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_5;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
+      } else {
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_5;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_2;
       }
 
-      A380FcuComputer_MATLABFunction_o(&rtb_Switch_m, A380FcuComputer_P.BitfromLabel_bit, &rtb_DataTypeConversion1_j);
-      rtb_DataTypeConversion_h = (rtb_DataTypeConversion1_j != 0U);
-      A380FcuComputer_MATLABFunction_n((rtb_DataTypeConversion1_j != 0U), A380FcuComputer_P.PulseNode1_isRisingEdge,
-        &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_kq);
-      A380FcuComputer_MATLABFunction_o(&rtb_Switch, A380FcuComputer_P.BitfromLabel1_bit, &rtb_DataTypeConversion1_j);
-      A380FcuComputer_MATLABFunction_n((rtb_DataTypeConversion1_j != 0U), A380FcuComputer_P.PulseNode2_isRisingEdge,
-        &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_mt1);
+      A380FcuComputer_MATLABFunction_o(&rtb_Switch_h, A380FcuComputer_P.BitfromLabel_bit, &rtb_y);
+      rtb_DataTypeConversion_d = (rtb_y != 0U);
+      A380FcuComputer_MATLABFunction_n((rtb_y != 0U), A380FcuComputer_P.PulseNode1_isRisingEdge, &rtb_Equal7,
+        &A380FcuComputer_DWork.sf_MATLABFunction_kq);
+      A380FcuComputer_MATLABFunction_o(&rtb_Switch_k, A380FcuComputer_P.BitfromLabel1_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_n((rtb_y != 0U), A380FcuComputer_P.PulseNode2_isRisingEdge, &rtb_Compare_j,
+        &A380FcuComputer_DWork.sf_MATLABFunction_mt1);
       A380FcuComputer_Y.out.logic.afs.loc_only_active = rtb_Equal8;
       rtb_BusAssignment_n_logic_efis_vv_auto_deactivate = rtb_Equal7;
       rtb_BusAssignment_n_logic_efis_ls_auto_activate = rtb_Compare_j;
@@ -2144,15 +2149,15 @@ void A380FcuComputer::step()
       }
 
       rtb_BusAssignment_pg_efis_mode = static_cast<a380_efis_mode_selection>(A380FcuComputer_DWork.pMode);
-      rtb_Equal7 = (rtb_BusAssignment_pg_efis_mode == A380FcuComputer_P.EnumeratedConstant_Value);
+      rtb_Equal8 = (rtb_BusAssignment_pg_efis_mode == A380FcuComputer_P.EnumeratedConstant_Value);
       if (!A380FcuComputer_DWork.pArcActive_not_empty) {
-        A380FcuComputer_DWork.pArcActive = rtb_Equal7;
+        A380FcuComputer_DWork.pArcActive = rtb_Equal8;
         A380FcuComputer_DWork.pArcActive_not_empty = true;
       }
 
-      if (rtb_Equal7 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 4)) {
+      if (rtb_Equal8 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 4)) {
         A380FcuComputer_DWork.pRange = static_cast<int8_T>(A380FcuComputer_DWork.pRange - 1);
-      } else if ((!rtb_Equal7) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange < 10)) {
+      } else if ((!rtb_Equal8) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange < 10)) {
         A380FcuComputer_DWork.pRange = static_cast<int8_T>(A380FcuComputer_DWork.pRange + 1);
       }
 
@@ -2175,7 +2180,7 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pRange = 0;
       }
 
-      A380FcuComputer_DWork.pArcActive = rtb_Equal7;
+      A380FcuComputer_DWork.pArcActive = rtb_Equal8;
       A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.traf_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_o, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_ce);
       A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal7, A380FcuComputer_P.TFlipFlop1_init,
@@ -2230,7 +2235,7 @@ void A380FcuComputer::step()
         &A380FcuComputer_DWork.sf_NavaidLogic_f);
       A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vv_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_j, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_k1);
-      if (rtb_DataTypeConversion_h) {
+      if (rtb_DataTypeConversion_d) {
         A380FcuComputer_DWork.vvActive = true;
       } else if (rtb_BusAssignment_n_logic_efis_vv_auto_deactivate) {
         A380FcuComputer_DWork.vvActive = false;
@@ -2250,9 +2255,13 @@ void A380FcuComputer::step()
         A380FcuComputer_P.PulseNode_isRisingEdge_f, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_dg);
       A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal7, A380FcuComputer_P.TFlipFlop2_init_n,
         &A380FcuComputer_DWork.sf_MATLABFunction_hr);
-      A380FcuComputer_Y.out.data = A380FcuComputer_U.in;
+      A380FcuComputer_Y.out.data.time = A380FcuComputer_U.in.time;
+      A380FcuComputer_Y.out.data.sim_data = A380FcuComputer_U.in.sim_data;
+      A380FcuComputer_Y.out.data.sim_input = A380FcuComputer_U.in.sim_input;
+      A380FcuComputer_Y.out.data.discrete_inputs = A380FcuComputer_U.in.discrete_inputs;
+      A380FcuComputer_Y.out.data.bus_inputs = A380FcuComputer_U.in.bus_inputs;
       A380FcuComputer_Y.out.logic.afs.master_prim = rtb_masterPrim;
-      A380FcuComputer_Y.out.logic.afs.ap_1_engaged = rtb_DataTypeConversion_p;
+      A380FcuComputer_Y.out.logic.afs.ap_1_engaged = rtb_BusAssignment_ao_logic_afs_ap_1_engaged;
       A380FcuComputer_Y.out.logic.afs.ap_2_engaged = rtb_DataTypeConversion_o;
       A380FcuComputer_Y.out.logic.afs.athr_engaged = rtb_DataTypeConversion_d3;
       A380FcuComputer_Y.out.logic.afs.fd_engaged = rtb_OR;
@@ -2260,13 +2269,13 @@ void A380FcuComputer::step()
       A380FcuComputer_Y.out.logic.afs.trk_fpa_active = rtb_BusAssignment_p_logic_afs_trk_fpa_active;
       A380FcuComputer_Y.out.logic.afs.true_active = rtb_BusAssignment_p_logic_afs_true_active;
       A380FcuComputer_Y.out.logic.afs.metric_alt_active = rtb_BusAssignment_p_logic_afs_metric_alt_active;
-      A380FcuComputer_Y.out.logic.afs.spd_mach_display_value = rtb_MultiportSwitch_j0_fg_selected_spd_kts_Data;
+      A380FcuComputer_Y.out.logic.afs.spd_mach_display_value = rtb_MultiportSwitch_j_fg_selected_spd_kts_Data;
       A380FcuComputer_Y.out.logic.afs.spd_mach_dashes = rtb_BusAssignment_ak_logic_afs_spd_mach_dashes;
-      A380FcuComputer_Y.out.logic.afs.hdg_trk_display_value = rtb_y_h;
+      A380FcuComputer_Y.out.logic.afs.hdg_trk_display_value = rtb_y_m;
       A380FcuComputer_Y.out.logic.afs.hdg_trk_dashes = rtb_BusAssignment_af_logic_afs_hdg_trk_dashes;
-      A380FcuComputer_Y.out.logic.afs.alt_display_value = rtb_y_b;
-      A380FcuComputer_Y.out.logic.afs.vs_fpa_display_value = rtb_y_e3;
-      A380FcuComputer_Y.out.logic.afs.vs_fpa_dashes = rtb_BusAssignment_ao_logic_afs_vs_fpa_dashes;
+      A380FcuComputer_Y.out.logic.afs.alt_display_value = rtb_y_g5;
+      A380FcuComputer_Y.out.logic.afs.vs_fpa_display_value = rtb_y_jv;
+      A380FcuComputer_Y.out.logic.afs.vs_fpa_dashes = rtb_Compare_ap;
       A380FcuComputer_Y.out.logic.afs.alt_active = rtb_Equal2;
       A380FcuComputer_Y.out.logic.afs.appr_active = rtb_OR3;
       A380FcuComputer_Y.out.logic.afs.hdg_trk_buttons.pushed =
@@ -2305,7 +2314,7 @@ void A380FcuComputer::step()
         rtb_BusAssignment_p_logic_afs_metric_alt_switching_pushed;
       A380FcuComputer_Y.out.discrete_outputs = A380FcuComputer_P.Constant3_Value;
       A380FcuComputer_Y.out.bus_outputs = A380FcuComputer_P.Constant2_Value;
-      A380FcuComputer_Y.out.logic.efis.vv_auto_activate = rtb_DataTypeConversion_h;
+      A380FcuComputer_Y.out.logic.efis.vv_auto_activate = rtb_DataTypeConversion_d;
       A380FcuComputer_Y.out.logic.efis.vv_auto_deactivate = rtb_BusAssignment_n_logic_efis_vv_auto_deactivate;
       A380FcuComputer_Y.out.logic.efis.ls_auto_activate = rtb_BusAssignment_n_logic_efis_ls_auto_activate;
       A380FcuComputer_Y.out.logic.efis.vv_on = A380FcuComputer_DWork.vvActive;
@@ -2333,16 +2342,16 @@ void A380FcuComputer::step()
     }
 
     if (A380FcuComputer_B.BusAssignment.logic.efis.efis_cp_panel_activate) {
-      rtb_DataTypeConversion1_j = static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 2U;
+      rtb_y = static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 2U;
       if (static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 2U > static_cast<uint32_T>
           (A380FcuComputer_B.BusAssignment.logic.efis.efis_range)) {
-        rtb_DataTypeConversion1_j = 0U;
+        rtb_y = 0U;
       }
 
-      if (static_cast<uint8_T>(rtb_DataTypeConversion1_j) < 1) {
+      if (static_cast<uint8_T>(rtb_y) < 1) {
         rtb_masterPrim = 1U;
       } else {
-        rtb_masterPrim = static_cast<uint8_T>(rtb_DataTypeConversion1_j);
+        rtb_masterPrim = static_cast<uint8_T>(rtb_y);
       }
     } else {
       rtb_masterPrim = 0U;
@@ -2382,7 +2391,7 @@ void A380FcuComputer::step()
       A380FcuComputer_P.EnumeratedConstant2_Value_k);
     rtb_VectorConcatenate[18] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant1_Value_a);
-    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_h);
+    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_m);
     rtb_VectorConcatenate[0] = A380FcuComputer_B.BusAssignment.logic.efis.baro_std;
     rtb_VectorConcatenate[1] = A380FcuComputer_B.BusAssignment.logic.efis.baro_qnh;
     rtb_VectorConcatenate[2] = A380FcuComputer_B.BusAssignment.data.discrete_inputs.efis_inputs.baro_is_inhg;
@@ -2411,7 +2420,7 @@ void A380FcuComputer::step()
       A380FcuComputer_P.EnumeratedConstant11_Value);
     rtb_VectorConcatenate[18] = (A380FcuComputer_P.EnumeratedConstant11_Value ==
       A380FcuComputer_B.BusAssignment.logic.efis.navaid_2);
-    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_b);
+    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_g5);
     rtb_VectorConcatenate[0] = A380FcuComputer_B.BusAssignment.logic.afs.spd_mach_buttons.pushed;
     rtb_VectorConcatenate[1] = A380FcuComputer_B.BusAssignment.logic.afs.spd_mach_buttons.pulled;
     rtb_VectorConcatenate[2] = A380FcuComputer_B.BusAssignment.logic.afs.hdg_trk_buttons.pushed;
@@ -2431,7 +2440,7 @@ void A380FcuComputer::step()
     rtb_VectorConcatenate[16] = A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.alt_increment_1000;
     rtb_VectorConcatenate[17] = A380FcuComputer_P.Constant20_Value;
     rtb_VectorConcatenate[18] = A380FcuComputer_P.Constant20_Value;
-    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_e3);
+    A380FcuComputer_MATLABFunction_a(rtb_VectorConcatenate, &rtb_y_jv);
     if (A380FcuComputer_B.BusAssignment.data.discrete_inputs.afs_inputs.spd_knob.turns < -8) {
       rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns = -8;
     } else {
@@ -2475,12 +2484,11 @@ void A380FcuComputer::step()
       rtb_DataTypeConversion_j = 7;
     }
 
-    rtb_DataTypeConversion1_j = (static_cast<uint32_T>
-      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns) & 15U) << 10 | (static_cast<uint32_T>
-      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns) & 15U) << 14 | (static_cast<uint32_T>
-      (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns) & 15U) << 18 | (static_cast<uint32_T>
-      (rtb_DataTypeConversion_j) & 15U) << 22;
-    std::memcpy((void *)&rtb_y, (void *)&rtb_DataTypeConversion1_j, (uint32_T)((size_t)1 * sizeof(real32_T)));
+    rtb_y = (static_cast<uint32_T>(rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_turns) & 15U) <<
+      10 | (static_cast<uint32_T>(rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_turns) & 15U) <<
+      14 | (static_cast<uint32_T>(rtb_BusConversion_InsertedFor_BusAssignment_at_inport_3_BusCreator1_turns) & 15U) <<
+      18 | (static_cast<uint32_T>(rtb_DataTypeConversion_j) & 15U) << 22;
+    std::memcpy((void *)&rtb_y_n, (void *)&rtb_y, (uint32_T)((size_t)1 * sizeof(real32_T)));
     A380FcuComputer_Y.out = A380FcuComputer_B.BusAssignment;
     A380FcuComputer_Y.out.discrete_outputs.efis_outputs.vv_light_on = A380FcuComputer_B.BusAssignment.logic.efis.vv_on;
     A380FcuComputer_Y.out.discrete_outputs.efis_outputs.ls_light_on = A380FcuComputer_B.BusAssignment.logic.efis.ls_on;
@@ -2577,10 +2585,10 @@ void A380FcuComputer::step()
     A380FcuComputer_Y.out.discrete_outputs.fcu_healthy = A380FcuComputer_P.Constant1_Value_i;
     A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_1.SSM = static_cast<uint32_T>
       (A380FcuComputer_P.EnumeratedConstant1_Value);
-    A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_1.Data = rtb_y_h;
+    A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_1.Data = rtb_y_m;
     A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_2.SSM = static_cast<uint32_T>
       (A380FcuComputer_P.EnumeratedConstant1_Value);
-    A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_2.Data = rtb_y_b;
+    A380FcuComputer_Y.out.bus_outputs.efis_discrete_word_2.Data = rtb_y_g5;
     A380FcuComputer_Y.out.bus_outputs.baro_setting_hpa.SSM = static_cast<uint32_T>
       (A380FcuComputer_P.EnumeratedConstant1_Value);
     A380FcuComputer_Y.out.bus_outputs.baro_setting_hpa.Data = A380FcuComputer_B.BusAssignment.logic.efis.baro_value_hpa;
@@ -2590,10 +2598,10 @@ void A380FcuComputer::step()
       A380FcuComputer_B.BusAssignment.logic.efis.baro_value_inhg;
     A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_1.SSM = static_cast<uint32_T>
       (A380FcuComputer_P.EnumeratedConstant1_Value);
-    A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_1.Data = rtb_y_e3;
+    A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_1.Data = rtb_y_jv;
     A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_2.SSM = static_cast<uint32_T>
       (A380FcuComputer_P.EnumeratedConstant1_Value);
-    A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_2.Data = rtb_y;
+    A380FcuComputer_Y.out.bus_outputs.afs_discrete_word_2.Data = rtb_y_n;
   } else if (A380FcuComputer_DWork.Runtime_MODE) {
     A380FcuComputer_DWork.EFISLogic_MODE = false;
     A380FcuComputer_DWork.Runtime_MODE = false;
