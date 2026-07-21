@@ -107,6 +107,7 @@ export const LoadSheetWidget = () => {
             height={51}
             onScrollStop={(scroll) => dispatch(setOfpScroll(scroll))}
             initialScroll={ofpScroll}
+            scrollButtons
           >
             <div
               ref={ref}

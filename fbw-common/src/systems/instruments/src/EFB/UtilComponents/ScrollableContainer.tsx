@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
 interface ScrollableContainerProps {
   height: number;
@@ -12,6 +13,10 @@ interface ScrollableContainerProps {
   onScroll?: (scrollTop: number) => void;
   onScrollStop?: (scrollTop: number) => void;
   nonRigid?: boolean;
+  /** When true, renders ▲/▼ buttons for precise scrolling next to the scrollbar. */
+  scrollButtons?: boolean;
+  /** Number of pixels to scroll per button click when scrollButtons is enabled. Defaults to 100. */
+  scrollAmount?: number;
 }
 
 /**
@@ -27,6 +32,8 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
   initialScroll = 0,
   innerClassName,
   nonRigid,
+  scrollButtons = false,
+  scrollAmount = 100,
 }) => {
   const [contentOverflows, setContentOverflows] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -71,7 +78,15 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
 
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
-  return (
+  const handleScrollUp = () => {
+    containerRef.current?.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+  };
+
+  const handleScrollDown = () => {
+    containerRef.current?.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+  };
+
+  const scrollableDiv = (
     <div
       className={`scrollbar w-full overflow-y-auto ${className}`}
       style={nonRigid ? { maxHeight: `${height}rem` } : { height: `${height}rem` }}
@@ -96,4 +111,30 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
       </div>
     </div>
   );
+
+  if (scrollButtons && contentOverflows) {
+    return (
+      <div className="relative w-full">
+        <button
+          type="button"
+          aria-label="Scroll up"
+          onClick={handleScrollUp}
+          className="absolute right-0 top-0 z-10 flex h-6 w-6 items-center justify-center rounded-t-md bg-theme-secondary text-theme-text transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+        >
+          <ChevronUp size={14} />
+        </button>
+        {scrollableDiv}
+        <button
+          type="button"
+          aria-label="Scroll down"
+          onClick={handleScrollDown}
+          className="absolute bottom-0 right-0 z-10 flex h-6 w-6 items-center justify-center rounded-b-md bg-theme-secondary text-theme-text transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+        >
+          <ChevronDown size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return scrollableDiv;
 };
