@@ -92,9 +92,9 @@ export function computeA3Message(
   autoBrakeActive: boolean,
   autoBrakeMode: number,
 ): A3Messages {
-  const clbDemand = atsFmaDiscreteWord.bitValueOr(22, false);
-  const mctDemand = atsFmaDiscreteWord.bitValueOr(23, false);
-  const assymThrust = atsFmaDiscreteWord.bitValueOr(21, false);
+  const clbDemand = atsFmaDiscreteWord.bitValueOr(26, false);
+  const mctDemand = atsFmaDiscreteWord.bitValueOr(27, false);
+  const assymThrust = atsFmaDiscreteWord.bitValueOr(25, false);
 
   if (thrLocked) {
     return A3Messages.THR_LK;

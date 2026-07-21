@@ -653,7 +653,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         break;
       case A3Messages.LVR_ASYM:
         text = 'LVR ASYM';
-        className = 'FontMedium Amber';
+        className = 'FontMedium Amber BlinkInfinite';
         break;
       case A3Messages.BRK_RTO:
         text = 'BRK RTO';
