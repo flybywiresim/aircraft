@@ -250,7 +250,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_lx;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_mm;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_n4;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dx;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dxv;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_b1;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_az;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kdz;
@@ -313,9 +313,10 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_l0;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bo;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_iv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_dg;
+    rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_dgp;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ps;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dg;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a5;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_fh;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_eh;
@@ -707,6 +708,10 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault1_defaultValue_hs;
     real32_T A429ValueOrDefault2_defaultValue_i;
     real32_T A429ValueOrDefault3_defaultValue_id;
+    real32_T A429ValueOrDefault4_defaultValue_o;
+    real32_T A429ValueOrDefault5_defaultValue_n;
+    real32_T A429ValueOrDefault6_defaultValue_b;
+    real32_T A429ValueOrDefault7_defaultValue_l;
     real32_T A429ValueOrDefault4_defaultValue_l;
     real32_T A429ValueOrDefault8_defaultValue;
     real32_T A429ValueOrDefault4_defaultValue_j;
@@ -788,10 +793,11 @@ class A380PrimComputerFg final
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode_isRisingEdge_b;
     boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
-    boolean_T PulseNode1_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge_p;
     boolean_T ConfirmNode_isRisingEdge_g;
     boolean_T PulseNode_isRisingEdge_l;
     boolean_T PulseNode3_isRisingEdge_n;
@@ -801,7 +807,7 @@ class A380PrimComputerFg final
     boolean_T ConfirmNode1_isRisingEdge_p;
     boolean_T PulseNode_isRisingEdge_p;
     boolean_T ConfirmNode2_isRisingEdge;
-    boolean_T PulseNode1_isRisingEdge_p;
+    boolean_T PulseNode1_isRisingEdge_pq;
     boolean_T PulseNode2_isRisingEdge_m;
     boolean_T PulseNode3_isRisingEdge_p;
     boolean_T PulseNode5_isRisingEdge;
@@ -864,7 +870,7 @@ class A380PrimComputerFg final
     boolean_T PulseNode6_isRisingEdge;
     boolean_T PulseNode5_isRisingEdge_g;
     boolean_T ConfirmNode_isRisingEdge_nr;
-    boolean_T PulseNode1_isRisingEdge_pq;
+    boolean_T PulseNode1_isRisingEdge_pqz;
     boolean_T PulseNode2_isRisingEdge_h;
     boolean_T ConfirmNode_isRisingEdge_ez;
     boolean_T PulseNode_isRisingEdge_k3;

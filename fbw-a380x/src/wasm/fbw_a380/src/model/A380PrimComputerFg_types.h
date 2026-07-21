@@ -552,19 +552,6 @@ enum class a380_athr_fma_message
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
@@ -655,6 +642,19 @@ struct ap_laws_input
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_laws_input input;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
