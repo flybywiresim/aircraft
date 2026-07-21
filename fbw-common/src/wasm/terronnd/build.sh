@@ -39,7 +39,7 @@ clang++ \
   -Wdouble-promotion \
   -Wundef \
   -Wconversion \
-  --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
+  --sysroot "${MSFS2024_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
@@ -60,8 +60,9 @@ clang++ \
   -mbulk-memory \
   -Werror=return-type \
   -O2 \
-  -I "${MSFS_SDK}/WASM/include" \
-  -I "${MSFS_SDK}/SimConnect SDK/include" \
+  -I "${DIR}/src/banned" \
+  -I "${MSFS2024_SDK}/WASM/include" \
+  -I "${MSFS2024_SDK}/SimConnect SDK/include" \
   -I "${DIR}/../cpp-msfs-framework/lib/" \
   "${DIR}/src/main.cpp" \
   "${DIR}/src/nanovg/nanovg.cpp" \
@@ -79,8 +80,9 @@ mkdir -p "${DIR}/out"
 wasm-ld \
   --no-entry \
   --allow-undefined \
-  -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
-  -lc "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a" \
+  -L "${MSFS2024_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
+  -lc "${MSFS2024_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a" \
+  -lc "${MSFS2024_SDK}/WASM/WasmVersions/MSFS_WasmVersions.a" \
   --export __wasm_call_ctors \
   --export-dynamic \
   --export malloc \
@@ -91,6 +93,9 @@ wasm-ld \
   --export mchunkit_next \
   --export get_pages_state \
   --export mark_decommit_pages \
+  --export GetSimConnectVersion \
+  --export GetExtensionVersionBuffer \
+  --export GetExtensionVersion \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \

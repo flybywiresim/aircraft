@@ -4,6 +4,7 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #include <SimConnect.h>
 #pragma clang diagnostic pop
+#include <MSFS/MSFS_Vars.h>
 #include <chrono>
 #include <cstddef>
 #include <string_view>
@@ -72,6 +73,7 @@ class LVarObject : public LVarObjectBase {
  private:
   struct LVarDefinition {
     int variableId;
+    int unitId;
     double value;
   };
 
@@ -92,7 +94,8 @@ class LVarObject : public LVarObjectBase {
     bool changedValues = false;
 
     for (auto& entry : this->_entries) {
-      double value = get_named_variable_value(entry.variableId);
+      double value;
+      fsVarsLVarGet(entry.variableId, entry.unitId, &value);
       if (!helper::Math::almostEqual(value, entry.value)) {
         entry.value = value;
         changedValues = true;
@@ -108,7 +111,11 @@ class LVarObject : public LVarObjectBase {
   /**
    * @brief Construct a new LVarObject object and registered all variable names
    */
-  LVarObject() : _entries({{register_named_variable(std::string(helper::concat<AircraftPrefix, Strings>).c_str()), 0.0}...}) {}
+  LVarObject()
+      : _entries({
+            {fsVarsRegisterLVar(std::string(helper::concat<AircraftPrefix, Strings>).c_str()), fsVarsGetUnitId("number"), 0.0}
+            ...
+  }) {}
   LVarObject(const LVarObject<Strings...>&) = delete;
 
   LVarObject<Strings...>& operator=(const LVarObject<Strings...>&) = delete;
@@ -138,7 +145,7 @@ class LVarObject : public LVarObjectBase {
    */
   void writeValues() {
     for (const auto& entry : std::as_const(this->_entries)) {
-      set_named_variable_value(entry.variableId, entry.value);
+      fsVarsLVarSet(entry.variableId, entry.unitId, entry.value);
     }
   }
 };
