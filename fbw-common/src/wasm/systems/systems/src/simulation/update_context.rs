@@ -107,6 +107,7 @@ impl TryFrom<f64> for SurfaceTypeMsfs {
             21 => Ok(SurfaceTypeMsfs::Sand),
             22 => Ok(SurfaceTypeMsfs::Shale),
             23 => Ok(SurfaceTypeMsfs::Tarmac),
+            255 => Ok(SurfaceTypeMsfs::Macadam),
             unexpected => Err(unexpected),
         }
     }
