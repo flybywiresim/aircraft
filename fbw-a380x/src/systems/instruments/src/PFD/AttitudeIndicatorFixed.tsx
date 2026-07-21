@@ -15,6 +15,8 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
@@ -233,13 +235,31 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<SelectedFdEvents>();
+  private readonly sub = this.props.bus.getSubscriber<SelectedFdEvents & PrimFgBusBaseEvents & PFDSimvars>();
 
-  private fdRollCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_roll_fd_command'));
+  private readonly fdRollCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_roll_fd_command'));
 
-  private fdPitchCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pitch_fd_command'));
+  private readonly fdPitchCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pitch_fd_command'));
 
-  private fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+  private readonly fdYawCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_yaw_fd_command'));
+
+  private readonly primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
+
+  private readonly fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+
+  private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+
+  private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+
+  private readonly onGround = MappedSubject.create(
+    ([leftMainGearCompressed, rightMainGearCompressed]) => leftMainGearCompressed || rightMainGearCompressed,
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+  );
+
+  private readonly lateralShouldFlash = this.primFgDiscreteWord5.map((word) => word.bitValueOr(27, false));
+
+  private readonly longitudinalShouldFlash = this.primFgDiscreteWord5.map((word) => word.bitValueOr(26, false));
 
   private readonly rollTransform = this.fdRollCommand.map((word) => {
     const offset = Math.min(Math.max(word.value, -45), 45) * 0.44;
@@ -247,12 +267,8 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
     return `translate3d(${offset}px, 0px, 0px)`;
   });
 
-  private readonly rollVisibility = MappedSubject.create(
-    ([fdActive, fdRollCommand]) => {
-      const visible = fdActive && !(fdRollCommand.isNoComputedData() || fdRollCommand.isFailureWarning());
-
-      return visible ? 'inherit' : 'hidden';
-    },
+  private readonly lateralVisible = MappedSubject.create(
+    ([fdActive, fdRollCommand]) => fdActive && !(fdRollCommand.isNoComputedData() || fdRollCommand.isFailureWarning()),
     this.fdActive,
     this.fdRollCommand,
   );
@@ -263,43 +279,80 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
     return `translate3d(0px, ${offset}px, 0px)`;
   });
 
-  private readonly pitchVisibility = MappedSubject.create(
-    ([fdActive, fdPitchCommand]) => {
-      const visible = fdActive && !(fdPitchCommand.isNoComputedData() || fdPitchCommand.isFailureWarning());
-
-      return visible ? 'inherit' : 'hidden';
-    },
+  private readonly longitudinalVisible = MappedSubject.create(
+    ([fdActive, fdPitchCommand]) =>
+      fdActive && !(fdPitchCommand.isNoComputedData() || fdPitchCommand.isFailureWarning()),
     this.fdActive,
     this.fdPitchCommand,
+  );
+
+  private readonly fdFlagVisible = MappedSubject.create(
+    ([fdActive, fdPitchCommand, fdRollCommand, fdYawCommand, onGround]) =>
+      fdActive &&
+      (fdRollCommand.isFailureWarning() ||
+        fdPitchCommand.isFailureWarning() ||
+        (fdYawCommand.isFailureWarning() && onGround)),
+    this.fdActive,
+    this.fdPitchCommand,
+    this.fdRollCommand,
+    this.fdYawCommand,
+    this.onGround,
   );
 
   render(): VNode | null {
     return (
       <g>
-        <g class="ThickOutline">
-          <path style={{ transform: this.rollTransform }} visibility={this.rollVisibility} d="m68.903 61.672v38.302" />
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
+        >
+          <path style={{ transform: this.rollTransform }} class="ThickOutline" d="m68.903 61.672v38.302" />
+        </FlashOneHertz>
 
-          <path
-            style={{ transform: this.pitchTransform }}
-            visibility={this.pitchVisibility}
-            d="m49.263 80.823h39.287"
-          />
-        </g>
-        <g class="ThickStroke Green">
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
+          <path style={{ transform: this.pitchTransform }} class="ThickOutline" d="m49.263 80.823h39.287" />
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
+        >
           <path
             style={{ transform: this.rollTransform }}
-            visibility={this.rollVisibility}
+            class="ThickStroke Green"
             id="FlightDirectorRoll"
             d="m68.903 61.672v38.302"
           />
+        </FlashOneHertz>
 
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
           <path
             style={{ transform: this.pitchTransform }}
-            visibility={this.pitchVisibility}
+            class="ThickStroke Green"
             id="FlightDirectorPitch"
             d="m49.263 80.823h39.287"
           />
-        </g>
+        </FlashOneHertz>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisible}>
+          <text id="FDFlag" x="52.702862" y="56.065434" class="FontLargest EndAlign Red">
+            FD
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }
