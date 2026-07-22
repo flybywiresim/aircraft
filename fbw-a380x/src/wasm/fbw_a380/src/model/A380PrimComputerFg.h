@@ -5,7 +5,7 @@
 #include "A380FgOuterLoops.h"
 
 extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
-extern struct_J1lEWmdkRUN5N361M6exMC rtP_prim_fg_mode_logic_output_MATLABStruct;
+extern struct_4PuDOsayu2Xpdv8g8JLxTH rtP_prim_fg_mode_logic_output_MATLABStruct;
 class A380PrimComputerFg final
 {
  public:
@@ -336,8 +336,8 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_bp;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_fp;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_p;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_c;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_pa;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ci;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_d;
     rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_b;
     rtDW_LeadLagFilter_A380PrimComputerFg_T sf_LeadLagFilter_c;
@@ -409,20 +409,16 @@ class A380PrimComputerFg final
     real_T BitfromLabel1_bit_la;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_f;
-    real_T CompareToConstant3_const;
-    real_T CompareToConstant5_const;
     real_T CompareToConstant_const_g;
     real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
-    real_T CompareToConstant3_const_k;
-    real_T CompareToConstant5_const_f;
     real_T CompareToConstant_const_a;
     real_T CompareToConstant1_const_e;
     real_T CompareToConstant2_const_n;
     real_T CompareToConstant_const_k;
     real_T CompareToConstant1_const_h;
     real_T CompareToConstant2_const_o;
-    real_T CompareToConstant3_const_g;
+    real_T CompareToConstant3_const;
     real_T CompareToConstant1_const_k;
     real_T CompareToConstant_const_fo;
     real_T CompareToConstant2_const_n1;
@@ -430,7 +426,7 @@ class A380PrimComputerFg final
     real_T CompareToConstant2_const_d;
     real_T CompareToConstant3_const_d;
     real_T CompareToConstant4_const;
-    real_T CompareToConstant5_const_a;
+    real_T CompareToConstant5_const;
     real_T CompareToConstant6_const;
     real_T CompareToConstant7_const;
     real_T CompareToConstant8_const;
@@ -471,10 +467,12 @@ class A380PrimComputerFg final
     real_T CompareToConstant1_const_cm;
     real_T CompareToConstant_const_d;
     real_T CompareToConstant2_const_j;
-    real_T CompareToConstant3_const_ge;
+    real_T CompareToConstant3_const_g;
     real_T CompareToConstant4_const_h;
-    real_T CompareToConstant5_const_av;
+    real_T CompareToConstant5_const_a;
     real_T CompareToConstant_const_ki;
+    real_T CompareToConstant2_const_ma;
+    real_T CompareToConstant3_const_m;
     real_T CompareToConstant_const_iw;
     real_T CompareToConstant1_const_gt;
     real_T CompareToConstant10_const_h;
@@ -629,9 +627,18 @@ class A380PrimComputerFg final
     fms_flight_phase EnumeratedConstant1_Value_p;
     fms_flight_phase EnumeratedConstant_Value_gt;
     fms_flight_phase EnumeratedConstant_Value_l;
+    fms_flight_phase EnumeratedConstant2_Value_c;
     fms_flight_phase EnumeratedConstant_Value_k;
     fms_flight_phase EnumeratedConstant_Value_ag;
     fms_flight_phase EnumeratedConstant1_Value_i;
+    real32_T CompareToConstant3_const_h;
+    real32_T CompareToConstant5_const_i;
+    real32_T CompareToConstant4_const_e;
+    real32_T CompareToConstant6_const_h;
+    real32_T CompareToConstant3_const_k;
+    real32_T CompareToConstant5_const_f;
+    real32_T CompareToConstant4_const_o;
+    real32_T CompareToConstant6_const_m;
     real32_T CompareToConstant_const_o;
     real32_T CompareToConstant_const_j0;
     real32_T CompareToConstant2_const_mw;
@@ -665,9 +672,17 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault_defaultValue;
     real32_T A429ValueOrDefault1_defaultValue;
     real32_T A429ValueOrDefault2_defaultValue;
+    real32_T A429ValueOrDefault3_defaultValue_d;
+    real32_T A429ValueOrDefault_defaultValue_h;
+    real32_T A429ValueOrDefault1_defaultValue_k;
+    real32_T A429ValueOrDefault2_defaultValue_m;
+    real32_T A429ValueOrDefault3_defaultValue_c;
+    real32_T A429ValueOrDefault_defaultValue_p;
+    real32_T A429ValueOrDefault1_defaultValue_i;
+    real32_T A429ValueOrDefault2_defaultValue_b;
     real32_T A429ValueOrDefault3_defaultValue_a;
     real32_T A429ValueOrDefault_defaultValue_e;
-    real32_T A429ValueOrDefault_defaultValue_p;
+    real32_T A429ValueOrDefault_defaultValue_ph;
     real32_T A429ValueOrDefault_defaultValue_j;
     real32_T A429ValueOrDefault_defaultValue_n;
     real32_T A429ValueOrDefault_defaultValue_l;
@@ -677,13 +692,13 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault1_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_m;
-    real32_T A429ValueOrDefault1_defaultValue_k;
+    real32_T A429ValueOrDefault1_defaultValue_ko;
     real32_T A429ValueOrDefault2_defaultValue_f;
     real32_T A429ValueOrDefault3_defaultValue_e;
-    real32_T A429ValueOrDefault_defaultValue_h;
+    real32_T A429ValueOrDefault_defaultValue_hb;
     real32_T A429ValueOrDefault1_defaultValue_b;
-    real32_T A429ValueOrDefault2_defaultValue_m;
-    real32_T A429ValueOrDefault3_defaultValue_c;
+    real32_T A429ValueOrDefault2_defaultValue_mp;
+    real32_T A429ValueOrDefault3_defaultValue_cv;
     real32_T A429ValueOrDefault_defaultValue_i;
     real32_T A429ValueOrDefault_defaultValue_hv;
     real32_T A429ValueOrDefault_defaultValue_f;
@@ -725,7 +740,7 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault14_defaultValue;
     real32_T A429ValueOrDefault9_defaultValue;
     real32_T A429ValueOrDefault3_defaultValue_ce;
-    real32_T A429ValueOrDefault1_defaultValue_i;
+    real32_T A429ValueOrDefault1_defaultValue_iz;
     real32_T A429ValueOrDefault2_defaultValue_g;
     real32_T DetectChange_vinit_m;
     real32_T DetectChange_vinit_p;
@@ -975,6 +990,7 @@ class A380PrimComputerFg final
     real_T Bias1_Bias;
     real_T Bias_Bias_p;
     real_T Bias1_Bias_e;
+    real_T Bias_Bias_b;
     real_T Bias_Bias_m;
     real_T Bias_Bias_n;
     real_T Switch6_Threshold;
@@ -989,7 +1005,7 @@ class A380PrimComputerFg final
     real_T Switch6_Threshold_j;
     real_T Gain_Gain_l;
     real_T Gain1_Gain_i;
-    real_T Bias_Bias_b;
+    real_T Bias_Bias_bi;
     real_T Gain2_Gain_i;
     real_T Constant_Value_ag;
     real_T Constant1_Value_bc;
@@ -1125,6 +1141,7 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_LagFilter_Reset(rtDW_LagFilter_A380PrimComputerFg_T *localDW);
   static void A380PrimComputerFg_LagFilter(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
     rtDW_LagFilter_A380PrimComputerFg_T *localDW);
+  static void A380PrimComputerFg_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
   static void A380PrimComputerFg_MATLABFunction_o(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380PrimComputerFg_MATLABFunction_e(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void A380PrimComputerFg_APEngagedLogic(boolean_T rtu_pulsedFcuButton, boolean_T rtu_prevApEngaged, boolean_T

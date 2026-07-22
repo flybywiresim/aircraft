@@ -1312,6 +1312,10 @@ void A380PrimComputerGeneralLogic::step()
       A380PrimComputerGeneralLogic_P.prim_fg_mode_logic_output_MATLABStruct.spd_target_kts;
     A380PrimComputerGeneralLogic_Y.out.fg_mode_logic.pfd_spd_target_kts =
       A380PrimComputerGeneralLogic_P.prim_fg_mode_logic_output_MATLABStruct.pfd_spd_target_kts;
+    A380PrimComputerGeneralLogic_Y.out.fg_mode_logic.short_term_managed_spd_kts =
+      A380PrimComputerGeneralLogic_P.prim_fg_mode_logic_output_MATLABStruct.short_term_managed_spd_kts;
+    A380PrimComputerGeneralLogic_Y.out.fg_mode_logic.short_term_managed_spd_visible =
+      A380PrimComputerGeneralLogic_P.prim_fg_mode_logic_output_MATLABStruct.short_term_managed_spd_visible;
     A380PrimComputerGeneralLogic_Y.out.fg_mode_logic.alt_cstr_applicable =
       A380PrimComputerGeneralLogic_P.prim_fg_mode_logic_output_MATLABStruct.alt_cstr_applicable;
     A380PrimComputerGeneralLogic_Y.out.fg_mode_logic.alt_sel_or_cstr =

@@ -1143,6 +1143,8 @@ struct base_prim_ap_fd_logic_outputs
   a380_athr_fma_message athr_fma_message;
   real_T spd_target_kts;
   real_T pfd_spd_target_kts;
+  real_T short_term_managed_spd_kts;
+  boolean_T short_term_managed_spd_visible;
   boolean_T alt_cstr_applicable;
   real_T alt_sel_or_cstr;
   boolean_T mode_sync_active;

@@ -239,29 +239,22 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
     this.sub.on('prim_pfd_short_term_managed_speed').whenChanged(),
   );
 
-  private readonly leftMainGearCompressedConsumer = ConsumerSubject.create(
-    this.sub.on('leftMainGearCompressed').whenChanged(),
-    true,
-  );
-
-  private readonly rightMainGearCompressedConsumer = ConsumerSubject.create(
-    this.sub.on('rightMainGearCompressed').whenChanged(),
-    true,
-  );
+  private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
 
   private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
 
   private readonly airspeed = Arinc429RegisterSubject.createEmpty();
 
-  private readonly shortTermManagedSpeedExists = MappedSubject.create(
-    ([shortTermManagedSpeed, leftGearCompressed, rightGearCompressed]) =>
-      shortTermManagedSpeed.value > 0 && (!leftGearCompressed || !rightGearCompressed),
+  private readonly shortTermManagedSpeedVisible = MappedSubject.create(
+    ([shortTermManagedSpeed, pfdTargetSpeed]) =>
+      !(shortTermManagedSpeed.isNoComputedData() || shortTermManagedSpeed.isFailureWarning()) &&
+      !(pfdTargetSpeed.isNoComputedData() || pfdTargetSpeed.isFailureWarning()) &&
+      Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2,
     this.shortTermManagedSpeedConsumer,
-    this.leftMainGearCompressedConsumer,
-    this.rightMainGearCompressedConsumer,
+    this.pfdTargetSpeed,
   );
 
-  private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
+  private readonly shortTermVisibility = this.shortTermManagedSpeedVisible.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly shortTermPath = MappedSubject.create(
     ([ias, shortTermSpeed]) => {
@@ -289,7 +282,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
       }
       return '';
     },
-    this.shortTermManagedSpeedExists,
+    this.shortTermManagedSpeedVisible,
     this.airspeed,
     this.shortTermManagedSpeedConsumer,
   );

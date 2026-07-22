@@ -3618,6 +3618,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       a380_athr_fma_message::NONE,
       0.0,
       0.0,
+      0.0,
+      false,
       false,
       0.0,
       false,

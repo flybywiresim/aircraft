@@ -3072,6 +3072,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
       a380_athr_fma_message::NONE,
       0.0,
       0.0,
+      0.0,
+      false,
       false,
       0.0,
       false,

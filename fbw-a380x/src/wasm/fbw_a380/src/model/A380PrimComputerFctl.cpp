@@ -4587,10 +4587,16 @@ void A380PrimComputerFctl::step()
 
     A380PrimComputerFctl_Y.out.bus_outputs.fg.pfd_spd_tgt_kts.Data = static_cast<real32_T>
       (A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.pfd_spd_target_kts);
-    A380PrimComputerFctl_Y.out.bus_outputs.fg.pfd_short_term_mngd_spd_kts.SSM = static_cast<uint32_T>
-      (A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
+    if (A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.short_term_managed_spd_visible) {
+      A380PrimComputerFctl_Y.out.bus_outputs.fg.pfd_short_term_mngd_spd_kts.SSM = static_cast<uint32_T>
+        (A380PrimComputerFctl_P.EnumeratedConstant1_Value_g);
+    } else {
+      A380PrimComputerFctl_Y.out.bus_outputs.fg.pfd_short_term_mngd_spd_kts.SSM = static_cast<uint32_T>
+        (A380PrimComputerFctl_P.EnumeratedConstant_Value_i);
+    }
+
     A380PrimComputerFctl_Y.out.bus_outputs.fg.pfd_short_term_mngd_spd_kts.Data = static_cast<real32_T>
-      (A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.pfd_spd_target_kts);
+      (A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.short_term_managed_spd_kts);
     if (A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.spd_mach_dashes ||
         A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.mach_control_active) {
       A380PrimComputerFctl_Y.out.bus_outputs.fg.selected_spd_kts.SSM = static_cast<uint32_T>
