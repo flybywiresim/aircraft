@@ -1,5 +1,6 @@
 export * from './AircraftGithubVersionChecker';
 export * from './amdb';
+export * from './ami';
 export * from './ApproachUtils';
 export * from './Arinc429ConsumerSubject';
 export * from './Arinc429RegisterSubject';
