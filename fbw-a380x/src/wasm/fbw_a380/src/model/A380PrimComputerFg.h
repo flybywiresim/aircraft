@@ -979,6 +979,7 @@ class A380PrimComputerFg final
     real_T Y_Y0_a;
     real_T Y_Y0_l;
     real_T Y_Y0_h;
+    real_T Constant_Value_h;
     real_T Y_Y0_i;
     real_T Switch7_Threshold;
     real_T Switch8_Threshold;
@@ -1089,7 +1090,7 @@ class A380PrimComputerFg final
     boolean_T Logic_table_hk[16];
     boolean_T Logic_table_f[16];
     boolean_T Logic_table_ib[16];
-    boolean_T Constant_Value_h;
+    boolean_T Constant_Value_h2;
     boolean_T Logic_table_bw[16];
     boolean_T Logic_table_nb[16];
     boolean_T Logic_table_fi[16];

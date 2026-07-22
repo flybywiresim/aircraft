@@ -373,7 +373,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
-  idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
+  idFmgcV_APP = std::make_unique<LocalVariable>("A32NX_SPEEDS_VAPP");
   idFmsManagedSpeedTarget = std::make_unique<LocalVariable>("A32NX_SPEEDS_MANAGED_PFD");
   idFmsPresetMach = std::make_unique<LocalVariable>("A32NX_MachPreselVal");
   idFmsPresetSpeed = std::make_unique<LocalVariable>("A32NX_SpeedPreselVal");
