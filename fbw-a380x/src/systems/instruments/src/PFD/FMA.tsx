@@ -306,10 +306,10 @@ class Row1 extends DisplayComponent<{
         <A1A2Cell bus={this.props.bus} A1A2CellMessage={this.props.A1A2CellMessage} />
 
         <g ref={this.cellsToHide}>
-          <B1Cell ref={this.b1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <C1Cell ref={this.c1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <B1Cell ref={this.b1Cell} bus={this.props.bus} />
+          <C1Cell ref={this.c1Cell} bus={this.props.bus} />
           <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
         </g>
         <E1Cell bus={this.props.bus} />
       </g>
@@ -731,12 +731,12 @@ class AB3Cell extends DisplayComponent<AB3CellProps> {
   }
 }
 
-class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
+class B1Cell extends ShowForSecondsComponent<CellProps> {
   private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
   private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
 
-  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
+  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
   private primFgDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_6'));
 
@@ -748,9 +748,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
 
   private readonly tcasLargeBoxDemand = this.primFgDiscreteWord6.map((word) => word.bitValueOr(11, false));
 
-  private readonly targetNotHeld = this.primFgDiscreteWord4.map((word) => word.bitValueOr(29, false));
-
-  private readonly longitudinalModeReversion = this.primFgDiscreteWord4.map((word) => word.bitValueOr(29, false));
+  private readonly targetNotHeld = this.primFgDiscreteWord5.map((word) => word.bitValueOr(29, false));
 
   private readonly text = MappedSubject.create(
     ([primFgDiscreteWord3, primFgSelectedFpa]) => {
@@ -884,7 +882,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
     return vsMode || fpaMode ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green';
   });
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
+  constructor(props: CellProps) {
     super(props, 10);
   }
 
@@ -1013,7 +1011,7 @@ class B2Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class C1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
+class C1Cell extends ShowForSecondsComponent<CellProps> {
   private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
   private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
@@ -1061,7 +1059,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
     }
   }, this.primFgDiscreteWord4);
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
+  constructor(props: CellProps) {
     super(props, 10);
   }
 
@@ -1129,7 +1127,7 @@ class C2Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class BC1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
+class BC1Cell extends ShowForSecondsComponent<CellProps> {
   private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
   private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
@@ -1161,7 +1159,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueP
     this.primFgDiscreteWord4,
   );
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
+  constructor(props: CellProps) {
     super(props, 10);
   }
 
