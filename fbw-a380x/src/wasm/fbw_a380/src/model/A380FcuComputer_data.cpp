@@ -192,6 +192,8 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
 
   a380_efis_range_selection::RANGE_ZOOM_2,
 
+  a380_efis_range_selection::RANGE_ZOOM_5,
+
   a380_efis_range_selection::RANGE_10,
 
   a380_efis_range_selection::RANGE_20,

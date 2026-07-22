@@ -196,6 +196,7 @@ class A380FcuComputer final
     a380_efis_range_selection EnumeratedConstant9_Value_m;
     a380_efis_range_selection EnumeratedConstant8_Value_e;
     a380_efis_range_selection EnumeratedConstant6_Value_b;
+    a380_efis_range_selection EnumeratedConstant11_Value_m;
     a380_efis_range_selection EnumeratedConstant7_Value;
     a380_efis_range_selection EnumeratedConstant5_Value;
     a380_efis_range_selection EnumeratedConstant4_Value;

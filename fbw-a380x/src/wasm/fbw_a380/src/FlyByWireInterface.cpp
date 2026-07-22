@@ -147,9 +147,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update spoilers
   result &= updateSpoilers(calculatedSampleTime);
 
-  // update FO side with FO Sync ON
-  result &= updateFoSide(calculatedSampleTime);
-
   // do not further process when active pause is on
   if (!simConnectInterface.isSimInActivePause()) {
     // update flight data recorder
@@ -497,8 +494,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = std::make_unique<LocalVariable>("A380X_EFIS_L_LS_BUTTON_IS_ON");
-  idLs2Active = std::make_unique<LocalVariable>("A380X_EFIS_R_LS_BUTTON_IS_ON");
   idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
@@ -918,15 +913,21 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimLeftNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_L_NAVAID_2_MODE");
   idFcuShimLeftNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_MODE");
   idFcuShimLeftNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_L_ND_RANGE");
+  idFcuShimLeftNdOansRange = std::make_unique<LocalVariable>("A32NX_EFIS_L_OANS_RANGE");
   idFcuShimLeftNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_L_OPTION");
-  idFcuShimLeftLsActive = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idFcuShimLeftNdOverlayOption = std::make_unique<LocalVariable>("A32NX_EFIS_L_ACTIVE_OVERLAY");
+  idFcuShimLeftTrafOn = std::make_unique<LocalVariable>("A380X_EFIS_L_TRAF_BUTTON_IS_ON");
+  idFcuShimLeftLsActive = std::make_unique<LocalVariable>("A380X_EFIS_L_LS_BUTTON_IS_ON");
   idFcuShimLeftBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro1_Mode");
   idFcuShimRightNavaid1Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_1_MODE");
   idFcuShimRightNavaid2Mode = std::make_unique<LocalVariable>("A32NX_EFIS_R_NAVAID_2_MODE");
   idFcuShimRightNdMode = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_MODE");
   idFcuShimRightNdRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_ND_RANGE");
+  idFcuShimRightNdOansRange = std::make_unique<LocalVariable>("A32NX_EFIS_R_OANS_RANGE");
   idFcuShimRightNdFilterOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_OPTION");
-  idFcuShimRightLsActive = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idFcuShimRightNdOverlayOption = std::make_unique<LocalVariable>("A32NX_EFIS_R_ACTIVE_OVERLAY");
+  idFcuShimRightTrafOn = std::make_unique<LocalVariable>("A380X_EFIS_R_TRAF_BUTTON_IS_ON");
+  idFcuShimRightLsActive = std::make_unique<LocalVariable>("A380X_EFIS_R_LS_BUTTON_IS_ON");
   idFcuShimRightBaroMode = std::make_unique<LocalVariable>("XMLVAR_Baro2_Mode");
 
   idFcuShimSpdDashes = std::make_unique<LocalVariable>("A32NX_FCU_SPD_MANAGED_DASHES");
@@ -2457,7 +2458,27 @@ bool FlyByWireInterface::updateFcuShim() {
     }
   };
 
-  auto getNdRange = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
+  auto getNdRange = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5, bool bit6, bool zoomActive) {
+    if (bit1) {
+      return 1;
+    } else if (bit2) {
+      return 2;
+    } else if (bit3) {
+      return 3;
+    } else if (bit4) {
+      return 4;
+    } else if (bit5) {
+      return 5;
+    } else if (bit6) {
+      return 6;
+    } else if (!zoomActive) {
+      return 7;
+    } else {
+      return 0;
+    }
+  };
+
+  auto getOansRange = [](bool bit1, bool bit2, bool bit3, bool bit4, bool bit5) {
     if (bit1) {
       return 0;
     } else if (bit2) {
@@ -2477,6 +2498,16 @@ bool FlyByWireInterface::updateFcuShim() {
     return bit1 << 0 | bit2 << 2 | bit3 << 1 | bit4 << 3 | bit5 << 4;
   };
 
+  auto getNdOverlay = [](bool bit1, bool bit2) {
+    if (bit1) {
+      return 1;
+    } else if (bit2) {
+      return 2;
+    } else {
+      return 0;
+    }
+  };
+
   auto getBaroMode = [](bool bit1, bool bit2) {
     if (bit1) {
       return 3;
@@ -2489,10 +2520,36 @@ bool FlyByWireInterface::updateFcuShim() {
 
   SimData simData = simConnectInterface.getSimData();
 
+  const auto oansRangeLeft = getOansRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 19, false),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 20, false),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 21, false),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 22, false),
+                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 23, false));
   idFcuShimLeftNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 26, false),
                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 28, true)));
   idFcuShimLeftNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 27, true),
                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 29, false)));
+  idFcuShimLeftNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 11, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 12, true),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 13, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 14, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 15, false)));
+  idFcuShimLeftNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 24, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 25, true),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 26, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 27, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 28, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 29, false),
+                                       oansRangeLeft != 5));
+  idFcuShimLeftNdOansRange->set(oansRangeLeft);
+  idFcuShimLeftNdFilterOption->set(getNdFilter(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 17, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 18, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 19, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 20, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 21, false)));
+  idFcuShimLeftNdOverlayOption->set(getNdOverlay(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 23, false),
+                                                 Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 24, false)));
+  idFcuShimLeftTrafOn->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 25, true));
   idFcuShimLeftLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 14, true));
   simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs[0].baro_setting_hpa, 1013) * 16, 1);
@@ -2505,10 +2562,36 @@ bool FlyByWireInterface::updateFcuShim() {
   idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 11, true),
                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 12, false)));
 
+  const auto oansRangeRight = getOansRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 19, false),
+                                           Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 20, false),
+                                           Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 21, false),
+                                           Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 22, false),
+                                           Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 23, false));
   idFcuShimRightNavaid1Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 26, false),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 28, true)));
   idFcuShimRightNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 27, true),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 29, false)));
+  idFcuShimRightNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 11, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 12, true),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 13, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 14, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 15, false)));
+  idFcuShimRightNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 24, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 25, true),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 26, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 27, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 28, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 29, false),
+                                        oansRangeRight != 5));
+  idFcuShimRightNdOverlayOption->set(getNdOverlay(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 23, false),
+                                                  Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 24, false)));
+  idFcuShimRightNdOansRange->set(oansRangeRight);
+  idFcuShimLeftNdFilterOption->set(getNdFilter(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 17, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 18, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 19, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 20, false),
+                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 21, false)));
+  idFcuShimRightTrafOn->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 25, true));
   idFcuShimRightLsActive->set(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 14, true));
   idFcuShimRightBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 11, true),
                                           Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 12, false)));
@@ -2881,35 +2964,6 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }
-
-  // result
-  return true;
-}
-
-bool FlyByWireInterface::updateFoSide(double sampleTime) {
-  // get sim data
-  auto simData = simConnectInterface.getSimData();
-
-  // Only one FD state, no sync needed
-
-  // LS Button
-  if (idSyncFoEfisEnabled->get() && idLs1Active->get() != idLs2Active->get()) {
-    if (last_ls1_active != idLs1Active->get()) {
-      idLs2Active->set(idLs1Active->get());
-    }
-
-    if (last_ls2_active != idLs2Active->get()) {
-      idLs1Active->set(idLs2Active->get());
-    }
-  }
-  last_ls1_active = idLs1Active->get();
-  last_ls2_active = idLs2Active->get();
-
-  // inHg/hPa switch
-  // Currently synced already
-
-  // STD Button
-  // Currently synced already
 
   // result
   return true;

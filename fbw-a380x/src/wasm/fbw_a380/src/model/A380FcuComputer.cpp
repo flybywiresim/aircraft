@@ -2030,7 +2030,7 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pValueInhg = 29.92F;
         A380FcuComputer_DWork.pMode = 2;
         A380FcuComputer_DWork.pArcActive_not_empty = false;
-        A380FcuComputer_DWork.pRange = 4;
+        A380FcuComputer_DWork.pRange = 5;
         A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ce);
         A380FcuComputer_MATLABFunction_mw_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ij);
         A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_lf);
@@ -2155,10 +2155,15 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pArcActive_not_empty = true;
       }
 
-      if (rtb_Equal8 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 4)) {
+      if (rtb_Equal8 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 5)) {
         A380FcuComputer_DWork.pRange = static_cast<int8_T>(A380FcuComputer_DWork.pRange - 1);
-      } else if ((!rtb_Equal8) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange < 10)) {
-        A380FcuComputer_DWork.pRange = static_cast<int8_T>(A380FcuComputer_DWork.pRange + 1);
+      } else if ((!rtb_Equal8) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange != 4)) {
+        tmp = A380FcuComputer_DWork.pRange + 1;
+        if (A380FcuComputer_DWork.pRange + 1 > 127) {
+          tmp = 127;
+        }
+
+        A380FcuComputer_DWork.pRange = static_cast<int8_T>(tmp);
       }
 
       tmp = A380FcuComputer_DWork.pRange + A380FcuComputer_U.in.discrete_inputs.efis_inputs.efis_range_knob_turns;
@@ -2172,8 +2177,8 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pRange = MAX_int8_T;
       }
 
-      if (A380FcuComputer_DWork.pRange > 10) {
-        A380FcuComputer_DWork.pRange = 10;
+      if (A380FcuComputer_DWork.pRange > 11) {
+        A380FcuComputer_DWork.pRange = 11;
       }
 
       if (A380FcuComputer_DWork.pRange < 0) {
@@ -2342,8 +2347,8 @@ void A380FcuComputer::step()
     }
 
     if (A380FcuComputer_B.BusAssignment.logic.efis.efis_cp_panel_activate) {
-      rtb_y = static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 2U;
-      if (static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 2U > static_cast<uint32_T>
+      rtb_y = static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 3U;
+      if (static_cast<uint32_T>(A380FcuComputer_B.BusAssignment.logic.efis.efis_range) - 3U > static_cast<uint32_T>
           (A380FcuComputer_B.BusAssignment.logic.efis.efis_range)) {
         rtb_y = 0U;
       }
@@ -2370,15 +2375,16 @@ void A380FcuComputer::step()
     rtb_VectorConcatenate[5] = A380FcuComputer_P.Constant_Value_f;
     rtb_VectorConcatenate[6] = A380FcuComputer_P.Constant_Value_f;
     rtb_VectorConcatenate[7] = A380FcuComputer_P.Constant_Value_f;
-    rtb_VectorConcatenate[8] = A380FcuComputer_P.Constant_Value_f;
-    rtb_VectorConcatenate[9] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
+    rtb_VectorConcatenate[8] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant10_Value);
-    rtb_VectorConcatenate[10] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
+    rtb_VectorConcatenate[9] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant9_Value_m);
-    rtb_VectorConcatenate[11] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
+    rtb_VectorConcatenate[10] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant8_Value_e);
-    rtb_VectorConcatenate[12] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
+    rtb_VectorConcatenate[11] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant6_Value_b);
+    rtb_VectorConcatenate[12] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
+      A380FcuComputer_P.EnumeratedConstant11_Value_m);
     rtb_VectorConcatenate[13] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
       A380FcuComputer_P.EnumeratedConstant7_Value);
     rtb_VectorConcatenate[14] = (A380FcuComputer_B.BusAssignment.logic.efis.efis_range ==
@@ -2619,7 +2625,7 @@ void A380FcuComputer::initialize()
   A380FcuComputer_DWork.pValueHpa = 1013.0F;
   A380FcuComputer_DWork.pValueInhg = 29.92F;
   A380FcuComputer_DWork.pMode = 2;
-  A380FcuComputer_DWork.pRange = 4;
+  A380FcuComputer_DWork.pRange = 5;
   A380FcuComputer_B.BusAssignment = A380FcuComputer_P.out_Y0;
   A380FcuComputer_Y.out = A380FcuComputer_P.out_Y0_l;
 }

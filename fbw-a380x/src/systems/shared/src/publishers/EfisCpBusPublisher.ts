@@ -23,12 +23,13 @@ export type FcuEfisCpBusBaseEvents = {
    * | 15  | ROSE ILS                          |
    * | 16  |                                   |
    * | -   | Spare                             |
-   * | 19  |                                   |
+   * | 18  |                                   |
    * |     | EFIS Range Selection              |
-   * | 20  | ZOOM 0.2                          |
-   * | 21  | ZOOM 0.5                          |
-   * | 22  | ZOOM 1                            |
-   * | 23  | ZOOM 2                            |
+   * | 19  | ZOOM 0.2                          |
+   * | 20  | ZOOM 0.5                          |
+   * | 21  | ZOOM 1                            |
+   * | 22  | ZOOM 2                            |
+   * | 23  | ZOOM 5                            |
    * | 24  | 10                                |
    * | 25  | 20                                |
    * | 26  | 40                                |
