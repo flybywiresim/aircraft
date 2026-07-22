@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, EventBus, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
-import { AdrBusEvents, Arinc429LocalVarConsumerSubject, FmsData, FwcBusEvents } from '@flybywiresim/fbw-sdk';
+import { AdrBusEvents, Arinc429LocalVarConsumerSubject, FmsData } from '@flybywiresim/fbw-sdk';
 import { ResetPanelSimvars } from '../../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { A380XFwcBusEvents } from '@shared/publishers/A380XFwcBusPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
 
 export class SecureCommunicationInterface implements Instrument {
@@ -14,7 +15,7 @@ export class SecureCommunicationInterface implements Instrument {
   private readonly toAircraftSubscriptions: Subscription[] = [];
 
   private readonly sub = this.bus.getSubscriber<
-    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents & ClockEvents & FqmsBusEvents
+    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & A380XFwcBusEvents & ClockEvents & FqmsBusEvents
   >();
 
   private readonly nssDataToAvncsOff = ConsumerSubject.create(this.sub.on('nssDataToAvncsOff'), false);

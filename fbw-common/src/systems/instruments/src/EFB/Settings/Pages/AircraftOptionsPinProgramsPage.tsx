@@ -37,6 +37,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
   const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
   const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
+  const [avionicsTestMode, setAvionicsTestMode] = usePersistentSetting('CONFIG_AVIONICS_TEST_MODE');
 
   const handleSetThrustReductionAlt = (value: string) => {
     setThrustReductionHeightSetting(value);
@@ -206,6 +207,12 @@ export const AircraftOptionsPinProgramsPage = () => {
               {t('Settings.AircraftOptionsPinPrograms.Select')}
             </Link>
           </SettingItem>
+
+          {aircraftContext.settingsPages.pinProgram.avionicsTestMode && (
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.AvionicsTestMode')}>
+              <Toggle value={avionicsTestMode} onToggle={(value) => setAvionicsTestMode(value)} />
+            </SettingItem>
+          )}
         </SettingsPage>
       </Route>
       <TabRoutes basePath={basePinProgRoute} tabs={subTabs} />

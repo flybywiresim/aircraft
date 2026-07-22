@@ -17,6 +17,7 @@ export interface NXDataStoreSettings {
   CONFIG_ATIS_SRC: ConfigAtisSource;
   CONFIG_TAF_SRC: ConfigTafSource;
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
+  CONFIG_AVIONICS_TEST_MODE: boolean;
   CONFIG_USING_METRIC_UNIT: boolean;
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
@@ -30,6 +31,7 @@ export type LegacyDataStoreSettingKey<k extends string = string> = k &
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     ACARS_PROVIDER: 'NONE',
+    CONFIG_AVIONICS_TEST_MODE: false,
     CONFIG_METAR_SRC: ConfigWeatherMap.MSFS,
     CONFIG_ATIS_SRC: ConfigWeatherMap.IVAO,
     CONFIG_TAF_SRC: ConfigWeatherMap.NOAA,

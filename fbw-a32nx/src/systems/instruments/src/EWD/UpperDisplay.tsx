@@ -8,6 +8,7 @@ import { AFloor } from './AFloor';
 import { Egt } from './EGT';
 import { FF } from './FF';
 import { FOB } from './FOB';
+import { FwcFlightPhaseIndicator } from './FwcFlightPhaseIndicator';
 import { Idle } from './Idle';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { N1 } from './N1';
@@ -80,6 +81,7 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
         </Layer>
 
         <FOB bus={this.props.bus} x={40} y={490} metric={this.usingMetric} />
+        <FwcFlightPhaseIndicator bus={this.props.bus} />
 
         <Slats bus={this.props.bus} />
       </>

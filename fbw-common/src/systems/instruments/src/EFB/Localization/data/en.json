@@ -591,6 +591,7 @@
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Height (ft)",
+      "AvionicsTestMode": "Avionics Test Mode",
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
       "IsisBaroUnit": "ISIS Baro Unit",
       "IsisMetricAltitude": "ISIS Metric Altitude",
