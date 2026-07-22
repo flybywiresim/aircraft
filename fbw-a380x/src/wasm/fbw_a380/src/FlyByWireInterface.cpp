@@ -2530,14 +2530,14 @@ bool FlyByWireInterface::updateFcuShim() {
   idFcuShimLeftNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 27, true),
                                               Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_2, 29, false)));
   idFcuShimLeftNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 11, false),
-                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 12, true),
-                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 13, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 12, false),
+                                     Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 13, true),
                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 14, false),
                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 15, false)));
   idFcuShimLeftNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 24, false),
-                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 25, true),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 25, false),
                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 26, false),
-                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 27, false),
+                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 27, true),
                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 28, false),
                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[0].efis_discrete_word_1, 29, false),
                                        oansRangeLeft != 5));
@@ -2572,14 +2572,14 @@ bool FlyByWireInterface::updateFcuShim() {
   idFcuShimRightNavaid2Mode->set(getNavaidMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 27, true),
                                                Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_2, 29, false)));
   idFcuShimRightNdMode->set(getNdMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 11, false),
-                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 12, true),
-                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 13, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 12, false),
+                                      Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 13, true),
                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 14, false),
                                       Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 15, false)));
   idFcuShimRightNdRange->set(getNdRange(Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 24, false),
-                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 25, true),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 25, false),
                                         Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 26, false),
-                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 27, false),
+                                        Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 27, true),
                                         Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 28, false),
                                         Arinc429Utils::bitFromValueOr(fcuBusOutputs[1].efis_discrete_word_1, 29, false),
                                         oansRangeRight != 5));
