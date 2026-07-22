@@ -36,8 +36,8 @@ use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
-#[msfs::gauge(name=systems)]
-async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
+#[msfs::system(name=systems)]
+async fn systems(mut gauge: msfs::System) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let key_prefix = "A32NX_";
@@ -375,14 +375,14 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT YAW MOI", "Slugs feet squared", 0)?
-    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    /*  .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
-    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)? */
     .provides_aircraft_variable("IS SLEW ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("NAV HAS NAV", "Bool", 3)?
     .provides_aircraft_variable("NAV HAS LOC", "Bool", 3)?

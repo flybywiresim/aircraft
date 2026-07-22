@@ -10,7 +10,7 @@ test = false
 [dependencies]
 uom.workspace = true
 systems = { path = "../systems" }
-msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+msfs = { git = "https://github.com/Saschl/msfs-rs", branch = "msfs2024-sasch", features=["msfs_2024"] }
 rustc-hash = "2.1.1"
 enum_dispatch = "0.3.13"
 serde = "1.0"

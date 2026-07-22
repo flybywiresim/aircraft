@@ -13,4 +13,4 @@ uom.workspace = true
 a320_systems = { path = "../a320_systems" }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 systems_wasm = { path = "../../../../../fbw-common/src/wasm/systems/systems_wasm" }
-msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+msfs = { git = "https://github.com/Saschl/msfs-rs", branch = "msfs2024-sasch", features=["msfs_2024"] }

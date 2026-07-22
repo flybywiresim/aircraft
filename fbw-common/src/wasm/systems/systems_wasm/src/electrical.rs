@@ -1,8 +1,8 @@
 #[cfg(not(target_arch = "wasm32"))]
-use crate::msfs::{legacy::trigger_key_event, legacy::trigger_key_event_ex1};
+use crate::msfs::{events::fs_events_trigger_key_event, legacy::trigger_key_event};
 
 #[cfg(target_arch = "wasm32")]
-use msfs::{legacy::trigger_key_event, legacy::trigger_key_event_ex1};
+use msfs::{events::fs_events_trigger_key_event, legacy::trigger_key_event};
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::sys::{
@@ -26,13 +26,12 @@ pub(super) fn electrical_buses<const N: usize>(
                 vec![variable],
                 vec![1.],
                 Box::new(move |_, _| {
-                    trigger_key_event_ex1(
-                        KEY_ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE,
+                    fs_events_trigger_key_event(
+                        KEY_ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE
+                            .try_into()
+                            .unwrap(),
                         INFINITELY_POWERED_BUS_IDENTIFIER,
                         bus.1,
-                        0,
-                        0,
-                        0,
                     );
                 }),
             );

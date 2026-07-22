@@ -22,23 +22,6 @@ pub(crate) mod legacy {
     }
 
     #[derive(Debug)]
-    pub struct AircraftVariable {}
-
-    impl AircraftVariable {
-        pub fn from(
-            _name: &str,
-            _units: &str,
-            _index: usize,
-        ) -> Result<Self, Box<dyn std::error::Error>> {
-            Ok(Self {})
-        }
-
-        pub fn get(&self) -> f64 {
-            0.
-        }
-    }
-
-    #[derive(Debug)]
     pub struct NamedVariable {
         value: Rc<Cell<f64>>,
     }
@@ -113,4 +96,40 @@ pub(crate) mod commbus {
             Some(Self(PhantomData))
         }
     }
+}
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) mod vars {
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    #[derive(Debug)]
+    pub struct AircraftVariableApi {
+        value: Rc<Cell<f64>>,
+    }
+
+    impl AircraftVariableApi {
+        pub fn from(
+            _name: &str,
+            _units: &str,
+            _index: usize,
+        ) -> Result<Self, Box<dyn std::error::Error>> {
+            Ok(Self {
+                value: Rc::new(Cell::new(0.)),
+            })
+        }
+
+        pub fn get(&self) -> f64 {
+            self.value.get()
+        }
+
+        pub fn set(&self, value: f64) {
+            self.value.set(value);
+        }
+    }
+}
+
+pub(crate) mod events {
+    use msfs::sys::{ID32, UINT32};
+
+    pub fn fs_events_trigger_key_event(_event_id: ID32, _value0: UINT32, _value1: UINT32) {}
 }

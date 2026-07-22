@@ -43,8 +43,8 @@ use systems::shared::{
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
-#[msfs::gauge(name=systems)]
-async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
+#[msfs::system(name=systems)]
+async fn systems(mut gauge: msfs::System) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let key_prefix = "A32NX_";
