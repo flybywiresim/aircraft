@@ -514,19 +514,22 @@ export class FlightManagementComputer implements FmcInterface {
 
   const gw = this.fmgc.getGrossWeightKg(forPlan);
 
-  if (gw !== null && isActiveOrCopyOfActive && phase === FmgcFlightPhase.Approach) {
-    // APPR active: LW is the present gross weight
-    return gw;
+  if (gw === null) {
+    return null;
   }
-  if (gw !== null && tf !== null && phase >= FmgcFlightPhase.Takeoff) {
-    // LW = GW - TRIP
-    return gw - tf;
-  }
-  if (gw !== null) {
-    // LW = GW - TRIP - TAXI
+  
+  if (phase < FmgcFlightPhase.Takeoff || !isActiveOrCopyOfActive) {
+    // Predicted LW = GW - TRIP - TAXI
     return gw - (tf ?? 0) - (plan.performanceData.taxiFuel.get() ?? 0) * 1000;
   }
-  return null;
+  
+  if (phase < FmgcFlightPhase.Approach) {
+    // Predicted LW = GW - TRIP
+    return gw - tf;
+  }
+  
+  // APPR active: LW is the present gross weight
+  return gw;
 }
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
