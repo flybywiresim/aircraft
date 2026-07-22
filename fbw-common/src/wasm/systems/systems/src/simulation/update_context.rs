@@ -78,6 +78,7 @@ pub enum SurfaceTypeMsfs {
     Sand = 21,
     Shale = 22,
     Tarmac = 23,
+    WrightFlyerTrack = 24,
 }
 impl TryFrom<f64> for SurfaceTypeMsfs {
     type Error = u32;
@@ -107,6 +108,7 @@ impl TryFrom<f64> for SurfaceTypeMsfs {
             21 => Ok(SurfaceTypeMsfs::Sand),
             22 => Ok(SurfaceTypeMsfs::Shale),
             23 => Ok(SurfaceTypeMsfs::Tarmac),
+            24 => Ok(SurfaceTypeMsfs::WrightFlyerTrack),
             255 => Ok(SurfaceTypeMsfs::Macadam),
             unexpected => Err(unexpected),
         }
