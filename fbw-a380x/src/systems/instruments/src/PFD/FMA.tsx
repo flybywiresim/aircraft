@@ -637,23 +637,23 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     switch (message) {
       case A3Messages.THR_LK:
         text = 'THR LK';
-        className = 'FontMedium Amber BlinkInfinite';
+        className = 'FontMedium Amber';
         break;
       case A3Messages.LVR_TOGA:
         text = 'LVR TOGA';
-        className = 'FontMedium White BlinkInfinite';
+        className = 'FontMedium White';
         break;
       case A3Messages.LVR_CLB:
         text = 'LVR CLB';
-        className = 'FontMedium White BlinkInfinite';
+        className = 'FontMedium White';
         break;
       case A3Messages.LVR_MCT:
         text = 'LVR MCT';
-        className = 'FontMedium White BlinkInfinite';
+        className = 'FontMedium White';
         break;
       case A3Messages.LVR_ASYM:
         text = 'LVR ASYM';
-        className = 'FontMedium Amber BlinkInfinite';
+        className = 'FontMedium Amber';
         break;
       case A3Messages.BRK_RTO:
         text = 'BRK RTO';
@@ -667,19 +667,23 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     this.classSub.set(`MiddleAlign ${className}`);
   }
 
+  private readonly shouldFlash = this.props.A3Message.map((A3Message) => A3Message !== A3Messages.BRK_RTO);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.A3Message.sub((a3) => {
       this.onUpdateAthrModeMessage(a3);
-    });
+    }, true);
   }
 
   render(): VNode {
     return (
-      <text class={this.classSub} x="16.989958" y="21.641243">
-        {this.textSub}
-      </text>
+      <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
+        <text class={this.classSub} x="16.989958" y="21.641243">
+          {this.textSub}
+        </text>
+      </FlashOneHertz>
     );
   }
 }
