@@ -117,7 +117,6 @@ export class FmcAircraftInterface {
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
-  private readonly speedShortTermManaged = Subject.create<number | null>(null);
 
   private readonly tdReached = this.bus
     .getSubscriber<FmsMessageVars>()
@@ -280,12 +279,6 @@ export class FmcAircraftInterface {
     this.subs.push(this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true));
     this.subs.push(
       this.fmgc.data.approachVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v ?? 0), true),
-    );
-    this.subs.push(
-      this.speedShortTermManaged.sub(
-        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v ?? 0),
-        true,
-      ),
     );
 
     this.subs.push(
@@ -1116,7 +1109,6 @@ export class FmcAircraftInterface {
     }
 
     let Vtap = 0;
-    let limitedByVls = false;
     // Minimum speed protection
     if (this.managedSpeedTarget) {
       const vls = this.speedVls.get();
@@ -1134,7 +1126,6 @@ export class FmcAircraftInterface {
       Vtap = MathUtils.clamp(this.managedSpeedTarget, limitingCharacteristicSpeed ?? 0, vMax - 5);
       if (Vtap < vls) {
         Vtap = vls;
-        limitedByVls = true;
       }
     }
     this.speedsManagedPfd.set(vPfd);
@@ -1145,39 +1136,11 @@ export class FmcAircraftInterface {
     if (ismanaged) {
       Coherent.call('AP_SPD_VAR_SET', 0, Vtap).catch(console.error);
     }
-
-    //short term managed speed
-    let shortTermManagedSpeed = 0;
-    if (phase != FmgcFlightPhase.Preflight) {
-      if (this.managedSpeedTarget) {
-        if (ismanaged) {
-          const shortTermActiveInmanaged =
-            !takeoffGoAround && phase != FmgcFlightPhase.Cruise && this.activeVerticalMode != VerticalMode.DES;
-          if (shortTermActiveInmanaged && this.isSpeedDifferenceGreaterThan2Kt(vPfd, Vtap)) {
-            shortTermManagedSpeed = Vtap;
-          }
-        } else {
-          const selectedSpeed = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number');
-          if (selectedSpeed) {
-            const speedTarget = phase == FmgcFlightPhase.Approach || limitedByVls ? Vtap : vPfd; // FIX me Should use ECON during hold & deceleration segments
-            if (this.isSpeedDifferenceGreaterThan2Kt(selectedSpeed, speedTarget)) {
-              shortTermManagedSpeed = speedTarget;
-            }
-          }
-        }
-      }
-    }
-    this.speedShortTermManaged.set(Math.round(shortTermManagedSpeed));
-  }
-
-  private isSpeedDifferenceGreaterThan2Kt(speed: number, speed2: number) {
-    return Math.abs(speed - speed2) > 2;
   }
 
   public invalidateManagedSpeed() {
     this.speedsManagedPfd.set(null);
     this.speedsManagedAthr.set(null);
-    this.speedShortTermManaged.set(null);
     this.managedSpeedTarget = null;
   }
 
