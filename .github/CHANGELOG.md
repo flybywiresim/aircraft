@@ -61,6 +61,7 @@
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [A380X/FMS] Fix landing weight not updating to present gross weight during approach phase - @smchuk (smchuco)
 
 ## 2024.1.0
 
