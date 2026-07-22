@@ -275,3 +275,7 @@ base_prim_analog_outputs Prim::getAnalogOutputs() {
 
   return output;
 }
+
+const prim_outputs& Prim::getDebugOutputs() {
+  return primFctl.A380PrimComputerFctl_Y.out;
+}

@@ -74,6 +74,12 @@ class FlyByWireInterface {
   bool flightDirectorDisconnectLatch_1 = false;
   bool flightDirectorDisconnectLatch_2 = false;
 
+  bool autolandWarningLatch = false;
+  bool autolandWarningTriggered = false;
+
+  double hDotFilterPrevU = 0;
+  double hDotFilterPrevY = 0;
+
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
@@ -157,6 +163,7 @@ class FlyByWireInterface {
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_H_dot_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bz_deg;
@@ -509,6 +516,23 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idStickLockActive;
 
+  // PRIM FG legacy/shim Lvars
+  std::unique_ptr<LocalVariable> idAutopilotShimNosewheelDemand;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralMode;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralArmed;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalMode;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalArmed;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaExpediteModeActive;
+  std::unique_ptr<LocalVariable> idAutopilotShimFmaTripleClick;
+  std::unique_ptr<LocalVariable> idAutopilotShimAutolandWarning;
+  std::unique_ptr<LocalVariable> idAutopilotShimActiveAny;
+  std::unique_ptr<LocalVariable> idAutopilotShimActive_1;
+  std::unique_ptr<LocalVariable> idAutopilotShimActive_2;
+  std::unique_ptr<LocalVariable> idAutopilotShim_H_dot_radio;
+  std::unique_ptr<LocalVariable> idAutothrustShimStatus;
+  std::unique_ptr<LocalVariable> idAutothrustShimMode;
+  std::unique_ptr<LocalVariable> idAutothrustShimModeMessage;
+
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
@@ -688,6 +712,22 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuShimLeftBaroCorrectionAdirs;
   std::unique_ptr<LocalVariable> idFcuShimRightBaroCorrectionAdirs;
 
+  std::unique_ptr<LocalVariable> idFcuShimSpdDashes;
+  std::unique_ptr<LocalVariable> idFcuShimSpdDot;
+  std::unique_ptr<LocalVariable> idFcuShimSpdValue;
+  std::unique_ptr<LocalVariable> idFcuShimTrkFpaActive;
+  std::unique_ptr<LocalVariable> idFcuShimHdgValue1;
+  std::unique_ptr<LocalVariable> idFcuShimHdgValue2;
+  std::unique_ptr<LocalVariable> idFcuShimShowHdg;
+  std::unique_ptr<LocalVariable> idFcuShimHdgDashes;
+  std::unique_ptr<LocalVariable> idFcuShimHdgDot;
+  std::unique_ptr<LocalVariable> idFcuShimAltManaged;
+  std::unique_ptr<LocalVariable> idFcuShimVsValue;
+  std::unique_ptr<LocalVariable> idFcuShimFpaValue;
+  std::unique_ptr<LocalVariable> idFcuShimVsManaged;
+
+  double prevFcuAltValue = 0;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -717,6 +757,8 @@ class FlyByWireInterface {
   bool updateAdirs(int adirsIndex);
 
   bool updatePrim(double sampleTime, int primIndex);
+
+  bool updatePrimFgShim(double sampleTime);
 
   bool updateSec(double sampleTime, int secIndex);
 

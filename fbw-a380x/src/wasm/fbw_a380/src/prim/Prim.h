@@ -34,6 +34,8 @@ class Prim {
 
   A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& externalInputs();
 
+  const prim_outputs& getDebugOutputs();
+
  private:
   void initSelfTests(bool viaPushButton);
 
