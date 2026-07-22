@@ -106,7 +106,7 @@ void Prim::update(double deltaTime,
   primFg.A380PrimComputerFg_U.in = primFe.A380PrimComputerFe_Y.out;
 
   if (fctlDisabled || fgDisabled) {
-    simConnectInterface.setClientDataPrimFlightEnvelopeOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.flight_envelope);
+    simConnectInterface.setClientDataPrimFlightEnvelopeOutput(primFe.A380PrimComputerFe_Y.out.flight_envelope);
   }
 
   // --------------- FG Step -----------------
