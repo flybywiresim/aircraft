@@ -998,7 +998,6 @@ struct base_prim_longitudinal_modes
   boolean_T fpa_active;
   boolean_T alt_acq_active;
   boolean_T alt_hold_active;
-  boolean_T fma_dash_display;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
   boolean_T app_des_active;

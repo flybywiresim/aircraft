@@ -1,6 +1,6 @@
 #include "A380PrimComputerFg.h"
 
-struct_4PuDOsayu2Xpdv8g8JLxTH rtP_prim_fg_mode_logic_output_MATLABStruct{
+struct_uZPwD8RWSgGMkipRB6vpb rtP_prim_fg_mode_logic_output_MATLABStruct{
   {
     0.0,
     false,
@@ -19,7 +19,6 @@ struct_4PuDOsayu2Xpdv8g8JLxTH rtP_prim_fg_mode_logic_output_MATLABStruct{
 
   {
     0.0,
-    false,
     false,
     false,
     false,
@@ -220,7 +219,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.16,
   400.0,
   40.0,
-  60.0,
+  50.0,
   250.0,
   250.0,
   0.0,
@@ -228,6 +227,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   250.0,
   250.0,
   250.0,
+  0.0,
   0.0,
   0.8,
   0.133,
@@ -547,6 +547,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   false,
   false,
   true,
+  false,
   false,
   false,
   false,
@@ -3740,7 +3741,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         false,
         false,
         false,
-        false,
         false
       },
 
@@ -4657,6 +4657,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

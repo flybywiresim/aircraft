@@ -44,7 +44,7 @@ class A380PrimComputerGeneralLogic final
   struct Parameters_A380PrimComputerGeneralLogic_T {
     struct_SypABsMe64R9KOFl2RjNgF prim_fctl_logic_output_MATLABStruct;
     base_prim_laws_outputs prim_laws_output_MATLABStruct;
-    struct_4PuDOsayu2Xpdv8g8JLxTH prim_fg_mode_logic_output_MATLABStruct;
+    struct_uZPwD8RWSgGMkipRB6vpb prim_fg_mode_logic_output_MATLABStruct;
     base_prim_analog_outputs prim_analog_output_MATLABStruct;
     base_prim_discrete_outputs prim_discrete_output_MATLABStruct;
     real_T LagFilter_C1;

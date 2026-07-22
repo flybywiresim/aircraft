@@ -5,7 +5,7 @@
 #include "A380FgOuterLoops.h"
 
 extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
-extern struct_4PuDOsayu2Xpdv8g8JLxTH rtP_prim_fg_mode_logic_output_MATLABStruct;
+extern struct_uZPwD8RWSgGMkipRB6vpb rtP_prim_fg_mode_logic_output_MATLABStruct;
 class A380PrimComputerFg final
 {
  public:
@@ -45,7 +45,7 @@ class A380PrimComputerFg final
 
   struct BlockIO_A380PrimComputerFg_T {
     prim_outputs BusAssignment_i;
-    prim_outputs BusAssignment_es;
+    prim_outputs BusAssignment_f;
     real_T u;
     real_T u_d;
     real_T u_l;
@@ -67,7 +67,6 @@ class A380PrimComputerFg final
     real_T Delay_DSTATE_a;
     real_T vMemoEo;
     real_T vMemoGa;
-    real_T eventTime;
     real_T pY;
     real_T pY_o;
     real_T pU;
@@ -121,12 +120,13 @@ class A380PrimComputerFg final
     boolean_T Memory_PreviousInput_ek;
     boolean_T Memory_PreviousInput_l1;
     boolean_T Memory_PreviousInput_e0;
-    boolean_T Memory_PreviousInput_j;
+    boolean_T Memory_PreviousInput_oz;
     boolean_T Memory_PreviousInput_og;
     boolean_T Memory_PreviousInput_oy;
-    boolean_T Memory_PreviousInput_jh;
+    boolean_T Memory_PreviousInput_j;
     boolean_T Memory_PreviousInput_ei;
     boolean_T Memory_PreviousInput_kj;
+    boolean_T Memory_PreviousInput_mq;
     boolean_T Memory_PreviousInput_kc;
     boolean_T Memory_PreviousInput_i3;
     boolean_T Memory_PreviousInput_il;
@@ -153,7 +153,6 @@ class A380PrimComputerFg final
     boolean_T pValue_not_empty;
     boolean_T prevTrkFpaActive;
     boolean_T prevTrkFpaActive_not_empty;
-    boolean_T eventTime_not_empty;
     boolean_T pValue_not_empty_n;
     boolean_T prevMachActive;
     boolean_T prevMachActive_not_empty;
@@ -207,6 +206,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_d;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lis;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bby;
+    rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_l;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cbh;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ckt;
     rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_o;
@@ -458,8 +458,9 @@ class A380PrimComputerFg final
     real_T CompareToConstant2_const_a;
     real_T CompareToConstant2_const_k;
     real_T CompareToConstant2_const_nt;
-    real_T CompareToConstant_const_jg;
+    real_T CompareToConstant_const_o;
     real_T CompareToConstant1_const_a;
+    real_T CompareToConstant1_const_ai;
     real_T CompareToConstant2_const_c;
     real_T CompareToConstant2_const_p;
     real_T CompareToConstant_const_il;
@@ -639,7 +640,7 @@ class A380PrimComputerFg final
     real32_T CompareToConstant5_const_f;
     real32_T CompareToConstant4_const_o;
     real32_T CompareToConstant6_const_m;
-    real32_T CompareToConstant_const_o;
+    real32_T CompareToConstant_const_ov;
     real32_T CompareToConstant_const_j0;
     real32_T CompareToConstant2_const_mw;
     real32_T CompareToConstant_const_p;
@@ -779,12 +780,13 @@ class A380PrimComputerFg final
     boolean_T SRFlipFlop1_initial_condition_g;
     boolean_T SRFlipFlop_initial_condition_jn;
     boolean_T SRFlipFlop_initial_condition_i;
-    boolean_T SRFlipFlop1_initial_condition_gz;
+    boolean_T SRFlipFlop1_initial_condition_n;
     boolean_T SRFlipFlop1_initial_condition_c;
     boolean_T SRFlipFlop_initial_condition_p;
     boolean_T SRFlipFlop_initial_condition_a;
     boolean_T SRFlipFlop_initial_condition_bp;
     boolean_T SRFlipFlop_initial_condition_lk;
+    boolean_T SRFlipFlop_initial_condition_okk;
     boolean_T SRFlipFlop_initial_condition_mc;
     boolean_T SRFlipFlop_initial_condition_j1;
     boolean_T SRFlipFlop_initial_condition_md;
@@ -1089,13 +1091,14 @@ class A380PrimComputerFg final
     boolean_T Logic_table_pp[16];
     boolean_T Logic_table_hk[16];
     boolean_T Logic_table_f[16];
-    boolean_T Logic_table_ib[16];
+    boolean_T Logic_table_pi[16];
     boolean_T Constant_Value_h2;
     boolean_T Logic_table_bw[16];
     boolean_T Logic_table_nb[16];
     boolean_T Logic_table_fi[16];
     boolean_T Logic_table_mh5[16];
     boolean_T Logic_table_kk[16];
+    boolean_T Logic_table_fe[16];
     boolean_T Logic_table_on[16];
     boolean_T Logic_table_ig[16];
     boolean_T Logic_table_f5[16];

@@ -805,6 +805,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         return 'ALT CST*';
       } else if (altHoldMode && altCstrApplicable && !altIsCrzAlt) {
         return 'ALT CST';
+      } else if (altAcqMode && !altCstrApplicable && altIsCrzAlt) {
+        return 'ALT CRZ*';
       } else if (altHoldMode && !altCstrApplicable && altIsCrzAlt) {
         return 'ALT CRZ';
       } else if (fpaMode) {
@@ -883,7 +885,14 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
     const fpaMode = word.bitValueOr(18, false);
     const vsMode = word.bitValueOr(17, false);
 
-    return vsMode || fpaMode ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green';
+    // ALT CRZ* also has a smaller font, as it otherwise would be too large for the box.
+    const altCstrApplicable = word.bitValueOr(28, false);
+    const altIsCrzAlt = word.bitValueOr(29, false);
+    const altAcqMode = word.bitValueOr(19, false);
+
+    return vsMode || fpaMode || (altAcqMode && !altCstrApplicable && altIsCrzAlt)
+      ? 'FontMediumSmaller MiddleAlign Green'
+      : 'FontMedium MiddleAlign Green';
   });
 
   constructor(props: CellProps) {
@@ -970,10 +979,10 @@ class B2Cell extends DisplayComponent<CellProps> {
         return gsArmed ? 'DES ' : '      DES';
       } else if (altAcqArmed && altCstrApplicable) {
         return gsArmed ? 'ALT ' : '      ALT';
+      } else if (altAcqArmed && altIsCrzAlt) {
+        return '     ALT CRZ';
       } else if (altAcqArmed) {
         return gsArmed ? 'ALT ' : '      ALT';
-      } else if (altAcqArmed && altIsCrzAlt) {
-        return '      ALT CRZ';
       } else if (gsArmed) {
         return '      G/S';
       } else {

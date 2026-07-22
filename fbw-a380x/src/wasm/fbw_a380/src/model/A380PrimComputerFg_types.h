@@ -447,7 +447,6 @@ struct base_prim_longitudinal_modes
   boolean_T fpa_active;
   boolean_T alt_acq_active;
   boolean_T alt_hold_active;
-  boolean_T fma_dash_display;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
   boolean_T app_des_active;
@@ -1424,10 +1423,10 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_4PuDOsayu2Xpdv8g8JLxTH_
-#define DEFINED_TYPEDEF_FOR_struct_4PuDOsayu2Xpdv8g8JLxTH_
+#ifndef DEFINED_TYPEDEF_FOR_struct_uZPwD8RWSgGMkipRB6vpb_
+#define DEFINED_TYPEDEF_FOR_struct_uZPwD8RWSgGMkipRB6vpb_
 
-struct struct_4PuDOsayu2Xpdv8g8JLxTH
+struct struct_uZPwD8RWSgGMkipRB6vpb
 {
   base_prim_lateral_modes lateral_modes;
   base_prim_longitudinal_modes longitudinal_modes;

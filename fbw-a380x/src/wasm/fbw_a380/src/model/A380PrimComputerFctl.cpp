@@ -3940,7 +3940,7 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_pw[15] = A380PrimComputerFctl_P.Constant7_Value_p;
     rtb_VectorConcatenate_pw[16] = A380PrimComputerFctl_P.Constant7_Value_p;
     rtb_VectorConcatenate_pw[17] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.alt_cstr_applicable;
-    rtb_VectorConcatenate_pw[18] = A380PrimComputerFctl_P.Constant7_Value_p;
+    rtb_VectorConcatenate_pw[18] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.longitudinal_modes.cruise_active;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_pw, &rtb_y_ku);
     rtb_VectorConcatenate_pw[0] = A380PrimComputerFctl_B.BusAssignment_m.fg_logic.ap_1_engaged;
     rtb_VectorConcatenate_pw[1] = A380PrimComputerFctl_B.BusAssignment_m.fg_logic.ap_2_engaged;
