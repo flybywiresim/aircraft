@@ -1349,6 +1349,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.ap_fd_2_on_adr_3 = rtb_OR2_b;
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.ap_fd_1_on_ir_3 = rtb_OR2_hu;
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.ap_fd_2_on_ir_3 = rtb_OR3_ix;
+    A380PrimComputerFg_B.BusAssignment_es.fg_logic.adirs_computation_data.alignment_dummy =
+      A380PrimComputerFg_P.Constant_Value_i;
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.adirs_computation_data.heading_deg = rtb_headingMag;
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.adirs_computation_data.track_deg = rtb_trackMag;
     A380PrimComputerFg_B.BusAssignment_es.fg_logic.adirs_computation_data.altitude_indicated_ft = rtb_headingTrue;
@@ -4233,6 +4235,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_Y.out.fg_logic.rwy_hdg_memo = A380PrimComputerFg_B.u_lyjj;
     A380PrimComputerFg_Y.out.fg_logic.tcas_failure = false;
     A380PrimComputerFg_Y.out.fg_logic.tcas_mode_available = false;
+    A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.lateral_modes.alignment_dummy;
     A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.rwy_active = rtb_NOT4;
     A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.nav_active = A380PrimComputerFg_DWork.Memory_PreviousInput_eu;
     A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.loc_cpt_active =
@@ -4251,6 +4255,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.align_submode_active = rtb_GreaterThan3;
     A380PrimComputerFg_Y.out.fg_mode_logic.lateral_modes.rollout_submode_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_en;
+    A380PrimComputerFg_Y.out.fg_mode_logic.longitudinal_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.longitudinal_modes.alignment_dummy;
     A380PrimComputerFg_Y.out.fg_mode_logic.longitudinal_modes.clb_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_jh;
     A380PrimComputerFg_Y.out.fg_mode_logic.longitudinal_modes.des_active =
@@ -4282,6 +4288,8 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_U.in.fg_mode_logic.longitudinal_modes.cruise_active;
     A380PrimComputerFg_Y.out.fg_mode_logic.longitudinal_modes.tcas_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_kx;
+    A380PrimComputerFg_Y.out.fg_mode_logic.armed_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.armed_modes.alignment_dummy;
     A380PrimComputerFg_Y.out.fg_mode_logic.armed_modes.alt_acq_armed = rtb_AND1_kq;
     A380PrimComputerFg_Y.out.fg_mode_logic.armed_modes.alt_acq_arm_possible =
       A380PrimComputerFg_DWork.Memory_PreviousInput_ek;
@@ -4384,6 +4392,8 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_Y.out.fg_laws.n_1_c_percent = A380PrimComputerFg_DWork.Delay_DSTATE_i;
     }
 
+    A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.lateral_modes.alignment_dummy;
     A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.rwy_active = rtb_NOT4;
     A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.nav_active = A380PrimComputerFg_DWork.Memory_PreviousInput_eu;
     A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.loc_cpt_active = A380PrimComputerFg_DWork.Memory_PreviousInput_f;
@@ -4401,6 +4411,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.align_submode_active = rtb_GreaterThan3;
     A380PrimComputerFg_DWork.Delay_DSTATE.lateral_modes.rollout_submode_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_en;
+    A380PrimComputerFg_DWork.Delay_DSTATE.longitudinal_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.longitudinal_modes.alignment_dummy;
     A380PrimComputerFg_DWork.Delay_DSTATE.longitudinal_modes.clb_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_jh;
     A380PrimComputerFg_DWork.Delay_DSTATE.longitudinal_modes.des_active =
@@ -4432,6 +4444,8 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_U.in.fg_mode_logic.longitudinal_modes.cruise_active;
     A380PrimComputerFg_DWork.Delay_DSTATE.longitudinal_modes.tcas_active =
       A380PrimComputerFg_DWork.Memory_PreviousInput_kx;
+    A380PrimComputerFg_DWork.Delay_DSTATE.armed_modes.alignment_dummy =
+      A380PrimComputerFg_U.in.fg_mode_logic.armed_modes.alignment_dummy;
     A380PrimComputerFg_DWork.Delay_DSTATE.armed_modes.alt_acq_armed = rtb_AND1_kq;
     A380PrimComputerFg_DWork.Delay_DSTATE.armed_modes.alt_acq_arm_possible =
       A380PrimComputerFg_DWork.Memory_PreviousInput_ek;

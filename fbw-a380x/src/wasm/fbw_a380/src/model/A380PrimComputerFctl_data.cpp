@@ -3495,6 +3495,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       false,
 
       {
+        0.0,
         0.0F,
         0.0F,
         0.0F,
@@ -3550,6 +3551,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
     {
       {
+        0.0,
         false,
         false,
         false,
@@ -3565,6 +3567,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       },
 
       {
+        0.0,
         false,
         false,
         false,
@@ -3585,6 +3588,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       },
 
       {
+        0.0,
         false,
         false,
         false,

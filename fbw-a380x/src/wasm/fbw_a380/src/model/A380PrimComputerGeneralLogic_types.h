@@ -905,6 +905,7 @@ struct base_prim_fctl_logic_outputs
 
 struct base_prim_fg_adirs_computation_data
 {
+  real_T alignment_dummy;
   real32_T heading_deg;
   real32_T track_deg;
   real32_T roll_angle_deg;
@@ -964,6 +965,7 @@ struct base_prim_fg_logic_output
 
 struct base_prim_lateral_modes
 {
+  real_T alignment_dummy;
   boolean_T rwy_active;
   boolean_T nav_active;
   boolean_T loc_cpt_active;
@@ -985,6 +987,7 @@ struct base_prim_lateral_modes
 
 struct base_prim_longitudinal_modes
 {
+  real_T alignment_dummy;
   boolean_T clb_active;
   boolean_T des_active;
   boolean_T op_clb_active;
@@ -1011,6 +1014,7 @@ struct base_prim_longitudinal_modes
 
 struct base_prim_armed_modes
 {
+  real_T alignment_dummy;
   boolean_T alt_acq_armed;
   boolean_T alt_acq_arm_possible;
   boolean_T nav_armed;
@@ -1402,10 +1406,10 @@ struct struct_SypABsMe64R9KOFl2RjNgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
-#define DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
+#ifndef DEFINED_TYPEDEF_FOR_struct_J1lEWmdkRUN5N361M6exMC_
+#define DEFINED_TYPEDEF_FOR_struct_J1lEWmdkRUN5N361M6exMC_
 
-struct struct_sHDyyIym2nhzMY8qs6JrkG
+struct struct_J1lEWmdkRUN5N361M6exMC
 {
   base_prim_lateral_modes lateral_modes;
   base_prim_longitudinal_modes longitudinal_modes;

@@ -5,7 +5,7 @@
 #include "A380FgOuterLoops.h"
 
 extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
-extern struct_sHDyyIym2nhzMY8qs6JrkG rtP_prim_fg_mode_logic_output_MATLABStruct;
+extern struct_J1lEWmdkRUN5N361M6exMC rtP_prim_fg_mode_logic_output_MATLABStruct;
 class A380PrimComputerFg final
 {
  public:
@@ -970,6 +970,7 @@ class A380PrimComputerFg final
     real_T Y_Y0_j;
     real_T Switch7_Threshold_g;
     real_T Switch8_Threshold_m;
+    real_T Constant_Value_i;
     real_T Bias_Bias;
     real_T Bias1_Bias;
     real_T Bias_Bias_p;

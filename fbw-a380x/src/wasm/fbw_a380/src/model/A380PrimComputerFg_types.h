@@ -340,6 +340,7 @@ struct base_prim_fg_out_bus
 
 struct base_prim_fg_adirs_computation_data
 {
+  real_T alignment_dummy;
   real32_T heading_deg;
   real32_T track_deg;
   real32_T roll_angle_deg;
@@ -413,6 +414,7 @@ struct ap_raw_output
 
 struct base_prim_lateral_modes
 {
+  real_T alignment_dummy;
   boolean_T rwy_active;
   boolean_T nav_active;
   boolean_T loc_cpt_active;
@@ -434,6 +436,7 @@ struct base_prim_lateral_modes
 
 struct base_prim_longitudinal_modes
 {
+  real_T alignment_dummy;
   boolean_T clb_active;
   boolean_T des_active;
   boolean_T op_clb_active;
@@ -460,6 +463,7 @@ struct base_prim_longitudinal_modes
 
 struct base_prim_armed_modes
 {
+  real_T alignment_dummy;
   boolean_T alt_acq_armed;
   boolean_T alt_acq_arm_possible;
   boolean_T nav_armed;
@@ -548,6 +552,54 @@ enum class a380_athr_fma_message
   LVR_CLB,
   LVR_MCT,
   LVR_ASYM
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+
+struct base_sec_out_bus
+{
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_1_position_deg;
+  base_arinc_429 right_spoiler_1_position_deg;
+  base_arinc_429 left_spoiler_2_position_deg;
+  base_arinc_429 right_spoiler_2_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 rudder_trim_actual_pos_deg;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -642,54 +694,6 @@ struct ap_laws_input
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_laws_input input;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-
-struct base_sec_out_bus
-{
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 aileron_status_word;
-  base_arinc_429 left_aileron_1_position_deg;
-  base_arinc_429 left_aileron_2_position_deg;
-  base_arinc_429 right_aileron_1_position_deg;
-  base_arinc_429 right_aileron_2_position_deg;
-  base_arinc_429 spoiler_status_word;
-  base_arinc_429 left_spoiler_1_position_deg;
-  base_arinc_429 right_spoiler_1_position_deg;
-  base_arinc_429 left_spoiler_2_position_deg;
-  base_arinc_429 right_spoiler_2_position_deg;
-  base_arinc_429 elevator_status_word;
-  base_arinc_429 elevator_1_position_deg;
-  base_arinc_429 elevator_2_position_deg;
-  base_arinc_429 elevator_3_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 rudder_status_word;
-  base_arinc_429 rudder_1_position_deg;
-  base_arinc_429 rudder_2_position_deg;
-  base_arinc_429 rudder_trim_actual_pos_deg;
-  base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
 };
 
 #endif
@@ -1418,10 +1422,10 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
-#define DEFINED_TYPEDEF_FOR_struct_sHDyyIym2nhzMY8qs6JrkG_
+#ifndef DEFINED_TYPEDEF_FOR_struct_J1lEWmdkRUN5N361M6exMC_
+#define DEFINED_TYPEDEF_FOR_struct_J1lEWmdkRUN5N361M6exMC_
 
-struct struct_sHDyyIym2nhzMY8qs6JrkG
+struct struct_J1lEWmdkRUN5N361M6exMC
 {
   base_prim_lateral_modes lateral_modes;
   base_prim_longitudinal_modes longitudinal_modes;

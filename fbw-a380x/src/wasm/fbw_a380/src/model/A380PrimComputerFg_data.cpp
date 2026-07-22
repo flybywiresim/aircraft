@@ -1,7 +1,8 @@
 #include "A380PrimComputerFg.h"
 
-struct_sHDyyIym2nhzMY8qs6JrkG rtP_prim_fg_mode_logic_output_MATLABStruct{
+struct_J1lEWmdkRUN5N361M6exMC rtP_prim_fg_mode_logic_output_MATLABStruct{
   {
+    0.0,
     false,
     false,
     false,
@@ -17,6 +18,7 @@ struct_sHDyyIym2nhzMY8qs6JrkG rtP_prim_fg_mode_logic_output_MATLABStruct{
   },
 
   {
+    0.0,
     false,
     false,
     false,
@@ -37,6 +39,7 @@ struct_sHDyyIym2nhzMY8qs6JrkG rtP_prim_fg_mode_logic_output_MATLABStruct{
   },
 
   {
+    0.0,
     false,
     false,
     false,
@@ -3632,6 +3635,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       false,
 
       {
+        0.0,
         0.0F,
         0.0F,
         0.0F,
@@ -3687,6 +3691,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
     {
       {
+        0.0,
         false,
         false,
         false,
@@ -3702,6 +3707,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       },
 
       {
+        0.0,
         false,
         false,
         false,
@@ -3722,6 +3728,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       },
 
       {
+        0.0,
         false,
         false,
         false,
@@ -4483,6 +4490,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   -10.0,
   0.0,
   18.0,
+  0.0,
   0.0,
   0.0,
   0.0,
