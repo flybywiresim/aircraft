@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 /* eslint-disable no-case-declarations */
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -69,44 +69,52 @@ export class LightSync implements Instrument {
     }
 
     const autoBrightness = this.getAutoBrightness();
+    const startState = SimVar.GetSimVarValue('L:A32NX_START_STATE', 'Number');
+
+    const isNight = autoBrightness < 50;
+    const isColdAndDark = startState === 1 || startState === 2;
+
+    const ambientLtValue = isNight && isColdAndDark ? 20 : 0;
+    const pedFloodLtValue = isNight && isColdAndDark ? 20 : 0;
+    const mainPnlFloodLtValue = isNight ? 10 : 0;
+    const integralLtValue = isNight ? 15 : 0;
 
     // OVHD Reading Lights
     this.setPotentiometer(96, 0); // Capt
     this.setPotentiometer(97, 0); // F/O
 
     // Glareshield
-    this.setPotentiometer(84, autoBrightness < 50 ? 1.5 * autoBrightness : 0); // Int Lt
-    this.setPotentiometer(87, autoBrightness); // Lcd Brt
-    this.setPotentiometer(10, 0); // table Cpt
-    this.setPotentiometer(11, 0); // table F/O
+    this.setPotentiometer(84, integralLtValue); // Integral
+    this.setPotentiometer(87, autoBrightness); // LCD
+    this.setPotentiometer(10, 0); // Table Capt
+    this.setPotentiometer(11, 0); // Table F/O
 
-    // Instruments Cpt
+    // Instruments Capt
     this.setPotentiometer(88, autoBrightness); // PFD
     this.setPotentiometer(89, autoBrightness); // ND
-    this.setPotentiometer(94, autoBrightness / 2); // wxRadar
+    this.setPotentiometer(94, autoBrightness / 2); // Wx Radar
     this.setPotentiometer(98, autoBrightness); // MFD
+    this.setPotentiometer(8, 0); // Console
     this.setPotentiometer(78, autoBrightness); // OIT
 
     // Instruments F/O
     this.setPotentiometer(90, autoBrightness); // PFD
     this.setPotentiometer(91, autoBrightness); // ND
-    this.setPotentiometer(95, autoBrightness / 2); // wxRadar
+    this.setPotentiometer(95, autoBrightness / 2); // Wx Radar
     this.setPotentiometer(99, autoBrightness); // MFD
+    this.setPotentiometer(9, 0); // Console
     this.setPotentiometer(79, autoBrightness); // OIT
 
     // Pedestal
-
-    this.setRmpBrightness(1, autoBrightness * 100); // rmpCptLightLevel
-    this.setRmpBrightness(2, autoBrightness * 100); // rmpFoLightLevel
-    this.setRmpBrightness(3, autoBrightness * 100); // rmpOvhdLightLevel
-    this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
-    this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
-    this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
-    // this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
-    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, autoBrightness / 100);
-    this.setPotentiometer(85, autoBrightness); // integralLightLevel
-    // this.setPotentiometer(7, autoBrightness); // ambianceLightLevel
-    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, autoBrightness / 100);
+    this.setRmpBrightness(1, autoBrightness * 100); // RMP Capt
+    this.setRmpBrightness(2, autoBrightness * 100); // RMP F/O
+    this.setRmpBrightness(3, autoBrightness * 100); // RMP OVHD
+    this.setPotentiometer(92, autoBrightness); // ECAM Upper
+    this.setPotentiometer(93, autoBrightness); // ECAM Lower
+    this.setPotentiometer(76, pedFloodLtValue); // Ped Flood
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, mainPnlFloodLtValue / 100); // Main Pnl Flood
+    this.setPotentiometer(85, integralLtValue); // Integral
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, ambientLtValue / 100); // Ambient
   }
 
   public onUpdate(): void {}
@@ -178,7 +186,7 @@ export class LightSync implements Instrument {
   /**
    * Sets the RMP brightness knobs.
    * @param rmp The RMP to set.
-   * @param brightness The brighness value in percent [0, 100].
+   * @param brightness The brightness value in percent [0, 100].
    */
   private setRmpBrightness(rmp: 1 | 2 | 3, brightness: number): void {
     // FIXME should use the B events, but not supported in FS2020.
