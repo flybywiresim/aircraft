@@ -1165,6 +1165,18 @@ void A380FadecComputer::step()
   }
 
   rtb_Switch2_idx_1 = N1_end;
+  if ((A380FadecComputer_U.in.data.V_ias_kn < 60.0) && (N1_end > 62.5) && (N1_end < 73.5)) {
+    if (N1_end < 68.0) {
+      N1_end = 62.5;
+    } else {
+      N1_end = 73.5;
+    }
+  }
+
+  if (A380FadecComputer_U.in.data.V_ias_kn < 35.0) {
+    N1_end = std::fmin(N1_end, 76.5);
+  }
+
   rtb_Sum = N1_end - A380FadecComputer_U.in.data.engine_N1_percent;
   if (std::abs(rtb_Sum) > 0.8) {
     A380FadecComputer_DWork.Delay_DSTATE = A380FadecComputer_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
