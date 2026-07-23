@@ -174,6 +174,16 @@
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) (&gt;O:PrevPot7Value)
                 (L:CPT_SLIDING_WINDOW) (L:FO_SLIDING_WINDOW) + 2 /
                 (&gt;L:A380X_SOUND_COCKPIT_WINDOW_RATIO)
+
+                (L:A380X_OVHD_STORM_LT, bool) if{
+                    100 (&gt;L:A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL, percent)
+                    100 (&gt;L:A380X_PED_LIGHTING_AMBIENT_LT_LEVEL, percent)
+                } els{
+                    (L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB, percent) (&gt;L:A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL, percent)
+                    (L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB, percent) (&gt;L:A380X_PED_LIGHTING_AMBIENT_LT_LEVEL, percent)
+                }
+                (L:A380X_PED_LIGHTING_MIP_FLOOD_LT_LEVEL, percent) 83 (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+                (L:A380X_PED_LIGHTING_AMBIENT_LT_LEVEL, percent) 7 (&gt;K:2:LIGHT_POTENTIOMETER_SET)
             </Update>
         </Component>
 
@@ -690,7 +700,7 @@
                 <PART_ID>LIGHTING_Knob_Glareshield_1</PART_ID>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_INCREASE</ANIMTIP_1>
-                <POTENTIOMETER>83</POTENTIOMETER>
+                <ANIM_SIMVAR>L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB</ANIM_SIMVAR>
             </UseTemplate>
 
             <!-- MAIN PNL Triangle Emissives (4) -->
@@ -859,16 +869,16 @@
             <!-- Console/Floor Lights -->
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>8</POTENTIOMETER>
-                <NODE_ID>SWITCH_EFIS_CS_CONSOLE</NODE_ID>
-                <PART_ID>SWITCH_EFIS_CS_CONSOLE</PART_ID>
-                <ANIM_NAME>SWITCH_EFIS_CS_CONSOLE</ANIM_NAME>
+                <NODE_ID>SWITCH_GLARESHIELD_CS_CONSOLE_FLOOR_LT</NODE_ID>
+                <PART_ID>SWITCH_GLARESHIELD_CS_CONSOLE_FLOOR_LT</PART_ID>
+                <ANIM_NAME>SWITCH_GLARESHIELD_CS_CONSOLE_FLOOR_LT</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>9</POTENTIOMETER>
-                <NODE_ID>SWITCH_EFIS_FO_CONSOLE</NODE_ID>
-                <PART_ID>SWITCH_EFIS_FO_CONSOLE</PART_ID>
-                <ANIM_NAME>SWITCH_EFIS_FO_CONSOLE</ANIM_NAME>
+                <NODE_ID>SWITCH_GLARESHIELD_FO_CONSOLE_FLOOR_LT</NODE_ID>
+                <PART_ID>SWITCH_GLARESHIELD_FO_CONSOLE_FLOOR_LT</PART_ID>
+                <ANIM_NAME>SWITCH_GLARESHIELD_FO_CONSOLE_FLOOR_LT</ANIM_NAME>
             </UseTemplate>
         </Component>
 
@@ -2352,7 +2362,7 @@
                         <NODE_ID>LIGHTING_Knob_Ambient</NODE_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
-                        <POTENTIOMETER>7</POTENTIOMETER>
+                        <ANIM_SIMVAR>L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB</ANIM_SIMVAR>
                     </UseTemplate>
                 </Component>
 

@@ -6,7 +6,7 @@
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { formatEwdMessages } from '@shared/EwdMessages';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
-import { FormattedFwcText } from './FormattedFwcText';
+import { FormattedFwcText } from '../MsfsAvionicsCommon/FormattedFwcText';
 
 import './style.scss';
 
