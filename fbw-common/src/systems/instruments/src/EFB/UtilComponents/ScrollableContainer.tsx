@@ -5,6 +5,9 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 
+const scrollButtonHeight = 1.5;
+const scrollButtonSpace = scrollButtonHeight * 2;
+
 interface ScrollableContainerProps {
   height: number;
   className?: string;
@@ -39,7 +42,6 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const position = useRef({ top: 0, y: 0 });
-  const scrollButtonSpace = 3;
 
   useEffect(() => {
     if (contentRef.current) {
@@ -92,11 +94,24 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
 
   const showScrollButtons = scrollButtons && contentOverflows;
   const scrollableHeight = showScrollButtons ? `calc(${height}rem - ${scrollButtonSpace}rem)` : `${height}rem`;
+  const scrollButtonMargins = showScrollButtons
+    ? { marginTop: `${scrollButtonHeight}rem`, marginBottom: `${scrollButtonHeight}rem` }
+    : {};
 
   const scrollableDiv = (
     <div
-      className={`scrollbar w-full overflow-y-auto ${showScrollButtons ? 'my-6' : ''} ${className}`}
-      style={nonRigid ? { maxHeight: scrollableHeight } : { height: scrollableHeight }}
+      className={`scrollbar w-full overflow-y-auto ${className}`}
+      style={
+        nonRigid
+          ? {
+              maxHeight: scrollableHeight,
+              ...scrollButtonMargins,
+            }
+          : {
+              height: scrollableHeight,
+              ...scrollButtonMargins,
+            }
+      }
       ref={containerRef}
       onScroll={(event) => {
         if (timeout.current) {
