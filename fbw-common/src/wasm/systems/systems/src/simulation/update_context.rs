@@ -109,6 +109,7 @@ impl TryFrom<f64> for SurfaceTypeMsfs {
             22 => Ok(SurfaceTypeMsfs::Shale),
             23 => Ok(SurfaceTypeMsfs::Tarmac),
             24 => Ok(SurfaceTypeMsfs::WrightFlyerTrack),
+            // Undocumented, but MSFS reports this occasionally
             255 => Ok(SurfaceTypeMsfs::Macadam),
             unexpected => Err(unexpected),
         }
