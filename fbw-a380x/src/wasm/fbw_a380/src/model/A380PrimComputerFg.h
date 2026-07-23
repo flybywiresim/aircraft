@@ -277,6 +277,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cd;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ph;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_hv;
+    rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_oe;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ll;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_gm;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_na;
@@ -432,6 +433,9 @@ class A380PrimComputerFg final
     real_T CompareToConstant8_const;
     real_T CompareToConstant9_const;
     real_T CompareToConstant10_const;
+    real_T CompareToConstant2_const_c;
+    real_T CompareToConstant1_const_lr;
+    real_T CompareToConstant2_const_m;
     real_T CompareToConstant1_const_i;
     real_T CompareToConstant_const_h;
     real_T CompareToConstant_const_kb;
@@ -452,7 +456,7 @@ class A380PrimComputerFg final
     real_T CompareToConstant_const_jk;
     real_T CompareToConstant1_const_p;
     real_T CompareToConstant_const_n2;
-    real_T CompareToConstant2_const_m;
+    real_T CompareToConstant2_const_mi;
     real_T CompareToConstant_const_c;
     real_T CompareToConstant1_const_cg;
     real_T CompareToConstant2_const_a;
@@ -461,7 +465,7 @@ class A380PrimComputerFg final
     real_T CompareToConstant_const_o;
     real_T CompareToConstant1_const_a;
     real_T CompareToConstant1_const_ai;
-    real_T CompareToConstant2_const_c;
+    real_T CompareToConstant2_const_cc;
     real_T CompareToConstant2_const_p;
     real_T CompareToConstant_const_il;
     real_T CompareToConstant_const_mv;
@@ -533,6 +537,7 @@ class A380PrimComputerFg final
     real_T ConfirmNode3_timeDelay;
     real_T ConfirmNode_timeDelay_j;
     real_T ConfirmNode_timeDelay_d;
+    real_T ConfirmNode_timeDelay_g;
     real_T ConfirmNode1_timeDelay_o;
     real_T ConfirmNode_timeDelay_m;
     real_T ConfirmNode_timeDelay_dd;
@@ -540,7 +545,7 @@ class A380PrimComputerFg final
     real_T ConfirmNode_timeDelay_df;
     real_T ConfirmNode_timeDelay_jv;
     real_T ConfirmNode1_timeDelay_ll;
-    real_T ConfirmNode_timeDelay_g;
+    real_T ConfirmNode_timeDelay_gg;
     real_T ConfirmNode2_timeDelay_i;
     real_T ConfirmNode1_timeDelay_f;
     real_T ConfirmNode1_timeDelay_l3;
@@ -641,8 +646,8 @@ class A380PrimComputerFg final
     real32_T CompareToConstant4_const_o;
     real32_T CompareToConstant6_const_m;
     real32_T CompareToConstant_const_ov;
+    real32_T CompareToConstant_const_dl;
     real32_T CompareToConstant_const_j0;
-    real32_T CompareToConstant2_const_mw;
     real32_T CompareToConstant_const_p;
     real32_T CompareToConstant1_const_j;
     real32_T CompareToConstant_const_oj;
@@ -690,6 +695,8 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault1_defaultValue_a;
     real32_T A429ValueOrDefault2_defaultValue_n;
     real32_T A429ValueOrDefault3_defaultValue_i;
+    real32_T A429ValueOrDefault1_defaultValue_m;
+    real32_T A429ValueOrDefault_defaultValue_py;
     real32_T A429ValueOrDefault1_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_d;
     real32_T A429ValueOrDefault_defaultValue_m;
@@ -845,6 +852,7 @@ class A380PrimComputerFg final
     boolean_T ConfirmNode_isRisingEdge_e;
     boolean_T PulseNode_isRisingEdge_n;
     boolean_T ConfirmNode_isRisingEdge_j;
+    boolean_T ConfirmNode_isRisingEdge_o;
     boolean_T ConfirmNode1_isRisingEdge_f;
     boolean_T ConfirmNode_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_g2;
@@ -857,7 +865,7 @@ class A380PrimComputerFg final
     boolean_T PulseNode1_isRisingEdge_d;
     boolean_T ConfirmNode_isRisingEdge_hr;
     boolean_T ConfirmNode1_isRisingEdge_h;
-    boolean_T ConfirmNode_isRisingEdge_o;
+    boolean_T ConfirmNode_isRisingEdge_ok;
     boolean_T PulseNode_isRisingEdge_bf;
     boolean_T ConfirmNode2_isRisingEdge_k;
     boolean_T ConfirmNode1_isRisingEdge_k;
@@ -978,6 +986,10 @@ class A380PrimComputerFg final
     real_T Constant1_Value_h;
     real_T Constant_Value_l;
     real_T Y_Y0;
+    real_T Gain1_Gain;
+    real_T Gain_Gain_f;
+    real_T Gain1_Gain_l;
+    real_T Gain_Gain_k;
     real_T Y_Y0_a;
     real_T Y_Y0_l;
     real_T Y_Y0_h;
@@ -989,6 +1001,8 @@ class A380PrimComputerFg final
     real_T Switch7_Threshold_g;
     real_T Switch8_Threshold_m;
     real_T Constant_Value_i;
+    real_T Constant3_Value;
+    real_T Constant3_Value_m;
     real_T Bias_Bias;
     real_T Bias1_Bias;
     real_T Bias_Bias_p;
@@ -998,7 +1012,7 @@ class A380PrimComputerFg final
     real_T Bias_Bias_n;
     real_T Switch6_Threshold;
     real_T Gain_Gain_m;
-    real_T Gain1_Gain;
+    real_T Gain1_Gain_o;
     real_T Bias_Bias_mq;
     real_T Gain2_Gain;
     real_T Constant_Value_a;
@@ -1026,7 +1040,7 @@ class A380PrimComputerFg final
     real_T Gain1_Gain_g;
     real_T Gain1_Gain_iz;
     real_T Gain_Gain_h;
-    real_T Gain1_Gain_o;
+    real_T Gain1_Gain_oj;
     real_T g_Gain;
     real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_m;
@@ -1042,7 +1056,7 @@ class A380PrimComputerFg final
     real32_T Gain1_Gain_ix;
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];
-    real32_T Gain_Gain_f;
+    real32_T Gain_Gain_fm;
     real32_T Constant_Value_f;
     real32_T Y_Y0_k;
     real32_T Y_Y0_g;
@@ -1070,6 +1084,7 @@ class A380PrimComputerFg final
     boolean_T Delay_InitialCondition_j;
     boolean_T Logic_table_d4[16];
     boolean_T Logic_table_m0[16];
+    boolean_T Constant_Value_op;
     boolean_T Constant_Value_g0;
     boolean_T Logic_table_k[16];
     boolean_T Logic_table_ml[16];
