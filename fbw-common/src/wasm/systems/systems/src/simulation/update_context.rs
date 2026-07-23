@@ -56,7 +56,7 @@ impl Attitude {
 pub enum SurfaceTypeMsfs {
     Concrete = 0,
     Grass = 1,
-    Water = 2,
+    WaterFsx = 2,
     GrassBumpy = 3,
     Asphalt = 4,
     ShortGrass = 5,
@@ -94,7 +94,7 @@ impl TryFrom<f64> for SurfaceTypeMsfs {
         match value.floor() as u32 {
             0 => Ok(SurfaceTypeMsfs::Concrete),
             1 => Ok(SurfaceTypeMsfs::Grass),
-            2 => Ok(SurfaceTypeMsfs::Water),
+            2 => Ok(SurfaceTypeMsfs::WaterFsx),
             3 => Ok(SurfaceTypeMsfs::GrassBumpy),
             4 => Ok(SurfaceTypeMsfs::Asphalt),
             5 => Ok(SurfaceTypeMsfs::ShortGrass),
