@@ -79,6 +79,14 @@ pub enum SurfaceTypeMsfs {
     Shale = 22,
     Tarmac = 23,
     WrightFlyerTrack = 24,
+    Ocean = 26,
+    Water = 27,
+    Pond = 28,
+    Lake = 29,
+    River = 30,
+    WasteWater = 31,
+    Paint = 32,
+    Unknown = 255,
 }
 impl TryFrom<f64> for SurfaceTypeMsfs {
     type Error = u32;
@@ -109,8 +117,15 @@ impl TryFrom<f64> for SurfaceTypeMsfs {
             22 => Ok(SurfaceTypeMsfs::Shale),
             23 => Ok(SurfaceTypeMsfs::Tarmac),
             24 => Ok(SurfaceTypeMsfs::WrightFlyerTrack),
+            26 => Ok(SurfaceTypeMsfs::Ocean),
+            27 => Ok(SurfaceTypeMsfs::Water),
+            28 => Ok(SurfaceTypeMsfs::Pond),
+            29 => Ok(SurfaceTypeMsfs::Lake),
+            30 => Ok(SurfaceTypeMsfs::River),
+            31 => Ok(SurfaceTypeMsfs::WasteWater),
+            32 => Ok(SurfaceTypeMsfs::Paint),
             // Undocumented, but MSFS reports this occasionally
-            255 => Ok(SurfaceTypeMsfs::Macadam),
+            255 => Ok(SurfaceTypeMsfs::Unknown),
             unexpected => Err(unexpected),
         }
     }
