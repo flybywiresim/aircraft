@@ -61,6 +61,7 @@
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [A380X/FUEL] Replace MSFS fuel triggers with custom FQMS implementation - @Gurgel100 (Pascal)
 
 ## 2024.1.0
 

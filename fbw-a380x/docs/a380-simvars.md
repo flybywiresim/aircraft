@@ -1056,7 +1056,24 @@
     | 18   | {side} Inner Fwd Pump running |
     | 19   | {side} Inner Aft Pump running |
     | 20   | {side} Trim Pump running |
-    | 21-29 | Unused |
+    | 21   | (side == RIGHT) APU Pump running |
+    | 22-29 | Unused |
+
+- A32NX_FQMS_{side}_FUEL_PUMP_TARGET_STATE_WORD
+  - Arinc429<Discrete>
+  - FQMS commanded fuel pump target state word. Bit set means commanded running.
+  - {side}
+    - LEFT
+    - RIGHT
+  - Bit mapping matches `A32NX_FQMS_{side}_FUEL_PUMP_RUNNING_WORD`.
+
+- A32NX_FQMS_VALVE_TARGET_STATE_WORD_{word}
+  - Arinc429<Discrete>
+  - FQMS commanded fuel valve target state word. Bit set means commanded open.
+  - {word}
+    - 1: fuel-system indices 1-19 map to bits 11-29
+    - 2: fuel-system indices 20-38 map to bits 11-29
+    - 3: fuel-system indices 39-57 map to bits 11-29
 
 - A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
   - Arinc429<Kilogram>

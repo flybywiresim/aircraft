@@ -1,13 +1,24 @@
+mod fuel_control;
 mod fuel_measuring;
+mod fuel_transfer;
 
-use super::{A380FuelTankType, SetFuelLevel};
+use super::{
+    discrete_words::{bit_from_discrete_words, pack_fuel_pump_words, pack_fuel_valve_words},
+    fuel_quantity_data_concentrator::FuelQuantityDataConcentrator,
+    A380FuelPump, A380FuelTankType, A380FuelValve, FuelPumpStatus, SetFuelControlState,
+    SetFuelLevel,
+};
 use crate::{
-    fuel::{ArincFuelPumpStatusProvider, FuelQuantityDataConcentrator},
+    fuel::{
+        cpiom_f::fuel_control::FuelControlApplication, ArincFuelPumpStatusProvider,
+        ArincFuelValveStatusProvider,
+    },
     systems::simulation::SimulationElement,
 };
 use bitflags::{bitflags, Flags};
-use enum_map::Enum;
+use enum_map::{enum_map, Enum, EnumMap};
 use fuel_measuring::FuelMeasuringApplication;
+use fuel_transfer::FuelTransferApplication;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
 use std::{collections::HashMap, time::Duration};
@@ -17,7 +28,8 @@ use systems::{
     pneumatic::EngineState,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, Resolution,
+        ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        LgciuWeightOnWheels, Resolution,
     },
     simulation::{
         InitContext, Read, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -25,8 +37,8 @@ use systems::{
     },
 };
 use uom::si::{
-    f64::{Mass, Power, Ratio, Velocity},
-    mass::kilogram,
+    f64::{Length, Mass, Power, Ratio, Velocity},
+    mass::{kilogram, pound},
     power::watt,
     ratio::percent,
     velocity::knot,
@@ -39,6 +51,31 @@ const FEED_TANKS: [A380FuelTankType; 4] = [
     A380FuelTankType::FeedFour,
 ];
 
+const WING_TANKS: [A380FuelTankType; 6] = [
+    A380FuelTankType::LeftOuter,
+    A380FuelTankType::RightOuter,
+    A380FuelTankType::LeftMid,
+    A380FuelTankType::RightMid,
+    A380FuelTankType::LeftInner,
+    A380FuelTankType::RightInner,
+];
+
+const INNER_TANKS: [A380FuelTankType; 2] =
+    [A380FuelTankType::LeftInner, A380FuelTankType::RightInner];
+const MID_TANKS: [A380FuelTankType; 2] = [A380FuelTankType::LeftMid, A380FuelTankType::RightMid];
+const OUTER_TANKS: [A380FuelTankType; 2] =
+    [A380FuelTankType::LeftOuter, A380FuelTankType::RightOuter];
+
+const TRIM_TANK: A380FuelTankType = A380FuelTankType::Trim;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+enum TankMode {
+    #[default]
+    None,
+    Source,
+    Target,
+}
+
 #[derive(Clone, Copy)]
 enum ModeSelect {
     AutoRefuel,
@@ -46,6 +83,96 @@ enum ModeSelect {
     _ManualRefuel,
     _Defuel,
     _Transfer,
+}
+
+trait FuelQuantityProvider {
+    fn get_tank_quantity(&self, tank: A380FuelTankType) -> Mass;
+    fn get_tank_capacity(&self, tank: A380FuelTankType) -> Mass;
+
+    fn get_feed_tank_quantities(&self) -> [Mass; 4] {
+        FEED_TANKS.map(|t| self.get_tank_quantity(t))
+    }
+
+    /// Returns if the specified tank is empty
+    fn tank_empty(&self, tank: A380FuelTankType) -> bool {
+        self.get_tank_quantity(tank).get::<pound>() < 20.
+    }
+
+    fn tanks_empty(&self, tanks: impl IntoIterator<Item = A380FuelTankType>) -> bool {
+        tanks.into_iter().all(|tank| self.tank_empty(tank))
+    }
+
+    /// Returns if the specified tank is full
+    fn tank_full(&self, tank: A380FuelTankType) -> bool {
+        (self.get_tank_quantity(tank) - self.get_tank_capacity(tank)).abs()
+            <= Mass::new::<pound>(20.)
+    }
+
+    fn tanks_full(&self, tanks: impl IntoIterator<Item = A380FuelTankType>) -> bool {
+        tanks.into_iter().all(|tank| self.tank_full(tank))
+    }
+
+    /// Sums the quantities of the given tanks
+    fn sum_tanks(&self, tanks: impl IntoIterator<Item = A380FuelTankType>) -> Mass {
+        tanks.into_iter().map(|t| self.get_tank_quantity(t)).sum()
+    }
+}
+
+trait TransferGalleryConnections {
+    fn set_forward_gallery_modes(
+        &mut self,
+        modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
+    );
+    fn set_aft_gallery_modes(
+        &mut self,
+        modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
+    );
+    fn is_forward_gallery_usable(&self) -> bool;
+    fn is_aft_gallery_usable(&self) -> bool;
+}
+
+#[derive(Default)]
+struct TransferGalleryTankConnections {
+    forward_gallery: EnumMap<A380FuelTankType, TankMode>,
+    aft_gallery: EnumMap<A380FuelTankType, TankMode>,
+    forward_gallery_in_use: bool,
+    aft_gallery_in_use: bool,
+}
+impl TransferGalleryTankConnections {
+    fn set_gallery_modes(
+        gallery: &mut EnumMap<A380FuelTankType, TankMode>,
+        modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
+    ) -> bool {
+        modes.into_iter().fold(false, |assigned, (tank, mode)| {
+            gallery[tank] = mode;
+            assigned || !matches!(mode, TankMode::None)
+        })
+    }
+}
+impl TransferGalleryConnections for TransferGalleryTankConnections {
+    fn set_forward_gallery_modes(
+        &mut self,
+        modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
+    ) {
+        debug_assert!(!self.forward_gallery_in_use);
+        self.forward_gallery_in_use = Self::set_gallery_modes(&mut self.forward_gallery, modes);
+    }
+
+    fn set_aft_gallery_modes(
+        &mut self,
+        modes: impl IntoIterator<Item = (A380FuelTankType, TankMode)>,
+    ) {
+        debug_assert!(!self.aft_gallery_in_use);
+        self.aft_gallery_in_use = Self::set_gallery_modes(&mut self.aft_gallery, modes);
+    }
+
+    fn is_forward_gallery_usable(&self) -> bool {
+        !self.forward_gallery_in_use
+    }
+
+    fn is_aft_gallery_usable(&self) -> bool {
+        !self.aft_gallery_in_use
+    }
 }
 
 #[derive(Deserialize)]
@@ -641,7 +768,18 @@ pub(super) struct A380FuelQuantityManagementSystem {
     fuel_measuring_application: FuelMeasuringApplication,
     refuel_application: RefuelApplication,
     integrated_refuel_panel: IntegratedRefuelPanel,
+    fuel_transfer_application: FuelTransferApplication,
+    fuel_control_application: FuelControlApplication,
 
+    fuel_valve_target_state_ids: [VariableIdentifier; 3],
+    fuel_valve_target_state_words: [Arinc429Word<u32>; 3],
+    fuel_valve_open_ids: [VariableIdentifier; 3],
+    fuel_valve_closed_ids: [VariableIdentifier; 3],
+    fuel_valve_open_words: [Arinc429Word<u32>; 3],
+    fuel_valve_closed_words: [Arinc429Word<u32>; 3],
+
+    fuel_pump_target_state_ids: [VariableIdentifier; 2],
+    fuel_pump_target_state_words: [Arinc429Word<u32>; 2],
     fuel_pump_running_word_id: [VariableIdentifier; 2],
     fuel_pump_running_words: [Arinc429Word<u32>; 2],
 
@@ -652,6 +790,8 @@ pub(super) struct A380FuelQuantityManagementSystem {
     fms_zero_fuel_weights: [Option<Mass>; 2],
     fms_zero_fuel_weight_cg_ids: [VariableIdentifier; 2],
     fms_zero_fuel_weight_cgs: [Option<Ratio>; 2],
+    fms_remaining_time_ids: [VariableIdentifier; 2],
+    fms_remaining_times: [Option<Duration>; 2],
 
     // Output ARINC 429 backup signals (only outputed by CPIOM-F3 and CPIOM-F4)
     // TODO: currently we output the values from all FQMS' as it would be one
@@ -681,6 +821,23 @@ impl A380FuelQuantityManagementSystem {
                 ElectricalBusType::DirectCurrentNamed("502PP"),
             ),
 
+            fuel_transfer_application: FuelTransferApplication::new(),
+            fuel_control_application: FuelControlApplication::new(),
+
+            fuel_valve_target_state_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_TARGET_STATE_WORD_{i}"))),
+            fuel_valve_target_state_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+            fuel_valve_open_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_OPEN_WORD_{i}"))),
+            fuel_valve_closed_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_CLOSED_WORD_{i}"))),
+            fuel_valve_open_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+            fuel_valve_closed_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+
+            fuel_pump_target_state_ids: ["LEFT", "RIGHT"].map(|side| {
+                context.get_identifier(format!("FQMS_{side}_FUEL_PUMP_TARGET_STATE_WORD"))
+            }),
+            fuel_pump_target_state_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 2],
             fuel_pump_running_word_id: ["LEFT", "RIGHT"]
                 .map(|side| context.get_identifier(format!("FQMS_{side}_FUEL_PUMP_RUNNING_WORD"))),
             fuel_pump_running_words: Default::default(),
@@ -693,6 +850,9 @@ impl A380FuelQuantityManagementSystem {
             fms_zero_fuel_weight_cg_ids: [1, 2]
                 .map(|id| context.get_identifier(format!("FM{id}_ZERO_FUEL_WEIGHT_CG"))),
             fms_zero_fuel_weight_cgs: Default::default(),
+            fms_remaining_time_ids: [1, 2]
+                .map(|id| context.get_identifier(format!("FM{id}_REMAINING_FLIGHT_TIME"))),
+            fms_remaining_times: Default::default(),
 
             fuel_tank_quantities_id: A380FuelTankType::iterator()
                 .map(|tank| context.get_identifier(format!("FQMS_{tank}_QUANTITY")))
@@ -711,10 +871,11 @@ impl A380FuelQuantityManagementSystem {
     pub(super) fn update(
         &mut self,
         context: &UpdateContext,
-        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload + FuelPumpStatus + SetFuelControlState),
         loadsheet: &LoadsheetInfo,
         fqdcs: &[FuelQuantityDataConcentrator; 2],
         cpioms_available: [bool; 4],
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) {
         // Currently this is excluded from the powered check to support
         // the current "legacy" refuel system implementation.
@@ -744,21 +905,86 @@ impl A380FuelQuantityManagementSystem {
             selected_fqdc.get_left_fuel_pump_running_word(),
             selected_fqdc.get_right_fuel_pump_running_word(),
         ];
+        self.fuel_valve_open_words = selected_fqdc.get_fuel_valve_open_words();
+        self.fuel_valve_closed_words = selected_fqdc.get_fuel_valve_closed_words();
 
         let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
         let (fms_zfwcg, flags2) = Self::get_fms_data_and_status(self.fms_zero_fuel_weight_cgs);
-        self.fqms_status_word = flags1 | flags2;
+        let (fms_remaining_flight_time, flags3) =
+            Self::get_fms_data_and_status(self.fms_remaining_times);
+        self.fqms_status_word = flags1 | flags2 | flags3;
 
         self.fuel_measuring_application
             .update(loadsheet, selected_fqdc, fms_zfw, fms_zfwcg);
+
+        // TODO: should come from the LGERS via AFDX
+        // TODO: are the transfers enabled if the LGERS are inop?
+        let is_on_ground = lgcius
+            .iter()
+            .any(|lgciu| lgciu.left_and_right_gear_compressed(false));
+
+        // Automatic transfers are disabled on the ground or when the fuel quantity
+        // in one feed tank is not available, or more than one tank are not available
+        let automatic_transfer_available = !is_on_ground
+            && !self.integrated_refuel_panel.refuel_is_enabled(context)
+            && self.fuel_measuring_application.all_feed_tanks_valid()
+            && self
+                .fuel_measuring_application
+                .unavailable_tank_quantity_count()
+                < 2;
+
+        if automatic_transfer_available {
+            self.fuel_transfer_application.update(
+                &self.fuel_measuring_application,
+                self.fuel_measuring_application.total_fuel_onboard(),
+                self.fuel_measuring_application.total_aircraft_weight(),
+                self.fuel_measuring_application.center_of_gravity(),
+                fms_remaining_flight_time,
+            );
+        } else {
+            self.fuel_transfer_application.reset();
+        }
+
+        self.fuel_control_application
+            .update(self.fuel_transfer_application.gallery_connections());
+
+        let fuel_pump_commands = self.fuel_control_application.fuel_pump_requested_running();
+        let fuel_valve_commands = self.fuel_control_application.fuel_valve_requested_open();
+
+        self.fuel_pump_target_state_words =
+            pack_fuel_pump_words(SignStatus::NormalOperation, |pump| fuel_pump_commands[pump]);
+        self.fuel_valve_target_state_words =
+            pack_fuel_valve_words(SignStatus::NormalOperation, |valve| {
+                fuel_valve_commands[valve]
+            });
+        self.apply_fuel_control(fuel_system, fuel_pump_commands, fuel_valve_commands);
     }
 
     fn reset(&mut self) {
         self.fuel_measuring_application.reset();
+        self.fuel_pump_target_state_words = Default::default();
         self.fuel_pump_running_words = Default::default();
+        self.fuel_valve_target_state_words = Default::default();
+        self.fuel_valve_open_words = Default::default();
+        self.fuel_valve_closed_words = Default::default();
         self.fms_zero_fuel_weights = Default::default();
         self.fms_zero_fuel_weight_cgs = Default::default();
         self.fqms_status_word = Default::default();
+    }
+
+    fn apply_fuel_control(
+        &self,
+        fuel_system: &mut impl SetFuelControlState,
+        fuel_pump_commands: EnumMap<A380FuelPump, bool>,
+        fuel_valve_commands: EnumMap<A380FuelValve, bool>,
+    ) {
+        for (pump, running) in fuel_pump_commands {
+            fuel_system.set_fuel_pump_command(pump, running);
+        }
+
+        for (valve, open) in fuel_valve_commands {
+            fuel_system.set_fuel_valve_command(valve, open);
+        }
     }
 
     #[expect(dead_code)]
@@ -843,6 +1069,14 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
         {
             *zfwcg = reader.read_arinc429(id).normal_value();
         }
+
+        for (id, time_remaining) in self
+            .fms_remaining_time_ids
+            .iter()
+            .zip(&mut self.fms_remaining_times)
+        {
+            *time_remaining = reader.read_arinc429(id).normal_value();
+        }
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -885,13 +1119,33 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
             );
         }
 
-        // Forwarded values from FQDC
+        for (id, word) in self
+            .fuel_pump_target_state_ids
+            .iter()
+            .zip(&self.fuel_pump_target_state_words)
+        {
+            self.write_arinc429(writer, id, word.normal_value(), is_powered);
+        }
         for (id, word) in self
             .fuel_pump_running_word_id
             .iter()
             .zip(&self.fuel_pump_running_words)
         {
             self.write_arinc429(writer, id, word.normal_value(), is_powered);
+        }
+        for (id, value) in self
+            .fuel_valve_target_state_ids
+            .iter()
+            .chain(&self.fuel_valve_open_ids)
+            .chain(&self.fuel_valve_closed_ids)
+            .zip(
+                self.fuel_valve_target_state_words
+                    .iter()
+                    .chain(&self.fuel_valve_open_words)
+                    .chain(&self.fuel_valve_closed_words),
+            )
+        {
+            writer.write(id, *value);
         }
 
         self.write_arinc429_bitflags(
@@ -901,4 +1155,8 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
             is_powered,
         );
     }
+}
+
+fn tanks_balanced(tank1: Mass, tank2: Mass) -> bool {
+    (tank1 - tank2).abs().get::<kilogram>() < 10.
 }
