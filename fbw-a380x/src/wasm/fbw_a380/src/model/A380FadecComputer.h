@@ -89,6 +89,7 @@ class A380FadecComputer final
     boolean_T Logic_table_n[16];
     boolean_T Logic_table_h[16];
     boolean_T Constant_Value;
+    boolean_T Constant4_Value;
     boolean_T Constant3_Value;
   };
 

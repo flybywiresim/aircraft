@@ -6,7 +6,7 @@
 class A380PrimComputerGeneralLogic final
 {
  public:
-  struct rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T {
+  struct rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T {
     real_T timeSinceCondition;
     boolean_T output;
   };
@@ -24,13 +24,13 @@ class A380PrimComputerGeneralLogic final
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T sf_MATLABFunction_m;
-    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T sf_MATLABFunction_lf;
-    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T sf_MATLABFunction_j;
+    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T sf_MATLABFunction_mm;
+    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T sf_MATLABFunction_lf;
+    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T sf_MATLABFunction_j;
     rtDW_MATLABFunction_A380PrimComputerGeneralLogic_l_T sf_MATLABFunction_id;
     rtDW_MATLABFunction_A380PrimComputerGeneralLogic_l_T sf_MATLABFunction_h;
-    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T sf_MATLABFunction_i;
-    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T sf_MATLABFunction;
+    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T sf_MATLABFunction_i4;
+    rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T sf_MATLABFunction_d;
   };
 
   struct ExternalInputs_A380PrimComputerGeneralLogic_T {
@@ -68,6 +68,10 @@ class A380PrimComputerGeneralLogic final
     real_T BitfromLabel4_bit_h;
     real_T BitfromLabel5_bit_l;
     real_T BitfromLabel7_bit_l;
+    real_T BitfromLabel3_bit_n;
+    real_T BitfromLabel2_bit_p;
+    real_T BitfromLabel4_bit_f;
+    real_T BitfromLabel1_bit_h;
     real_T HysteresisNode2_highTrigger;
     real_T HysteresisNode3_highTrigger;
     real_T HysteresisNode2_lowTrigger;
@@ -117,16 +121,16 @@ class A380PrimComputerGeneralLogic final
  private:
   D_Work_A380PrimComputerGeneralLogic_T A380PrimComputerGeneralLogic_DWork;
   static Parameters_A380PrimComputerGeneralLogic_T A380PrimComputerGeneralLogic_P;
-  static void A380PrimComputerGeneralLogic_MATLABFunction_Reset(rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T
+  static void A380PrimComputerGeneralLogic_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380PrimComputerGeneralLogic_MATLABFunction_g_Reset(rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T
     *localDW);
-  static void A380PrimComputerGeneralLogic_MATLABFunction(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge,
-    real_T rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerGeneralLogic_T *localDW);
+  static void A380PrimComputerGeneralLogic_MATLABFunction_d(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge,
+    real_T rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerGeneralLogic_h_T *localDW);
   static void A380PrimComputerGeneralLogic_MATLABFunction_f_Reset(rtDW_MATLABFunction_A380PrimComputerGeneralLogic_l_T
     *localDW);
   static void A380PrimComputerGeneralLogic_MATLABFunction_h(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger,
     boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerGeneralLogic_l_T *localDW);
   static void A380PrimComputerGeneralLogic_MATLABFunction_a(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380PrimComputerGeneralLogic_MATLABFunction_b(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
 };
 
 #endif

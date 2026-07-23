@@ -2838,6 +2838,31 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
   // update reverser thrust limit
   idAutothrustThrustLimitREV->set(idAutothrustThrustLimitTOGA->get() * autothrustThrustLimitReversePercentageToga);
 
+  bool engineRunning = false;
+  real_T engine_N1_percent = 0.;
+  real_T commanded_engine_N1_percent = 0.;
+  if (fadecIndex == 0) {
+    engineRunning = simData.engine_combustion_1;
+    engine_N1_percent = simData.engine_N1_1_percent;
+    commanded_engine_N1_percent =
+        simData.commanded_engine_N1_1_percent + simData.engine_N1_1_percent - simData.corrected_engine_N1_1_percent;
+  } else if (fadecIndex == 1) {
+    engineRunning = simData.engine_combustion_2;
+    engine_N1_percent = simData.engine_N1_2_percent;
+    commanded_engine_N1_percent =
+        simData.commanded_engine_N1_2_percent + simData.engine_N1_2_percent - simData.corrected_engine_N1_2_percent;
+  } else if (fadecIndex == 2) {
+    engineRunning = simData.engine_combustion_3;
+    engine_N1_percent = simData.engine_N1_3_percent;
+    commanded_engine_N1_percent =
+        simData.commanded_engine_N1_3_percent + simData.engine_N1_3_percent - simData.corrected_engine_N1_3_percent;
+  } else {
+    engineRunning = simData.engine_combustion_4;
+    engine_N1_percent = simData.engine_N1_4_percent;
+    commanded_engine_N1_percent =
+        simData.commanded_engine_N1_4_percent + simData.engine_N1_4_percent - simData.corrected_engine_N1_4_percent;
+  }
+
   fadecInputs[fadecIndex].in.time.dt = sampleTime;
   fadecInputs[fadecIndex].in.time.simulation_time = simData.simulationTime;
 
@@ -2853,12 +2878,10 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
   fadecInputs[fadecIndex].in.data.on_ground =
       idLgciuLeftMainGearCompressed[fadecIndex]->get() && idLgciuRightMainGearCompressed[fadecIndex]->get();
   fadecInputs[fadecIndex].in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
-  fadecInputs[fadecIndex].in.data.is_engine_operative = fadecIndex == 0 ? simData.engine_combustion_1 : simData.engine_combustion_2;
-  fadecInputs[fadecIndex].in.data.commanded_engine_N1_percent =
-      fadecIndex == 0 ? simData.commanded_engine_N1_1_percent + simData.engine_N1_1_percent - simData.corrected_engine_N1_1_percent
-                      : simData.commanded_engine_N1_2_percent + simData.engine_N1_2_percent - simData.corrected_engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.is_engine_operative = engineRunning;
+  fadecInputs[fadecIndex].in.data.commanded_engine_N1_percent = commanded_engine_N1_percent;
   fadecInputs[fadecIndex].in.data.engine_N2_percent = 0;
-  fadecInputs[fadecIndex].in.data.engine_N1_percent = fadecIndex == 0 ? simData.engine_N1_1_percent : simData.engine_N1_2_percent;
+  fadecInputs[fadecIndex].in.data.engine_N1_percent = engine_N1_percent;
   fadecInputs[fadecIndex].in.data.TAT_degC = simData.total_air_temperature_celsius;
   fadecInputs[fadecIndex].in.data.OAT_degC = simData.ambient_temperature_celsius;
 

@@ -1007,6 +1007,7 @@ struct base_eec
   base_arinc_429 ecu_status_word_1;
   base_arinc_429 ecu_status_word_2;
   base_arinc_429 ecu_status_word_3;
+  base_arinc_429 ecu_status_word_4;
   base_arinc_429 n1_limit_percent;
   base_arinc_429 n1_maximum_percent;
   base_arinc_429 n1_command_percent;
@@ -1084,7 +1085,7 @@ struct base_prim_general_logic_outputs
   boolean_T slats_locked;
   boolean_T flaps_locked;
   boolean_T landing_gear_down;
-  boolean_T one_engine_out;
+  boolean_T engine_out;
   boolean_T engine_running;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;

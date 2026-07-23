@@ -193,6 +193,7 @@ struct base_eec
   base_arinc_429 ecu_status_word_1;
   base_arinc_429 ecu_status_word_2;
   base_arinc_429 ecu_status_word_3;
+  base_arinc_429 ecu_status_word_4;
   base_arinc_429 n1_limit_percent;
   base_arinc_429 n1_maximum_percent;
   base_arinc_429 n1_command_percent;

@@ -152,6 +152,11 @@ A380FadecComputer::Parameters_A380FadecComputer_T A380FadecComputer::A380FadecCo
     {
       0U,
       0.0F
+    },
+
+    {
+      0U,
+      0.0F
     }
   },
 
@@ -173,6 +178,8 @@ A380FadecComputer::Parameters_A380FadecComputer_T A380FadecComputer::A380FadecCo
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
 
   false,
 

@@ -314,9 +314,9 @@ void A380FadecComputer::step()
   uint32_T rtb_v_man_kn_SSM;
   uint32_T rtb_v_max_kn_SSM;
   uint32_T rtb_v_stall_kn_SSM;
-  uint32_T rtb_y_a;
   uint32_T rtb_y_e;
-  uint32_T rtb_y_h;
+  uint32_T rtb_y_ms;
+  uint32_T rtb_y_pv;
   uint32_T rtb_yaw_fd_command_1_SSM;
   uint32_T rtb_yaw_fd_command_2_SSM;
   boolean_T rtb_VectorConcatenate[19];
@@ -1105,9 +1105,9 @@ void A380FadecComputer::step()
   rtb_BusAssignment_e_prim_input_fg_n1_command_percent.SSM = rtb_n1_command_percent_SSM;
   rtb_BusAssignment_e_prim_input_fg_n1_command_percent.Data = rtb_n1_command_percent_Data;
   A380FadecComputer_MATLABFunction_g(rtb_BusAssignment_o_prim_input_fg_ats_discrete_word,
-    A380FadecComputer_P.BitfromLabel4_bit, &rtb_y_a);
+    A380FadecComputer_P.BitfromLabel4_bit, &rtb_y_ms);
   A380FadecComputer_MATLABFunction_g(rtb_BusAssignment_o_prim_input_fg_ats_discrete_word,
-    A380FadecComputer_P.BitfromLabel5_bit, &rtb_y_h);
+    A380FadecComputer_P.BitfromLabel5_bit, &rtb_y_pv);
   A380FadecComputer_MATLABFunction_g(rtb_BusAssignment_o_prim_input_fg_ats_discrete_word,
     A380FadecComputer_P.BitfromLabel_bit_g, &rtb_y_e);
   A380FadecComputer_MATLABFunction(&rtb_BusAssignment_e_prim_input_fg_n1_command_percent, &rtb_NOT1_f);
@@ -1143,7 +1143,7 @@ void A380FadecComputer::step()
   A380FadecComputer_MATLABFunction_g(rtb_BusAssignment_o_prim_input_fg_ats_discrete_word,
     A380FadecComputer_P.BitfromLabel2_bit, &rtb_y_e);
   if (rtb_NOT1_f && (rtb_y_e != 0U) && rtb_AND && A380FadecComputer_DWork.Memory_PreviousInput_p) {
-    if ((rtb_y_a != 0U) && (rtb_y_h != 0U) && (!A380FadecComputer_U.in.data.on_ground)) {
+    if ((rtb_y_ms != 0U) && (rtb_y_pv != 0U) && (!A380FadecComputer_U.in.data.on_ground)) {
       N1_end = A380FadecComputer_U.in.input.thrust_limit_TOGA_percent;
       rtb_Switch2_idx_1 = rtb_N1c;
     } else {
@@ -1244,6 +1244,27 @@ void A380FadecComputer::step()
   rtb_VectorConcatenate[18] = A380FadecComputer_P.Constant_Value;
   A380FadecComputer_MATLABFunction_l(rtb_VectorConcatenate,
     &A380FadecComputer_Y.out.fadec_bus_output.ecu_status_word_3.Data);
+  rtb_VectorConcatenate[0] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[1] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[2] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[3] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[4] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[5] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[6] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[7] = A380FadecComputer_U.in.data.is_engine_operative;
+  rtb_VectorConcatenate[8] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[9] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[10] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[11] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[12] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[13] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[14] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[15] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[16] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[17] = A380FadecComputer_P.Constant4_Value;
+  rtb_VectorConcatenate[18] = A380FadecComputer_P.Constant4_Value;
+  A380FadecComputer_MATLABFunction_l(rtb_VectorConcatenate,
+    &A380FadecComputer_Y.out.fadec_bus_output.ecu_status_word_4.Data);
   A380FadecComputer_Y.out.fadec_bus_output.ecu_maintenance_word_6.Data = static_cast<real32_T>
     (A380FadecComputer_U.in.data.engine_N1_percent);
   rtb_VectorConcatenate[0] = A380FadecComputer_P.Constant3_Value;
@@ -1556,6 +1577,8 @@ void A380FadecComputer::step()
     (A380FadecComputer_P.EnumeratedConstant1_Value);
   A380FadecComputer_Y.out.fadec_bus_output.ecu_status_word_2.Data = A380FadecComputer_P.Constant1_Value;
   A380FadecComputer_Y.out.fadec_bus_output.ecu_status_word_3.SSM = static_cast<uint32_T>
+    (A380FadecComputer_P.EnumeratedConstant1_Value);
+  A380FadecComputer_Y.out.fadec_bus_output.ecu_status_word_4.SSM = static_cast<uint32_T>
     (A380FadecComputer_P.EnumeratedConstant1_Value);
   A380FadecComputer_Y.out.fadec_bus_output.n1_limit_percent.SSM = static_cast<uint32_T>
     (A380FadecComputer_P.EnumeratedConstant1_Value);
