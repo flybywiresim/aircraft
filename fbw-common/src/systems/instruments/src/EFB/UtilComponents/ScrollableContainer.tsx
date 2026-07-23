@@ -39,16 +39,20 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const position = useRef({ top: 0, y: 0 });
+  const scrollButtonSpace = 3;
 
   useEffect(() => {
     if (contentRef.current) {
-      if (contentRef.current.clientHeight > height * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const scrollButtonSpaceInPixels = scrollButtons ? scrollButtonSpace * rootFontSize : 0;
+
+      if (contentRef.current.clientHeight > height * rootFontSize - scrollButtonSpaceInPixels) {
         setContentOverflows(true);
       } else {
         setContentOverflows(false);
       }
     }
-  }, [children]);
+  }, [children, height, scrollButtons]);
 
   const handleMouseDown = (event: React.MouseEvent) => {
     position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
@@ -86,10 +90,13 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
     containerRef.current?.scrollBy({ top: scrollAmount, behavior: 'smooth' });
   };
 
+  const showScrollButtons = scrollButtons && contentOverflows;
+  const scrollableHeight = showScrollButtons ? `calc(${height}rem - ${scrollButtonSpace}rem)` : `${height}rem`;
+
   const scrollableDiv = (
     <div
-      className={`scrollbar w-full overflow-y-auto ${className}`}
-      style={nonRigid ? { maxHeight: `${height}rem` } : { height: `${height}rem` }}
+      className={`scrollbar w-full overflow-y-auto ${showScrollButtons ? 'my-6' : ''} ${className}`}
+      style={nonRigid ? { maxHeight: scrollableHeight } : { height: scrollableHeight }}
       ref={containerRef}
       onScroll={(event) => {
         if (timeout.current) {
@@ -112,9 +119,9 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
     </div>
   );
 
-  if (scrollButtons && contentOverflows) {
+  if (showScrollButtons) {
     return (
-      <div className="relative w-full">
+      <div className="relative flow-root w-full">
         <button
           type="button"
           aria-label="Scroll up"
