@@ -94,8 +94,8 @@ class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolea
         class={{ HiddenElement: this.visible.map(SubscribableMapFunctions.not()) }}
         id="HorizonHeadingBug"
       >
-        <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
-        <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+        <path class="ThickOutline" d="m68.906 80.823v-7" />
+        <path class="ThickStroke Cyan" d="m68.906 80.823v-7" />
       </g>
     );
   }
