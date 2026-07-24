@@ -1,6 +1,6 @@
 #include "A380PrimComputerFg.h"
 
-struct_uZPwD8RWSgGMkipRB6vpb rtP_prim_fg_mode_logic_output_MATLABStruct{
+struct_W3yGMdfnPPSl8IlK28v23B rtP_prim_fg_mode_logic_output_MATLABStruct{
   {
     0.0,
     false,
@@ -19,6 +19,7 @@ struct_uZPwD8RWSgGMkipRB6vpb rtP_prim_fg_mode_logic_output_MATLABStruct{
 
   {
     0.0,
+    false,
     false,
     false,
     false,
@@ -164,6 +165,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   13.0,
   14.0,
   24.0,
+  25.0,
   26.0,
   18.0,
   15.0,
@@ -222,7 +224,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.16,
   400.0,
   40.0,
-  50.0,
+  100.0,
+  100.0,
   250.0,
   250.0,
   0.0,
@@ -420,6 +423,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   250.0F,
   40.0F,
   0.0F,
+  50.0F,
   0.0F,
   0.0F,
   24.0F,
@@ -582,6 +586,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   false,
   false,
   false,
+  false,
   true,
   true,
   true,
@@ -672,6 +677,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   true,
   false,
   false,
+  true,
   true,
   false,
   false,
@@ -3768,6 +3774,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         false,
         false,
         false,
+        false,
         false
       },
 
@@ -4552,6 +4559,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.0,
   0.0,
   0.0,
+  0.0,
+  0.0,
   360.0,
   360.0,
   -2.0,
@@ -4654,6 +4663,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

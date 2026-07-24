@@ -999,6 +999,7 @@ struct base_prim_longitudinal_modes
   boolean_T fpa_active;
   boolean_T alt_acq_active;
   boolean_T alt_hold_active;
+  boolean_T alt_hold_vs_submode_active;
   boolean_T gs_capt_active;
   boolean_T gs_trk_active;
   boolean_T app_des_active;
@@ -1408,10 +1409,10 @@ struct struct_SypABsMe64R9KOFl2RjNgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_uZPwD8RWSgGMkipRB6vpb_
-#define DEFINED_TYPEDEF_FOR_struct_uZPwD8RWSgGMkipRB6vpb_
+#ifndef DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
+#define DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
 
-struct struct_uZPwD8RWSgGMkipRB6vpb
+struct struct_W3yGMdfnPPSl8IlK28v23B
 {
   base_prim_lateral_modes lateral_modes;
   base_prim_longitudinal_modes longitudinal_modes;

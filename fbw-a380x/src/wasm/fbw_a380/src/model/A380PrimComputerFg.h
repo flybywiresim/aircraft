@@ -5,7 +5,7 @@
 #include "A380FgOuterLoops.h"
 
 extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
-extern struct_uZPwD8RWSgGMkipRB6vpb rtP_prim_fg_mode_logic_output_MATLABStruct;
+extern struct_W3yGMdfnPPSl8IlK28v23B rtP_prim_fg_mode_logic_output_MATLABStruct;
 class A380PrimComputerFg final
 {
  public:
@@ -121,6 +121,7 @@ class A380PrimComputerFg final
     boolean_T Memory_PreviousInput_l1;
     boolean_T Memory_PreviousInput_e0;
     boolean_T Memory_PreviousInput_oz;
+    boolean_T Memory_PreviousInput_hw;
     boolean_T Memory_PreviousInput_og;
     boolean_T Memory_PreviousInput_oy;
     boolean_T Memory_PreviousInput_j;
@@ -245,6 +246,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kv;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_os;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_je;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nab;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_d0;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_bc;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_fb;
@@ -398,6 +400,7 @@ class A380PrimComputerFg final
     real_T BitfromLabel2_bit_jq;
     real_T BitfromLabel1_bit_f;
     real_T BitfromLabel1_bit_c;
+    real_T BitfromLabel4_bit_h;
     real_T BitfromLabel6_bit;
     real_T BitfromLabel4_bit_m;
     real_T BitfromLabel2_bit_l;
@@ -456,12 +459,13 @@ class A380PrimComputerFg final
     real_T CompareToConstant1_const_n;
     real_T CompareToConstant_const_i;
     real_T CompareToConstant_const_jk;
+    real_T CompareToConstant2_const_a;
     real_T CompareToConstant1_const_p;
     real_T CompareToConstant_const_n2;
     real_T CompareToConstant2_const_mi;
     real_T CompareToConstant_const_c;
     real_T CompareToConstant1_const_cg;
-    real_T CompareToConstant2_const_a;
+    real_T CompareToConstant2_const_ay;
     real_T CompareToConstant2_const_k;
     real_T CompareToConstant2_const_nt;
     real_T CompareToConstant_const_o;
@@ -654,6 +658,7 @@ class A380PrimComputerFg final
     real32_T CompareToConstant1_const_j;
     real32_T CompareToConstant_const_oj;
     real32_T CompareToConstant2_const_e;
+    real32_T CompareToConstant3_const_br;
     real32_T CompareToConstant1_const_hc;
     real32_T CompareToConstant2_const_pq;
     real32_T CompareToConstant_const_mj;
@@ -790,6 +795,7 @@ class A380PrimComputerFg final
     boolean_T SRFlipFlop_initial_condition_jn;
     boolean_T SRFlipFlop_initial_condition_i;
     boolean_T SRFlipFlop1_initial_condition_n;
+    boolean_T SRFlipFlop2_initial_condition;
     boolean_T SRFlipFlop1_initial_condition_c;
     boolean_T SRFlipFlop_initial_condition_p;
     boolean_T SRFlipFlop_initial_condition_a;
@@ -804,7 +810,7 @@ class A380PrimComputerFg final
     boolean_T SRFlipFlop1_initial_condition_fn;
     boolean_T SRFlipFlop_initial_condition_jq;
     boolean_T SRFlipFlop1_initial_condition_d;
-    boolean_T SRFlipFlop2_initial_condition;
+    boolean_T SRFlipFlop2_initial_condition_e;
     boolean_T SRFlipFlop1_initial_condition_jg;
     boolean_T SRFlipFlop_initial_condition_pb;
     boolean_T SRFlipFlop_initial_condition_mv;
@@ -907,6 +913,7 @@ class A380PrimComputerFg final
     boolean_T ConfirmNode_isRisingEdge_c;
     boolean_T ConfirmNode_isRisingEdge_gx;
     boolean_T ConfirmNode_isRisingEdge_ne;
+    boolean_T PulseNode_isRisingEdge_nr;
     boolean_T ConfirmNode_isRisingEdge_l;
     boolean_T PulseNode3_isRisingEdge_f;
     boolean_T PulseNode4_isRisingEdge_k;
@@ -997,9 +1004,11 @@ class A380PrimComputerFg final
     real_T Y_Y0_h;
     real_T Constant_Value_h;
     real_T Y_Y0_i;
+    real_T Constant6_Value;
     real_T Switch7_Threshold;
     real_T Switch8_Threshold;
     real_T Y_Y0_j;
+    real_T Constant6_Value_o;
     real_T Switch7_Threshold_g;
     real_T Switch8_Threshold_m;
     real_T Constant_Value_i;
@@ -1109,6 +1118,7 @@ class A380PrimComputerFg final
     boolean_T Logic_table_hk[16];
     boolean_T Logic_table_f[16];
     boolean_T Logic_table_pi[16];
+    boolean_T Logic_table_j[16];
     boolean_T Constant_Value_h2;
     boolean_T Logic_table_bw[16];
     boolean_T Logic_table_nb[16];
@@ -1131,7 +1141,7 @@ class A380PrimComputerFg final
     boolean_T Logic_table_bk[16];
     boolean_T Logic_table_lp[16];
     boolean_T Logic_table_ho[16];
-    boolean_T Logic_table_j[16];
+    boolean_T Logic_table_jv[16];
     boolean_T Logic_table_ja[16];
     boolean_T Logic_table_e[16];
     boolean_T Logic_table_fj[16];
