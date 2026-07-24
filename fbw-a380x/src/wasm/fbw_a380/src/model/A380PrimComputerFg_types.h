@@ -556,6 +556,19 @@ enum class a380_athr_fma_message
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -587,19 +600,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -1421,80 +1421,6 @@ enum class SignStatusMatrix
   NoComputedData,
   FunctionalTest,
   NormalOperation
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
-#define DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
-
-struct struct_W3yGMdfnPPSl8IlK28v23B
-{
-  base_prim_lateral_modes lateral_modes;
-  base_prim_longitudinal_modes longitudinal_modes;
-  base_prim_armed_modes armed_modes;
-  lateral_law active_lateral_law;
-  vertical_law active_longitudinal_law;
-  boolean_T auto_spd_control_active;
-  boolean_T manual_spd_control_active;
-  boolean_T mach_control_active;
-  boolean_T athr_active;
-  boolean_T athr_limited;
-  boolean_T alpha_floor_mode_active;
-  boolean_T thrust_mode_active;
-  boolean_T thrust_target_idle;
-  boolean_T speed_mach_mode_active;
-  boolean_T retard_mode_active;
-  a380_athr_fma_mode athr_fma_mode;
-  a380_athr_fma_message athr_fma_message;
-  real_T spd_target_kts;
-  real_T pfd_spd_target_kts;
-  real_T short_term_managed_spd_kts;
-  boolean_T short_term_managed_spd_visible;
-  boolean_T alt_cstr_applicable;
-  real_T alt_sel_or_cstr;
-  boolean_T mode_sync_active;
-  boolean_T any_ap_fd_engaged;
-  boolean_T any_lateral_mode_engaged;
-  boolean_T any_longitudinal_mode_engaged;
-  boolean_T lateral_mode_reset;
-  boolean_T longitudinal_mode_reset;
-  boolean_T hdg_trk_preset_available;
-  boolean_T alt_soft_mode_active;
-  boolean_T fd_auto_disengage;
-  boolean_T ap_fd_mode_reversion;
-  boolean_T lateral_mode_reversion;
-  boolean_T longitudinal_mode_reversion_vs;
-  boolean_T longitudinal_mode_reversion_op_clb;
-  boolean_T pitch_fd_bars_flashing;
-  boolean_T roll_fd_bars_flashing;
-  boolean_T loc_bc_selection;
-  boolean_T vs_target_not_held;
-  real_T tcas_vs_target;
-  boolean_T tcas_ra_corrective;
-  tcas_submode active_tcas_submode;
-  boolean_T tcas_alt_acq_cond;
-  boolean_T tcas_alt_hold_cond;
-  boolean_T tcas_ra_inhibited;
-  boolean_T trk_fpa_deselected;
-  boolean_T longi_large_box_tcas;
-  boolean_T land_2_capability;
-  boolean_T land_3_fail_passive_capability;
-  boolean_T land_3_fail_op_capability;
-  boolean_T land_2_inop;
-  boolean_T land_3_fail_passive_inop;
-  boolean_T land_3_fail_op_inop;
-  boolean_T tla_to_ga_set;
-  boolean_T true_active;
-  boolean_T trk_fpa_active;
-  boolean_T metric_alt_active;
-  boolean_T selected_spd_mach;
-  boolean_T spd_mach_dashes;
-  boolean_T selected_hdg_trk;
-  boolean_T hdg_trk_dashes;
-  boolean_T selected_alt;
-  boolean_T selected_vs_fpa;
-  boolean_T vs_fpa_dashes;
 };
 
 #endif

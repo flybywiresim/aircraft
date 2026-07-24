@@ -5,7 +5,6 @@
 #include "A380FgOuterLoops.h"
 
 extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
-extern struct_W3yGMdfnPPSl8IlK28v23B rtP_prim_fg_mode_logic_output_MATLABStruct;
 class A380PrimComputerFg final
 {
  public:
@@ -120,8 +119,8 @@ class A380PrimComputerFg final
     boolean_T Memory_PreviousInput_ek;
     boolean_T Memory_PreviousInput_l1;
     boolean_T Memory_PreviousInput_e0;
-    boolean_T Memory_PreviousInput_oz;
     boolean_T Memory_PreviousInput_hw;
+    boolean_T Memory_PreviousInput_oz;
     boolean_T Memory_PreviousInput_og;
     boolean_T Memory_PreviousInput_oy;
     boolean_T Memory_PreviousInput_j;
@@ -199,7 +198,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lth;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_a0p;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_d4;
-    rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ep;
+    rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ep5;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_dxb;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_llo;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dth;
@@ -246,9 +245,11 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kv;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_os;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_je;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_on;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nab;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_d0;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_bc;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ep;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_fb;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ed;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_lx;
@@ -457,10 +458,13 @@ class A380PrimComputerFg final
     real_T CompareToConstant1_const_g;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant1_const_n;
+    real_T CompareToConstant1_const_m;
     real_T CompareToConstant_const_i;
     real_T CompareToConstant_const_jk;
     real_T CompareToConstant2_const_a;
+    real_T CompareToConstant4_const_l;
     real_T CompareToConstant1_const_p;
+    real_T CompareToConstant5_const_o;
     real_T CompareToConstant_const_n2;
     real_T CompareToConstant2_const_mi;
     real_T CompareToConstant_const_c;
@@ -667,7 +671,7 @@ class A380PrimComputerFg final
     real32_T CompareToConstant3_const_l;
     real32_T CompareToConstant_const_bx;
     real32_T CompareToConstant2_const_kg;
-    real32_T CompareToConstant1_const_m;
+    real32_T CompareToConstant1_const_mh;
     real32_T CompareToConstant3_const_e;
     real32_T CompareToConstant12_const;
     real32_T CompareToConstant14_const;
@@ -794,8 +798,8 @@ class A380PrimComputerFg final
     boolean_T SRFlipFlop1_initial_condition_g;
     boolean_T SRFlipFlop_initial_condition_jn;
     boolean_T SRFlipFlop_initial_condition_i;
-    boolean_T SRFlipFlop1_initial_condition_n;
     boolean_T SRFlipFlop2_initial_condition;
+    boolean_T SRFlipFlop1_initial_condition_n;
     boolean_T SRFlipFlop1_initial_condition_c;
     boolean_T SRFlipFlop_initial_condition_p;
     boolean_T SRFlipFlop_initial_condition_a;
@@ -911,15 +915,17 @@ class A380PrimComputerFg final
     boolean_T ConfirmNode_isRisingEdge_f;
     boolean_T ConfirmNode_isRisingEdge_jx;
     boolean_T ConfirmNode_isRisingEdge_c;
+    boolean_T PulseNode_isRisingEdge_dn;
     boolean_T ConfirmNode_isRisingEdge_gx;
     boolean_T ConfirmNode_isRisingEdge_ne;
     boolean_T PulseNode_isRisingEdge_nr;
     boolean_T ConfirmNode_isRisingEdge_l;
+    boolean_T PulseNode1_isRisingEdge_c;
     boolean_T PulseNode3_isRisingEdge_f;
     boolean_T PulseNode4_isRisingEdge_k;
     boolean_T PulseNode5_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_pu;
-    boolean_T PulseNode1_isRisingEdge_c;
+    boolean_T PulseNode1_isRisingEdge_cr;
     boolean_T ConfirmNode_isRisingEdge_bx;
     boolean_T ConfirmNode_isRisingEdge_co;
     boolean_T PulseNode_isRisingEdge_h;
@@ -982,6 +988,7 @@ class A380PrimComputerFg final
     uint8_T CompareToConstant4_const_b;
     prim_outputs out_Y0;
     base_prim_fg_laws_outputs Delay2_InitialCondition;
+    base_prim_ap_fd_logic_outputs Delay_InitialCondition;
     base_arinc_429 Constant_Value;
     real_T Constant2_Value;
     real_T RETARD_Value;
@@ -1062,7 +1069,7 @@ class A380PrimComputerFg final
     real_T ktstomps_Gain_n;
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
-    real_T Delay_InitialCondition;
+    real_T Delay_InitialCondition_i;
     real32_T Gain3_Gain_k;
     real32_T Gain1_Gain_ix;
     real32_T uDLookupTable_tableData[7];
@@ -1088,7 +1095,7 @@ class A380PrimComputerFg final
     boolean_T Logic_table_m[16];
     boolean_T Constant_Value_o;
     boolean_T Logic_table_a[16];
-    boolean_T Delay_InitialCondition_i;
+    boolean_T Delay_InitialCondition_ir;
     boolean_T Logic_table_h[16];
     boolean_T Delay_InitialCondition_n;
     boolean_T Logic_table_mv[16];
@@ -1117,8 +1124,8 @@ class A380PrimComputerFg final
     boolean_T Logic_table_pp[16];
     boolean_T Logic_table_hk[16];
     boolean_T Logic_table_f[16];
-    boolean_T Logic_table_pi[16];
     boolean_T Logic_table_j[16];
+    boolean_T Logic_table_pi[16];
     boolean_T Constant_Value_h2;
     boolean_T Logic_table_bw[16];
     boolean_T Logic_table_nb[16];
