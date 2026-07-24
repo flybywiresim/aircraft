@@ -157,6 +157,8 @@ class A380PrimComputerFg final
     boolean_T prevMachActive;
     boolean_T prevMachActive_not_empty;
     boolean_T pValue_not_empty_a;
+    boolean_T prevTrkFpaActive_i;
+    boolean_T prevTrkFpaActive_not_empty_n;
     boolean_T pValue_not_empty_j;
     boolean_T p_true_active;
     boolean_T p_metric_alt_active;
