@@ -22,6 +22,25 @@
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
+1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
+1. [A380X/FWS] Improve ROW/ROP callouts, changed autobrake off master caution light to 3 seconds - @BravoMike99 (bruno_pt99)
+1. [A380X/OIT] Restart FLT OPS startup sequence after laptop power loss - @HendersonTyler (Tyler Henderson)
+1. [A380X/MFD] Fix LS field remaining blank on F-PLN arrival page when no landing system is available or selected - @matze-tech (matze2346)
+1. [A380X/PRIM] Move FE to PRIM and add SPD LIM flag - @lukecologne (luke)
+1. [A380X/PRIM] Improve speed trend behaviour - @lukecologne (luke)
+1. [A380X/FWS] Add NAV UNRELIABLE AIRSPEED INDICATION procedure - @matze-tech (matze2346)
+1. [A380X/FLIGHT MODEL] Bounced landings fix plus added pitch inertia - @donstim (donbikes)
+1. [A380X] Fix character spawning under the ground in walkaround mode - @heclak (Heclak)
+1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
+1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
+1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
+1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
+1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
+1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
+1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 
 ## 2020.15.0
 
