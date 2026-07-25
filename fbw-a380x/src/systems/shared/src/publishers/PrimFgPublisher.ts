@@ -171,7 +171,9 @@ export type PrimFgBusBaseEvents = {
    *       12 | TCAS RA Inihibited
    *       13 | TRK FPA Deselected
    *       14 | TCAS RA Corrective
-   *       15 |
+   *       15 | FCU ALT ABV A/C
+   *       16 | FCU ALT BLW A/C
+   *       17 |
    *       -  | Spare
    *       29 |
    */
