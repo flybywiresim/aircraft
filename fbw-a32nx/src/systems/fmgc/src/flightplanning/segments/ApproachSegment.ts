@@ -30,7 +30,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
   private approach: Approach | undefined;
 
-  async setProcedure(databaseId: string | undefined, useRnpArNaming = false, skipUpdateLegs?: boolean): Promise<void> {
+  async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean, useRnpArNaming = false): Promise<void> {
     const oldApproachName = this.flightPlan.approach?.ident;
 
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;

@@ -1015,7 +1015,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    */
   async setApproach(databaseId: string | undefined) {
     await this.approachSegment
-      .setProcedure(databaseId, this.context.useApproachRnpArNaming.get())
+      .setProcedure(databaseId, false, this.context.useApproachRnpArNaming.get())
       .then(() => this.incrementVersion());
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -2737,7 +2737,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     // the methods on BaseFlightPlan flush the op queue
 
     if (this.approach) {
-      await this.approachSegment.setProcedure(this.approach.databaseId, this.context.useApproachRnpArNaming.get());
+      await this.approachSegment.setProcedure(
+        this.approach.databaseId,
+        false,
+        this.context.useApproachRnpArNaming.get(),
+      );
     }
 
     if (this.approachVia) {

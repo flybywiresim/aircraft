@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,6 +7,7 @@ import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { Airway, AltitudeConstraint, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  Accessible,
   EventBus,
   EventSubscriber,
   MappedSubject,
@@ -14,6 +15,7 @@ import {
   SubEvent,
   Subject,
   Subscription,
+  Value,
   Wait,
 } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
@@ -60,7 +62,9 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
 
-  public syncClientID = MathUtils.randomInt32();
+  public readonly syncClientID = MathUtils.randomInt32();
+
+  public readonly useApproachRnpArNaming: Accessible<boolean> = Value.create(false);
 
   constructor(
     private readonly bus: EventBus,

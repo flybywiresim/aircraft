@@ -318,6 +318,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     await this.destinationSegment.setRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
     await this.approachSegment.setProcedure(
       this.alternateFlightPlan.approach?.databaseId ?? undefined,
+      false,
       this.context.useApproachRnpArNaming.get(),
     );
     await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
