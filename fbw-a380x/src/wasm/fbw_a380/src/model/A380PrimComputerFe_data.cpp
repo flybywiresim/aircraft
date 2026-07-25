@@ -3143,6 +3143,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
       false,
       false,
       false,
+      false,
+      false,
       0.0F,
       false,
       0.0F,

@@ -492,6 +492,51 @@ enum class fmgc_des_submode
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_time_
+#define DEFINED_TYPEDEF_FOR_base_time_
+
+struct base_time
+{
+  real_T dt;
+  real_T simulation_time;
+  real_T monotonic_time;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+
+struct base_prim_lateral_surface_positions
+{
+  real_T left_inboard_aileron_deg;
+  real_T right_inboard_aileron_deg;
+  real_T left_midboard_aileron_deg;
+  real_T right_midboard_aileron_deg;
+  real_T left_outboard_aileron_deg;
+  real_T right_outboard_aileron_deg;
+  real_T left_spoiler_1_deg;
+  real_T right_spoiler_1_deg;
+  real_T left_spoiler_2_deg;
+  real_T right_spoiler_2_deg;
+  real_T left_spoiler_3_deg;
+  real_T right_spoiler_3_deg;
+  real_T left_spoiler_4_deg;
+  real_T right_spoiler_4_deg;
+  real_T left_spoiler_5_deg;
+  real_T right_spoiler_5_deg;
+  real_T left_spoiler_6_deg;
+  real_T right_spoiler_6_deg;
+  real_T left_spoiler_7_deg;
+  real_T right_spoiler_7_deg;
+  real_T left_spoiler_8_deg;
+  real_T right_spoiler_8_deg;
+  real_T upper_rudder_deg;
+  real_T lower_rudder_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
 
@@ -517,18 +562,6 @@ struct base_prim_discrete_outputs
   boolean_T fcu_2_select;
   boolean_T ap_engaged;
   boolean_T reverser_tertiary_lock;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_time_
-#define DEFINED_TYPEDEF_FOR_base_time_
-
-struct base_time
-{
-  real_T dt;
-  real_T simulation_time;
-  real_T monotonic_time;
 };
 
 #endif
@@ -1009,39 +1042,6 @@ struct base_prim_flight_envelope_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-
-struct base_prim_lateral_surface_positions
-{
-  real_T left_inboard_aileron_deg;
-  real_T right_inboard_aileron_deg;
-  real_T left_midboard_aileron_deg;
-  real_T right_midboard_aileron_deg;
-  real_T left_outboard_aileron_deg;
-  real_T right_outboard_aileron_deg;
-  real_T left_spoiler_1_deg;
-  real_T right_spoiler_1_deg;
-  real_T left_spoiler_2_deg;
-  real_T right_spoiler_2_deg;
-  real_T left_spoiler_3_deg;
-  real_T right_spoiler_3_deg;
-  real_T left_spoiler_4_deg;
-  real_T right_spoiler_4_deg;
-  real_T left_spoiler_5_deg;
-  real_T right_spoiler_5_deg;
-  real_T left_spoiler_6_deg;
-  real_T right_spoiler_6_deg;
-  real_T left_spoiler_7_deg;
-  real_T right_spoiler_7_deg;
-  real_T left_spoiler_8_deg;
-  real_T right_spoiler_8_deg;
-  real_T upper_rudder_deg;
-  real_T lower_rudder_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 #define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 
@@ -1269,6 +1269,8 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T tcas_ra_inhibited;
   boolean_T trk_fpa_deselected;
   boolean_T longi_large_box_tcas;
+  boolean_T fcu_alt_abv_acft;
+  boolean_T fcu_alt_blw_acft;
   boolean_T land_2_capability;
   boolean_T land_3_fail_passive_capability;
   boolean_T land_3_fail_op_capability;

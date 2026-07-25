@@ -323,19 +323,6 @@ enum class fmgc_des_submode
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -367,6 +354,19 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -1185,6 +1185,8 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T tcas_ra_inhibited;
   boolean_T trk_fpa_deselected;
   boolean_T longi_large_box_tcas;
+  boolean_T fcu_alt_abv_acft;
+  boolean_T fcu_alt_blw_acft;
   boolean_T land_2_capability;
   boolean_T land_3_fail_passive_capability;
   boolean_T land_3_fail_op_capability;

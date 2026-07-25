@@ -3986,8 +3986,8 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_pw[1] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.tcas_ra_inhibited;
     rtb_VectorConcatenate_pw[2] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.trk_fpa_deselected;
     rtb_VectorConcatenate_pw[3] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.tcas_ra_corrective;
-    rtb_VectorConcatenate_pw[4] = A380PrimComputerFctl_P.Constant2_Value_d;
-    rtb_VectorConcatenate_pw[5] = A380PrimComputerFctl_P.Constant2_Value_d;
+    rtb_VectorConcatenate_pw[4] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.fcu_alt_abv_acft;
+    rtb_VectorConcatenate_pw[5] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.fcu_alt_blw_acft;
     rtb_VectorConcatenate_pw[6] = A380PrimComputerFctl_P.Constant2_Value_d;
     rtb_VectorConcatenate_pw[7] = A380PrimComputerFctl_P.Constant2_Value_d;
     rtb_VectorConcatenate_pw[8] = A380PrimComputerFctl_P.Constant2_Value_d;

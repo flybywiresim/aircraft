@@ -1185,6 +1185,8 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T tcas_ra_inhibited;
   boolean_T trk_fpa_deselected;
   boolean_T longi_large_box_tcas;
+  boolean_T fcu_alt_abv_acft;
+  boolean_T fcu_alt_blw_acft;
   boolean_T land_2_capability;
   boolean_T land_3_fail_passive_capability;
   boolean_T land_3_fail_op_capability;

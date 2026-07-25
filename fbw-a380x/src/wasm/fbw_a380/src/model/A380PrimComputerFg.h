@@ -322,6 +322,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_dgp;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ps;
+    rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_kw;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dg;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a5;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_fh;
@@ -517,6 +518,7 @@ class A380PrimComputerFg final
     real_T MTrigNode1_isRisingEdge_n;
     real_T MTrigNode1_isRisingEdge_mw;
     real_T MTrigNode_isRisingEdge_k;
+    real_T MTrigNode_isRisingEdge_kv;
     real_T FGOuterLoopDataPreparation_isSide1;
     real_T FGOuterLoopDataPreparation1_isSide1;
     real_T APEngagedLogic_isSide2;
@@ -538,6 +540,7 @@ class A380PrimComputerFg final
     real_T MTrigNode1_retriggerable_d;
     real_T MTrigNode1_retriggerable_o0;
     real_T MTrigNode_retriggerable_cq;
+    real_T MTrigNode_retriggerable_ci;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode_timeDelay_b;
@@ -612,6 +615,7 @@ class A380PrimComputerFg final
     real_T MTrigNode1_triggerDuration_p;
     real_T MTrigNode1_triggerDuration_b;
     real_T MTrigNode_triggerDuration_c;
+    real_T MTrigNode_triggerDuration_h;
     real_T RateLimiterVariableTs_up;
     real_T DetectChange_vinit;
     real_T DetectChange_vinit_a;
@@ -685,6 +689,8 @@ class A380PrimComputerFg final
     real32_T CompareToConstant10_const_c;
     real32_T CompareToConstant9_const_k;
     real32_T CompareToConstant11_const_p;
+    real32_T CompareToConstant1_const_ak;
+    real32_T CompareToConstant_const_gf;
     real32_T A429ValueOrDefault3_defaultValue;
     real32_T A429ValueOrDefault_defaultValue;
     real32_T A429ValueOrDefault1_defaultValue;

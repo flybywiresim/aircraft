@@ -134,18 +134,22 @@ export enum BC3Messages {
 
 export function computeBC3Message(
   isAttExcessive: boolean,
-  tcasArmed: boolean,
   setHoldSpeed: boolean,
   fcdcWord1: Arinc429WordData,
   fwcFlightPhase: number,
-  trkFpaDeselectedTCAS: boolean,
-  tcasRaInhibited: boolean,
   tdReached: boolean,
   disconnectApForLdg: boolean,
   exitMissed: boolean,
+  primFgDiscreteWord2: Arinc429WordData,
+  primFgDiscreteWord6: Arinc429WordData,
 ): BC3Messages {
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
+  const tcasArmed = primFgDiscreteWord2.bitValueOr(18, false);
+  const trkFpaDeselected = primFgDiscreteWord6.bitValueOr(13, false);
+  const tcasRaInhibited = primFgDiscreteWord6.bitValueOr(12, false);
+  const fcuAltAbvAc = primFgDiscreteWord6.bitValueOr(15, false);
+  const fcuAltBlwAc = primFgDiscreteWord6.bitValueOr(16, false);
 
   // All currently unused message are set to false
   if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
@@ -158,7 +162,7 @@ export function computeBC3Message(
     return BC3Messages.TCAS_ARMED;
   } else if (tcasRaInhibited && !isAttExcessive) {
     return BC3Messages.TCAS_RA_INHIBITED;
-  } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
+  } else if (trkFpaDeselected && !isAttExcessive) {
     return BC3Messages.TRK_FPA_DESELECTED;
   } else if (false) {
     return BC3Messages.MOVE_THR_LEVERS;
@@ -174,9 +178,9 @@ export function computeBC3Message(
     return BC3Messages.SET_HOLD_SPD;
   } else if (exitMissed) {
     return BC3Messages.EXIT_MISSED;
-  } else if (false) {
+  } else if (fcuAltBlwAc && !isAttExcessive) {
     return BC3Messages.FCU_ALT_BELOW_AC;
-  } else if (false) {
+  } else if (fcuAltAbvAc && !isAttExcessive) {
     return BC3Messages.FCU_ALT_ABOVE_AC;
   } else {
     return BC3Messages.NONE;

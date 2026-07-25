@@ -132,21 +132,16 @@ export class FMA extends DisplayComponent<{
       disconnectApForLdg,
       btvExitMissed,
     ]) => {
-      const tcasArmed = primFgDiscreteWord2.bitValueOr(18, false);
-      const trkFpaDeselected = primFgDiscreteWord6.bitValueOr(13, false);
-      const tcasRaInhibited = primFgDiscreteWord6.bitValueOr(12, false);
-
       return computeBC3Message(
         isAttExcessive,
-        tcasArmed,
         setHoldSpeed,
         fcdcDiscreteWord1,
         fwcFlightPhase,
-        trkFpaDeselected,
-        tcasRaInhibited,
         tdReached,
         disconnectApForLdg,
         btvExitMissed,
+        primFgDiscreteWord2,
+        primFgDiscreteWord6,
       );
     },
     this.props.isAttExcessive,
