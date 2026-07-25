@@ -15,7 +15,7 @@ import './style.scss';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
-import { FcdcSimvarPublisher } from '../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
 import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
