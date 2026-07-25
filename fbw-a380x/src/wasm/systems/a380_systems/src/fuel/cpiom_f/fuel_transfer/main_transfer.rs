@@ -24,8 +24,6 @@ pub(super) struct MainTransfer {
     source_tank: TransferSourceTank,
 }
 impl MainTransfer {
-    const TIME_TO_DESTINATION_CUTOFF: Duration = Duration::from_secs(60 * 24);
-
     /// Updates the source tanks for the main fuel transfer
     pub(crate) fn update(
         &mut self,
@@ -33,21 +31,18 @@ impl MainTransfer {
         remaining_flight_time: Option<Duration>,
     ) {
         // Determine the source for a fuel transfer depending on priority and available fuel
-        // TODO: what if remaining flight time is not available?
-        self.source_tank =
-            if remaining_flight_time.is_some_and(|d| d < Self::TIME_TO_DESTINATION_CUTOFF) {
-                return;
-            } else if !tank_quantities.tanks_empty(INNER_TANKS) {
-                TransferSourceTank::Inner
-            } else if !tank_quantities.tanks_empty(MID_TANKS) {
-                TransferSourceTank::Mid
-            } else if !tank_quantities.tank_empty(TRIM_TANK) {
-                TransferSourceTank::Trim
-            } else if !tank_quantities.tanks_empty(OUTER_TANKS) {
-                TransferSourceTank::Outer
-            } else {
-                return;
-            };
+        self.source_tank = if !tank_quantities.tanks_empty(INNER_TANKS) {
+            TransferSourceTank::Inner
+        } else if !tank_quantities.tanks_empty(MID_TANKS) {
+            TransferSourceTank::Mid
+        } else if !tank_quantities.tank_empty(TRIM_TANK) {
+            TransferSourceTank::Trim
+        } else if !tank_quantities.tanks_empty(OUTER_TANKS) {
+            TransferSourceTank::Outer
+        } else {
+            *self = Default::default();
+            return;
+        };
 
         // Get thresholds and whether pairwise balancing applies
         let (feed_1_4_threshold, feed_2_3_threshold, transfer_threshold_diff, pairwise_synced) =
@@ -265,6 +260,7 @@ impl FuelTransfer for MainTransfer {
 mod tests {
     use super::*;
     use ntest::assert_about_eq;
+    use rstest::rstest;
     use rustc_hash::FxHashMap;
     use uom::si::mass::kilogram;
 
@@ -493,6 +489,32 @@ mod tests {
         let provider = MockFuelQuantityProvider::default();
         let mut main_transfer = MainTransfer::default();
         main_transfer.update(&provider, Some(Duration::from_secs(60 * 60 * 6)));
+        assert_eq!(main_transfer.feed_tank_is_target, [false; 4]);
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::None);
+    }
+
+    #[rstest]
+    #[case(A380FuelTankType::LeftOuter, TransferSourceTank::Outer)]
+    #[case(A380FuelTankType::LeftMid, TransferSourceTank::Mid)]
+    #[case(A380FuelTankType::LeftInner, TransferSourceTank::Inner)]
+    #[case(A380FuelTankType::Trim, TransferSourceTank::Trim)]
+    fn test_transfer_stops_when_no_fuel_left(
+        #[case] fuel_tank: A380FuelTankType,
+        #[case] source_tank: TransferSourceTank,
+    ) {
+        let quantities = FxHashMap::from_iter([(fuel_tank, Mass::new::<kilogram>(800.))]);
+        let mut main_transfer = MainTransfer::default();
+        main_transfer.update(
+            &MockFuelQuantityProvider { quantities },
+            Some(Duration::from_hours(2)),
+        );
+        assert_eq!(main_transfer.feed_tank_is_target, [true; 4]);
+        assert_eq!(main_transfer.source_tank, source_tank);
+
+        main_transfer.update(
+            &MockFuelQuantityProvider::default(),
+            Some(Duration::from_hours(2)),
+        );
         assert_eq!(main_transfer.feed_tank_is_target, [false; 4]);
         assert_eq!(main_transfer.source_tank, TransferSourceTank::None);
     }
