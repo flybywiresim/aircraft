@@ -188,9 +188,10 @@ export class FlightPhaseManager {
 
   handleNewDestinationAirportEntered(): void {
     if (this.phase === FmgcFlightPhase.GoAround) {
+      // FIXME: EO ACC ALT is advisory only.
       const accAlt = this.isEngineOutCondition.get()
-        ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_EO_ACC_ALT')
-        : Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_ACC_ALT');
+        ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT')
+        : Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
       if (Simplane.getAltitude() > accAlt.valueOr(0)) {
         this.changePhase(FmgcFlightPhase.Climb);
       }

@@ -386,9 +386,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("A32NX_FM1_THR_RED_ALT");
   idFmgcThrustReductionAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_THR_RED_ALT");
   idFmgcAccelerationAltitude = std::make_unique<LocalVariable>("A32NX_FM1_ACC_ALT");
-  idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
   idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
-  idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
   idFmsLsCourse = std::make_unique<LocalVariable>("A32NX_FM_LS_COURSE");
@@ -1045,11 +1043,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // FM thrust reduction/acceleration ARINC words
   fmThrustReductionAltitude->setFromSimVar(idFmgcThrustReductionAltitude->get());
-  fmThrustReductionAltitudeGoAround->setFromSimVar(idFmgcThrustReductionAltitudeGoAround->get());
   fmAccelerationAltitude->setFromSimVar(idFmgcAccelerationAltitude->get());
-  fmAccelerationAltitudeEngineOut->setFromSimVar(idFmgcAccelerationAltitudeEngineOut->get());
-  fmAccelerationAltitudeGoAround->setFromSimVar(idFmgcAccelerationAltitudeGoAround->get());
-  fmAccelerationAltitudeGoAroundEngineOut->setFromSimVar(idFmgcAccelerationAltitudeGoAroundEngineOut->get());
 
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());

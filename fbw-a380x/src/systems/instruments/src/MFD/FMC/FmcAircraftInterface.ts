@@ -68,9 +68,6 @@ export class FmcAircraftInterface {
   public readonly arincThrustReductionAltitude = new FmArinc429OutputWord('THR_RED_ALT');
   public readonly arincAccelerationAltitude = new FmArinc429OutputWord('ACC_ALT');
   public readonly arincEoAccelerationAltitude = new FmArinc429OutputWord('EO_ACC_ALT');
-  public readonly arincMissedThrustReductionAltitude = new FmArinc429OutputWord('MISSED_THR_RED_ALT');
-  public readonly arincMissedAccelerationAltitude = new FmArinc429OutputWord('MISSED_ACC_ALT');
-  public readonly arincMissedEoAccelerationAltitude = new FmArinc429OutputWord('MISSED_EO_ACC_ALT');
   public readonly arincTransitionAltitude = new FmArinc429OutputWord('TRANS_ALT');
   public readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   public readonly arincZeroFuelWeight = new FmArinc429OutputWord('ZERO_FUEL_WEIGHT');
@@ -97,9 +94,6 @@ export class FmcAircraftInterface {
     this.arincThrustReductionAltitude,
     this.arincAccelerationAltitude,
     this.arincEoAccelerationAltitude,
-    this.arincMissedThrustReductionAltitude,
-    this.arincMissedAccelerationAltitude,
-    this.arincMissedEoAccelerationAltitude,
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincZeroFuelWeight,
@@ -399,62 +393,44 @@ export class FmcAircraftInterface {
   }
 
   public updateThrustReductionAcceleration() {
-    if (!this.flightPlanService.hasActive) {
-      return;
-    }
-    const activePerformanceData = this.flightPlanService.active.performanceData;
+    const activePerformanceData = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData
+      : null;
 
-    const thrustReductionAlt = activePerformanceData.thrustReductionAltitude.get();
+    const flightPhase = this.flightPhase.get();
+
+    // Set the thrust reduction altitude and acceleration altitude in a single output.
+    let thrustReductionAlt: number | null = null;
+    let accelerationAlt: number | null = null;
+    let engineOutAccelerationAlt: number | null = null;
+    if (flightPhase <= FmgcFlightPhase.Takeoff) {
+      thrustReductionAlt = activePerformanceData?.thrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.accelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.engineOutAccelerationAltitude.get() ?? null;
+    } else if (flightPhase === FmgcFlightPhase.GoAround) {
+      thrustReductionAlt = activePerformanceData?.missedThrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.missedAccelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.missedEngineOutAccelerationAltitude.get() ?? null;
+    }
     this.arincThrustReductionAltitude.setBnrValue(
-      thrustReductionAlt !== null ? thrustReductionAlt : 0,
+      thrustReductionAlt ?? 0,
       thrustReductionAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
-    const accelerationAlt = activePerformanceData.accelerationAltitude.get();
+
     this.arincAccelerationAltitude.setBnrValue(
-      accelerationAlt !== null ? accelerationAlt : 0,
+      accelerationAlt ?? 0,
       accelerationAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
-    const engineOutAccelerationAlt = activePerformanceData.engineOutAccelerationAltitude.get();
-    this.arincEoAccelerationAltitude.setBnrValue(
-      engineOutAccelerationAlt !== null ? engineOutAccelerationAlt : 0,
-      engineOutAccelerationAlt !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
 
-    const missedThrustReductionAlt = activePerformanceData.missedThrustReductionAltitude.get();
-    this.arincMissedThrustReductionAltitude.setBnrValue(
-      missedThrustReductionAlt !== null ? missedThrustReductionAlt : 0,
-      missedThrustReductionAlt !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    const missedAccelerationAlt = activePerformanceData.missedAccelerationAltitude.get();
-    this.arincMissedAccelerationAltitude.setBnrValue(
-      missedAccelerationAlt !== null ? missedAccelerationAlt : 0,
-      missedAccelerationAlt !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    const missedEngineOutAccelerationAlt = activePerformanceData.missedEngineOutAccelerationAltitude.get();
-    this.arincMissedEoAccelerationAltitude.setBnrValue(
-      missedEngineOutAccelerationAlt !== null ? missedEngineOutAccelerationAlt : 0,
-      missedEngineOutAccelerationAlt !== null
+    this.arincEoAccelerationAltitude.setBnrValue(
+      engineOutAccelerationAlt ?? 0,
+      engineOutAccelerationAlt !== null
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,

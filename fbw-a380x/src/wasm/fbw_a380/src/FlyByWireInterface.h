@@ -98,11 +98,8 @@ class FlyByWireInterface {
   bool last_ls2_active = false;
 
   std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitude = std::make_unique<Arinc429NumericWord>();
-  std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
   std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitude = std::make_unique<Arinc429NumericWord>();
   std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeEngineOut = std::make_unique<Arinc429NumericWord>();
-  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
-  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAroundEngineOut = std::make_unique<Arinc429NumericWord>();
 
   FlightDataRecorder flightDataRecorder;
 
@@ -279,7 +276,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitude;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeEngineOut;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAround;
-  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAroundEngineOut;
   std::unique_ptr<LocalVariable> idFmgcCruiseAltitude;
   std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
   std::unique_ptr<LocalVariable> idFmsLsCourse;
