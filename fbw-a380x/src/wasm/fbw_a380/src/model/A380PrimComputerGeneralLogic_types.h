@@ -543,8 +543,6 @@ struct base_fms_inputs
   boolean_T backbeam_selected;
   real_T fms_loc_distance;
   real_T fms_unrealistic_gs_angle_deg;
-  real_T fms_weight_lbs;
-  real_T fms_cg_percent;
   boolean_T lateral_flight_plan_valid;
   boolean_T nav_capture_condition;
   real_T phi_c_deg;
@@ -571,9 +569,19 @@ struct base_fms_inputs
   boolean_T fms_mach_mode_activate;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
-  real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fqms_
+#define DEFINED_TYPEDEF_FOR_base_fqms_
+
+struct base_fqms
+{
+  base_arinc_429 gross_weight_kg;
+  base_arinc_429 gross_weight_cg_pct;
 };
 
 #endif
@@ -606,7 +614,7 @@ struct base_eec
 struct base_prim_adcn_inputs
 {
   base_fms_inputs fms;
-  real_T fqms;
+  base_fqms fqms;
   base_eec eec_1;
   base_eec eec_2;
   base_eec eec_3;
@@ -683,8 +691,12 @@ struct base_prim_flight_envelope_outputs
   real_T beta_target_deg;
   boolean_T beta_target_visible;
   boolean_T alpha_floor_condition;
-  real_T computed_weight_lbs;
-  real_T computed_cg_percent;
+  real_T computed_gross_weight_kg;
+  real_T computed_gross_weight_cg_percent;
+  boolean_T gross_weight_lost;
+  boolean_T gross_weight_cg_lost;
+  boolean_T gross_weight_disagree;
+  boolean_T gross_weight_cg_disagree;
   boolean_T speed_scale_lost;
   boolean_T speed_scale_visible;
   real_T v_ls_kn;
@@ -1327,158 +1339,6 @@ enum class SignStatusMatrix
   NoComputedData,
   FunctionalTest,
   NormalOperation
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_SypABsMe64R9KOFl2RjNgF_
-#define DEFINED_TYPEDEF_FOR_struct_SypABsMe64R9KOFl2RjNgF_
-
-struct struct_SypABsMe64R9KOFl2RjNgF
-{
-  base_prim_surface_status surface_statuses;
-  base_prim_lateral_surface_positions lateral_surface_positions;
-  base_prim_pitch_surface_positions pitch_surface_positions;
-  a380_lateral_efcs_law lateral_law_capability;
-  a380_lateral_efcs_law active_lateral_law;
-  a380_pitch_efcs_law pitch_law_capability;
-  a380_pitch_efcs_law active_pitch_law;
-  boolean_T abnormal_condition_law_active;
-  boolean_T is_master_prim;
-  boolean_T elevator_1_avail;
-  boolean_T elevator_1_engaged;
-  boolean_T elevator_2_avail;
-  boolean_T elevator_2_engaged;
-  boolean_T elevator_3_avail;
-  boolean_T elevator_3_engaged;
-  boolean_T ths_avail;
-  boolean_T ths_engaged;
-  boolean_T left_aileron_1_avail;
-  boolean_T left_aileron_1_engaged;
-  boolean_T left_aileron_2_avail;
-  boolean_T left_aileron_2_engaged;
-  boolean_T right_aileron_1_avail;
-  boolean_T right_aileron_1_engaged;
-  boolean_T right_aileron_2_avail;
-  boolean_T right_aileron_2_engaged;
-  boolean_T left_spoiler_hydraulic_mode_avail;
-  boolean_T left_spoiler_electric_mode_avail;
-  boolean_T left_spoiler_hydraulic_mode_engaged;
-  boolean_T left_spoiler_electric_mode_engaged;
-  boolean_T right_spoiler_hydraulic_mode_avail;
-  boolean_T right_spoiler_electric_mode_avail;
-  boolean_T right_spoiler_hydraulic_mode_engaged;
-  boolean_T right_spoiler_electric_mode_engaged;
-  boolean_T rudder_1_hydraulic_mode_avail;
-  boolean_T rudder_1_electric_mode_avail;
-  boolean_T rudder_1_hydraulic_mode_engaged;
-  boolean_T rudder_1_electric_mode_engaged;
-  boolean_T rudder_2_hydraulic_mode_avail;
-  boolean_T rudder_2_electric_mode_avail;
-  boolean_T rudder_2_hydraulic_mode_engaged;
-  boolean_T rudder_2_electric_mode_engaged;
-  boolean_T aileron_droop_active;
-  boolean_T aileron_antidroop_active;
-  boolean_T ths_automatic_mode_active;
-  real_T ths_manual_mode_c_deg_s;
-  boolean_T eha_ebha_elec_mode_inhibited;
-  boolean_T left_sidestick_disabled;
-  boolean_T right_sidestick_disabled;
-  boolean_T left_sidestick_priority_locked;
-  boolean_T right_sidestick_priority_locked;
-  real_T total_sidestick_pitch_command;
-  real_T total_sidestick_roll_command;
-  boolean_T speed_brake_inhibited;
-  real_T speed_brake_command_deg;
-  boolean_T ground_spoilers_armed;
-  boolean_T ground_spoilers_out;
-  boolean_T phased_lift_dumping_active;
-  boolean_T spoiler_lift_active;
-  boolean_T ap_authorised;
-  boolean_T protection_ap_disconnect;
-  boolean_T high_alpha_prot_active;
-  real_T alpha_prot_deg;
-  real_T alpha_max_deg;
-  boolean_T v_alpha_prot_kn;
-  real_T v_alpha_max_kn;
-  real_T v_alpha_stall_warn_kn;
-  boolean_T high_speed_prot_active;
-  real_T high_speed_prot_lo_thresh_kn;
-  real_T high_speed_prot_hi_thresh_kn;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
-#define DEFINED_TYPEDEF_FOR_struct_W3yGMdfnPPSl8IlK28v23B_
-
-struct struct_W3yGMdfnPPSl8IlK28v23B
-{
-  base_prim_lateral_modes lateral_modes;
-  base_prim_longitudinal_modes longitudinal_modes;
-  base_prim_armed_modes armed_modes;
-  lateral_law active_lateral_law;
-  vertical_law active_longitudinal_law;
-  boolean_T auto_spd_control_active;
-  boolean_T manual_spd_control_active;
-  boolean_T mach_control_active;
-  boolean_T athr_active;
-  boolean_T athr_limited;
-  boolean_T alpha_floor_mode_active;
-  boolean_T thrust_mode_active;
-  boolean_T thrust_target_idle;
-  boolean_T speed_mach_mode_active;
-  boolean_T retard_mode_active;
-  a380_athr_fma_mode athr_fma_mode;
-  a380_athr_fma_message athr_fma_message;
-  real_T spd_target_kts;
-  real_T pfd_spd_target_kts;
-  real_T short_term_managed_spd_kts;
-  boolean_T short_term_managed_spd_visible;
-  boolean_T alt_cstr_applicable;
-  real_T alt_sel_or_cstr;
-  boolean_T mode_sync_active;
-  boolean_T any_ap_fd_engaged;
-  boolean_T any_lateral_mode_engaged;
-  boolean_T any_longitudinal_mode_engaged;
-  boolean_T lateral_mode_reset;
-  boolean_T longitudinal_mode_reset;
-  boolean_T hdg_trk_preset_available;
-  boolean_T alt_soft_mode_active;
-  boolean_T fd_auto_disengage;
-  boolean_T ap_fd_mode_reversion;
-  boolean_T lateral_mode_reversion;
-  boolean_T longitudinal_mode_reversion_vs;
-  boolean_T longitudinal_mode_reversion_op_clb;
-  boolean_T pitch_fd_bars_flashing;
-  boolean_T roll_fd_bars_flashing;
-  boolean_T loc_bc_selection;
-  boolean_T vs_target_not_held;
-  real_T tcas_vs_target;
-  boolean_T tcas_ra_corrective;
-  tcas_submode active_tcas_submode;
-  boolean_T tcas_alt_acq_cond;
-  boolean_T tcas_alt_hold_cond;
-  boolean_T tcas_ra_inhibited;
-  boolean_T trk_fpa_deselected;
-  boolean_T longi_large_box_tcas;
-  boolean_T land_2_capability;
-  boolean_T land_3_fail_passive_capability;
-  boolean_T land_3_fail_op_capability;
-  boolean_T land_2_inop;
-  boolean_T land_3_fail_passive_inop;
-  boolean_T land_3_fail_op_inop;
-  boolean_T tla_to_ga_set;
-  boolean_T true_active;
-  boolean_T trk_fpa_active;
-  boolean_T metric_alt_active;
-  boolean_T selected_spd_mach;
-  boolean_T spd_mach_dashes;
-  boolean_T selected_hdg_trk;
-  boolean_T hdg_trk_dashes;
-  boolean_T selected_alt;
-  boolean_T selected_vs_fpa;
-  boolean_T vs_fpa_dashes;
 };
 
 #endif

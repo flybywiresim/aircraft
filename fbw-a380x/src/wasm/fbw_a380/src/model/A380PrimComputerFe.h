@@ -102,7 +102,6 @@ class A380PrimComputerFe final
     real_T uDLookupTable1_tableData[96];
     real_T uDLookupTable1_bp01Data[8];
     real_T uDLookupTable1_bp02Data[12];
-    real_T Gain3_Gain;
     real_T nDLookupTable_tableData[96];
     real_T nDLookupTable_bp01Data[8];
     real_T nDLookupTable_bp02Data[2];
@@ -112,7 +111,6 @@ class A380PrimComputerFe final
     real_T uDLookupTable1_bp01Data_p[8];
     real_T uDLookupTable1_bp02Data_h[12];
     real_T Constant1_Value;
-    real_T Gain3_Gain_i;
     real_T nDLookupTable_tableData_g[96];
     real_T nDLookupTable_bp01Data_n[8];
     real_T nDLookupTable_bp02Data_j[2];
@@ -121,7 +119,6 @@ class A380PrimComputerFe final
     real_T uDLookupTable1_tableData_p[96];
     real_T uDLookupTable1_bp01Data_o[8];
     real_T uDLookupTable1_bp02Data_p[12];
-    real_T Gain3_Gain_k;
     real_T nDLookupTable_tableData_p[96];
     real_T nDLookupTable_bp01Data_c[8];
     real_T nDLookupTable_bp02Data_e[2];
@@ -132,7 +129,6 @@ class A380PrimComputerFe final
     real_T uDLookupTable1_bp01Data_pl[8];
     real_T uDLookupTable1_bp02Data_b[12];
     real_T Constant_Value_a;
-    real_T Gain3_Gain_kw;
     real_T nDLookupTable_tableData_d[96];
     real_T nDLookupTable_bp01Data_cz[8];
     real_T nDLookupTable_bp02Data_i[2];
@@ -140,7 +136,7 @@ class A380PrimComputerFe final
     real_T Gain2_Gain_j;
     real_T Vmcl20_Value;
     real_T Vfe_25_Value;
-    real_T Gain3_Gain_h;
+    real_T Gain3_Gain;
     real_T uDLookupTable_tableData_p[40];
     real_T uDLookupTable_bp01Data_n[8];
     real_T uDLookupTable_bp02Data[5];
@@ -204,6 +200,8 @@ class A380PrimComputerFe final
     rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputerFe_T *localDW);
   static void A380PrimComputerFe_VS1GfromVLS(real_T rtu_vls_conf_0, real_T rtu_vls_conf_other, real_T
     rtu_flap_handle_index, real_T *rty_vs1g);
+  static void A380PrimComputerFe_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380PrimComputerFe_MATLABFunction_k(const base_arinc_429 *rtu_u, real32_T *rty_y);
 };
 
 #endif

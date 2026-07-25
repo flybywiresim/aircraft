@@ -1035,7 +1035,6 @@ class A380PrimComputerFg final
     real_T Gain2_Gain;
     real_T Constant_Value_a;
     real_T Constant1_Value_b;
-    real_T Gain3_Gain;
     real_T Switch9_Threshold;
     real_T Switch6_Threshold_j;
     real_T Gain_Gain_l;
@@ -1044,7 +1043,6 @@ class A380PrimComputerFg final
     real_T Gain2_Gain_i;
     real_T Constant_Value_ag;
     real_T Constant1_Value_bc;
-    real_T Gain3_Gain_p;
     real_T Switch9_Threshold_f;
     real_T Gain1_Gain_p;
     real_T fpmtoms_Gain;
@@ -1070,7 +1068,7 @@ class A380PrimComputerFg final
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
     real_T Delay_InitialCondition_i;
-    real32_T Gain3_Gain_k;
+    real32_T Gain3_Gain;
     real32_T Gain1_Gain_ix;
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];

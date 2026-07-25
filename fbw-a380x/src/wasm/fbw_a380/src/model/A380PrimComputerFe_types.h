@@ -323,6 +323,19 @@ enum class fmgc_des_submode
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -354,19 +367,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -648,8 +648,6 @@ struct base_fms_inputs
   boolean_T backbeam_selected;
   real_T fms_loc_distance;
   real_T fms_unrealistic_gs_angle_deg;
-  real_T fms_weight_lbs;
-  real_T fms_cg_percent;
   boolean_T lateral_flight_plan_valid;
   boolean_T nav_capture_condition;
   real_T phi_c_deg;
@@ -676,9 +674,19 @@ struct base_fms_inputs
   boolean_T fms_mach_mode_activate;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
-  real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fqms_
+#define DEFINED_TYPEDEF_FOR_base_fqms_
+
+struct base_fqms
+{
+  base_arinc_429 gross_weight_kg;
+  base_arinc_429 gross_weight_cg_pct;
 };
 
 #endif
@@ -711,7 +719,7 @@ struct base_eec
 struct base_prim_adcn_inputs
 {
   base_fms_inputs fms;
-  real_T fqms;
+  base_fqms fqms;
   base_eec eec_1;
   base_eec eec_2;
   base_eec eec_3;
@@ -788,8 +796,12 @@ struct base_prim_flight_envelope_outputs
   real_T beta_target_deg;
   boolean_T beta_target_visible;
   boolean_T alpha_floor_condition;
-  real_T computed_weight_lbs;
-  real_T computed_cg_percent;
+  real_T computed_gross_weight_kg;
+  real_T computed_gross_weight_cg_percent;
+  boolean_T gross_weight_lost;
+  boolean_T gross_weight_cg_lost;
+  boolean_T gross_weight_disagree;
+  boolean_T gross_weight_cg_disagree;
   boolean_T speed_scale_lost;
   boolean_T speed_scale_visible;
   real_T v_ls_kn;
@@ -1314,6 +1326,19 @@ struct prim_outputs
   base_prim_discrete_outputs discrete_outputs;
   base_prim_analog_outputs analog_outputs;
   base_prim_out_bus bus_outputs;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+#define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
+
+enum class SignStatusMatrix
+  : int32_T {
+  FailureWarning = 0,
+  NoComputedData,
+  FunctionalTest,
+  NormalOperation
 };
 
 #endif

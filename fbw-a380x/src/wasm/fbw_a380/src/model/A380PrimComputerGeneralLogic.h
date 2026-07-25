@@ -42,11 +42,6 @@ class A380PrimComputerGeneralLogic final
   };
 
   struct Parameters_A380PrimComputerGeneralLogic_T {
-    struct_SypABsMe64R9KOFl2RjNgF prim_fctl_logic_output_MATLABStruct;
-    base_prim_laws_outputs prim_laws_output_MATLABStruct;
-    struct_W3yGMdfnPPSl8IlK28v23B prim_fg_mode_logic_output_MATLABStruct;
-    base_prim_analog_outputs prim_analog_output_MATLABStruct;
-    base_prim_discrete_outputs prim_discrete_output_MATLABStruct;
     real_T LagFilter_C1;
     real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
@@ -88,21 +83,26 @@ class A380PrimComputerGeneralLogic final
     boolean_T ConfirmNode2_isRisingEdge_k;
     prim_outputs out_Y0;
     base_prim_out_bus Constant4_Value;
+    base_prim_fctl_logic_outputs Constant1_Value;
     base_prim_fg_laws_outputs Constant8_Value;
+    base_prim_ap_fd_logic_outputs Constant9_Value;
+    base_prim_laws_outputs Constant_Value;
     base_prim_general_logic_outputs Constant6_Value;
     base_prim_fg_logic_output Constant5_Value;
     base_prim_flight_envelope_outputs Constant7_Value;
-    real32_T Constant2_Value;
-    real32_T Constant3_Value;
+    base_prim_analog_outputs Constant3_Value;
+    base_prim_discrete_outputs Constant2_Value;
+    real32_T Constant2_Value_i;
+    real32_T Constant3_Value_e;
     real32_T Constant6_Value_a;
     real32_T Constant4_Value_i;
-    real32_T Constant1_Value;
+    real32_T Constant1_Value_i;
     real32_T FlapFPPUtoSurfaceAngle_tableData[7];
     real32_T FlapFPPUtoSurfaceAngle_bp01Data[7];
     real32_T SlatFPPUtoSurfaceAngle_tableData[3];
     real32_T SlatFPPUtoSurfaceAngle_bp01Data[3];
     boolean_T Constant5_Value_i;
-    boolean_T Constant_Value;
+    boolean_T Constant_Value_e;
     boolean_T Constant1_Value_b;
     boolean_T Constant_Value_f;
   };

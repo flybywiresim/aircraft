@@ -498,9 +498,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
-  idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FQMS_GROSS_WEIGHT");
-
-  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_FQMS_CENTER_OF_GRAVITY_MAC");
+  idFqmsGrossWeight = std::make_unique<LocalVariable>("A32NX_FQMS_GROSS_WEIGHT");
+  idFqmsGrossWeightCgPercentMac = std::make_unique<LocalVariable>("A32NX_FQMS_CENTER_OF_GRAVITY_MAC");
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -1649,8 +1648,6 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.backbeam_selected = idFm1BackbeamSelected->get();
   modelInputs.in.adcn_inputs.fms.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;
   modelInputs.in.adcn_inputs.fms.fms_unrealistic_gs_angle_deg = (simData.nav_gs_valid != 0) ? -simData.nav_gs_deg : 0;
-  modelInputs.in.adcn_inputs.fms.fms_weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get()).Data * 2.205;
-  modelInputs.in.adcn_inputs.fms.fms_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get()).Data / 100;
   modelInputs.in.adcn_inputs.fms.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
   modelInputs.in.adcn_inputs.fms.nav_capture_condition = idFmNavCaptureCondition->get();
   modelInputs.in.adcn_inputs.fms.phi_c_deg = idFmPhiCommand->get();
@@ -1677,10 +1674,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.fms_mach_mode_activate = simInputAutopilot.mach_mode_activate;
   modelInputs.in.adcn_inputs.fms.flex_temp_deg_c = idFmgcFlexTemperature->get();
   modelInputs.in.adcn_inputs.fms.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
-  modelInputs.in.adcn_inputs.fms.acceleration_alt_eo_ft = fmAccelerationAltitudeEngineOut->valueOr(0);
   modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
-  modelInputs.in.adcn_inputs.fqms = {};
+  modelInputs.in.adcn_inputs.fqms.gross_weight_kg = Arinc429Utils::fromSimVar(idFqmsGrossWeight->get());
+  modelInputs.in.adcn_inputs.fqms.gross_weight_cg_pct = Arinc429Utils::fromSimVar(idFqmsGrossWeightCgPercentMac->get());
   modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
   modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];

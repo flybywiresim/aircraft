@@ -962,8 +962,6 @@ struct base_fms_inputs
   boolean_T backbeam_selected;
   real_T fms_loc_distance;
   real_T fms_unrealistic_gs_angle_deg;
-  real_T fms_weight_lbs;
-  real_T fms_cg_percent;
   boolean_T lateral_flight_plan_valid;
   boolean_T nav_capture_condition;
   real_T phi_c_deg;
@@ -990,9 +988,19 @@ struct base_fms_inputs
   boolean_T fms_mach_mode_activate;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
-  real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fqms_
+#define DEFINED_TYPEDEF_FOR_base_fqms_
+
+struct base_fqms
+{
+  base_arinc_429 gross_weight_kg;
+  base_arinc_429 gross_weight_cg_pct;
 };
 
 #endif
@@ -1025,7 +1033,7 @@ struct base_eec
 struct base_prim_adcn_inputs
 {
   base_fms_inputs fms;
-  real_T fqms;
+  base_fqms fqms;
   base_eec eec_1;
   base_eec eec_2;
   base_eec eec_3;
@@ -1102,8 +1110,12 @@ struct base_prim_flight_envelope_outputs
   real_T beta_target_deg;
   boolean_T beta_target_visible;
   boolean_T alpha_floor_condition;
-  real_T computed_weight_lbs;
-  real_T computed_cg_percent;
+  real_T computed_gross_weight_kg;
+  real_T computed_gross_weight_cg_percent;
+  boolean_T gross_weight_lost;
+  boolean_T gross_weight_cg_lost;
+  boolean_T gross_weight_disagree;
+  boolean_T gross_weight_cg_disagree;
   boolean_T speed_scale_lost;
   boolean_T speed_scale_visible;
   real_T v_ls_kn;

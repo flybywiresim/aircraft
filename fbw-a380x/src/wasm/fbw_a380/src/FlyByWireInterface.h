@@ -354,9 +354,9 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idWingAntiIce;
 
-  std::unique_ptr<LocalVariable> idFmGrossWeight;
-
-  std::unique_ptr<LocalVariable> idCgPercentMac;
+  // FQMS inputs
+  std::unique_ptr<LocalVariable> idFqmsGrossWeight;
+  std::unique_ptr<LocalVariable> idFqmsGrossWeightCgPercentMac;
 
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
