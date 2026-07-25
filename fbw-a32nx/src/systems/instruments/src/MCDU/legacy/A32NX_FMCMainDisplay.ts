@@ -119,7 +119,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly currFlightPlanService = new FlightPlanService(
     this.bus,
     new A320FlightPlanPerformanceData(),
-    FpmConfigs.A320_HONEYWELL_H3,
+    A320AircraftConfig,
     true,
   );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);

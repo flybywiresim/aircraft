@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { RunwayUtils, Approach, ApproachType } from '@flybywiresim/fbw-sdk';
@@ -31,16 +30,17 @@ export class ApproachUtils {
     };
   }
 
-  public static parseApproach(approach: Approach): ApproachNameComponents | undefined {
-    const type = ApproachUtils.approachTypeString(approach.type);
+  private static parseApproach(approach: Approach, isRnpAr = false): ApproachNameComponents | undefined {
+    const type = ApproachUtils.approachTypeString(approach.type, isRnpAr);
     const runway = RunwayUtils.runwayString(approach.runwayIdent);
     const designator = approach.multipleIndicator;
 
     return { type, runway, designator };
   }
 
-  private static formatShortApproachName(approach: Approach): string {
-    const appr = ApproachUtils.parseApproach(approach);
+  private static formatShortApproachName(approach: Approach, withRnpArNaming = false): string {
+    const isRnpAr = withRnpArNaming && ApproachUtils.isRnpArApproach(approach);
+    const appr = ApproachUtils.parseApproach(approach, isRnpAr);
 
     if (!appr) {
       return '';
@@ -56,30 +56,36 @@ export class ApproachUtils {
     /**
      * Format an approach name in short format (max 7 chars)
      * @param approach An approach object
+     * @param withRnpArNaming Whether to show RNP-AR approaches as RNP instead of RNAV.
      * @returns An approach name in short format (e.g. RNV23LY)
      */
-    (approach: Approach): string;
+    (approach: Approach, withRnpArNaming?: boolean): string;
   } = ApproachUtils.formatShortApproachName;
 
-  private static formatLongApproachName(approach: Approach): string {
-    const appr = ApproachUtils.parseApproach(approach);
+  private static formatLongApproachName(approach: Approach, withRnpArNaming = false): string {
+    const isRnpAr = withRnpArNaming && this.isRnpArApproach(approach);
+    const appr = ApproachUtils.parseApproach(approach, isRnpAr);
+    if (!appr) {
+      return '';
+    }
     const runway = appr.runway;
-    const suffix = appr.designator ? `-${appr.designator}` : '';
+    const suffix = (appr.designator ? `-${appr.designator}` : '') + (isRnpAr ? '(AR)' : '');
 
     return `${appr.type}${runway}${suffix}`;
   }
 
   public static longApproachName: {
-    /*
+    /**
      * Format an approach name in long format (max 9 chars)
      * @param approach an approach object
+     * @param withRnpArNaming whether to show RNP-AR approaches as RNP instead of RNAV and with AR suffix at the end.
      * @returns An approach name in long format (e.g. RNAV23L-Y)
      */
-    (approach: Approach): string;
+    (approach: Approach, withRnpArNaming?: boolean): string;
   } = ApproachUtils.formatLongApproachName;
 
-  public static approachTypeString(type: ApproachType): string {
-    switch (type) {
+  public static approachTypeString(approachType: ApproachType, isRnpAr = false): string {
+    switch (approachType) {
       case ApproachType.Gps:
         return 'GPS';
       case ApproachType.Ils:
@@ -94,14 +100,20 @@ export class ApproachUtils {
       case ApproachType.NdbDme:
         return 'NDB';
       case ApproachType.Rnav:
-        return 'RNAV';
+        return isRnpAr ? 'RNP' : 'RNAV';
       case ApproachType.Sdf:
         return 'SDF';
       case ApproachType.Vor:
       case ApproachType.VorDme:
         return 'VOR';
+      case ApproachType.Gls:
+        return 'GLS';
       default:
         return '';
     }
+  }
+
+  public static isRnpArApproach(approach: Approach): boolean {
+    return approach.authorisationRequired || approach.missedApproachAuthorisationRequired; // TODO for LPV it shouldn't be applicable.
   }
 }

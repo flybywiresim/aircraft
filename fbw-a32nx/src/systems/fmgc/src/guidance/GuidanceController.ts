@@ -227,7 +227,7 @@ export class GuidanceController {
 
     const phase = this.flightPhase.get();
 
-    if (this.symbolConfig.publishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
+    if (this.symbolConfig.showSidName && phase < FmgcFlightPhase.Cruise) {
       if (this.flightPlanService.active.isDepartureProcedureActive) {
         apprMsg = this.flightPlanService.active.originDeparture.ident.padEnd(this.approachIdentSize);
       }
@@ -241,10 +241,7 @@ export class GuidanceController {
           // Nothing is shown on the ND for runway-by-itself approaches
           apprMsg =
             appr && appr.type !== ApproachType.Unknown
-              ? ApproachUtils.longApproachName(appr) +
-                (appr.authorisationRequired && this.symbolConfig.showRnpArLabel ? '(RNP)' : '').padEnd(
-                  this.approachIdentSize,
-                )
+              ? ApproachUtils.longApproachName(appr, this.symbolConfig.rnpArNaming).padEnd(this.approachIdentSize)
               : '';
         }
       }
@@ -338,7 +335,7 @@ export class GuidanceController {
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
-    this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
+    this.approachIdentSize = this.symbolConfig.approachIdentSize;
     this.bus
       .getSubscriber<FlightPlanOperationEvents>()
       .on('fms_set_hold_immediate_exit')

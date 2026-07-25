@@ -316,7 +316,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
     await this.destinationSegment.setAirport(this.alternateDestinationAirport.ident);
     await this.destinationSegment.setRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
-    await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
+    await this.approachSegment.setProcedure(
+      this.alternateFlightPlan.approach?.databaseId ?? undefined,
+      this.context.useApproachRnpArNaming.get(),
+    );
     await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
     await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(

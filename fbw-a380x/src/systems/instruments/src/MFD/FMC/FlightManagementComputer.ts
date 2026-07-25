@@ -3,7 +3,7 @@
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { A380AircraftConfig } from './A380AircraftConfig';
 import {
   ArraySubject,
   ConsumerSubject,
@@ -51,7 +51,6 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from '../MFD';
 import { FmcIndex } from './FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from '../shared/MfdUIData';
 import { ActiveUriInformation } from '../pages/common/MfdUiService';
@@ -124,7 +123,7 @@ export class FlightManagementComputer implements FmcInterface {
   #flightPlanService = new FlightPlanService<A380FlightPlanPerformanceData>(
     this.bus,
     new A380FlightPlanPerformanceData(),
-    FpmConfigs.A380,
+    A380AircraftConfig,
     this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
   );
 
