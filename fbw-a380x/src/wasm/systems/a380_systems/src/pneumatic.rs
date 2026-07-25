@@ -28,7 +28,7 @@ use systems::{
         PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
@@ -1177,11 +1177,31 @@ impl FullAuthorityDigitalEngineControl {
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_1_state = reader.read(&self.engine_1_state_id);
-        self.engine_2_state = reader.read(&self.engine_2_state_id);
-        self.engine_3_state = reader.read(&self.engine_3_state_id);
-        self.engine_4_state = reader.read(&self.engine_4_state_id);
-        self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
+        self.engine_1_state = reader.read_discrete_or_fallback(
+            &self.engine_1_state_id,
+            "EngineState1",
+            EngineState::Off,
+        );
+        self.engine_2_state = reader.read_discrete_or_fallback(
+            &self.engine_2_state_id,
+            "EngineState2",
+            EngineState::Off,
+        );
+        self.engine_3_state = reader.read_discrete_or_fallback(
+            &self.engine_3_state_id,
+            "EngineState3",
+            EngineState::Off,
+        );
+        self.engine_4_state = reader.read_discrete_or_fallback(
+            &self.engine_4_state_id,
+            "EngineState4",
+            EngineState::Off,
+        );
+        self.engine_mode_selector1_position = reader.read_discrete_or_fallback(
+            &self.engine_mode_selector1_id,
+            "EngineModeSelector",
+            EngineModeSelector::Norm,
+        );
     }
 }
 
