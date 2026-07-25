@@ -1189,6 +1189,15 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FQMS_BUS", ClientData::FQMS_BUS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FQMS_BUS, sizeof(base_fqms), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FQMS_BUS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_fqms));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   for (int i = 0; i < 4; i++) {
     auto defineId = ClientData::FADEC_1_BUS + i;
     // map client id
@@ -1713,6 +1722,10 @@ bool SimConnectInterface::setClientDataIls(base_ils_bus& output, int ilsIndex) {
 
 bool SimConnectInterface::setClientDataFms(base_fms_inputs& output) {
   return sendClientData(ClientData::FMS_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataFqms(base_fqms& output) {
+  return sendClientData(ClientData::FQMS_BUS, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataFadec(base_eec& output, int fadecIndex) {

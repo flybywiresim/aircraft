@@ -112,6 +112,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateAdirs(i);
   }
 
+  result &= updateFqms();
+
   for (int i = 0; i < 2; i++) {
     result &= updateFcu(calculatedSampleTime, i);
   }
@@ -1444,6 +1446,17 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateFqms() {
+  fqmsBusOutputs.gross_weight_kg = Arinc429Utils::fromSimVar(idFqmsGrossWeight->get());
+  fqmsBusOutputs.gross_weight_cg_pct = Arinc429Utils::fromSimVar(idFqmsGrossWeightCgPercentMac->get());
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataFqms(fqmsBusOutputs);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   // do not further process when active pause is on
   if (simConnectInterface.isSimInActivePause()) {
@@ -1676,8 +1689,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
-  modelInputs.in.adcn_inputs.fqms.gross_weight_kg = Arinc429Utils::fromSimVar(idFqmsGrossWeight->get());
-  modelInputs.in.adcn_inputs.fqms.gross_weight_cg_pct = Arinc429Utils::fromSimVar(idFqmsGrossWeightCgPercentMac->get());
+  modelInputs.in.adcn_inputs.fqms = fqmsBusOutputs;
   modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
   modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];

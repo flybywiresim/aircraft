@@ -126,6 +126,8 @@ class FlyByWireInterface {
   base_adr_bus adrBusOutputs[3] = {};
   base_ir_bus irBusOutputs[3] = {};
 
+  base_fqms fqmsBusOutputs = {};
+
   Prim prims[3] = {Prim(true, false, false), Prim(false, true, false), Prim(false, false, true)};
   base_prim_discrete_outputs primsDiscreteOutputs[3] = {};
   base_prim_analog_outputs primsAnalogOutputs[3] = {};
@@ -759,6 +761,8 @@ class FlyByWireInterface {
   bool updateIls(int ilsIndex);
 
   bool updateAdirs(int adirsIndex);
+
+  bool updateFqms();
 
   bool updatePrim(double sampleTime, int primIndex);
 
