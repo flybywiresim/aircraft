@@ -312,6 +312,16 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   25.0,
 
+  80.0,
+
+  2.6,
+
+  2.6,
+
+  2.6,
+
+  2.6,
+
   30.0,
 
   0.02,
@@ -440,6 +450,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   1.0,
 
+  1.0,
+
   5.0,
 
   12.0,
@@ -540,7 +552,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   a380_pitch_efcs_law::AlternateLaw2,
 
-  false,
+  0.0F,
 
   false,
 
@@ -550,6 +562,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   false,
 
+  false,
+
+  false,
+
   true,
 
   true,
@@ -571,6 +587,18 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   true,
 
   false,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  2U,
+
+  2U,
 
   2U,
 
@@ -4366,6 +4394,14 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   -0.25,
 
+
+  { -5.8, -4.68, 0.18 },
+
+
+  { 29.0, 34.5, 43.0 },
+
+  0.0,
+
   0.0,
 
   0.0,
@@ -4664,6 +4700,11 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   false,
 
   false,
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 

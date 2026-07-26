@@ -139,6 +139,7 @@ clang++ \
   "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
+  "${DIR}/src/model/look1_binlcpw.cpp" \
   "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_iflf_binlxpw.cpp" \

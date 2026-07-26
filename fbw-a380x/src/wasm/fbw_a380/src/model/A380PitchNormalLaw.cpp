@@ -323,9 +323,9 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
 
   1.0,
 
-  3.5,
+  2.0,
 
-  -11.0,
+  -10.0,
 
   0.0,
 
