@@ -28,6 +28,7 @@ import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
 import { SimplaneValues } from './shared/SimplaneValueProvide';
 import { VerticalMode } from '@shared/autopilot';
+import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -251,13 +252,16 @@ export class FlightPathVector extends DisplayComponent<{
 
 export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HudElems>();
+  private readonly sub = this.props.bus.getArincSubscriber<
+    PrimFeBusBaseEvents & Arinc429Values & HUDSimvars & ClockEvents & HudElems
+  >();
+
+  private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_speed_trend').atFrequency(10));
   private refElement = FSComponent.createRef<SVGGElement>();
   private leftChevron = FSComponent.createRef<SVGGElement>();
   private rightChevron = FSComponent.createRef<SVGGElement>();
   private inRange = true;
   private merged = false;
-  private vCTrend = new Arinc429Word(0);
 
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
@@ -270,11 +274,11 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
 
   private setOffset() {
     const sign =
-      Math.abs(this.getAccel()) > Math.abs(this.vCTrend.value)
+      Math.abs(this.getAccel()) > Math.abs(this.vCTrendWord.get().value)
         ? Math.sign(this.getAccel())
-        : Math.sign(this.vCTrend.value);
-    const trend = sign * Math.max(Math.abs(this.getAccel()), Math.abs(this.vCTrend.value));
-    if (this.vCTrend.isNormalOperation()) {
+        : Math.sign(this.vCTrendWord.get().value);
+    const trend = sign * Math.max(Math.abs(this.getAccel()), Math.abs(this.vCTrendWord.get().value));
+    if (this.vCTrendWord.get().isNormalOperation()) {
       this.refElement.instance.style.visibility = 'visible';
       const offset = (-trend * 28) / 5;
       const UsedOffset = Math.max(offset, -FIVE_DEG);
@@ -326,16 +330,6 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
       this.groundSpeed.sub(() => {
         this.setOffset();
       }),
-    );
-
-    this.subscriptions.push(
-      this.sub
-        .on('vCTrend')
-        .withArinc429Precision(2)
-        .whenChanged()
-        .handle((word) => {
-          this.vCTrend = word;
-        }),
     );
   }
 
