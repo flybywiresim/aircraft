@@ -4294,12 +4294,12 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_pw[10] = A380PrimComputerFctl_P.Constant1_Value_h;
     rtb_VectorConcatenate_pw[11] = A380PrimComputerFctl_P.Constant1_Value_h;
     rtb_VectorConcatenate_pw[12] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.lateral_modes.land_active;
-    rtb_VectorConcatenate_pw[13] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_2_capability;
-    rtb_VectorConcatenate_pw[14] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_passive_capability;
-    rtb_VectorConcatenate_pw[15] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_op_capability;
-    rtb_VectorConcatenate_pw[16] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_2_inop;
-    rtb_VectorConcatenate_pw[17] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_passive_inop;
-    rtb_VectorConcatenate_pw[18] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_op_inop;
+    rtb_VectorConcatenate_pw[13] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_pw[14] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_pw[15] = A380PrimComputerFctl_P.Constant1_Value_h;
+    rtb_VectorConcatenate_pw[16] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_2_capability;
+    rtb_VectorConcatenate_pw[17] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_passive_capability;
+    rtb_VectorConcatenate_pw[18] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.land_3_fail_op_capability;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_pw, &rtb_y_oqi);
     rtb_VectorConcatenate_pw[0] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.armed_modes.alt_acq_armed;
     rtb_VectorConcatenate_pw[1] = A380PrimComputerFctl_B.BusAssignment_m.fg_mode_logic.armed_modes.alt_acq_arm_possible;

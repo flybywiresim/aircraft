@@ -99,6 +99,7 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
     this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
+    this.backplane.addInstrument('FcdcChoiceProvider', this.fcdcChoiceProvider);
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
     this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('FqmsPublisher', this.fqmsPublisher);

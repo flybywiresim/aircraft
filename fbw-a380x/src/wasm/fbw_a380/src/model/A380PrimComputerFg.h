@@ -163,8 +163,6 @@ class A380PrimComputerFg final
     boolean_T p_true_active;
     boolean_T p_metric_alt_active;
     boolean_T p_trk_fpa_active;
-    boolean_T pLand3FailOp;
-    boolean_T pLand3FailPass;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_c;
@@ -180,7 +178,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_jfh;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kdl;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_er;
+    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_erf;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oks;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_lq;
@@ -415,6 +413,8 @@ class A380PrimComputerFg final
     real_T BitfromLabel2_bit_ji;
     real_T BitfromLabel2_bit_g;
     real_T BitfromLabel1_bit_la;
+    real_T BitfromLabel3_bit_h;
+    real_T BitfromLabel1_bit_m;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant_const_g;

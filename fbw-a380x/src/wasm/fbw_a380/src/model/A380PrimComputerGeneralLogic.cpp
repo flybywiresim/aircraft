@@ -994,6 +994,20 @@ void A380PrimComputerGeneralLogic::step()
       break;
     }
 
+    if (A380PrimComputerGeneralLogic_U.in.discrete_inputs.is_unit_1) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_a_rejected = rtb_ra1Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_b_rejected = rtb_ra3Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_c_rejected = rtb_ra2Invalid;
+    } else if (A380PrimComputerGeneralLogic_U.in.discrete_inputs.is_unit_2) {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_a_rejected = rtb_ra3Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_b_rejected = rtb_ra1Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_c_rejected = rtb_ra2Invalid;
+    } else {
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_a_rejected = rtb_ra1Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_b_rejected = rtb_ra2Invalid;
+      A380PrimComputerGeneralLogic_Y.out.general_logic.ra_c_rejected = rtb_ra3Invalid;
+    }
+
     A380PrimComputerGeneralLogic_MATLABFunction
       (&A380PrimComputerGeneralLogic_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
        A380PrimComputerGeneralLogic_P.BitfromLabel6_bit_o, &rtb_y_dw);

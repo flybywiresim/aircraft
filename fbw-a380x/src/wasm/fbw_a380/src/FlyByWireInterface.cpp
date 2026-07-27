@@ -576,8 +576,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
     idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
-    idFcdcFgDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_4");
-    idFcdcFgDiscreteWord8[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_8");
+    idFcdcFgDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_1");
+    idFcdcFgDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_2");
+    idFcdcFgDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_3");
     idFcdcLandingFctDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_LANDING_FCT_DISCRETE_WORD");
     idFcdcCaptRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
     idFcdcFoRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
@@ -2224,7 +2225,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
     fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
     fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
-    fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
     fcdcs[fcdcIndex].discreteInputs.simData = simData;
     fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[0] = simData.engine_combustion_1;
@@ -2239,7 +2239,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.antiskidAvailable = simData.antiskidBrakesActive;
     fcdcs[fcdcIndex].discreteInputs.nwsCommunicationAvailable =
         !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
-    fcdcs[fcdcIndex].discreteInputs.fcuNorthRefTrue = idFcuNorthRefTrue->get() == 1;
     fcdcs[fcdcIndex].discreteInputs.yellowHydraulicAvailable = idHydYellowPressurised->get();
     fcdcs[fcdcIndex].discreteInputs.greenHydraulicAvailable = idHydGreenPressurised->get();
     fcdcs[fcdcIndex].discreteInputs.abnProcImpactingLdgPerfActive =
@@ -2299,12 +2298,14 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
-  idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord4.toSimVar());
-  idFcdcFgDiscreteWord8[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord8.toSimVar());
+  idFcdcFgDiscreteWord1[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord1.toSimVar());
+  idFcdcFgDiscreteWord2[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord2.toSimVar());
+  idFcdcFgDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord3.toSimVar());
   idFcdcLandingFctDiscreteWord[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].landingFctDiscreteWord.toSimVar());
 
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
-  idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
+  // TODO autoland warning is a function of the FWS
+  // idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
   idBtvLost->set(fcdcsDiscreteOutputs[0].btvLost || fcdcsDiscreteOutputs[1].btvLost ? 1 : 0);
 
   return true;

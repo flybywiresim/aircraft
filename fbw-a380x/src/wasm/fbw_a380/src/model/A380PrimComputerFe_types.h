@@ -769,6 +769,9 @@ struct base_prim_general_logic_outputs
   real_T ra_computation_data_ft;
   boolean_T two_ra_failure;
   boolean_T all_ra_failure;
+  boolean_T ra_a_rejected;
+  boolean_T ra_b_rejected;
+  boolean_T ra_c_rejected;
   boolean_T all_sfcc_lost;
   real32_T flap_handle_index;
   real32_T flap_angle_deg;
@@ -1190,9 +1193,6 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T land_2_capability;
   boolean_T land_3_fail_passive_capability;
   boolean_T land_3_fail_op_capability;
-  boolean_T land_2_inop;
-  boolean_T land_3_fail_passive_inop;
-  boolean_T land_3_fail_op_inop;
   boolean_T tla_to_ga_set;
   boolean_T true_active;
   boolean_T trk_fpa_active;

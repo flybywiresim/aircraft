@@ -1349,15 +1349,11 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     } else if (message == D1D2Messages.RAW_ONLY) {
       return 'ONLY';
     } else {
-      this.isShown = false;
-
       return '';
     }
   });
 
   private readonly modeChangePath = this.D1D2Message.map((message) => {
-    this.isShown = true;
-
     if (
       message == D1D2Messages.LAND_1 ||
       message == D1D2Messages.APPR_1 ||
@@ -1380,6 +1376,14 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
   constructor(props: CellProps) {
     super(props, 9);
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.D1D2Message.sub(() => {
+      this.displayModeChangedPath();
+    });
   }
 
   render(): VNode {
@@ -1501,6 +1505,7 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
 
   private textSub = MappedSubject.create(
     ([ap1Engaged, ap2Engaged]) => {
+      this.isShown = true;
       if (ap1Engaged && ap2Engaged) {
         return 'AP1+2';
       } else if (ap1Engaged) {

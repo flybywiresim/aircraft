@@ -62,12 +62,12 @@ export type PrimFgBusBaseEvents = {
    *       -  | Spare
    *       22 |
    *       23 | LAND Mode Active
-   *       24 | Land 2 Capability
-   *       25 | Land 3 Fail Passive Capability
-   *       26 | Land 3 Fail Op. Capability
-   *       27 | Land 2 Inop.
-   *       28 | Land 3 Fail Passive Inop.
-   *       29 | Land 3 Fail Op. Inop.
+   *       24 | Spare
+   *       25 | Spare
+   *       26 | Spare
+   *       27 | Land 2 Capability
+   *       28 | Land 3 Fail Passive Capability
+   *       29 | Land 3 Fail Op. Capability
    */
   prim_fg_discrete_word_1: number;
   /* FG discrete word 2 (armed modes).

@@ -422,8 +422,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
-  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord4[2];
-  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord8[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFcdcLandingFctDiscreteWord[2];
   std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];

@@ -3,7 +3,7 @@
   "isInteractive": false,
   "extraDeps": [
     "../MsfsAvionicsCommon",
-    "../../shared/PitchTrimUtils",
+    "../../shared/src",
     "/fbw-common/src/systems/instruments/src/PFD"
   ]
 }
