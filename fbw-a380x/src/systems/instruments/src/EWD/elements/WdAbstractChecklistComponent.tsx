@@ -10,7 +10,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from '../shared/EwdSimvarPublisher';
-import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import { ChecklistLineStyle, WD_NUM_LINES, WdLineData, WdSpecialLine } from '../../MsfsAvionicsCommon/EcamMessages';
 import { DestroyableComponent } from '../..//MsfsAvionicsCommon/DestroyableComponent';
@@ -29,7 +29,7 @@ interface WdAbstractChecklistComponentProps {
 
 export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
   protected readonly sub = this.props.bus.getSubscriber<
-    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcSimvars & FwsEvents & IrBusEvents
+    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcBusEvents & FwsEvents & IrBusEvents
   >();
 
   protected readonly lineData: WdLineData[] = [];

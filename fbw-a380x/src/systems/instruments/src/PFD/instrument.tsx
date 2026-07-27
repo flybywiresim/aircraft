@@ -12,7 +12,8 @@ import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
 import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
-import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcChoiceProvider } from './shared/FcdcChoiceProvider';
 import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
@@ -55,13 +56,15 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
 
-  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+  private readonly fcdcPublisher = new FcdcBusPublisher(this.bus);
 
   private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
 
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
+  private readonly fcdcChoiceProvider = new FcdcChoiceProvider(this.bus);
 
   private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
 

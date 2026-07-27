@@ -47,7 +47,7 @@ import { BrakeToVacate } from './PseudoPRIM/BrakeToVacate';
 // FIXME should not import from instruments
 import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
 // FIXME should not import from instruments
 import {
   ResetPanelSimvarPublisher,
@@ -137,7 +137,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+  private readonly fcdcPublisher = new FcdcBusPublisher(this.bus);
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 

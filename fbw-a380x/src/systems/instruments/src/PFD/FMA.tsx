@@ -20,7 +20,6 @@ import {
   Arinc429Word,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
@@ -31,7 +30,10 @@ import {
   computeA1A2Message,
   computeA3Message,
   computeBC3Message,
+  computeD1D2Message,
+  D1D2Messages,
 } from './FMADefinitions';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -64,9 +66,10 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 export class FMA extends DisplayComponent<{
   readonly bus: ArincEventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly fcdcData: FcdcValueProvider;
 }> {
-  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents & PrimFgBusBaseEvents>();
+  private sub = this.props.bus.getSubscriber<
+    PFDSimvars & Arinc429Values & DmcLogicEvents & PrimFgBusBaseEvents & FcdcBusBaseEvents
+  >();
 
   private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
@@ -83,6 +86,8 @@ export class FMA extends DisplayComponent<{
   private primFgAtsFmaDiscreteWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('prim_fg_ats_fma_discrete_word'),
   );
+
+  private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
 
   private readonly ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
 
@@ -147,7 +152,7 @@ export class FMA extends DisplayComponent<{
     this.props.isAttExcessive,
     this.primFgDiscreteWord2,
     this.setHoldSpeed,
-    this.props.fcdcData.fcdcDiscreteWord1,
+    this.fcdcDiscreteWord1,
     this.fwcFlightPhase,
     this.primFgDiscreteWord6,
     this.tdReached,
@@ -243,12 +248,7 @@ export class FMA extends DisplayComponent<{
           <path d="m133.72 0.33732v20.864" />
         </g>
 
-        <Row1
-          bus={this.props.bus}
-          isAttExcessive={this.props.isAttExcessive}
-          fcdcData={this.props.fcdcData}
-          A1A2CellMessage={this.A1A2Message}
-        />
+        <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} A1A2CellMessage={this.A1A2Message} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} A1A2CellMessage={this.A1A2Message} />
         <Row3
           bus={this.props.bus}
@@ -264,7 +264,6 @@ export class FMA extends DisplayComponent<{
 class Row1 extends DisplayComponent<{
   readonly bus: EventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly fcdcData: FcdcValueProvider;
   readonly A1A2CellMessage: Subscribable<number>;
 }> {
   private b1Cell = FSComponent.createRef<B1Cell>();
@@ -303,7 +302,7 @@ class Row1 extends DisplayComponent<{
         <g ref={this.cellsToHide}>
           <B1Cell ref={this.b1Cell} bus={this.props.bus} />
           <C1Cell ref={this.c1Cell} bus={this.props.bus} />
-          <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} />
           <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
         </g>
         <E1Cell bus={this.props.bus} />
@@ -662,7 +661,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     this.classSub.set(`MiddleAlign ${className}`);
   }
 
-  private readonly shouldFlash = this.props.A3Message.map((A3Message) => A3Message !== A3Messages.BRK_RTO);
+  private readonly shouldFlash = this.props.A3Message.map(
+    (A3Message) => A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -1298,74 +1299,100 @@ class BC3Cell extends DisplayComponent<{
   }
 }
 
-class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
+class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm108.1 1.8143h19.994v6.0476h-19.994z';
   private static readonly SixCharactersPerLineTwoLinesModeChangePath = 'm107.1 1.8143h22.994v13.506h-22.994z';
   private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm110.1 1.8143h15.994v13.506h-15.994z';
 
-  private readonly text1Sub = Subject.create('');
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & FcdcBusBaseEvents>();
 
-  private readonly text2Sub = Subject.create('');
+  private readonly primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  constructor(props: CellProps & { readonly fcdcData: FcdcValueProvider }) {
-    super(props, 9);
-  }
+  private readonly primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
 
-  private setText() {
-    let text1: string;
-    let text2: string | undefined;
-    let modeChangedPath: string | undefined;
+  private readonly fcdcFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_fg_discrete_word_1'));
+
+  private readonly D1D2Message = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1]) => {
+      return computeD1D2Message(primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1);
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord2,
+    this.fcdcFgDiscreteWord1,
+  );
+
+  private readonly text1Sub = this.D1D2Message.map((message) => {
     this.isShown = true;
-    if (this.props.fcdcData.land2Capacity.get()) {
-      text1 = 'LAND2';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
-      text1 = 'LAND3';
-      text2 = 'SINGLE';
-      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
-    } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
-      text1 = 'LAND3';
-      text2 = 'DUAL';
-      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
-    } else if (false) {
-      text1 = 'LAND1';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (false) {
-      text1 = 'F-APP';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (false) {
-      text1 = 'F-APP';
-      text2 = '+ RAW';
-      modeChangedPath = D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
-    } else if (false) {
-      text1 = 'RAW';
-      text2 = 'ONLY';
-      modeChangedPath = D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
-    } else if (false) {
-      text1 = 'APPR1';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
+
+    if (message == D1D2Messages.LAND_2) {
+      return 'LAND2';
+    } else if (message == D1D2Messages.LAND_3_DUAL || message == D1D2Messages.LAND_3_SINGLE) {
+      return 'LAND3';
+    } else if (message == D1D2Messages.APPR_1) {
+      return 'APPR1';
+    } else if (message == D1D2Messages.F_APP || message == D1D2Messages.F_APP_RAW) {
+      return 'F-APP';
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return 'RAW';
+    } else if (message == D1D2Messages.LAND_1) {
+      return 'LAND1';
     } else {
-      text1 = '';
-      text2 = '';
       this.isShown = false;
+
+      return '';
     }
+  });
 
-    const hasChanged = text1 !== this.text1Sub.get() || text2 !== this.text2Sub.get();
+  private readonly text2Sub = this.D1D2Message.map((message) => {
+    this.isShown = true;
 
-    if (hasChanged) {
-      this.displayModeChangedPath();
+    if (
+      message == D1D2Messages.LAND_1 ||
+      message == D1D2Messages.APPR_1 ||
+      message == D1D2Messages.LAND_2 ||
+      message == D1D2Messages.F_APP
+    ) {
+      return '';
+    } else if (message == D1D2Messages.LAND_3_SINGLE) {
+      return 'SINGLE';
+    } else if (message == D1D2Messages.LAND_3_DUAL) {
+      return 'DUAL';
+    } else if (message == D1D2Messages.F_APP_RAW) {
+      return '+RAW';
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return 'ONLY';
+    } else {
+      this.isShown = false;
 
-      this.text1Sub.set(text1);
-      this.text2Sub.set(text2);
-      if (this.modeChangedPathRef !== undefined) {
-        this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath);
-      }
-    } else if (!this.isShown) {
-      this.displayModeChangedPath(true);
+      return '';
     }
+  });
+
+  private readonly modeChangePath = this.D1D2Message.map((message) => {
+    this.isShown = true;
+
+    if (
+      message == D1D2Messages.LAND_1 ||
+      message == D1D2Messages.APPR_1 ||
+      message == D1D2Messages.LAND_2 ||
+      message == D1D2Messages.F_APP
+    ) {
+      return D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
+    } else if (
+      message == D1D2Messages.LAND_3_DUAL ||
+      message == D1D2Messages.LAND_3_SINGLE ||
+      message == D1D2Messages.F_APP_RAW
+    ) {
+      return D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
+    } else {
+      return '';
+    }
+  });
+
+  constructor(props: CellProps) {
+    super(props, 9);
   }
 
   render(): VNode {
@@ -1377,7 +1404,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
         <text class="FontMedium MiddleAlign White" x="118.39752" y="14.289783">
           {this.text2Sub}
         </text>
-        <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" />
+        <path ref={this.modeChangedPathRef} d={this.modeChangePath} class="NormalStroke White" visibility="hidden" />
       </g>
     );
   }

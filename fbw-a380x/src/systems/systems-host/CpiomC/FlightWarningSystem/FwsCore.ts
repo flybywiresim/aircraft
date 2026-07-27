@@ -90,7 +90,7 @@ import {
   OisDebugDataControlEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -136,7 +136,7 @@ export interface FwsSuppressableItemDict {
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
-      FcdcSimvars &
+      FcdcBusEvents &
       FqmsBusEvents &
       FGVars &
       FmsMessageVars &

@@ -186,3 +186,47 @@ export function computeBC3Message(
     return BC3Messages.NONE;
   }
 }
+
+export enum D1D2Messages {
+  NONE = 0,
+  LAND_2,
+  LAND_3_SINGLE,
+  LAND_3_DUAL,
+  APPR_1,
+  LAND_1,
+  F_APP,
+  F_APP_RAW,
+  RAW_ONLY,
+}
+
+export function computeD1D2Message(
+  fgDiscreteWord1: Arinc429WordData,
+  fgDiscreteWord2: Arinc429WordData,
+  fcdcFgDiscreteWord1: Arinc429WordData,
+): D1D2Messages {
+  const landModeArmed = fgDiscreteWord2.bitValueOr(28, false);
+  const landModeActive = fgDiscreteWord1.bitValueOr(23, false);
+  const land2Capacity = fcdcFgDiscreteWord1.bitValueOr(24, false);
+  const land3FailPassiveCapacity = fcdcFgDiscreteWord1.bitValueOr(25, false);
+  const land3FailOperationalCapacity = fcdcFgDiscreteWord1.bitValueOr(26, false);
+
+  if (land2Capacity) {
+    return D1D2Messages.LAND_2;
+  } else if (land3FailPassiveCapacity) {
+    return D1D2Messages.LAND_3_SINGLE;
+  } else if (land3FailOperationalCapacity) {
+    return D1D2Messages.LAND_3_DUAL;
+  } else if (landModeArmed || landModeActive) {
+    return D1D2Messages.APPR_1;
+  } else if (false) {
+    return D1D2Messages.LAND_1;
+  } else if (false) {
+    return D1D2Messages.F_APP;
+  } else if (false) {
+    return D1D2Messages.F_APP_RAW;
+  } else if (false) {
+    return D1D2Messages.RAW_ONLY;
+  } else {
+    return D1D2Messages.NONE;
+  }
+}

@@ -29,8 +29,8 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -106,11 +106,10 @@ interface HorizonProps {
   readonly instrument: BaseInstrument;
   readonly isAttExcessive: Subscribable<boolean>;
   readonly filteredRadioAlt: Subscribable<number>;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FcdcBusEvents>();
 
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -118,8 +117,15 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private yOffset = Subject.create(0);
 
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
 
   onAfterRender(node: VNode): void {

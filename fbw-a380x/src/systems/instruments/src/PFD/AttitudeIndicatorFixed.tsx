@@ -13,18 +13,17 @@ import { Arinc429LocalVarConsumerSubject, Arinc429Word } from '@flybywiresim/fbw
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & FcdcBusEvents>();
 
   private roll = new Arinc429Word(0);
 
@@ -32,8 +31,15 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
   private visibilitySub = Subject.create('hidden');
 
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
 
   onAfterRender(node: VNode): void {
