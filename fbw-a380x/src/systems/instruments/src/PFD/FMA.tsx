@@ -26,10 +26,14 @@ import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import {
   A1A2Messages,
   A3Messages,
+  B1Messages,
   BC3Messages,
+  C1Messages,
   computeA1A2Message,
   computeA3Message,
+  computeB1Message,
   computeBC3Message,
+  computeC1Message,
   computeD1D2Message,
   D1D2Messages,
 } from './FMADefinitions';
@@ -744,6 +748,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private primFgSelectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_flight_path_angle'));
 
+  private readonly message = this.primFgDiscreteWord3.map((primFgDiscreteWord3) =>
+    computeB1Message(primFgDiscreteWord3),
+  );
+
   private readonly fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
   private readonly tcasLargeBoxDemand = this.primFgDiscreteWord6.map((word) => word.bitValueOr(11, false));
@@ -751,94 +759,79 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   private readonly targetNotHeld = this.primFgDiscreteWord5.map((word) => word.bitValueOr(29, false));
 
   private readonly text = MappedSubject.create(
-    ([primFgDiscreteWord3, primFgSelectedFpa]) => {
-      const gsTrackMode = primFgDiscreteWord3.bitValueOr(22, false);
-      const gsCaptureMode = primFgDiscreteWord3.bitValueOr(21, false);
-      const descentMode = primFgDiscreteWord3.bitValueOr(12, false);
-      const climbMode = primFgDiscreteWord3.bitValueOr(11, false);
-      const pitchTakeoffMode = primFgDiscreteWord3.bitValueOr(15, false);
-      const pitchGoaroundMode = primFgDiscreteWord3.bitValueOr(16, false);
-      const openDescentMode = primFgDiscreteWord3.bitValueOr(14, false);
-      const openClimbMode = primFgDiscreteWord3.bitValueOr(13, false);
-      const altHoldMode = primFgDiscreteWord3.bitValueOr(20, false);
-      const altAcqMode = primFgDiscreteWord3.bitValueOr(19, false);
-      const fpaMode = primFgDiscreteWord3.bitValueOr(18, false);
-      const vsMode = primFgDiscreteWord3.bitValueOr(17, false);
-      const appDesMode = primFgDiscreteWord3.bitValueOr(23, false);
-      const tcasMode = primFgDiscreteWord3.bitValueOr(25, false);
-
-      const altCstrApplicable = primFgDiscreteWord3.bitValueOr(28, false);
-      const altIsCrzAlt = primFgDiscreteWord3.bitValueOr(29, false);
-
+    ([B1Message, primFgSelectedFpa]) => {
       this.isShown = true;
-      if (gsTrackMode) {
-        return 'G/S';
-      } else if (false) {
-        return 'F-G/S';
-      } else if (gsCaptureMode) {
-        return 'G/S*';
-      } else if (false) {
-        return 'F-G/S*';
-      } else if (pitchTakeoffMode || pitchGoaroundMode) {
-        return 'SRS';
-      } else if (tcasMode) {
-        return 'TCAS';
-      } else if (appDesMode) {
-        return 'APP-DES';
-      } else if (descentMode) {
-        return 'DES';
-      } else if (openDescentMode) {
-        return 'OP DES';
-      } else if (climbMode) {
-        return 'CLB';
-      } else if (openClimbMode) {
-        return 'OP CLB';
-      } else if (altHoldMode && !altCstrApplicable && !altIsCrzAlt) {
-        return 'ALT';
-      } else if (altAcqMode && !altCstrApplicable && !altIsCrzAlt) {
-        return 'ALT*';
-      } else if (altAcqMode && altCstrApplicable && !altIsCrzAlt) {
-        return 'ALT CST*';
-      } else if (altHoldMode && altCstrApplicable && !altIsCrzAlt) {
-        return 'ALT CST';
-      } else if (altAcqMode && !altCstrApplicable && altIsCrzAlt) {
-        return 'ALT CRZ*';
-      } else if (altHoldMode && !altCstrApplicable && altIsCrzAlt) {
-        return 'ALT CRZ';
-      } else if (fpaMode) {
-        let text = 'FPA';
-        const fpaValue = primFgSelectedFpa.value;
 
-        // if FPA is 0 give it an empty space for where the '+' and '-' will be.
-        if (!(primFgSelectedFpa.isNoComputedData() || primFgSelectedFpa.isFailureWarning()) && fpaValue === 0) {
-          text += ' ';
+      switch (B1Message) {
+        case B1Messages.NONE:
+          this.isShown = false;
+          return '';
+
+        case B1Messages.GS:
+          return 'G/S';
+        case B1Messages.F_GS:
+          return 'F-G/S';
+        case B1Messages.GS_STAR:
+          return 'G/S*';
+        case B1Messages.F_GS_STAR:
+          return 'F-G/S*';
+        case B1Messages.SRS:
+          return 'SRS';
+        case B1Messages.TCAS:
+          return 'TCAS';
+        case B1Messages.APP_DES:
+          return 'APP-DES';
+        case B1Messages.DES:
+          return 'DES';
+        case B1Messages.OP_DES:
+          return 'OP DES';
+        case B1Messages.CLB:
+          return 'CLB';
+        case B1Messages.OP_CLB:
+          return 'OP CLB';
+        case B1Messages.ALT:
+          return 'ALT';
+        case B1Messages.ALT_STAR:
+          return 'ALT*';
+        case B1Messages.ALT_CST:
+          return 'ALT CST';
+        case B1Messages.ALT_CST_STAR:
+          return 'ALT CST*';
+        case B1Messages.ALT_CRZ:
+          return 'ALT CRZ';
+        case B1Messages.ALT_CRZ_STAR:
+          return 'ALT CRZ*';
+        case B1Messages.FPA: {
+          let text = 'FPA';
+          const fpaValue = primFgSelectedFpa.value;
+
+          // if FPA is 0 give it an empty space for where the '+' and '-' will be.
+          if (!(primFgSelectedFpa.isNoComputedData() || primFgSelectedFpa.isFailureWarning()) && fpaValue === 0) {
+            text += ' ';
+          }
+          return text;
         }
-        return text;
-      } else if (vsMode) {
-        return 'V/S';
-      } else {
-        this.isShown = false;
-
-        return '';
+        case B1Messages.VS:
+          return 'V/S';
+        default:
+          this.isShown = false;
+          return '';
       }
     },
-    this.primFgDiscreteWord3,
+    this.message,
     this.primFgSelectedFpa,
   );
 
   private readonly additionalText = MappedSubject.create(
-    ([primFgDiscreteWord3, primFgSelectedVs, primFgSelectedFpa]) => {
-      const fpaMode = primFgDiscreteWord3.bitValueOr(18, false);
-      const vsMode = primFgDiscreteWord3.bitValueOr(17, false);
-
-      if (fpaMode) {
+    ([B1Message, primFgSelectedVs, primFgSelectedFpa]) => {
+      if (B1Message === B1Messages.FPA) {
         if (!(primFgSelectedFpa.isNoComputedData() || primFgSelectedFpa.isFailureWarning())) {
           const fpaValue = primFgSelectedFpa.value;
           return `${fpaValue > 0 ? '+' : ''}${(Math.round(fpaValue * 10) / 10).toFixed(1)}°`;
         } else {
           return '-----';
         }
-      } else if (vsMode) {
+      } else if (B1Message === B1Messages.VS) {
         if (!(primFgSelectedVs.isNoComputedData() || primFgSelectedVs.isFailureWarning())) {
           const vsValue = primFgSelectedVs.value;
           return `${vsValue > 0 ? '+' : ''}${Math.round(vsValue).toString()}`.padStart(5, '\xa0');
@@ -849,7 +842,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         return '';
       }
     },
-    this.primFgDiscreteWord3,
+    this.message,
     this.primFgSelectedVs,
     this.primFgSelectedFpa,
   );
@@ -1025,48 +1018,42 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
   private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
 
-  private readonly text = MappedSubject.create(([primFgDiscreteWord4]) => {
-    const rollGaActive = primFgDiscreteWord4.bitValueOr(15, false);
-    const backbeamMode = primFgDiscreteWord4.bitValueOr(29, false);
-    const locCaptActive = primFgDiscreteWord4.bitValueOr(13, false);
-    const locTrackActive = primFgDiscreteWord4.bitValueOr(14, false);
-    const headingActive = primFgDiscreteWord4.bitValueOr(16, false);
-    const runwayActive = primFgDiscreteWord4.bitValueOr(11, false);
-    const runwayLocSubmodeActive = primFgDiscreteWord4.bitValueOr(18, false);
-    const runwayTrackSubmodeActive = primFgDiscreteWord4.bitValueOr(19, false);
-    const trackActive = primFgDiscreteWord4.bitValueOr(17, false);
-    const navActive = primFgDiscreteWord4.bitValueOr(12, false);
+  private readonly message = this.primFgDiscreteWord4.map((primFgDiscreteWord4) =>
+    computeC1Message(primFgDiscreteWord4),
+  );
 
+  private readonly text = this.message.map((C1Message) => {
     this.isShown = true;
-    if (rollGaActive) {
-      return 'GA TRK';
-    } else if (locCaptActive && backbeamMode) {
-      return 'LOC B/C*';
-    } else if (locCaptActive && !backbeamMode) {
-      return 'LOC *';
-    } else if (false) {
-      return 'F-LOC *';
-    } else if (headingActive) {
-      return 'HDG';
-    } else if (runwayActive && runwayLocSubmodeActive) {
-      return 'RWY';
-    } else if (runwayActive && runwayTrackSubmodeActive) {
-      return 'RWY TRK';
-    } else if (trackActive) {
-      return 'TRACK';
-    } else if (locTrackActive && backbeamMode) {
-      return 'LOC B/C';
-    } else if (locTrackActive && !backbeamMode) {
-      return 'LOC';
-    } else if (false) {
-      return 'F-LOC';
-    } else if (navActive) {
-      return 'NAV';
-    } else {
-      this.isShown = false;
-      return '';
+    switch (C1Message) {
+      case C1Messages.GA_TRK:
+        return 'GA TRK';
+      case C1Messages.LOC_BC_STAR:
+        return 'LOC B/C*';
+      case C1Messages.LOC_STAR:
+        return 'LOC *';
+      case C1Messages.F_LOC_STAR:
+        return 'F-LOC *';
+      case C1Messages.HDG:
+        return 'HDG';
+      case C1Messages.RWY:
+        return 'RWY';
+      case C1Messages.RWY_TRK:
+        return 'RWY TRK';
+      case C1Messages.TRACK:
+        return 'TRACK';
+      case C1Messages.LOC_BC:
+        return 'LOC B/C';
+      case C1Messages.LOC:
+        return 'LOC';
+      case C1Messages.F_LOC:
+        return 'F-LOC';
+      case C1Messages.NAV:
+        return 'NAV';
+      default:
+        this.isShown = false;
+        return '';
     }
-  }, this.primFgDiscreteWord4);
+  });
 
   constructor(props: CellProps) {
     super(props, 10);

@@ -113,6 +113,148 @@ export function computeA3Message(
   }
 }
 
+export enum B1Messages {
+  NONE = 0,
+  GS,
+  F_GS,
+  GS_STAR,
+  F_GS_STAR,
+  SRS,
+  TCAS,
+  APP_DES,
+  DES,
+  OP_DES,
+  CLB,
+  OP_CLB,
+  ALT,
+  ALT_STAR,
+  ALT_CST,
+  ALT_CST_STAR,
+  ALT_CRZ,
+  ALT_CRZ_STAR,
+  FPA,
+  VS,
+}
+
+export function computeB1Message(primFgDiscreteWord3: Arinc429WordData): B1Messages {
+  const gsTrackMode = primFgDiscreteWord3.bitValueOr(22, false);
+  const gsCaptureMode = primFgDiscreteWord3.bitValueOr(21, false);
+  const descentMode = primFgDiscreteWord3.bitValueOr(12, false);
+  const climbMode = primFgDiscreteWord3.bitValueOr(11, false);
+  const pitchTakeoffMode = primFgDiscreteWord3.bitValueOr(15, false);
+  const pitchGoaroundMode = primFgDiscreteWord3.bitValueOr(16, false);
+  const openDescentMode = primFgDiscreteWord3.bitValueOr(14, false);
+  const openClimbMode = primFgDiscreteWord3.bitValueOr(13, false);
+  const altHoldMode = primFgDiscreteWord3.bitValueOr(20, false);
+  const altAcqMode = primFgDiscreteWord3.bitValueOr(19, false);
+  const fpaMode = primFgDiscreteWord3.bitValueOr(18, false);
+  const vsMode = primFgDiscreteWord3.bitValueOr(17, false);
+  const appDesMode = primFgDiscreteWord3.bitValueOr(23, false);
+  const tcasMode = primFgDiscreteWord3.bitValueOr(25, false);
+
+  const altCstrApplicable = primFgDiscreteWord3.bitValueOr(28, false);
+  const altIsCrzAlt = primFgDiscreteWord3.bitValueOr(29, false);
+
+  if (gsTrackMode) {
+    return B1Messages.GS;
+  } else if (false) {
+    return B1Messages.F_GS;
+  } else if (gsCaptureMode) {
+    return B1Messages.GS_STAR;
+  } else if (false) {
+    return B1Messages.F_GS_STAR;
+  } else if (pitchTakeoffMode || pitchGoaroundMode) {
+    return B1Messages.SRS;
+  } else if (tcasMode) {
+    return B1Messages.TCAS;
+  } else if (appDesMode) {
+    return B1Messages.APP_DES;
+  } else if (descentMode) {
+    return B1Messages.DES;
+  } else if (openDescentMode) {
+    return B1Messages.OP_DES;
+  } else if (climbMode) {
+    return B1Messages.CLB;
+  } else if (openClimbMode) {
+    return B1Messages.OP_CLB;
+  } else if (altHoldMode && !altCstrApplicable && !altIsCrzAlt) {
+    return B1Messages.ALT;
+  } else if (altAcqMode && !altCstrApplicable && !altIsCrzAlt) {
+    return B1Messages.ALT_STAR;
+  } else if (altAcqMode && altCstrApplicable && !altIsCrzAlt) {
+    return B1Messages.ALT_CST_STAR;
+  } else if (altHoldMode && altCstrApplicable && !altIsCrzAlt) {
+    return B1Messages.ALT_CST;
+  } else if (altAcqMode && !altCstrApplicable && altIsCrzAlt) {
+    return B1Messages.ALT_CRZ_STAR;
+  } else if (altHoldMode && !altCstrApplicable && altIsCrzAlt) {
+    return B1Messages.ALT_CRZ;
+  } else if (fpaMode) {
+    return B1Messages.FPA;
+  } else if (vsMode) {
+    return B1Messages.VS;
+  } else {
+    return B1Messages.NONE;
+  }
+}
+
+export enum C1Messages {
+  NONE = 0,
+  GA_TRK,
+  LOC_BC_STAR,
+  LOC_STAR,
+  F_LOC_STAR,
+  HDG,
+  RWY,
+  RWY_TRK,
+  TRACK,
+  LOC_BC,
+  LOC,
+  F_LOC,
+  NAV,
+}
+
+export function computeC1Message(primFgDiscreteWord4: Arinc429WordData): C1Messages {
+  const rollGaActive = primFgDiscreteWord4.bitValueOr(15, false);
+  const backbeamMode = primFgDiscreteWord4.bitValueOr(29, false);
+  const locCaptActive = primFgDiscreteWord4.bitValueOr(13, false);
+  const locTrackActive = primFgDiscreteWord4.bitValueOr(14, false);
+  const headingActive = primFgDiscreteWord4.bitValueOr(16, false);
+  const runwayActive = primFgDiscreteWord4.bitValueOr(11, false);
+  const runwayLocSubmodeActive = primFgDiscreteWord4.bitValueOr(18, false);
+  const runwayTrackSubmodeActive = primFgDiscreteWord4.bitValueOr(19, false);
+  const trackActive = primFgDiscreteWord4.bitValueOr(17, false);
+  const navActive = primFgDiscreteWord4.bitValueOr(12, false);
+
+  if (rollGaActive) {
+    return C1Messages.GA_TRK;
+  } else if (locCaptActive && backbeamMode) {
+    return C1Messages.LOC_BC_STAR;
+  } else if (locCaptActive && !backbeamMode) {
+    return C1Messages.LOC_STAR;
+  } else if (false) {
+    return C1Messages.F_LOC_STAR;
+  } else if (headingActive) {
+    return C1Messages.HDG;
+  } else if (runwayActive && runwayLocSubmodeActive) {
+    return C1Messages.RWY;
+  } else if (runwayActive && runwayTrackSubmodeActive) {
+    return C1Messages.RWY_TRK;
+  } else if (trackActive) {
+    return C1Messages.TRACK;
+  } else if (locTrackActive && backbeamMode) {
+    return C1Messages.LOC_BC;
+  } else if (locTrackActive && !backbeamMode) {
+    return C1Messages.LOC;
+  } else if (false) {
+    return C1Messages.F_LOC;
+  } else if (navActive) {
+    return C1Messages.NAV;
+  } else {
+    return C1Messages.NONE;
+  }
+}
+
 export enum BC3Messages {
   NONE = 0,
   USE_MAN_PITCH_TRIM,
