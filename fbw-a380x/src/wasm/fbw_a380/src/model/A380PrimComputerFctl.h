@@ -440,6 +440,8 @@ class A380PrimComputerFctl final
     a380_lateral_efcs_law EnumeratedConstant_Value_g;
     a380_pitch_efcs_law EnumeratedConstant_Value_l;
     a380_pitch_efcs_law EnumeratedConstant_Value_j;
+    a380_pitch_efcs_law EnumeratedConstant4_Value;
+    a380_pitch_efcs_law EnumeratedConstant3_Value;
     real32_T DetectChange_vinit;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop1_initial_condition;

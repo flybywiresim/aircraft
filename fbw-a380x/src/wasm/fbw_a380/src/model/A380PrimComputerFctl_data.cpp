@@ -552,6 +552,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   a380_pitch_efcs_law::AlternateLaw2,
 
+  a380_pitch_efcs_law::NormalLaw,
+
+  a380_pitch_efcs_law::NormalLaw,
+
   0.0F,
 
   false,

@@ -604,6 +604,7 @@ void A380PrimComputerFctl::step()
   real32_T rtb_yaw_fd_command_1_Data;
   real32_T rtb_yaw_fd_command_2_Data;
   uint32_T rtb_Switch3_a;
+  uint32_T rtb_fctl_v_alpha_lim_kn_SSM;
   uint32_T rtb_y_hz;
   uint32_T rtb_y_ny;
   uint32_T rtb_y_o5;
@@ -4005,6 +4006,16 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_o[18] = A380PrimComputerFctl_P.Constant22_Value;
     A380PrimComputerFctl_MATLABFunction_gr(rtb_VectorConcatenate_o, &rtb_fctl_discrete_status_word_1_Data);
     rtb_y_hz = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant2_Value);
+    if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost) {
+      rtb_y_o5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant2_Value);
+    } else if ((A380PrimComputerFctl_P.EnumeratedConstant4_Value ==
+                A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.active_pitch_law) &&
+               A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_visible) {
+      rtb_y_o5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value);
+    } else {
+      rtb_y_o5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value);
+    }
+
     A380PrimComputerFctl_DWork.DelayInput1_DSTATE = static_cast<real32_T>
       (A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.v_alpha_max_kn);
     rtb_fctl_v_alpha_lim_kn_Data = A380PrimComputerFctl_DWork.DelayInput1_DSTATE;
@@ -4013,7 +4024,9 @@ void A380PrimComputerFctl::step()
     rtb_fctl_v_alpha_prot_kn_Data = A380PrimComputerFctl_DWork.DelayInput1_DSTATE;
     rtb_OR_i = !A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost;
     if (rtb_OR_i) {
-      if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_visible) {
+      if ((A380PrimComputerFctl_P.EnumeratedConstant3_Value !=
+           A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.active_pitch_law) &&
+          A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_visible) {
         rtb_y_hz = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant1_Value);
       } else {
         rtb_y_hz = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant_Value);
@@ -4022,6 +4035,7 @@ void A380PrimComputerFctl::step()
 
     A380PrimComputerFctl_DWork.DelayInput1_DSTATE = static_cast<real32_T>
       (A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.v_alpha_stall_warn_kn);
+    rtb_fctl_v_alpha_lim_kn_SSM = rtb_y_o5;
     rtb_fctl_v_alpha_stall_warn_kn_Data = A380PrimComputerFctl_DWork.DelayInput1_DSTATE;
     rtb_y_o5 = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant2_Value_l);
     if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost) {
@@ -4821,29 +4835,9 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.discrete_status_word_1.SSM = static_cast<uint32_T>
       (A380PrimComputerFctl_P.EnumeratedConstant1_Value);
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.discrete_status_word_1.Data = rtb_fctl_discrete_status_word_1_Data;
-    if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost) {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_lim_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant2_Value);
-    } else if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_visible) {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_lim_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant1_Value);
-    } else {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_lim_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant_Value);
-    }
-
+    A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_lim_kn.SSM = rtb_fctl_v_alpha_lim_kn_SSM;
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_lim_kn.Data = rtb_fctl_v_alpha_lim_kn_Data;
-    if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost) {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_prot_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant2_Value);
-    } else if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_visible) {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_prot_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant1_Value);
-    } else {
-      A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_prot_kn.SSM = static_cast<uint32_T>
-        (A380PrimComputerFctl_P.EnumeratedConstant_Value);
-    }
-
+    A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_prot_kn.SSM = rtb_fctl_v_alpha_lim_kn_SSM;
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_prot_kn.Data = rtb_fctl_v_alpha_prot_kn_Data;
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_stall_warn_kn.SSM = rtb_y_hz;
     A380PrimComputerFctl_Y.out.bus_outputs.fctl.v_alpha_stall_warn_kn.Data = rtb_fctl_v_alpha_stall_warn_kn_Data;
