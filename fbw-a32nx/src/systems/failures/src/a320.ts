@@ -62,8 +62,9 @@ export const A320Failure = Object.freeze({
   Sec3Failure: 27004,
   Fcdc1Failure: 27005,
   Fcdc2Failure: 27006,
-  SlatWtbFailure: 27007,
-  FlapWtbFailure: 27008,
+
+  SlatWtbFailure: 27100,
+  FlapWtbFailure: 27101,
 
   GreenReservoirLeak: 29000,
   BlueReservoirLeak: 29001,

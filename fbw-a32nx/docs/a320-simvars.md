@@ -1220,7 +1220,7 @@
         - RIGHT
 
 - A32NX_{side}_SLATS_WTB_ACTIVE
-    - Degrees
+    - Boolean
     - The WTB has been triggered and is holding the slats in position
     - Side
         - LEFT
