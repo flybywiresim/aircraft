@@ -21,9 +21,9 @@ export class FcdcChoiceProvider implements Instrument {
   // We have to initialize this in init, as otherwise the content will not be ready and the getDisplayIndex method will fail
   private readonly isSide2 = Subject.create(false);
 
-  private readonly fcdc1StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
+  private readonly fcdc1StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
 
-  private readonly fcdc2StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
+  private readonly fcdc2StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
 
   private readonly useFcdc2 = MappedSubject.create(
     ([fcdc1StatusWord1, fcdc2StatusWord1, isSide2]) => {
