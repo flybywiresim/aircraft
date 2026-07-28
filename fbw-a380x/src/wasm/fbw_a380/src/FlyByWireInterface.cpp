@@ -320,40 +320,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idRudderPedalAnimationPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
   idAutopilotNosewheelDemand = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
-  // register L variable for custom fly-by-wire interface
-  idFmaLateralMode = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
-  idFmaLateralArmed = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_ARMED");
-  idFmaVerticalMode = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_MODE");
-  idFmaVerticalArmed = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_ARMED");
-  idFmaExpediteModeActive = std::make_unique<LocalVariable>("A32NX_FMA_EXPEDITE_MODE");
-  idFmaSpeedProtectionActive = std::make_unique<LocalVariable>("A32NX_FMA_SPEED_PROTECTION_MODE");
-  idFmaSoftAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_SOFT_ALT_MODE");
-  idFmaCruiseAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_CRUISE_ALT_MODE");
-  idFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION");
-  idFmaModeReversion = std::make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
-
-  idAutopilotTcasMessageDisarm = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
-  idAutopilotTcasMessageRaInhibited = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
-  idAutopilotTcasMessageTrkFpaDeselection = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
-
-  // register L variable for flight director
-  idFlightDirectorBank = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
-  idFlightDirectorPitch = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
-  idFlightDirectorYaw = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
-
-  // register L variables for autoland warning
-  idAutopilotAutolandWarning = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
-
-  // register L variables for relative speed to ground
-  idAutopilot_H_dot_radio = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_H_DOT_RADIO");
-
-  // register L variables for autopilot
-  idAutopilotActiveAny = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
-  idAutopilotActive_1 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_1_ACTIVE");
-  idAutopilotActive_2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_2_ACTIVE");
-
-  idAutopilotAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
-
   // register L variables for flight warning system
   idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
   idFwsDiscreteWord126[0] = std::make_unique<LocalVariable>("A32NX_FWC_1_DISCRETE_WORD_126");
@@ -419,19 +385,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idOansFailed = std::make_unique<LocalVariable>("A32NX_OANS_FAILED");
   idOansPposLost = std::make_unique<LocalVariable>("A32NX_ARPT_NAV_POS_LOST");
-
-  idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
-  idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
-  idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
-  idFcuSelectedVs = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
-  idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
-
-  idFcuLocModeActive = std::make_unique<LocalVariable>("A32NX_FCU_LOC_MODE_ACTIVE");
-  idFcuApprModeActive = std::make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
-  idFcuHeadingSync = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SYNC");
-  idFcuModeReversionActive = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
-  idFcuModeReversionTrkFpaActive = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
-  idFcuModeReversionTargetFpm = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
   for (int i = 0; i < 4; i++) {
     std::string idString = std::to_string(i + 1);
@@ -672,8 +625,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutopilotShimFmaLateralArmed = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_ARMED");
   idAutopilotShimFmaVerticalMode = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_MODE");
   idAutopilotShimFmaVerticalArmed = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_ARMED");
-  idAutopilotShimFmaExpediteModeActive = std::make_unique<LocalVariable>("A32NX_FMA_EXPEDITE_MODE");
-  idAutopilotShimFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
   idAutopilotShimAutolandWarning = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
   idAutopilotShimActiveAny = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
   idAutopilotShimActive_1 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_1_ACTIVE");
@@ -934,6 +885,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuShimSpdDot = std::make_unique<LocalVariable>("A32NX_FCU_SPD_MANAGED_DOT");
   idFcuShimSpdValue = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_SPEED_SELECTED");
   idFcuShimTrkFpaActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
+  idFcuShimNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
   idFcuShimHdgValue1 = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SELECTED");
   idFcuShimHdgValue2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
   idFcuShimShowHdg = std::make_unique<LocalVariable>("A320_FCU_SHOW_SELECTED_HEADING");
@@ -978,9 +930,6 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
-    idFcuHeadingSync->set(0);
-    idFcuModeReversionActive->set(0);
-    idFcuModeReversionTargetFpm->set(simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     wasFcuInitialized = true;
   } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
@@ -1963,8 +1912,6 @@ bool FlyByWireInterface::updatePrimFgShim(double sampleTime) {
   idAutopilotShimFmaLateralArmed->set(lateralArmed);
   idAutopilotShimFmaVerticalMode->set(verticalMode);
   idAutopilotShimFmaVerticalArmed->set(verticalArmed);
-  idAutopilotShimFmaExpediteModeActive->set(Arinc429Utils::bitFromValueOr(primsBusOutputs[masterPrim].fg.discrete_word_1, 24, false));
-  idAutopilotShimFmaTripleClick->set(Arinc429Utils::bitFromValueOr(primsBusOutputs[masterPrim].fg.discrete_word_4, 28, false));
   idAutopilotShimActiveAny->set(ap1Engaged || ap2Engaged);
   idAutopilotShimActive_1->set(ap1Engaged);
   idAutopilotShimActive_2->set(ap2Engaged);
@@ -2420,6 +2367,7 @@ bool FlyByWireInterface::updateFcuAfsLvars() {
   auto selectedFcuAfs = fcu1Active ? fcu1Afs : fcu2Afs;
 
   idFcuAfsDisplayTrkFpaMode->set(selectedFcuAfs.trk_fpa_mode);
+  idFcuShimNorthRefTrue->set(selectedFcuAfs.true_mode);
   idFcuAfsDisplayMachMode->set(selectedFcuAfs.mach_mode);
   idFcuAfsDisplayTrueMode->set(selectedFcuAfs.true_mode);
   idFcuAfsDisplaySpdMachValue->set(selectedFcuAfs.spd_mach_value);

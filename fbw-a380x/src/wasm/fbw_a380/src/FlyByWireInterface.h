@@ -188,48 +188,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
   std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
 
-  std::unique_ptr<LocalVariable> idFmaLateralMode;
-  std::unique_ptr<LocalVariable> idFmaLateralArmed;
-  std::unique_ptr<LocalVariable> idFmaVerticalMode;
-  std::unique_ptr<LocalVariable> idFmaVerticalArmed;
-  std::unique_ptr<LocalVariable> idFmaSoftAltModeActive;
-  std::unique_ptr<LocalVariable> idFmaCruiseAltModeActive;
-  std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
-  std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
-  std::unique_ptr<LocalVariable> idFmaTripleClick;
-  std::unique_ptr<LocalVariable> idFmaModeReversion;
-
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageDisarm;
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageRaInhibited;
-  std::unique_ptr<LocalVariable> idAutopilotTcasMessageTrkFpaDeselection;
-
-  std::unique_ptr<LocalVariable> idFlightDirectorBank;
-  std::unique_ptr<LocalVariable> idFlightDirectorPitch;
-  std::unique_ptr<LocalVariable> idFlightDirectorYaw;
-
-  std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
-
-  std::unique_ptr<LocalVariable> idAutopilotActiveAny;
-  std::unique_ptr<LocalVariable> idAutopilotActive_1;
-  std::unique_ptr<LocalVariable> idAutopilotActive_2;
-
-  std::unique_ptr<LocalVariable> idAutopilotAutothrustMode;
-
-  std::unique_ptr<LocalVariable> idAutopilot_H_dot_radio;
-
-  std::unique_ptr<LocalVariable> idFcuTrkFpaModeActive;
-  std::unique_ptr<LocalVariable> idFcuNorthRefTrue;
-  std::unique_ptr<LocalVariable> idFcuSelectedFpa;
-  std::unique_ptr<LocalVariable> idFcuSelectedVs;
-  std::unique_ptr<LocalVariable> idFcuSelectedHeading;
-
-  std::unique_ptr<LocalVariable> idFcuLocModeActive;
-  std::unique_ptr<LocalVariable> idFcuApprModeActive;
-  std::unique_ptr<LocalVariable> idFcuHeadingSync;
-  std::unique_ptr<LocalVariable> idFcuModeReversionActive;
-  std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
-  std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
-
   std::unique_ptr<LocalVariable> idFmLateralPlanAvail;
   std::unique_ptr<LocalVariable> idFmCrossTrackError;
   std::unique_ptr<LocalVariable> idFmTrackAngleError;
@@ -519,8 +477,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutopilotShimFmaLateralArmed;
   std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalMode;
   std::unique_ptr<LocalVariable> idAutopilotShimFmaVerticalArmed;
-  std::unique_ptr<LocalVariable> idAutopilotShimFmaExpediteModeActive;
-  std::unique_ptr<LocalVariable> idAutopilotShimFmaTripleClick;
   std::unique_ptr<LocalVariable> idAutopilotShimAutolandWarning;
   std::unique_ptr<LocalVariable> idAutopilotShimActiveAny;
   std::unique_ptr<LocalVariable> idAutopilotShimActive_1;
@@ -719,6 +675,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuShimSpdDot;
   std::unique_ptr<LocalVariable> idFcuShimSpdValue;
   std::unique_ptr<LocalVariable> idFcuShimTrkFpaActive;
+  std::unique_ptr<LocalVariable> idFcuShimNorthRefTrue;
   std::unique_ptr<LocalVariable> idFcuShimHdgValue1;
   std::unique_ptr<LocalVariable> idFcuShimHdgValue2;
   std::unique_ptr<LocalVariable> idFcuShimShowHdg;

@@ -71,7 +71,6 @@ export interface PFDSimvars {
   betaTargetActive: number;
   betaTarget: number;
   latAcc: number;
-  crzAltMode: boolean;
   flexTemp: number;
   autoBrakeMode: number;
   autoBrakeActive: boolean;
@@ -177,7 +176,6 @@ export enum PFDVars {
   betaTargetActive = 'L:A32NX_BETA_TARGET_ACTIVE',
   betaTarget = 'L:A32NX_BETA_TARGET',
   latAcc = 'ACCELERATION BODY X',
-  crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
   autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
@@ -282,7 +280,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['betaTargetActive', { name: PFDVars.betaTargetActive, type: SimVarValueType.Number }],
     ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
     ['latAcc', { name: PFDVars.latAcc, type: 'G Force' as SimVarValueType }],
-    ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
     ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
     ['autoBrakeMode', { name: PFDVars.autoBrakeMode, type: SimVarValueType.Number }],
     ['autoBrakeActive', { name: PFDVars.autoBrakeActive, type: SimVarValueType.Bool }],
