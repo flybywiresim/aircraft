@@ -1198,6 +1198,26 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_TCAS_BUS", ClientData::TCAS_BUS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::TCAS_BUS, sizeof(base_tcas), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::TCAS_BUS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_tcas));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AESU_BUS", ClientData::AESU_BUS);
+  // create client data
+  result &=
+      SimConnect_CreateClientData(hSimConnect, ClientData::AESU_BUS, sizeof(base_aesu_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &=
+      SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AESU_BUS, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_aesu_bus));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
   for (int i = 0; i < 4; i++) {
     auto defineId = ClientData::FADEC_1_BUS + i;
     // map client id
@@ -1726,6 +1746,14 @@ bool SimConnectInterface::setClientDataFms(base_fms_inputs& output) {
 
 bool SimConnectInterface::setClientDataFqms(base_fqms& output) {
   return sendClientData(ClientData::FQMS_BUS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataTcas(base_tcas& output) {
+  return sendClientData(ClientData::TCAS_BUS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataAesu(base_aesu_bus& output) {
+  return sendClientData(ClientData::AESU_BUS, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataFadec(base_eec& output, int fadecIndex) {

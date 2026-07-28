@@ -1317,6 +1317,11 @@ const fcu_outputs A380FcuComputer_rtZfcu_outputs{ { { 0.0,
             0.0F
           }
         }
+      },
+
+      { { 0U,
+          0.0F
+        }
       }
     }
   },
@@ -1371,6 +1376,9 @@ const fcu_outputs A380FcuComputer_rtZfcu_outputs{ { { 0.0,
     },
 
     { false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -1536,13 +1544,40 @@ void A380FcuComputer::A380FcuComputer_MATLABFunction_m(const base_arinc_429 *rtu
   *rty_y = (rtu_u->SSM == static_cast<uint32_T>(SignStatusMatrix::NormalOperation));
 }
 
-void A380FcuComputer::A380FcuComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380FcuComputer_d5_T *localDW)
+void A380FcuComputer::A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y)
+{
+  *rty_y = (rtu_u->SSM != static_cast<uint32_T>(SignStatusMatrix::FailureWarning));
+}
+
+void A380FcuComputer::A380FcuComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_A380FcuComputer_o_T *localDW)
+{
+  localDW->previousInput_not_empty = false;
+}
+
+void A380FcuComputer::A380FcuComputer_MATLABFunction_k(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+  rtDW_MATLABFunction_A380FcuComputer_o_T *localDW)
+{
+  if (!localDW->previousInput_not_empty) {
+    localDW->previousInput = rtu_isRisingEdge;
+    localDW->previousInput_not_empty = true;
+  }
+
+  if (rtu_isRisingEdge) {
+    *rty_y = (rtu_u && (!localDW->previousInput));
+  } else {
+    *rty_y = ((!rtu_u) && localDW->previousInput);
+  }
+
+  localDW->previousInput = rtu_u;
+}
+
+void A380FcuComputer::A380FcuComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380FcuComputer_jh_T *localDW)
 {
   localDW->previousInput_not_empty = false;
 }
 
 void A380FcuComputer::A380FcuComputer_MATLABFunction_n(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-  rtDW_MATLABFunction_A380FcuComputer_d5_T *localDW)
+  rtDW_MATLABFunction_A380FcuComputer_jh_T *localDW)
 {
   if (!localDW->previousInput_not_empty) {
     localDW->previousInput = rtu_isRisingEdge;
@@ -1577,7 +1612,7 @@ void A380FcuComputer::A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, a
   *rty_navaidStatus = localDW->pNavaidStatus;
 }
 
-void A380FcuComputer::A380FcuComputer_MATLABFunction_mw_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW)
+void A380FcuComputer::A380FcuComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW)
 {
   localDW->pY_not_empty = false;
 }
@@ -1595,11 +1630,6 @@ void A380FcuComputer::A380FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_
   }
 
   *rty_y = localDW->pY;
-}
-
-void A380FcuComputer::A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y)
-{
-  *rty_y = (rtu_u->SSM != static_cast<uint32_T>(SignStatusMatrix::FailureWarning));
 }
 
 void A380FcuComputer::A380FcuComputer_MATLABFunction_a(const boolean_T rtu_u[19], real32_T *rty_y)
@@ -1640,9 +1670,11 @@ void A380FcuComputer::step()
   boolean_T rtb_VectorConcatenate[19];
   boolean_T rtb_BusAssignment_af_logic_afs_hdg_trk_dashes;
   boolean_T rtb_BusAssignment_ak_logic_afs_spd_mach_dashes;
+  boolean_T rtb_BusAssignment_ao_logic_afs_alt_active;
   boolean_T rtb_BusAssignment_ao_logic_afs_ap_1_engaged;
-  boolean_T rtb_BusAssignment_n_logic_efis_ls_auto_activate;
-  boolean_T rtb_BusAssignment_n_logic_efis_vv_auto_deactivate;
+  boolean_T rtb_BusAssignment_ao_logic_afs_appr_active;
+  boolean_T rtb_BusAssignment_n_logic_efis_terr_auto_activate;
+  boolean_T rtb_BusAssignment_n_logic_efis_traf_auto_activate;
   boolean_T rtb_BusAssignment_p_logic_afs_fd_pushed;
   boolean_T rtb_BusAssignment_p_logic_afs_mach_active;
   boolean_T rtb_BusAssignment_p_logic_afs_metric_alt_active;
@@ -1652,6 +1684,7 @@ void A380FcuComputer::step()
   boolean_T rtb_BusAssignment_p_logic_afs_trk_fpa_switching_pushed;
   boolean_T rtb_BusAssignment_p_logic_afs_true_active;
   boolean_T rtb_BusAssignment_p_logic_afs_true_mag_switching_pushed;
+  boolean_T rtb_BusAssignment_pg_ls_auto_activate;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_pulled;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_pushed;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_k_pulled;
@@ -1674,7 +1707,7 @@ void A380FcuComputer::step()
   boolean_T rtb_y_f;
   boolean_T rtb_y_gd;
   boolean_T rtb_y_pp;
-  a380_efis_mode_selection rtb_BusAssignment_pg_efis_mode;
+  a380_efis_mode_selection rtb_DataTypeConversion1_g;
   if (A380FcuComputer_U.in.sim_data.computer_running) {
     if (!A380FcuComputer_DWork.Runtime_MODE) {
       A380FcuComputer_MATLABFunction_e_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_e);
@@ -1814,7 +1847,8 @@ void A380FcuComputer::step()
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel1_bit_m,
       &rtb_y);
     rtb_BusAssignment_p_logic_afs_metric_alt_active = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel2_bit, &rtb_y);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel2_bit_f,
+      &rtb_y);
     rtb_BusAssignment_p_logic_afs_mach_active = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel3_bit, &rtb_y);
     rtb_BusAssignment_p_logic_afs_true_active = (rtb_y != 0U);
@@ -1861,7 +1895,7 @@ void A380FcuComputer::step()
     rtb_DataTypeConversion_d3 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_3, A380FcuComputer_P.BitfromLabel5_bit,
       &rtb_y);
-    rtb_Equal2 = (rtb_y != 0U);
+    rtb_BusAssignment_ao_logic_afs_alt_active = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel7_bit_g,
       &rtb_y);
     rtb_Equal1 = (rtb_y != 0U);
@@ -1876,13 +1910,13 @@ void A380FcuComputer::step()
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel11_bit,
       &rtb_y);
     rtb_Equal7 = (rtb_Equal7 || (rtb_y != 0U));
-    rtb_Equal8 = (rtb_OR3 && (!rtb_Equal7));
+    rtb_OR3 = (rtb_OR3 && (!rtb_Equal7));
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel6_bit_a,
       &rtb_y);
     rtb_Equal1 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_3, A380FcuComputer_P.BitfromLabel10_bit,
       &rtb_y);
-    rtb_OR3 = (rtb_Equal7 || rtb_Equal1 || (rtb_y != 0U));
+    rtb_BusAssignment_ao_logic_afs_appr_active = (rtb_Equal7 || rtb_Equal1 || (rtb_y != 0U));
     switch (rtb_masterPrim) {
      case 1:
       rtb_y = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.selected_spd_kts.SSM;
@@ -2018,10 +2052,13 @@ void A380FcuComputer::step()
     A380FcuComputer_MATLABFunction(&rtb_Switch_h, A380FcuComputer_P.A429ValueOrDefault_defaultValue_e, &rtb_y_jv);
     if (!A380FcuComputer_U.in.discrete_inputs.efis_backup_activated) {
       if (!A380FcuComputer_DWork.EFISLogic_MODE) {
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_kq);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mt1);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ny);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_nb);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_kq);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mt1);
+        A380FcuComputer_MATLABFunction_p_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_n3);
+        A380FcuComputer_MATLABFunction_p_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ov);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_pq);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ny);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_nb);
         A380FcuComputer_DWork.std_active = false;
         A380FcuComputer_DWork.qnh_active = true;
         A380FcuComputer_DWork.qfe_active = false;
@@ -2031,45 +2068,45 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pMode = 2;
         A380FcuComputer_DWork.pArcActive_not_empty = false;
         A380FcuComputer_DWork.pRange = 5;
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ce);
-        A380FcuComputer_MATLABFunction_mw_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ij);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_lf);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_gu);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_aj);
+        A380FcuComputer_DWork.pTrafActive = false;
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_lf);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_gu);
         A380FcuComputer_DWork.pSurvFilter = a380_surv_filter_selection::NONE;
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mb);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_bp);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mq);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mb);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_bp);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_mq);
         A380FcuComputer_DWork.pEfisFilter = a380_efis_filter_selection::NONE;
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_onf);
-        A380FcuComputer_MATLABFunction_mw_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_btn);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_l0);
-        A380FcuComputer_MATLABFunction_mw_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_o3);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ic);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_onf);
+        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_btn);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_l0);
+        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_o3n);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ic);
         A380FcuComputer_NavaidLogic_Reset(&A380FcuComputer_DWork.sf_NavaidLogic);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_jv);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_jv);
         A380FcuComputer_NavaidLogic_Reset(&A380FcuComputer_DWork.sf_NavaidLogic_f);
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_k1);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_k1);
         A380FcuComputer_DWork.vvActive = false;
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_dj);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_dj);
         A380FcuComputer_DWork.lsActive = false;
-        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_dg);
-        A380FcuComputer_MATLABFunction_mw_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_hr);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_dg);
+        A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_hr);
         A380FcuComputer_DWork.EFISLogic_MODE = true;
       }
 
-      A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_1_bus.fctl.fctl_law_status_word,
-        A380FcuComputer_P.BitfromLabel6_bit, &rtb_y);
       A380FcuComputer_MATLABFunction_em(&A380FcuComputer_U.in.bus_inputs.prim_1_bus.fctl.fctl_law_status_word,
         &rtb_Equal7);
+      A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_1_bus.fctl.fctl_law_status_word,
+        A380FcuComputer_P.BitfromLabel6_bit, &rtb_y);
       rtb_Compare_j = ((rtb_y != 0U) && rtb_Equal7);
+      A380FcuComputer_MATLABFunction_em(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
+        &rtb_Equal1);
       A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
         A380FcuComputer_P.BitfromLabel7_bit, &rtb_y);
-      A380FcuComputer_MATLABFunction_em(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
-        &rtb_Equal7);
       if (rtb_Compare_j) {
         rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_5;
         rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
-      } else if ((rtb_y != 0U) && rtb_Equal7) {
+      } else if ((rtb_y != 0U) && rtb_Equal1) {
         rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_5;
         rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
       } else {
@@ -2079,17 +2116,25 @@ void A380FcuComputer::step()
 
       A380FcuComputer_MATLABFunction_o(&rtb_Switch_h, A380FcuComputer_P.BitfromLabel_bit, &rtb_y);
       rtb_DataTypeConversion_d = (rtb_y != 0U);
-      A380FcuComputer_MATLABFunction_n((rtb_y != 0U), A380FcuComputer_P.PulseNode1_isRisingEdge, &rtb_Equal7,
+      A380FcuComputer_MATLABFunction_k((rtb_y != 0U), A380FcuComputer_P.PulseNode1_isRisingEdge, &rtb_Equal2,
         &A380FcuComputer_DWork.sf_MATLABFunction_kq);
       A380FcuComputer_MATLABFunction_o(&rtb_Switch_k, A380FcuComputer_P.BitfromLabel1_bit, &rtb_y);
-      A380FcuComputer_MATLABFunction_n((rtb_y != 0U), A380FcuComputer_P.PulseNode2_isRisingEdge, &rtb_Compare_j,
+      A380FcuComputer_MATLABFunction_k((rtb_y != 0U), A380FcuComputer_P.PulseNode2_isRisingEdge, &rtb_Equal1,
         &A380FcuComputer_DWork.sf_MATLABFunction_mt1);
-      A380FcuComputer_Y.out.logic.afs.loc_only_active = rtb_Equal8;
-      rtb_BusAssignment_n_logic_efis_vv_auto_deactivate = rtb_Equal7;
-      rtb_BusAssignment_n_logic_efis_ls_auto_activate = rtb_Compare_j;
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.baro_knob.pushed,
+      A380FcuComputer_MATLABFunction_n(A380FcuComputer_P.Constant_Value, A380FcuComputer_P.PulseNode3_isRisingEdge,
+        &rtb_Equal8, &A380FcuComputer_DWork.sf_MATLABFunction_n3);
+      A380FcuComputer_MATLABFunction_n(A380FcuComputer_P.Constant_Value, A380FcuComputer_P.PulseNode4_isRisingEdge,
+        &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_ov);
+      A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.aesu_bus.aesu_status_word,
+        A380FcuComputer_P.BitfromLabel2_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_k((rtb_y != 0U), A380FcuComputer_P.PulseNode5_isRisingEdge, &rtb_Compare_j,
+        &A380FcuComputer_DWork.sf_MATLABFunction_pq);
+      A380FcuComputer_Y.out.logic.efis.ls_auto_activate = rtb_Equal1;
+      rtb_BusAssignment_n_logic_efis_terr_auto_activate = rtb_Equal7;
+      rtb_BusAssignment_n_logic_efis_traf_auto_activate = rtb_Compare_j;
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.baro_knob.pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge, &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_ny);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.baro_knob.pulled,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.baro_knob.pulled,
         A380FcuComputer_P.PulseNode1_isRisingEdge_m, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_nb);
       if (rtb_Equal7 && A380FcuComputer_DWork.std_active) {
         A380FcuComputer_DWork.std_active = false;
@@ -2148,16 +2193,16 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pMode = 0;
       }
 
-      rtb_BusAssignment_pg_efis_mode = static_cast<a380_efis_mode_selection>(A380FcuComputer_DWork.pMode);
-      rtb_Equal8 = (rtb_BusAssignment_pg_efis_mode == A380FcuComputer_P.EnumeratedConstant_Value);
+      rtb_DataTypeConversion1_g = static_cast<a380_efis_mode_selection>(A380FcuComputer_DWork.pMode);
+      rtb_Equal7 = (rtb_DataTypeConversion1_g == A380FcuComputer_P.EnumeratedConstant_Value);
       if (!A380FcuComputer_DWork.pArcActive_not_empty) {
-        A380FcuComputer_DWork.pArcActive = rtb_Equal8;
+        A380FcuComputer_DWork.pArcActive = rtb_Equal7;
         A380FcuComputer_DWork.pArcActive_not_empty = true;
       }
 
-      if (rtb_Equal8 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 5)) {
+      if (rtb_Equal7 && (!A380FcuComputer_DWork.pArcActive) && (A380FcuComputer_DWork.pRange > 5)) {
         A380FcuComputer_DWork.pRange = static_cast<int8_T>(A380FcuComputer_DWork.pRange - 1);
-      } else if ((!rtb_Equal8) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange != 4)) {
+      } else if ((!rtb_Equal7) && A380FcuComputer_DWork.pArcActive && (A380FcuComputer_DWork.pRange != 4)) {
         tmp = A380FcuComputer_DWork.pRange + 1;
         if (A380FcuComputer_DWork.pRange + 1 > 127) {
           tmp = 127;
@@ -2185,31 +2230,33 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pRange = 0;
       }
 
-      A380FcuComputer_DWork.pArcActive = rtb_Equal8;
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.traf_button_pushed,
-        A380FcuComputer_P.PulseNode_isRisingEdge_o, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_ce);
-      A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal7, A380FcuComputer_P.TFlipFlop1_init,
-        &A380FcuComputer_DWork.sf_MATLABFunction_ij);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.wx_button_pushed,
+      A380FcuComputer_DWork.pArcActive = rtb_Equal7;
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.traf_button_pushed,
+        A380FcuComputer_P.PulseNode2_isRisingEdge_g, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_aj);
+      A380FcuComputer_DWork.pTrafActive = (((!A380FcuComputer_DWork.pTrafActive) && rtb_Compare_j) ||
+        rtb_BusAssignment_n_logic_efis_traf_auto_activate || (((!A380FcuComputer_DWork.pTrafActive) || (!rtb_Compare_j))
+        && A380FcuComputer_DWork.pTrafActive));
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.wx_button_pushed,
         A380FcuComputer_P.PulseNode2_isRisingEdge_l, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_lf);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.terr_button_pushed,
-        A380FcuComputer_P.PulseNode1_isRisingEdge_g, &rtb_Equal8, &A380FcuComputer_DWork.sf_MATLABFunction_gu);
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.terr_button_pushed,
+        A380FcuComputer_P.PulseNode1_isRisingEdge_g, &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_gu);
       if (((A380FcuComputer_DWork.pSurvFilter == a380_surv_filter_selection::WX) && rtb_Compare_j) ||
-          ((A380FcuComputer_DWork.pSurvFilter == a380_surv_filter_selection::TERR) && rtb_Equal8)) {
+          ((A380FcuComputer_DWork.pSurvFilter == a380_surv_filter_selection::TERR) && rtb_Equal7)) {
         A380FcuComputer_DWork.pSurvFilter = a380_surv_filter_selection::NONE;
-      } else if (rtb_Compare_j) {
+      } else if (rtb_Compare_j || rtb_Equal8) {
         A380FcuComputer_DWork.pSurvFilter = a380_surv_filter_selection::WX;
-      } else if (rtb_Equal8) {
+      } else if (rtb_Equal7 || rtb_BusAssignment_n_logic_efis_terr_auto_activate) {
         A380FcuComputer_DWork.pSurvFilter = a380_surv_filter_selection::TERR;
       }
 
-      A380FcuComputer_Y.out.logic.efis.traf_on = rtb_Equal7;
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.wpt_button_pushed,
+      rtb_BusAssignment_pg_ls_auto_activate = rtb_Equal1;
+      A380FcuComputer_Y.out.logic.efis.wx_auto_activate = rtb_Equal8;
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.wpt_button_pushed,
         A380FcuComputer_P.PulseNode2_isRisingEdge_ll, &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_mb);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vord_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vord_button_pushed,
         A380FcuComputer_P.PulseNode1_isRisingEdge_l, &rtb_Equal8, &A380FcuComputer_DWork.sf_MATLABFunction_bp);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.ndb_button_pushed,
-        A380FcuComputer_P.PulseNode3_isRisingEdge, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_mq);
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.ndb_button_pushed,
+        A380FcuComputer_P.PulseNode3_isRisingEdge_n, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_mq);
       if (((A380FcuComputer_DWork.pEfisFilter == a380_efis_filter_selection::WPT) && rtb_Equal7) ||
           ((A380FcuComputer_DWork.pEfisFilter == a380_efis_filter_selection::VORD) && rtb_Equal8) ||
           ((A380FcuComputer_DWork.pEfisFilter == a380_efis_filter_selection::NDB) && rtb_Compare_j)) {
@@ -2222,41 +2269,41 @@ void A380FcuComputer::step()
         A380FcuComputer_DWork.pEfisFilter = a380_efis_filter_selection::NDB;
       }
 
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.cstr_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.cstr_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_m, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_onf);
-      A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal1, A380FcuComputer_P.TFlipFlop1_init_p,
+      A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal1, A380FcuComputer_P.TFlipFlop1_init,
         &A380FcuComputer_DWork.sf_MATLABFunction_btn);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.arpt_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.arpt_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_b, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_l0);
       A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal8, A380FcuComputer_P.TFlipFlop2_init,
-        &A380FcuComputer_DWork.sf_MATLABFunction_o3);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_1_button_pushed,
+        &A380FcuComputer_DWork.sf_MATLABFunction_o3n);
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_1_button_pushed,
         A380FcuComputer_P.PulseNode2_isRisingEdge_f, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_ic);
       A380FcuComputer_NavaidLogic(rtb_Compare_j, &A380FcuComputer_Y.out.logic.efis.navaid_1,
         &A380FcuComputer_DWork.sf_NavaidLogic);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_2_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_2_button_pushed,
         A380FcuComputer_P.PulseNode2_isRisingEdge_lq, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_jv);
       A380FcuComputer_NavaidLogic(rtb_Compare_j, &A380FcuComputer_Y.out.logic.efis.navaid_2,
         &A380FcuComputer_DWork.sf_NavaidLogic_f);
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vv_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vv_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_j, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_k1);
       if (rtb_DataTypeConversion_d) {
         A380FcuComputer_DWork.vvActive = true;
-      } else if (rtb_BusAssignment_n_logic_efis_vv_auto_deactivate) {
+      } else if (rtb_Equal2) {
         A380FcuComputer_DWork.vvActive = false;
       } else if (rtb_Compare_j) {
         A380FcuComputer_DWork.vvActive = !A380FcuComputer_DWork.vvActive;
       }
 
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.ls_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.ls_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_c, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_dj);
-      if (rtb_BusAssignment_n_logic_efis_ls_auto_activate) {
+      if (rtb_BusAssignment_pg_ls_auto_activate) {
         A380FcuComputer_DWork.lsActive = true;
       } else if (rtb_Compare_j) {
         A380FcuComputer_DWork.lsActive = !A380FcuComputer_DWork.lsActive;
       }
 
-      A380FcuComputer_MATLABFunction_n(A380FcuComputer_U.in.discrete_inputs.efis_inputs.taxi_button_pushed,
+      A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.taxi_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_f, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_dg);
       A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal7, A380FcuComputer_P.TFlipFlop2_init_n,
         &A380FcuComputer_DWork.sf_MATLABFunction_hr);
@@ -2281,8 +2328,9 @@ void A380FcuComputer::step()
       A380FcuComputer_Y.out.logic.afs.alt_display_value = rtb_y_g5;
       A380FcuComputer_Y.out.logic.afs.vs_fpa_display_value = rtb_y_jv;
       A380FcuComputer_Y.out.logic.afs.vs_fpa_dashes = rtb_Compare_ap;
-      A380FcuComputer_Y.out.logic.afs.alt_active = rtb_Equal2;
-      A380FcuComputer_Y.out.logic.afs.appr_active = rtb_OR3;
+      A380FcuComputer_Y.out.logic.afs.alt_active = rtb_BusAssignment_ao_logic_afs_alt_active;
+      A380FcuComputer_Y.out.logic.afs.loc_only_active = rtb_OR3;
+      A380FcuComputer_Y.out.logic.afs.appr_active = rtb_BusAssignment_ao_logic_afs_appr_active;
       A380FcuComputer_Y.out.logic.afs.hdg_trk_buttons.pushed =
         rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_pushed;
       A380FcuComputer_Y.out.logic.afs.hdg_trk_buttons.pulled =
@@ -2320,16 +2368,19 @@ void A380FcuComputer::step()
       A380FcuComputer_Y.out.discrete_outputs = A380FcuComputer_P.Constant3_Value;
       A380FcuComputer_Y.out.bus_outputs = A380FcuComputer_P.Constant2_Value;
       A380FcuComputer_Y.out.logic.efis.vv_auto_activate = rtb_DataTypeConversion_d;
-      A380FcuComputer_Y.out.logic.efis.vv_auto_deactivate = rtb_BusAssignment_n_logic_efis_vv_auto_deactivate;
-      A380FcuComputer_Y.out.logic.efis.ls_auto_activate = rtb_BusAssignment_n_logic_efis_ls_auto_activate;
+      A380FcuComputer_Y.out.logic.efis.vv_auto_deactivate = rtb_Equal2;
+      A380FcuComputer_Y.out.logic.efis.ls_auto_activate = rtb_BusAssignment_pg_ls_auto_activate;
+      A380FcuComputer_Y.out.logic.efis.terr_auto_activate = rtb_BusAssignment_n_logic_efis_terr_auto_activate;
+      A380FcuComputer_Y.out.logic.efis.traf_auto_activate = rtb_BusAssignment_n_logic_efis_traf_auto_activate;
       A380FcuComputer_Y.out.logic.efis.vv_on = A380FcuComputer_DWork.vvActive;
       A380FcuComputer_Y.out.logic.efis.ls_on = A380FcuComputer_DWork.lsActive;
       A380FcuComputer_Y.out.logic.efis.taxi_on = rtb_Equal7;
       A380FcuComputer_Y.out.logic.efis.efis_filter = A380FcuComputer_DWork.pEfisFilter;
       A380FcuComputer_Y.out.logic.efis.cstr_on = rtb_Equal1;
       A380FcuComputer_Y.out.logic.efis.arpt_on = rtb_Equal8;
+      A380FcuComputer_Y.out.logic.efis.traf_on = A380FcuComputer_DWork.pTrafActive;
       A380FcuComputer_Y.out.logic.efis.surv_filter = A380FcuComputer_DWork.pSurvFilter;
-      A380FcuComputer_Y.out.logic.efis.efis_mode = rtb_BusAssignment_pg_efis_mode;
+      A380FcuComputer_Y.out.logic.efis.efis_mode = rtb_DataTypeConversion1_g;
       A380FcuComputer_Y.out.logic.efis.efis_range = static_cast<a380_efis_range_selection>(A380FcuComputer_DWork.pRange);
       A380FcuComputer_Y.out.logic.efis.baro_std = A380FcuComputer_DWork.std_active;
       A380FcuComputer_Y.out.logic.efis.baro_qnh = (A380FcuComputer_DWork.qnh_active &&
@@ -2341,7 +2392,7 @@ void A380FcuComputer::step()
       A380FcuComputer_Y.out.logic.efis.efis_cp_panel_activate =
         A380FcuComputer_P.Constant1_Value.efis.efis_cp_panel_activate;
       A380FcuComputer_B.BusAssignment = A380FcuComputer_Y.out;
-      A380FcuComputer_B.BusAssignment.logic.efis.efis_cp_panel_activate = A380FcuComputer_P.Constant_Value;
+      A380FcuComputer_B.BusAssignment.logic.efis.efis_cp_panel_activate = A380FcuComputer_P.Constant_Value_c;
     } else {
       A380FcuComputer_DWork.EFISLogic_MODE = false;
     }

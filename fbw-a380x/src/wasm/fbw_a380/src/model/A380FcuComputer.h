@@ -12,7 +12,12 @@ class A380FcuComputer final
     boolean_T previousInput;
   };
 
-  struct rtDW_MATLABFunction_A380FcuComputer_d5_T {
+  struct rtDW_MATLABFunction_A380FcuComputer_o_T {
+    boolean_T previousInput;
+    boolean_T previousInput_not_empty;
+  };
+
+  struct rtDW_MATLABFunction_A380FcuComputer_jh_T {
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
@@ -37,6 +42,7 @@ class A380FcuComputer final
     a380_efis_filter_selection pEfisFilter;
     int8_T pRange;
     int8_T pMode;
+    boolean_T pTrafActive;
     boolean_T lsActive;
     boolean_T vvActive;
     boolean_T pArcActive;
@@ -46,30 +52,32 @@ class A380FcuComputer final
     boolean_T qfe_active;
     boolean_T Runtime_MODE;
     boolean_T EFISLogic_MODE;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_mt1;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_kq;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_ce;
-    rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_ij;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_lf;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_gu;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_dg;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_lf;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_gu;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_aj;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_dg;
     rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_hr;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_dj;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_k1;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_l0;
-    rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_o3;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_onf;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_dj;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_k1;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_l0;
+    rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_o3n;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_onf;
     rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_btn;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_jv;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_jv;
     rtDW_NavaidLogic_A380FcuComputer_T sf_NavaidLogic_f;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_mq;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_mb;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_bp;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_ic;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_mq;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_mb;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_bp;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_ic;
     rtDW_NavaidLogic_A380FcuComputer_T sf_NavaidLogic;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_nb;
-    rtDW_MATLABFunction_A380FcuComputer_d5_T sf_MATLABFunction_ny;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_nb;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_ny;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_li;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_pq;
+    rtDW_MATLABFunction_A380FcuComputer_jh_T sf_MATLABFunction_ov;
+    rtDW_MATLABFunction_A380FcuComputer_jh_T sf_MATLABFunction_n3;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_mt1;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_kq;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_mt;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_i1;
     rtDW_MATLABFunction_A380FcuComputer_d_T sf_MATLABFunction_ml;
@@ -105,9 +113,10 @@ class A380FcuComputer final
     real_T BitfromLabel7_bit;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel2_bit;
     real_T BitfromLabel_bit_n;
     real_T BitfromLabel1_bit_m;
-    real_T BitfromLabel2_bit;
+    real_T BitfromLabel2_bit_f;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel_bit_p;
     real_T BitfromLabel1_bit_e;
@@ -212,19 +221,21 @@ class A380FcuComputer final
     real32_T A429ValueOrDefault_defaultValue_b;
     real32_T A429ValueOrDefault_defaultValue_e;
     boolean_T TFlipFlop1_init;
-    boolean_T TFlipFlop1_init_p;
     boolean_T TFlipFlop2_init;
     boolean_T TFlipFlop2_init_n;
     boolean_T PulseNode1_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
+    boolean_T PulseNode3_isRisingEdge;
+    boolean_T PulseNode4_isRisingEdge;
+    boolean_T PulseNode5_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_m;
-    boolean_T PulseNode_isRisingEdge_o;
+    boolean_T PulseNode2_isRisingEdge_g;
     boolean_T PulseNode2_isRisingEdge_l;
     boolean_T PulseNode1_isRisingEdge_g;
     boolean_T PulseNode2_isRisingEdge_ll;
     boolean_T PulseNode1_isRisingEdge_l;
-    boolean_T PulseNode3_isRisingEdge;
+    boolean_T PulseNode3_isRisingEdge_n;
     boolean_T PulseNode_isRisingEdge_m;
     boolean_T PulseNode_isRisingEdge_b;
     boolean_T PulseNode2_isRisingEdge_f;
@@ -244,6 +255,7 @@ class A380FcuComputer final
     base_fcu_discrete_outputs Constant3_Value;
     base_fcu_bus Constant2_Value;
     boolean_T Constant_Value;
+    boolean_T Constant_Value_c;
     boolean_T Constant1_Value_i;
     boolean_T Constant_Value_f;
     boolean_T Constant_Value_i;
@@ -281,16 +293,19 @@ class A380FcuComputer final
   static void A380FcuComputer_MATLABFunction_e(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T rtp_isRisingEdge,
     real_T rtp_retriggerable, real_T rtp_triggerDuration, rtDW_MATLABFunction_A380FcuComputer_d_T *localDW);
   static void A380FcuComputer_MATLABFunction_m(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380FcuComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380FcuComputer_d5_T *localDW);
+  static void A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380FcuComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_A380FcuComputer_o_T *localDW);
+  static void A380FcuComputer_MATLABFunction_k(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_A380FcuComputer_o_T *localDW);
+  static void A380FcuComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380FcuComputer_jh_T *localDW);
   static void A380FcuComputer_MATLABFunction_n(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_A380FcuComputer_d5_T *localDW);
+    rtDW_MATLABFunction_A380FcuComputer_jh_T *localDW);
   static void A380FcuComputer_NavaidLogic_Reset(rtDW_NavaidLogic_A380FcuComputer_T *localDW);
   static void A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, a380_efis_navaid_selection *rty_navaidStatus,
     rtDW_NavaidLogic_A380FcuComputer_T *localDW);
-  static void A380FcuComputer_MATLABFunction_mw_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
+  static void A380FcuComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
   static void A380FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_T *rty_y, boolean_T rtp_init,
     rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
-  static void A380FcuComputer_MATLABFunction_em(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380FcuComputer_MATLABFunction_a(const boolean_T rtu_u[19], real32_T *rty_y);
 };
 

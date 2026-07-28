@@ -12,6 +12,8 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
 
   11.0,
 
+  11.0,
+
   14.0,
 
   12.0,
@@ -230,7 +232,11 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
 
   false,
 
-  false,
+  true,
+
+  true,
+
+  true,
 
   true,
 
@@ -1921,6 +1927,13 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
               0.0F
             }
           }
+        },
+
+        {
+          {
+            0U,
+            0.0F
+          }
         }
       }
     },
@@ -1981,6 +1994,9 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       },
 
       {
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -3733,6 +3749,13 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
               0.0F
             }
           }
+        },
+
+        {
+          {
+            0U,
+            0.0F
+          }
         }
       }
     },
@@ -3793,6 +3816,9 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       },
 
       {
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -3963,6 +3989,9 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       false,
       false,
       false,
+      false,
+      false,
+      false,
       a380_efis_filter_selection::NONE,
       false,
       false,
@@ -4064,6 +4093,8 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       0.0F
     }
   },
+
+  false,
 
   true,
 

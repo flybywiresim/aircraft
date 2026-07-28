@@ -386,6 +386,40 @@ struct base_fcu_sim_input
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
+
+struct base_fcu_efis_logic_outputs
+{
+  boolean_T vv_auto_activate;
+  boolean_T vv_auto_deactivate;
+  boolean_T ls_auto_activate;
+  boolean_T wx_auto_activate;
+  boolean_T terr_auto_activate;
+  boolean_T traf_auto_activate;
+  boolean_T vv_on;
+  boolean_T ls_on;
+  boolean_T taxi_on;
+  a380_efis_filter_selection efis_filter;
+  boolean_T cstr_on;
+  boolean_T arpt_on;
+  a380_efis_navaid_selection navaid_1;
+  a380_efis_navaid_selection navaid_2;
+  boolean_T traf_on;
+  a380_surv_filter_selection surv_filter;
+  a380_efis_mode_selection efis_mode;
+  a380_efis_range_selection efis_range;
+  boolean_T baro_std;
+  boolean_T baro_qnh;
+  boolean_T baro_qfe;
+  real32_T baro_value_hpa;
+  real32_T baro_value_inhg;
+  boolean_T baro_preset_active;
+  boolean_T efis_cp_panel_activate;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
 #define DEFINED_TYPEDEF_FOR_base_fcu_bus_
 
@@ -470,6 +504,16 @@ struct base_prim_out_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_aesu_bus_
+#define DEFINED_TYPEDEF_FOR_base_aesu_bus_
+
+struct base_aesu_bus
+{
+  base_arinc_429 aesu_status_word;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fcu_bus_inputs_
 
@@ -478,6 +522,7 @@ struct base_fcu_bus_inputs
   base_prim_out_bus prim_1_bus;
   base_prim_out_bus prim_2_bus;
   base_prim_out_bus prim_3_bus;
+  base_aesu_bus aesu_bus;
 };
 
 #endif
@@ -532,37 +577,6 @@ struct base_afs_logic_outputs
   boolean_T trk_fpa_switching_pushed;
   boolean_T true_mag_switching_pushed;
   boolean_T metric_alt_switching_pushed;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
-
-struct base_fcu_efis_logic_outputs
-{
-  boolean_T vv_auto_activate;
-  boolean_T vv_auto_deactivate;
-  boolean_T ls_auto_activate;
-  boolean_T vv_on;
-  boolean_T ls_on;
-  boolean_T taxi_on;
-  a380_efis_filter_selection efis_filter;
-  boolean_T cstr_on;
-  boolean_T arpt_on;
-  a380_efis_navaid_selection navaid_1;
-  a380_efis_navaid_selection navaid_2;
-  boolean_T traf_on;
-  a380_surv_filter_selection surv_filter;
-  a380_efis_mode_selection efis_mode;
-  a380_efis_range_selection efis_range;
-  boolean_T baro_std;
-  boolean_T baro_qnh;
-  boolean_T baro_qfe;
-  real32_T baro_value_hpa;
-  real32_T baro_value_inhg;
-  boolean_T baro_preset_active;
-  boolean_T efis_cp_panel_activate;
 };
 
 #endif

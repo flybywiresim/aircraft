@@ -114,6 +114,10 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   result &= updateFqms();
 
+  result &= updateTcas();
+
+  result &= updateAesu();
+
   for (int i = 0; i < 2; i++) {
     result &= updateFcu(calculatedSampleTime, i);
   }
@@ -378,10 +382,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
   idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
   idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasTargetGreenMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
-  idTcasTargetGreenMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
-  idTcasTargetRedMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
-  idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
+  idTcasRaRateToMaintain = std::make_unique<LocalVariable>("A32NX_TCAS_RA_RATE_TO_MAINTAIN");
 
   idOansFailed = std::make_unique<LocalVariable>("A32NX_OANS_FAILED");
   idOansPposLost = std::make_unique<LocalVariable>("A32NX_ARPT_NAV_POS_LOST");
@@ -1401,6 +1402,34 @@ bool FlyByWireInterface::updateFqms() {
   return true;
 }
 
+bool FlyByWireInterface::updateTcas() {
+  tcasBusOutputs.tcas_valid = idTcasFault->get() == 0;
+  tcasBusOutputs.ta_ra_mode = idTcasMode->get() >= 2;
+  tcasBusOutputs.ta_active = idTcasState->get() == 1;
+  tcasBusOutputs.ra_active = idTcasState->get() >= 2;
+  tcasBusOutputs.ra_rate_to_maintain = std::round(idTcasRaRateToMaintain->get() / 100);
+  tcasBusOutputs.ra_corrective = idTcasRaCorrective->get();
+
+  if (primDisabled != -1) {
+    simConnectInterface.setClientDataTcas(tcasBusOutputs);
+  }
+
+  return true;
+}
+
+bool FlyByWireInterface::updateAesu() {
+  const bool taOrRaActive = idTcasState->get() >= 1;
+
+  aesuBusOutputs.aesu_status_word.SSM = Arinc429SignStatus::NormalOperation;
+  aesuBusOutputs.aesu_status_word.Data = static_cast<float>(taOrRaActive << 10);
+
+  if (fcuDisabled != -1) {
+    simConnectInterface.setClientDataAesu(aesuBusOutputs);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   // do not further process when active pause is on
   if (simConnectInterface.isSimInActivePause()) {
@@ -1638,6 +1667,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
   modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];
   modelInputs.in.adcn_inputs.eec_4 = fadecBusOutputs[3];
+  modelInputs.in.adcn_inputs.tcas = tcasBusOutputs;
 
   if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || fcuDisabled != -1 || fadecDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
@@ -2293,6 +2323,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   fcus[fcuIndex].modelInputs.in.bus_inputs.prim_1_bus = primsBusOutputs[0];
   fcus[fcuIndex].modelInputs.in.bus_inputs.prim_2_bus = primsBusOutputs[1];
   fcus[fcuIndex].modelInputs.in.bus_inputs.prim_3_bus = primsBusOutputs[2];
+  fcus[fcuIndex].modelInputs.in.bus_inputs.aesu_bus = aesuBusOutputs;
 
   base_fcu_discrete_outputs discreteOutputs = fcus[fcuIndex].getDiscreteOutputs();
 

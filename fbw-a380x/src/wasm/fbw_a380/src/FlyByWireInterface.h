@@ -125,6 +125,10 @@ class FlyByWireInterface {
 
   base_fqms fqmsBusOutputs = {};
 
+  base_tcas tcasBusOutputs = {};
+
+  base_aesu_bus aesuBusOutputs = {};
+
   Prim prims[3] = {Prim(true, false, false), Prim(false, true, false), Prim(false, false, true)};
   base_prim_discrete_outputs primsDiscreteOutputs[3] = {};
   base_prim_analog_outputs primsAnalogOutputs[3] = {};
@@ -214,10 +218,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTcasTaOnly;
   std::unique_ptr<LocalVariable> idTcasState;
   std::unique_ptr<LocalVariable> idTcasRaCorrective;
-  std::unique_ptr<LocalVariable> idTcasTargetGreenMin;
-  std::unique_ptr<LocalVariable> idTcasTargetGreenMax;
-  std::unique_ptr<LocalVariable> idTcasTargetRedMin;
-  std::unique_ptr<LocalVariable> idTcasTargetRedMax;
+  std::unique_ptr<LocalVariable> idTcasRaRateToMaintain;
 
   std::unique_ptr<LocalVariable> idOansFailed;
   std::unique_ptr<LocalVariable> idOansPposLost;
@@ -717,6 +718,10 @@ class FlyByWireInterface {
   bool updateAdirs(int adirsIndex);
 
   bool updateFqms();
+
+  bool updateTcas();
+
+  bool updateAesu();
 
   bool updatePrim(double sampleTime, int primIndex);
 

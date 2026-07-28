@@ -608,6 +608,21 @@ struct base_eec
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_tcas_
+#define DEFINED_TYPEDEF_FOR_base_tcas_
+
+struct base_tcas
+{
+  boolean_T tcas_valid;
+  boolean_T ta_ra_mode;
+  boolean_T ta_active;
+  boolean_T ra_active;
+  real_T ra_rate_to_maintain;
+  boolean_T ra_corrective;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_adcn_inputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_adcn_inputs_
 
@@ -619,6 +634,7 @@ struct base_prim_adcn_inputs
   base_eec eec_2;
   base_eec eec_3;
   base_eec eec_4;
+  base_tcas tcas;
 };
 
 #endif

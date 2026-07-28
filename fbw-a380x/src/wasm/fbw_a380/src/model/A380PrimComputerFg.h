@@ -53,6 +53,7 @@ class A380PrimComputerFg final
     real_T u_lyjj;
     real32_T u_c;
     real32_T u_dg;
+    real32_T u_lyjjl;
   };
 
   struct D_Work_A380PrimComputerFg_T {
@@ -416,6 +417,7 @@ class A380PrimComputerFg final
     real_T BitfromLabel3_bit_h;
     real_T BitfromLabel1_bit_m;
     real_T CompareToConstant_const;
+    real_T CompareToConstant_const_e;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant_const_g;
     real_T CompareToConstant1_const;
@@ -455,7 +457,7 @@ class A380PrimComputerFg final
     real_T CompareToConstant1_const_f;
     real_T CompareToConstant2_const_oh;
     real_T CompareToConstant_const_j;
-    real_T CompareToConstant_const_e;
+    real_T CompareToConstant_const_ep;
     real_T CompareToConstant1_const_g;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant1_const_n;
@@ -1080,6 +1082,7 @@ class A380PrimComputerFg final
     real32_T uDLookupTable_bp01Data[7];
     real32_T Gain_Gain_fm;
     real32_T Constant_Value_f;
+    real32_T Y_Y0_l0;
     real32_T Y_Y0_k;
     real32_T Y_Y0_g;
     real32_T DelayOneStep_InitialCondition;
