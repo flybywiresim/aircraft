@@ -4,7 +4,6 @@
 #include "A380PrimComputerFg_types.h"
 #include "A380FgOuterLoops.h"
 
-extern const base_arinc_429 A380PrimComputerFg_rtZbase_arinc_429;
 class A380PrimComputerFg final
 {
  public:
@@ -16,6 +15,13 @@ class A380PrimComputerFg final
   };
 
   struct rtDW_LagFilter_A380PrimComputerFg_T {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  };
+
+  struct rtDW_LagFilter_A380PrimComputerFg_b_T {
     real32_T pY;
     real32_T pU;
     boolean_T pY_not_empty;
@@ -68,10 +74,8 @@ class A380PrimComputerFg final
     real_T vMemoEo;
     real_T vMemoGa;
     real_T pY;
-    real_T pY_o;
-    real_T pU;
     real_T pY_a;
-    real_T pU_j;
+    real_T pU;
     real32_T DelayOneStep_DSTATE;
     real32_T DelayInput1_DSTATE_i;
     real32_T DelayInput1_DSTATE_k;
@@ -167,11 +171,11 @@ class A380PrimComputerFg final
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_c;
-    boolean_T pY_not_empty_b;
-    boolean_T pU_not_empty_b;
     boolean_T pY_not_empty_g;
     boolean_T pU_not_empty_o;
     boolean_T Runtime_MODE;
+    rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_f;
+    rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_c;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_aqw;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_jqs;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lk;
@@ -233,7 +237,7 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_bii;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_ob;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_l0a;
-    rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_b4;
+    rtDW_LagFilter_A380PrimComputerFg_b_T sf_LagFilter_b4;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_l1;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oh;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cd0;
@@ -345,7 +349,8 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_pa;
     rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ci;
     rtDW_MATLABFunction_A380PrimComputerFg_kr_T sf_MATLABFunction_d;
-    rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_b;
+    rtDW_LagFilter_A380PrimComputerFg_b_T sf_LagFilter_b;
+    rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter;
     rtDW_LeadLagFilter_A380PrimComputerFg_T sf_LeadLagFilter_c;
     rtDW_LeadLagFilter_A380PrimComputerFg_T sf_LeadLagFilter;
   };
@@ -363,11 +368,13 @@ class A380PrimComputerFg final
     real_T ScheduledGain2_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
     real_T LagFilter_C1;
+    real_T LagFilter1_C1;
+    real_T LagFilter1_C1_a;
     real_T WashoutFilter_C1;
     real_T HighPassFilter_C1;
     real_T LowPassFilter_C1;
     real_T LagFilter_C1_j;
-    real_T LagFilter1_C1;
+    real_T LagFilter1_C1_n;
     real_T WashoutFilter_C1_o;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
@@ -754,9 +761,7 @@ class A380PrimComputerFg final
     real32_T A429ValueOrDefault5_defaultValue_n;
     real32_T A429ValueOrDefault6_defaultValue_b;
     real32_T A429ValueOrDefault7_defaultValue_l;
-    real32_T A429ValueOrDefault4_defaultValue_l;
     real32_T A429ValueOrDefault8_defaultValue;
-    real32_T A429ValueOrDefault4_defaultValue_j;
     real32_T A429ValueOrDefault8_defaultValue_o;
     real32_T A429ValueOrDefault_defaultValue_o;
     real32_T A429ValueOrDefault11_defaultValue;
@@ -1036,21 +1041,25 @@ class A380PrimComputerFg final
     real_T Bias_Bias_b;
     real_T Bias_Bias_m;
     real_T Bias_Bias_n;
+    real_T Gain3_Gain;
+    real_T Saturation_UpperSat_n;
+    real_T Saturation_LowerSat_n;
     real_T Switch6_Threshold;
     real_T Gain_Gain_m;
     real_T Gain1_Gain_o;
     real_T Bias_Bias_mq;
     real_T Gain2_Gain;
     real_T Constant_Value_a;
-    real_T Constant1_Value_b;
     real_T Switch9_Threshold;
+    real_T Gain3_Gain_k;
+    real_T Saturation_UpperSat_m;
+    real_T Saturation_LowerSat_m;
     real_T Switch6_Threshold_j;
     real_T Gain_Gain_l;
     real_T Gain1_Gain_i;
     real_T Bias_Bias_bi;
     real_T Gain2_Gain_i;
     real_T Constant_Value_ag;
-    real_T Constant1_Value_bc;
     real_T Switch9_Threshold_f;
     real_T Gain1_Gain_p;
     real_T fpmtoms_Gain;
@@ -1067,7 +1076,7 @@ class A380PrimComputerFg final
     real_T Gain1_Gain_oj;
     real_T g_Gain;
     real_T Saturation_UpperSat_a;
-    real_T Saturation_LowerSat_m;
+    real_T Saturation_LowerSat_mu;
     real_T ktstomps_Gain;
     real_T _Gain;
     real_T Saturation1_UpperSat_l;
@@ -1076,7 +1085,7 @@ class A380PrimComputerFg final
     real_T mpstokts_Gain;
     real_T Gain4_Gain;
     real_T Delay_InitialCondition_i;
-    real32_T Gain3_Gain;
+    real32_T Gain3_Gain_ka;
     real32_T Gain1_Gain_ix;
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];
@@ -1184,8 +1193,11 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_LeadLagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_C2, real_T rtu_C3, real_T rtu_C4,
     real_T rtu_dt, real_T *rty_Y, rtDW_LeadLagFilter_A380PrimComputerFg_T *localDW);
   static void A380PrimComputerFg_LagFilter_Reset(rtDW_LagFilter_A380PrimComputerFg_T *localDW);
-  static void A380PrimComputerFg_LagFilter(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
+  static void A380PrimComputerFg_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_A380PrimComputerFg_T *localDW);
+  static void A380PrimComputerFg_LagFilter_j_Reset(rtDW_LagFilter_A380PrimComputerFg_b_T *localDW);
+  static void A380PrimComputerFg_LagFilter_b(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
+    rtDW_LagFilter_A380PrimComputerFg_b_T *localDW);
   static void A380PrimComputerFg_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
   static void A380PrimComputerFg_MATLABFunction_o(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380PrimComputerFg_MATLABFunction_e(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
@@ -1209,6 +1221,8 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_MATLABFunction1(const prim_outputs *rtu_in, boolean_T rtu_set_dashes, boolean_T
     rtu_set_selection, boolean_T *rty_dashes, rtDW_MATLABFunction1_A380PrimComputerFg_T *localDW);
   static void A380PrimComputerFg_MATLABFunction_hg(const base_arinc_429 *rtu_u, real32_T *rty_y);
+  static void A380PrimComputerFg_betaestimation1(real32_T rtu_Vcas_kn, real32_T rtu_n_y_g, real_T rtu_zeta_deg, real_T
+    rtu_gross_weight_kg, real32_T *rty_beta);
   A380FgOuterLoops LawMDLOBJ1;
   A380FgOuterLoops Law1MDLOBJ2;
 };
