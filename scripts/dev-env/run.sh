@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE="ghcr.io/flybywiresim/dev-env@sha256:21b41d787735f76863806114148085631c682051d6fb7278826c6ce8f1c7815a"
+IMAGE="ghcr.io/flybywiresim/dev-env@sha256:8d3377bdd506aab35b7a2b19a8848efc2f6e778a636f177e61635ab9584f1b08"
 
 # only set `-it` if there is a tty
 if [ -t 0 ] && [ -t 1 ];

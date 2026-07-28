@@ -2,7 +2,7 @@
 
 rem This is a script to use a locally built docker image to run the tests
 
-set image="sha256:21b41d787735f76863806114148085631c682051d6fb7278826c6ce8f1c7815a"
+set image="sha256:8d3377bdd506aab35b7a2b19a8848efc2f6e778a636f177e61635ab9584f1b08"
 set envfile="%cd%\.env"
 
 if not exist %envfile% (
