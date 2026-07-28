@@ -45,15 +45,15 @@ export class HudValueProvider implements Instrument {
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);
-  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed'), 0);
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
   private readonly athrMode = ConsumerSubject.create(this.sub.on('AThrMode'), AutoThrustMode.NONE);
 
   private readonly hudMode = MappedSubject.create(
-    ([lmgc, rmgc, speed, ra, athrMode]) => {
+    ([lmgc, rmgc, groundSpeed, ra, athrMode]) => {
       if (
         (lmgc || rmgc) &&
-        speed.value < 40 &&
+        groundSpeed < 40 &&
         !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
       ) {
         return HudMode.TAXI;
@@ -64,7 +64,7 @@ export class HudValueProvider implements Instrument {
         return HudMode.TAKEOFF;
       } else if (
         (lmgc || rmgc) &&
-        speed.value >= 40 &&
+        groundSpeed >= 40 &&
         !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
       ) {
         return HudMode.ROLLOUT_OR_RTO;
@@ -74,7 +74,7 @@ export class HudValueProvider implements Instrument {
     },
     this.lmgc,
     this.rmgc,
-    this.speed,
+    this.groundSpeed,
     this.ra,
     this.athrMode,
   );
