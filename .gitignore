@@ -18,6 +18,8 @@
 !.prettierignore
 !.prettierrc
 
+!pnpm-workspace.yaml
+
 !igniter.config.mjs
 !jsconfig.json
 

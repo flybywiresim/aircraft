@@ -1,0 +1,4 @@
+allowBuilds:
+    esbuild: true
+nodeLinker: hoisted
+fetchWarnTimeoutMs: 30000
