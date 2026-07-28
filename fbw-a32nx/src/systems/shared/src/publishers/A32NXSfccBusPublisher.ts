@@ -12,6 +12,33 @@ import {
 
 interface A32NXSfccBusBaseEvents {
   /**
+   * Slat/Flap component status discrete word from SFCC1 bus.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Slat Data Valid                   |
+   * | 12  | Slat WTB Solenoid Fail            |
+   * | 13  | Spare                             |
+   * | 14  | Slat Half Speed                   |
+   * | 15  | Slat Channel no ADIRU Data        |
+   * | 16  | Flap LH Attachment Sensor Fail    |
+   * | 17  | Slat no x-link                    |
+   * | 18  | Slat WTB Power Loss               |
+   * | 19  | Flap RH Attachment Sensor Fail    |
+   * | 20  | Flap Data Valid                   |
+   * | 21  | Flap WTB Solenoid Fail            |
+   * | 22  | Flap Attachment Sensor Fail       |
+   * | 23  | Flap Half Speed                   |
+   * | 24  | Flap Channel no ADIRU Data        |
+   * | 25  | Flap Channel no LGCIU Data        |
+   * | 26  | Flap no x-link                    |
+   * | 27  | Flap WTB Power Loss               |
+   * | 28  | Flap Auto-retract Failed          |
+   * | 29  | Flap Auto-retract Engaged         |
+   */
+  a32nx_sfcc_1_slats_flaps_component: number;
+
+  /**
    * Slat/Flap system status discrete word from SFCC1 bus.
    * Raw ARINC word.
    * | Bit |            Description            |
@@ -43,6 +70,33 @@ interface A32NXSfccBusBaseEvents {
 
   /** The flaps FPPU angle in degrees from SFCC1. Raw ARINC word. */
   a32nx_sfcc_1_flaps_position: number;
+
+  /**
+   * Slat/Flap component status discrete word from SFCC2 bus.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Slat Data Valid                   |
+   * | 12  | Slat WTB Solenoid Fail            |
+   * | 13  | Spare                             |
+   * | 14  | Slat Half Speed                   |
+   * | 15  | Slat Channel no ADIRU Data        |
+   * | 16  | Flap LH Attachment Sensor Fail    |
+   * | 17  | Slat no x-link                    |
+   * | 18  | Slat WTB Power Loss               |
+   * | 19  | Flap RH Attachment Sensor Fail    |
+   * | 20  | Flap Data Valid                   |
+   * | 21  | Flap WTB Solenoid Fail            |
+   * | 22  | Flap Attachment Sensor Fail       |
+   * | 23  | Flap Half Speed                   |
+   * | 24  | Flap Channel no ADIRU Data        |
+   * | 25  | Flap Channel no LGCIU Data        |
+   * | 26  | Flap no x-link                    |
+   * | 27  | Flap WTB Power Loss               |
+   * | 28  | Flap Auto-retract Failed          |
+   * | 29  | Flap Auto-retract Engaged         |
+   */
+  a32nx_sfcc_2_slats_flaps_component: number;
 
   /**
    * Slat/Flap system status discrete word from SFCC2 bus.
@@ -103,11 +157,19 @@ export class A32NXSfccBusPublisher extends SimVarPublisher<A32NXSfccBusPublisher
   public constructor(bus: EventBus, pacer?: PublishPacer<A32NXSfccBusPublisherEvents>) {
     const simvars = new Map<keyof A32NXSfccBusPublisherEvents, SimVarPublisherEntry<any>>([
       [
+        'a32nx_sfcc_1_slats_flaps_component',
+        { name: 'L:A32NX_SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD', type: SimVarValueType.Enum },
+      ],
+      [
         'a32nx_sfcc_1_slats_flaps_status',
         { name: 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD', type: SimVarValueType.Enum },
       ],
       ['a32nx_sfcc_1_slats_position', { name: 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD', type: SimVarValueType.Enum }],
       ['a32nx_sfcc_1_flaps_position', { name: 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD', type: SimVarValueType.Enum }],
+      [
+        'a32nx_sfcc_2_slats_flaps_component',
+        { name: 'L:A32NX_SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD', type: SimVarValueType.Enum },
+      ],
       [
         'a32nx_sfcc_2_slats_flaps_status',
         { name: 'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD', type: SimVarValueType.Enum },

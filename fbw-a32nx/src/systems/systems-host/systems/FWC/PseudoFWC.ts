@@ -42,6 +42,7 @@ import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/pr
 import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPublisher';
 import { A32NXDisplayManagementEvents } from '../../../shared/src/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
+import { A32NXSfccBusEvents } from '../../../shared/src/publishers/A32NXSfccBusPublisher';
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { FwsSoundManager } from './FwsSoundManager';
 // FIXME should not import from instruments
@@ -144,6 +145,7 @@ export class PseudoFWC {
       A32NXDisplayManagementEvents &
       A32NXEcpBusEvents &
       A32NXElectricalSystemEvents &
+      A32NXSfccBusEvents &
       A32NXFcuBusEvents &
       A32NXFacBusEvents &
       KeyEvents &
@@ -990,24 +992,20 @@ export class PseudoFWC {
 
   private readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
-  private readonly sfcc1ComponentStatusWord = RegisteredSimVar.create<number>(
-    'L:A32NX_SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD',
-    SimVarValueType.Number,
+  private readonly sfcc1ComponentStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_1_slats_flaps_component'),
   );
 
-  private readonly sfcc1SystemStatusWord = RegisteredSimVar.create<number>(
-    'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
-    SimVarValueType.Number,
+  private readonly sfcc1SystemStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_1_slats_flaps_status'),
   );
 
-  private readonly sfcc2ComponentStatusWord = RegisteredSimVar.create<number>(
-    'L:A32NX_SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD',
-    SimVarValueType.Number,
+  private readonly sfcc2ComponentStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_2_slats_flaps_component'),
   );
 
-  private readonly sfcc2SystemStatusWord = RegisteredSimVar.create<number>(
-    'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD',
-    SimVarValueType.Number,
+  private readonly sfcc2SystemStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_2_slats_flaps_status'),
   );
 
   /* FUEL */
@@ -2266,11 +2264,11 @@ export class PseudoFWC {
     this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
     this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
 
-    this.sdac04501Word.set(this.sfcc1ComponentStatusWord.get());
-    this.sdac04510Word.set(this.sfcc2ComponentStatusWord.get());
+    this.sdac04501Word.set(this.sfcc1ComponentStatusWord.get().rawWord);
+    this.sdac04510Word.set(this.sfcc2ComponentStatusWord.get().rawWord);
 
-    this.sdac04601Word.set(this.sfcc1SystemStatusWord.get());
-    this.sdac04610Word.set(this.sfcc2SystemStatusWord.get());
+    this.sdac04601Word.set(this.sfcc1SystemStatusWord.get().rawWord);
+    this.sdac04610Word.set(this.sfcc2SystemStatusWord.get().rawWord);
   }
 
   /**
