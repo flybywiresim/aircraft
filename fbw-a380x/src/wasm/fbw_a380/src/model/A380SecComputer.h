@@ -5,9 +5,6 @@
 #include "A380LateralDirectLaw.h"
 #include "A380PitchDirectLaw.h"
 
-extern base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct;
-extern base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct;
-extern base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct;
 class A380SecComputer final
 {
  public:
@@ -21,7 +18,7 @@ class A380SecComputer final
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_MATLABFunction_A380SecComputer_T {
+  struct rtDW_MATLABFunction_A380SecComputer_e_T {
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
@@ -1013,16 +1010,16 @@ class A380SecComputer final
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_k;
     boolean_T Runtime_MODE;
-    rtDW_MATLABFunction_A380SecComputer_T sf_MATLABFunction_mf;
-    rtDW_MATLABFunction_A380SecComputer_T sf_MATLABFunction_ek;
-    rtDW_MATLABFunction_A380SecComputer_T sf_MATLABFunction_nu;
-    rtDW_MATLABFunction_A380SecComputer_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_mf;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_ek;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_nu;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_j2y;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_bd;
     rtDW_MATLABFunction_A380SecComputer_c_T sf_MATLABFunction_mg;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_bh;
-    rtDW_MATLABFunction_A380SecComputer_T sf_MATLABFunction_f;
+    rtDW_MATLABFunction_A380SecComputer_e_T sf_MATLABFunction_f;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_cd;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_p0;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_c;
@@ -1113,6 +1110,8 @@ class A380SecComputer final
     real_T BitfromLabel_bit_k;
     real_T BitfromLabel6_bit_a;
     real_T BitfromLabel5_bit_j;
+    real_T BitfromLabel1_bit_b;
+    real_T BitfromLabel3_bit_k;
     real_T CompareToConstant_const;
     real_T CompareToConstant1_const;
     real_T CompareToConstant1_const_p;
@@ -1182,16 +1181,19 @@ class A380SecComputer final
     sec_outputs out_Y0;
     base_sec_out_bus Constant4_Value;
     base_sec_logic_outputs Constant1_Value;
+    base_sec_analog_outputs Constant3_Value;
+    base_sec_laws_outputs Constant_Value;
+    base_sec_discrete_outputs Constant2_Value;
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant9_Value;
     real_T Constant8_Value;
-    real_T Constant2_Value;
+    real_T Constant2_Value_n;
     real_T Constant1_Value_f;
     real_T Constant2_Value_l;
-    real_T Constant3_Value;
+    real_T Constant3_Value_h;
     real_T Constant2_Value_m;
-    real_T Constant_Value;
+    real_T Constant_Value_l;
     real_T Gain_Gain;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
@@ -1285,11 +1287,12 @@ class A380SecComputer final
   static void A380SecComputer_RateLimiter_j_Reset(rtDW_RateLimiter_A380SecComputer_o_T *localDW);
   static void A380SecComputer_RateLimiter_e(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380SecComputer_o_T *localDW);
-  static void A380SecComputer_MATLABFunction_Reset(rtDW_MATLABFunction_A380SecComputer_T *localDW);
-  static void A380SecComputer_MATLABFunction(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_A380SecComputer_T *localDW);
+  static void A380SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380SecComputer_MATLABFunction_p(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380SecComputer_e_T *localDW);
+  static void A380SecComputer_MATLABFunction_f(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_A380SecComputer_e_T *localDW);
   static void A380SecComputer_MATLABFunction_h(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380SecComputer_MATLABFunction_c(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void A380SecComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
   static void A380SecComputer_MATLABFunction_m(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_c_T *localDW);
