@@ -647,14 +647,16 @@ pub enum BoardingRate {
     Fast,
     Real,
 }
-read_write_enum!(BoardingRate);
-impl From<f64> for BoardingRate {
-    fn from(value: f64) -> Self {
+try_read_write_enum!(BoardingRate);
+impl TryFrom<f64> for BoardingRate {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            2 => BoardingRate::Real,
-            1 => BoardingRate::Fast,
-            0 => BoardingRate::Instant,
-            _ => panic!("{} cannot be converted into BoardingRate", value),
+            0 => Ok(BoardingRate::Instant),
+            1 => Ok(BoardingRate::Fast),
+            2 => Ok(BoardingRate::Real),
+            i => Err(i),
         }
     }
 }
@@ -1060,7 +1062,11 @@ impl SimulationElement for BoardingInputs {
         self.developer_state
             .set(reader.read(&self.developer_state_id));
         self.is_boarding = reader.read(&self.is_boarding_id);
-        self.board_rate = reader.read(&self.board_rate_id);
+        self.board_rate = reader.read_discrete_or_fallback(
+            &self.board_rate_id,
+            "boarding_rate",
+            BoardingRate::Instant,
+        );
         self.per_pax_weight
             .set(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
@@ -1088,22 +1094,26 @@ pub enum GsxState {
     Performing,
     Completed,
 }
-impl From<f64> for GsxState {
-    fn from(value: f64) -> Self {
+
+impl TryFrom<f64> for GsxState {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => GsxState::None,
-            1 => GsxState::Available,
-            2 => GsxState::NotAvailable,
-            3 => GsxState::Bypassed,
-            4 => GsxState::Requested,
-            5 => GsxState::Performing,
-            6 => GsxState::Completed,
-            i => panic!("Cannot convert from {} to GsxState.", i),
+            0 => Ok(GsxState::None),
+            1 => Ok(GsxState::Available),
+            2 => Ok(GsxState::NotAvailable),
+            3 => Ok(GsxState::Bypassed),
+            4 => Ok(GsxState::Requested),
+            5 => Ok(GsxState::Performing),
+            6 => Ok(GsxState::Completed),
+            7 => Ok(GsxState::Completed),
+            unexpected => Err(unexpected),
         }
     }
 }
 
-read_write_enum!(GsxState);
+try_read_write_enum!(GsxState);
 
 pub struct GsxInput {
     is_enabled_id: VariableIdentifier,
@@ -1173,8 +1183,16 @@ impl SimulationElement for GsxInput {
         self.pax_deboarding = reader.read(&self.pax_deboarding_id);
         self.cargo_boarding_percent = reader.read(&self.cargo_boarding_percent_id);
         self.cargo_deboarding_percent = reader.read(&self.cargo_deboarding_percent_id);
-        self.boarding_state = reader.read(&self.boarding_state_id);
-        self.deboarding_state = reader.read(&self.deboarding_state_id);
+        self.boarding_state = reader.read_discrete_or_fallback(
+            &self.boarding_state_id,
+            "boarding_state",
+            GsxState::Completed,
+        );
+        self.deboarding_state = reader.read_discrete_or_fallback(
+            &self.deboarding_state_id,
+            "deboarding_state",
+            GsxState::Completed,
+        );
     }
 }
 
