@@ -27,13 +27,16 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
 
   if (monitoringHealthy) {
     // Select master PRIM, use it for population of FCDC discrete words
-    allPrimsDead = true;
-    for (int i = 0; i < 3; i++) {
-      if (discreteInputs.primHealthy[i]) {
-        allPrimsDead = false;
-        masterPrimIndex = i;
-        break;
-      }
+    allPrimsDead = false;
+    if (bitFromValueOr(busInputs.prims[0].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 0;
+    } else if (bitFromValueOr(busInputs.prims[1].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 1;
+    } else if (bitFromValueOr(busInputs.prims[2].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 2;
+    } else {
+      allPrimsDead = true;
+      masterPrimIndex = 0;
     }
 
     radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
