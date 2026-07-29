@@ -238,8 +238,8 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly shortTermManagedSpeedVisible = MappedSubject.create(
     ([shortTermManagedSpeed, pfdTargetSpeed]) =>
-      !(shortTermManagedSpeed.isNoComputedData() || shortTermManagedSpeed.isFailureWarning()) &&
-      !(pfdTargetSpeed.isNoComputedData() || pfdTargetSpeed.isFailureWarning()) &&
+      !shortTermManagedSpeed.isInvalid &&
+      !pfdTargetSpeed.isInvalid() &&
       Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2,
     this.shortTermManagedSpeedConsumer,
     this.pfdTargetSpeed,

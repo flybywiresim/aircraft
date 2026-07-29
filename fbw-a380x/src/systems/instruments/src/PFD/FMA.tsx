@@ -422,8 +422,8 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
 class Row3 extends DisplayComponent<{
   readonly bus: ArincEventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly BC3Message: Subscribable<number>;
-  readonly A3Message: Subscribable<number>;
+  readonly BC3Message: Subscribable<BC3Messages>;
+  readonly A3Message: Subscribable<A3Messages>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -1189,7 +1189,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 class BC3Cell extends DisplayComponent<{
-  readonly BC3Message: Subscribable<number>;
+  readonly BC3Message: Subscribable<BC3Messages>;
 }> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
@@ -1258,7 +1258,7 @@ class BC3Cell extends DisplayComponent<{
         break;
       case BC3Messages.FCU_ALT_ABOVE_AC:
         text = 'FCU ALT ABOVE A/C';
-        className = 'DisappearAfter10Seconds FontMediumSmaller White';
+        className = 'FontMediumSmaller White';
         break;
       default:
         return [null, null];

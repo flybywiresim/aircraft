@@ -159,10 +159,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         this.fdVisibilitySub.set('display:inline');
       }
     });
-
-    sub.on('da').handle(() => {
-      this.props;
-    });
   }
 
   render(): VNode {
