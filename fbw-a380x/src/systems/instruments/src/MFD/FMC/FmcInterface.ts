@@ -308,6 +308,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** Returns whether inches is selected on the FCU of the associated side */
   inchesSelectedOnFcu(side: EfisSide): boolean;
 
+  getApproachCrossWindComponent(forPlan?: FlightPlanIndex): number | null;
+
+  getApproachHeadWindComponent(forPlan?: FlightPlanIndex): number | null;
+
   reset(): void;
 
   /** Clean up all subscriptions */

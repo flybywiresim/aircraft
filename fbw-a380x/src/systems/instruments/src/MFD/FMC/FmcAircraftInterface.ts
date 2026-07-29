@@ -82,6 +82,7 @@ export class FmcAircraftInterface {
   public readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
   public readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
   public readonly arincFlightNumber5 = new FmArinc429OutputWord('FLIGHT_NUMBER_5');
+  private readonly arincHeadwindComponent = new FmArinc429OutputWord('APPROACH_HEADWIND_COMPONENT');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   public arincBusOutputs = [
@@ -107,6 +108,7 @@ export class FmcAircraftInterface {
     this.arincFlightNumber3,
     this.arincFlightNumber4,
     this.arincFlightNumber5,
+    this.arincHeadwindComponent,
   ];
 
   private readonly speedVs1g = Subject.create(0);
@@ -474,6 +476,16 @@ export class FmcAircraftInterface {
         : Arinc429SignStatusMatrix.NoComputedData,
       9,
       512,
+      0,
+    );
+  }
+
+  public updateApproachHeadWindComponent(value: number | null) {
+    this.arincHeadwindComponent.setBnrValue(
+      value !== null ? value : 0,
+      value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+      8,
+      255,
       0,
     );
   }

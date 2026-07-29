@@ -69,6 +69,7 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -261,6 +262,9 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly approachWindDirection = Subject.create<number | null>(null);
   private readonly approachWindMagnitude = Subject.create<number | null>(null);
 
+  /** For the active flight plan */
+  private readonly approachHeadWindComponent = Subject.create<number | null>(null);
+
   private readonly destDataEntered = MappedSubject.create(
     ([qnh, temperature, windDirection, windMagnitude]) =>
       qnh !== null && temperature !== null && windDirection !== null && windMagnitude !== null,
@@ -412,6 +416,19 @@ export class FlightManagementComputer implements FmcInterface {
           this.exitEngineOut();
         }
       }),
+      this.approachWindDirection.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.approachWindMagnitude.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.approachHeadWindComponent.sub((v) => {
+        this.acInterface.updateApproachHeadWindComponent(v);
+      }),
     );
 
     let lastUpdateTime = Date.now();
@@ -436,6 +453,34 @@ export class FlightManagementComputer implements FmcInterface {
     }, 15000);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
+  }
+  getApproachCrossWindComponent(forPlan = FlightPlanIndex.Active): number | null {
+    return forPlan === FlightPlanIndex.Active
+      ? this.approachHeadWindComponent.get()
+      : this.calculateApproachWindComponent(forPlan, false);
+  }
+
+  getApproachHeadWindComponent(forPlan = FlightPlanIndex.Active): number | null {
+    return forPlan === FlightPlanIndex.Active
+      ? this.approachHeadWindComponent.get()
+      : this.calculateApproachWindComponent(forPlan, true);
+  }
+
+  private calculateApproachWindComponent(forPlan = FlightPlanIndex.Active, headWind: boolean): number | null {
+    const plan = this.#flightPlanService.has(forPlan) ? this.#flightPlanService.get(forPlan) : undefined;
+    if (!plan || !plan.destinationRunway) {
+      return null;
+    }
+    const approachWindDirection = plan.performanceData.approachWindDirection.get();
+    const approachWindSpeed = plan.performanceData.approachWindMagnitude.get();
+    if (approachWindDirection === null || approachWindSpeed === null) {
+      return null;
+    }
+    return A380SpeedsUtils.getHeadwind(
+      approachWindDirection,
+      approachWindSpeed,
+      plan.destinationRunway.magneticBearing + (headWind ? 0 : 90),
+    );
   }
 
   destroy() {
@@ -1749,7 +1794,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private loadActiveFlightPlanFuelAndApproachData(): void {
-    const pd = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active?.performanceData : null;
+    const flightplan = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active : null;
+    const pd = flightplan?.performanceData;
     this.approachFlapsThreeSelected.set(pd?.approachFlapsThreeSelected.get() ?? false);
     this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
     this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
@@ -1760,5 +1806,8 @@ export class FlightManagementComputer implements FmcInterface {
     this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
     this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
     this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
+    if (flightplan?.destinationRunway === undefined) {
+      this.approachHeadWindComponent.set(null);
+    }
   }
 }
