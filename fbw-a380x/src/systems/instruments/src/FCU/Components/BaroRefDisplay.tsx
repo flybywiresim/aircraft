@@ -50,7 +50,7 @@ export class BaroRefDisplay extends DisplayComponent<BaroRefDisplayProps> {
   private baroValueSub = MappedSubject.create(
     ([lightsTest, baroIsStd, baroIsInhg, baroValue]) => {
       if (lightsTest) {
-        return '88.88';
+        return '8.8.8.8';
       } else if (baroIsStd) {
         return 'Std';
       } else if (!baroIsInhg) {
@@ -68,7 +68,7 @@ export class BaroRefDisplay extends DisplayComponent<BaroRefDisplayProps> {
   private baroPreselValueSub = MappedSubject.create(
     ([lightsTest, baroIsInhg, baroIsStd, baroValue, baroMode]) => {
       if (lightsTest) {
-        return 'p8.88';
+        return '8.p.8.8'; // p is used as a standin character for the Q test character
       } else if (!baroIsStd && baroMode === 2) {
         return 'qfe';
       } else if (!baroIsInhg) {
