@@ -336,6 +336,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       throw new Error('[FMS/FPM] Cannot enter new city pair on temporary flight plan');
     }
 
+    const flightNumber = this.flightPlanManager.has(planIndex)
+      ? this.flightPlanManager.get(planIndex).flightNumber.get()
+      : null;
+
     if (planIndex === FlightPlanIndex.Active && this.flightPlanManager.has(FlightPlanIndex.Temporary)) {
       this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
@@ -346,6 +350,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.create(planIndex, true, FlightPlanFlags.ManualCreation);
 
     const plan = this.flightPlanManager.get(planIndex);
+
+    if (flightNumber !== null) {
+      plan.setFlightNumber(flightNumber);
+    }
 
     await plan.setOriginAirport(fromIcao);
     await plan.setDestinationAirport(toIcao);
