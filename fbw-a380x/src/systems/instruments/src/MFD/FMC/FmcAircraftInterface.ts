@@ -484,9 +484,9 @@ export class FmcAircraftInterface {
     this.arincHeadwindComponent.setBnrValue(
       value !== null ? value : 0,
       value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-      8,
+      9,
       255,
-      0,
+      -255,
     );
   }
 
