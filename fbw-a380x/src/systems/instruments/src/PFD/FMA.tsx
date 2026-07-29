@@ -458,14 +458,18 @@ interface CellProps extends ComponentProps {
   bus: EventBus;
 }
 
-class A1A2Cell extends ShowForSecondsComponent<CellProps & { A1A2CellMessage: Subscribable<A1A2Messages> }> {
+interface A1A2CellProps extends CellProps {
+  A1A2CellMessage: Subscribable<A1A2Messages>;
+}
+
+class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
   private cellRef = FSComponent.createRef<SVGGElement>();
 
   private flexTemp = ConsumerSubject.create(this.sub.on('flexTemp'), 0);
 
-  constructor(props) {
+  constructor(props: A1A2CellProps) {
     super(props, 10);
   }
 
