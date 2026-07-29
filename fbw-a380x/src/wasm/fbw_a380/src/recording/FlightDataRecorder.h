@@ -44,7 +44,9 @@ class FlightDataRecorder {
 
   void loadConfiguration();
 
-  void writePrim(Prim& prim);
+  void writePrimOutputs(Prim& prim);
+
+  void writeMasterPrim(int masterPrim, Prim& prim);
 
   void writeSec(Sec& sec);
 };
