@@ -50,6 +50,8 @@ struct base_prim_fg_adirs_computation_data
   real_T alignment_dummy;
   real32_T heading_deg;
   real32_T track_deg;
+  real32_T wind_dir_deg;
+  real32_T wind_speed_kn;
   real32_T roll_angle_deg;
   real32_T vertical_speed_ft_min;
   real32_T flight_path_angle_deg;
@@ -504,6 +506,20 @@ struct base_time
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
 #define DEFINED_TYPEDEF_FOR_base_sim_data_
 
@@ -832,6 +848,7 @@ struct base_fms_inputs
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+  real_T tower_headwind_kn;
 };
 
 #endif
@@ -1028,20 +1045,6 @@ struct base_prim_lateral_surface_positions
   real_T right_spoiler_8_deg;
   real_T upper_rudder_deg;
   real_T lower_rudder_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
 };
 
 #endif

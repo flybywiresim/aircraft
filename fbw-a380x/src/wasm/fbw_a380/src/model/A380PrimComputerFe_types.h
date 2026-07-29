@@ -676,6 +676,7 @@ struct base_fms_inputs
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+  real_T tower_headwind_kn;
 };
 
 #endif
@@ -940,6 +941,8 @@ struct base_prim_fg_adirs_computation_data
   real_T alignment_dummy;
   real32_T heading_deg;
   real32_T track_deg;
+  real32_T wind_dir_deg;
+  real32_T wind_speed_kn;
   real32_T roll_angle_deg;
   real32_T vertical_speed_ft_min;
   real32_T flight_path_angle_deg;

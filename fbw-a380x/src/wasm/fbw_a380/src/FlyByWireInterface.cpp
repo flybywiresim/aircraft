@@ -499,7 +499,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idIrLatitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
     idIrLongitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
     idIrGroundSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
-    idIrWindSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_VELOCITY");
+    idIrWindSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_SPEED");
     idIrWindDirectionTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
     idIrTrackAngleMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
     idIrTrackAngleTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRUE_TRACK");
@@ -1662,6 +1662,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
+  modelInputs.in.adcn_inputs.fms.tower_headwind_kn = 0;
   modelInputs.in.adcn_inputs.fqms = fqmsBusOutputs;
   modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];

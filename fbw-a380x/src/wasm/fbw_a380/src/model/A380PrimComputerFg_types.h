@@ -343,6 +343,8 @@ struct base_prim_fg_adirs_computation_data
   real_T alignment_dummy;
   real32_T heading_deg;
   real32_T track_deg;
+  real32_T wind_dir_deg;
+  real32_T wind_speed_kn;
   real32_T roll_angle_deg;
   real32_T vertical_speed_ft_min;
   real32_T flight_path_angle_deg;
@@ -569,6 +571,41 @@ struct base_lgciu_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+
+struct base_sec_out_bus
+{
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_1_position_deg;
+  base_arinc_429 right_spoiler_1_position_deg;
+  base_arinc_429 left_spoiler_2_position_deg;
+  base_arinc_429 right_spoiler_2_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 rudder_trim_actual_pos_deg;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
@@ -659,41 +696,6 @@ struct ap_laws_input
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_laws_input input;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-
-struct base_sec_out_bus
-{
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 aileron_status_word;
-  base_arinc_429 left_aileron_1_position_deg;
-  base_arinc_429 left_aileron_2_position_deg;
-  base_arinc_429 right_aileron_1_position_deg;
-  base_arinc_429 right_aileron_2_position_deg;
-  base_arinc_429 spoiler_status_word;
-  base_arinc_429 left_spoiler_1_position_deg;
-  base_arinc_429 right_spoiler_1_position_deg;
-  base_arinc_429 left_spoiler_2_position_deg;
-  base_arinc_429 right_spoiler_2_position_deg;
-  base_arinc_429 elevator_status_word;
-  base_arinc_429 elevator_1_position_deg;
-  base_arinc_429 elevator_2_position_deg;
-  base_arinc_429 elevator_3_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 rudder_status_word;
-  base_arinc_429 rudder_1_position_deg;
-  base_arinc_429 rudder_2_position_deg;
-  base_arinc_429 rudder_trim_actual_pos_deg;
-  base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
 };
 
 #endif
@@ -990,6 +992,7 @@ struct base_fms_inputs
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+  real_T tower_headwind_kn;
 };
 
 #endif

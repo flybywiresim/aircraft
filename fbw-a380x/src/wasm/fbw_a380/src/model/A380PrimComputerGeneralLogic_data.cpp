@@ -2475,6 +2475,7 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
           0.0,
           0.0,
           0.0,
+          0.0,
           0.0
         },
 
@@ -3047,6 +3048,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
 
       {
         0.0,
+        0.0F,
+        0.0F,
         0.0F,
         0.0F,
         0.0F,
@@ -4776,6 +4779,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
 
     {
       0.0,
+      0.0F,
+      0.0F,
       0.0F,
       0.0F,
       0.0F,
