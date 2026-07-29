@@ -38,6 +38,8 @@ import {
   D1D2Messages,
 } from './FMADefinitions';
 import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { FcuEfisCpBusEvents } from '../../../shared/src/publishers/EfisCpBusPublisher';
+import { getDisplayIndex } from './PFD';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -1295,7 +1297,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   private static readonly SixCharactersPerLineTwoLinesModeChangePath = 'm107.1 1.8143h22.994v13.506h-22.994z';
   private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm110.1 1.8143h15.994v13.506h-15.994z';
 
-  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & FcdcBusBaseEvents>();
+  private sub = this.props.bus.getSubscriber<
+    PrimFgBusBaseEvents & FcdcBusBaseEvents & FcuEfisCpBusEvents & PFDSimvars
+  >();
 
   private readonly primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
@@ -1303,13 +1307,29 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
   private readonly fcdcFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_fg_discrete_word_1'));
 
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
+
+  private readonly hasGs = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+
+  private readonly appr1Condition = MappedSubject.create(
+    ([lsButton, hasLoc, hasGs]) => lsButton && hasGs && hasLoc,
+    this.lsButton,
+    this.hasLoc,
+    this.hasGs,
+  );
+
   private readonly D1D2Message = MappedSubject.create(
-    ([primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1]) => {
-      return computeD1D2Message(primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1);
+    ([primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1, appr1Condition]) => {
+      return computeD1D2Message(primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1, appr1Condition);
     },
     this.primFgDiscreteWord1,
     this.primFgDiscreteWord2,
     this.fcdcFgDiscreteWord1,
+    this.appr1Condition,
   );
 
   private readonly text1Sub = this.D1D2Message.map((message) => {
@@ -1384,6 +1404,12 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
 
     this.D1D2Message.sub(() => {
       this.displayModeChangedPath();

@@ -345,6 +345,7 @@ export function computeD1D2Message(
   fgDiscreteWord1: Arinc429WordData,
   fgDiscreteWord2: Arinc429WordData,
   fcdcFgDiscreteWord1: Arinc429WordData,
+  appr1Condition: boolean,
 ): D1D2Messages {
   const landModeArmed = fgDiscreteWord2.bitValueOr(28, false);
   const landModeActive = fgDiscreteWord1.bitValueOr(23, false);
@@ -358,7 +359,7 @@ export function computeD1D2Message(
     return D1D2Messages.LAND_3_SINGLE;
   } else if (land3FailOperationalCapacity) {
     return D1D2Messages.LAND_3_DUAL;
-  } else if (landModeArmed || landModeActive) {
+  } else if (landModeArmed || landModeActive || appr1Condition) {
     return D1D2Messages.APPR_1;
   } else if (false) {
     return D1D2Messages.LAND_1;
