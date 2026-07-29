@@ -54,8 +54,11 @@ import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {
+  private static readonly fmApproachHeadWindRegisterdSimVar = RegisteredSimVar.create(
+    'L:A380X_FM_APPROACH_HEADWIND_COMPONENT',
+    SimVarValueType.Enum,
+  );
   private readonly subs = [] as Subscription[];
-
   private gameState = GameStateProvider.get();
   // ARINC words
   // arinc bus output words
@@ -82,7 +85,8 @@ export class FmcAircraftInterface {
   public readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
   public readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
   public readonly arincFlightNumber5 = new FmArinc429OutputWord('FLIGHT_NUMBER_5');
-  private readonly arincHeadwindComponent = new FmArinc429OutputWord('APPROACH_HEADWIND_COMPONENT');
+  private readonly arincHeadWindComponent = Arinc429Register.empty();
+  private readonly arincHeadWindComponentRaw = Subject.create(Arinc429Register.empty().rawWord);
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   public arincBusOutputs = [
@@ -108,7 +112,6 @@ export class FmcAircraftInterface {
     this.arincFlightNumber3,
     this.arincFlightNumber4,
     this.arincFlightNumber5,
-    this.arincHeadwindComponent,
   ];
 
   private readonly speedVs1g = Subject.create(0);
@@ -381,6 +384,9 @@ export class FmcAircraftInterface {
 
     this.subs.push(this.speedsManagedAthr.sub((v) => this.speedsManagedAthrVar.set(v ?? 0), true));
     this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
+    this.subs.push(
+      this.arincHeadWindComponentRaw.sub((v) => FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v)),
+    );
   }
 
   thrustReductionAccelerationChecks() {
@@ -481,13 +487,11 @@ export class FmcAircraftInterface {
   }
 
   public updateApproachHeadWindComponent(value: number | null) {
-    this.arincHeadwindComponent.setBnrValue(
-      value !== null ? value : 0,
+    this.arincHeadWindComponent.setValue(value ?? 0);
+    this.arincHeadWindComponent.setSsm(
       value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-      9,
-      255,
-      -255,
     );
+    this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
   }
 
   public updatePerformanceData() {
