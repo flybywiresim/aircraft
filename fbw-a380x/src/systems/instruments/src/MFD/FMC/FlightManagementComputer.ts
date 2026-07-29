@@ -455,9 +455,7 @@ export class FlightManagementComputer implements FmcInterface {
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
   getApproachCrossWindComponent(forPlan = FlightPlanIndex.Active): number | null {
-    return forPlan === FlightPlanIndex.Active
-      ? this.approachHeadWindComponent.get()
-      : this.calculateApproachWindComponent(forPlan, false);
+    return this.calculateApproachWindComponent(forPlan, false);
   }
 
   getApproachHeadWindComponent(forPlan = FlightPlanIndex.Active): number | null {
@@ -477,8 +475,8 @@ export class FlightManagementComputer implements FmcInterface {
       return null;
     }
     return A380SpeedsUtils.getHeadwind(
-      approachWindDirection,
       approachWindSpeed,
+      approachWindDirection,
       plan.destinationRunway.magneticBearing + (headWind ? 0 : 90),
     );
   }
