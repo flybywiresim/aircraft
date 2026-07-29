@@ -31,7 +31,7 @@ class A380X_FCU extends BaseInstrument {
     FSComponent.render(<FCUComponent bus={this.bus} />, document.getElementById('FCU_CONTENT'));
 
     // Remove "instrument didn't load" text
-    document.getElementById('FCU_CONTENT').querySelector(':scope > h1').remove();
+    document.getElementById('FCU_CONTENT')?.querySelector(':scope > h1')?.remove();
 
     this.backplane.init();
   }
