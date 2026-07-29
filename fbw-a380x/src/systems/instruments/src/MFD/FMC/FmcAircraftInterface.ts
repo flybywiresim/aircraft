@@ -47,7 +47,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -237,12 +237,12 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
-  private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
+  private readonly fcuEfisLeftDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_l_discrete_word_2'),
     Arinc429Register.empty().rawWord,
   );
-  private readonly fcuRightDiscreteWord1Right = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_right'),
+  private readonly fcuEfisRightDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),
     Arinc429Register.empty().rawWord,
   );
 
@@ -2213,9 +2213,9 @@ export class FmcAircraftInterface {
 
   isInchesSelectedOnFcu(side: EfisSide): boolean {
     if (side == 'L') {
-      return this.fcuLeftDiscreteWord1Left.get().bitValueOr(11, false);
+      return this.fcuEfisLeftDiscreteWord2.get().bitValueOr(13, false);
     } else {
-      return this.fcuRightDiscreteWord1Right.get().bitValueOr(11, false);
+      return this.fcuEfisRightDiscreteWord2.get().bitValueOr(13, false);
     }
   }
 }
