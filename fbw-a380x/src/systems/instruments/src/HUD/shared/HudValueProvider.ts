@@ -4,7 +4,7 @@ import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
 import { AutoThrustMode } from '../../../../shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './ArincValueProvider';
 
 export class HudValueProvider implements Instrument {
@@ -45,7 +45,7 @@ export class HudValueProvider implements Instrument {
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);
-  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed'), 0);
+  private readonly groundSpeed = Arinc429RegisterSubject.createEmpty();
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
   private readonly athrMode = ConsumerSubject.create(this.sub.on('AThrMode'), AutoThrustMode.NONE);
 
@@ -53,7 +53,7 @@ export class HudValueProvider implements Instrument {
     ([lmgc, rmgc, groundSpeed, ra, athrMode]) => {
       if (
         (lmgc || rmgc) &&
-        groundSpeed < 40 &&
+        groundSpeed.value < 40 &&
         !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
       ) {
         return HudMode.TAXI;
@@ -64,7 +64,7 @@ export class HudValueProvider implements Instrument {
         return HudMode.TAKEOFF;
       } else if (
         (lmgc || rmgc) &&
-        groundSpeed >= 40 &&
+        groundSpeed.value >= 40 &&
         !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
       ) {
         return HudMode.ROLLOUT_OR_RTO;
@@ -86,6 +86,10 @@ export class HudValueProvider implements Instrument {
     const publisher = this.bus.getPublisher<HudElems>();
 
     const isCaptainSide = getDisplayIndex() === 1;
+
+    this.sub.on('groundSpeed').handle((value) => {
+      this.groundSpeed.setWord(value);
+    });
 
     this.sub
       .on('realTime')
