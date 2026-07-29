@@ -42,7 +42,7 @@ export type FcuEfisCpBusBaseEvents = {
 
   fcu_efis_r_discrete_word_1: number;
   /**
-   * Discrete word 1 for EIS right, raw ARINC word.
+   * Discrete word 2 for EIS left, raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
    * | 11  | Baro is STD                       |
