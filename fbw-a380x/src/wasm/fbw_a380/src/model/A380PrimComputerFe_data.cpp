@@ -2423,7 +2423,11 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
           0.0,
           0.0,
           0.0,
-          0.0
+
+          {
+            0U,
+            0.0F
+          }
         },
 
         {

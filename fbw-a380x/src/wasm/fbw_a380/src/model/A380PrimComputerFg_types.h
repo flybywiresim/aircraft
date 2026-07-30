@@ -558,19 +558,6 @@ enum class a380_athr_fma_message
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -696,6 +683,19 @@ struct ap_laws_input
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_laws_input input;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -992,7 +992,7 @@ struct base_fms_inputs
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
-  real_T tower_headwind_kn;
+  base_arinc_429 tower_headwind_kn;
 };
 
 #endif

@@ -676,7 +676,7 @@ struct base_fms_inputs
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
-  real_T tower_headwind_kn;
+  base_arinc_429 tower_headwind_kn;
 };
 
 #endif

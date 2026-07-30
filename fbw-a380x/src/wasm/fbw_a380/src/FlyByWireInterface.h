@@ -100,7 +100,6 @@ class FlyByWireInterface {
   std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitude = std::make_unique<Arinc429NumericWord>();
   std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitude = std::make_unique<Arinc429NumericWord>();
   std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeEngineOut = std::make_unique<Arinc429NumericWord>();
-  std::unique_ptr<Arinc429NumericWord> towerHeadwindComponent = std::make_unique<Arinc429NumericWord>();
 
   FlightDataRecorder flightDataRecorder;
 

@@ -1022,7 +1022,6 @@ class A380PrimComputerFg final
     real_T Y_Y0_a;
     real_T Y_Y0_l;
     real_T Y_Y0_h;
-    real_T Constant_Value_h;
     real_T Gain1_Gain_k;
     real_T Bias_Bias;
     real_T Gain_Gain_c;
@@ -1031,6 +1030,7 @@ class A380PrimComputerFg final
     real_T Constant1_Value_o;
     real_T Gain1_Gain_g;
     real_T Gain_Gain_m;
+    real_T Constant_Value_h;
     real_T Y_Y0_i;
     real_T Constant6_Value;
     real_T Switch7_Threshold;
@@ -1228,7 +1228,7 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_MATLABFunction1_Reset(rtDW_MATLABFunction1_A380PrimComputerFg_T *localDW);
   static void A380PrimComputerFg_MATLABFunction1(const prim_outputs *rtu_in, boolean_T rtu_set_dashes, boolean_T
     rtu_set_selection, boolean_T *rty_dashes, rtDW_MATLABFunction1_A380PrimComputerFg_T *localDW);
-  static void A380PrimComputerFg_MATLABFunction_hg(const base_arinc_429 *rtu_u, real32_T *rty_y);
+  static void A380PrimComputerFg_MATLABFunction_a(const base_arinc_429 *rtu_u, real32_T *rty_y);
   static void A380PrimComputerFg_betaestimation1(real32_T rtu_Vcas_kn, real32_T rtu_n_y_g, real_T rtu_zeta_deg, real_T
     rtu_gross_weight_kg, real32_T *rty_beta);
   A380FgOuterLoops LawMDLOBJ1;

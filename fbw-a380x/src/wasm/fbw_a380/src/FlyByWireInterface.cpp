@@ -996,7 +996,6 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // FM thrust reduction/acceleration ARINC words
   fmThrustReductionAltitude->setFromSimVar(idFmgcThrustReductionAltitude->get());
   fmAccelerationAltitude->setFromSimVar(idFmgcAccelerationAltitude->get());
-  towerHeadwindComponent->setFromSimVar(idFmsTowerHeadwindComponent->get());
 
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
@@ -1664,7 +1663,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
-  modelInputs.in.adcn_inputs.fms.tower_headwind_kn = towerHeadwindComponent->valueOr(0);
+  modelInputs.in.adcn_inputs.fms.tower_headwind_kn = Arinc429Utils::fromSimVar(idFmsTowerHeadwindComponent->get());
   modelInputs.in.adcn_inputs.fqms = fqmsBusOutputs;
   modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
