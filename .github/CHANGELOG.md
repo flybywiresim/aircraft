@@ -22,6 +22,7 @@
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 
 ## 2020.15.0
 
