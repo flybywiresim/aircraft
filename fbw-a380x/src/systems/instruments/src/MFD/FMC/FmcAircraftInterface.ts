@@ -56,7 +56,7 @@ import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 export class FmcAircraftInterface {
   private static readonly fmApproachHeadWindRegisterdSimVar = RegisteredSimVar.create(
     'L:A380X_FM_APPROACH_HEADWIND_COMPONENT',
-    SimVarValueType.Enum,
+    SimVarValueType.String,
   );
   private readonly subs = [] as Subscription[];
   private gameState = GameStateProvider.get();
@@ -230,15 +230,10 @@ export class FmcAircraftInterface {
     'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD',
     SimVarValueType.Enum,
   );
-  private readonly speedsManagedAthrVar = RegisteredSimVar.create<number>(
-    'L:A32NX_SPEEDS_MANAGED_ATHR',
-    SimVarValueType.Knots,
-  );
   private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
     'L:A32NX_SPEEDS_MANAGED_PFD',
     SimVarValueType.Knots,
   );
-  private readonly speedsManagedAthr = Subject.create<number | null>(null);
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
@@ -381,11 +376,11 @@ export class FmcAircraftInterface {
           }
         }),
     );
-
-    this.subs.push(this.speedsManagedAthr.sub((v) => this.speedsManagedAthrVar.set(v ?? 0), true));
     this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
     this.subs.push(
-      this.arincHeadWindComponentRaw.sub((v) => FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v)),
+      this.arincHeadWindComponentRaw.sub((v) => {
+        FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v.toString());
+      }),
     );
   }
 
@@ -928,9 +923,6 @@ export class FmcAircraftInterface {
   }
 
   /** in knots or mach */
-  private managedSpeedTarget: number | null = null;
-
-  private managedSpeedTargetIsMach = false;
 
   private holdDecelReached = false;
 
@@ -947,85 +939,34 @@ export class FmcAircraftInterface {
     if (!this.flightPlanService.hasActive) {
       return;
     }
-    const activePerformanceData = this.flightPlanService.active.performanceData;
-
-    let vPfd: number = 0;
-    let isMach = false;
-    let takeoffGoAround = false;
-
+    let vPfd: number | null = -1;
     const phase = this.flightPhase.get();
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
 
-    if (SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1) {
-      if (this.activeVerticalMode === VerticalMode.OP_CLB) {
-        switch (this.flapLeverPosition) {
-          case 0: {
-            this.managedSpeedTarget = this.fmgc.data.greenDotSpeed.get();
-            break;
-          }
-          case 1: {
-            this.managedSpeedTarget = this.fmgc.data.slatRetractionSpeed.get();
-            break;
-          }
-          default: {
-            this.managedSpeedTarget = this.fmgc.data.flapRetractionSpeed.get();
-          }
-        }
-      } else if (this.activeVerticalMode === VerticalMode.OP_DES) {
-        this.managedSpeedTarget =
-          this.flapLeverPosition === 0
-            ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
-            : this.speedVmax.get() - 10;
-      }
-      if (this.managedSpeedTarget != null) {
-        vPfd = this.managedSpeedTarget;
-      }
-    } else if (this.holdDecelReached) {
+    if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget!;
-      this.managedSpeedTarget = this.holdSpeedTarget;
     } else {
       if (this.setHoldSpeedMessageActive) {
         this.setHoldSpeedMessageActive = false;
         SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
         this.fmc.removeMessageFromQueue(NXSystemMessages.setHoldSpeed.text);
       }
-
       const engineOut = !this.fmgc.isAllEngineOn();
-
-      const v2 = activePerformanceData.v2.get();
       switch (phase) {
-        case FmgcFlightPhase.Preflight: {
-          if (v2) {
-            vPfd = v2;
-            this.managedSpeedTarget = v2 + 10;
-            takeoffGoAround = true;
-          }
+        case FmgcFlightPhase.Preflight:
+        case FmgcFlightPhase.Takeoff:
+          vPfd = this.flightPlanService.active.performanceData.v2.get();
           break;
-        }
-        case FmgcFlightPhase.Takeoff: {
-          if (v2) {
-            vPfd = v2;
-            this.managedSpeedTarget = engineOut
-              ? Math.min(v2 + 15, Math.max(v2, this.takeoffEngineOutSpeed ? this.takeoffEngineOutSpeed : 0))
-              : v2 + 10;
-            takeoffGoAround = true;
-          }
-          break;
-        }
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
-
           const speedLimit = this.fmgc.getClimbSpeedLimit();
-
           if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
             speed = Math.min(speed, speedLimit.speed);
           }
-
           speed = Math.min(speed, this.getSpeedConstraint());
-
           // EO handling. Ignore speed constraints or limits.
-          if (!this.fmgc.isAllEngineOn()) {
+          if (engineOut) {
             const greenDotSpeed = this.fmgc.data.greenDotSpeed.get();
             if (
               (this.activeVerticalMode === VerticalMode.OP_CLB || this.activeVerticalMode === VerticalMode.CLB) &&
@@ -1037,9 +978,7 @@ export class FmcAircraftInterface {
               speed = cas ? cas - (cas - greenDotSpeed) * (FMS_CYCLE_TIME / 1_000) : greenDotSpeed;
             }
           }
-
-          [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach());
-          vPfd = this.managedSpeedTarget ?? speed;
+          vPfd = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach())[0] ?? speed;
           break;
         }
         case FmgcFlightPhase.Cruise: {
@@ -1048,103 +987,29 @@ export class FmcAircraftInterface {
           if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
             speed = Math.min(speed, speedLimit.speed);
           }
-
-          [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
-          vPfd = this.managedSpeedTarget ?? speed;
+          vPfd = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach())[0] ?? speed;
           break;
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
           vPfd = this.speedsManagedPfdVar.get();
-          this.managedSpeedTarget = this.speedsManagedAthrVar.get();
-
-          // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
-          // Also, VNAV already does the conversion from Mach if necessary
-          isMach = this.getManagedTargets(
-            this.fmgc.getManagedDescentSpeed(),
-            this.fmgc.getManagedDescentSpeedMach(),
-          )[1];
-          break;
-        }
-        case FmgcFlightPhase.Approach: {
-          // the displayed target is Vapp (with GSmini)
-          const speed = this.fmgc.data.approachVapp.get();
-          vPfd = this.getVAppGsMini() ?? speed;
-
-          this.managedSpeedTarget = Math.max(speed ?? 0, vPfd);
           break;
         }
         case FmgcFlightPhase.GoAround: {
-          if (this.activeVerticalMode === VerticalMode.SRS_GA) {
-            const speed = Math.min(
-              this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
-              Math.max(
-                SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
-                this.fmgc.data.approachVapp.get() ?? 0,
-              ),
-              this.speedVmax.get() - 5,
-            );
-            vPfd = speed;
-            this.managedSpeedTarget = speed;
-            takeoffGoAround = true;
-          } else {
-            const speedConstraint = this.getSpeedConstraint();
-            const speed = Math.min(this.fmgc.data.greenDotSpeed.get() ?? Infinity, speedConstraint);
-
-            vPfd = speed;
-            this.managedSpeedTarget = speed;
-          }
+          const speedConstraint = this.getSpeedConstraint();
+          const speed = Math.min(this.fmgc.data.greenDotSpeed.get() ?? Infinity, speedConstraint);
+          vPfd = speed;
           break;
         }
         default:
           break;
       }
     }
-
-    // Automatically change fcu mach/speed mode
-    if (this.managedSpeedTargetIsMach !== isMach) {
-      if (isMach) {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
-      } else {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
-      }
-      this.managedSpeedTargetIsMach = isMach;
-    }
-
-    let Vtap = 0;
-    // Minimum speed protection
-    if (this.managedSpeedTarget) {
-      const vls = this.speedVls.get();
-      const limitingCharacteristicSpeed = takeoffGoAround
-        ? null
-        : this.getLimitingCharacteristicSpeed(
-            phase === FmgcFlightPhase.Approach ||
-              this.activeVerticalMode === VerticalMode.GS_CPT ||
-              this.activeVerticalMode === VerticalMode.GS_TRACK ||
-              this.activeVerticalMode === VerticalMode.ROLL_OUT ||
-              this.activeVerticalMode === VerticalMode.LAND,
-          );
-      const vMax = this.speedVmax.get();
-      // Select the most limiting characteristic speed between speed target, VLS and current flap configuration. Limit by vmax.
-      Vtap = MathUtils.clamp(this.managedSpeedTarget, limitingCharacteristicSpeed ?? 0, vMax - 5);
-      if (Vtap < vls) {
-        Vtap = vls;
-      }
-    }
     this.speedsManagedPfd.set(vPfd);
-    this.speedsManagedAthr.set(Vtap);
-
-    const ismanaged = this.isAirspeedManaged();
-
-    if (ismanaged) {
-      Coherent.call('AP_SPD_VAR_SET', 0, Vtap).catch(console.error);
-    }
   }
 
   public invalidateManagedSpeed() {
     this.speedsManagedPfd.set(null);
-    this.speedsManagedAthr.set(null);
-    this.managedSpeedTarget = null;
   }
 
   getAppManagedSpeed() {
@@ -1162,49 +1027,6 @@ export class FmcAircraftInterface {
       default:
         return this.fmgc.data.flapRetractionSpeed.get();
     }
-  }
-
-  getVAppGsMini() {
-    let vAppTarget = this.fmgc.data.approachVapp.get() ?? SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
-    let towerHeadwind = 0;
-    const appWindDirection = this.flightPlanService.active.performanceData.approachWindDirection.get() ?? 0;
-    const appWindSpeed = this.flightPlanService.active.performanceData.approachWindMagnitude.get() ?? 0;
-
-    const destRwy = this.fmgc.getDestinationRunway();
-    if (destRwy) {
-      towerHeadwind = A380SpeedsUtils.getHeadwind(appWindSpeed, appWindDirection, destRwy.magneticBearing);
-    }
-    vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
-
-    return vAppTarget;
-  }
-
-  /**
-   * Gets the limiting characteristic based on the current flap lever position.
-   * @param approach. If true, F speed is not considered a limiting speed when flap lever is 3 and CONF3 is selected on the FMS.
-   * @returns the limiting charateristic speed in knots, or null if no speed can be calculated.
-   */
-  private getLimitingCharacteristicSpeed(approach: boolean): number | null {
-    let limitingSpeed: number | null = null;
-    switch (this.flapLeverPosition) {
-      case 0:
-        limitingSpeed = this.fmgc.data.greenDotSpeed.get();
-        break;
-      case 1:
-        limitingSpeed = this.fmgc.data.slatRetractionSpeed.get();
-        break;
-      case 2:
-        limitingSpeed = this.fmgc.data.flapRetractionSpeed.get();
-        break;
-      case 3:
-        limitingSpeed =
-          !approach || !this.flightPlanService.active.performanceData.approachFlapsThreeSelected.get()
-            ? this.fmgc.data.flapRetractionSpeed.get()
-            : null;
-        break;
-    }
-
-    return limitingSpeed;
   }
 
   private speedLimitExceeded = false;

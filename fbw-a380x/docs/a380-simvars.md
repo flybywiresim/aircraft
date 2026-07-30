@@ -468,6 +468,10 @@
     - Bool
     - Indicates if the FMS predicted fuel at destination is below minimum.
 
+- A380X_FM_APPROACH_HEADWIND_COMPONENT
+    - Arinc429<Knots>
+    - The headwind component calculated by the fms based on the inserted approach wind and runway. Negative value indicates a tailwind component.
+
 ## Communications ATA 23
 
 ### Placeholder Types
