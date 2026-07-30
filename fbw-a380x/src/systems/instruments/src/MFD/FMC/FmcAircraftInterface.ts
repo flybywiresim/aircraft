@@ -995,6 +995,10 @@ export class FmcAircraftInterface {
           vPfd = this.speedsManagedPfdVar.get();
           break;
         }
+        case FmgcFlightPhase.Approach: {
+          vPfd = this.fmgc.data.approachVapp.get();
+          break;
+        }
         case FmgcFlightPhase.GoAround: {
           const speedConstraint = this.getSpeedConstraint();
           const speed = Math.min(this.fmgc.data.greenDotSpeed.get() ?? Infinity, speedConstraint);
