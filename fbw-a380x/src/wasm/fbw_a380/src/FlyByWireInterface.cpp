@@ -930,25 +930,38 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, targetAltitude);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_FD_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_MODE_SET, 3);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_MODE_SET, 3);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_RANGE_SET, 6);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_RANGE_SET, 6);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_TRAF_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_TRAF_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_NAVAID_1_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_NAVAID_1_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_NAVAID_2_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_NAVAID_2_PUSH);
     wasFcuInitialized = true;
   } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
     double targetHeading = std::fmod(std::round(simData.Psi_magnetic_deg), 360.0);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_FD_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_MODE_SET, 3);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_MODE_SET, 3);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_RANGE_SET, 5);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_RANGE_SET, 5);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_TRAF_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_TRAF_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_NAVAID_1_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_NAVAID_1_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_L_NAVAID_2_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_EFIS_R_NAVAID_2_PUSH);
     wasFcuInitialized = true;
   } else if (idStartState->get() < 4 && timeSinceReady > 1.0) {
-    // init FCU for on ground -> default FCU values after power-on
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 100);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, 0);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
+    // init FCU for on ground -> nothing to do, default FCU values after power-on
     wasFcuInitialized = true;
   }
 
