@@ -1644,7 +1644,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_FCUKnobTurnsUnpack(rtb_trackMag, &rtb_value_d, A380PrimComputerFg_P.FCUKnobTurnsUnpack_field);
     A380PrimComputerFg_MATLABFunction1(&A380PrimComputerFg_B.BusAssignment_f, rtb_LowerRelop1,
       (A380PrimComputerFg_DWork.Delay_DSTATE_c.manual_spd_control_active || (rtb_value_d !=
-      A380PrimComputerFg_P.CompareToConstant_const_l)), &rtb_disengagementCondition,
+      A380PrimComputerFg_P.CompareToConstant_const_l) || (A380PrimComputerFg_U.in.data.sim_input.spd_mach !=
+      A380PrimComputerFg_P.CompareToConstant1_const_j)), &rtb_disengagementCondition,
       &A380PrimComputerFg_DWork.sf_MATLABFunction1_l);
     if (A380PrimComputerFg_U.in.data.adcn_inputs.fms.preset_spd_mach_activate) {
       if (rtb_Logic_op[0]) {
@@ -1694,6 +1695,14 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_DWork.prevMachActive_not_empty = true;
     }
 
+    if (A380PrimComputerFg_U.in.data.sim_input.spd_mach != -1.0F) {
+      if (rtb_Logic_op[0]) {
+        A380PrimComputerFg_DWork.pValue_e = A380PrimComputerFg_U.in.data.sim_input.spd_mach / 100.0F;
+      } else {
+        A380PrimComputerFg_DWork.pValue_e = A380PrimComputerFg_U.in.data.sim_input.spd_mach;
+      }
+    }
+
     if (A380PrimComputerFg_DWork.prevMachActive != rtb_Logic_op[0]) {
       A380PrimComputerFg_DWork.pValue_e = rtb_y_cp;
     }
@@ -1732,7 +1741,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_FCUKnobTurnsUnpack(rtb_y_cp, &rtb_value_d, A380PrimComputerFg_P.FCUKnobTurnsUnpack_field_h);
     A380PrimComputerFg_MATLABFunction1(&A380PrimComputerFg_B.BusAssignment_f, (rtb_LowerRelop1 || rtb_y_ch), (rtb_y_od ||
       (!A380PrimComputerFg_DWork.Delay_DSTATE_c.any_ap_fd_engaged) || (rtb_value_d !=
-      A380PrimComputerFg_P.CompareToConstant_const_mo) ||
+      A380PrimComputerFg_P.CompareToConstant_const_mo) || (A380PrimComputerFg_U.in.data.sim_input.hdg_trk !=
+      A380PrimComputerFg_P.CompareToConstant1_const_jq) ||
       A380PrimComputerFg_DWork.Delay_DSTATE_c.hdg_trk_preset_available), &rtb_LowerRelop1,
       &A380PrimComputerFg_DWork.sf_MATLABFunction1_o);
     A380PrimComputerFg_MATLABFunction(&A380PrimComputerFg_DWork.Delay_DSTATE[0U].fg.selected_hdg_deg,
@@ -1761,6 +1771,10 @@ void A380PrimComputerFg::step()
     if (!A380PrimComputerFg_DWork.prevTrkFpaActive_not_empty_n) {
       A380PrimComputerFg_DWork.prevTrkFpaActive_i = rtb_Logic_ag[0];
       A380PrimComputerFg_DWork.prevTrkFpaActive_not_empty_n = true;
+    }
+
+    if (A380PrimComputerFg_U.in.data.sim_input.hdg_trk != -1.0F) {
+      A380PrimComputerFg_DWork.pValue_i = A380PrimComputerFg_U.in.data.sim_input.hdg_trk;
     }
 
     if (A380PrimComputerFg_DWork.prevTrkFpaActive_i != rtb_Logic_ag[0]) {
@@ -1828,15 +1842,15 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_DWork.pValue_not_empty_j = true;
     }
 
-    if (A380PrimComputerFg_P.Constant_Value_c != -1.0F) {
-      A380PrimComputerFg_DWork.pValue_p = A380PrimComputerFg_P.Constant_Value_c;
+    if (A380PrimComputerFg_U.in.data.sim_input.alt != -1.0F) {
+      A380PrimComputerFg_DWork.pValue_p = A380PrimComputerFg_U.in.data.sim_input.alt;
     }
 
     if (rtb_BusAssignment_o_fg_logic_mode_sync_active) {
       A380PrimComputerFg_DWork.pValue_p = rtb_y_cp;
     }
 
-    if ((A380PrimComputerFg_P.Constant_Value_c != -1.0F) || (rtb_value_d != 0)) {
+    if ((A380PrimComputerFg_U.in.data.sim_input.alt != -1.0F) || (rtb_value_d != 0)) {
       A380PrimComputerFg_DWork.pValue_p = std::round(((static_cast<real32_T>(low_i + 100) / 2.0F + 1.0F) * static_cast<
         real32_T>(rtb_value_d) + A380PrimComputerFg_DWork.pValue_p) / static_cast<real32_T>(low_i + 100)) * (
         static_cast<real32_T>(low_i) + 100.0F);
@@ -1853,7 +1867,8 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_FCUKnobTurnsUnpack(rtb_y_cp, &rtb_value_d, A380PrimComputerFg_P.FCUKnobTurnsUnpack_field_e);
     A380PrimComputerFg_MATLABFunction1(&A380PrimComputerFg_B.BusAssignment_f, rtb_LowerRelop1, (rtb_y_od ||
       (!A380PrimComputerFg_DWork.Delay_DSTATE_c.any_ap_fd_engaged) || (rtb_value_d !=
-      A380PrimComputerFg_P.CompareToConstant_const_mw)), &rtb_AND10_j, &A380PrimComputerFg_DWork.sf_MATLABFunction1_d);
+      A380PrimComputerFg_P.CompareToConstant_const_mw) || (A380PrimComputerFg_U.in.data.sim_input.vs_fpa !=
+      A380PrimComputerFg_P.CompareToConstant1_const_hh)), &rtb_AND10_j, &A380PrimComputerFg_DWork.sf_MATLABFunction1_d);
     A380PrimComputerFg_MATLABFunction(&A380PrimComputerFg_DWork.Delay_DSTATE[0U].fg.selected_vs_ft_min,
       A380PrimComputerFg_P.A429ValueOrDefault1_defaultValue_c, &rtb_trackMag);
     if (rtb_OR_g_tmp) {
@@ -1894,6 +1909,14 @@ void A380PrimComputerFg::step()
         A380PrimComputerFg_DWork.pValue = rtb_y_cp;
       } else {
         A380PrimComputerFg_DWork.pValue = rtb_trackMag;
+      }
+    }
+
+    if (A380PrimComputerFg_U.in.data.sim_input.vs_fpa != -1.0F) {
+      if (rtb_Logic_ag[0]) {
+        A380PrimComputerFg_DWork.pValue = A380PrimComputerFg_U.in.data.sim_input.vs_fpa / 10.0F;
+      } else {
+        A380PrimComputerFg_DWork.pValue = A380PrimComputerFg_U.in.data.sim_input.vs_fpa;
       }
     }
 
@@ -2764,7 +2787,7 @@ void A380PrimComputerFg::step()
     rtb_y_cp = std::abs(rtb_headingMag);
     A380PrimComputerFg_DWork.Memory_PreviousInput_ek = A380PrimComputerFg_P.Logic_table_pp[(((static_cast<uint32_T>
       ((A380PrimComputerFg_DWork.pValue_p != A380PrimComputerFg_DWork.DelayInput1_DSTATE_i) || (rtb_y_cp >
-      A380PrimComputerFg_P.CompareToConstant1_const_j)) << 1) +
+      A380PrimComputerFg_P.CompareToConstant1_const_j2)) << 1) +
       (A380PrimComputerFg_DWork.Delay_DSTATE_c.longitudinal_modes.alt_hold_active && (rtb_y_cp <=
       A380PrimComputerFg_P.CompareToConstant_const_oj))) << 1) + A380PrimComputerFg_DWork.Memory_PreviousInput_ek];
     A380PrimComputerFg_MATLABFunction_e(&A380PrimComputerFg_DWork.Delay_DSTATE[0U].fg.discrete_word_2,

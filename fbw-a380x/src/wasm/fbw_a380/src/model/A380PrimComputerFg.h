@@ -733,11 +733,14 @@ class A380PrimComputerFg final
     real32_T CompareToConstant5_const_n;
     real32_T CompareToConstant4_const_j;
     real32_T CompareToConstant6_const_a;
+    real32_T CompareToConstant1_const_j;
+    real32_T CompareToConstant1_const_jq;
+    real32_T CompareToConstant1_const_hh;
     real32_T CompareToConstant_const_ov;
     real32_T CompareToConstant_const_dl;
     real32_T CompareToConstant_const_j0;
     real32_T CompareToConstant_const_p;
-    real32_T CompareToConstant1_const_j;
+    real32_T CompareToConstant1_const_j2;
     real32_T CompareToConstant_const_oj;
     real32_T CompareToConstant2_const_e;
     real32_T CompareToConstant3_const_br;
@@ -1174,7 +1177,6 @@ class A380PrimComputerFg final
     real32_T Y_Y0_k;
     real32_T Y_Y0_g;
     real32_T DelayOneStep_InitialCondition;
-    real32_T Constant_Value_c;
     real32_T Gain1_Gain_b;
     real32_T Gain1_Gain_mf;
     real32_T Gain2_Gain_o;

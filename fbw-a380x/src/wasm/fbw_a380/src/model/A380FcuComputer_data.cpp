@@ -300,7 +300,9 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       },
 
       {
-        0.0F
+        0.0F,
+        0,
+        0
       },
 
       {
@@ -2122,7 +2124,9 @@ A380FcuComputer::Parameters_A380FcuComputer_T A380FcuComputer::A380FcuComputer_P
       },
 
       {
-        0.0F
+        0.0F,
+        0,
+        0
       },
 
       {

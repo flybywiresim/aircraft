@@ -2237,6 +2237,7 @@ void A380PrimComputerFctl::step()
 
     A380PrimComputerFctl_B.BusAssignment_nw.data.time = A380PrimComputerFctl_U.in.data.time;
     A380PrimComputerFctl_B.BusAssignment_nw.data.sim_data = A380PrimComputerFctl_U.in.data.sim_data;
+    A380PrimComputerFctl_B.BusAssignment_nw.data.sim_input = A380PrimComputerFctl_U.in.data.sim_input;
     A380PrimComputerFctl_B.BusAssignment_nw.data.discrete_inputs = A380PrimComputerFctl_U.in.data.discrete_inputs;
     A380PrimComputerFctl_B.BusAssignment_nw.data.analog_inputs = A380PrimComputerFctl_U.in.data.analog_inputs;
     A380PrimComputerFctl_B.BusAssignment_nw.data.bus_inputs = A380PrimComputerFctl_U.in.data.bus_inputs;

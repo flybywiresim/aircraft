@@ -1531,6 +1531,11 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
+  modelInputs.in.sim_input.spd_mach = simInputAutopilot.SPD_MACH_set;
+  modelInputs.in.sim_input.hdg_trk = simInputAutopilot.HDG_TRK_set;
+  modelInputs.in.sim_input.alt = simInputAutopilot.ALT_set;
+  modelInputs.in.sim_input.vs_fpa = simInputAutopilot.VS_FPA_set;
+
   modelInputs.in.discrete_inputs.alignment_dummy = 0.0;
   modelInputs.in.discrete_inputs.prim_overhead_button_pressed = idPrimPushbuttonPressed[primIndex]->get();
   modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
@@ -2305,6 +2310,10 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
 
   fcus[fcuIndex].modelInputs.in.sim_input.baro_setting_hpa =
       fcuIndex == 0 ? simInputAutopilot.baro_left_set : simInputAutopilot.baro_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.efis_mode =
+      fcuIndex == 0 ? simInputAutopilot.efis_mode_left_set : simInputAutopilot.efis_mode_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.efis_range =
+      fcuIndex == 0 ? simInputAutopilot.efis_range_left_set : simInputAutopilot.efis_range_right_set;
 
   fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = idFcuSwitchedOff->get();
   fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = idFcuEisCpBackupActive[fcuIndex]->get();

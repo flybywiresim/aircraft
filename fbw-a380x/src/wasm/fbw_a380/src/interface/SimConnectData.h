@@ -160,16 +160,6 @@ struct SimInputAutopilot {
   double AP_1_push;
   double AP_2_push;
   double AP_disconnect;
-  double HDG_push;
-  double HDG_pull;
-  double ALT_push;
-  double ALT_pull;
-  // FIXME remove VS_push
-  double VS_push;
-  double VS_pull;
-  double LOC_push;
-  double APPR_push;
-  double EXPED_push;
   double DIR_TO_trigger;
   double mach_mode_activate;
   double spd_mode_activate;
@@ -180,6 +170,10 @@ struct SimInputAutopilot {
   double HDG_TRK_set;
   double ALT_set;
   double VS_FPA_set;
+  double efis_mode_left_set;
+  double efis_range_left_set;
+  double efis_mode_right_set;
+  double efis_range_right_set;
 };
 
 struct SimInputThrottles {

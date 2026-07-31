@@ -371,6 +371,19 @@ struct base_lgciu_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+
+struct base_prim_sim_input
+{
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -752,6 +765,7 @@ struct prim_inputs
 {
   base_time time;
   base_sim_data sim_data;
+  base_prim_sim_input sim_input;
   base_prim_discrete_inputs discrete_inputs;
   base_prim_analog_inputs analog_inputs;
   base_prim_bus_inputs bus_inputs;
