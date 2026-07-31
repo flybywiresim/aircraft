@@ -310,7 +310,7 @@ export class FmcAircraftInterface {
 
     this.subs.push(
       this.fmc.approachFlapsThreeSelected.sub(
-        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v),
+        (v) => SimVar.SetSimVarValue('L:A380X_FM_LANDING_CONF3', SimVarValueType.Bool, v),
         true,
       ),
     );

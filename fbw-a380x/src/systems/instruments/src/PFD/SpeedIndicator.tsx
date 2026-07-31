@@ -236,13 +236,18 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly airspeed = Arinc429RegisterSubject.createEmpty();
 
+  private readonly selectedSpeedActive = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_fg_discrete_word_4'),
+  ).map((v) => !v.isInvalid() && v.bitValue(18));
+
   private readonly shortTermManagedSpeedVisible = MappedSubject.create(
-    ([shortTermManagedSpeed, pfdTargetSpeed]) =>
+    ([shortTermManagedSpeed, pfdTargetSpeed, selectedSpeed]) =>
       !shortTermManagedSpeed.isInvalid() &&
       !pfdTargetSpeed.isInvalid() &&
-      Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2,
+      (selectedSpeed || Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2),
     this.shortTermManagedSpeed,
     this.pfdTargetSpeed,
+    this.selectedSpeedActive,
   );
 
   private readonly shortTermVisibility = this.shortTermManagedSpeedVisible.map((v) => (v ? 'visible' : 'hidden'));
