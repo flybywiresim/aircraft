@@ -187,12 +187,15 @@ export type PrimFgBusBaseEvents = {
    *       14 | A/THR Limited
    *       15 | Spare
    *       16 | Spare
-   *       17 | SPD/MACH Mode Active
-   *       18 | RETARD Mode Active
-   *       19 | THRUST Mode Active
-   *       20 | Spare
-   *       21 | ALPHA FLOOR Mode Active
-   *       22 |
+   *       17 | Spare
+   *       18 | SPD/MACH Mode Active
+   *       19 | RETARD Mode Active
+   *       20 | THRUST Mode Active
+   *       21 | Spare
+   *       22 | Spare
+   *       23 | Spare
+   *       24 | ALPHA FLOOR Mode Active
+   *       25 |
    *       -  | Spare
    *       29 |
    */

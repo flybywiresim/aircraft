@@ -960,6 +960,7 @@ struct base_prim_fg_adirs_computation_data
 struct base_prim_fg_logic_output
 {
   boolean_T gnd_eng_stop_flt_5s;
+  boolean_T mode_sync_active;
   boolean_T ap_fd_common_condition;
   boolean_T ap_fd_1_condition;
   boolean_T ap_fd_2_condition;
@@ -973,7 +974,6 @@ struct base_prim_fg_logic_output
   boolean_T ap_1_inop;
   boolean_T ap_2_inop;
   boolean_T athr_inop;
-  boolean_T fmgc_opp_priority;
   boolean_T ap_fd_1_on_adr_3;
   boolean_T ap_fd_2_on_adr_3;
   boolean_T ap_fd_1_on_ir_3;
@@ -1182,7 +1182,6 @@ struct base_prim_ap_fd_logic_outputs
   boolean_T short_term_managed_spd_visible;
   boolean_T alt_cstr_applicable;
   real_T alt_sel_or_cstr;
-  boolean_T mode_sync_active;
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;

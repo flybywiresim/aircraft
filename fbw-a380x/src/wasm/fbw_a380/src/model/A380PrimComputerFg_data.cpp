@@ -32,37 +32,89 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   { 1.0, 0.01 },
   23.0,
-  28.0,
-  19.0,
   21.0,
-  22.0,
-  20.0,
-  27.0,
-  26.0,
-  24.0,
-  26.0,
-  26.0,
-  24.0,
-  24.0,
-  24.0,
-  26.0,
-  14.0,
+  21.0,
   13.0,
   14.0,
+  11.0,
+  12.0,
+  11.0,
+  28.0,
+  21.0,
+  11.0,
+  22.0,
+  14.0,
+  20.0,
+  13.0,
+  19.0,
+  12.0,
+  27.0,
+  15.0,
+  11.0,
+  18.0,
+  11.0,
+  19.0,
+  28.0,
+  26.0,
   24.0,
+  23.0,
+  26.0,
+  14.0,
+  26.0,
+  24.0,
+  23.0,
+  16.0,
+  15.0,
+  24.0,
+  24.0,
+  26.0,
+  16.0,
+  17.0,
+  14.0,
+  22.0,
+  13.0,
+  14.0,
+  12.0,
+  23.0,
+  24.0,
+  13.0,
+  14.0,
+  11.0,
+  19.0,
+  20.0,
   25.0,
   26.0,
+  17.0,
+  18.0,
   18.0,
   15.0,
   15.0,
-  15.0,
+  11.0,
   15.0,
   16.0,
-  16.0,
+  15.0,
   12.0,
+  15.0,
+  17.0,
+  13.0,
+  16.0,
+  14.0,
+  16.0,
+  13.0,
+  21.0,
+  22.0,
+  18.0,
+  25.0,
+  18.0,
+  12.0,
+  17.0,
   11.0,
   14.0,
   13.0,
+  21.0,
+  20.0,
+  18.0,
+  19.0,
   28.0,
   28.0,
   900.0,
@@ -173,7 +225,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   1.0,
   0.0,
   0.0,
-  1.0,
+  0.0,
   -2.0,
   0.0,
   0.0,
@@ -193,9 +245,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.0,
   1.0,
   5.0,
-  0.72,
-  0.2,
-  0.2,
   15.0,
   0.9,
   0.9,
@@ -419,6 +468,13 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   tcas_submode::ALT_ACQ,
   tcas_submode::ALT_HOLD,
   tcas_submode::VS,
@@ -450,51 +506,49 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   false,
   false,
   false,
-  true,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
   false,
   true,
-  true,
-  true,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
   true,
   true,
   true,
   true,
   true,
-  false,
   true,
   true,
   true,
   true,
-  false,
+  true,
+  true,
   true,
   true,
   true,
@@ -3756,7 +3810,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       false,
       false,
       false,
-      false,
       0.0,
       false,
       tcas_submode::VS,
@@ -4399,6 +4452,524 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   {
     {
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      }
+    },
+
+    {
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      }
+    },
+
+    {
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      }
+    }
+  },
+
+  {
+    {
       0.0,
       0.0,
 
@@ -4527,7 +5098,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
     false,
     false,
     0.0,
-    false,
     false,
     false,
     false,
@@ -4681,32 +5251,21 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.0174532924F,
   10.0F,
   false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
   false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
   false,
   false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
   false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
@@ -4806,7 +5365,58 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  false
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+
 };
