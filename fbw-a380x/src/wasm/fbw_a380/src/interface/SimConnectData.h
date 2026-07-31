@@ -137,6 +137,7 @@ struct SimData {
   double contact_point_compression_3;
   double contact_point_compression_4;
   unsigned long long antiskidBrakesActive;
+  double seaLevelPressure;
 };
 
 struct SimInput {

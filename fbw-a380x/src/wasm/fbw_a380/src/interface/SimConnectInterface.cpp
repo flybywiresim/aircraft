@@ -275,6 +275,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:3", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:4", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ANTISKID BRAKES ACTIVE", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SEA LEVEL PRESSURE", "MBAR");
 
   // -----------------------------------
   // DATA FOR FDR TO MONITOR FUEL SYSTEM
@@ -2587,6 +2588,15 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
         sendEvent(BAROMETRIC_STD_PRESSURE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
       std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << altimeterIndex << std::endl;
+      break;
+    }
+
+    case Events::BAROMETRIC: {
+      simInputAutopilot.baro_left_set = simData.seaLevelPressure;
+      simInputAutopilot.baro_right_set = simData.seaLevelPressure;
+      sendEvent(Events::BAROMETRIC, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
+
+      std::cout << "WASM: event triggered: BAROMETRIC" << std::endl;
       break;
     }
 
