@@ -1661,7 +1661,7 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_P.A429ValueOrDefault1_defaultValue_h, &rtb_trackMag);
     A380PrimComputerFg_MATLABFunction(&A380PrimComputerFg_DWork.Delay_DSTATE[0U].fg.selected_spd_kts,
       A380PrimComputerFg_P.A429ValueOrDefault2_defaultValue_dd, &rtb_y_cp);
-    absAdvRateToMaintain = A380PrimComputerFg_DWork.Delay_DSTATE_c.pfd_spd_target_kts / 1479.1;
+    absAdvRateToMaintain = A380PrimComputerFg_DWork.Delay_DSTATE_c.spd_target_kts / 1479.1;
     if (rtb_BusAssignment_o_fg_logic_mode_sync_active) {
       if (rtb_Logic_op[0]) {
         rtb_y_cp = rtb_trackMag;
@@ -1679,7 +1679,7 @@ void A380PrimComputerFg::step()
         absAdvRateToMaintain = std::sqrt((std::pow(static_cast<real32_T>((std::pow(absAdvRateToMaintain *
           absAdvRateToMaintain + 1.0, 3.5) - 1.0) * 1013.25) / rtb_trackTrue + 1.0F, 0.285714298F) - 1.0F) / 0.2F);
       } else {
-        absAdvRateToMaintain = A380PrimComputerFg_DWork.Delay_DSTATE_c.pfd_spd_target_kts;
+        absAdvRateToMaintain = A380PrimComputerFg_DWork.Delay_DSTATE_c.spd_target_kts;
       }
 
       rtb_y_cp = static_cast<real32_T>(absAdvRateToMaintain);
