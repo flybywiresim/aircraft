@@ -256,7 +256,7 @@ export class FmcAircraftInterface {
   );
 
   private readonly isTrackOrheadingActive = this.masterPrimFgWord4.map(
-    (v) => (!v.isInvalid() && v.bitValue(16)) || v.bitValue(17),
+    (v) => !v.isInvalid() && (v.bitValue(16) || v.bitValue(17)),
   );
 
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
