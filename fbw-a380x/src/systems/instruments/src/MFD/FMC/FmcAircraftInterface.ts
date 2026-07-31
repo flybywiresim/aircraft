@@ -251,6 +251,10 @@ export class FmcAircraftInterface {
     this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_fg_discrete_word_4'),
   );
 
+  private readonly masterPrimFgWord5 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_fg_discrete_word_5'),
+  );
+
   private readonly openOrManagedVerticalModesActive = this.masterPrimFgWord3.map(
     (v) => v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(13) || v.bitValue(14),
   );
@@ -1776,10 +1780,10 @@ export class FmcAircraftInterface {
   }
 
   IsAirspeedSelected(): boolean | null {
-    return this.masterPrimFgWord4.get().bitValueOr(18, null);
+    return this.masterPrimFgWord5.get().bitValueOr(18, null);
   }
 
   IsAirspeedManaged(): boolean | null {
-    return this.masterPrimFgWord4.get().bitValueOr(17, null);
+    return this.masterPrimFgWord5.get().bitValueOr(17, null);
   }
 }
