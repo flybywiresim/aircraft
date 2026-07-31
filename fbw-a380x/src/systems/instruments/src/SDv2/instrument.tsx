@@ -10,7 +10,6 @@ import { ArincEventBus, FailuresConsumer, FmsDataPublisher } from '@flybywiresim
 import { SD } from './SD';
 import { SDSimvarPublisher } from './SDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
-import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
@@ -26,8 +25,6 @@ class SdInstrument implements FsInstrument {
   private readonly simVarPublisher = new SDSimvarPublisher(this.bus);
 
   private readonly adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, 'L');
-
-  private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
   private readonly fmsDataPublisher = new FmsDataPublisher(this.bus);
 
@@ -46,7 +43,6 @@ class SdInstrument implements FsInstrument {
     this.backplane.addPublisher('fmsData', this.fmsDataPublisher);
     this.backplane.addPublisher('fcuBus', this.fcuBusPublisher);
     this.backplane.addPublisher('fqms', this.fqmsPublisher);
-    this.backplane.addInstrument('simplane', this.simplaneValueProvider);
 
     this.doInit();
   }

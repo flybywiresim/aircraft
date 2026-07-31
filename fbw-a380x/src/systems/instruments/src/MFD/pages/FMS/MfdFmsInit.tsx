@@ -520,7 +520,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number>
                 dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
                 dataHandlerDuringValidation={async (v) =>
-                  v ? this.props.fmcService.master.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
+                  v ? this.props.fmcService.master.trySetCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                 }
                 mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}

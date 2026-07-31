@@ -1,5 +1,7 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
 import { PrimFeBusBaseEvents, PrimFeBusEvents } from '@shared/publishers/PrimFePublisher';
 import { PrimFctlBusEvents } from '@shared/publishers/PrimFctlPublisher';
 import { PrimFgBusEvents, PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
@@ -52,7 +54,7 @@ const primFgSubjectsByKey = {
   prim_fg_ats_fma_discrete_word: ConsumerSubject.create(null, 0),
 } satisfies Record<keyof PrimFgBusBaseEvents, ConsumerSubject<number>>;
 
-export class PrimChoiceProvider implements Instrument {
+export class PrimChoiceProvider {
   private readonly sub = this.bus.getSubscriber<PrimFeBusEvents & PrimFctlBusEvents & PrimFgBusEvents>();
 
   private readonly prim1FctlLawStatusWord = Arinc429LocalVarConsumerSubject.create(
@@ -95,7 +97,6 @@ export class PrimChoiceProvider implements Instrument {
 
   constructor(private readonly bus: EventBus) {}
 
-  /** @inheritdoc */
   public init(): void {
     const publisher = this.bus.getPublisher<PrimFeBusBaseEvents & PrimFgBusBaseEvents>();
 
@@ -122,10 +123,5 @@ export class PrimChoiceProvider implements Instrument {
         publisher.pub(key, word);
       }, true);
     }
-  }
-
-  /** @inheritdoc */
-  public onUpdate(): void {
-    // noop
   }
 }

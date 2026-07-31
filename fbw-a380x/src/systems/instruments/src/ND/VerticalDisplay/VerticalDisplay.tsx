@@ -65,7 +65,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       MfdSurvEvents &
       NDControlEvents &
       NDSimvars &
-      SimplaneValues
+      SimplaneValues //TODO Replace with FG events
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();

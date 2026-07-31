@@ -17,7 +17,7 @@ import { FcdcChoiceProvider } from './shared/FcdcChoiceProvider';
 import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
-import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
+import { PrimChoiceProvider } from '../../../shared/src/publishers/PrimChoiceProvider';
 import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
 import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
 import { PrimFgBusPublisher } from '@shared/publishers/PrimFgPublisher';
@@ -103,8 +103,6 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
     this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('FqmsPublisher', this.fqmsPublisher);
-
-    this.backplane.addInstrument('PrimChoiceProvider', this.primChoiceProvider);
     this.backplane.addInstrument('FdSelectionProvider', this.fdSelectionProvider);
     this.backplane.addPublisher('PrimFePublisher', this.primFePublisher);
     this.backplane.addPublisher('PrimFctlPublisher', this.primFctlPublisher);
@@ -129,6 +127,7 @@ class A380X_PFD extends BaseInstrument {
     super.connectedCallback();
 
     this.backplane.init();
+    this.primChoiceProvider.init();
 
     FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 

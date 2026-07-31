@@ -27,15 +27,13 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmcl, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from './fmgc';
 import { ADIRS } from '../shared/Adirs';
 import { NXSystemMessages } from '../shared/NXSystemMessages';
 import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
-import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMessageVars } from '../../MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from '../pages/FMS/F-PLN/MfdFmsFplnVertRev';
@@ -48,6 +46,8 @@ import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -137,16 +137,6 @@ export class FmcAircraftInterface {
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
-
-  private readonly fmaVerticalMode = ConsumerSubject.create(
-    this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode'),
-    0,
-  );
-
-  private activeLateralMode = LateralMode.NONE;
-
-  public readonly fmaLateralMode = ConsumerSubject.create(this.bus.getSubscriber<FGVars>().on('fg.fma.lateralMode'), 0);
-  private activeVerticalMode = VerticalMode.NONE;
 
   private readonly altActiveInClimbForMoreThan10Min = new NXLogicConfirmNode(600);
 
@@ -246,6 +236,28 @@ export class FmcAircraftInterface {
     Arinc429Register.empty().rawWord,
   );
 
+  private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
+
+  private readonly masterPrimAltitude = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_selected_altitude'),
+  );
+
+  private readonly masterPrimFgWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_fg_discrete_word_3'),
+  );
+
+  private readonly masterPrimFgWord4 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_fg_discrete_word_4'),
+  );
+
+  private readonly openOrManagedVerticalModesActive = this.masterPrimFgWord3.map(
+    (v) => v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(13) || v.bitValue(14),
+  );
+
+  private fcuAltitudeChangeCheckCruiseFlightLevel = false;
+
+  private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
+
   constructor(
     private bus: EventBus,
     private fmc: FlightManagementComputer,
@@ -253,6 +265,7 @@ export class FmcAircraftInterface {
     private flightPlanService: FlightPlanService,
   ) {
     this.init();
+    this.primChoiceProvider.init();
   }
 
   destroy() {
@@ -380,6 +393,32 @@ export class FmcAircraftInterface {
     this.subs.push(
       this.arincHeadWindComponentRaw.sub((v) => {
         FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v.toString());
+      }),
+      this.masterPrimAltitude.sub((v) => {
+        if (v.isNormalOperation()) {
+          this.fmc.handleFcuAltKnobTurn();
+          this.fcuAltitudeChangeCheckCruiseFlightLevel = true;
+        }
+      }),
+      Arinc429LocalVarConsumerSubject.create(
+        this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_selected_vertical_speed'),
+      ).sub((v) => {
+        if (v.isNormalOperation()) {
+          this.fmc.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
+        }
+      }),
+      Arinc429LocalVarConsumerSubject.create(
+        this.bus.getSubscriber<PrimFgBusBaseEvents>().on('prim_selected_flight_path_angle'),
+      ).sub((v) => {
+        if (v.isNormalOperation()) {
+          this.fmc.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
+        }
+      }),
+      this.openOrManagedVerticalModesActive.sub((v) => {
+        if (v) {
+          this.fmc.handleFcuAltKnobPushPull();
+          this.onStepClimbDescent();
+        }
       }),
     );
   }
@@ -855,7 +894,7 @@ export class FmcAircraftInterface {
     if (currentLeg && currentLeg.isDiscontinuity === false && currentLeg.type === 'HM') {
       holdSpeedTarget = this.getHoldingSpeed(currentLegConstraints.descentSpeed, currentLegConstraints.descentAltitude);
       holdDecelReached = true;
-      enableHoldSpeedWarning = !Simplane.getAutoPilotAirspeedManaged();
+      enableHoldSpeedWarning = this.IsAirspeedSelected() ?? false;
       this.holdLegIndex = plan.activeLegIndex;
     } else if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.type === 'HM') {
       const adirLat = ADIRS.getLatitude();
@@ -874,7 +913,7 @@ export class FmcAircraftInterface {
         const gsWord = ADIRS.getGroundSpeed();
         const gs = gsWord && gsWord.isNormalOperation() ? gsWord.value : 0;
         const warningDist = decelDist + gs / 120;
-        if (!Simplane.getAutoPilotAirspeedManaged() && dtg != null && dtg <= warningDist) {
+        if (this.IsAirspeedSelected() && dtg != null && dtg <= warningDist) {
           enableHoldSpeedWarning = true;
         }
       }
@@ -968,10 +1007,9 @@ export class FmcAircraftInterface {
           // EO handling. Ignore speed constraints or limits.
           if (engineOut) {
             const greenDotSpeed = this.fmgc.data.greenDotSpeed.get();
-            if (
-              (this.activeVerticalMode === VerticalMode.OP_CLB || this.activeVerticalMode === VerticalMode.CLB) &&
-              greenDotSpeed
-            ) {
+            const openClimbOrClimbActive =
+              this.masterPrimFgWord3.get().bitValueOr(11, false) || this.masterPrimFgWord3.get().bitValue(13);
+            if (openClimbOrClimbActive && greenDotSpeed) {
               // New speed target is GDOT (EO-GDOT), but it ramps down by 1kt per second
               const casWord = ADIRS.getCalibratedAirspeed();
               const cas = casWord && casWord.isNormalOperation() ? casWord.value : null;
@@ -1081,136 +1119,15 @@ export class FmcAircraftInterface {
     }
   }
 
-  private apMasterStatus: boolean = false;
-
-  private lastUpdateAPTime: number = 0;
-
-  private updateAutopilotCooldown: number = 0;
-
-  private apCooldown: number = 500;
-
   private forceNextAltitudeUpdate: boolean = true;
-
-  private activeWpIdx: number = 0;
 
   /** in feet */
   private constraintAlt: number | null = null;
 
-  private lastRequestedFLCModeWaypointIndex: number | null = null;
-
-  updateAutopilot(dt: number) {
-    let apLogicOn = this.apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
-    this.lastUpdateAPTime = Date.now();
-    if (Number.isFinite(dt)) {
-      this.updateAutopilotCooldown -= dt;
-    }
-    if (SimVar.GetSimVarValue('L:AIRLINER_FMC_FORCE_NEXT_UPDATE', 'number') === 1) {
-      SimVar.SetSimVarValue('L:AIRLINER_FMC_FORCE_NEXT_UPDATE', 'number', 0);
-      this.updateAutopilotCooldown = -1;
-    }
-
-    if (
-      this.flightPhase.get() === FmgcFlightPhase.Takeoff &&
-      !this.fmgc.isAllEngineOn() &&
-      this.takeoffEngineOutSpeed === undefined
-    ) {
-      const casWord = ADIRS.getCalibratedAirspeed();
-      this.takeoffEngineOutSpeed = casWord && casWord.isNormalOperation() ? casWord.value : null;
-    }
-
-    if (this.updateAutopilotCooldown < 0) {
-      this.updatePerfSpeeds();
-      this.updateConstraints();
-      this.updateManagedSpeed();
-      const currentApMasterStatus = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean');
-      if (currentApMasterStatus !== this.apMasterStatus) {
-        this.apMasterStatus = currentApMasterStatus;
-        apLogicOn = this.apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
-        this.forceNextAltitudeUpdate = true;
-        console.log('Enforce AP in Altitude Lock mode. Cause : AP Master Status has changed.');
-        SimVar.SetSimVarValue('L:A320_NEO_FCU_FORCE_IDLE_VS', 'Number', 1);
-        if (this.apMasterStatus) {
-          if (this.flightPlanService.hasActive && this.flightPlanService.active.legCount === 0) {
-            this.onModeSelectedAltitude();
-            this.onModeSelectedHeading();
-          }
-        }
-      }
-      if (apLogicOn) {
-        if (!Simplane.getAutoPilotFLCActive() && !SimVar.GetSimVarValue('AUTOPILOT AIRSPEED HOLD', 'Boolean')) {
-          SimVar.SetSimVarValue('K:AP_PANEL_SPEED_HOLD', 'Number', 1);
-        }
-        if (!SimVar.GetSimVarValue('AUTOPILOT HEADING LOCK', 'Boolean')) {
-          if (!SimVar.GetSimVarValue('AUTOPILOT APPROACH HOLD', 'Boolean')) {
-            SimVar.SetSimVarValue('K:AP_PANEL_HEADING_HOLD', 'Number', 1);
-          }
-        }
-      }
-
-      if (this.isAltitudeManaged()) {
-        const plan = this.flightPlanService.active;
-
-        const prevWaypoint = plan.hasElement(plan.activeLegIndex - 1);
-        const nextWaypoint = plan.hasElement(plan.activeLegIndex + 1);
-
-        if (prevWaypoint && nextWaypoint) {
-          const activeWpIdx = plan.activeLegIndex;
-
-          if (activeWpIdx !== this.activeWpIdx) {
-            this.activeWpIdx = activeWpIdx;
-            this.updateConstraints();
-          }
-          if (this.constraintAlt) {
-            Coherent.call('AP_ALT_VAR_SET_ENGLISH', 2, this.constraintAlt, this.forceNextAltitudeUpdate).catch(
-              console.error,
-            );
-            this.forceNextAltitudeUpdate = false;
-          } else {
-            const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue('feet');
-            if (Number.isFinite(altitude)) {
-              Coherent.call('AP_ALT_VAR_SET_ENGLISH', 2, altitude, this.forceNextAltitudeUpdate).catch(console.error);
-              this.forceNextAltitudeUpdate = false;
-            }
-          }
-        } else {
-          const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue('feet');
-          if (Number.isFinite(altitude)) {
-            SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', 0);
-            Coherent.call('AP_ALT_VAR_SET_ENGLISH', 2, altitude, this.forceNextAltitudeUpdate).catch(console.error);
-            this.forceNextAltitudeUpdate = false;
-          }
-        }
-      }
-
-      if (
-        Simplane.getAutoPilotAltitudeManaged() &&
-        this.flightPlanService.hasActive &&
-        SimVar.GetSimVarValue('L:A320_NEO_FCU_STATE', 'number') !== 1
-      ) {
-        const currentWaypointIndex = this.flightPlanService.active.activeLegIndex;
-        if (currentWaypointIndex !== this.lastRequestedFLCModeWaypointIndex) {
-          this.lastRequestedFLCModeWaypointIndex = currentWaypointIndex;
-          setTimeout(() => {
-            if (Simplane.getAutoPilotAltitudeManaged()) {
-              this.onModeManagedAltitude();
-            }
-          }, 1000);
-        }
-      }
-
-      if (this.flightPhase.get() === FmgcFlightPhase.GoAround && apLogicOn) {
-        // depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
-        // this._onModeManagedAltitude();
-        this.onModeSelectedAltitude();
-      }
-      this.updateAutopilotCooldown = this.apCooldown;
-    }
-  }
-
   /**
    * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
    */
-  updatePerfSpeeds() {
+  public updatePerfSpeeds() {
     /** in kg */
     const estLdgWeight = this.fmc.getLandingWeight(FlightPlanIndex.Active);
     let ldgWeight = estLdgWeight;
@@ -1340,10 +1257,10 @@ export class FmcAircraftInterface {
   updateConstraints() {
     const activeFpIndex = this.flightPlanService.activeLegIndex;
     const constraints = this.managedProfile.get(activeFpIndex);
-    const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0;
+    const fcuSelAlt = this.masterPrimAltitude.get().valueOr(null);
 
     let constraintAlt = 0;
-    if (constraints) {
+    if (constraints && fcuSelAlt !== null) {
       const phase = this.flightPhase.get();
       if (
         (phase < FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.GoAround) &&
@@ -1369,149 +1286,31 @@ export class FmcAircraftInterface {
     }
   }
 
-  public onEvent(event: string): void {
-    if (event === 'MODE_SELECTED_HEADING' || event === 'A320_Neo_CDU_MODE_SELECTED_HEADING') {
-      if (Simplane.getAutoPilotHeadingManaged()) {
-        if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number') === 0) {
-          const currentHeading = Simplane.getHeadingMagnetic();
-
-          Coherent.call('HEADING_BUG_SET', 1, currentHeading).catch(console.error);
-        }
-      }
-      this.onModeSelectedHeading();
-    }
-    if (event === 'MODE_MANAGED_HEADING' || event === 'A320_Neo_CDU_MODE_MANAGED_HEADING') {
-      if (this.flightPlanService.active.legCount === 0) {
-        return;
-      }
-
-      this.onModeManagedHeading();
-    }
-    if (event === 'MODE_SELECTED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_SELECTED_ALTITUDE') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-      if (dist) {
-        this.fmc.handleFcuAltKnobPushPull(dist);
-      }
-      this.onModeSelectedAltitude();
-      this.onStepClimbDescent();
-    }
-    if (event === 'MODE_MANAGED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_MANAGED_ALTITUDE') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-      if (dist) {
-        this.fmc.handleFcuAltKnobPushPull(dist);
-      }
-      this.onModeManagedAltitude();
-      this.onStepClimbDescent();
-    }
-    if (
-      event === 'AP_DEC_ALT' ||
-      event === 'AP_INC_ALT' ||
-      event === 'A320_Neo_CDU_AP_DEC_ALT' ||
-      event === 'A320_Neo_CDU_AP_INC_ALT'
-    ) {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-      if (dist) {
-        this.fmc.handleFcuAltKnobTurn(dist);
-      }
-      this.onTrySetCruiseFlightLevel();
-    }
-    if (
-      event === 'AP_DEC_HEADING' ||
-      event === 'AP_INC_HEADING' ||
-      event === 'A320_Neo_CDU_AP_DEC_HEADING' ||
-      event === 'A320_Neo_CDU_AP_INC_HEADING'
-    ) {
-      if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number') === 0) {
-        const currentHeading = Simplane.getHeadingMagnetic();
-        Coherent.call('HEADING_BUG_SET', 1, currentHeading).catch(console.error);
-      }
-      SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', 1);
-    }
-    if (event === 'VS' || event === 'A320_Neo_CDU_VS') {
-      const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
-      if (dist) {
-        this.fmc.handleFcuVSKnob(dist, this.onStepClimbDescent.bind(this));
-      }
-    }
-  }
-
-  onModeSelectedHeading() {
-    if (SimVar.GetSimVarValue('AUTOPILOT APPROACH HOLD', 'boolean')) {
-      return;
-    }
-    if (!SimVar.GetSimVarValue('AUTOPILOT HEADING LOCK', 'Boolean')) {
-      SimVar.SetSimVarValue('K:AP_PANEL_HEADING_HOLD', 'Number', 1);
-    }
-    SimVar.SetSimVarValue('K:HEADING_SLOT_INDEX_SET', 'number', 1);
-  }
-
-  onModeManagedHeading() {
-    if (SimVar.GetSimVarValue('AUTOPILOT APPROACH HOLD', 'boolean')) {
-      return;
-    }
-    if (!SimVar.GetSimVarValue('AUTOPILOT HEADING LOCK', 'Boolean')) {
-      SimVar.SetSimVarValue('K:AP_PANEL_HEADING_HOLD', 'Number', 1);
-    }
-    SimVar.SetSimVarValue('K:HEADING_SLOT_INDEX_SET', 'number', 2);
-    SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', 0);
-  }
-
-  onModeSelectedAltitude() {
-    if (!Simplane.getAutoPilotGlideslopeHold()) {
-      SimVar.SetSimVarValue('L:A320_NEO_FCU_FORCE_IDLE_VS', 'Number', 1);
-    }
-    SimVar.SetSimVarValue('K:ALTITUDE_SLOT_INDEX_SET', 'number', 1);
-    Coherent.call(
-      'AP_ALT_VAR_SET_ENGLISH',
-      1,
-      Simplane.getAutoPilotDisplayedAltitudeLockValue(),
-      this.forceNextAltitudeUpdate,
-    ).catch(console.error);
-  }
-
-  onModeManagedAltitude() {
-    SimVar.SetSimVarValue('K:ALTITUDE_SLOT_INDEX_SET', 'number', 2);
-    Coherent.call(
-      'AP_ALT_VAR_SET_ENGLISH',
-      1,
-      Simplane.getAutoPilotDisplayedAltitudeLockValue(),
-      this.forceNextAltitudeUpdate,
-    ).catch(console.error);
-    Coherent.call(
-      'AP_ALT_VAR_SET_ENGLISH',
-      2,
-      Simplane.getAutoPilotDisplayedAltitudeLockValue(),
-      this.forceNextAltitudeUpdate,
-    ).catch(console.error);
-    if (!Simplane.getAutoPilotGlideslopeHold()) {
-      SimVar.SetSimVarValue('L:A320_NEO_FCU_FORCE_IDLE_VS', 'Number', 1);
-    }
-  }
-
   onStepClimbDescent() {
     const cruiseLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
+    const flightPhase = this.flightPhase.get();
+    const isCruise = flightPhase === FmgcFlightPhase.Cruise;
+    const isClimbPhase = flightPhase === FmgcFlightPhase.Climb;
 
-    if (
-      !(this.flightPhase.get() === FmgcFlightPhase.Climb || this.flightPhase.get() === FmgcFlightPhase.Cruise) ||
-      !cruiseLevel
-    ) {
+    if (cruiseLevel === null || (!isClimbPhase && !isCruise)) {
       return;
     }
 
-    const targetFl = (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100;
+    const primAltitude = this.masterPrimAltitude.get();
+    const targetFlightLevel = primAltitude.isNormalOperation() ? primAltitude.value / 100 : null;
 
     if (
-      (this.flightPhase.get() === FmgcFlightPhase.Climb && targetFl > cruiseLevel) ||
-      (this.flightPhase.get() === FmgcFlightPhase.Cruise && targetFl !== cruiseLevel)
+      targetFlightLevel !== null &&
+      ((isClimbPhase && targetFlightLevel > cruiseLevel) || (isCruise && targetFlightLevel !== cruiseLevel))
     ) {
-      this.deleteOutdatedCruiseSteps(cruiseLevel, targetFl);
+      this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
       this.fmc.addMessageToQueue(
-        NXSystemMessages.newCrzAlt.getModifiedMessage((targetFl * 100).toFixed(0)),
+        NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
         undefined,
         undefined,
       );
-      this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
+      this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', primAltitude.value);
     }
   }
 
@@ -1539,124 +1338,55 @@ export class FmcAircraftInterface {
     }
   }
 
-  private cruiseFlightLevelTimeOut: ReturnType<typeof setTimeout> | null = null;
-
   /**
-   * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
-   * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
-   * @private
+   * Checks whether or not the crz fl can be changed to the newly selected fcu altitude.
    */
-  private onTrySetCruiseFlightLevel() {
-    const cruiseLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
+  public checkCruiseLevelChangeDueToFcu(deltaTime: number) {
+    if (this.fcuAltitudeChangeCheckCruiseFlightLevel) {
+      const cruiseLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
+      const flightPhase = this.flightPhase.get();
+      const isClimb = flightPhase === FmgcFlightPhase.Climb;
+      const isCruise = flightPhase === FmgcFlightPhase.Cruise;
+      if (cruiseLevel !== null && (isClimb || isCruise)) {
+        const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
+        const fgModesSuitedForLevelChange =
+          primFgDiscreteWord3.bitValueOr(11, false) || // CLB
+          primFgDiscreteWord3.bitValue(12) || // DES
+          primFgDiscreteWord3.bitValue(13) || // OP CLB
+          primFgDiscreteWord3.bitValue(14) || // OP DES
+          primFgDiscreteWord3.bitValue(17) || // VS
+          primFgDiscreteWord3.bitValue(18) || // FPA
+          (primFgDiscreteWord3.bitValue(20) && !primFgDiscreteWord3.bitValue(28)) || // ALT without constraint
+          primFgDiscreteWord3.bitValue(29); // ALT CRZ;
 
-    if (
-      !(this.flightPhase.get() === FmgcFlightPhase.Climb || this.flightPhase.get() === FmgcFlightPhase.Cruise) ||
-      !cruiseLevel
-    ) {
-      return;
-    }
-
-    if (
-      (this.activeVerticalMode >= VerticalMode.ALT_CPT && this.activeVerticalMode <= VerticalMode.FPA) ||
-      (this.activeVerticalMode >= VerticalMode.ALT_CST_CPT && this.activeVerticalMode <= VerticalMode.DES)
-    ) {
-      const fcuFl = (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100;
-
-      if (
-        (this.flightPhase.get() === FmgcFlightPhase.Climb && fcuFl > cruiseLevel) ||
-        (this.flightPhase.get() === FmgcFlightPhase.Cruise && fcuFl !== cruiseLevel)
-      ) {
-        if (this.cruiseFlightLevelTimeOut) {
-          clearTimeout(this.cruiseFlightLevelTimeOut);
-          this.cruiseFlightLevelTimeOut = null;
-        }
-
-        this.cruiseFlightLevelTimeOut = setTimeout(() => {
-          if (!cruiseLevel) {
+        if (fgModesSuitedForLevelChange) {
+          const fcuAltitude = this.masterPrimAltitude.get().valueOr(null);
+          const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
+          if (
+            fcuFlightLevel !== null &&
+            ((isClimb && fcuFlightLevel > cruiseLevel) || (isCruise && fcuFlightLevel !== cruiseLevel))
+          ) {
+            const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
+            if (changeCruiseFlightLevel) {
+              this.fmc.addMessageToQueue(
+                NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude!.toFixed(0)),
+                undefined,
+                undefined,
+              );
+              this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFlightLevel);
+              // used by FlightPhaseManager
+              SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
+              this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
+            }
             return;
           }
-
-          if (
-            fcuFl === (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100 &&
-            ((this.flightPhase.get() === FmgcFlightPhase.Climb && fcuFl > cruiseLevel) ||
-              (this.flightPhase.get() === FmgcFlightPhase.Cruise && fcuFl !== cruiseLevel))
-          ) {
-            this.fmc.addMessageToQueue(
-              NXSystemMessages.newCrzAlt.getModifiedMessage((fcuFl * 100).toFixed(0)),
-              undefined,
-              undefined,
-            );
-            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
-            // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
-          }
-        }, 3000);
+        }
       }
+      // Reset helpers
+      this.cruiseAltitudeChangeConfirm.write(false, deltaTime);
+      this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
     }
   }
-
-  /**
-   * Sets new Cruise FL if all conditions good
-   * @param fl Altitude or FL
-   * @returns input passed checks
-   */
-  private trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active): boolean {
-    if (!this.flightPlanService.has(intoPlan)) {
-      return false;
-    }
-    const plan = this.flightPlanService.get(intoPlan);
-    if (!Number.isFinite(fl)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
-      return false;
-    }
-    const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
-    if (flBelowMinOrMax) {
-      this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-      return false;
-    }
-    if (plan.isActiveOrCopiedFromActive()) {
-      const phase = this.flightPhase.get();
-      const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100);
-      if (
-        fl < selFl &&
-        (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)
-      ) {
-        this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-        return false;
-      }
-    }
-    plan.setPerformanceData('cruiseFlightLevel', fl);
-    if (fl > (this.fmc.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
-    }
-    if (intoPlan === FlightPlanIndex.Active) {
-      this.onUpdateCruiseLevel(fl);
-    }
-    return true;
-  }
-
-  /**
-   *
-   * @param newFl FL in 100 increments (e.g. 240 for 24000ft)
-   */
-  public setCruiseFl(newFl: number, intoPlan: FlightPlanIndex) {
-    const ret = this.trySetCruiseFl(newFl, intoPlan);
-    if (ret && intoPlan === FlightPlanIndex.Active) {
-      if (
-        SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
-        SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
-      ) {
-        SimVar.SetSimVarValue(
-          'L:A32NX_NEW_CRZ_ALT',
-          'number',
-          this.flightPlanService.active.performanceData.cruiseFlightLevel.get(),
-        );
-      } else {
-        SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
-      }
-    }
-  }
-
   /**
    * called when cruise FL is updated through FMS
    * @param newCruiseLevel as flight level
@@ -1669,36 +1399,20 @@ export class FmcAircraftInterface {
   }
 
   public isHdgOrTrackModeEngaged() {
-    return this.activeLateralMode === LateralMode.HDG || this.activeLateralMode === LateralMode.TRACK;
+    const primFgDiscreteWord4 = this.masterPrimFgWord4.get();
+    return primFgDiscreteWord4.bitValueOr(16, false) || primFgDiscreteWord4.bitValue(17);
   }
 
   private isLateralModeManaged() {
-    switch (this.activeLateralMode) {
-      case LateralMode.NAV:
-      case LateralMode.LOC_CPT:
-      case LateralMode.LOC_TRACK:
-      case LateralMode.LAND:
-      case LateralMode.FLARE:
-      case LateralMode.ROLL_OUT:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  // TODO: make this util or local var?
-  isAirspeedManaged() {
-    return SimVar.GetSimVarValue('AUTOPILOT SPEED SLOT INDEX', 'number') === 2;
-  }
-
-  // TODO: make this util or local var?
-  isHeadingManaged() {
-    return SimVar.GetSimVarValue('AUTOPILOT HEADING SLOT INDEX', 'number') === 2;
-  }
-
-  // TODO: make this util or local var?
-  isAltitudeManaged() {
-    return SimVar.GetSimVarValue('AUTOPILOT ALTITUDE SLOT INDEX', 'number') === 2;
+    const primFgDiscreteWord4 = this.masterPrimFgWord4.get();
+    return (
+      primFgDiscreteWord4.bitValueOr(12, false) || // NAV
+      primFgDiscreteWord4.bitValue(13) || // LOC CPT
+      primFgDiscreteWord4.bitValue(14) || /// LOC TRACK
+      primFgDiscreteWord4.bitValue(25) || /// LAND
+      this.masterPrimFgWord3.get().bitValueOr(25, false) || // FLARE
+      primFgDiscreteWord4.bitValue(26) // ROLLOUT
+    );
   }
 
   getManagedTargets(v: number, m: number): [number, boolean] {
@@ -1885,10 +1599,10 @@ export class FmcAircraftInterface {
 
         const autoStepClimb = NXDataStore.getLegacy('AUTO_STEP_CLIMB', 'DISABLED') === 'ENABLED';
         if (autoStepClimb && !this.fmc.guidanceController.vnavDriver.isSelectedVerticalModeActive()) {
-          // Set new FCU alt, push FCU knob
-          Coherent.call('AP_ALT_VAR_SET_ENGLISH', 3, approachingCruiseStep.toAltitude, true).catch(console.error);
-          SimVar.SetSimVarValue('H:A320_Neo_FCU_ALT_PUSH', 'number', 1);
-          SimVar.SetSimVarValue('H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE', 'number', 1);
+          SimVar.SetSimVarValue('K:A32NX.FCU_ALT_SET', SimVarValueType.Number, approachingCruiseStep.toAltitude).catch(
+            console.error,
+          );
+          SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PULL', SimVarValueType.Bool, true);
         }
         this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
       }
@@ -1965,7 +1679,7 @@ export class FmcAircraftInterface {
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
     const flightPhase = this.flightPhase.get();
     const altActiveInClimbForMoreThan10Min: boolean = this.altActiveInClimbForMoreThan10Min.write(
-      flightPhase === FmgcFlightPhase.Climb && this.activeVerticalMode == VerticalMode.ALT,
+      flightPhase === FmgcFlightPhase.Climb && this.masterPrimFgWord3.get().bitValueOr(20, false),
       deltaTime,
     );
 
@@ -2016,14 +1730,6 @@ export class FmcAircraftInterface {
     }
   }
 
-  /**
-   * Acquires FG data such as the active guidance modes.
-   */
-  fgAquisition() {
-    this.activeVerticalMode = this.fmaVerticalMode.get();
-    this.activeLateralMode = this.fmaLateralMode.get();
-  }
-
   checkLateralDiscontinuityAhead() {
     this.latDiscontinuityAhead.set(this.fmc.guidanceController?.vnavDriver.shouldShowLatDiscontinuityAhead());
   }
@@ -2059,5 +1765,17 @@ export class FmcAircraftInterface {
     } else {
       return this.fcuEfisRightDiscreteWord2.get().bitValueOr(13, false);
     }
+  }
+
+  getFcuSelectedAltitude(): number | null {
+    return this.masterPrimAltitude.get().valueOr(null);
+  }
+
+  IsAirspeedSelected(): boolean | null {
+    return this.masterPrimFgWord4.get().bitValueOr(18, null);
+  }
+
+  IsAirspeedManaged(): boolean | null {
+    return this.masterPrimFgWord4.get().bitValueOr(17, null);
   }
 }
