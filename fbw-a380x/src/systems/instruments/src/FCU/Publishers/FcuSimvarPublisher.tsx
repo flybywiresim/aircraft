@@ -70,7 +70,7 @@ export enum FcuVars {
 
 export class FCUSimvarPublisher extends SimVarPublisher<FcuSimvars> {
   private static simvars = new Map<keyof FcuSimvars, SimVarPublisherEntry<any>>([
-    ['lightsTest', { name: FcuVars.lightsTest, type: SimVarValueType.Bool, map: (v) => v === 0 }],
+    ['lightsTest', { name: FcuVars.lightsTest, type: SimVarValueType.Number, map: (v) => v === 0 }],
 
     ['eisDisplayLeftActive', { name: FcuVars.eisDisplayLeftActive, type: SimVarValueType.Bool }],
     ['eisDisplayRightActive', { name: FcuVars.eisDisplayRightActive, type: SimVarValueType.Bool }],
