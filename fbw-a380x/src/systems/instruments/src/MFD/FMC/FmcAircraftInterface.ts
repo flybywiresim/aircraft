@@ -8,6 +8,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
+  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import {
@@ -252,6 +253,10 @@ export class FmcAircraftInterface {
 
   private readonly openOrManagedVerticalModesActive = this.masterPrimFgWord3.map(
     (v) => v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(13) || v.bitValue(14),
+  );
+
+  private readonly isTrackOrheadingActive = this.masterPrimFgWord4.map(
+    (v) => (!v.isInvalid() && v.bitValue(16)) || v.bitValue(17),
   );
 
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
@@ -1398,9 +1403,8 @@ export class FmcAircraftInterface {
     this.fmc.handleNewCruiseAltitudeEntered(newCruiseLevel);
   }
 
-  public isHdgOrTrackModeEngaged() {
-    const primFgDiscreteWord4 = this.masterPrimFgWord4.get();
-    return primFgDiscreteWord4.bitValueOr(16, false) || primFgDiscreteWord4.bitValue(17);
+  public isHdgOrTrackModeEngaged(): Subscribable<boolean> {
+    return this.isTrackOrheadingActive;
   }
 
   private isLateralModeManaged() {

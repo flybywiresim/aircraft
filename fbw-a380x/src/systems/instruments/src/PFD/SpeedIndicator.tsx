@@ -226,7 +226,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly v4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_4'));
 
-  private readonly shortTermManagedSpeedConsumer = Arinc429LocalVarConsumerSubject.create(
+  private readonly shortTermManagedSpeed = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('prim_pfd_short_term_managed_speed').whenChanged(),
   );
 
@@ -238,10 +238,10 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly shortTermManagedSpeedVisible = MappedSubject.create(
     ([shortTermManagedSpeed, pfdTargetSpeed]) =>
-      !shortTermManagedSpeed.isInvalid &&
+      !shortTermManagedSpeed.isInvalid() &&
       !pfdTargetSpeed.isInvalid() &&
       Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2,
-    this.shortTermManagedSpeedConsumer,
+    this.shortTermManagedSpeed,
     this.pfdTargetSpeed,
   );
 
@@ -263,7 +263,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
       }
     },
     this.airspeed,
-    this.shortTermManagedSpeedConsumer,
+    this.shortTermManagedSpeed,
   );
 
   private readonly shortTermStyle = MappedSubject.create(
@@ -275,7 +275,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
     },
     this.shortTermManagedSpeedVisible,
     this.airspeed,
-    this.shortTermManagedSpeedConsumer,
+    this.shortTermManagedSpeed,
   );
 
   render(): VNode {

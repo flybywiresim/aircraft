@@ -897,7 +897,7 @@ export class FlightManagementComputer implements FmcInterface {
     const secToLeg = secPlan.activeLeg;
 
     return (
-      this.acInterface.isHdgOrTrackModeEngaged() ||
+      this.acInterface.isHdgOrTrackModeEngaged().get() ||
       (activeToLeg === undefined && secToLeg === undefined) ||
       (activeToLeg !== undefined &&
         secToLeg !== undefined &&

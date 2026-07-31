@@ -611,7 +611,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsTitle extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents & PFDSimvars>();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
@@ -619,7 +619,7 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
 
-  private readonly hasLoc = ConsumerSubject.create(null, false);
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
 
   private readonly ilsTitleShown = MappedSubject.create(
     ([hasLoc, lsButton]) => hasLoc && lsButton,
@@ -635,10 +635,6 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
     this.fcuEisDiscreteWord2.setConsumer(
       this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
-
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
     this.ilsTitleShown.sub((it) => {
