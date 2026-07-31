@@ -746,6 +746,7 @@ class A380PrimComputerFg final
     real32_T CompareToConstant3_const_br;
     real32_T CompareToConstant1_const_hc;
     real32_T CompareToConstant2_const_pq;
+    real32_T CompareToConstant_const_a;
     real32_T CompareToConstant_const_mj;
     real32_T CompareToConstant1_const_ko;
     real32_T CompareToConstant2_const_pa;
@@ -1096,6 +1097,7 @@ class A380PrimComputerFg final
     real_T Y_Y0_a;
     real_T Y_Y0_l;
     real_T Y_Y0_h;
+    real_T Constant_Value_hn;
     real_T Gain1_Gain_k;
     real_T Bias_Bias;
     real_T Gain_Gain_c;
@@ -1104,7 +1106,6 @@ class A380PrimComputerFg final
     real_T Constant1_Value_o;
     real_T Gain1_Gain_g;
     real_T Gain_Gain_m;
-    real_T Constant_Value_hn;
     real_T Y_Y0_i;
     real_T Constant6_Value;
     real_T Switch7_Threshold;

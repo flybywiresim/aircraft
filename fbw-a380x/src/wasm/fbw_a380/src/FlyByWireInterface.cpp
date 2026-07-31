@@ -364,6 +364,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
   idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
   idFmsTowerHeadwindComponent = std::make_unique<LocalVariable>("A380X_FM_APPROACH_HEADWIND_COMPONENT");
+  idFmsFlap3ApproachSelected = std::make_unique<LocalVariable>("A380X_FM_LANDING_CONF3");
 
   idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -1682,6 +1683,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.adcn_inputs.fms.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   modelInputs.in.adcn_inputs.fms.cruise_alt_ft = idFmgcCruiseAltitude->get();
   modelInputs.in.adcn_inputs.fms.tower_headwind_kn = Arinc429Utils::fromSimVar(idFmsTowerHeadwindComponent->get());
+  modelInputs.in.adcn_inputs.fms.flap_3_approach_selected = idFmsFlap3ApproachSelected->get();
   modelInputs.in.adcn_inputs.fqms = fqmsBusOutputs;
   modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
   modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];

@@ -585,6 +585,7 @@ struct base_fms_inputs
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
   base_arinc_429 tower_headwind_kn;
+  boolean_T flap_3_approach_selected;
 };
 
 #endif
