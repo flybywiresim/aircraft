@@ -967,7 +967,7 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly visibility = MappedSubject.create(
     ([v1, flightphase, speed]) => {
-      if (v1 !== 0 && flightphase <= 5 && v1 - speed.valueOr(Infinity) > DisplayRange) {
+      if (!speed.isFailureWarning() && v1 !== 0 && flightphase <= 5 && v1 - speed.valueOr(30) > DisplayRange) {
         return 'visible';
       } else {
         return 'hidden';
