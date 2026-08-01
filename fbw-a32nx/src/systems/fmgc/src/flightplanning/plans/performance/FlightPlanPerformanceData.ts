@@ -659,6 +659,8 @@ export interface FlightPlanPerformanceData {
    */
   readonly takeoffWeight?: MutableSubscribable<number | null>;
 
+  serialize(): SerializedFlightPlanPerformanceData;
+
   clone(): this;
 
   destroy(): void;
@@ -679,7 +681,7 @@ type ReadonlyFlightPlanPerformanceDataValue<T> = T extends Subscribable<infer V>
 export type ReadonlyFlightPlanPerformanceData = {
   readonly [K in keyof Omit<
     FlightPlanPerformanceData,
-    'clone' | 'destroy' | 'pipeTo'
+    'serialize' | 'clone' | 'destroy' | 'pipeTo'
   >]: ReadonlyFlightPlanPerformanceDataValue<FlightPlanPerformanceData[K]>;
 };
 
