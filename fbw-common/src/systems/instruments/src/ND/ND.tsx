@@ -82,8 +82,6 @@ export interface NDProps<T extends number> {
   mapOptions?: Partial<MapOptions>;
 
   fmMessages: FMMessage[];
-
-  approachMessagePadding: 9 | 14;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -383,12 +381,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
               <Chrono bus={this.props.bus} />
-              <TopMessages
-                bus={this.props.bus}
-                ndMode={this.currentPageMode}
-                showOans={this.showOans}
-                approachMessagePadding={this.props.approachMessagePadding}
-              />
+              <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
             </svg>
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
@@ -468,12 +461,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               bus={this.props.bus}
               isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())}
             />
-            <TopMessages
-              bus={this.props.bus}
-              ndMode={this.currentPageMode}
-              showOans={this.showOans}
-              approachMessagePadding={this.props.approachMessagePadding}
-            />
+            <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
 
             {false && <LnavStatus />}
             {true && <VnavStatus />}
@@ -699,7 +687,6 @@ class TopMessages extends DisplayComponent<{
   bus: EventBus;
   ndMode: Subscribable<EfisNdMode>;
   showOans: Subscribable<boolean>;
-  approachMessagePadding: 9 | 14;
 }> {
   private readonly sub = this.props.bus.getSubscriber<
     ClockEvents & GenericDisplayManagementEvents & NDSimvars & GenericFmsEvents & FmsOansData
@@ -717,17 +704,12 @@ class TopMessages extends DisplayComponent<{
 
   private readonly apprMessage1 = ConsumerSubject.create(this.sub.on('apprMessage1'), 0);
 
-  private readonly approachIsRnpAr = ConsumerSubject.create(this.sub.on('rnpArApproach'), false);
-
   private readonly approachMessageValue = MappedSubject.create(
-    ([apprmsg0, apprmsg1, rnpAr]) => {
-      return `${SimVarString.unpack([apprmsg0, apprmsg1]) + (rnpAr ? '(AR)' : '')}`.padEnd(
-        this.props.approachMessagePadding,
-      );
+    ([apprmsg0, apprmsg1]) => {
+      return SimVarString.unpack([apprmsg0, apprmsg1]);
     },
     this.apprMessage0,
     this.apprMessage1,
-    this.approachIsRnpAr,
   );
 
   private readonly btvMessageValue = Subject.create('');

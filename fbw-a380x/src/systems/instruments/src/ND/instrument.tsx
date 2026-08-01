@@ -273,7 +273,6 @@ class NDInstrument implements FsInstrument {
             modeChangeMessage={a380NdModeChange}
             mapOptions={{ waypointBoxing: true, secondaryFlightPlanWaypointsInWhite: true }}
             fmMessages={Object.values(NDFMMessageTypes)}
-            approachMessagePadding={14}
           />
           <ContextMenu
             ref={this.contextMenuRef}

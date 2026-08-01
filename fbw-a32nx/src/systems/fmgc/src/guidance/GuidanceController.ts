@@ -3,16 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  EfisSide,
-  EfisNdMode,
-  ApproachUtils,
-  SimVarString,
-  ApproachType,
-  LegType,
-  MagVar,
-  RegisteredSimVar,
-} from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, SimVarString, LegType, MagVar, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -195,8 +186,6 @@ export class GuidanceController {
     if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER && (state?.mode !== ndMode || state?.range !== ndRange)) {
       this.pseudoWaypoints.acceptEfisParameters();
     }
-
-    this.updateEfisApproachMessage();
   }
 
   private updateMapPartlyDisplayed() {
@@ -224,40 +213,6 @@ export class GuidanceController {
     SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
     SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_0', 'string', efisVars[0].toString());
     SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
-  }
-
-  private updateEfisApproachMessage() {
-    let apprMsg = '';
-
-    const phase = this.flightPhase.get();
-
-    if (this.publishSidName && phase < FmgcFlightPhase.Cruise) {
-      if (this.flightPlanService.active.isDepartureProcedureActive) {
-        apprMsg = this.flightPlanService.active.originDeparture.ident;
-      }
-    } else {
-      const runway = this.flightPlanService.active.destinationRunway;
-      if (runway) {
-        const distanceToDestination = this.getAlongTrackDistanceToDestination() ?? -1;
-        if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
-          const appr = this.flightPlanService.active.approach;
-          this.approachIsRnpAr.set(this.useRnpArNaming ? ApproachUtils.isRnpArApproach(appr) : false);
-          // Nothing is shown on the ND for runway-by-itself approaches
-          apprMsg =
-            appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr, this.useRnpArNaming) : '';
-        }
-      }
-    }
-
-    if (apprMsg !== this.approachMessage) {
-      this.approachMessage = apprMsg;
-      const apprMsgVars = SimVarString.pack(apprMsg, 9);
-      // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
-      SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_0', 'string', apprMsgVars[0].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_1', 'string', apprMsgVars[1].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_0', 'string', apprMsgVars[0].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_1', 'string', apprMsgVars[1].toString());
-    }
   }
 
   private updateEfisData() {

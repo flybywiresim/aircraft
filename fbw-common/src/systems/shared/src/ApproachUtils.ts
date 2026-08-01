@@ -1,7 +1,7 @@
 // Copyright (c) 2023 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { RunwayUtils, Approach, ApproachType } from '@flybywiresim/fbw-sdk';
+import { RunwayUtils, Approach, ApproachType, LevelOfService } from '@flybywiresim/fbw-sdk';
 
 export type ApproachNameComponents = {
   // the approach type, e.g. ILS or RNAV
@@ -114,6 +114,11 @@ export class ApproachUtils {
   }
 
   public static isRnpArApproach(approach: Approach): boolean {
-    return approach.authorisationRequired || approach.missedApproachAuthorisationRequired; // TODO for LPV it shouldn't be applicable.
+    return (
+      approach.authorisationRequired ||
+      (approach.missedApproachAuthorisationRequired &&
+        approach.levelOfService !== LevelOfService.Lp &&
+        approach.levelOfService !== LevelOfService.Lpv)
+    );
   }
 }

@@ -321,7 +321,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return -1;
   }
 
-  get isDepartureProcedureActive(): boolean {
+  public isDepartureProcedureActive(): boolean {
     return (
       this.departureSegment.procedure !== undefined &&
       ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||

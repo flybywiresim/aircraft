@@ -19,5 +19,4 @@ export interface GenericFmsEvents {
   mrpLat: number;
   mrpLong: number;
   fmsFailed: boolean;
-  rnpArApproach: boolean;
 }
