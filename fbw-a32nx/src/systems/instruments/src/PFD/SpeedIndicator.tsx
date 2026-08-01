@@ -69,7 +69,7 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   private getV1Visibility() {
-    if (this.flightPhase <= 4 && this.v1Speed !== 0) {
+    if (this.flightPhase <= 4 && this.v1Speed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -124,7 +124,7 @@ class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   private getVrVisibility() {
-    if (this.flightPhase <= 4 && this.vrSpeed !== 0) {
+    if (this.flightPhase <= 4 && this.vrSpeed >= 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -969,7 +969,7 @@ class V1Offtape extends DisplayComponent<{ bus: ArincEventBus }> {
 
     sub.on('speed').handle((s) => {
       const speed = new Arinc429Word(s);
-      if (this.v1Speed - speed.value > DisplayRange) {
+      if (this.v1Speed > 0 && this.v1Speed - speed.value > DisplayRange) {
         this.v1TextRef.instance.style.visibility = 'visible';
       } else {
         this.v1TextRef.instance.style.visibility = 'hidden';

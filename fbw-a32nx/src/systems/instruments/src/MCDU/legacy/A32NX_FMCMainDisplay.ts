@@ -598,14 +598,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.atsu?.onFmsReset();
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', -1);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
 
@@ -1169,7 +1168,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateManagedSpeed() {
-    let vPfd = 0;
+    let vPfd = -1;
     let isMach = false;
 
     this.updateHoldingSpeed();
@@ -5522,13 +5521,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const activePlan = this.flightPlanService.active;
 
     this.subscriptions.push(
-      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? 0), true),
+      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? 0), true),
+      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true),
+      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? -1), true),
     );
     // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
     this.subscriptions.push(
@@ -5573,7 +5572,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           SimVar.SetSimVarValue(
             'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
             'number',
-            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : 0,
+            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : -1,
           ),
         true,
       ),

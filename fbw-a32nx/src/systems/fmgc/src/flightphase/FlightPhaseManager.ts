@@ -33,8 +33,9 @@ function canInitiateDes(distanceToDestination: number): boolean {
 
   // Can initiate descent? OR Can initiate early descent?
   return (
-    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
-    (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200)
+    cruiseFl > 0 &&
+    (((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
+      (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200))
   );
 }
 

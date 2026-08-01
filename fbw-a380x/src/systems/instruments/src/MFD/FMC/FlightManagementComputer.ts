@@ -1292,7 +1292,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         if (fcuAltitude !== null && !plan.performanceData.cruiseFlightLevel.get()) {
           this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', fcuAltitude / 100);
-          SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude ?? 0);
+          SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
         }
 
         break;
