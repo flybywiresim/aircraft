@@ -154,6 +154,77 @@ struct base_prim_fg_out_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+
+struct base_sec_discrete_inputs
+{
+  boolean_T sec_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T rudder_trim_left_pressed;
+  boolean_T rudder_trim_right_pressed;
+  boolean_T rudder_trim_reset_pressed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
+
+struct base_sec_discrete_outputs
+{
+  boolean_T elevator_1_active_mode;
+  boolean_T elevator_2_active_mode;
+  boolean_T elevator_3_active_mode;
+  boolean_T ths_active_mode;
+  boolean_T left_aileron_1_active_mode;
+  boolean_T left_aileron_2_active_mode;
+  boolean_T right_aileron_1_active_mode;
+  boolean_T right_aileron_2_active_mode;
+  boolean_T rudder_1_hydraulic_active_mode;
+  boolean_T rudder_1_electric_active_mode;
+  boolean_T rudder_2_hydraulic_active_mode;
+  boolean_T rudder_2_electric_active_mode;
+  boolean_T rudder_trim_active_mode;
+  boolean_T sec_healthy;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
+
+struct base_sec_analog_outputs
+{
+  real_T elevator_1_pos_order_deg;
+  real_T elevator_2_pos_order_deg;
+  real_T elevator_3_pos_order_deg;
+  real_T ths_pos_order_deg;
+  real_T left_aileron_1_pos_order_deg;
+  real_T left_aileron_2_pos_order_deg;
+  real_T right_aileron_1_pos_order_deg;
+  real_T right_aileron_2_pos_order_deg;
+  real_T left_spoiler_1_pos_order_deg;
+  real_T right_spoiler_1_pos_order_deg;
+  real_T left_spoiler_2_pos_order_deg;
+  real_T right_spoiler_2_pos_order_deg;
+  real_T rudder_1_pos_order_deg;
+  real_T rudder_2_pos_order_deg;
+  real_T rudder_trim_command_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -202,6 +273,38 @@ struct base_lgciu_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_lateral_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_sec_lateral_surface_positions_
+
+struct base_sec_lateral_surface_positions
+{
+  real_T left_aileron_1_command_deg;
+  real_T right_aileron_1_command_deg;
+  real_T left_aileron_2_command_deg;
+  real_T right_aileron_2_command_deg;
+  real_T left_spoiler_1_command_deg;
+  real_T right_spoiler_1_command_deg;
+  real_T left_spoiler_2_command_deg;
+  real_T right_spoiler_2_command_deg;
+  real_T rudder_1_command_deg;
+  real_T rudder_2_command_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_sec_pitch_surface_positions_
+
+struct base_sec_pitch_surface_positions
+{
+  real_T elevator_1_command_deg;
+  real_T elevator_2_command_deg;
+  real_T elevator_3_command_deg;
+  real_T ths_command_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
 #define DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
 
@@ -227,54 +330,6 @@ struct base_sec_analog_inputs
   real_T rudder_2_pos_deg;
   real_T rudder_pedal_pos_deg;
   real_T rudder_trim_actual_pos_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
-
-struct base_sec_analog_outputs
-{
-  real_T elevator_1_pos_order_deg;
-  real_T elevator_2_pos_order_deg;
-  real_T elevator_3_pos_order_deg;
-  real_T ths_pos_order_deg;
-  real_T left_aileron_1_pos_order_deg;
-  real_T left_aileron_2_pos_order_deg;
-  real_T right_aileron_1_pos_order_deg;
-  real_T right_aileron_2_pos_order_deg;
-  real_T left_spoiler_1_pos_order_deg;
-  real_T right_spoiler_1_pos_order_deg;
-  real_T left_spoiler_2_pos_order_deg;
-  real_T right_spoiler_2_pos_order_deg;
-  real_T rudder_1_pos_order_deg;
-  real_T rudder_2_pos_order_deg;
-  real_T rudder_trim_command_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-
-struct base_sec_discrete_inputs
-{
-  boolean_T sec_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T rudder_trim_left_pressed;
-  boolean_T rudder_trim_right_pressed;
-  boolean_T rudder_trim_reset_pressed;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T rat_deployed;
-  boolean_T rat_contactor_closed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
 };
 
 #endif
@@ -427,38 +482,6 @@ struct sec_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_lateral_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_sec_lateral_surface_positions_
-
-struct base_sec_lateral_surface_positions
-{
-  real_T left_aileron_1_command_deg;
-  real_T right_aileron_1_command_deg;
-  real_T left_aileron_2_command_deg;
-  real_T right_aileron_2_command_deg;
-  real_T left_spoiler_1_command_deg;
-  real_T right_spoiler_1_command_deg;
-  real_T left_spoiler_2_command_deg;
-  real_T right_spoiler_2_command_deg;
-  real_T rudder_1_command_deg;
-  real_T rudder_2_command_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_sec_pitch_surface_positions_
-
-struct base_sec_pitch_surface_positions
-{
-  real_T elevator_1_command_deg;
-  real_T elevator_2_command_deg;
-  real_T elevator_3_command_deg;
-  real_T ths_command_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_laws_outputs_
 #define DEFINED_TYPEDEF_FOR_base_sec_laws_outputs_
 
@@ -594,29 +617,6 @@ struct base_sec_logic_outputs
   boolean_T ir_failure_not_self_detected;
   base_elac_adr_computation_data adr_computation_data;
   base_elac_ir_computation_data ir_computation_data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
-
-struct base_sec_discrete_outputs
-{
-  boolean_T elevator_1_active_mode;
-  boolean_T elevator_2_active_mode;
-  boolean_T elevator_3_active_mode;
-  boolean_T ths_active_mode;
-  boolean_T left_aileron_1_active_mode;
-  boolean_T left_aileron_2_active_mode;
-  boolean_T right_aileron_1_active_mode;
-  boolean_T right_aileron_2_active_mode;
-  boolean_T rudder_1_hydraulic_active_mode;
-  boolean_T rudder_1_electric_active_mode;
-  boolean_T rudder_2_hydraulic_active_mode;
-  boolean_T rudder_2_electric_active_mode;
-  boolean_T rudder_trim_active_mode;
-  boolean_T sec_healthy;
 };
 
 #endif
