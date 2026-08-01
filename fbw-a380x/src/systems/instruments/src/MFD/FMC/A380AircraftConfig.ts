@@ -169,9 +169,8 @@ const engineModelParams: EngineModelParameters = {
 };
 
 const fmsSymbolConfig: FMSymbolsConfig = {
-  showSidName: true,
+  publishSidName: true,
   rnpArNaming: true,
-  approachIdentSize: 14,
 };
 
 export const A380AircraftConfig: AircraftConfig = {

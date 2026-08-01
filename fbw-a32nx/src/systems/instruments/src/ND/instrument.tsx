@@ -158,6 +158,7 @@ class NDInstrument implements FsInstrument {
           rangeChangeMessage={a320NdRangeChange}
           modeChangeMessage={a320NdModeChange}
           fmMessages={Object.values(FMMessageTypes)}
+          approachMessagePadding={9}
         />
       </DisplayUnit>,
       document.getElementById('ND_CONTENT'),

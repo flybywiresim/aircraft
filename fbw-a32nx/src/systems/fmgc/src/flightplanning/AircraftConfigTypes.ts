@@ -193,12 +193,9 @@ export interface FlightModelParameters {
 }
 
 export interface FMSymbolsConfig {
-  /** Whether to show the SID ident on the ND */
-  showSidName: boolean;
+  /** Whether to publish the SID name as the approach message before cruise phase */
+  publishSidName: boolean;
 
-  /** Whether to show RNP AR approaches on the ND as RNP with the AR suffix instead of RNAV */
+  /** Whether to format RNP AR approaches on the approach message as RNP instead of RNAV */
   rnpArNaming: boolean;
-
-  /** The number of characters the approach ident size is padded to */
-  approachIdentSize: number;
 }

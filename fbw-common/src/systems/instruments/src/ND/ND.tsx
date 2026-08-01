@@ -82,6 +82,8 @@ export interface NDProps<T extends number> {
   mapOptions?: Partial<MapOptions>;
 
   fmMessages: FMMessage[];
+
+  approachMessagePadding: 9 | 14;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -381,7 +383,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
               <Chrono bus={this.props.bus} />
-              <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
+              <TopMessages
+                bus={this.props.bus}
+                ndMode={this.currentPageMode}
+                showOans={this.showOans}
+                approachMessagePadding={this.props.approachMessagePadding}
+              />
             </svg>
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
@@ -461,7 +468,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               bus={this.props.bus}
               isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())}
             />
-            <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
+            <TopMessages
+              bus={this.props.bus}
+              ndMode={this.currentPageMode}
+              showOans={this.showOans}
+              approachMessagePadding={this.props.approachMessagePadding}
+            />
 
             {false && <LnavStatus />}
             {true && <VnavStatus />}
@@ -687,6 +699,7 @@ class TopMessages extends DisplayComponent<{
   bus: EventBus;
   ndMode: Subscribable<EfisNdMode>;
   showOans: Subscribable<boolean>;
+  approachMessagePadding: 9 | 14;
 }> {
   private readonly sub = this.props.bus.getSubscriber<
     ClockEvents & GenericDisplayManagementEvents & NDSimvars & GenericFmsEvents & FmsOansData
@@ -700,13 +713,22 @@ class TopMessages extends DisplayComponent<{
 
   private readonly trueTrackWord = Arinc429RegisterSubject.createEmpty();
 
-  private needApprMessageUpdate = true;
+  private readonly apprMessage0 = ConsumerSubject.create(this.sub.on('apprMessage0'), 0);
 
-  private apprMessage0: number;
+  private readonly apprMessage1 = ConsumerSubject.create(this.sub.on('apprMessage1'), 0);
 
-  private apprMessage1: number;
+  private readonly approachIsRnpAr = ConsumerSubject.create(this.sub.on('rnpArApproach'), false);
 
-  private readonly approachMessageValue = Subject.create('');
+  private readonly approachMessageValue = MappedSubject.create(
+    ([apprmsg0, apprmsg1, rnpAr]) => {
+      return `${SimVarString.unpack([apprmsg0, apprmsg1]) + (rnpAr ? '(AR)' : '')}`.padEnd(
+        this.props.approachMessagePadding,
+      );
+    },
+    this.apprMessage0,
+    this.apprMessage1,
+    this.approachIsRnpAr,
+  );
 
   private readonly btvMessageValue = Subject.create('');
 
@@ -757,29 +779,11 @@ class TopMessages extends DisplayComponent<{
     super.onAfterRender(node);
 
     this.sub
-      .on('apprMessage0')
-      .whenChanged()
-      .handle((value) => {
-        this.apprMessage0 = value;
-        this.needApprMessageUpdate = true;
-      });
-
-    this.sub
-      .on('apprMessage1')
-      .whenChanged()
-      .handle((value) => {
-        this.apprMessage1 = value;
-        this.needApprMessageUpdate = true;
-      });
-
-    this.sub
       .on('ndBtvMessage')
       .whenChanged()
       .handle((value) => {
         this.btvMessageValue.set(value);
       });
-
-    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshApproachMessage.bind(this));
 
     this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
 
@@ -791,15 +795,6 @@ class TopMessages extends DisplayComponent<{
       .on('trueRefActive')
       .whenChanged()
       .handle((v) => this.trueRefActive.set(!!v));
-  }
-
-  private refreshApproachMessage(): void {
-    if (this.needApprMessageUpdate) {
-      const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
-
-      this.approachMessageValue.set(ident);
-      this.needApprMessageUpdate = false;
-    }
   }
 
   render(): VNode | null {

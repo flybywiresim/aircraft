@@ -69,7 +69,7 @@ export class ApproachUtils {
       return '';
     }
     const runway = appr.runway;
-    const suffix = (appr.designator ? `-${appr.designator}` : '') + (isRnpAr ? '(AR)' : '');
+    const suffix = appr.designator ? `-${appr.designator}` : '';
 
     return `${appr.type}${runway}${suffix}`;
   }
