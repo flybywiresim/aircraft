@@ -122,6 +122,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFcu(calculatedSampleTime, i);
   }
 
+  result &= updateEfisSync();
+
   result &= updateFcuAfsLvars();
 
   result &= updateFcuShim();
@@ -2403,6 +2405,66 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
   idFcuEisDisplayBaroMode[fcuIndex]->set(efisPanelOutputs.baro_mode);
   idFcuEisDisplayBaroPresetVisible[fcuIndex]->set(efisPanelOutputs.baro_preset_visible);
   idFcuEisCpActive[fcuIndex]->set(efisPanelOutputs.efis_cp_active);
+
+  return true;
+}
+
+bool FlyByWireInterface::updateEfisSync() {
+  // Disable EFIS Sync if it's disabled or one or more FCUs is faulty (nothing to sync in that case)
+  if (!idSyncFoEfisEnabled->get() || !fcus[0].getDiscreteOutputs().fcu_healthy || !fcus[1].getDiscreteOutputs().fcu_healthy) {
+    return true;
+  }
+
+  const auto& fcu1BusOutput = fcus[0].getBusOutputs();
+  const auto& fcu2BusOutput = fcus[1].getBusOutputs();
+  bool isLeftStd = Arinc429Utils::bitFromValueOr(fcu1BusOutput.efis_discrete_word_2, 11, false);
+  bool isRightStd = Arinc429Utils::bitFromValueOr(fcu2BusOutput.efis_discrete_word_2, 11, false);
+  bool isLeftQnh = Arinc429Utils::bitFromValueOr(fcu1BusOutput.efis_discrete_word_2, 12, false);
+  bool isRightQnh = Arinc429Utils::bitFromValueOr(fcu2BusOutput.efis_discrete_word_2, 12, false);
+
+  if (simConnectInterface.wasLastBaroInputRightSide()) {
+    if (idFcuEisPanelBaroIsInhg[1]->get()) {
+      if (fcu1BusOutput.baro_setting_inhg.Data != fcu2BusOutput.baro_setting_inhg.Data) {
+        const DWORD kohlsman = fcu2BusOutput.baro_setting_inhg.Data * 541.822186666672;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing left baro to " << fcu2BusOutput.baro_setting_inhg.Data << std::endl;
+      }
+    } else if (fcu1BusOutput.baro_setting_hpa.Data != fcu2BusOutput.baro_setting_hpa.Data) {
+      const DWORD kohlsman = fcu2BusOutput.baro_setting_hpa.Data * 16.;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+      std::cout << "FBWInterface: Syncing left baro to " << fcu2BusOutput.baro_setting_hpa.Data << std::endl;
+    }
+
+    // FIXME need to handle QFE and we won't be able to do it this way
+    if (!isLeftStd && isRightStd) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
+      std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
+    } else if (!isLeftQnh && isRightQnh) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
+      std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
+    }
+  } else {
+    if (idFcuEisPanelBaroIsInhg[1]->get()) {
+      if (fcu1BusOutput.baro_setting_inhg.Data != fcu2BusOutput.baro_setting_inhg.Data) {
+        const DWORD kohlsman = fcu1BusOutput.baro_setting_inhg.Data * 541.822186666672;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing right baro to " << fcu1BusOutput.baro_setting_inhg.Data << std::endl;
+      }
+    } else if (fcu1BusOutput.baro_setting_hpa.Data != fcu2BusOutput.baro_setting_hpa.Data) {
+      const DWORD kohlsman = fcu1BusOutput.baro_setting_hpa.Data * 16.;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+      std::cout << "FBWInterface: Syncing right baro to " << fcu1BusOutput.baro_setting_hpa.Data << std::endl;
+    }
+
+    // FIXME need to handle QFE and we won't be able to do it this way
+    if (isLeftStd && !isRightStd) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
+      std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
+    } else if (isLeftQnh && !isRightQnh) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
+      std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
+    }
+  }
 
   return true;
 }

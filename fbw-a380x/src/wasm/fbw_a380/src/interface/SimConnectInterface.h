@@ -405,6 +405,8 @@ class SimConnectInterface {
   bool isSimInActivePause();
   bool isSimInPause();
 
+  bool wasLastBaroInputRightSide() const { return lastBaroInputWasRightSide; }
+
  private:
   enum ClientData {
     PRIM_DISCRETE_INPUTS,

@@ -737,6 +737,8 @@ class FlyByWireInterface {
 
   bool updateFcu(double sampleTime, int fcuIndex);
 
+  bool updateEfisSync();
+
   bool updateFcuAfsLvars();
 
   bool updateFcuShim();
