@@ -16,6 +16,11 @@ This file applies to the entire repository. More specific `AGENTS.md` files, if 
 
 Put aircraft-independent behavior in `fbw-common` when both aircraft genuinely share the same contract. Keep aircraft geometry, configuration, simvars, and system behavior in the relevant aircraft tree. Preserve existing path aliases such as `@flybywiresim/*`, `@shared/*`, and `@instruments/*` instead of adding long relative imports.
 
+## Generated sources
+
+- Do not modify generated behavior XML sources in `generated` folders.
+- Do not modify the generated `model/` folders in the fly-by-wire WASM modules: `fbw-a32nx/src/wasm/fbw_a320/src/model/` and `fbw-a380x/src/wasm/fbw_a380/src/model/`.
+
 ## Environment and build system
 
 The pinned Docker development environment is the source of truth for full builds and CI-equivalent validation. Initialize the submodule before building.
