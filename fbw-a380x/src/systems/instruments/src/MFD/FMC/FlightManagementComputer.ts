@@ -785,9 +785,9 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', NaN);
+    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', 0);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', 0);
+    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', 0);
   }
 
   public clearLatestFmsErrorMessage() {
@@ -1382,7 +1382,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   triggerCheckSpeedModeMessage(preselectedSpeed: number | null) {
-    const isSpeedSelected = this.acInterface.IsAirspeedSelected() === true;
+    const isSpeedSelected = this.acInterface.isAirspeedSelected() === true;
     const hasPreselectedSpeed = preselectedSpeed !== null;
 
     const checkSpeedModeMessageActive =
@@ -1402,7 +1402,7 @@ export class FlightManagementComputer implements FmcInterface {
   clearCheckSpeedModeMessage() {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
-    if (checkSpeedModeMessageActive && this.acInterface.IsAirspeedManaged()) {
+    if (checkSpeedModeMessageActive && this.acInterface.isAirspeedManaged()) {
       this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }

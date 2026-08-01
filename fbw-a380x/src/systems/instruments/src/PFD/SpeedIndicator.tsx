@@ -957,46 +957,35 @@ class VAlphaLimBar extends DisplayComponent<{
 }
 
 class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
-  private v1TextRef = FSComponent.createRef<SVGTextElement>();
+  private readonly v1 = ConsumerSubject.create(this.props.bus.getSubscriber<PFDSimvars>().on('v1'), 0);
 
-  private v1Speed = 0;
+  private readonly fwcFlightPhase = ConsumerSubject.create(
+    this.props.bus.getSubscriber<PFDSimvars>().on('fwcFlightPhase'),
+    1,
+  );
+  private readonly speed = Arinc429ConsumerSubject.create(this.props.bus.getSubscriber<Arinc429Values>().on('speedAr'));
 
-  onAfterRender() {
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub.on('speed').handle((s) => {
-      const speed = new Arinc429Word(s);
-      if (this.v1Speed - speed.value > DisplayRange) {
-        this.v1TextRef.instance.style.visibility = 'visible';
+  private readonly visibility = MappedSubject.create(
+    ([v1, flightphase, speed]) => {
+      if (v1 !== 0 && flightphase <= 5 && v1 - speed.valueOr(Infinity) > DisplayRange) {
+        return 'visible';
       } else {
-        this.v1TextRef.instance.style.visibility = 'hidden';
+        return 'hidden';
       }
-    });
+    },
+    this.v1,
+    this.fwcFlightPhase,
+    this.speed,
+  );
 
-    sub
-      .on('v1')
-      .whenChanged()
-      .handle((v1) => {
-        this.v1Speed = v1;
-        this.v1TextRef.instance.textContent = Math.round(v1).toString();
-      });
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((p) => {
-        if (p <= 5) {
-          this.v1TextRef.instance.style.visibility = 'visible';
-        } else {
-          this.v1TextRef.instance.style.visibility = 'hidden';
-        }
-      });
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
   }
 
   render() {
     return (
-      <text ref={this.v1TextRef} id="V1SpeedText" class="FontTiny Cyan" x="21.271021" y="43.23">
-        0
+      <text id="V1SpeedText" class="FontTiny Cyan" x="21.271021" y="43.23" style={{ visibility: this.visibility }}>
+        {this.v1}
       </text>
     );
   }

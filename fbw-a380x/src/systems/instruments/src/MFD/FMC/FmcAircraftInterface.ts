@@ -548,21 +548,9 @@ export class FmcAircraftInterface {
       this.flightPlanService.setPerformanceData('v2', Math.round(fSpeed));
     }
 
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_V1_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.v1.get() ?? NaN,
-    );
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_V2_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.v2.get() ?? NaN,
-    );
-    SimVar.SetSimVarValue(
-      'L:AIRLINER_VR_SPEED',
-      'Knots',
-      this.flightPlanService.active.performanceData.vr.get() ?? NaN,
-    );
+    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? 0);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? 0);
+    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr.get() ?? 0);
   }
 
   public getToSpeedsTooLow(): boolean {
@@ -903,7 +891,7 @@ export class FmcAircraftInterface {
     if (currentLeg && currentLeg.isDiscontinuity === false && currentLeg.type === 'HM') {
       holdSpeedTarget = this.getHoldingSpeed(currentLegConstraints.descentSpeed, currentLegConstraints.descentAltitude);
       holdDecelReached = true;
-      enableHoldSpeedWarning = this.IsAirspeedSelected() ?? false;
+      enableHoldSpeedWarning = this.isAirspeedSelected() ?? false;
       this.holdLegIndex = plan.activeLegIndex;
     } else if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.type === 'HM') {
       const adirLat = ADIRS.getLatitude();
@@ -922,7 +910,7 @@ export class FmcAircraftInterface {
         const gsWord = ADIRS.getGroundSpeed();
         const gs = gsWord && gsWord.isNormalOperation() ? gsWord.value : 0;
         const warningDist = decelDist + gs / 120;
-        if (this.IsAirspeedSelected() && dtg != null && dtg <= warningDist) {
+        if (this.isAirspeedSelected() && dtg != null && dtg <= warningDist) {
           enableHoldSpeedWarning = true;
         }
       }
@@ -1779,11 +1767,11 @@ export class FmcAircraftInterface {
     return this.masterPrimAltitude.get().valueOr(null);
   }
 
-  IsAirspeedSelected(): boolean | null {
+  isAirspeedSelected(): boolean | null {
     return this.masterPrimFgWord5.get().bitValueOr(18, null);
   }
 
-  IsAirspeedManaged(): boolean | null {
+  isAirspeedManaged(): boolean | null {
     return this.masterPrimFgWord5.get().bitValueOr(17, null);
   }
 }
