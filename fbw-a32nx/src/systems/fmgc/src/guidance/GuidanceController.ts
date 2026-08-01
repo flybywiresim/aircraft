@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, SimVarString, LegType, MagVar, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, SimVarString, LegType, MagVar } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -31,7 +31,7 @@ import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
-import { ConsumerValue, EventBus, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 
@@ -73,8 +73,6 @@ export interface Fmgc {
 }
 
 export class GuidanceController {
-  private static readonly rnpArApproachSimVar = RegisteredSimVar.createBoolean('L:FBW_FM_RNP_AR_APPROACH');
-
   lnavDriver: LnavDriver;
 
   vnavDriver: VnavDriver;
@@ -159,8 +157,6 @@ export class GuidanceController {
     FmgcFlightPhase.Preflight,
   );
   private activeLegSecondsToGo: number | null;
-
-  private readonly approachIsRnpAr = Subject.create(false);
 
   public getActiveLegSecondsToGo(): number | null {
     return this.activeLegSecondsToGo;
@@ -325,10 +321,6 @@ export class GuidanceController {
       },
       undefined,
     );
-
-    this.approachIsRnpAr.sub((v) => {
-      GuidanceController.rnpArApproachSimVar.set(v);
-    }, true);
   }
 
   private geometryRecomputationTimer = GEOMETRY_RECOMPUTATION_TIMER + 1;
