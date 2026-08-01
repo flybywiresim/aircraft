@@ -6,7 +6,6 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
-  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
@@ -168,16 +167,13 @@ const engineModelParams: EngineModelParameters = {
   ],
 };
 
-const fmsSymbolConfig: FMSymbolsConfig = {
-  publishSidName: true,
-  rnpArNaming: true,
-};
-
 export const A380AircraftConfig: AircraftConfig = {
   lnavConfig,
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
-  fmSymbolConfig: fmsSymbolConfig,
   fpmConfig: FpmConfigs.A380,
+  fmSymbolConfig: {
+    rnpArNaming: true,
+  },
 };

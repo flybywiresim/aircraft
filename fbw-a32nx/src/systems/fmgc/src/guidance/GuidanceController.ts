@@ -83,10 +83,6 @@ export class GuidanceController {
 
   efisVectors: EfisVectors;
 
-  private readonly useRnpArNaming: boolean;
-
-  private readonly publishSidName: boolean;
-
   get activeGeometry(): Geometry | null {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Active);
   }
@@ -291,8 +287,6 @@ export class GuidanceController {
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
-    this.useRnpArNaming = acConfig.fmSymbolConfig.rnpArNaming;
-    this.publishSidName = acConfig.fmSymbolConfig.publishSidName;
     this.bus
       .getSubscriber<FlightPlanOperationEvents>()
       .on('fms_set_hold_immediate_exit')

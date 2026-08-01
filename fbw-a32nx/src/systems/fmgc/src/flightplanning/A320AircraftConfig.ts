@@ -6,7 +6,6 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
-  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
@@ -140,17 +139,13 @@ const engineModelParams: EngineModelParameters = {
     [110.0, 1.392754, 1.252148, 1.069322, 0.933937, 0.835886, 0.766054, 0.724483, 0.683759, 0.6454, 0.563051],
   ],
 };
-
-const fmsSymbolConfig: FMSymbolsConfig = {
-  publishSidName: false,
-  rnpArNaming: false,
-};
-
 export const A320AircraftConfig: AircraftConfig = {
   lnavConfig,
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
-  fmSymbolConfig: fmsSymbolConfig,
   fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
+  fmSymbolConfig: {
+    rnpArNaming: false,
+  },
 };

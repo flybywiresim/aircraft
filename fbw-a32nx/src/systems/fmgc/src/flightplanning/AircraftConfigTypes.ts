@@ -193,9 +193,6 @@ export interface FlightModelParameters {
 }
 
 export interface FMSymbolsConfig {
-  /** Whether to publish the SID name as the approach message before cruise phase */
-  publishSidName: boolean;
-
-  /** Whether to format RNP AR approaches on the approach message as RNP instead of RNAV */
+  /** Whether to format RNP AR approaches as RNP instead of RNAV */
   rnpArNaming: boolean;
 }
