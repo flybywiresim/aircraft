@@ -252,7 +252,6 @@ export class GuidanceController {
     if (apprMsg !== this.approachMessage) {
       this.approachMessage = apprMsg;
       const apprMsgVars = SimVarString.pack(apprMsg, 9);
-      console.log('Setting approach message ' + apprMsg + 'vars ' + apprMsgVars);
       // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
       SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_0', 'string', apprMsgVars[0].toString());
       SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_1', 'string', apprMsgVars[1].toString());
