@@ -302,7 +302,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   ];
 
   private shouldShowConfirmVSpeeds() {
-    const pd = this.loadedFlightPlan?.performanceData;
+    const pd = this.loadedFlightPlan?.readonlyPerformanceData;
     const fm = this.props.fmcService.master.fmgc.data;
 
     if (!pd || !fm) {
@@ -374,7 +374,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     if (fpIndex === FlightPlanIndex.Active) {
       if (newIndex === TakeoffPowerSetting.FLEX) {
-        const flex = this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get();
+        const flex = this.props.flightPlanInterface.active.readonlyPerformanceData.flexTakeoffTemperature.get();
         // FLEX
         SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex === 0 ? 0.1 : flex ?? 0);
       } else if (newIndex === TakeoffPowerSetting.DERATED) {
@@ -751,7 +751,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   // GA page subjects, refs and methods
 
   protected onNewData(): void {
-    const pd = this.loadedFlightPlan?.performanceData;
+    const pd = this.loadedFlightPlan?.readonlyPerformanceData;
 
     if (!pd || !this.loadedFlightPlan) {
       return;
@@ -807,7 +807,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const pd = this.loadedFlightPlan?.performanceData;
+    const pd = this.loadedFlightPlan?.readonlyPerformanceData;
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
     this.costIndex.set(pd?.costIndex.get() ?? null);
     this.toShift.set(pd?.takeoffShift.get() ?? null);
@@ -1340,14 +1340,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination(fpIndex);
       this.approachParametersMandatory.set(isActiveOrTmpy && (distanceToDest ?? 0) <= 180);
 
-      this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
+      this.approachVappPilotEntry.set(this.loadedFlightPlan?.readonlyPerformanceData.pilotVapp.get() !== null);
       this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? NaN);
       this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
 
       this.approachVls.set(this.props.fmcService.master.getApproachVls(fpIndex) ?? null);
       this.approachVref.set(this.props.fmcService.master.getApproachVref(fpIndex) ?? null);
-      const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
-      const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
+      const apprWindDirection = this.loadedFlightPlan?.readonlyPerformanceData.approachWindDirection.get();
+      const apprWindMagnitude = this.loadedFlightPlan?.readonlyPerformanceData.approachWindMagnitude.get();
       if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
         const towerHeadwind = A380SpeedsUtils.getHeadwind(
           apprWindMagnitude,

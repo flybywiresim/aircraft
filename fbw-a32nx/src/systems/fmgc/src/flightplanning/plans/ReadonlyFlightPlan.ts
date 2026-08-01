@@ -19,6 +19,11 @@ import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { Subscribable } from '@microsoft/msfs-sdk';
 import { PropagatedWindEntry } from '../data/wind';
 
+/** Read-only view of the subscribable values held in flight-plan performance data. */
+export type ReadonlyFlightPlanPerformanceData<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> = {
+  readonly [K in keyof P]: P[K] extends Subscribable<infer T> ? Subscribable<T> : P[K];
+};
+
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
@@ -126,6 +131,8 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   glideslopeIntercept(): number | undefined;
 
   get performanceData(): P;
+
+  get readonlyPerformanceData(): ReadonlyFlightPlanPerformanceData<P>;
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 }

@@ -235,7 +235,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           this.alternateExists.set(
             this.props.flightPlanInterface.getAlternate(loadedfpIndex).destinationAirport !== undefined,
           );
-          const pd = this.loadedFlightPlan!.performanceData;
+          const pd = this.loadedFlightPlan!.readonlyPerformanceData;
           this.landingWeight.set(
             this.props.fmcService.master.getLandingWeight(loadedfpIndex) ?? NaN,
             UnitType.KILOGRAM,
@@ -351,7 +351,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const pd = this.loadedFlightPlan?.performanceData;
+    const pd = this.loadedFlightPlan?.readonlyPerformanceData;
 
     const pdZfw = pd?.zeroFuelWeight.get();
     if (pdZfw !== undefined && pdZfw !== null) {

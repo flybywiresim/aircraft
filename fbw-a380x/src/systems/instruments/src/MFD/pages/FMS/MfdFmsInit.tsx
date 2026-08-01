@@ -230,7 +230,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       const fp = this.loadedFlightPlan;
 
       const fpIndex = this.loadedFlightPlanIndex.get();
-      const pd = fp?.performanceData;
+      const pd = fp?.readonlyPerformanceData;
 
       this.tropopause.set(pd?.tropopause.get() ?? null);
       this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
@@ -273,8 +273,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent &&
         (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary),
     );
-    const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
-    const cruiseTemp = this.loadedFlightPlan.performanceData.cruiseTemperature.get();
+    const cruiseLevel = this.loadedFlightPlan.readonlyPerformanceData.cruiseFlightLevel.get();
+    const cruiseTemp = this.loadedFlightPlan.readonlyPerformanceData.cruiseTemperature.get();
 
     if (cruiseLevel && (!cruiseTemp || cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5)) {
       this.props.flightPlanInterface.setPerformanceData(

@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2026 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -73,7 +73,7 @@ import {
   FlightPlanPerformanceData,
   SerializedFlightPlanPerformanceData,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { ReadonlyFlightPlan, ReadonlyFlightPlanPerformanceData } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
@@ -241,6 +241,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   abstract get performanceData(): P;
+
+  get readonlyPerformanceData(): ReadonlyFlightPlanPerformanceData<P> {
+    return this.performanceData as unknown as ReadonlyFlightPlanPerformanceData<P>;
+  }
 
   destroy() {
     for (const subscription of this.subscriptions) {

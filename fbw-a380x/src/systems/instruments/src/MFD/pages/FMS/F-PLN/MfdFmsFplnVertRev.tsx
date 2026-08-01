@@ -225,7 +225,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly stepAltsScrollUpDisabled = Subject.create(true);
 
   protected onNewData(): void {
-    const pd = this.loadedFlightPlan?.performanceData;
+    const pd = this.loadedFlightPlan?.readonlyPerformanceData;
 
     this.transitionAltitude.set(pd?.transitionAltitude.get() ?? null);
     this.transitionLevel.set(pd?.transitionLevel.get() ?? null);
@@ -346,30 +346,30 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       const speedLimitSpeed = climbSpeedLimit
         ? isAlternate
-          ? plan?.performanceData.alternateClimbSpeedLimitSpeed.get()
-          : plan?.performanceData.climbSpeedLimitSpeed.get()
+          ? plan?.readonlyPerformanceData.alternateClimbSpeedLimitSpeed.get()
+          : plan?.readonlyPerformanceData.climbSpeedLimitSpeed.get()
         : isAlternate
-          ? plan?.performanceData.alternateDescentSpeedLimitSpeed.get()
-          : plan?.performanceData.descentSpeedLimitSpeed.get();
+          ? plan?.readonlyPerformanceData.alternateDescentSpeedLimitSpeed.get()
+          : plan?.readonlyPerformanceData.descentSpeedLimitSpeed.get();
 
       const speedLimitAltitude = climbSpeedLimit
         ? isAlternate
-          ? plan?.performanceData.alternateClimbSpeedLimitAltitude.get()
-          : plan?.performanceData.climbSpeedLimitAltitude.get()
+          ? plan?.readonlyPerformanceData.alternateClimbSpeedLimitAltitude.get()
+          : plan?.readonlyPerformanceData.climbSpeedLimitAltitude.get()
         : isAlternate
-          ? plan?.performanceData.alternateDescentSpeedLimitAltitude.get()
-          : plan?.performanceData.descentSpeedLimitAltitude.get();
+          ? plan?.readonlyPerformanceData.alternateDescentSpeedLimitAltitude.get()
+          : plan?.readonlyPerformanceData.descentSpeedLimitAltitude.get();
 
       this.speedLimitSpeed.set(speedLimitSpeed ?? null);
       this.speedLimitAltitude.set(speedLimitAltitude ?? null);
       this.speedLimitPilotEntered.set(
         climbSpeedLimit
           ? isAlternate
-            ? plan?.performanceData.isAlternateClimbSpeedLimitPilotEntered.get() ?? false
-            : plan?.performanceData.isClimbSpeedLimitPilotEntered.get() ?? false
+            ? plan?.readonlyPerformanceData.isAlternateClimbSpeedLimitPilotEntered.get() ?? false
+            : plan?.readonlyPerformanceData.isClimbSpeedLimitPilotEntered.get() ?? false
           : isAlternate
-            ? plan?.performanceData.isAlternateDescentSpeedLimitPilotEntered.get() ?? false
-            : plan?.performanceData.isDescentSpeedLimitPilotEntered.get() ?? false,
+            ? plan?.readonlyPerformanceData.isAlternateDescentSpeedLimitPilotEntered.get() ?? false
+            : plan?.readonlyPerformanceData.isDescentSpeedLimitPilotEntered.get() ?? false,
       );
 
       if (constraintType !== WaypointConstraintType.Unknown) {
@@ -607,7 +607,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         return StepDisabledReason.GoAround;
       } else if (phase === FmgcFlightPhase.Done) {
         return StepDisabledReason.Done;
-      } else if (fp.performanceData.cruiseFlightLevel.get() === null) {
+      } else if (fp.readonlyPerformanceData.cruiseFlightLevel.get() === null) {
         return StepDisabledReason.NoCruiseLevel;
       }
     }
@@ -731,7 +731,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private checkPerformanceDataEditCondition() {
-    return this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData;
+    return this.checkLegModificationAllowed() && this.loadedFlightPlan?.readonlyPerformanceData;
   }
 
   private async tryUpdateSpeedLimitValue(value: number | null) {
@@ -933,7 +933,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private getEstimatedGrossWeightAtIndex(legIndex: number): number | null {
-    const zfw = this.loadedFlightPlan?.performanceData.zeroFuelWeight.get() ?? null;
+    const zfw = this.loadedFlightPlan?.readonlyPerformanceData.zeroFuelWeight.get() ?? null;
     const pred =
       this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
         ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex)

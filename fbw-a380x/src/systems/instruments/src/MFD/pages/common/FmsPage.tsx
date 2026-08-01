@@ -277,7 +277,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     const fm = this.props.fmcService.master.fmgc.data;
     const fps = this.props.flightPlanInterface;
     const activeFlightPlan = fps?.hasActive ? fps.active : undefined;
-    const pdActive = activeFlightPlan?.performanceData;
+    const pdActive = activeFlightPlan?.readonlyPerformanceData;
 
     // CHECK TO DATA
     if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {
@@ -293,7 +293,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         fps?.setPerformanceData('v2', null, FlightPlanIndex.Active);
         this.props.fmcService.master.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => activeFlightPlan.performanceData.vr.get() !== null,
+          () => activeFlightPlan.readonlyPerformanceData.vr.get() !== null,
           undefined,
         );
       }
