@@ -122,14 +122,14 @@ struct base_prim_fg_out_bus
   base_arinc_429 roll_fd_command_2;
   base_arinc_429 pitch_fd_command_2;
   base_arinc_429 yaw_fd_command_2;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_1;
   base_arinc_429 fm_alt_constraint_ft;
   base_arinc_429 ats_discrete_word;
   base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
   base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_5;
   base_arinc_429 discrete_word_6;
   base_arinc_429 low_target_speed_margin_kts;
   base_arinc_429 high_target_speed_margin_kts;
@@ -218,6 +218,19 @@ struct base_elac_ir_computation_data
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -249,19 +262,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif

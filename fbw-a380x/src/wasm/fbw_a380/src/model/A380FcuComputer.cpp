@@ -1648,9 +1648,9 @@ void A380FcuComputer::A380FcuComputer_MATLABFunction_a(const boolean_T rtu_u[19]
 void A380FcuComputer::step()
 {
   const base_arinc_429 *rtb_MultiportSwitch_f_fg_ats_discrete_word;
-  const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_1;
   const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_2;
   const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_3;
+  const base_arinc_429 *rtb_MultiportSwitch_f_fg_discrete_word_4;
   const base_arinc_429 *rtb_MultiportSwitch_fg_discrete_word_5;
   base_arinc_429 rtb_Switch_h;
   base_arinc_429 rtb_Switch_k;
@@ -1856,40 +1856,40 @@ void A380FcuComputer::step()
     rtb_BusAssignment_p_logic_afs_true_active = (rtb_y != 0U);
     switch (rtb_masterPrim) {
      case 1:
-      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_4;
+      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_ats_discrete_word = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.ats_discrete_word;
-      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_3;
-      rtb_MultiportSwitch_f_fg_discrete_word_1 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_discrete_word_2 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
+      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_3;
+      rtb_MultiportSwitch_f_fg_discrete_word_4 = &A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_4;
       break;
 
      case 2:
-      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_4;
+      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_ats_discrete_word = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.ats_discrete_word;
-      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_3;
-      rtb_MultiportSwitch_f_fg_discrete_word_1 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_discrete_word_2 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
+      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_3;
+      rtb_MultiportSwitch_f_fg_discrete_word_4 = &A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_4;
       break;
 
      default:
-      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_4;
+      rtb_MultiportSwitch_fg_discrete_word_5 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_ats_discrete_word = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.ats_discrete_word;
-      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_3;
-      rtb_MultiportSwitch_f_fg_discrete_word_1 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_1;
       rtb_MultiportSwitch_f_fg_discrete_word_2 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_2;
+      rtb_MultiportSwitch_f_fg_discrete_word_3 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_3;
+      rtb_MultiportSwitch_f_fg_discrete_word_4 = &A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_4;
       break;
     }
 
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel_bit_p,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel_bit_p,
       &rtb_y);
     rtb_BusAssignment_ao_logic_afs_ap_1_engaged = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel1_bit_e,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel1_bit_e,
       &rtb_y);
     rtb_DataTypeConversion_o = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel2_bit_a,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel2_bit_a,
       &rtb_y);
     rtb_OR = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel3_bit_j,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel3_bit_j,
       &rtb_y);
     rtb_OR = (rtb_OR || (rtb_y != 0U));
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_ats_discrete_word, A380FcuComputer_P.BitfromLabel4_bit,
@@ -1898,10 +1898,11 @@ void A380FcuComputer::step()
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_3, A380FcuComputer_P.BitfromLabel5_bit,
       &rtb_y);
     rtb_BusAssignment_ao_logic_afs_alt_active = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel7_bit_g,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_4, A380FcuComputer_P.BitfromLabel7_bit_g,
       &rtb_y);
     rtb_Equal1 = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel8_bit, &rtb_y);
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_4, A380FcuComputer_P.BitfromLabel8_bit,
+      &rtb_y);
     rtb_Equal8 = (rtb_y != 0U);
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel9_bit,
       &rtb_y);
@@ -1909,7 +1910,7 @@ void A380FcuComputer::step()
     A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_2, A380FcuComputer_P.BitfromLabel12_bit,
       &rtb_y);
     rtb_Equal7 = (rtb_y != 0U);
-    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_f_fg_discrete_word_1, A380FcuComputer_P.BitfromLabel11_bit,
+    A380FcuComputer_MATLABFunction_o(rtb_MultiportSwitch_fg_discrete_word_5, A380FcuComputer_P.BitfromLabel11_bit,
       &rtb_y);
     rtb_Equal7 = (rtb_Equal7 || (rtb_y != 0U));
     rtb_OR3 = (rtb_OR3 && (!rtb_Equal7));
@@ -2106,21 +2107,21 @@ void A380FcuComputer::step()
       A380FcuComputer_MATLABFunction_o(&A380FcuComputer_U.in.bus_inputs.prim_2_bus.fctl.fctl_law_status_word,
         A380FcuComputer_P.BitfromLabel7_bit, &rtb_y);
       if (rtb_Compare_j) {
-        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_5;
-        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_2;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_1_bus.fg.discrete_word_5;
       } else if ((rtb_y != 0U) && rtb_Equal1) {
-        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_5;
-        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_2;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_2_bus.fg.discrete_word_5;
       } else {
-        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_5;
-        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_2;
+        rtb_Switch_h = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_2;
+        rtb_Switch_k = A380FcuComputer_U.in.bus_inputs.prim_3_bus.fg.discrete_word_5;
       }
 
-      A380FcuComputer_MATLABFunction_o(&rtb_Switch_h, A380FcuComputer_P.BitfromLabel_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_o(&rtb_Switch_k, A380FcuComputer_P.BitfromLabel_bit, &rtb_y);
       rtb_DataTypeConversion_d = (rtb_y != 0U);
       A380FcuComputer_MATLABFunction_k((rtb_y != 0U), A380FcuComputer_P.PulseNode1_isRisingEdge, &rtb_Equal2,
         &A380FcuComputer_DWork.sf_MATLABFunction_kq);
-      A380FcuComputer_MATLABFunction_o(&rtb_Switch_k, A380FcuComputer_P.BitfromLabel1_bit, &rtb_y);
+      A380FcuComputer_MATLABFunction_o(&rtb_Switch_h, A380FcuComputer_P.BitfromLabel1_bit, &rtb_y);
       A380FcuComputer_MATLABFunction_k((rtb_y != 0U), A380FcuComputer_P.PulseNode2_isRisingEdge, &rtb_Equal1,
         &A380FcuComputer_DWork.sf_MATLABFunction_mt1);
       A380FcuComputer_MATLABFunction_n(A380FcuComputer_P.Constant_Value, A380FcuComputer_P.PulseNode3_isRisingEdge,

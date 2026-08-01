@@ -122,14 +122,14 @@ struct base_prim_fg_out_bus
   base_arinc_429 roll_fd_command_2;
   base_arinc_429 pitch_fd_command_2;
   base_arinc_429 yaw_fd_command_2;
-  base_arinc_429 discrete_word_5;
-  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_1;
   base_arinc_429 fm_alt_constraint_ft;
   base_arinc_429 ats_discrete_word;
   base_arinc_429 ats_fma_discrete_word;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_1;
   base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+  base_arinc_429 discrete_word_5;
   base_arinc_429 discrete_word_6;
   base_arinc_429 low_target_speed_margin_kts;
   base_arinc_429 high_target_speed_margin_kts;
@@ -169,19 +169,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
-#define DEFINED_TYPEDEF_FOR_athr_data_computed_
-
-struct athr_data_computed
-{
-  boolean_T TLA_in_active_range;
-  boolean_T is_FLX_active;
-  boolean_T ATHR_disabled;
-  real_T time_since_touchdown;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_eec_
 #define DEFINED_TYPEDEF_FOR_base_eec_
 
@@ -200,6 +187,19 @@ struct base_eec
   base_arinc_429 selected_n2_actual_percent;
   base_arinc_429 selected_n1_actual_percent;
   base_arinc_429 ecu_maintenance_word_6;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
+#define DEFINED_TYPEDEF_FOR_athr_data_computed_
+
+struct athr_data_computed
+{
+  boolean_T TLA_in_active_range;
+  boolean_T is_FLX_active;
+  boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
 };
 
 #endif

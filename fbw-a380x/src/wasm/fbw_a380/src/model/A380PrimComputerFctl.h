@@ -650,13 +650,13 @@ class A380PrimComputerFctl final
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
     boolean_T Constant_Value_ho;
-    boolean_T Constant9_Value_f;
-    boolean_T Constant8_Value_h3;
+    boolean_T Constant1_Value_h;
     boolean_T Constant4_Value_o;
     boolean_T Constant5_Value_c;
-    boolean_T Constant7_Value_p;
-    boolean_T Constant1_Value_h;
     boolean_T Constant6_Value_o;
+    boolean_T Constant7_Value_p;
+    boolean_T Constant8_Value_h3;
+    boolean_T Constant9_Value_f;
     boolean_T Constant2_Value_d;
   };
 
