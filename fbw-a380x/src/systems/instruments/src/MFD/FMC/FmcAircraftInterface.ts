@@ -398,7 +398,7 @@ export class FmcAircraftInterface {
           }
         }),
     );
-    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
+    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? -1), true));
     this.subs.push(
       this.arincHeadWindComponentRaw.sub((v) => {
         FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v.toString());
@@ -975,7 +975,7 @@ export class FmcAircraftInterface {
     if (!this.flightPlanService.hasActive) {
       return;
     }
-    let vPfd: number | null = -1;
+    let vPfd: number | null = null;
     const phase = this.flightPhase.get();
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
