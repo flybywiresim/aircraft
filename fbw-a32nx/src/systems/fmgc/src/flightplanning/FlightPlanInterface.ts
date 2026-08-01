@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,9 +7,8 @@ import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { ReadonlyFlightPlan, ReadonlyMainFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
@@ -29,19 +28,21 @@ import { WindEntry, PropagatedWindEntry, WindVector } from './data/wind';
  */
 export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   extends FlightPlanContext {
-  get(index: number): FlightPlan<P>;
+  get(index: number): ReadonlyMainFlightPlan<P>;
+
+  getAlternate(index: number): ReadonlyFlightPlan<P>;
 
   has(index: number): boolean;
 
-  get active(): ReadonlyFlightPlan<P>;
+  get active(): ReadonlyMainFlightPlan<P>;
 
-  get temporary(): ReadonlyFlightPlan<P>;
+  get temporary(): ReadonlyMainFlightPlan<P>;
 
-  get activeOrTemporary(): ReadonlyFlightPlan<P>;
+  get activeOrTemporary(): ReadonlyMainFlightPlan<P>;
 
-  get uplink(): ReadonlyFlightPlan<P>;
+  get uplink(): ReadonlyMainFlightPlan<P>;
 
-  secondary(index: number): ReadonlyFlightPlan<P>;
+  secondary(index: number): ReadonlyMainFlightPlan<P>;
 
   get hasActive(): boolean;
 

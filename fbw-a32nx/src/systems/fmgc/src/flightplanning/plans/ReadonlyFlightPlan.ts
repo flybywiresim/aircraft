@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,6 +15,7 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { Subscribable } from '@microsoft/msfs-sdk';
 import { PropagatedWindEntry } from '../data/wind';
 
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
@@ -61,7 +62,7 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get destinationLegIndex(): number | null;
 
-  readonly availableDestinationRunways: Runway[];
+  readonly availableDestinationRunways: readonly Runway[];
 
   get endsAtRunway(): boolean;
 
@@ -84,13 +85,13 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get originRunway(): Runway | undefined;
 
-  readonly availableOriginRunways: Runway[];
+  readonly availableOriginRunways: readonly Runway[];
 
   get departureRunwayTransition(): ProcedureTransition | undefined;
 
   get originDeparture(): Departure | undefined;
 
-  readonly availableDepartures: Departure[];
+  readonly availableDepartures: readonly Departure[];
 
   get departureEnrouteTransition(): ProcedureTransition | undefined;
 
@@ -103,15 +104,15 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get arrivalRunwayTransition(): ProcedureTransition | undefined;
 
-  readonly availableArrivals: Arrival[];
+  readonly availableArrivals: readonly Arrival[];
 
   get approachVia(): ProcedureTransition | undefined | null;
 
   get approach(): Approach | undefined;
 
-  readonly availableApproaches: Approach[];
+  readonly availableApproaches: readonly Approach[];
 
-  readonly availableApproachVias: ProcedureTransition[];
+  readonly availableApproachVias: readonly ProcedureTransition[];
 
   get destinationAirport(): Airport | undefined;
 
@@ -126,4 +127,19 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   get performanceData(): P;
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
+}
+
+/**
+ * Read-only view of a main flight plan. Unlike alternate flight plans, main plans carry operational metadata and own
+ * an alternate flight plan.
+ */
+export interface ReadonlyMainFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
+  extends ReadonlyFlightPlan<P> {
+  readonly flags: number;
+
+  readonly flightNumber: Subscribable<string | null>;
+
+  readonly alternateFlightPlan: ReadonlyFlightPlan<P>;
+
+  isActiveOrCopiedFromActive(): boolean;
 }
