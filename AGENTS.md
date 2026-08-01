@@ -33,6 +33,8 @@ git submodule update --init
 
 On Windows, use `scripts\dev-env\run.cmd` in place of `run.sh`. Setup runs `pnpm install`; keep `pnpm-lock.yaml` synchronized and do not introduce another package manager lockfile.
 
+**Important:** Set `FBW_TYPECHECK=1` in the environment to enable TypeScript checks. This must be done before code is considered deliverable.
+
 Useful scoped commands:
 
 ```sh
