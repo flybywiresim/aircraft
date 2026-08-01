@@ -28,21 +28,21 @@ import { WindEntry, PropagatedWindEntry, WindVector } from './data/wind';
  */
 export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   extends FlightPlanContext {
-  get(index: number): ReadonlyMainFlightPlan<P>;
+  get(index: number): ReadonlyMainFlightPlan;
 
-  getAlternate(index: number): ReadonlyFlightPlan<P>;
+  getAlternate(index: number): ReadonlyFlightPlan;
 
   has(index: number): boolean;
 
-  get active(): ReadonlyMainFlightPlan<P>;
+  get active(): ReadonlyMainFlightPlan;
 
-  get temporary(): ReadonlyMainFlightPlan<P>;
+  get temporary(): ReadonlyMainFlightPlan;
 
-  get activeOrTemporary(): ReadonlyMainFlightPlan<P>;
+  get activeOrTemporary(): ReadonlyMainFlightPlan;
 
-  get uplink(): ReadonlyMainFlightPlan<P>;
+  get uplink(): ReadonlyMainFlightPlan;
 
-  secondary(index: number): ReadonlyMainFlightPlan<P>;
+  secondary(index: number): ReadonlyMainFlightPlan;
 
   get hasActive(): boolean;
 

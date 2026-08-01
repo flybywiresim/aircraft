@@ -2,7 +2,6 @@ import { EventBus, ReadonlyLifecycle, Subject, Subscribable, Subscription } from
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanPerformanceData } from './plans/performance/FlightPlanPerformanceData';
 import { ReadonlyMainFlightPlan } from './plans/ReadonlyFlightPlan';
 
 export class ObservableFlightPlanManager implements Subscription {
@@ -70,13 +69,13 @@ export class ObservableFlightPlanManager implements Subscription {
     );
   }
 
-  private readonly _activePlan = Subject.create<ReadonlyMainFlightPlan<FlightPlanPerformanceData> | null>(null);
+  private readonly _activePlan = Subject.create<ReadonlyMainFlightPlan | null>(null);
   /**
    * A reference to the active flight plan if it exists, or null if it does not. This can be used to be notified of when
    * subscriptions to e.g performance data have to be re-connected to a *new* active flight plan because the old ones
    * have been destroyed.
    */
-  public readonly activePlan: Subscribable<ReadonlyMainFlightPlan<FlightPlanPerformanceData> | null> = this._activePlan;
+  public readonly activePlan: Subscribable<ReadonlyMainFlightPlan | null> = this._activePlan;
 
   private readonly _temporaryPlanExists = Subject.create(false);
   public readonly temporaryPlanExists: Subscribable<boolean> = this._temporaryPlanExists;

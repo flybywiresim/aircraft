@@ -16,7 +16,6 @@ import { FmsPage } from '../../common/FmsPage';
 import { getApproachName } from '../../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 import './MfdFmsFpln.scss';
@@ -346,7 +345,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     }
   }
 
-  private generateRunwayOptions(flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData>, isAltn: boolean) {
+  private generateRunwayOptions(flightPlan: ReadonlyFlightPlan, isAltn: boolean) {
     if (flightPlan.destinationAirport) {
       this.toIcao.set(flightPlan.destinationAirport.ident);
 

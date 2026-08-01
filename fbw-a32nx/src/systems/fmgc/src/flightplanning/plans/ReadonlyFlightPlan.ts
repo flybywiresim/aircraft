@@ -14,17 +14,12 @@ import {
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { ReadonlyFlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { Subscribable } from '@microsoft/msfs-sdk';
 import { PropagatedWindEntry } from '../data/wind';
 
-/** Read-only view of the subscribable values held in flight-plan performance data. */
-export type ReadonlyFlightPlanPerformanceData<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> = {
-  readonly [K in keyof P]: P[K] extends Subscribable<infer T> ? Subscribable<T> : P[K];
-};
-
-export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+export interface ReadonlyFlightPlan {
   get index(): number;
 
   /**
@@ -130,9 +125,7 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   glideslopeIntercept(): number | undefined;
 
-  get performanceData(): P;
-
-  get readonlyPerformanceData(): ReadonlyFlightPlanPerformanceData<P>;
+  get performanceData(): ReadonlyFlightPlanPerformanceData;
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 }
@@ -141,13 +134,12 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
  * Read-only view of a main flight plan. Unlike alternate flight plans, main plans carry operational metadata and own
  * an alternate flight plan.
  */
-export interface ReadonlyMainFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
-  extends ReadonlyFlightPlan<P> {
+export interface ReadonlyMainFlightPlan extends ReadonlyFlightPlan {
   readonly flags: number;
 
   readonly flightNumber: Subscribable<string | null>;
 
-  readonly alternateFlightPlan: ReadonlyFlightPlan<P>;
+  readonly alternateFlightPlan: ReadonlyFlightPlan;
 
   readonly fixInfos: readonly (FixInfoData | undefined)[];
 

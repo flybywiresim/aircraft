@@ -436,7 +436,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
             etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-            transitionAltitude: this.loadedFlightPlan.readonlyPerformanceData.transitionAltitude.get(),
+            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude.get(),
             altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
             hasAltitudeConstraint: false, // TODO
             altitudeConstraint: null, // TODO
@@ -456,8 +456,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         if (isLeg(leg)) {
-          const transAlt = this.loadedFlightPlan.readonlyPerformanceData.transitionAltitude.get();
-          const transLevel = this.loadedFlightPlan.readonlyPerformanceData.transitionLevel.get();
+          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
           const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
           const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;

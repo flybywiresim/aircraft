@@ -73,7 +73,7 @@ import {
   FlightPlanPerformanceData,
   SerializedFlightPlanPerformanceData,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { ReadonlyFlightPlan, ReadonlyFlightPlanPerformanceData } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
@@ -91,7 +91,7 @@ export interface FlightPlanContext {
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
-  implements ReadonlyFlightPlan<P>
+  implements ReadonlyFlightPlan
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
@@ -241,10 +241,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   abstract get performanceData(): P;
-
-  get readonlyPerformanceData(): ReadonlyFlightPlanPerformanceData<P> {
-    return this.performanceData as unknown as ReadonlyFlightPlanPerformanceData<P>;
-  }
 
   destroy() {
     for (const subscription of this.subscriptions) {

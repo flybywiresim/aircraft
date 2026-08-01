@@ -33,7 +33,6 @@ import {
   fixInfoUri,
 } from '../../shared/utils';
 import { ReadonlyFlightPlan, ReadonlyMainFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -45,9 +44,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly activePageTitle = Subject.create<string>('');
 
-  public loadedFlightPlan: ReadonlyMainFlightPlan<FlightPlanPerformanceData> | null = null;
+  public loadedFlightPlan: ReadonlyMainFlightPlan | null = null;
 
-  public loadedAlternateFlightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | null = null;
+  public loadedAlternateFlightPlan: ReadonlyFlightPlan | null = null;
 
   protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
@@ -277,7 +276,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     const fm = this.props.fmcService.master.fmgc.data;
     const fps = this.props.flightPlanInterface;
     const activeFlightPlan = fps?.hasActive ? fps.active : undefined;
-    const pdActive = activeFlightPlan?.readonlyPerformanceData;
+    const pdActive = activeFlightPlan?.performanceData;
 
     // CHECK TO DATA
     if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {
@@ -293,7 +292,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         fps?.setPerformanceData('v2', null, FlightPlanIndex.Active);
         this.props.fmcService.master.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => activeFlightPlan.readonlyPerformanceData.vr.get() !== null,
+          () => activeFlightPlan.performanceData.vr.get() !== null,
           undefined,
         );
       }

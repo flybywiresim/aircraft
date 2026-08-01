@@ -13,7 +13,6 @@ import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from '../../common/FmsPage';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 import './MfdFmsFpln.scss';
@@ -168,10 +167,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     }
   }
 
-  private generateRunwayOptions(
-    flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData>,
-    isAltn: boolean | null | undefined,
-  ) {
+  private generateRunwayOptions(flightPlan: ReadonlyFlightPlan, isAltn: boolean | null | undefined) {
     if (flightPlan.originAirport) {
       this.fromIcao.set(flightPlan.originAirport.ident);
 
