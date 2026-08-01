@@ -3495,7 +3495,7 @@ export class FwsCore {
     const v1Threshold = v1 - 4;
     const v1ConfirmNodeStatus = this.v1SpeedConfirmNode.read();
     this.v1SpeedConfirmNode.write(
-      v1 &&
+      v1 > 0 &&
         (this.adr1Cas.get().valueOr(0) > v1Threshold ||
           this.adr2Cas.get().valueOr(0) > v1Threshold ||
           this.adr3Cas.get().valueOr(0) > v1Threshold),

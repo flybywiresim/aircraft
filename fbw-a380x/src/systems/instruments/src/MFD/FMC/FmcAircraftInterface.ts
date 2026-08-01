@@ -548,9 +548,9 @@ export class FmcAircraftInterface {
       this.flightPlanService.setPerformanceData('v2', Math.round(fSpeed));
     }
 
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? 0);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? 0);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr.get() ?? 0);
+    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? -1);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? -1);
+    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr.get() ?? -1);
   }
 
   public getToSpeedsTooLow(): boolean {

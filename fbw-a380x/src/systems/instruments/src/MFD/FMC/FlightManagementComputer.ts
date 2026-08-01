@@ -774,7 +774,6 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
 
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', 0);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
 
@@ -785,9 +784,9 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', 0);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', 0);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', 0);
+    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', -1);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', -1);
+    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', -1);
     SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'knots', -1);
   }
 

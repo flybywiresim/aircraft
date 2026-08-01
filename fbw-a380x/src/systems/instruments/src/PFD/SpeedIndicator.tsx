@@ -75,7 +75,7 @@ class V1BugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getV1Visibility() {
-    if (this.flightPhase <= 5 && this.v1Speed !== 0) {
+    if (this.flightPhase <= 5 && this.v1Speed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -130,7 +130,7 @@ class VRBugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getVrVisibility() {
-    if (this.flightPhase <= 5 && this.vrSpeed !== 0) {
+    if (this.flightPhase <= 5 && this.vrSpeed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -967,7 +967,7 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly visibility = MappedSubject.create(
     ([v1, flightphase, speed]) => {
-      if (!speed.isFailureWarning() && v1 !== 0 && flightphase <= 5 && v1 - speed.valueOr(30) > DisplayRange) {
+      if (!speed.isFailureWarning() && v1 > 0 && flightphase <= 5 && v1 - speed.valueOr(30) > DisplayRange) {
         return 'visible';
       } else {
         return 'hidden';
