@@ -765,7 +765,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private initSimVars() {
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
@@ -788,6 +788,7 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', 0);
     SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', 0);
     SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'knots', -1);
   }
 
   public clearLatestFmsErrorMessage() {
