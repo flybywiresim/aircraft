@@ -34,7 +34,7 @@ import { FplnRevisionsMenuType, getRevisionsMenu } from './FplnRevisionsMenu';
 import { DestinationWindow } from './DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from './InsertNextWptFrom';
 import { FmsPage } from '../../common/FmsPage';
-import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
@@ -351,9 +351,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       let lastDistanceFromStart: number = 0;
       let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
       // Construct leg data for all legs
-      const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(
-        this.loadedAlternateFlightPlan?.allLegs as ReadonlyFlightPlanElement[],
-      );
+      const jointFlightPlan = [...this.loadedFlightPlan.allLegs, ...(this.loadedAlternateFlightPlan?.allLegs ?? [])];
 
       if (!jointFlightPlan.length) {
         return;
@@ -373,10 +371,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         if (
-          el instanceof FlightPlanLeg &&
+          isLeg(el) &&
           index <
             (this.loadedFlightPlan?.legCount ?? 0) +
-              (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateFlightPlan.legCount ?? 0)
+              (this.props.flightPlanInterface.getAlternate(this.loadedFlightPlanIndex.get()).legCount ?? 0)
         ) {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
@@ -457,7 +455,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           this.lineData.push(data);
         }
 
-        if (leg instanceof FlightPlanLeg) {
+        if (isLeg(leg)) {
           const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
           const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
@@ -720,7 +718,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       const leg = flightPlan?.elementAt(legIndex);
       this.props.fmcService.master.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
 
-      if (leg instanceof FlightPlanLeg) {
+      if (isLeg(leg)) {
         let type: FplnRevisionsMenuType = FplnRevisionsMenuType.Waypoint;
         if (leg.segment.class === SegmentClass.Departure) {
           type = FplnRevisionsMenuType.Departure;
@@ -749,7 +747,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     if (revWptIndex !== null) {
       const wpt: NextWptInfo[] = flightPlan?.allLegs
         .map((el: ReadonlyFlightPlanElement, idx: number) => {
-          if (el instanceof FlightPlanLeg && el.isXF() && idx >= revWptIndex + 1) {
+          if (isLeg(el) && el.isXF() && idx >= revWptIndex + 1) {
             return { ident: el.ident, originalLegIndex: idx };
           }
           return null;

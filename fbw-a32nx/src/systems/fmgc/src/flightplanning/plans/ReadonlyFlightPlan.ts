@@ -15,6 +15,7 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { Subscribable } from '@microsoft/msfs-sdk';
 import { PropagatedWindEntry } from '../data/wind';
 
@@ -140,6 +141,8 @@ export interface ReadonlyMainFlightPlan<P extends FlightPlanPerformanceData = Fl
   readonly flightNumber: Subscribable<string | null>;
 
   readonly alternateFlightPlan: ReadonlyFlightPlan<P>;
+
+  readonly fixInfos: readonly (FixInfoData | undefined)[];
 
   isActiveOrCopiedFromActive(): boolean;
 }
