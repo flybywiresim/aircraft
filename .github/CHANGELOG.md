@@ -61,6 +61,7 @@
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 
 ## 2024.1.0
 

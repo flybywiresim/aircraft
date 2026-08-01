@@ -205,14 +205,17 @@ enum InertialReferenceMode {
     Attitude = 2,
 }
 
-read_write_enum!(InertialReferenceMode);
+try_read_write_enum!(InertialReferenceMode);
 
-impl From<f64> for InertialReferenceMode {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for InertialReferenceMode {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            1 => InertialReferenceMode::Navigation,
-            2 => InertialReferenceMode::Attitude,
-            _ => InertialReferenceMode::Off,
+            0 => Ok(InertialReferenceMode::Off),
+            1 => Ok(InertialReferenceMode::Navigation),
+            2 => Ok(InertialReferenceMode::Attitude),
+            i => Err(i),
         }
     }
 }
@@ -255,25 +258,31 @@ impl InertialReferenceModeSelector {
 }
 impl SimulationElement for InertialReferenceModeSelector {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.mode = reader.read(&self.mode_id)
+        self.mode = reader.read_discrete_or_fallback(
+            &self.mode_id,
+            "InertialReferenceModeSelector",
+            InertialReferenceMode::Off,
+        );
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum AlignState {
     Off = 0,
     Aligning = 1,
     Aligned = 2,
 }
 
-read_write_enum!(AlignState);
+try_read_write_enum!(AlignState);
 
-impl From<f64> for AlignState {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for AlignState {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            1 => AlignState::Aligning,
-            2 => AlignState::Aligned,
-            _ => AlignState::Off,
+            1 => Ok(AlignState::Aligning),
+            2 => Ok(AlignState::Aligned),
+            i => Err(i),
         }
     }
 }
@@ -464,7 +473,11 @@ impl SimulationElement for AdirsSimulatorData {
         self.baro_correction_1 = reader.read_arinc429(&self.baro_correction_1_id);
         self.baro_correction_2 = reader.read_arinc429(&self.baro_correction_2_id);
         self.is_boarding_started_by_user = reader.read(&self.is_boarding_started_by_user_id);
-        self.boarding_rate = reader.read(&self.boarding_rate_id);
+        self.boarding_rate = reader.read_discrete_or_fallback(
+            &self.boarding_rate_id,
+            "BoardingRate",
+            BoardingRate::Instant,
+        );
     }
 }
 
@@ -602,7 +615,11 @@ impl SimulationElement for AirDataInertialReferenceSystem {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.configured_align_time = reader.read(&self.configured_align_time_id);
+        self.configured_align_time = reader.read_discrete_or_fallback(
+            &self.configured_align_time_id,
+            "AlignTime",
+            AlignTime::Realistic,
+        );
         self.aircraft_preset_quick_mode = reader.read(&self.aircraft_preset_quick_mode_id);
     }
 
@@ -1584,21 +1601,24 @@ impl SimulationElement for AirDataReference {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum AlignTime {
     Realistic = 0,
     Instant = 1,
     Fast = 2,
 }
 
-read_write_enum!(AlignTime);
+try_read_write_enum!(AlignTime);
 
-impl From<f64> for AlignTime {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for AlignTime {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            1 => AlignTime::Instant,
-            2 => AlignTime::Fast,
-            _ => AlignTime::Realistic,
+            0 => Ok(AlignTime::Realistic),
+            1 => Ok(AlignTime::Instant),
+            2 => Ok(AlignTime::Fast),
+            i => Err(i),
         }
     }
 }
@@ -2928,7 +2948,9 @@ mod tests {
         }
 
         fn align_state(&mut self, adiru_number: usize) -> AlignState {
-            self.read_by_name(&AirDataInertialReferenceUnit::state_id(adiru_number))
+            let state: Result<AlignState, _> =
+                self.read_by_name(&AirDataInertialReferenceUnit::state_id(adiru_number));
+            state.unwrap_or(AlignState::Off)
         }
 
         fn remaining_alignment_time(&mut self) -> Duration {
