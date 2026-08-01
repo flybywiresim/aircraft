@@ -124,7 +124,7 @@ class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   private getVrVisibility() {
-    if (this.flightPhase <= 4 && this.vrSpeed >= 0) {
+    if (this.flightPhase <= 4 && this.vrSpeed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
