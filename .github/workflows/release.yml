@@ -73,6 +73,7 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          sudo apt-get update
           sudo apt-get install -y rclone
       - name: Build A32NX
         run: |
@@ -232,6 +233,7 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          sudo apt-get update
           sudo apt-get install -y rclone
       - name: Remove A380X 4K textures
         run: |
@@ -382,6 +384,7 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          sudo apt-get update
           sudo apt-get install -y rclone
       - name: Build A380X
         run: |
