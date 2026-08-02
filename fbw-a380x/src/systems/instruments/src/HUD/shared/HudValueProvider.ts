@@ -379,7 +379,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.IlsGS = 'block';
                 this.elems.IlsLoc = 'block';
                 this.elems.IlsHorizonTrk = 'block';
-                this.elems.syntheticRunwway = 'block';
+                this.elems.syntheticRunwway = 'none';
                 this.elems.windIndicator = 'block';
                 this.elems.QFE = 'block';
                 this.elems.metricAlt = true;
@@ -407,7 +407,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.IlsGS = 'block';
                 this.elems.IlsLoc = 'block';
                 this.elems.IlsHorizonTrk = 'block';
-                this.elems.syntheticRunwway = 'block';
+                this.elems.syntheticRunwway = 'none';
                 this.elems.windIndicator = 'block';
                 this.elems.QFE = 'block';
                 this.elems.metricAlt = true;
