@@ -1439,7 +1439,7 @@ mod acs_controller_tests {
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-            Aircraft, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+            Aircraft, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
             UpdateContext,
         },
     };
@@ -1749,9 +1749,21 @@ mod acs_controller_tests {
     }
     impl SimulationElement for TestFadec {
         fn read(&mut self, reader: &mut SimulatorReader) {
-            self.engine_1_state = reader.read(&self.engine_1_state_id);
-            self.engine_2_state = reader.read(&self.engine_2_state_id);
-            self.engine_mode_selector_position = reader.read(&self.engine_mode_selector_id);
+            self.engine_1_state = reader.read_discrete_or_fallback(
+                &self.engine_1_state_id,
+                "EngineState",
+                EngineState::Off,
+            );
+            self.engine_2_state = reader.read_discrete_or_fallback(
+                &self.engine_2_state_id,
+                "EngineState",
+                EngineState::Off,
+            );
+            self.engine_mode_selector_position = reader.read_discrete_or_fallback(
+                &self.engine_mode_selector_id,
+                "EngineModeSelector",
+                EngineModeSelector::Norm,
+            );
         }
     }
 
