@@ -65,7 +65,7 @@ interface LegacyFmsPageDrawingInterface {
     isResolvedOverride?: (arg0: any) => any,
     onClearOverride?: (arg0: any) => any,
   ): void;
-  removeMessageFromQueue(value: string): void;
+  removeMessageFromQueue(message: TypeIIMessage): void;
   activateMcduScratchpad(): void;
   isSubsystemRequesting(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'): boolean;
   requestUpdate(): void;

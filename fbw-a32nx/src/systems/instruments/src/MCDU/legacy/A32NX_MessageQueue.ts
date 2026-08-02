@@ -1,9 +1,8 @@
-// @ts-strict-ignore
 import { TypeIIMessage } from '../messages/NXSystemMessages';
 import { ScratchpadDataLink } from './A320_Neo_CDU_Scratchpad';
 
 export class A32NX_MessageQueue {
-  private readonly _queue = [];
+  private readonly _queue: TypeIIMessage[] = [];
 
   constructor(private readonly _fmgc: { fmgcScratchpad: ScratchpadDataLink }) {}
 
@@ -20,15 +19,15 @@ export class A32NX_MessageQueue {
     this.updateDisplayedMessage();
   }
 
-  removeMessage(value: string) {
+  removeMessage(message: TypeIIMessage) {
     for (let i = 0; i < this._queue.length; i++) {
-      const message = this._queue[i];
-      if (message.text === value) {
-        message.onClear(this._fmgc);
+      const storedMessage = this._queue[i];
+      if (storedMessage.getMessageId() === message.getMessageId()) {
+        storedMessage.onClear();
         this._queue.splice(i, 1);
         if (i === 0) {
           if (this._fmgc.fmgcScratchpad) {
-            this._fmgc.fmgcScratchpad.removeMessage(value);
+            this._fmgc.fmgcScratchpad.removeMessage(storedMessage.text);
           }
           this.updateDisplayedMessage();
         }
@@ -41,7 +40,7 @@ export class A32NX_MessageQueue {
     this._queue.length = 0;
   }
 
-  updateDisplayedMessage() {
+  updateDisplayedMessage(): void {
     if (this._queue.length > 0) {
       const message = this._queue[0];
       if (message.isResolved(this._fmgc)) {
@@ -57,7 +56,8 @@ export class A32NX_MessageQueue {
 
   _addToQueueOrUpdateQueuePosition(message: TypeIIMessage) {
     for (let i = 0; i < this._queue.length; i++) {
-      if (this._queue[i].text === message.text) {
+      const queueMessage = this._queue[i];
+      if (queueMessage.getMessageId() === message.getMessageId()) {
         if (i !== 0) {
           this._queue.unshift(this._queue[i]);
           this._queue.splice(i + 1, 1);

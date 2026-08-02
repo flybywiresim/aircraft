@@ -61,8 +61,8 @@ export class CDUFuelPredPage {
         );
       } else {
         if (mcdu.trySetZeroFuelWeightZFWCG(value, FlightPlanIndex.Active)) {
-          mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg.text);
-          mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
+          mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg);
+          mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight);
           mcdu._checkWeightSettable = true;
 
           await CDUFuelPredPage.refreshAfterFuelPred(mcdu, FlightPlanIndex.Active);

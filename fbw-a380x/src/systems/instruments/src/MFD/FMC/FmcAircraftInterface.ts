@@ -253,6 +253,8 @@ export class FmcAircraftInterface {
     Arinc429Register.empty().rawWord,
   );
 
+  private readonly trueReference = RegisteredSimVar.createBoolean('L:A32NX_PUSH_TRUE_REF');
+
   constructor(
     private bus: EventBus,
     private fmc: FlightManagementComputer,
@@ -2278,5 +2280,9 @@ export class FmcAircraftInterface {
     } else {
       return this.fcuRightDiscreteWord1Right.get().bitValueOr(11, false);
     }
+  }
+
+  isTrueRefActive(): boolean {
+    return this.trueReference.get();
   }
 }

@@ -223,10 +223,17 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   ): void;
 
   /**
-   * Removes a message from the queue
+   * @deprecated Use removeMessageFromQueueByType instead.
+   * Removes a message from the queue by its text content.
    * @param value {String}
    */
   removeMessageFromQueue(value: string): void;
+
+  /**
+   * Removes a message from the queue by its type
+   * @param message  the message to remove.
+   */
+  removeMessageFromQueueByType(message: TypeIMessage | TypeIIMessage): void;
 
   /**
    * Checks whether a waypoint is currently in use
@@ -307,6 +314,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /** Returns whether inches is selected on the FCU of the associated side */
   inchesSelectedOnFcu(side: EfisSide): boolean;
+
+  /**
+   * Indicates whether the true heading reference has been manually selected by the pilot.
+   */
+  isTrueRefActive(): boolean;
 
   reset(): void;
 
