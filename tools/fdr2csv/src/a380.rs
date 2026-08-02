@@ -1,16 +1,16 @@
 use crate::{
     a380_headers::{
-        ap_laws_output, ap_sm_output, athr_out, base_fac_analog_outputs, base_fac_bus,
-        base_fac_discrete_outputs, base_prim_analog_outputs, base_prim_discrete_outputs,
-        base_prim_out_bus, base_sec_analog_outputs, base_sec_discrete_outputs, base_sec_out_bus,
-        AircraftSpecificData, BaseData, FuelSystemData,
+        ap_laws_output, ap_sm_output, athr_out, base_prim_analog_outputs,
+        base_prim_discrete_outputs, base_prim_out_bus, base_sec_analog_outputs,
+        base_sec_discrete_outputs, base_sec_out_bus, AircraftSpecificData, BaseData,
+        FuelSystemData,
     },
     read_bytes,
 };
 use serde::Serialize;
 use std::io::{prelude::*, Error};
 
-pub const INTERFACE_VERSION: u64 = 3800006;
+pub const INTERFACE_VERSION: u64 = 3800007;
 pub const INTERFACE_MIN_VERSION: u64 = 3800000;
 
 // A single FDR record
@@ -24,8 +24,6 @@ pub struct FdrData {
     sec_1: SecData,
     sec_2: SecData,
     sec_3: SecData,
-    fac_1: FacData,
-    fac_2: FacData,
     ap_sm: ap_sm_output,
     ap_law: ap_laws_output,
     athr: athr_out,
@@ -46,13 +44,6 @@ struct SecData {
     analog_outputs: base_sec_analog_outputs,
 }
 
-#[derive(Serialize, Default)]
-struct FacData {
-    bus_outputs: base_fac_bus,
-    discrete_outputs: base_fac_discrete_outputs,
-    analog_outputs: base_fac_analog_outputs,
-}
-
 // These are helper functions to read in a whole FDR record.
 pub fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
     Ok(FdrData {
@@ -64,8 +55,6 @@ pub fn read_record(reader: &mut impl Read) -> Result<FdrData, Error> {
         sec_1: read_sec(reader)?,
         sec_2: read_sec(reader)?,
         sec_3: read_sec(reader)?,
-        fac_1: read_fac(reader)?,
-        fac_2: read_fac(reader)?,
         ap_sm: read_bytes::<ap_sm_output>(reader)?,
         ap_law: read_bytes::<ap_laws_output>(reader)?,
         athr: read_bytes::<athr_out>(reader)?,
@@ -86,13 +75,5 @@ fn read_sec(reader: &mut impl Read) -> Result<SecData, Error> {
         bus_outputs: read_bytes::<base_sec_out_bus>(reader)?,
         discrete_outputs: read_bytes::<base_sec_discrete_outputs>(reader)?,
         analog_outputs: read_bytes::<base_sec_analog_outputs>(reader)?,
-    })
-}
-
-fn read_fac(reader: &mut impl Read) -> Result<FacData, Error> {
-    Ok(FacData {
-        bus_outputs: read_bytes::<base_fac_bus>(reader)?,
-        discrete_outputs: read_bytes::<base_fac_discrete_outputs>(reader)?,
-        analog_outputs: read_bytes::<base_fac_analog_outputs>(reader)?,
     })
 }

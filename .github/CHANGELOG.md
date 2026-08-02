@@ -61,6 +61,8 @@
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
+1. [FMS] Fix a bug where the flight number was not retained when entering a new FROM/TO - @tracernz (Mike)
 1. [FMS] Added AREA RNP IS and PROCEDURE RNP IS fms messages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Display leg RNP on F-PLN page if present in the navigation database - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Fixed F-PLN page crashing when alternate flightplan contained a hold - @BravoMike99 (bruno_pt99)
