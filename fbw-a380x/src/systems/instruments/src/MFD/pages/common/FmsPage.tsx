@@ -10,10 +10,10 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { AbstractMfdPageProps } from '../../MFD';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { ActivePageTitleBar } from './ActivePageTitleBar';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { MfdSystem } from './MfdUiService';
 import {

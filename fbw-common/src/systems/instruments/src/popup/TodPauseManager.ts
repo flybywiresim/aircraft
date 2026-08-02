@@ -32,13 +32,9 @@ export class TodPauseManager {
     this.isTodPauseVisible.sub((isVisible) => {
       if (isVisible) {
         window.document.addEventListener('keydown', this.handleKeyDown);
-        Coherent.trigger('FOCUS_INPUT_FIELD', 1333, '', '', '', false);
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', true);
       } else {
         window.document.removeEventListener('keydown', this.handleKeyDown);
-
-        Coherent.trigger('UNFOCUS_INPUT_FIELD', 1333);
-
         Coherent.call('TOOLBAR_SET_ACTIVE_PAUSE', false);
       }
     });

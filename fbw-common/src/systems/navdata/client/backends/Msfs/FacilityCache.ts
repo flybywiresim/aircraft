@@ -1,4 +1,4 @@
-// Copyright (c) 2021, 2022, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable camelcase */
@@ -15,8 +15,8 @@ import {
   JSAirportRequestFlags,
 } from './FsTypes';
 import { Waypoint } from '../../../shared';
-import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 import { ErrorLogger } from '../../../shared/types/ErrorLogger';
+import { SharedGlobal, SharedGlobalObjectRef } from '@microsoft/msfs-sdk';
 
 export enum LoadType {
   Airport = 'A',
@@ -50,24 +50,54 @@ export type SearchedFacilityTypeMap = {
   [IcaoSearchFilter.Vors]: JS_FacilityVOR[];
   [IcaoSearchFilter.None]: (JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR)[];
 };
+
+interface SharedFacilityCache {
+  facilities: Map<string, JS_Facility>;
+
+  airwayFixes: Map<string, Waypoint[]>;
+}
+
 export class FacilityCache {
   private static cacheSize = 1000;
 
-  private listener; // TODO type
+  private readonly initPromise: Promise<void>;
 
-  private facilityCache = new Map<string, JS_Facility>();
+  private isInit = false;
 
-  private airwayIcaoCache = new Map<string, Set<string>>();
-
-  private airwayFixCache = new Map<string, Waypoint[]>();
+  private sharedCache?: SharedGlobalObjectRef<SharedFacilityCache>;
 
   constructor(private readonly logError: ErrorLogger) {
-    this.listener = RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
+    const facilityListenerPromise = new Promise<void>((resolve) => {
+      RegisterViewListener('JS_LISTENER_FACILITY', () => resolve(), true);
+    });
+
+    const sharedCachePromise = SharedGlobal.get<SharedFacilityCache>('FBW_FACILITY_CACHE');
+
+    this.initPromise = Promise.all([sharedCachePromise, facilityListenerPromise]).then(([sharedCache]) => {
+      if (sharedCache.isViewOwner) {
+        sharedCache.instance.airwayFixes = new Map();
+        sharedCache.instance.facilities = new Map();
+      }
+      this.sharedCache = sharedCache;
+      this.isInit = true;
+    });
 
     Coherent.on('SendAirport', this.receiveFacility.bind(this));
     Coherent.on('SendIntersection', this.receiveFacility.bind(this));
     Coherent.on('SendNdb', this.receiveFacility.bind(this));
     Coherent.on('SendVor', this.receiveFacility.bind(this));
+  }
+
+  public async getCache(): Promise<SharedFacilityCache> {
+    if (!this.isInit) {
+      await this.initPromise;
+    }
+
+    if (!this.sharedCache || this.sharedCache.isDetached.get()) {
+      throw new Error('Shared cache not available!');
+    }
+
+    return this.sharedCache.instance;
   }
 
   public async getFacilities<T extends LoadType>(
@@ -78,9 +108,11 @@ export class FacilityCache {
     const toFetch = [];
     const fetched = new Map<string, FacilityType<T>>();
 
+    const cache = await this.getCache();
+
     for (const icao of icaos) {
       const key = FacilityCache.key(icao, loadType);
-      const cached = this.facilityCache.get(key);
+      const cached = cache.facilities.get(key);
       if (cached) {
         fetched.set(icao, cached as any as FacilityType<T>);
       } else {
@@ -109,7 +141,7 @@ export class FacilityCache {
           let allSuccess = true;
           successfulIcaos.forEach((icao) => {
             const key = FacilityCache.key(icao, loadType);
-            const facility = this.facilityCache.get(key) as any as FacilityType<T>;
+            const facility = cache.facilities.get(key) as any as FacilityType<T>;
             if (facility) {
               fetched.set(icao, facility);
             } else {
@@ -133,8 +165,10 @@ export class FacilityCache {
     loadType: T,
     timeout = 500,
   ): Promise<FacilityType<T> | undefined> {
+    const cache = await this.getCache();
+
     const key = FacilityCache.key(icao, loadType);
-    const cached = this.facilityCache.get(key);
+    const cached = cache.facilities.get(key);
     if (cached) {
       return cached as any as FacilityType<T>;
     }
@@ -150,7 +184,7 @@ export class FacilityCache {
       const interval = setInterval(() => {
         elapsedTime += 50;
 
-        const facility = this.facilityCache.get(key) as any as FacilityType<T>;
+        const facility = cache.facilities.get(key) as any as FacilityType<T>;
         if (facility) {
           clearInterval(interval);
           resolve(facility);
@@ -165,11 +199,15 @@ export class FacilityCache {
   }
 
   private insert(key: string, facility: JS_Facility): void {
-    if (this.facilityCache.size > FacilityCache.cacheSize - 1) {
-      const oldestKey: string = this.facilityCache.keys().next().value!;
-      this.facilityCache.delete(oldestKey);
+    if (!this.sharedCache || this.sharedCache.isDetached.get()) {
+      throw new Error('Shared facility cache not available!');
     }
-    this.facilityCache.set(key, facility);
+
+    if (this.sharedCache.instance.facilities.size > FacilityCache.cacheSize - 1) {
+      const oldestKey: string = this.sharedCache.instance.facilities.keys().next().value!;
+      this.sharedCache.instance.facilities.delete(oldestKey);
+    }
+    this.sharedCache.instance.facilities.set(key, facility);
   }
 
   static key(icao: string, loadType: LoadType): string {
@@ -195,41 +233,6 @@ export class FacilityCache {
     }
   }
 
-  /**
-   * Fix up airport ICAOs to a format that MSFS2020 can understand and load.
-   * Note: this is **not** required for MSFS2024.
-   * @param airport The airport facility to fix up.
-   */
-  private static fixupAirportRegions(airport: JS_FacilityAirport): void {
-    for (const appr of airport.approaches) {
-      for (const trans of appr.transitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(appr.finalLegs);
-      FacilityCache.fixupLegAirportRegions(appr.missedLegs);
-    }
-
-    for (const sid of airport.departures) {
-      for (const trans of sid.runwayTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(sid.commonLegs);
-      for (const trans of sid.enRouteTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-    }
-
-    for (const star of airport.arrivals) {
-      for (const trans of star.enRouteTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-      FacilityCache.fixupLegAirportRegions(star.commonLegs);
-      for (const trans of star.runwayTransitions) {
-        FacilityCache.fixupLegAirportRegions(trans.legs);
-      }
-    }
-  }
-
   private receiveFacility(facility: JS_Facility): void {
     let loadType: LoadType;
     switch (facility.icao.charAt(0)) {
@@ -250,19 +253,11 @@ export class FacilityCache {
         return;
     }
 
-    if (loadType === LoadType.Intersection) {
-      this.addToAirwayCache(facility as any as JS_FacilityIntersection);
-    }
-
     if (loadType === LoadType.Airport) {
       const dataFlags = (facility as JS_FacilityAirport).loadedDataFlags;
       if (dataFlags !== undefined && (dataFlags & JSAirportRequestFlags.All) !== JSAirportRequestFlags.All) {
         // ignore minimal airports
         return;
-      }
-
-      if (!isMsfs2024() && loadType === LoadType.Airport) {
-        FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
       }
     }
 
@@ -331,21 +326,16 @@ export class FacilityCache {
   }
 
   public getCachedAirwayFixes(databaseID: string): Waypoint[] | undefined {
-    return this.airwayFixCache.get(databaseID);
+    if (!this.sharedCache || this.sharedCache?.isDetached.get()) {
+      return;
+    }
+    return this.sharedCache.instance.airwayFixes.get(databaseID);
   }
 
   public setCachedAirwayFixes(databaseID: string, fixes: Waypoint[]): void {
-    this.airwayFixCache.set(databaseID, fixes);
-  }
-
-  private addToAirwayCache(facility: JS_FacilityIntersection): void {
-    facility.routes.forEach((route) => {
-      let cache = this.airwayIcaoCache.get(route.name);
-      if (!cache) {
-        cache = new Set();
-        this.airwayIcaoCache.set(route.name, cache);
-      }
-      cache.add(facility.icao);
-    });
+    if (!this.sharedCache || this.sharedCache?.isDetached.get()) {
+      return;
+    }
+    this.sharedCache.instance.airwayFixes.set(databaseID, fixes);
   }
 }

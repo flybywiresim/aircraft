@@ -154,8 +154,8 @@ jobs:
           path: ./fbw-a32nx/out/build-modules/
           retention-days: 1
 
-  build_a380x_4k:
-    name: Build A380X (4K)
+  build_a380x:
+    name: Build A380X
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -190,8 +190,6 @@ jobs:
           sudo rm -rf /usr/lib/jvm
           sudo rm -rf /usr/local/sqlpackage
           sudo rm -rf /usr/share/gradle-8.10.2
-          sudo rm -rf /usr/lib/python3
-          sudo rm -rf /usr/lib/python3.10
           sudo rm -rf /usr/lib/mono
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
@@ -221,7 +219,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4 -4k
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
@@ -244,12 +242,28 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
-          name: flybywire-aircraft-a380-842 (4K)
+          name: flybywire-aircraft-a380-842
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
       - name: Upload modules as artifact
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
-          name: build-modules-a380x-4k
+          name: build-modules-a380x
           path: ./fbw-a380x/out/build-modules/
           retention-days: 1
+
+  check_fdr2csv:
+    name: Lint fdr2csv
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Build fdr2csv
+        run: |
+          ./scripts/dev-env/run.sh cargo clippy --manifest-path=/external/tools/fdr2csv/Cargo.toml --all-targets --all-features --keep-going -- -D warnings

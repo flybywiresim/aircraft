@@ -17,18 +17,18 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   CostIndexFormat,
   PaxNbrFormat,
   PercentageFormat,
   TimeHHMMFormat,
   WeightFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+} from '../common/DataEntryFormats';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import {
   maxAltnFuel,
   maxBlockFuel,
@@ -42,12 +42,12 @@ import {
   minZfw,
   minZfwCg,
 } from '@shared/PerformanceConstants';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FmsPage } from '../common/FmsPage';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { getEtaFromUtcOrPresent, hhmmFormatter } from '../../shared/utils';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { CostIndexMode } from '../../FMC/fmgc';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -231,6 +231,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
           this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(loadedfpIndex);
+          this.props.fmcService.master.calculateTakeoffWeight(loadedfpIndex);
           const fp = this.props.flightPlanInterface.get(loadedfpIndex);
           this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
           const pd = this.loadedFlightPlan!.performanceData;
@@ -366,7 +367,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.blockFuel.set(null);
     }
     const pdTaxiFuel = pd?.taxiFuel.get();
-    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null) {
+    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null && !this.taxiAndRouteRsvDisabled.get()) {
       this.taxiFuel.set(pdTaxiFuel * 1000);
     } else {
       this.taxiFuel.set(null);

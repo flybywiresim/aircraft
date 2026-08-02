@@ -205,7 +205,7 @@ export class FbwAircraftSentryClient {
       const manifest = await (await fetch(`/VFS/${config.buildInfoFilePrefix}_build_info.json`)).json();
 
       release = manifest.pretty_release_name;
-    } catch (e) {
+    } catch (_e) {
       console.warn(
         `[SentryClient] Could not load ${config.buildInfoFilePrefix}_build_info.json. Using 'unknown' as release name`,
       );

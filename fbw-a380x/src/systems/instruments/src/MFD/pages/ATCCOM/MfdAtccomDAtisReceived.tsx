@@ -1,15 +1,16 @@
 // Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import './MfdAtccomDAtis.scss';
+
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdAtccomDAtis.scss';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomMfdPageProps } from '../../MFD';
 import { AtccomFooter } from './MfdAtccomFooter';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { AtisType } from '@datalink/common';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentSetting, NXUnits } from '@flybywiresim/fbw-sdk';
+import { usePersistentSetting, NXUnits } from '@flybywiresim/fbw-sdk-react';
 import { PageTitle } from '../Generic/PageTitle';
 import EngineColumn from './elements/EngineColumn';
 

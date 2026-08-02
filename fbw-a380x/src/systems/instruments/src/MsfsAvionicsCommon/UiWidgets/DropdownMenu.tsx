@@ -15,8 +15,8 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { InputField, InteractionMode } from './InputField';
+import { DropdownFieldFormat } from '../../MFD/pages/common/DataEntryFormats';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 interface DropdownMenuProps extends ComponentProps {

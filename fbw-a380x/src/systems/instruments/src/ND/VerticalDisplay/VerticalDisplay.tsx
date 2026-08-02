@@ -24,19 +24,19 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { NDSimvars } from '../NDSimvarPublisher';
 
 import '../style.scss';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
-import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
+import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { FmsSymbolsData } from '../FmsSymbolsPublisher';
+import { NDControlEvents } from '../NDControlEvents';
+import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
-import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { AesuBusEvents } from '../../MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { MfdSurvEvents } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;

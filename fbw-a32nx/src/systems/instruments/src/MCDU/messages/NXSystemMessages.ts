@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 // FIXME move into FMGC
@@ -8,7 +7,7 @@ export class McduMessage {
   public isTypeTwo = false;
 
   constructor(
-    public text,
+    public text: string,
     public isAmber = false,
     public replace = '',
   ) {}
@@ -70,7 +69,6 @@ export const NXSystemMessages = {
   cancelAtisUpdate: new TypeIMessage('CANCEL UPDATE BEFORE'), // FIXME move out of FMS
   checkAltnWind: new TypeIIMessage('CHECK ALTN WIND'),
   checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
-  checkSpeedMode: new TypeIIMessage('CHECK SPEED MODE'),
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
   checkWeight: new TypeIIMessage('CHECK WEIGHT', true),
   comUnavailable: new TypeIMessage('COM UNAVAILABLE'), // FIXME move out of FMS
@@ -104,6 +102,7 @@ export const NXSystemMessages = {
   rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
   selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'), // FIXME move out of FMS (is part of MCDU itself)
   setHoldSpeed: new TypeIIMessage('SET HOLD SPEED'),
+  setManagedSpeed: new TypeIIMessage('SET MANAGED SPEED'),
   spdLimExceeded: new TypeIIMessage('SPD LIM EXCEEDED', true),
   systemBusy: new TypeIMessage('SYSTEM BUSY-TRY LATER'), // FIXME move out of FMS
   toSpeedTooLow: new TypeIIMessage('TO SPEEDS TOO LOW', true),

@@ -19,7 +19,7 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 

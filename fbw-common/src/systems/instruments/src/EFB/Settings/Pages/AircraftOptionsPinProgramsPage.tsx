@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty, usePersistentProperty, usePersistentSetting } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, usePersistentProperty, usePersistentSetting } from '@flybywiresim/fbw-sdk-react';
 import React, { useContext, useState } from 'react';
 import { Link, Route, Switch } from 'react-router-dom';
 import { PageLink, TabRoutes, pathify } from '../../Utils/routing';

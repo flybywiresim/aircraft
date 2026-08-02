@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { AtccomMfdPageProps } from '../../MFD';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 
 export class AtccomFooter extends DisplayComponent<AtccomMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.

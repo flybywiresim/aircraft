@@ -12,7 +12,7 @@ import {
   Units,
   usePersistentProperty,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { useAppSelector, isSimbriefDataLoaded, getMaxPax, getMaxCargo } from '@flybywiresim/flypad';
 import { A380Payload } from './WideBody/A380Payload';
 import { A320Payload } from './NarrowBody/A320Payload';

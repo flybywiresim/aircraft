@@ -18,7 +18,6 @@ import {
   setCabinInfo,
   setFlypadInfo,
   store,
-  TroubleshootingContextProvider,
   useAppDispatch,
   useEventBus,
   useNavigraphAuthInfo,
@@ -35,10 +34,10 @@ import {
   UniversalConfigProvider,
   usePersistentProperty,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { ToastContainer } from 'react-toastify';
 import { OisInternalData } from '../OIT/OisInternalPublisher';
-import { simbriefDataFromFms } from 'instruments/src/OITlegacy/utils';
+import { simbriefDataFromFms } from './utils';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -137,24 +136,22 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
       }}
     >
       <Provider store={store}>
-        <TroubleshootingContextProvider eventBus={eventBus}>
-          <FailuresOrchestratorProvider failures={[]}>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-              <Router>
-                <ModalProvider>
-                  <EventBusContextProvider eventBus={eventBus}>
-                    <NavigraphAuthProvider>
-                      <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        <ToastContainer position="top-center" draggableDirection="y" limit={2} />
-                        <OitEfbPageWrapper eventBus={eventBus} />
-                      </PowerContext.Provider>
-                    </NavigraphAuthProvider>
-                  </EventBusContextProvider>
-                </ModalProvider>
-              </Router>
-            </ErrorBoundary>
-          </FailuresOrchestratorProvider>
-        </TroubleshootingContextProvider>
+        <FailuresOrchestratorProvider failures={[]}>
+          <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+            <Router>
+              <ModalProvider>
+                <EventBusContextProvider eventBus={eventBus}>
+                  <NavigraphAuthProvider>
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                      <ToastContainer position="top-center" draggableDirection="y" limit={2} />
+                      <OitEfbPageWrapper eventBus={eventBus} />
+                    </PowerContext.Provider>
+                  </NavigraphAuthProvider>
+                </EventBusContextProvider>
+              </ModalProvider>
+            </Router>
+          </ErrorBoundary>
+        </FailuresOrchestratorProvider>
       </Provider>
     </AircraftContext.Provider>
   );

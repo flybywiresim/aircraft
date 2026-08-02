@@ -17,9 +17,9 @@ import {
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
-import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
+import { FmcAircraftInterface } from './FmcAircraftInterface';
+import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from './fmgc';
+import { FmcInterface, FmcOperatingModes } from './FmcInterface';
 import {
   a380EfisRangeSettings,
   Airport,
@@ -29,7 +29,6 @@ import {
   Fix,
   FMMessage,
   ISimbriefData,
-  isMsfs2024,
   logTroubleshootingError,
   NXDataStore,
   RegisteredSimVar,
@@ -45,17 +44,17 @@ import {
   NXSystemMessages,
   TypeIIMessage,
   TypeIMessage,
-} from 'instruments/src/MFD/shared/NXSystemMessages';
+} from '../shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { bearingTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { MfdDisplayInterface } from '../MFD';
+import { FmcIndex } from './FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
-import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { MfdUIData } from '../shared/MfdUIData';
+import { ActiveUriInformation } from '../pages/common/MfdUiService';
 import { A380FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A380FlightPlanPerformanceData';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
@@ -65,7 +64,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { VdAltitudeConstraint } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
@@ -152,12 +151,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   private efisInterfaces = {
     L: new EfisInterface(
+      this.bus,
       'L',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,
       A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS,
     ),
     R: new EfisInterface(
+      this.bus,
       'R',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,
@@ -335,7 +336,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
     // one FMC.
-    if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
+    if (this.operatingMode === FmcOperatingModes.Master) {
       this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanInterface);
     }
 
@@ -521,29 +522,35 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
-    const pd = this.flightPlanInterface.get(forPlan).performanceData;
-    if (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan)) {
-      // On ground, engines off
-      // TOW before engine start: TOW = ZFW + BLOCK - TAXI
+    return this.flightPlanInterface.get(forPlan).performanceData.takeoffWeight?.get() ?? null;
+  }
 
+  public calculateTakeoffWeight(forPlan = FlightPlanIndex.Active): void {
+    if (!this.flightPlanInterface.has(forPlan)) {
+      return;
+    }
+    const plan = this.flightPlanInterface.get(forPlan);
+    const pd = plan.performanceData;
+    const isActiveOrCopyOfActive = plan.isActiveOrCopiedFromActive();
+
+    if (isActiveOrCopyOfActive && this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+      return; // frozen at liftoff, don't overwrite
+    }
+
+    let tow: number | null;
+    if (!isActiveOrCopyOfActive || !this.enginesWereStarted.get()) {
+      // Engines off or secondary not copied from active: ZFW + BLOCK - TAXI
       const zfw = pd.zeroFuelWeight.get();
       const blockFuel = pd.blockFuel.get();
       const taxiFuel = pd.taxiFuel.get();
-      if (zfw != null && blockFuel !== null && taxiFuel !== null) {
-        return (zfw + blockFuel - taxiFuel) * 1000;
-      }
-      return null;
+      tow = zfw != null && blockFuel !== null && taxiFuel !== null ? (zfw + blockFuel - taxiFuel) * 1000 : null;
+    } else {
+      // Engines on, preflight: GW - TAXI
+      const gw = this.fmgc.getGrossWeightKg();
+      tow = gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
     }
-    if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
-      // In flight
-      // TOW: TOW = GW
-      return this.fmgc.getGrossWeightKg();
-    }
-    // Preflight, engines on
-    // LW = GW - TRIP - TAXI
-    // TOW after engine start: TOW = GW - TAXI
-    const gw = this.fmgc.getGrossWeightKg();
-    return gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
+
+    pd.takeoffWeight?.set(tow);
   }
 
   public getTripFuel(forPlan = FlightPlanIndex.Active): number | null {
@@ -706,6 +713,11 @@ export class FlightManagementComputer implements FmcInterface {
       return this.#fmgc.data.approachVref.get();
     }
     return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  inchesSelectedOnFcu(side: EfisSide): boolean {
+    return this.acInterface.isInchesSelectedOnFcu(side);
   }
 
   private initSimVars() {
@@ -1201,6 +1213,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
+        this.flightPlanInterface.active.performanceData.takeoffWeight?.set(this.fmgc.getGrossWeightKg());
 
         this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
@@ -1642,6 +1655,7 @@ export class FlightManagementComputer implements FmcInterface {
     const activePlan = this.flightPlanInterface.active;
     activePlan.performanceData.preselectedClimbSpeed.set(null);
     activePlan.performanceData.preselectedCruiseSpeed.set(null);
+    let stepDeleted = false;
 
     // Delete planned/future altitude steps
     this.flightPlanInterface.active.allLegs
@@ -1652,8 +1666,13 @@ export class FlightManagementComputer implements FmcInterface {
       .forEach((l) => {
         if (l.isDiscontinuity === false) {
           l.cruiseStep = undefined;
+          stepDeleted = true;
         }
       });
+
+    if (stepDeleted) {
+      this.addMessageToQueue(NXSystemMessages.stepDeleted);
+    }
 
     // Delete time constraints
     // no-op
@@ -1664,6 +1683,10 @@ export class FlightManagementComputer implements FmcInterface {
 
   public exitEngineOut() {
     // Restore long-term guidance targets
+  }
+
+  public engineOutActive(): boolean {
+    return this.fmgc.data.engineOut.get();
   }
 
   async swapNavDatabase(): Promise<void> {

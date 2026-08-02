@@ -1,21 +1,24 @@
 // @ts-strict-ignore
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
-import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
-import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { getDisplayIndex } from '../MsfsAvionicsCommon/CdsDisplayUnit';
+import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
-import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
-import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
-import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
-import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
+import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { PrimChoiceProvider } from './shared/PrimChoiceProvider';
+import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
+import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
 
 import './style.scss';
 
@@ -60,6 +63,12 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
+  private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
+
+  private readonly primFePublisher = new PrimFeBusPublisher(this.bus);
+
+  private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -85,6 +94,10 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
     this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('FqmsPublisher', this.fqmsPublisher);
+
+    this.backplane.addInstrument('PrimChoiceProvider', this.primChoiceProvider);
+    this.backplane.addPublisher('PrimFePublisher', this.primFePublisher);
+    this.backplane.addPublisher('PrimFctlPublisher', this.primFctlPublisher);
   }
 
   get templateID(): string {

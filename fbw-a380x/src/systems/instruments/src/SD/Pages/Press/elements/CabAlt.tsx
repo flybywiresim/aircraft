@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-import { MathUtils, useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 import { GaugeComponent, GaugeMarkerComponent, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position, ValidRedundantSystem } from '@instruments/common/types';

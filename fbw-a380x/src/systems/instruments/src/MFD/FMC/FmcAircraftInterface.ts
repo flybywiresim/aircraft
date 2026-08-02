@@ -23,22 +23,23 @@ import {
   FmArinc429OutputWord,
   RaBusEvents,
   RegisteredSimVar,
+  EfisSide,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmcl, Vmo, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
-import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { FmgcDataService } from './fmgc';
+import { ADIRS } from '../shared/Adirs';
+import { NXSystemMessages } from '../shared/NXSystemMessages';
 import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { FmsMessageVars } from '../../MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { MfdFmsFplnVertRev } from '../pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdSurvEvents, VdAltitudeConstraint } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FlightManagementComputer, FMS_CYCLE_TIME } from './FlightManagementComputer';
@@ -46,6 +47,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -241,6 +243,15 @@ export class FmcAircraftInterface {
   private readonly speedsManagedAthr = Subject.create<number | null>(null);
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
+
+  private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
+    Arinc429Register.empty().rawWord,
+  );
+  private readonly fcuRightDiscreteWord1Right = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_right'),
+    Arinc429Register.empty().rawWord,
+  );
 
   constructor(
     private bus: EventBus,
@@ -1117,19 +1128,10 @@ export class FmcAircraftInterface {
 
     let Vtap = 0;
     let limitedByVls = false;
-    // VLS protection
+    // Minimum speed protection
     if (this.managedSpeedTarget) {
       const vls = this.speedVls.get();
-      if (this.managedSpeedTarget < vls) {
-        Vtap = vls;
-        limitedByVls = true;
-      }
-    }
-
-    if (!Vtap && this.managedSpeedTarget) {
-      // Overspeed protection and limiting characteristic speed protection
-      const vMax = this.speedVmax.get();
-      const vMin = takeoffGoAround
+      const limitingCharacteristicSpeed = takeoffGoAround
         ? null
         : this.getLimitingCharacteristicSpeed(
             phase === FmgcFlightPhase.Approach ||
@@ -1138,7 +1140,13 @@ export class FmcAircraftInterface {
               this.activeVerticalMode === VerticalMode.ROLL_OUT ||
               this.activeVerticalMode === VerticalMode.LAND,
           );
-      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin ?? 0), vMax - 5);
+      const vMax = this.speedVmax.get();
+      // Select the most limiting characteristic speed between speed target, VLS and current flap configuration. Limit by vmax.
+      Vtap = MathUtils.clamp(this.managedSpeedTarget, limitingCharacteristicSpeed ?? 0, vMax - 5);
+      if (Vtap < vls) {
+        Vtap = vls;
+        limitedByVls = true;
+      }
     }
     this.speedsManagedPfd.set(vPfd);
     this.speedsManagedAthr.set(Vtap);
@@ -1466,7 +1474,7 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
       this.fmgc.data.approachGreenDotSpeed.set(Math.ceil(approachSpeeds.gd));
       this.fmgc.data.approachSlatRetractionSpeed.set(Math.ceil(approachSpeeds.s));
-      this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
+      this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f2));
       this.fmgc.data.approachVapp.set(pd.pilotVapp.get() ?? Math.ceil(approachSpeeds.vapp));
     } else {
       this.fmgc.data.approachVls.set(null);
@@ -2261,6 +2269,14 @@ export class FmcAircraftInterface {
         const finalTime = pd.finalHoldingTime.get();
         pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
       }
+    }
+  }
+
+  isInchesSelectedOnFcu(side: EfisSide): boolean {
+    if (side == 'L') {
+      return this.fcuLeftDiscreteWord1Left.get().bitValueOr(11, false);
+    } else {
+      return this.fcuRightDiscreteWord1Right.get().bitValueOr(11, false);
     }
   }
 }

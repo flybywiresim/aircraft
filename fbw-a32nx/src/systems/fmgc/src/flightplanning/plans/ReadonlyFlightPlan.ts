@@ -59,7 +59,7 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get destinationLeg(): ReadonlyFlightPlanElement | undefined;
 
-  get destinationLegIndex(): number;
+  get destinationLegIndex(): number | null;
 
   readonly availableDestinationRunways: Runway[];
 
@@ -74,6 +74,9 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
 
   get allLegs(): readonly ReadonlyFlightPlanElement[];
+
+  /** Gets the engine out departure legs. */
+  getEngineOutDepartureLegs(): readonly ReadonlyFlightPlanElement[];
 
   get pendingAirways(): ReadonlyPendingAirways | undefined;
 
