@@ -2,10 +2,10 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Ratio, ratio::percent};
 
 use crate::{
-    shared::random_from_range,
+    shared::{random_from_range, DelayedTrueLogicGate},
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, VariableIdentifier, Write, Writer,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 use nalgebra::Vector3;
@@ -674,7 +674,8 @@ pub struct BoardingSounds {
     pax_ambience: bool,
     pax_welcome: bool,
 
-    welcome_timer: Duration,
+    welcome_pending: bool,
+    welcome_delay: DelayedTrueLogicGate,
 }
 impl BoardingSounds {
     // Set a timer for 10 seconds between "Boarding Completed" and "Welcome Onboard"
@@ -692,7 +693,8 @@ impl BoardingSounds {
             pax_complete: false,
             pax_ambience: false,
             pax_welcome: false,
-            welcome_timer: Duration::ZERO,
+            welcome_pending: false,
+            welcome_delay: DelayedTrueLogicGate::new(Self::BOARDING_COMPLETE_WELCOME_DELAY),
         }
     }
 
@@ -722,7 +724,8 @@ impl BoardingSounds {
 
     pub fn play_sound_pax_complete(&mut self, playing: bool) {
         if playing && !self.pax_complete {
-            self.welcome_timer = Duration::from_millis(1);
+            self.welcome_pending = true;
+            self.welcome_delay = DelayedTrueLogicGate::new(Self::BOARDING_COMPLETE_WELCOME_DELAY);
             self.pax_welcome = false;
         }
         self.pax_complete = playing;
@@ -732,13 +735,11 @@ impl BoardingSounds {
         self.pax_ambience = playing;
     }
 
-    pub fn update_welcome(&mut self, delta: Duration) {
-        if self.welcome_timer > Duration::ZERO && !self.pax_welcome {
-            self.welcome_timer += delta;
-            if self.welcome_timer >= Self::BOARDING_COMPLETE_WELCOME_DELAY {
-                self.pax_welcome = true;
-                self.welcome_timer = Duration::ZERO;
-            }
+    pub fn update_welcome(&mut self, context: &UpdateContext) {
+        self.welcome_delay.update(context, self.welcome_pending);
+        if self.welcome_delay.output() {
+            self.pax_welcome = true;
+            self.welcome_pending = false;
         }
     }
 
@@ -982,7 +983,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
     }
 
     // ======================================
-    pub fn update(&mut self, delta_time: Duration) {
+    pub fn update(&mut self, context: &UpdateContext) {
         self.update_pax_ambience();
 
         if !self.gsx_driver.is_enabled() {
@@ -997,7 +998,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 } else {
                     self.real_rate.into()
                 };
-                self.update_time(delta_time);
+                self.update_time(context.delta());
 
                 if self.time().as_millis() > ms_delay {
                     self.reset_time();
@@ -1019,7 +1020,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
             );
         }
 
-        self.boarding_sounds.update_welcome(delta_time);
+        self.boarding_sounds.update_welcome(context);
     }
 }
 impl<const P: usize, const G: usize, const C: usize> SimulationElement for PayloadManager<P, G, C> {
