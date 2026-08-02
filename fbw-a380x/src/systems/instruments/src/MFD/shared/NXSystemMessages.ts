@@ -28,6 +28,7 @@ export class TypeIMessage extends McduMessage {
 
 export class TypeIIMessage extends McduMessage {
   constructor(
+    private readonly id: number,
     text: string,
     isAmber = false,
     replace = '',
@@ -35,7 +36,6 @@ export class TypeIIMessage extends McduMessage {
     public onClear = () => {},
   ) {
     super(text, isAmber, replace);
-
     this.isTypeTwo = true;
   }
 
@@ -51,6 +51,7 @@ export class TypeIIMessage extends McduMessage {
     onClear: (() => void) | undefined = undefined,
   ) {
     return new TypeIIMessage(
+      this.id,
       t ? this.text.replace(this.replace, `${t}`) : this.text,
       this.isAmber,
       this.replace,
@@ -59,8 +60,8 @@ export class TypeIIMessage extends McduMessage {
     );
   }
 
-  getTextExcludingReplace(): string {
-    return this.text.slice(0, this.text.indexOf(this.replace));
+  getMessageId(): number {
+    return this.id;
   }
 }
 
@@ -82,49 +83,48 @@ export class ATCCOMMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
-  areaRnpis: new TypeIIMessage('AREA RNP IS XX.XX', true, 'XX.XX'),
+  areaRnpis: new TypeIIMessage(0, 'AREA RNP IS XX.XX', true, 'XX.XX'),
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
-  crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
-  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
-  checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
-  checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
-  checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
-  checkZfw: new TypeIIMessage('CHECK ZFW', true),
-  comFplnReceivedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
+  crzFlAboveMaxFL: new TypeIIMessage(1, 'CRZ FL ABOVE MAX FL', false),
+  checkMinFuelAtDest: new TypeIIMessage(3, 'CHECK MIN FUEL AT DEST'),
+  checkSpeedMode: new TypeIIMessage(4, 'CHECK SPD MODE'),
+  checkToData: new TypeIIMessage(5, 'CHECK T.O. DATA', true),
+  checkZfw: new TypeIIMessage(6, 'CHECK ZFW', true),
+  comFplnReceivedPendingInsertion: new TypeIIMessage(7, 'COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
-  cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
-  databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
-  destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
-  enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
+  cstrDelUpToWpt: new TypeIIMessage(8, 'CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
+  databaseCodingError: new TypeIIMessage(9, 'DATABASE CODING ERROR'),
+  destEfobBelowMin: new TypeIIMessage(10, 'DEST EFOB BELOW MIN', true),
+  enterDestData: new TypeIIMessage(11, 'ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
-  initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
-  newAccAlt: new TypeIIMessage('NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
-  newCrzAlt: new TypeIIMessage('NEW CRZ ALT: HHHHH', false, 'HHHHH'),
-  newThrRedAlt: new TypeIIMessage('NEW THR RED ALT: HHHHH', false, 'HHHHH'),
+  initializeZfwOrZfwCg: new TypeIIMessage(12, 'INITIALIZE ZFW / ZFWCG', true),
+  newAccAlt: new TypeIIMessage(13, 'NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
+  newCrzAlt: new TypeIIMessage(14, 'NEW CRZ ALT: HHHHH', false, 'HHHHH'),
+  newThrRedAlt: new TypeIIMessage(15, 'NEW THR RED ALT: HHHHH', false, 'HHHHH'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
   notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
-  receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
-  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
-  setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
-  tdReached: new TypeIIMessage('T/D REACHED'),
-  spdLimExceeded: new TypeIIMessage('SPD LIMIT EXCEEDED', true),
-  toSpeedTooLow: new TypeIIMessage('T.O SPEED TOO LOW - CHECK TOW & T.O DATA', true),
-  vToDisagree: new TypeIIMessage('V1/VR/V2 DISAGREE', true),
+  receivedCpnyFplnNotValid: new TypeIIMessage(16, 'RECEIVED COMPANY F-PLN NOT VALID', false),
+  rwyLsDisagree: new TypeIIMessage(17, 'RUNWAY / LS DISAGREE', true),
+  setHoldSpeed: new TypeIIMessage(18, 'SET HOLD SPD'),
+  tdReached: new TypeIIMessage(19, 'T/D REACHED'),
+  spdLimExceeded: new TypeIIMessage(20, 'SPD LIMIT EXCEEDED', true),
+  toSpeedTooLow: new TypeIIMessage(21, 'T.O SPEED TOO LOW - CHECK TOW & T.O DATA', true),
+  vToDisagree: new TypeIIMessage(22, 'V1/VR/V2 DISAGREE', true),
   xxxIsDeselected: new TypeIMessage('XXXX IS DESELECTED', false, 'XXXX'),
-  stepAboveMaxFl: new TypeIIMessage('STEP ABOVE MAX FL'),
-  stepAhead: new TypeIIMessage('STEP AHEAD'),
-  stepDeleted: new TypeIIMessage('STEP DELETED'),
-  tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
-  navprimary: new TypeIIMessage('NAV PRIMARY'),
-  navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
+  stepAboveMaxFl: new TypeIIMessage(23, 'STEP ABOVE MAX FL'),
+  stepAhead: new TypeIIMessage(24, 'STEP AHEAD'),
+  stepDeleted: new TypeIIMessage(25, 'STEP DELETED'),
+  tooSteepPathAhead: new TypeIIMessage(26, 'TOO STEEP PATH AHEAD'),
+  navprimary: new TypeIIMessage(27, 'NAV PRIMARY'),
+  navprimaryLost: new TypeIIMessage(28, 'NAV PRIMARY LOST', true),
   sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
   lrcInUse: new TypeIMessage('LRC MODE IN USE'),
-  lateralDiscontinuityAhead: new TypeIIMessage('LATERAL DISCONTINUITY AHEAD', true),
-  procedureRnpIs: new TypeIIMessage('PROC RNP IS XX.XX', true, 'XX.XX'),
+  lateralDiscontinuityAhead: new TypeIIMessage(29, 'LATERAL DISCONTINUITY AHEAD', true),
+  procedureRnpIs: new TypeIIMessage(30, 'PROC RNP IS XX.XX', true, 'XX.XX'),
 };
 
 export const NXFictionalMessages = {
@@ -149,7 +149,6 @@ export const NXFictionalMessages = {
   noRefWpt: new TypeIMessage('NO REF WAYPOINT'),
   noWptInfos: new TypeIMessage('NO WAYPOINT INFOS'),
   emptyMessage: new TypeIMessage(''),
-  reloadPlaneApply: new TypeIIMessage('RELOAD A/C TO APPLY', true),
   noAcarsConnection: new TypeIMessage('NO ACARS CONNECTION'),
   unknownAtsuMessage: new TypeIMessage('UNKNOWN ATSU MESSAGE'),
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),

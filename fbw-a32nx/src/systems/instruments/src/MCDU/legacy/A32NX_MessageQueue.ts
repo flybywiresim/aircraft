@@ -19,15 +19,15 @@ export class A32NX_MessageQueue {
     this.updateDisplayedMessage();
   }
 
-  removeMessage(value: string) {
+  removeMessage(message: TypeIIMessage) {
     for (let i = 0; i < this._queue.length; i++) {
-      const message = this._queue[i];
-      if (message.text === value || message.getTextIdentifier() === value) {
-        message.onClear();
+      const storedMessage = this._queue[i];
+      if (storedMessage.getMessageId() === message.getMessageId()) {
+        storedMessage.onClear();
         this._queue.splice(i, 1);
         if (i === 0) {
           if (this._fmgc.fmgcScratchpad) {
-            this._fmgc.fmgcScratchpad.removeMessage(value);
+            this._fmgc.fmgcScratchpad.removeMessage(storedMessage.text);
           }
           this.updateDisplayedMessage();
         }
@@ -57,7 +57,7 @@ export class A32NX_MessageQueue {
   _addToQueueOrUpdateQueuePosition(message: TypeIIMessage) {
     for (let i = 0; i < this._queue.length; i++) {
       const queueMessage = this._queue[i];
-      if (queueMessage.text === message.text || queueMessage.getTextIdentifier() === message.getTextIdentifier()) {
+      if (queueMessage.getMessageId() === message.getMessageId()) {
         if (i !== 0) {
           this._queue.unshift(this._queue[i]);
           this._queue.splice(i + 1, 1);

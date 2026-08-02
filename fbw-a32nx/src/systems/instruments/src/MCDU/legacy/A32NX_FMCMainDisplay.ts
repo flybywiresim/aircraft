@@ -362,7 +362,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     undefined,
   ).sub((value) => {
     if (value === undefined) {
-      this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs.text);
+      this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs);
     } else {
       this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(value.toFixed(2)));
     }
@@ -373,7 +373,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     undefined,
   ).sub((value) => {
     if (value === undefined) {
-      this.removeMessageFromQueue(NXSystemMessages.areaRnpIs.text);
+      this.removeMessageFromQueue(NXSystemMessages.areaRnpIs);
     } else {
       this.addMessageToQueue(NXSystemMessages.areaRnpIs.getModifiedMessage(value.toFixed(2)));
     }
@@ -989,7 +989,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private clearCheckSpeedModeMessage() {
     if (this.setManagedSpeedMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
       this.setManagedSpeedMessageActive = false;
-      this.removeMessageFromQueue(NXSystemMessages.setManagedSpeed.text);
+      this.removeMessageFromQueue(NXSystemMessages.setManagedSpeed);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }
@@ -1234,7 +1234,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       if (this.setHoldSpeedMessageActive) {
         this.setHoldSpeedMessageActive = false;
         SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
-        this.removeMessageFromQueue(NXSystemMessages.setHoldSpeed.text);
+        this.removeMessageFromQueue(NXSystemMessages.setHoldSpeed);
       }
 
       const engineOut = this.isEngineOutCondition.get();
@@ -1418,7 +1418,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         cas.value <= speedLimit + 5;
       if (resetLimitExceeded) {
         this.speedLimitExceeded = false;
-        this.removeMessageFromQueue(NXSystemMessages.spdLimExceeded.text);
+        this.removeMessageFromQueue(NXSystemMessages.spdLimExceeded);
       }
     } else if (cas.isNormalOperation() && alt.isNormalOperation()) {
       const setLimitExceeded = alt.value < speedLimitAlt - 150 && cas.value > speedLimit + 10;
@@ -2032,7 +2032,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         (!isClimbVsDescent && stepLevel <= oldCruiseLevel && stepLevel >= newCruiseLevel)
       ) {
         element.cruiseStep = undefined; // TODO call a method on FPS so that we sync this (fms-v2)
-        this.removeMessageFromQueue(NXSystemMessages.stepAhead.text);
+        this.removeMessageFromQueue(NXSystemMessages.stepAhead);
       }
     }
   }
@@ -2131,7 +2131,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.addMessageToQueue(NXSystemMessages.checkWeight);
       this._checkWeightSettable = false;
     } else if (!gwMismatch && !this._checkWeightSettable) {
-      this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
+      this.removeMessageFromQueue(NXSystemMessages.checkWeight);
       this._checkWeightSettable = true;
     }
   }
@@ -2526,7 +2526,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public onUplinkDone(fltplnRecieved: boolean, forPlan: FlightPlanIndex) {
-    this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
+    this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg);
     this.addMessageToQueue(
       forPlan === FlightPlanIndex.Active ? NXSystemMessages.aocActFplnUplink : NXSystemMessages.aocSecFplnUplink,
     );
@@ -2736,7 +2736,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
       SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
 
-      this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
+      this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending);
 
       callback();
     } else {
@@ -2762,7 +2762,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
       SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
 
-      this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
+      this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending);
 
       callback();
     }
@@ -2925,7 +2925,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
+    this.removeMessageFromQueue(NXSystemMessages.checkToData);
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedV1Speed = undefined;
@@ -2949,7 +2949,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
+    this.removeMessageFromQueue(NXSystemMessages.checkToData);
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedVRSpeed = undefined;
@@ -2973,7 +2973,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
+    this.removeMessageFromQueue(NXSystemMessages.checkToData);
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedV2Speed = undefined;
@@ -4587,8 +4587,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * Removes a message from the queue
    * @param value {String}
    */
-  public removeMessageFromQueue(value: string) {
-    this._messageQueue.removeMessage(value);
+  public removeMessageFromQueue(message: TypeIIMessage) {
+    this._messageQueue.removeMessage(message);
   }
 
   public updateMessageQueue() {
@@ -5542,7 +5542,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (zfwDiff !== null && zfwDiff > 5) {
       this.addMessageToQueue(NXSystemMessages.checkWeight);
       const sub = this.flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
-        this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
+        this.removeMessageFromQueue(NXSystemMessages.checkWeight);
         sub.destroy();
       });
     }

@@ -1164,8 +1164,8 @@ export class FlightManagementComputer implements FmcInterface {
     return this.fmsErrors
       .getArray()
       .findIndex((el) =>
-        isTypeIIMessage(message)
-          ? el.messageText.includes(message.getTextExcludingReplace())
+        isTypeIIMessage(message) && isTypeIIMessage(el.message)
+          ? el.message.getMessageId() === message.getMessageId()
           : el.messageText === message.text,
       );
   }
