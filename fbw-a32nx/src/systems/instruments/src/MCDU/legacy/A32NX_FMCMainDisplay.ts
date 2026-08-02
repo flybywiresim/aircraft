@@ -348,11 +348,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
-    Arinc429Register.empty().rawWord,
   );
   private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
-    Arinc429Register.empty().rawWord,
   );
 
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
