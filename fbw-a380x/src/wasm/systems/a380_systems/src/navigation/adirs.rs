@@ -22,7 +22,7 @@ use systems::shared::{
     AdirsDiscreteOutputs, AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses,
 };
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 use uom::si::f64::*;
@@ -417,7 +417,11 @@ impl SimulationElement for A380AdirsElectricalHarness {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.air_data_swtg_knob_position = reader.read(&self.air_data_swtg_knob_id);
+        self.air_data_swtg_knob_position = reader.read_discrete_or_fallback(
+            &self.air_data_swtg_knob_id,
+            "AirDataSwtg",
+            AirDataAttHdgSwitchingKnobPosition::Norm,
+        );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -654,7 +658,11 @@ impl AdiruElectricalHarness for A380AdiruElectricalHarness {
 impl SimulationElement for A380AdiruElectricalHarness {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.ir_discrete_input.ir_off_command = reader.read(&self.ir_off_command_id);
-        let mode: ModeSelectorPosition = reader.read(&self.mode_selector_position_id);
+        let mode: ModeSelectorPosition = reader.read_discrete_or_fallback(
+            &self.mode_selector_position_id,
+            "ModeSelectorPosition",
+            ModeSelectorPosition::Navigation,
+        );
         (
             self.ir_discrete_input.mode_select_m1,
             self.ir_discrete_input.mode_select_m2,
@@ -667,8 +675,16 @@ impl SimulationElement for A380AdiruElectricalHarness {
 
         self.adr_discrete_input.adr_off_command = reader.read(&self.adr_off_command_id);
 
-        self.att_hdg_swtg_knob_position = reader.read(&self.att_hdg_swtg_knob_id);
-        self.air_data_swtg_knob_position = reader.read(&self.air_data_swtg_knob_id);
+        self.att_hdg_swtg_knob_position = reader.read_discrete_or_fallback(
+            &self.att_hdg_swtg_knob_id,
+            "AttHdgSwtg",
+            AirDataAttHdgSwitchingKnobPosition::Norm,
+        );
+        self.air_data_swtg_knob_position = reader.read_discrete_or_fallback(
+            &self.air_data_swtg_knob_id,
+            "AirDataSwtg",
+            AirDataAttHdgSwitchingKnobPosition::Norm,
+        );
 
         self.ir_discrete_input.simulator_fast_align_mode_active =
             reader.read(&self.ir_fast_align_mode_id);

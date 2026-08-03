@@ -20,7 +20,7 @@ enum AlignTime {
     Fast = 2,
 }
 
-read_write_enum!(AlignTime);
+try_read_write_enum!(AlignTime);
 
 impl From<f64> for AlignTime {
     fn from(value: f64) -> Self {

@@ -48,17 +48,19 @@ pub enum AirDataAttHdgSwitchingKnobPosition {
     CaptOn3,
     FoOn3,
 }
-impl From<f64> for AirDataAttHdgSwitchingKnobPosition {
-    fn from(value: f64) -> Self {
-        match value as usize {
-            0 => AirDataAttHdgSwitchingKnobPosition::CaptOn3,
-            1 => AirDataAttHdgSwitchingKnobPosition::Norm,
-            2 => AirDataAttHdgSwitchingKnobPosition::FoOn3,
-            _ => AirDataAttHdgSwitchingKnobPosition::Norm,
+impl TryFrom<f64> for AirDataAttHdgSwitchingKnobPosition {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
+        match value as u8 {
+            0 => Ok(AirDataAttHdgSwitchingKnobPosition::CaptOn3),
+            1 => Ok(AirDataAttHdgSwitchingKnobPosition::Norm),
+            2 => Ok(AirDataAttHdgSwitchingKnobPosition::FoOn3),
+            i => Err(i),
         }
     }
 }
-read_write_enum!(AirDataAttHdgSwitchingKnobPosition);
+try_read_write_enum!(AirDataAttHdgSwitchingKnobPosition);
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum ModeSelectorPosition {
@@ -67,14 +69,17 @@ pub enum ModeSelectorPosition {
     Attitude = 2,
 }
 
-read_write_enum!(ModeSelectorPosition);
+try_read_write_enum!(ModeSelectorPosition);
 
-impl From<f64> for ModeSelectorPosition {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for ModeSelectorPosition {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            1 => ModeSelectorPosition::Navigation,
-            2 => ModeSelectorPosition::Attitude,
-            _ => ModeSelectorPosition::Off,
+            0 => Ok(ModeSelectorPosition::Off),
+            1 => Ok(ModeSelectorPosition::Navigation),
+            2 => Ok(ModeSelectorPosition::Attitude),
+            i => Err(i),
         }
     }
 }

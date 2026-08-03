@@ -52,7 +52,7 @@ pub fn navigation(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
             Variable::named("BOARDING_RATE"),
         ],
         |values| {
-            let boarding_rate = BoardingRate::from(values[1]);
+            let boarding_rate = BoardingRate::try_from(values[1]).unwrap_or(BoardingRate::Real);
             let boarding_started_by_user = to_bool(values[0]);
 
             match boarding_rate {
