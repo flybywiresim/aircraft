@@ -4248,8 +4248,8 @@ export class PseudoFWC {
     this.elecEmerGen12Reset.set(!(this.elecEmerGen1ResetMemoryNode.read() && this.elecEmerGen2ResetMemoryNode.read()));
 
     /* ATA34 - NAV logic */
-    const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
-    const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
+    const dmcLStdBit = this.dmcLeftDiscreteWord350.get().bitValueOr(11, false) && fcu1Healthy;
+    const dmcLQnhBit = this.dmcLeftDiscreteWord350.get().bitValueOr(12, false) && fcu1Healthy;
     const dmcLIsQnh = dmcLQnhBit && !dmcLStdBit;
     const dmcLIsStd = dmcLStdBit && !dmcLQnhBit;
     const dmcLIsQfe = !dmcLQnhBit && !dmcLStdBit && fcu1Healthy;
@@ -4393,14 +4393,15 @@ export class PseudoFWC {
     this.ir3FaultFlipFlop.write(ir3FaultDetected && this.fwcFlightPhase.get() == 2, !ir3FaultDetected);
 
     this.ir3UsedLeft.set(
-      this.dmcLeftDiscreteWord6.get().bitValueOr(11, false) && this.dmcLeftDiscreteWord6.get().bitValueOr(12, false),
+      this.dmcLeftDiscreteWord272.get().bitValueOr(11, false) &&
+        this.dmcLeftDiscreteWord272.get().bitValueOr(12, false),
     );
 
     this.ir3Used.set(
-      (this.dmcLeftDiscreteWord6.get().bitValueOr(11, false) &&
-        this.dmcLeftDiscreteWord6.get().bitValueOr(12, false)) ||
-        (this.dmcRightDiscreteWord6.get().bitValueOr(11, false) &&
-          this.dmcRightDiscreteWord6.get().bitValueOr(12, false)),
+      (this.dmcLeftDiscreteWord272.get().bitValueOr(11, false) &&
+        this.dmcLeftDiscreteWord272.get().bitValueOr(12, false)) ||
+        (this.dmcRightDiscreteWord272.get().bitValueOr(11, false) &&
+          this.dmcRightDiscreteWord272.get().bitValueOr(12, false)),
     );
 
     this.ir1and2FaultActive.set(ir1FaultDetected && ir2FaultDetected);
@@ -4421,10 +4422,12 @@ export class PseudoFWC {
     );
 
     this.adr3UsedLeft.set(
-      this.dmcLeftDiscreteWord6.get().bitValueOr(13, false) && this.dmcLeftDiscreteWord6.get().bitValueOr(14, false),
+      this.dmcLeftDiscreteWord272.get().bitValueOr(13, false) &&
+        this.dmcLeftDiscreteWord272.get().bitValueOr(14, false),
     );
     this.adr3UsedRight.set(
-      this.dmcRightDiscreteWord6.get().bitValueOr(13, false) && this.dmcRightDiscreteWord6.get().bitValueOr(14, false),
+      this.dmcRightDiscreteWord272.get().bitValueOr(13, false) &&
+        this.dmcRightDiscreteWord272.get().bitValueOr(14, false),
     );
 
     const adr1Faulty = this.adr1DiscreteWord1.get().bitValueOr(13, true);
