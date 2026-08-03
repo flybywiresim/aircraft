@@ -12,10 +12,10 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
-use super::{Read, SimulatorReader};
+use super::{Read, Reader, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, VariableIdentifier, Write, Writer},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -56,7 +56,7 @@ impl Attitude {
 pub enum SurfaceTypeMsfs {
     Concrete = 0,
     Grass = 1,
-    Water = 2,
+    WaterFsx = 2,
     GrassBumpy = 3,
     Asphalt = 4,
     ShortGrass = 5,
@@ -78,38 +78,60 @@ pub enum SurfaceTypeMsfs {
     Sand = 21,
     Shale = 22,
     Tarmac = 23,
+    WrightFlyerTrack = 24,
+    Ocean = 26,
+    Water = 27,
+    Pond = 28,
+    Lake = 29,
+    River = 30,
+    WasteWater = 31,
+    Paint = 32,
+    Unknown = 255,
 }
-impl From<f64> for SurfaceTypeMsfs {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for SurfaceTypeMsfs {
+    type Error = u32;
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value.floor() as u32 {
-            0 => SurfaceTypeMsfs::Concrete,
-            1 => SurfaceTypeMsfs::Grass,
-            2 => SurfaceTypeMsfs::Water,
-            3 => SurfaceTypeMsfs::GrassBumpy,
-            4 => SurfaceTypeMsfs::Asphalt,
-            5 => SurfaceTypeMsfs::ShortGrass,
-            6 => SurfaceTypeMsfs::LongGrass,
-            7 => SurfaceTypeMsfs::HardTurf,
-            8 => SurfaceTypeMsfs::Snow,
-            9 => SurfaceTypeMsfs::Ice,
-            10 => SurfaceTypeMsfs::Urban,
-            11 => SurfaceTypeMsfs::Forest,
-            12 => SurfaceTypeMsfs::Dirt,
-            13 => SurfaceTypeMsfs::Coral,
-            14 => SurfaceTypeMsfs::Gravel,
-            15 => SurfaceTypeMsfs::OilTreated,
-            16 => SurfaceTypeMsfs::SteelMats,
-            17 => SurfaceTypeMsfs::Bituminus,
-            18 => SurfaceTypeMsfs::Brick,
-            19 => SurfaceTypeMsfs::Macadam,
-            20 => SurfaceTypeMsfs::Planks,
-            21 => SurfaceTypeMsfs::Sand,
-            22 => SurfaceTypeMsfs::Shale,
-            23 => SurfaceTypeMsfs::Tarmac,
-            _ => SurfaceTypeMsfs::Macadam,
+            0 => Ok(SurfaceTypeMsfs::Concrete),
+            1 => Ok(SurfaceTypeMsfs::Grass),
+            2 => Ok(SurfaceTypeMsfs::WaterFsx),
+            3 => Ok(SurfaceTypeMsfs::GrassBumpy),
+            4 => Ok(SurfaceTypeMsfs::Asphalt),
+            5 => Ok(SurfaceTypeMsfs::ShortGrass),
+            6 => Ok(SurfaceTypeMsfs::LongGrass),
+            7 => Ok(SurfaceTypeMsfs::HardTurf),
+            8 => Ok(SurfaceTypeMsfs::Snow),
+            9 => Ok(SurfaceTypeMsfs::Ice),
+            10 => Ok(SurfaceTypeMsfs::Urban),
+            11 => Ok(SurfaceTypeMsfs::Forest),
+            12 => Ok(SurfaceTypeMsfs::Dirt),
+            13 => Ok(SurfaceTypeMsfs::Coral),
+            14 => Ok(SurfaceTypeMsfs::Gravel),
+            15 => Ok(SurfaceTypeMsfs::OilTreated),
+            16 => Ok(SurfaceTypeMsfs::SteelMats),
+            17 => Ok(SurfaceTypeMsfs::Bituminus),
+            18 => Ok(SurfaceTypeMsfs::Brick),
+            19 => Ok(SurfaceTypeMsfs::Macadam),
+            20 => Ok(SurfaceTypeMsfs::Planks),
+            21 => Ok(SurfaceTypeMsfs::Sand),
+            22 => Ok(SurfaceTypeMsfs::Shale),
+            23 => Ok(SurfaceTypeMsfs::Tarmac),
+            24 => Ok(SurfaceTypeMsfs::WrightFlyerTrack),
+            26 => Ok(SurfaceTypeMsfs::Ocean),
+            27 => Ok(SurfaceTypeMsfs::Water),
+            28 => Ok(SurfaceTypeMsfs::Pond),
+            29 => Ok(SurfaceTypeMsfs::Lake),
+            30 => Ok(SurfaceTypeMsfs::River),
+            31 => Ok(SurfaceTypeMsfs::WasteWater),
+            32 => Ok(SurfaceTypeMsfs::Paint),
+            // Undocumented, but MSFS reports this occasionally
+            255 => Ok(SurfaceTypeMsfs::Unknown),
+            unexpected => Err(unexpected),
         }
     }
 }
+
+try_read_write_enum!(SurfaceTypeMsfs);
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct LocalAcceleration {
@@ -627,8 +649,11 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
-        let surface_read: f64 = reader.read(&self.surface_id);
-        self.surface = surface_read.into();
+        self.surface = reader.read_discrete_or_fallback(
+            &self.surface_id,
+            "SurfaceTypeMsfs",
+            SurfaceTypeMsfs::Macadam,
+        );
 
         self.rotation_accel = Vector3::new(
             AngularAcceleration::new::<radian_per_second_squared>(
