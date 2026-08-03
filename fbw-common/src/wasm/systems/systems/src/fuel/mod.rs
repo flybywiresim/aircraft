@@ -17,14 +17,16 @@ pub enum RefuelRate {
     Fast,
     Instant,
 }
-read_write_enum!(RefuelRate);
-impl From<f64> for RefuelRate {
-    fn from(value: f64) -> Self {
+try_read_write_enum!(RefuelRate);
+impl TryFrom<f64> for RefuelRate {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => RefuelRate::Real,
-            1 => RefuelRate::Fast,
-            2 => RefuelRate::Instant,
-            i => panic!("Cannot convert from {} to RefuelRate.", i),
+            0 => Ok(RefuelRate::Real),
+            1 => Ok(RefuelRate::Fast),
+            2 => Ok(RefuelRate::Instant),
+            i => Err(i),
         }
     }
 }
