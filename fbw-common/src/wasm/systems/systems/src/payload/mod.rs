@@ -725,7 +725,6 @@ impl BoardingSounds {
     pub fn play_sound_pax_complete(&mut self, playing: bool) {
         if playing && !self.pax_complete {
             self.welcome_pending = true;
-            self.welcome_delay = DelayedTrueLogicGate::new(Self::BOARDING_COMPLETE_WELCOME_DELAY);
             self.pax_welcome = false;
         }
         self.pax_complete = playing;
