@@ -20,6 +20,10 @@
 
 !pnpm-workspace.yaml
 
+!AGENTS.md
+!GEMINI.md
+!CLAUDE.md
+
 !igniter.config.mjs
 !jsconfig.json
 
@@ -43,6 +47,7 @@ large-files/node_modules
 /fbw-a32nx/*
 /fbw-a32nx/.env.local
 !/fbw-a32nx/README.md
+!/fbw-a32nx/AGENTS.md
 !/fbw-a32nx/mach.config.js
 !/fbw-a32nx/.env
 !/fbw-a32nx/docs/
@@ -65,6 +70,7 @@ large-files/node_modules
 /fbw-a380x/*
 /fbw-a380x/.env.local
 !/fbw-a380x/README.md
+!/fbw-a380x/AGENTS.md
 !/fbw-a380x/mach.config.js
 !/fbw-a380x/.env
 !/fbw-a380x/docs/
