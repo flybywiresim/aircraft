@@ -415,8 +415,8 @@ impl InertialReferenceRuntime {
             && !adr_own.standard_altitude.is_failure_warning();
         let adr_a_valid = !adr_a.true_airspeed.is_failure_warning()
             && !adr_a.standard_altitude.is_failure_warning();
-        let adr_b_valid = !adr_a.true_airspeed.is_failure_warning()
-            && !adr_a.standard_altitude.is_failure_warning();
+        let adr_b_valid = !adr_b.true_airspeed.is_failure_warning()
+            && !adr_b.standard_altitude.is_failure_warning();
 
         // With AUTO DADS SELECT open, use MANUAL DADS SELECT. If it's open, use ADR input 1, else input 2.
         let selected_adr =
@@ -493,7 +493,7 @@ impl InertialReferenceRuntime {
         let alignment_active = self.active_mode == IrOperationMode::AlignFine
             || self.active_mode == IrOperationMode::AlignCoarse
             || self.active_mode == IrOperationMode::Realign;
-        self.excess_motion_error = self.excess_motion_body_velocity_filter.output().max()
+        self.excess_motion_error = self.excess_motion_body_velocity_filter.output().norm()
             > Self::MAX_ALIGNMENT_VELOCITY_FPS
             && alignment_active
             && !self.excess_motion_inhibit_mtrig.output();
