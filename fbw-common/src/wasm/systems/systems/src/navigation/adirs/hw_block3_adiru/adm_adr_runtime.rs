@@ -689,24 +689,24 @@ impl AdmAirDataReferenceRuntime {
 bitflags! {
     #[derive(Default)]
     pub(super) struct AdrDiscrete1Flags: u32 {
-        const ICING_DETECTOR_HEAT = 1;
-        const PITOT_HEAT = 1 << 1;
-        const ADR_STATUS_FAIL = 1 << 2;
-        const RIGHT_STATIC_HEAT = 1 << 3;
-        const LEFT_STATIC_HEAT = 1 << 4;
-        const TAT_HEAT = 1 << 5;
-        const AOA_1_SENSOR_HEAT = 1 << 6;
-        const AOA_2_SENSOR_HEAT = 1 << 7;
-        const OVERSPEED_WARNING = 1 << 8;
+        const ICING_DETECTOR_HEAT = 1 << 10;
+        const PITOT_HEAT = 1 << 11;
+        const ADR_STATUS_FAIL = 1 << 12;
+        const RIGHT_STATIC_HEAT = 1 << 13;
+        const LEFT_STATIC_HEAT = 1 << 14;
+        const TAT_HEAT = 1 << 15;
+        const AOA_1_SENSOR_HEAT = 1 << 16;
+        const AOA_2_SENSOR_HEAT = 1 << 17;
+        const OVERSPEED_WARNING = 1 << 18;
         // spare bit
-        const AOA_AVERAGE_UNIQUE = 1 << 10;
-        const VMO_MMO_1 = 1 << 11;
-        const VMO_MMO_2 = 1 << 12;
-        const VMO_MMO_3 = 1 << 13;
-        const VMO_MMO_4 = 1 << 14;
-        const ALTERNATE_SSEC_A = 1 << 15;
-        const ALTERNATE_SSEC_B = 1 << 16;
-        const BARO_PORT_A = 1 << 17;
-        const ZERO_MACH_SSEC = 1 << 18;
+        const AOA_AVERAGE_UNIQUE = 1 << 20;
+        const VMO_MMO_1 = 1 << 21;
+        const VMO_MMO_2 = 1 << 22;
+        const VMO_MMO_3 = 1 << 23;
+        const VMO_MMO_4 = 1 << 24;
+        const ALTERNATE_SSEC_A = 1 << 25;
+        const ALTERNATE_SSEC_B = 1 << 26;
+        const BARO_PORT_A = 1 << 27;
+        const ZERO_MACH_SSEC = 1 << 28;
     }
 }

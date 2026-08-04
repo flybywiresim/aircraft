@@ -145,7 +145,7 @@ export class PseudoDmc implements Instrument {
       this.irDiscreteWordOnside.sub(
         (v) =>
           this.dmcDiscreteWord313Onside.setValueSsm(
-            v.value << 10, // The rust words use a different bit numbering convention to JS/C++
+            v.value,
             v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
           ),
         true,
@@ -154,7 +154,7 @@ export class PseudoDmc implements Instrument {
       this.irDiscreteWordBackup.sub(
         (v) =>
           this.dmcDiscreteWord313Backup.setValueSsm(
-            v.value << 10, // The rust words use a different bit numbering convention to JS/C++
+            v.value,
             v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
           ),
         true,
@@ -347,11 +347,11 @@ export class PseudoDmc implements Instrument {
   }
 
   private static mapIrDiscreteToDmc(ir: Arinc429WordData, dmc: Arinc429RegisterSubject): void {
-    dmc.setBitValue(12, ir.bitValue(9));
-    dmc.setBitValue(26, ir.bitValue(16));
-    dmc.setBitValue(27, ir.bitValue(17));
-    dmc.setBitValue(28, ir.bitValue(18));
-    dmc.setBitValue(29, ir.bitValue(1));
+    dmc.setBitValue(12, ir.bitValue(19));
+    dmc.setBitValue(26, ir.bitValue(26));
+    dmc.setBitValue(27, ir.bitValue(27));
+    dmc.setBitValue(28, ir.bitValue(28));
+    dmc.setBitValue(29, ir.bitValue(11));
     dmc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 }

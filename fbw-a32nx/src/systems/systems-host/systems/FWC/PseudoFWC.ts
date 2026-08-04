@@ -3084,9 +3084,9 @@ export class PseudoFWC {
       !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
       !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())
     ) {
-      overspeedWarning ||= adr3Discrete1.bitValueOr(9, false);
+      overspeedWarning ||= adr3Discrete1.bitValueOr(19, false);
     }
-    overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
+    overspeedWarning ||= adr1Discrete1.bitValueOr(19, false) || adr2Discrete1.bitValueOr(19, false);
     this.overspeedWarning.set(overspeedWarning);
 
     this.fac12FaultWarning.set(
