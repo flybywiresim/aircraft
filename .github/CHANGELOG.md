@@ -64,7 +64,7 @@
 1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 1. [FMS] Fix a bug where the flight number was not retained when entering a new FROM/TO - @tracernz (Mike)
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
-1. [EFB] Improve pushback line to be of a consistent length - @heclak (Heclak)
+1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 
 ## 2024.1.0
 
