@@ -40,21 +40,18 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 };
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => {
-  const TARGET_LENGTH = 200;
+  const targetLength = 200;
 
-  // Draw a straight line instead of an arc
   if (!turningRadius || turningRadius === 0) {
     return (
-      <svg width={TARGET_LENGTH * 2} height="2" viewBox={`-${TARGET_LENGTH} -1 ${TARGET_LENGTH * 2} 2`}>
-        <line x1="0" y1="0" x2={TARGET_LENGTH} y2="0" stroke="white" strokeWidth="2" />
+      <svg width={targetLength * 2} height="2" viewBox={`-${targetLength} -1 ${targetLength * 2} 2`}>
+        <line x1="0" y1="0" x2={targetLength} y2="0" stroke="white" strokeWidth="2" />
       </svg>
     );
   }
 
-  const sweepAngle = (TARGET_LENGTH / turningRadius) * (180 / Math.PI);
-
-  // Cap the angle at 180 degrees as a fail-safe for extremely tight (unrealistic) turns
-  const endAngle = Math.min(sweepAngle, 180);
+  const sweepAngle = (targetLength / turningRadius) * (180 / Math.PI);
+  const endAngle = Math.min(sweepAngle, 180); // Cap the angle at 180 degrees for extremely tight turns
 
   return (
     <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
