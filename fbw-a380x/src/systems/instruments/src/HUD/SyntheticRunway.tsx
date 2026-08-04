@@ -105,14 +105,14 @@ export class SyntheticRunway extends DisplayComponent<{
 
   private strToLLA(str: string | null): LatLongAlt {
     if (str !== null) {
-      const arrP = str.match(/(\d+.\d+)/gm);
+      const arrP = str.match(/((-)*(\d+.\d+))/gm);
       if (arrP === null || arrP.length < 2) {
         return new LatLongAlt(0, 0, 0);
       } else {
         const Plat = arrP[0];
         const Plon = arrP[1];
         const Palt = arrP[2];
-        const P = new LatLongAlt(this.filterFloat(Plat), this.filterFloat(Plon), this.filterFloat(Palt));
+        const P = new LatLongAlt(Number(Plat), Number(Plon), Number(Palt));
         return P;
       }
     } else {
@@ -122,13 +122,13 @@ export class SyntheticRunway extends DisplayComponent<{
 
   private strToCoordinates(str: string | null): Coordinates {
     if (str !== null) {
-      const arrP = str.match(/(\d+.\d+)/gm);
+      const arrP = str.match(/((-)*(\d+.\d+))/gm);
       if (arrP === null) {
         return new LatLongAlt(0, 0, 0);
       } else {
         const Plat = arrP[0];
         const Plon = arrP[1];
-        const P = new LatLongAlt(this.filterFloat(Plat), this.filterFloat(Plon));
+        const P = new LatLongAlt(Number(Plat), Number(Plon));
         return P;
       }
     } else {
