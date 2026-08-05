@@ -1,9 +1,9 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { A380AircraftConfig } from './A380AircraftConfig';
 import {
   ArraySubject,
   ConsumerSubject,
@@ -51,7 +51,6 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from '../MFD';
 import { FmcIndex } from './FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from '../shared/MfdUIData';
 import { ActiveUriInformation } from '../pages/common/MfdUiService';
@@ -69,6 +68,8 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { FmsModule } from '@fmgc/modules/FmsModule';
+import { A380X_EfisApproachMessageModule } from './modules/A380xEfisApproachMessageModule';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -98,6 +99,8 @@ export class FlightManagementComputer implements FmcInterface {
     R: 0,
   };
 
+  private readonly modules: FmsModule[] = [];
+
   #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
   get mfdReference() {
@@ -121,10 +124,10 @@ export class FlightManagementComputer implements FmcInterface {
     this._operatingMode = mode;
   }
 
-  #flightPlanService = new FlightPlanService<A380FlightPlanPerformanceData>(
+  flightPlanService = new FlightPlanService<A380FlightPlanPerformanceData>(
     this.bus,
     new A380FlightPlanPerformanceData(),
-    FpmConfigs.A380,
+    A380AircraftConfig,
     this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
   );
 
@@ -135,7 +138,7 @@ export class FlightManagementComputer implements FmcInterface {
   #rpcServer: FlightPlanRpcServer | undefined;
 
   get flightPlanInterface() {
-    return this.#flightPlanService;
+    return this.flightPlanService;
   }
 
   private lastFlightPlanVersion: number | null = null;
@@ -287,6 +290,8 @@ export class FlightManagementComputer implements FmcInterface {
 
   private simBriefOfp: ISimbriefData | null = null;
 
+  public readonly simDuration = 0;
+
   constructor(
     private instance: FmcIndex,
     private _operatingMode: FmcOperatingModes,
@@ -436,6 +441,7 @@ export class FlightManagementComputer implements FmcInterface {
     }, 15000);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
+    this.addModule(new A380X_EfisApproachMessageModule(this.bus));
   }
 
   destroy() {
@@ -444,6 +450,11 @@ export class FlightManagementComputer implements FmcInterface {
     for (const s of this.subs) {
       s.destroy();
     }
+  }
+
+  protected addModule(module: FmsModule) {
+    module.init(this);
+    this.modules.push(module);
   }
 
   public revisedWaypoint(): Fix | undefined {
@@ -788,7 +799,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.fmgc.data.cpnyFplnRequestedForPlan.set(intoPlan);
       await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
         this,
-        this.#flightPlanService,
+        this.flightPlanService,
         intoPlan,
         this.simBriefOfp,
         {
@@ -880,12 +891,12 @@ export class FlightManagementComputer implements FmcInterface {
 
     const zfwDiff = this.computeZfwDiffToSecondary(index);
     const zfwCgDiff = this.computeZfwCgDiffToSecondary(index);
-    const oldDestination = this.#flightPlanService.active?.destinationAirport;
+    const oldDestination = this.flightPlanService.active?.destinationAirport;
 
-    if (this.#flightPlanService.hasActive) {
-      await this.#flightPlanService.activeAndSecondarySwap(index, !this.enginesWereStarted.get());
+    if (this.flightPlanService.hasActive) {
+      await this.flightPlanService.activeAndSecondarySwap(index, !this.enginesWereStarted.get());
     } else {
-      await this.#flightPlanService.secondaryActivate(index, !this.enginesWereStarted.get());
+      await this.flightPlanService.secondaryActivate(index, !this.enginesWereStarted.get());
     }
 
     await this.onSecondaryActivated(zfwDiff, zfwCgDiff, oldDestination);
@@ -900,13 +911,13 @@ export class FlightManagementComputer implements FmcInterface {
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       this.addMessageToQueue(NXSystemMessages.checkToData);
-      const flex = this.#flightPlanService.active?.performanceData.flexTakeoffTemperature.get();
+      const flex = this.flightPlanService.active?.performanceData.flexTakeoffTemperature.get();
       SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex === 0 ? 0.1 : flex ?? 0);
     }
 
     if (zfwDiff !== null && zfwDiff > 5 && zfwCgDiff !== null && zfwCgDiff > 0.5) {
       this.addMessageToQueue(NXSystemMessages.checkZfw);
-      const sub = this.#flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
+      const sub = this.flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
         this.removeMessageFromQueue(NXSystemMessages.checkZfw.text);
         sub.destroy();
       });
@@ -922,16 +933,16 @@ export class FlightManagementComputer implements FmcInterface {
    */
   private async onActiveFlightPlanChanged(): Promise<void> {
     this.hasActiveFlightPlan.set(
-      this.#flightPlanService.hasActive &&
-        this.#flightPlanService.active.originAirport !== undefined &&
-        this.#flightPlanService.active.destinationAirport !== undefined,
+      this.flightPlanService.hasActive &&
+        this.flightPlanService.active.originAirport !== undefined &&
+        this.flightPlanService.active.destinationAirport !== undefined,
     );
 
-    if (this.#flightPlanService.hasActive) {
+    if (this.flightPlanService.hasActive) {
       // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
       this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
-      const flightNumber = this.#flightPlanService.active.flightNumber.get();
+      const flightNumber = this.flightPlanService.active.flightNumber.get();
       if (flightNumber !== null) {
         await this.onActiveFlightNumberChanged(flightNumber);
       }
@@ -944,7 +955,7 @@ export class FlightManagementComputer implements FmcInterface {
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
-    await this.#flightPlanService.setFlightNumber(flightNumber, forPlan);
+    await this.flightPlanService.setFlightNumber(flightNumber, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
       await this.onActiveFlightNumberChanged(flightNumber);
@@ -987,8 +998,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private computeZfwDiffToSecondary(secIndex: number): number | null {
-    const activePlan = this.#flightPlanService.active;
-    const secondaryPlan = this.#flightPlanService.secondary(secIndex);
+    const activePlan = this.flightPlanService.active;
+    const secondaryPlan = this.flightPlanService.secondary(secIndex);
 
     const activeZfw = activePlan.performanceData.zeroFuelWeight.get();
     const secondaryZfw = secondaryPlan.performanceData.zeroFuelWeight.get();
@@ -997,8 +1008,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private computeZfwCgDiffToSecondary(secIndex: number): number | null {
-    const activePlan = this.#flightPlanService.active;
-    const secondaryPlan = this.#flightPlanService.secondary(secIndex);
+    const activePlan = this.flightPlanService.active;
+    const secondaryPlan = this.flightPlanService.secondary(secIndex);
 
     const activeZfwCg = activePlan.performanceData.zeroFuelWeightCenterOfGravity.get();
     const secondaryZfwCg = secondaryPlan.performanceData.zeroFuelWeightCenterOfGravity.get();
@@ -1007,7 +1018,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
-    const plan = this.#flightPlanService.get(forPlan);
+    const plan = this.flightPlanService.get(forPlan);
     if (!plan) {
       return undefined;
     }
@@ -1032,7 +1043,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private checkDestination(oldDestination: string) {
-    const newDestination = this.#flightPlanService.active.destinationAirport?.ident;
+    const newDestination = this.flightPlanService.active.destinationAirport?.ident;
 
     // Enabling alternate or new DEST should sequence out of the GO AROUND phase
     if (newDestination && newDestination !== oldDestination) {
@@ -1215,9 +1226,9 @@ export class FlightManagementComputer implements FmcInterface {
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
         this.flightPlanInterface.active.performanceData.takeoffWeight?.set(this.fmgc.getGrossWeightKg());
 
-        this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
-        this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
-        this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuelPercentage', 0);
+        this.flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
+        this.flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
+        this.flightPlanService.active.setPerformanceData('pilotRouteReserveFuelPercentage', 0);
 
         this.fmgc.data.climbPredictionsReferenceAutomatic.set(
           this.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude,
@@ -1430,6 +1441,9 @@ export class FlightManagementComputer implements FmcInterface {
     const throttledDt = this.fmsUpdateThrottler.canUpdate(dt);
 
     if (throttledDt !== -1) {
+      for (let i = 0; i < this.modules.length; i++) {
+        this.modules[i].onUpdate(throttledDt);
+      }
       this.navigation.update(throttledDt);
       this.loadActiveFlightPlanFuelAndApproachData();
       if (this.flightPlanInterface.hasActive) {
@@ -1492,8 +1506,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.updateEfisPlanCentre(
           this.mfdReference?.uiService.captOrFo === 'FO' ? 'R' : 'L',
           FlightPlanIndex.Active,
-          this.#flightPlanService.active.activeLegIndex,
-          this.#flightPlanService.active.activeLegIndex >= this.#flightPlanService.active.allLegs.length,
+          this.flightPlanService.active.activeLegIndex,
+          this.flightPlanService.active.activeLegIndex >= this.flightPlanService.active.allLegs.length,
         );
       }
 

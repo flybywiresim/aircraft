@@ -1,7 +1,5 @@
 // Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-
-import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { BitFlags, DateTimeFormatter } from '@microsoft/msfs-sdk';
@@ -17,38 +15,6 @@ export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromP
   const secondsEta = fromPresent ? seconds : seconds + SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
   const eta = new Date(secondsEta * 1000);
   return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
-}
-
-const approachTypeNames: Record<ApproachType, string> = {
-  [ApproachType.Ils]: 'ILS',
-  [ApproachType.Gls]: 'GLS',
-  [ApproachType.Igs]: 'IGS',
-  [ApproachType.Loc]: 'LOC',
-  [ApproachType.LocBackcourse]: 'BAC',
-  [ApproachType.Lda]: 'LDA',
-  [ApproachType.Sdf]: 'SDF',
-  [ApproachType.Gps]: 'GPS',
-  [ApproachType.Rnav]: 'RNV',
-  [ApproachType.Vor]: 'VOR',
-  [ApproachType.VorDme]: 'VOR',
-  [ApproachType.Vortac]: 'VOR',
-  [ApproachType.Ndb]: 'NDB',
-  [ApproachType.NdbDme]: 'NDB',
-  [ApproachType.Fms]: 'RNAV',
-  [ApproachType.Mls]: 'MLS', // not actually supported
-  [ApproachType.MlsTypeA]: 'MLS', // not actually supported
-  [ApproachType.MlsTypeBC]: 'MLS', // not actually supported
-  [ApproachType.Tacan]: 'TAC', // not actually supported
-  [ApproachType.Unknown]: '',
-};
-
-export function getApproachName(approach: Approach, withRnpSuffix = true): string {
-  // we don't need to worry about circling approaches as they aren't available, so we can always expect a runway ident
-  // The (RNP) suffix is added RNP-AR approaches, and for RNP-AR missed approaches (even on non-RNAV approaches).
-  const approachSuffix = approach.multipleIndicator ? `-${approach.multipleIndicator}` : '';
-  const arSuffix =
-    withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
-  return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
 
 export const noPositionAvailableText = '--°--.--/---°--.--';

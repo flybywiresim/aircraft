@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FpmConfig } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Airway, AltitudeConstraint, Fix, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { Accessible, BitFlags, EventBus, SimVarValueType, Value } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -23,20 +23,25 @@ import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
 import { FlightPlan } from './plans/FlightPlan';
+import { AircraftConfig } from './AircraftConfigTypes';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  public syncClientID = MathUtils.randomInt32();
+  public readonly syncClientID = MathUtils.randomInt32();
 
-  public batchStack: FlightPlanBatch[] = [];
+  public readonly batchStack: FlightPlanBatch[] = [];
+
+  public readonly useApproachRnpArNaming: Accessible<boolean> = Value.create(false);
+
+  private readonly config: FpmConfig;
 
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
-    private config = FpmConfigs.A320_HONEYWELL_H3,
+    private readonly aircraftConfig: AircraftConfig,
     master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
@@ -46,6 +51,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.syncClientID,
       master,
     );
+    this.useApproachRnpArNaming = Value.create(this.aircraftConfig.fmSymbolConfig.rnpArNaming);
+    this.config = this.aircraftConfig.fpmConfig;
   }
 
   createFlightPlans() {
