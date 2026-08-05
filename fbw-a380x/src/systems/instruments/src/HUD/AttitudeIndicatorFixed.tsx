@@ -19,6 +19,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { FIVE_DEG, HudElems, HudMode, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
+import { FmgcFlightPhase } from '@shared/flightphase';
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
   readonly fcdcData: FcdcValueProvider;
@@ -475,46 +476,47 @@ interface DeclutterIndicatorProps {
 }
 
 export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps> {
-  private declutterMode = 0;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values>();
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
 
-  private textSub = Subject.create('');
-
-  private declutterModeRef = FSComponent.createRef<SVGPathElement>();
-
-  private text: string = '';
-  private handleDecIndState() {
-    if (this.declutterMode == 0) {
-      this.text = 'N';
-      this.declutterModeRef.instance.style.visibility = 'visible';
-    } else if (this.declutterMode == 1) {
-      this.text = 'D';
-      this.declutterModeRef.instance.style.visibility = 'visible';
-    } else if (this.declutterMode == 2) {
-      this.declutterModeRef.instance.style.visibility = 'hidden';
-
-      this.text = '';
-    }
-    this.textSub.set(this.text);
-  }
+  private readonly declutterText = MappedSubject.create(
+    ([decMode, fmgcFlightPhase, hudMode]) => {
+      if (hudMode === HudMode.NORMAL) {
+        if (fmgcFlightPhase === FmgcFlightPhase.Approach) {
+          if (decMode == 0) {
+            return 'N';
+          } else if (decMode == 1) {
+            return 'D';
+          } else if (decMode == 2) {
+            return '';
+          }
+        } else {
+          if (decMode == 0) {
+            return 'N';
+          } else {
+            return 'D';
+          }
+        }
+      } else {
+        return '';
+      }
+    },
+    this.decMode,
+    this.fmgcFlightPhase,
+    this.hudMode,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HudElems>();
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        this.handleDecIndState();
-      });
   }
 
   render(): VNode {
     return (
-      <g ref={this.declutterModeRef} id="DeclutterModeIndicator">
+      <g id="DeclutterModeIndicator">
         <text class="FontMedium  MiddleAlign Green" x="1000" y="900">
-          {this.textSub}
+          {this.declutterText}
         </text>
       </g>
     );
