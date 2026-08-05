@@ -63,6 +63,9 @@
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
 1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 1. [FMS] Fix a bug where the flight number was not retained when entering a new FROM/TO - @tracernz (Mike)
+1. [ADIRS] Add computerized ADIRS simulation - @lukecologne (luke)
+1. [ADIRS] Add basic simulation of air data sensors - @lukecologne (luke)
+1. [ADIRS] Add simulation of ADIRS power supplies - @lukecologne (luke)
 
 ## 2024.1.0
 

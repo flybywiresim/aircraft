@@ -67,14 +67,14 @@ export class CDUIRSMonitor {
       return '';
     }
 
-    if (irMaintenanceWord.bitValueOr(9, false)) {
+    if (irMaintenanceWord.bitValueOr(19, false)) {
       return 'IR FAULT';
     }
-    if (irMaintenanceWord.bitValueOr(13, false)) {
+    if (irMaintenanceWord.bitValueOr(23, false)) {
       return 'EXCESS MOTION';
     }
 
-    if (irMaintenanceWord.bitValueOr(4, false)) {
+    if (irMaintenanceWord.bitValueOr(14, false)) {
       return 'ENTER HEADING';
     }
 
@@ -86,10 +86,20 @@ export class CDUIRSMonitor {
       return 'INVAL';
     }
 
-    if (irMaintenanceWord.bitValue(3)) {
-      const align1Min = irMaintenanceWord.bitValue(16);
-      const align2Min = irMaintenanceWord.bitValue(17);
-      const align4Min = irMaintenanceWord.bitValue(18);
+    if (irMaintenanceWord.bitValue(12)) {
+      return 'ATT';
+    }
+
+    if (irMaintenanceWord.bitValue(13)) {
+      return 'NAV';
+    }
+
+    if (irMaintenanceWord.bitValue(11)) {
+      const align1Min = irMaintenanceWord.bitValue(26);
+      const align2Min = irMaintenanceWord.bitValue(27);
+      const align4Min = irMaintenanceWord.bitValue(28);
+
+      let timeToAlignString: string;
       if (align1Min || align2Min || align4Min) {
         let timeToAlign = 0;
         if (align1Min) {
@@ -101,12 +111,12 @@ export class CDUIRSMonitor {
         if (align4Min) {
           timeToAlign += 4;
         }
-        return 'ALIGN TTN ' + timeToAlign;
+        timeToAlignString = 'TTN ' + timeToAlign;
       } else {
-        return 'NAV';
+        timeToAlignString = '';
       }
-    } else if (irMaintenanceWord.bitValue(2)) {
-      return 'ATT';
+
+      return `ALIGN ${timeToAlignString}`;
     }
 
     return '';

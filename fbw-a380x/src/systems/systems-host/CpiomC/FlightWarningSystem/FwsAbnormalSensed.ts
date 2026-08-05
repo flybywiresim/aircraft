@@ -4058,27 +4058,27 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.irExcessMotion,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
+        this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir3MaintWord.bitValueOr(23, false),
+        !this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir3MaintWord.bitValueOr(23, false),
+        !this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          this.fws.ir3MaintWord.bitValueOr(23, false),
+        this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir3MaintWord.bitValueOr(23, false),
+        this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          this.fws.ir3MaintWord.bitValueOr(23, false),
+        !this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          !this.fws.ir3MaintWord.bitValueOr(23, false),
+        this.fws.ir1MaintWord.bitValueOr(23, false) &&
+          this.fws.ir2MaintWord.bitValueOr(23, false) &&
+          this.fws.ir3MaintWord.bitValueOr(23, false),
       ],
       whichItemsChecked: () => [true, true, true, true, true, true, true],
       failure: 2,
