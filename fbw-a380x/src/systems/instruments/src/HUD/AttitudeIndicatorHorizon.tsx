@@ -511,11 +511,13 @@ class PitchScale extends DisplayComponent<{
   private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
   private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
+  private readonly verticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode').whenChanged(), 0);
+
   private readonly threeDegLineVis = MappedSubject.create(
-    ([ls1btn, ls2btn, decMode, flightPhase]) => {
+    ([ls1btn, ls2btn, decMode, flightPhase, verticalMode]) => {
       if (ls1btn || ls2btn) {
         if (flightPhase === FmgcFlightPhase.Approach) {
-          return 'block';
+          return verticalMode === VerticalMode.FLARE || verticalMode === VerticalMode.ROLL_OUT ? 'none' : 'block';
         } else {
           return decMode === 2 ? 'none' : 'block';
         }
@@ -527,6 +529,7 @@ class PitchScale extends DisplayComponent<{
     this.ls2btn,
     this.decMode,
     this.flightPhase,
+    this.verticalMode,
   );
   private data: LSPath = {
     roll: new Arinc429Word(0),
