@@ -2042,14 +2042,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // Pitch up accel
         test_bed.write_by_name("ROTATION VELOCITY BODY X", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(0., 1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., 1., 0.)
+        );
 
         // Pitch up accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2059,7 +2065,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(0., 1., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., 1., -1.)
+        );
     }
 
     #[test]
@@ -2074,14 +2083,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // Yaw right accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(1., 0., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(1., 0., 0.)
+        );
 
         // Yaw right accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2091,14 +2106,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(1., 0., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(1., 0., -1.)
+        );
 
         // Yaw left accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(-1., 0., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., 0., 0.)
+        );
 
         // Yaw left accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2108,7 +2129,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(-1., 0., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., 0., -1.)
+        );
     }
 
     #[test]
@@ -2123,14 +2147,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel -> Aligned on roll axis we expect no effect
         test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel with velocity -> Aligned on roll axis we expect no effect
         test_bed.write_by_name(
@@ -2140,7 +2170,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
     }
 
     #[test]
@@ -2155,14 +2188,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(right_wing_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel -> expect down accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(0., -1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., -1., 0.)
+        );
 
         // roll right accel with velocity -> Down Force plus centripetal left
         test_bed.write_by_name(
@@ -2172,7 +2211,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        test_bed.query_element(|e| assert_eq!(e.local_accel, Vector3::new(-1., -1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., -1., 0.)
+        );
     }
 }
 

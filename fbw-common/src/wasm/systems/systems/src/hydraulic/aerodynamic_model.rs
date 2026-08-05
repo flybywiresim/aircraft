@@ -450,7 +450,10 @@ mod tests {
 
         let test_bed = test_bed(TestAircraft::new(body, aero_model));
         //   let test_bed = SimulationTestBed::new(|_| TestAircraft::new(body, aero_model));
-        test_bed.query(|a| assert_eq!(a.body_aero_force_magnitude(), Force::new::<newton>(0.)));
+        assert_eq!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(0.)
+        );
     }
 
     #[test]
@@ -480,13 +483,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
-        test_bed.query(|a| {
-            assert_le!(
-                a.body_aero_force_forward_value(),
-                Force::new::<newton>(-50.)
-            )
-        });
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(50.)
+        );
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-50.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_up_value())
         ));
@@ -507,14 +511,22 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(10.)
+        );
 
         // Drag force backward
-        test_bed
-            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-2.)
+        );
 
         // Lift force upward
-        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(10.)));
+        assert_gt!(
+            test_bed.query(|a| a.body_aero_force_up_value()),
+            Force::new::<newton>(10.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -532,14 +544,22 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(10.)
+        );
 
         // Drag force backward
-        test_bed
-            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-2.)
+        );
 
         // Lift force upward
-        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(10.)));
+        assert_gt!(
+            test_bed.query(|a| a.body_aero_force_up_value()),
+            Force::new::<newton>(10.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -557,14 +577,22 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(10.)
+        );
 
         // Drag force backward
-        test_bed
-            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-2.)
+        );
 
         // Lift force downward
-        test_bed.query(|a| assert_lt!(a.body_aero_force_up_value(), Force::new::<newton>(-10.)));
+        assert_lt!(
+            test_bed.query(|a| a.body_aero_force_up_value()),
+            Force::new::<newton>(-10.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -581,14 +609,18 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
-        test_bed.query(|a| {
-            assert_le!(
-                a.body_aero_force_forward_value(),
-                Force::new::<newton>(-50.)
-            )
-        });
-        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(50.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(50.)
+        );
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-50.)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_aero_force_up_value()),
+            Force::new::<newton>(50.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -605,14 +637,18 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
-        test_bed.query(|a| {
-            assert_le!(
-                a.body_aero_force_forward_value(),
-                Force::new::<newton>(-50.)
-            )
-        });
-        test_bed.query(|a| assert_lt!(a.body_aero_force_up_value(), Force::new::<newton>(-50.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_magnitude()),
+            Force::new::<newton>(50.)
+        );
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(-50.)
+        );
+        assert_lt!(
+            test_bed.query(|a| a.body_aero_force_up_value()),
+            Force::new::<newton>(-50.)
+        );
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -646,7 +682,10 @@ mod tests {
 
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_forward_value())));
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_up_value())));
-        test_bed.query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(50.)));
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(50.)
+        );
     }
 
     #[test]
@@ -778,13 +817,14 @@ mod tests {
         test_bed.run_without_delta();
 
         // Less drag
-        test_bed.query(|a| assert_gt!(a.body_aero_force_forward_value(), long_force,));
-        test_bed.query(|a| {
-            assert_lt!(
-                a.body_aero_force_forward_value(),
-                Force::new::<newton>(250.),
-            )
-        });
+        assert_gt!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            long_force,
+        );
+        assert_lt!(
+            test_bed.query(|a| a.body_aero_force_forward_value()),
+            Force::new::<newton>(250.),
+        );
     }
 
     #[test]
@@ -820,9 +860,14 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear not pushed right
-        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(300.)));
-        test_bed
-            .query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-300.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(300.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(-300.)
+        );
     }
 
     #[test]
@@ -852,8 +897,14 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear door not pushed left
-        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(50.)));
-        test_bed.query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-50.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(50.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(-50.)
+        );
     }
 
     #[test]
@@ -889,9 +940,14 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear not pushed left
-        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(300.)));
-        test_bed
-            .query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-300.)));
+        assert_le!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(300.)
+        );
+        assert_ge!(
+            test_bed.query(|a| a.body_aero_force_right_value()),
+            Force::new::<newton>(-300.)
+        );
     }
 
     #[test]

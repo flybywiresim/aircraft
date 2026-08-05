@@ -1348,8 +1348,9 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(10));
 
         assert!(test_bed.query(|a| a.door_assembly.is_locked()));
-        assert!(
-            test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
+        assert_eq!(
+            test_bed.query(|a| a.door_assembly.position_normalized()),
+            Ratio::new::<ratio>(0.)
         );
     }
 
@@ -1367,8 +1368,9 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(10));
 
-        assert!(
-            test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
+        assert_eq!(
+            test_bed.query(|a| a.door_assembly.position_normalized()),
+            Ratio::new::<ratio>(0.)
         );
 
         assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));

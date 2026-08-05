@@ -913,9 +913,18 @@ mod tests {
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
 
-        test_bed.query_element(|e| assert_eq!(e.accumulator_total_volume(), init_max_vol));
-        test_bed.query_element(|e| assert_eq!(e.accumulator_fluid_volume(), Volume::default()));
-        test_bed.query_element(|e| assert_eq!(e.accumulator_gas_volume(), init_max_vol));
+        assert_eq!(
+            test_bed.query_element(|e| e.accumulator_total_volume()),
+            init_max_vol
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.accumulator_fluid_volume()),
+            Volume::default()
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.accumulator_gas_volume()),
+            init_max_vol
+        );
     }
 
     #[test]
@@ -940,9 +949,18 @@ mod tests {
         assert!(test_bed.query_element(
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
-        test_bed.query_element(|e| assert_eq!(e.accumulator_total_volume(), init_max_vol));
-        test_bed.query_element(|e| assert_eq!(e.accumulator_fluid_volume(), init_max_vol / 2.0));
-        test_bed.query_element(|e| assert_lt!(e.accumulator_gas_volume(), init_max_vol));
+        assert_eq!(
+            test_bed.query_element(|e| e.accumulator_total_volume()),
+            init_max_vol
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.accumulator_fluid_volume()),
+            init_max_vol / 2.0
+        );
+        assert_lt!(
+            test_bed.query_element(|e| e.accumulator_gas_volume()),
+            init_max_vol
+        );
     }
 
     #[test]

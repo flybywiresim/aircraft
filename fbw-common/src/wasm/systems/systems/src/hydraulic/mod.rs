@@ -3357,8 +3357,14 @@ mod tests {
             LeakMeasurementValve::new(ElectricalBusType::DirectCurrentEssential)
         }));
 
-        test_bed.query_element(|e| assert_eq!(e.downstream_pressure, Pressure::new::<psi>(0.)));
-        test_bed.query_element(|e| assert_eq!(e.upstream_pressure, Pressure::new::<psi>(0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.downstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.upstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
@@ -3367,8 +3373,14 @@ mod tests {
             PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
-        test_bed.query_element(|e| assert_eq!(e.downstream_pressure(), Pressure::new::<psi>(0.)));
-        test_bed.query_element(|e| assert_eq!(e.upstream_pressure, Pressure::new::<psi>(0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(0.)
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.upstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
@@ -3383,8 +3395,10 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        test_bed
-            .query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(2800.)));
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(2800.)
+        );
     }
 
     #[test]
@@ -3399,9 +3413,14 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        test_bed
-            .query_element(|e| assert_le!(e.downstream_pressure(), Pressure::new::<psi>(1500.)));
-        test_bed.query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(500.)));
+        assert_le!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(1500.)
+        );
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(500.)
+        );
     }
 
     #[test]
@@ -3416,8 +3435,14 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        test_bed.query_element(|e| assert_le!(e.downstream_pressure(), Pressure::new::<psi>(50.)));
-        test_bed.query_element(|e| assert_ge!(e.downstream_pressure(), Pressure::new::<psi>(0.)));
+        assert_le!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(50.)
+        );
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
