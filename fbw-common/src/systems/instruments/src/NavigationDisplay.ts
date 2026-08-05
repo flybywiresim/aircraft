@@ -217,4 +217,5 @@ export interface HUDSyntheticRunway {
   width: number | null;
   cornerCoordinates: LatLongAlt[];
   centerlineCoordinates: LatLongAlt[];
+  papiCoordinates: LatLongAlt[];
 }

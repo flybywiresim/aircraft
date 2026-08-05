@@ -135,6 +135,10 @@ export class FmcAircraftInterface {
   private readonly srwyP7 = Subject.create<string | null>('');
   private readonly srwyP8 = Subject.create<string | null>('');
   private readonly srwyP9 = Subject.create<string | null>('');
+  private readonly srwyPl1 = Subject.create<string | null>('');
+  private readonly srwyPl2 = Subject.create<string | null>('');
+  private readonly srwyPl3 = Subject.create<string | null>('');
+  private readonly srwyPl4 = Subject.create<string | null>('');
 
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
@@ -418,6 +422,10 @@ export class FmcAircraftInterface {
       this.srwyP7.sub((v) => pub.pub('srwyP7', v, true), true),
       this.srwyP8.sub((v) => pub.pub('srwyP8', v, true), true),
       this.srwyP9.sub((v) => pub.pub('srwyP9', v, true), true),
+      this.srwyPl1.sub((v) => pub.pub('srwyPl1', v, true), true),
+      this.srwyPl2.sub((v) => pub.pub('srwyPl2', v, true), true),
+      this.srwyPl3.sub((v) => pub.pub('srwyPl3', v, true), true),
+      this.srwyPl4.sub((v) => pub.pub('srwyPl4', v, true), true),
     );
 
     // Check for STEP DELETED message
@@ -761,6 +769,7 @@ export class FmcAircraftInterface {
         );
         const cornerCoor: LatLongAlt[] = [];
         const centerLineCoords: LatLongAlt[] = [];
+        const papiCoords: LatLongAlt[] = [];
 
         const p1 = Avionics.Utils.bearingDistanceToCoordinates(
           runway.bearing - 90,
@@ -816,6 +825,49 @@ export class FmcAircraftInterface {
         p9.alt = runway.thresholdCrossingHeight; //in feet
         centerLineCoords.push(p9);
 
+        //aiming point 311 meters (1020ft) from threshold
+
+        const papiLine = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing,
+          311 / 1852, //meters to NM
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
+        );
+
+        const pl1 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          (runway.width / 2 + 50) / 1852, //1852: nautical miles to meters
+          papiLine.lat,
+          papiLine.long,
+        );
+        pl1.alt = runway.thresholdCrossingHeight - 1020 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
+
+        const pl2 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          runway.width / 2 / 1852, //1852: nautical miles to meters
+          papiLine.lat,
+          papiLine.long,
+        );
+        pl2.alt = pl1.alt;
+
+        const pl3 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          (runway.width / 2 + 50) / 1852, //1852: nautical miles to meters
+          papiLine.lat,
+          papiLine.long,
+        );
+        pl3.alt = runway.thresholdCrossingHeight - 1020 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
+
+        const pl4 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          runway.width / 2 / 1852, //1852: nautical miles to meters
+          papiLine.lat,
+          papiLine.long,
+        );
+        pl4.alt = pl1.alt;
+
+        papiCoords.push(pl1, pl2, pl3, pl4);
+
         this.gradient.set(runway.gradient);
         this.location.set(runway.location.lat.toFixed(6) + '#' + runway.location.long.toFixed(6));
         this.direction.set((runway as any).bearing);
@@ -843,6 +895,11 @@ export class FmcAircraftInterface {
         this.srwyP7.set(p7.lat.toFixed(6) + '#' + p7.long.toFixed(6) + '#' + p7.alt.toFixed(6));
         this.srwyP8.set(p8.lat.toFixed(6) + '#' + p8.long.toFixed(6) + '#' + p8.alt.toFixed(6));
         this.srwyP9.set(p9.lat.toFixed(6) + '#' + p9.long.toFixed(6) + '#' + p9.alt.toFixed(6));
+
+        this.srwyPl1.set(pl1.lat.toFixed(6) + '#' + pl1.long.toFixed(6) + '#' + pl1.alt.toFixed(6));
+        this.srwyPl2.set(pl2.lat.toFixed(6) + '#' + pl2.long.toFixed(6) + '#' + pl2.alt.toFixed(6));
+        this.srwyPl3.set(pl3.lat.toFixed(6) + '#' + pl3.long.toFixed(6) + '#' + pl3.alt.toFixed(6));
+        this.srwyPl4.set(pl4.lat.toFixed(6) + '#' + pl4.long.toFixed(6) + '#' + pl4.alt.toFixed(6));
       }
     }
   }

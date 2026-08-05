@@ -59,6 +59,10 @@ export interface BaseFmsData {
   srwyP7: string | null;
   srwyP8: string | null;
   srwyP9: string | null;
+  srwyPl1: string | null;
+  srwyPl2: string | null;
+  srwyPl3: string | null;
+  srwyPl4: string | null;
 }
 
 type IndexedTopics = 'fmZeroFuelWeight' | 'fmZeroFuelWeightCg' | 'fmLandingElevation';

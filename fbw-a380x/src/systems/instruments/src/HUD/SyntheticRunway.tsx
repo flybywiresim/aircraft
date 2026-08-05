@@ -12,6 +12,7 @@ import {
   MappedSubject,
   ConsumerSubject,
   Subscription,
+  Subject,
 } from '@microsoft/msfs-sdk';
 import {
   Arinc429ConsumerSubject,
@@ -23,7 +24,7 @@ import {
 import { getSmallestAngle, HudElems, MdaMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
-import { Coordinates } from 'msfs-geo';
+import { Coordinates, DegToRad } from 'msfs-geo';
 export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
   filteredRadioAlt: Subscribable<number>;
@@ -32,7 +33,8 @@ export class SyntheticRunway extends DisplayComponent<{
   private readonly sub = this.props.bus.getSubscriber<
     HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems & FmsData
   >();
-
+  private dirLeftPapi = Subject.create(0);
+  private dirRightPapi = Subject.create(0);
   private data: HUDSyntheticRunway = {
     gradient: 0,
     location: { lat: 0, long: 0 },
@@ -47,6 +49,7 @@ export class SyntheticRunway extends DisplayComponent<{
     width: 0,
     cornerCoordinates: [],
     centerlineCoordinates: [],
+    papiCoordinates: [],
   };
 
   private definedData = false;
@@ -58,9 +61,11 @@ export class SyntheticRunway extends DisplayComponent<{
   private landingRunway = '0000';
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
+  private papiLinePathRefs: NodeReference<SVGTextElement>[] = [];
 
   private JKCoords: LatLongAlt[] = [];
   private centerLineCoords: LatLongAlt[] = [];
+  private papiCoords: LatLongAlt[] = [];
   private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
   private data2?: HUDSyntheticRunway;
   /** bit 29 is NO DH selection */
@@ -97,6 +102,13 @@ export class SyntheticRunway extends DisplayComponent<{
   private readonly srwyP7 = ConsumerSubject.create(this.sub.on('srwyP7').whenChanged(), '');
   private readonly srwyP8 = ConsumerSubject.create(this.sub.on('srwyP8').whenChanged(), '');
   private readonly srwyP9 = ConsumerSubject.create(this.sub.on('srwyP9').whenChanged(), '');
+  private readonly srwyPl1 = ConsumerSubject.create(this.sub.on('srwyPl1').whenChanged(), '');
+  private readonly srwyPl2 = ConsumerSubject.create(this.sub.on('srwyPl2').whenChanged(), '');
+  private readonly srwyPl3 = ConsumerSubject.create(this.sub.on('srwyPl3').whenChanged(), '');
+  private readonly srwyPl4 = ConsumerSubject.create(this.sub.on('srwyPl4').whenChanged(), '');
+
+  private readonly dme = ConsumerSubject.create(this.sub.on('dme').whenChanged(), 0);
+  private readonly hasDme = ConsumerSubject.create(this.sub.on('hasDme').whenChanged(), false);
 
   private filterFloat = function (value: any) {
     if (/^(-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) return Number(value);
@@ -135,6 +147,23 @@ export class SyntheticRunway extends DisplayComponent<{
       return new LatLongAlt(0, 0, 0);
     }
   }
+
+  private readonly papiLineVis = MappedSubject.create(([hasDme]) => {
+    return hasDme ? 'block' : 'none';
+  }, this.hasDme);
+
+  private readonly papiLineLength = MappedSubject.create(
+    ([dme, hasDme]) => {
+      if (hasDme) {
+        const len = Math.min(Number(dme) * 1852 * Math.tan(DegToRad(0.5)), 150);
+        return len > 15 ? len : len / 2;
+      } else {
+        return Number(50);
+      }
+    },
+    this.dme,
+    this.hasDme,
+  );
 
   private readonly mdaDhMode = MappedSubject.create(
     ([noDh, dh, mda]) => {
@@ -194,6 +223,10 @@ export class SyntheticRunway extends DisplayComponent<{
       srwyP7,
       srwyP8,
       srwyP9,
+      srwyPl1,
+      srwyPl2,
+      srwyPl3,
+      srwyPl4,
     ]) => {
       this.data.gradient = gradient;
       this.data.location = this.strToCoordinates(location) as Coordinates;
@@ -216,6 +249,10 @@ export class SyntheticRunway extends DisplayComponent<{
       this.data.centerlineCoordinates[2] = this.strToLLA(srwyP7);
       this.data.centerlineCoordinates[3] = this.strToLLA(srwyP8);
       this.data.centerlineCoordinates[4] = this.strToLLA(srwyP9);
+      this.data.papiCoordinates[0] = this.strToLLA(srwyPl1);
+      this.data.papiCoordinates[1] = this.strToLLA(srwyPl2);
+      this.data.papiCoordinates[2] = this.strToLLA(srwyPl3);
+      this.data.papiCoordinates[3] = this.strToLLA(srwyPl4);
 
       const eps = 0.001;
       if (
@@ -263,6 +300,10 @@ export class SyntheticRunway extends DisplayComponent<{
     this.srwyP7,
     this.srwyP8,
     this.srwyP9,
+    this.srwyPl1,
+    this.srwyPl2,
+    this.srwyPl3,
+    this.srwyPl4,
   );
 
   private readonly mdaDhValue = MappedSubject.create(
@@ -440,18 +481,38 @@ export class SyntheticRunway extends DisplayComponent<{
       this.centerLineCoords[3] = this.data2.centerlineCoordinates[3];
       this.centerLineCoords[4] = this.data2.centerlineCoordinates[4];
 
+      this.papiCoords[1] = this.data2.papiCoordinates[1];
+      this.papiCoords[0] = this.DestFromPointCoordsBearingDistance(
+        Number(this.data.direction) - 90,
+        this.papiLineLength.get(),
+        this.papiCoords[1].lat,
+        this.papiCoords[1].long,
+      );
+
+      this.papiCoords[3] = this.data2.papiCoordinates[3];
+      this.papiCoords[2] = this.DestFromPointCoordsBearingDistance(
+        Number(this.data.direction) + 90,
+        this.papiLineLength.get(),
+        this.papiCoords[3].lat,
+        this.papiCoords[3].long,
+      );
+      // //extended centerline   //1852: nautical miles to meters
+
       this.JKCoords[0].alt = this.JKCoords[0].alt - this.threshHeighAbvGnd;
       this.JKCoords[1].alt = this.JKCoords[1].alt - this.threshHeighAbvGnd;
       this.JKCoords[2].alt = this.JKCoords[2].alt - this.threshHeighAbvGnd;
       this.JKCoords[3].alt = this.JKCoords[3].alt - this.threshHeighAbvGnd;
-
-      // //extended centerline   //1852: nautical miles to meters
 
       this.centerLineCoords[0].alt = this.centerLineCoords[0].alt - this.threshHeighAbvGnd;
       this.centerLineCoords[1].alt = this.centerLineCoords[1].alt - this.threshHeighAbvGnd;
       this.centerLineCoords[2].alt = this.centerLineCoords[2].alt - this.threshHeighAbvGnd;
       this.centerLineCoords[3].alt = this.centerLineCoords[3].alt - this.threshHeighAbvGnd;
       this.centerLineCoords[4].alt = this.centerLineCoords[4].alt - this.threshHeighAbvGnd;
+
+      this.papiCoords[0].alt = this.data2.papiCoordinates[0].alt - this.threshHeighAbvGnd;
+      this.papiCoords[1].alt = this.data2.papiCoordinates[1].alt - this.threshHeighAbvGnd;
+      this.papiCoords[2].alt = this.data2.papiCoordinates[2].alt - this.threshHeighAbvGnd;
+      this.papiCoords[3].alt = this.data2.papiCoordinates[3].alt - this.threshHeighAbvGnd;
     }
   }
 
@@ -505,6 +566,32 @@ export class SyntheticRunway extends DisplayComponent<{
         'p6 alt: ' + this.centerLineCoords[1].alt,
       );
     }
+    // papi line calcs
+    if (this.data2 !== undefined) {
+      if (this.papiLineLength.get() > 15) {
+        this.dirLeftPapi.set((Number(this.data2.direction) + 90 + 180) % 360);
+        this.dirRightPapi.set((Number(this.data2.direction) - 90 + 180) % 360);
+      } else {
+        this.dirLeftPapi.set((Number(this.data2.direction) - 90 + 180) % 360);
+        this.dirRightPapi.set((Number(this.data2.direction) + 90 + 180) % 360);
+      }
+
+      this.papiCoords[0] = this.DestFromPointCoordsBearingDistance(
+        this.dirLeftPapi.get(),
+        this.papiLineLength.get(),
+        this.data2.papiCoordinates[1].lat,
+        this.data2.papiCoordinates[1].long,
+      );
+      this.papiCoords[0].alt = this.data2.papiCoordinates[0].alt - this.threshHeighAbvGnd;
+
+      this.papiCoords[2] = this.DestFromPointCoordsBearingDistance(
+        this.dirRightPapi.get(),
+        this.papiLineLength.get(),
+        this.data2.papiCoordinates[3].lat,
+        this.data2.papiCoordinates[3].long,
+      );
+      this.papiCoords[2].alt = this.data2.papiCoordinates[2].alt - this.threshHeighAbvGnd;
+    }
 
     if (this.JKCoords.length === 4) {
       for (let i = 0; i < 4; i++) {
@@ -516,6 +603,8 @@ export class SyntheticRunway extends DisplayComponent<{
           this.drawPath(this.centerLineCoords[i], this.centerLineCoords[i + 1]),
         );
       }
+      this.papiLinePathRefs[0].instance.setAttribute('d', this.drawPath(this.papiCoords[0], this.papiCoords[1]));
+      this.papiLinePathRefs[1].instance.setAttribute('d', this.drawPath(this.papiCoords[2], this.papiCoords[3]));
     } else {
       return;
     }
@@ -595,6 +684,11 @@ export class SyntheticRunway extends DisplayComponent<{
       const centerlineRef = FSComponent.createRef<SVGTextElement>();
       res.push(<path class="SmallStroke Green" ref={centerlineRef} d="" />);
       this.centerlinePathRefs.push(centerlineRef);
+    }
+    for (let i = 0; i < 2; i++) {
+      const papiLinePathRef = FSComponent.createRef<SVGTextElement>();
+      res.push(<path class="SmallStroke Green" display={this.papiLineVis.get()} ref={papiLinePathRef} d="" />);
+      this.papiLinePathRefs.push(papiLinePathRef);
     }
 
     return (
