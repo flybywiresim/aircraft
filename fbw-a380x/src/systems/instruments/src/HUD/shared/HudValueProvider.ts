@@ -212,7 +212,29 @@ export class HudValueProvider implements Instrument {
           this.logCase = ' D ';
         } else {
           //HudMode Normal
-          if (this.flightPhase === FmgcFlightPhase.Approach) {
+          if (this.flightPhase === FmgcFlightPhase.Descent) {
+            if (this.declutterMode === 0) {
+              if (this.crosswindMode === false) {
+                // flightPhase Des dec 0 xwind 0
+                this.elems.syntheticRunwway = 'block';
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+              } else {
+                // flightPhase Des dec 0 xwind 1
+                this.elems.syntheticRunwway = 'block';
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+              }
+            } else if (!(this.declutterMode === 0)) {
+              if (this.crosswindMode === false) {
+                // flightPhase Des dec !0 xwind 0
+                this.elems.syntheticRunwway = 'none';
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+              } else {
+                // flightPhase Des dec !0 xwind 1
+                this.elems.syntheticRunwway = 'none';
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+              }
+            }
+          } else if (this.flightPhase === FmgcFlightPhase.Approach) {
             if (this.declutterMode === 0) {
               if (this.crosswindMode === false) {
                 // flightPhase App dec 0 xwind 0
@@ -362,7 +384,7 @@ export class HudValueProvider implements Instrument {
           } else {
             if (this.declutterMode === 0) {
               if (this.crosswindMode === false) {
-                // flightPhase NOTApp dec 0 xwind 0
+                // flightPhase NOTApp or Des dec 0 xwind 0
                 this.elems.spdTape = 'block';
                 this.elems.xWindSpdTape = 'none';
                 this.elems.altTape = 'block';
@@ -390,7 +412,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.spdChevrons = 'block';
                 this.logCase = ' J ';
               } else {
-                // flightPhase NOTApp dec 0 xwind 1
+                // flightPhase NOTApp or Des dec 0 xwind 1
                 this.elems.spdTape = 'none';
                 this.elems.xWindSpdTape = 'block';
                 this.elems.altTape = 'none';
@@ -420,7 +442,7 @@ export class HudValueProvider implements Instrument {
               }
             } else if (!(this.declutterMode === 0)) {
               if (this.crosswindMode === false) {
-                // flightPhase NOTApp dec !0 xwind 0
+                // flightPhase NOTApp or Des dec !0 xwind 0
                 this.elems.spdTape = 'block';
                 this.elems.xWindSpdTape = 'none';
                 this.elems.altTape = 'block';
