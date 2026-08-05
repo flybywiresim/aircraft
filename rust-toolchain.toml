@@ -1,4 +1,5 @@
 [toolchain]
 channel = "1.93.0"
+components = [ "rust-analyzer" ]
 targets = [ "wasm32-wasip1" ]
 components = ["rust-analyzer"]
