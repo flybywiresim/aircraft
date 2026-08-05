@@ -32,7 +32,7 @@ use systems::{
         ReservoirAirPressure,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
     valve_signal_implementation,
@@ -1641,9 +1641,21 @@ impl FullAuthorityDigitalEngineControl {
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_1_state = reader.read(&self.engine_1_state_id);
-        self.engine_2_state = reader.read(&self.engine_2_state_id);
-        self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
+        self.engine_1_state = reader.read_discrete_or_fallback(
+            &self.engine_1_state_id,
+            "EngineState1",
+            EngineState::Off,
+        );
+        self.engine_2_state = reader.read_discrete_or_fallback(
+            &self.engine_2_state_id,
+            "EngineState2",
+            EngineState::Off,
+        );
+        self.engine_mode_selector1_position = reader.read_discrete_or_fallback(
+            &self.engine_mode_selector1_id,
+            "EngineModeSelector",
+            EngineModeSelector::Norm,
+        );
         self.engine_1_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_1_n2_percent_id));
         self.engine_2_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_2_n2_percent_id));
     }

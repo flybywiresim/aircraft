@@ -436,7 +436,11 @@ impl SimulationElement for WingAntiIcePushButton {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.mode = reader.read(&self.mode_id)
+        self.mode = reader.read_discrete_or_fallback(
+            &self.mode_id,
+            "WingAntiIcePushButtonMode",
+            WingAntiIcePushButtonMode::On,
+        )
     }
 }
 
@@ -446,13 +450,16 @@ pub enum WingAntiIcePushButtonMode {
     On = 1,
 }
 
-read_write_enum!(WingAntiIcePushButtonMode);
+try_read_write_enum!(WingAntiIcePushButtonMode);
 
-impl From<f64> for WingAntiIcePushButtonMode {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for WingAntiIcePushButtonMode {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => WingAntiIcePushButtonMode::Off,
-            _ => WingAntiIcePushButtonMode::On,
+            0 => Ok(WingAntiIcePushButtonMode::Off),
+            1 => Ok(WingAntiIcePushButtonMode::On),
+            i => Err(i),
         }
     }
 }
@@ -479,7 +486,11 @@ impl SimulationElement for CrossBleedValveSelectorKnob {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.mode = reader.read(&self.mode_id)
+        self.mode = reader.read_discrete_or_fallback(
+            &self.mode_id,
+            "CrossBleedValveSelectorMode",
+            CrossBleedValveSelectorMode::Auto,
+        )
     }
 }
 
@@ -490,15 +501,17 @@ pub enum CrossBleedValveSelectorMode {
     Open = 2,
 }
 
-read_write_enum!(CrossBleedValveSelectorMode);
+try_read_write_enum!(CrossBleedValveSelectorMode);
 
-impl From<f64> for CrossBleedValveSelectorMode {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for CrossBleedValveSelectorMode {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => CrossBleedValveSelectorMode::Shut,
-            1 => CrossBleedValveSelectorMode::Auto,
-            2 => CrossBleedValveSelectorMode::Open,
-            _ => panic!("CrossBleedValveSelectorMode value does not correspond to any enum member"),
+            0 => Ok(CrossBleedValveSelectorMode::Shut),
+            1 => Ok(CrossBleedValveSelectorMode::Auto),
+            2 => Ok(CrossBleedValveSelectorMode::Open),
+            i => Err(i),
         }
     }
 }
@@ -512,17 +525,19 @@ pub enum EngineState {
     Shutting = 4,
 }
 
-read_write_enum!(EngineState);
+try_read_write_enum!(EngineState);
 
-impl From<f64> for EngineState {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for EngineState {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 | 10 => EngineState::Off,
-            1 | 11 => EngineState::On,
-            2 | 12 => EngineState::Starting,
-            3 | 13 => EngineState::Restarting,
-            4 | 14 => EngineState::Shutting,
-            _ => panic!("EngineState value does not correspond to any enum member"),
+            0 | 10 => Ok(EngineState::Off),
+            1 | 11 => Ok(EngineState::On),
+            2 | 12 => Ok(EngineState::Starting),
+            3 | 13 => Ok(EngineState::Restarting),
+            4 | 14 => Ok(EngineState::Shutting),
+            i => Err(i),
         }
     }
 }
@@ -768,15 +783,17 @@ pub enum EngineModeSelector {
     Ignition = 2,
 }
 
-read_write_enum!(EngineModeSelector);
+try_read_write_enum!(EngineModeSelector);
 
-impl From<f64> for EngineModeSelector {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for EngineModeSelector {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => EngineModeSelector::Crank,
-            1 => EngineModeSelector::Norm,
-            2 => EngineModeSelector::Ignition,
-            _ => panic!("Engine mode selector position not recognized."),
+            0 => Ok(EngineModeSelector::Crank),
+            1 => Ok(EngineModeSelector::Norm),
+            2 => Ok(EngineModeSelector::Ignition),
+            i => Err(i),
         }
     }
 }

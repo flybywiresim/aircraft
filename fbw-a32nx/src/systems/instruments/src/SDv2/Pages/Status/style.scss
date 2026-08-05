@@ -1,0 +1,38 @@
+﻿@import "../../../Common/definitions";
+
+#main-status {
+    font-family: "Ecam", monospace !important;
+
+    tspan {
+        white-space: pre;
+    }
+
+    .EWDWarn {
+        font-size: 26px;
+        letter-spacing: 1px;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteLine {
+        stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .RedLine {
+        stroke: $display-red !important;
+        stroke-width: 2;
+        fill: none;
+    }
+}

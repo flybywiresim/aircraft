@@ -63,15 +63,15 @@ impl LandingGearWeightOnWheelsEstimator {
 
     const NOSE_SPRING_RATIO: f64 = 0.477;
     const NOSE_SPRING_CONSTANT: f64 = 80538.6;
-    const NOSE_MAX_COMPRESSION_FT: f64 = 1.560;
+    const NOSE_MAX_COMPRESSION_FT: f64 = 2.4;
 
     const WING_SPRING_RATIO: f64 = 0.575;
     const WING_SPRING_CONSTANT: f64 = 175675.7;
-    const WING_MAX_COMPRESSION_FT: f64 = 1.643;
+    const WING_MAX_COMPRESSION_FT: f64 = 2.4;
 
     const BODY_SPRING_RATIO: f64 = 0.412;
     const BODY_SPRING_CONSTANT: f64 = 196507.5;
-    const BODY_MAX_COMPRESSION_FT: f64 = 1.724;
+    const BODY_MAX_COMPRESSION_FT: f64 = 2.4;
 
     // Method 2 guesstimate fit curve
     // Weight estimation is in the form of weight = X * compression_percent^(Y)

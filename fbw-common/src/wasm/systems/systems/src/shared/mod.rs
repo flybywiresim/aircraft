@@ -30,6 +30,9 @@ pub mod update_iterator;
 mod random;
 pub use random::*;
 
+mod diagnostics;
+pub use diagnostics::*;
+
 pub mod arinc429;
 pub mod arinc825;
 pub mod can_bus;

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 mod update_context;
 use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
-use crate::shared::{from_bool, ElectricalBusType};
+use crate::shared::{fallback_on_unexpected_discrete, from_bool, ElectricalBusType};
 use crate::{
     electrical::Electricity,
     failures::FailureType,
@@ -538,6 +538,23 @@ impl SimulationElementVisitor for SimulationToSimulatorVisitor<'_> {
 
 pub trait Reader {
     fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64;
+
+    fn read_discrete_or_fallback<T>(
+        &mut self,
+        identifier: &VariableIdentifier,
+        context: &'static str,
+        fallback: T,
+    ) -> T
+    where
+        Self: Sized + Read<Result<T, <T as TryFrom<f64>>::Error>>,
+        T: Copy + std::fmt::Debug + TryFrom<f64>,
+        <T as TryFrom<f64>>::Error: Copy + Into<u64>,
+    {
+        let value: Result<T, _> = self.read(identifier);
+        value.unwrap_or_else(|unexpected| {
+            fallback_on_unexpected_discrete(context, unexpected.into(), fallback)
+        })
+    }
 }
 
 /// Reads data from the simulator into the aircraft system simulation.
