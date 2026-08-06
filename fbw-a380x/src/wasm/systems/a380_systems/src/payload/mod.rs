@@ -275,7 +275,7 @@ impl A380Payload {
     }
 
     pub(crate) fn update(&mut self, context: &UpdateContext) {
-        self.payload_manager.update(context.delta());
+        self.payload_manager.update(context);
     }
 
     fn pax_num(&self, ps: usize) -> i8 {

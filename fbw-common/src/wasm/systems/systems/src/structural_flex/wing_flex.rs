@@ -733,6 +733,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
     }
 
     pub fn acceleration_at_node_idx(&self, node_idx: usize) -> Acceleration {
+        // FIXME no runtime panics please! Use the type system or compile time checks
         assert!(node_idx < NODE_NUMBER);
 
         self.nodes[node_idx].acceleration()
