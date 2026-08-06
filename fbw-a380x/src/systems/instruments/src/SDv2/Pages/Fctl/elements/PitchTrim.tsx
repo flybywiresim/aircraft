@@ -132,7 +132,7 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           x={26}
           y={68}
           visibility={this.deflectionInfoValid.map((positionInfoValid) => (!positionInfoValid ? 'visible' : 'hidden'))}
-          class="Amber F26"
+          class="Amber F28"
         >
           XX
         </text>
