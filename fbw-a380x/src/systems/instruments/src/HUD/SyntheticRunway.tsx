@@ -156,7 +156,7 @@ export class SyntheticRunway extends DisplayComponent<{
     ([dme, hasDme]) => {
       if (hasDme) {
         const len = Math.min(Number(dme) * 1852 * Math.tan(DegToRad(0.5)), 150);
-        return len > 15 ? len : len / 2;
+        return len;
       } else {
         return Number(50);
       }
@@ -568,7 +568,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }
     // papi line calcs
     if (this.data2 !== undefined) {
-      if (this.papiLineLength.get() > 15) {
+      if (this.papiLineLength.get() > Number(this.data2.width) / 3) {
         this.dirLeftPapi.set((Number(this.data2.direction) + 90 + 180) % 360);
         this.dirRightPapi.set((Number(this.data2.direction) - 90 + 180) % 360);
       } else {
