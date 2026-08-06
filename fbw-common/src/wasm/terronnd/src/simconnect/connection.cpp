@@ -87,6 +87,14 @@ void Connection::processDispatchMessage(SIMCONNECT_RECV* pData) {
   }
 }
 
+void CALLBACK TerrOnNDSimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext) {
+  Connection* connection = static_cast<Connection*>(pContext);
+
+  if (connection != nullptr) {
+    connection->processDispatchMessage(pData);
+  }
+}
+
 void Connection::updateLVarObjects() {
   std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
@@ -97,19 +105,13 @@ void Connection::updateLVarObjects() {
   }
 }
 
-bool Connection::readData() {
+bool Connection::requestSimConnectUpdates() {
   if (this->_connection == 0) {
     return false;
   }
 
-  DWORD cbData;
-  SIMCONNECT_RECV* pData;
-
-  while (SUCCEEDED(SimConnect_GetNextDispatch(this->_connection, &pData, &cbData))) {
-    this->processDispatchMessage(pData);
-  }
-
-  this->updateLVarObjects();
+  // for in-process gauges, it is enough to call dispatch once
+  SimConnect_CallDispatch(this->_connection, TerrOnNDSimConnectCallback, this);
 
   return true;
 }

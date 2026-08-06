@@ -4,9 +4,10 @@
 #pragma clang diagnostic ignored "-Wunused-function"
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-#include <MSFS/Legacy/gauges.h>
+#include <MSFS/MSFS_GaugeContext.h>
 #include <MSFS/Render/nanovg.h>
 #include <MSFS/Render/stb_image.h>
+
 #pragma clang diagnostic pop
 #include <cstdint>
 #include <iostream>
@@ -107,7 +108,8 @@ class Display : public DisplayBase {
    * @param side The display side
    * @param context The gauge context
    */
-  Display(simconnect::Connection& connection, DisplaySide side, FsContext context) : DisplayBase(side, context), _ndThresholdData(nullptr) {
+  Display(simconnect::Connection& connection, DisplaySide side, FsContext context)
+      : DisplayBase(side, context), _ndThresholdData(nullptr), _ignoreNextFrame(true) {
     this->_ndThresholdData = connection.lvarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>();
 
     // write initial values to avoid invalid drawings
@@ -116,7 +118,7 @@ class Display : public DisplayBase {
     this->_frameData = connection.clientDataArea<std::uint8_t, SIMCONNECT_CLIENTDATA_MAX_SIZE>();
     this->_frameData->defineArea(side == DisplaySide::Left ? FrameDataLeftName : FrameDataRightName);
     this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-    this->_frameData->setOnChangeCallback([=]() {
+    this->_frameData->setOnChangeCallback([=, this]() {
       if (!this->_ignoreNextFrame && (this->_configuration.terrOnNd || this->_configuration.terrOnVd)) {
         if (this->_nanovgImage == 0) {
           // If we don't have an image yet, create one
@@ -188,8 +190,8 @@ class Display : public DisplayBase {
    * @param config The new ND configuration instance
    */
   void update(const DisplayBase::NdConfiguration& config) override {
-    const bool resetMapData = this->_configuration.mode != config.mode || config.range != this->_configuration.range ||
-                              this->_configuration.terrOnNd != config.terrOnNd || this->_configuration.terrOnVd != config.terrOnVd;
+    const bool resetMapData  = this->_configuration.mode != config.mode || config.range != this->_configuration.range ||
+                               this->_configuration.terrOnNd != config.terrOnNd || this->_configuration.terrOnVd != config.terrOnVd;
     const bool validEfisMode = config.mode == NavigationDisplayArcModeId || config.mode == NavigationDisplayRoseLsModeId ||
                                config.mode == NavigationDisplayRoseNavModeId || config.mode == NavigationDisplayRoseVorModeId;
 
