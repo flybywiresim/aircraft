@@ -1,7 +1,6 @@
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, EventBus, Instrument, MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
 import { FcdcBusBaseEvents, FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
-import { getDisplayIndex } from '../PFD';
 
 const fcdcSubjectsByKey = {
   fcdc_discrete_word_1: ConsumerSubject.create(null, 0),
@@ -24,23 +23,19 @@ const fcdcSubjectsByKey = {
 export class FcdcChoiceProvider implements Instrument {
   private readonly sub = this.bus.getSubscriber<FcdcBusEvents>();
 
-  // We have to initialize this in init, as otherwise the content will not be ready and the getDisplayIndex method will fail
-  private readonly isSide2 = Subject.create(false);
-
   private readonly fcdc1StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
 
   private readonly fcdc2StatusWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
 
   private readonly useFcdc2 = MappedSubject.create(
-    ([fcdc1StatusWord1, fcdc2StatusWord1, isSide2]) => {
+    ([fcdc1StatusWord1, fcdc2StatusWord1]) => {
       const fcdc1Fault = fcdc1StatusWord1.isFailureWarning();
       const fcdc2Fault = fcdc2StatusWord1.isFailureWarning();
 
-      return isSide2 ? fcdc2Fault && !fcdc1Fault : !(fcdc1Fault && !fcdc2Fault);
+      return fcdc1Fault && !fcdc2Fault;
     },
     this.fcdc1StatusWord1,
     this.fcdc2StatusWord1,
-    this.isSide2,
   );
 
   private readonly fcdcSubjects = new Map(
@@ -52,8 +47,6 @@ export class FcdcChoiceProvider implements Instrument {
   /** @inheritdoc */
   public init(): void {
     const publisher = this.bus.getPublisher<FcdcBusBaseEvents>();
-
-    this.isSide2.set(getDisplayIndex() === 2);
 
     this.useFcdc2.sub((useFcdc2) => {
       for (const [key, value] of this.fcdcSubjects) {

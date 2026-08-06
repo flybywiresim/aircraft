@@ -44,12 +44,6 @@ export type BaseSDSimvars = AdirsSimVars &
     afdx_14_14_reachable: boolean;
     afdx_4_3_reachable: boolean;
     afdx_14_13_reachable: boolean;
-    prim1Healthy: boolean;
-    prim2Healthy: boolean;
-    prim3Healthy: boolean;
-    sec1Healthy: boolean;
-    sec2Healthy: boolean;
-    sec3Healthy: boolean;
     leftInnerAileronDeflection: number;
     rightInnerAileronDeflection: number;
     leftMiddleAileronDeflection: number;
@@ -154,12 +148,6 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['afdx_14_14_reachable', { name: 'L:A32NX_AFDX_14_14_REACHABLE', type: SimVarValueType.Bool }],
     ['afdx_4_3_reachable', { name: 'L:A32NX_AFDX_4_3_REACHABLE', type: SimVarValueType.Bool }],
     ['afdx_14_13_reachable', { name: 'L:A32NX_AFDX_14_13_REACHABLE', type: SimVarValueType.Bool }],
-    ['prim1Healthy', { name: 'L:A32NX_PRIM_1_HEALTHY', type: SimVarValueType.Bool }],
-    ['prim2Healthy', { name: 'L:A32NX_PRIM_2_HEALTHY', type: SimVarValueType.Bool }],
-    ['prim3Healthy', { name: 'L:A32NX_PRIM_3_HEALTHY', type: SimVarValueType.Bool }],
-    ['sec1Healthy', { name: 'L:A32NX_SEC_1_HEALTHY', type: SimVarValueType.Bool }],
-    ['sec2Healthy', { name: 'L:A32NX_SEC_2_HEALTHY', type: SimVarValueType.Bool }],
-    ['sec3Healthy', { name: 'L:A32NX_SEC_3_HEALTHY', type: SimVarValueType.Bool }],
     [
       'leftInnerAileronDeflection',
       { name: 'L:A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION', type: SimVarValueType.Number },

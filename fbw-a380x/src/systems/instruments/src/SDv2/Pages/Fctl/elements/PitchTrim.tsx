@@ -10,7 +10,8 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
 import { SDSimvars } from '../../../SDSimvarPublisher';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, MathUtils } from '@flybywiresim/fbw-sdk';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 
 interface PitchTrimProps {
   x: number;
@@ -20,6 +21,12 @@ interface PitchTrimProps {
 }
 
 export class PitchTrim extends DisplayComponent<PitchTrimProps> {
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
+
+  private readonly fcdcDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_4'));
+
+  private readonly fcdcDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_5'));
+
   private readonly positionInfoValid = Subject.create(true);
 
   private readonly thsPositionRadians = ConsumerSubject.create(
@@ -47,23 +54,36 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
     false,
   );
 
-  private readonly hydraulicAvailable = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.hydGreenAvailable,
-    this.hydYellowAvailable,
+  private readonly failAvailBit1: number;
+
+  private readonly failAvailBit2: number;
+
+  private readonly powerAvail = this.fcdcDiscreteWord5.map(
+    (word) => word.bitValue(this.failAvailBit1) || word.bitValue(this.failAvailBit2),
   );
 
-  private readonly pitchTrimValueClass = this.hydraulicAvailable.map((hydraulicAvailable) =>
+  private readonly actuator1Failed = this.fcdcDiscreteWord4.map((word) => word.bitValueOr(this.failAvailBit1, false));
+
+  private readonly actuator2Failed = this.fcdcDiscreteWord4.map((word) => word.bitValueOr(this.failAvailBit2, false));
+
+  private readonly pitchTrimValueClass = this.powerAvail.map((hydraulicAvailable) =>
     hydraulicAvailable ? 'Green F26' : 'Amber F26',
   );
 
   private readonly pitchTrimTitleClass = MappedSubject.create(
-    ([hydGreenAvailable, hydYellowAvailable, thsJam]) =>
-      (hydGreenAvailable || hydYellowAvailable) && !thsJam ? 'F22 MiddleAlign LS1 White' : 'F22 MiddleAlign LS1 Amber',
-    this.hydGreenAvailable,
-    this.hydYellowAvailable,
+    ([powerAvail, thsJam]) => (powerAvail && !thsJam ? 'F22 MiddleAlign LS1 White' : 'F22 MiddleAlign LS1 Amber'),
+    this.powerAvail,
     this.thsJam,
   );
+
+  constructor(props: PitchTrimProps) {
+    super(props);
+
+    const failAvailBit = 25;
+
+    this.failAvailBit1 = failAvailBit;
+    this.failAvailBit2 = failAvailBit + 1;
+  }
 
   render() {
     return (
@@ -75,8 +95,8 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
             LineRound: true,
             LineJoinRound: true,
             NoFill: true,
-            Green: this.hydraulicAvailable,
-            Amber: this.hydraulicAvailable.map(SubscribableMapFunctions.not()),
+            Green: this.powerAvail,
+            Amber: this.powerAvail.map(SubscribableMapFunctions.not()),
           }}
           d="m-5,98 l-21,-11 v23 l21,-11 z"
           transform={this.thsPosition.map((thsPosition) => `translate (0 ${-thsPosition * 10})`)}
@@ -131,6 +151,8 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           type={ActuatorType.Conventional}
           powerSource={HydraulicPowerSource.Green}
           powerSourceAvailable={this.hydGreenAvailable}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={this.actuator1Failed}
         />
         <ActuatorIndication
           x={-63}
@@ -138,6 +160,8 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           type={ActuatorType.Conventional}
           powerSource={HydraulicPowerSource.Yellow}
           powerSourceAvailable={this.hydYellowAvailable}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={this.actuator2Failed}
         />
       </g>
     );
