@@ -232,8 +232,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           // FIXME: Move to main update loop once calculated by the predictions
           this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(loadedfpIndex);
           this.props.fmcService.master.calculateTakeoffWeight(loadedfpIndex);
-          const fp = this.props.flightPlanInterface.get(loadedfpIndex);
-          this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
+          this.alternateExists.set(
+            this.props.flightPlanInterface.getAlternate(loadedfpIndex).destinationAirport !== undefined,
+          );
           const pd = this.loadedFlightPlan!.performanceData;
           this.landingWeight.set(
             this.props.fmcService.master.getLandingWeight(loadedfpIndex) ?? NaN,
@@ -424,10 +425,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.destEfob.set(NaN);
     }
 
-    const fp = hasFp ? this.props.flightPlanInterface.get(fpIndex!) : null;
-    this.altnIcao.set(fp?.alternateDestinationAirport?.ident ?? 'NONE');
+    this.altnIcao.set(
+      hasFp ? this.props.flightPlanInterface.getAlternate(fpIndex!).destinationAirport?.ident ?? 'NONE' : 'NONE',
+    );
     this.altnEta.set('--:--');
-    if (fp) {
+    if (hasFp) {
       this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN, UnitType.KILOGRAM);
     } else {
       this.altnEfob.set(NaN);

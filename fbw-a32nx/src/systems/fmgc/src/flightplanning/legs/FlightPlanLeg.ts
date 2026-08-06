@@ -1,6 +1,6 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
+// Copyright (c) 2021-2026 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -603,6 +603,6 @@ export function isDiscontinuity(o: any): o is Discontinuity {
   return typeof o === 'object' && o.isDiscontinuity === true;
 }
 
-export function isLeg(o: any): o is FlightPlanLeg {
+export function isLeg(o: any): o is ReadonlyFlightPlanLeg {
   return typeof o === 'object' && o.isDiscontinuity === false;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -1548,7 +1548,7 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    const plan: ReadonlyFlightPlan<A380FlightPlanPerformanceData> = this.flightPlanInterface.active;
+    const plan: ReadonlyFlightPlan = this.flightPlanInterface.active;
 
     if (!predictions || !this.flightPlanInterface.hasActive) {
       this.acInterface.transmitVerticalPath([], [], [], [], null);
