@@ -533,6 +533,13 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
     idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
+    idFcdcDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_6");
+    idFcdcDiscreteWord7[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_7");
+    idFcdcDiscreteWord8[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_8");
+    idFcdcDiscreteWord9[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_9");
+    idFcdcDiscreteWord10[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_10");
+    idFcdcDiscreteWord11[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_11");
+
     idFcdcFgDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_1");
     idFcdcFgDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_2");
     idFcdcFgDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_3");
@@ -2235,9 +2242,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   if (afdxCommAvailable) {
     fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
-    fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
     fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
-    fcdcs[fcdcIndex].discreteInputs.simData = simData;
     fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[0] = simData.engine_combustion_1;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[1] = simData.engine_combustion_2;
@@ -2265,9 +2270,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.autoBrakeActive = idAutobrakeActive->get() == 1;
     fcdcs[fcdcIndex].discreteInputs.autoBrakeMode = idAutobrakeArmedMode->get();
     fcdcs[fcdcIndex].discreteInputs.btvState = idBtvState->get();
-
-    // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
-    fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
   }
 
   bool primSecReachable[3] = {fcdcIndex == 0 ? (idAfdx1_3Reachable->get() == 1 || idAfdx11_13Reachable->get() == 1)
@@ -2278,8 +2280,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
                                              : (idAfdx9_4Reachable->get() == 1 || idAfdx19_14Reachable->get() == 1)};
 
   for (int i = 0; i < 3; i++) {
-    fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primSecReachable[i] ? primsDiscreteOutputs[i].prim_healthy : false;
-
     if (primSecReachable[i]) {
       fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
       fcdcs[fcdcIndex].busInputs.secs[i] = secsBusOutputs[i];
@@ -2310,6 +2310,12 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
+  idFcdcDiscreteWord6[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus6.toSimVar());
+  idFcdcDiscreteWord7[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus7.toSimVar());
+  idFcdcDiscreteWord8[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus8.toSimVar());
+  idFcdcDiscreteWord9[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus9.toSimVar());
+  idFcdcDiscreteWord10[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus10.toSimVar());
+  idFcdcDiscreteWord11[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus11.toSimVar());
   idFcdcFgDiscreteWord1[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord1.toSimVar());
   idFcdcFgDiscreteWord2[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord2.toSimVar());
   idFcdcFgDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord3.toSimVar());

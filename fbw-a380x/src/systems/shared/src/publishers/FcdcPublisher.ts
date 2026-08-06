@@ -70,12 +70,12 @@ export type FcdcBusBaseEvents = {
    * | 16  | L Aileron Actuator 6 Avail        |
    * | 17  | Spare                             |
    * | 18  | Spare                             |
-   * | 19  | L Aileron Actuator 1 Avail        |
-   * | 20  | L Aileron Actuator 2 Avail        |
-   * | 21  | L Aileron Actuator 3 Avail        |
-   * | 22  | L Aileron Actuator 4 Avail        |
-   * | 23  | L Aileron Actuator 5 Avail        |
-   * | 24  | L Aileron Actuator 6 Avail        |
+   * | 19  | R Aileron Actuator 1 Avail        |
+   * | 20  | R Aileron Actuator 2 Avail        |
+   * | 21  | R Aileron Actuator 3 Avail        |
+   * | 22  | R Aileron Actuator 4 Avail        |
+   * | 23  | R Aileron Actuator 5 Avail        |
+   * | 24  | R Aileron Actuator 6 Avail        |
    * | 25  | Spare                             |
    * | 26  | Spare                             |
    * | 27  | Spare                             |
@@ -195,14 +195,14 @@ export type FcdcBusBaseEvents = {
    * | 11  | Spoiler 1 Avail                   |
    * | 12  | Spoiler 2 Avail                   |
    * | 13  | Spoiler 3 Avail                   |
-   * | 14  | Left Spoiler 4 Avail              |
-   * | 15  | Left Spoiler 5 Avail              |
-   * | 16  | Left Spoiler 6 Avail              |
-   * | 17  | Right Spoiler 4 Avail             |
-   * | 18  | Right Spoiler 5 Avail             |
-   * | 19  | Right Spoiler 6 Avail             |
-   * | 20  | Spoiler 7 Avail                   |
-   * | 21  | Spoiler 8 Avail                   |
+   * | 14  | Spoiler 7 Avail                   |
+   * | 15  | Spoiler 8 Avail                   |
+   * | 16  | Left Spoiler 4 Avail              |
+   * | 17  | Left Spoiler 5 Avail              |
+   * | 18  | Left Spoiler 6 Avail              |
+   * | 19  | Right Spoiler 4 Avail             |
+   * | 20  | Right Spoiler 5 Avail             |
+   * | 21  | Right Spoiler 6 Avail             |
    * | 22  | Spare                             |
    * | 23  | Spare                             |
    * | 24  | Spare                             |
@@ -424,6 +424,60 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_5',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_5',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_6',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_6',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_7',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_7',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_8',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_8',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_9',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_9',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_10',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_10',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_11',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_11',
           type: SimVarValueType.Number,
           indexed: true,
           defaultIndex: null,
