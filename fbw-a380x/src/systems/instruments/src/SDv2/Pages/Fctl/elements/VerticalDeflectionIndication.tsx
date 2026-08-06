@@ -8,8 +8,8 @@ import {
 } from '@microsoft/msfs-sdk';
 
 const SCALE_HEIGHT = 116;
-export const MAX_VERTICAL_DEFLECTION = 20;
-export const MIN_VERTICAL_DEFLECTION = -30;
+const MAX_VERTICAL_DEFLECTION = 20;
+const MIN_VERTICAL_DEFLECTION = -30;
 
 interface VerticalDeflectionIndicationProps {
   x?: number;
@@ -52,7 +52,7 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
 
   render() {
     return (
-      <g transform={`translate(${this.props.x} ${this.props.y})`}>
+      <g transform={`translate(${this.props.x ?? 0} ${this.props.y ?? 0})`}>
         <path class="Grey Fill" d="m0,0 v 116 h15 v-116 z" />
 
         <circle
