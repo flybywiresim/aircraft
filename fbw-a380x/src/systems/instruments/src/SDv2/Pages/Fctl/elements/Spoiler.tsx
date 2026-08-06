@@ -129,9 +129,9 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
         />
 
         <text
-          x={-1}
+          x={0}
           y={0}
-          class="Amber F32"
+          class="Amber F28"
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'inherit' : 'hidden',
           )}
