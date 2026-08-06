@@ -1,4 +1,4 @@
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
 import { SDSimvars } from '../../../SDSimvarPublisher';
 
@@ -40,6 +40,8 @@ export class SlatFlapActuatorIndication extends DisplayComponent<SlatFlapActuato
           type={this.props.type === 'SLATS' ? ActuatorType.EHA : ActuatorType.Conventional}
           powerSource={this.props.type === 'SLATS' ? ElecPowerSource.AcEss : HydraulicPowerSource.Green}
           powerSourceAvailable={this.props.type === 'SLATS' ? this.elecAcEssAvailable : this.hydGreenAvailable}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={Subject.create(false)}
         />
         <ActuatorIndication
           x={53}
@@ -47,6 +49,8 @@ export class SlatFlapActuatorIndication extends DisplayComponent<SlatFlapActuato
           type={ActuatorType.Conventional}
           powerSource={this.props.type === 'SLATS' ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow}
           powerSourceAvailable={this.props.type === 'SLATS' ? this.hydGreenAvailable : this.hydYellowAvailable}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={Subject.create(false)}
         />
       </g>
     );
