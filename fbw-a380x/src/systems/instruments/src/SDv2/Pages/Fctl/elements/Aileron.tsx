@@ -1,13 +1,4 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Subscribable,
-  SubscribableMapFunctions,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import {
   ActuatorIndication,
   ActuatorType,
@@ -17,6 +8,8 @@ import {
 } from './ActuatorIndication';
 import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
 import { SDSimvars } from '../../../SDSimvarPublisher';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 export enum AileronSide {
   Left = 'left',
@@ -39,6 +32,12 @@ interface AileronProps {
 }
 
 export class Aileron extends DisplayComponent<AileronProps> {
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
+
+  private readonly fcdcDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_2'));
+
+  private readonly fcdcDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_3'));
+
   private readonly showAileronDroopSymbol = Subject.create(true);
 
   private readonly deflectionInfoValid = Subject.create(true);
@@ -59,7 +58,17 @@ export class Aileron extends DisplayComponent<AileronProps> {
 
   private readonly powerSource2Avail: ConsumerSubject<boolean>;
 
-  private readonly powerAvail: Subscribable<boolean>;
+  private readonly failAvailBit1: number;
+
+  private readonly failAvailBit2: number;
+
+  private readonly powerAvail = this.fcdcDiscreteWord3.map(
+    (word) => word.bitValue(this.failAvailBit1) || word.bitValue(this.failAvailBit2),
+  );
+
+  private readonly actuator1Failed = this.fcdcDiscreteWord2.map((word) => word.bitValueOr(this.failAvailBit1, false));
+
+  private readonly actuator2Failed = this.fcdcDiscreteWord2.map((word) => word.bitValueOr(this.failAvailBit2, false));
 
   constructor(props: AileronProps) {
     super(props);
@@ -91,11 +100,15 @@ export class Aileron extends DisplayComponent<AileronProps> {
       false,
     );
 
-    this.powerAvail = MappedSubject.create(
-      SubscribableMapFunctions.or(),
-      this.powerSource1Avail,
-      this.powerSource2Avail,
-    );
+    let failAvailBit = this.props.side === AileronSide.Left ? 11 : 19;
+    if (this.props.position == AileronPosition.Mid) {
+      failAvailBit += 2;
+    } else if (this.props.position == AileronPosition.Outboard) {
+      failAvailBit += 4;
+    }
+
+    this.failAvailBit1 = failAvailBit;
+    this.failAvailBit2 = failAvailBit + 1;
   }
 
   render() {
@@ -133,6 +146,8 @@ export class Aileron extends DisplayComponent<AileronProps> {
           type={ActuatorType.Conventional}
           powerSource={this.actuator1PowerSource}
           powerSourceAvailable={this.powerSource1Avail}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={this.actuator1Failed}
         />
         <ActuatorIndication
           x={actuatorIndicationX}
@@ -140,6 +155,8 @@ export class Aileron extends DisplayComponent<AileronProps> {
           type={this.props.position === AileronPosition.Outboard ? ActuatorType.Conventional : ActuatorType.EHA}
           powerSource={this.actuator2PowerSource}
           powerSourceAvailable={this.powerSource2Avail}
+          powerSourceInfoAvailable={Subject.create(true)}
+          actuatorFailed={this.actuator2Failed}
         />
       </g>
     );
