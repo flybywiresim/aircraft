@@ -1,6 +1,7 @@
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subject } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface SlatFlapActuatorIndicationProps {
   x: number;
@@ -10,20 +11,19 @@ interface SlatFlapActuatorIndicationProps {
 }
 
 export class SlatFlapActuatorIndication extends DisplayComponent<SlatFlapActuatorIndicationProps> {
-  private readonly hydGreenAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`greenPressureSwitch`),
-    false,
-  );
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
 
-  private readonly hydYellowAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`yellowPressureSwitch`),
-    false,
-  );
+  private readonly fcdcDiscreteWord12 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_12'));
 
-  private readonly elecAcEssAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`acEssPowered`),
-    false,
-  );
+  private readonly hydGreenAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(28));
+
+  private readonly hydYellowAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(29));
+
+  private readonly hydInfoAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValueOr(27, false));
+
+  private readonly elecAcEssAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(24));
+
+  private readonly elecInfoAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValueOr(23, false));
 
   render() {
     return (
@@ -40,7 +40,7 @@ export class SlatFlapActuatorIndication extends DisplayComponent<SlatFlapActuato
           type={this.props.type === 'SLATS' ? ActuatorType.EHA : ActuatorType.Conventional}
           powerSource={this.props.type === 'SLATS' ? ElecPowerSource.AcEss : HydraulicPowerSource.Green}
           powerSourceAvailable={this.props.type === 'SLATS' ? this.elecAcEssAvailable : this.hydGreenAvailable}
-          powerSourceInfoAvailable={Subject.create(true)}
+          powerSourceInfoAvailable={this.props.type === 'SLATS' ? this.elecInfoAvailable : this.hydInfoAvailable}
           actuatorFailed={Subject.create(false)}
         />
         <ActuatorIndication
@@ -49,7 +49,7 @@ export class SlatFlapActuatorIndication extends DisplayComponent<SlatFlapActuato
           type={ActuatorType.Conventional}
           powerSource={this.props.type === 'SLATS' ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow}
           powerSourceAvailable={this.props.type === 'SLATS' ? this.hydGreenAvailable : this.hydYellowAvailable}
-          powerSourceInfoAvailable={Subject.create(true)}
+          powerSourceInfoAvailable={this.hydInfoAvailable}
           actuatorFailed={Subject.create(false)}
         />
       </g>

@@ -6,14 +6,15 @@ export enum ActuatorType {
 }
 
 export enum HydraulicPowerSource {
-  Green = 'green',
-  Yellow = 'yellow',
+  Green = 0,
+  Yellow = 1,
 }
 
+// Needs to have different values, otherwise it can't be distinguished at runtime
 export enum ElecPowerSource {
-  AcEss = 'acEss',
-  AcEha = 'ac1',
-  Ac1 = 'acEha',
+  AcEss = 2,
+  Ac1 = 3,
+  AcEha = 4,
 }
 
 /**
@@ -23,6 +24,32 @@ export enum ElecPowerSource {
  */
 export function powerSourceIsHydraulic(v: HydraulicPowerSource | ElecPowerSource): v is HydraulicPowerSource {
   return v === HydraulicPowerSource.Green || v === HydraulicPowerSource.Yellow;
+}
+
+/**
+ *
+ * @param v The power source to check
+ * @returns The bit of the FCDC Discrete Word 12 to check for power source availability
+ */
+export function getFcdcBitForPowerSource(v: HydraulicPowerSource | ElecPowerSource) {
+  if (powerSourceIsHydraulic(v)) {
+    return 28 + v;
+  } else {
+    return 24 + v - ElecPowerSource.AcEss;
+  }
+}
+
+/**
+ *
+ * @param v The power source to check
+ * @returns The bit of the FCDC Discrete Word 12 to check for power source info availability
+ */
+export function getFcdcBitForPowerSourceInfoAvail(v: HydraulicPowerSource | ElecPowerSource) {
+  if (powerSourceIsHydraulic(v)) {
+    return 27;
+  } else {
+    return 23;
+  }
 }
 
 interface ActuatorIndicationProps {
@@ -65,6 +92,7 @@ export class ActuatorIndication extends DisplayComponent<ActuatorIndicationProps
               SW4: true,
               LineRound: true,
               LineJoinRound: true,
+              Hide: this.props.powerSourceInfoAvailable.map(SubscribableMapFunctions.not()),
               Amber: this.props.powerSourceAvailable.map(SubscribableMapFunctions.not()),
               Green: this.props.powerSourceAvailable,
             }}

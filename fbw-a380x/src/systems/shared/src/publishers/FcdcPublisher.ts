@@ -289,6 +289,174 @@ export type FcdcBusBaseEvents = {
    */
   fcdc_discrete_word_11: number;
   /**
+   * FCDC Discrete word 11, raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Elevator Actuator 1 PRIM1 Fault |
+   * | 12  | L Elevator Actuator 4 PRIM1 Fault |
+   * | 13  | R Elevator Actuator 3 PRIM1 Fault |
+   * | 14  | L Elevator Actuator 3 PRIM2 Fault |
+   * | 15  | R Elevator Actuator 1 PRIM2 Fault |
+   * | 16  | R Elevator Actuator 4 PRIM2 Fault |
+   * | 17  | L Elevator Actuator 2 PRIM3 Fault |
+   * | 18  | R Elevator Actuator 2 PRIM3 Fault |
+   * | 18  | Spare                             |
+   * | 19  | Spare                             |
+   * | 20  | Spare                             |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | Elec Info Available               |
+   * | 24  | AC ESS Available                  |
+   * | 25  | AC 1 Available                    |
+   * | 26  | AC EHA Available                  |
+   * | 27  | Hyd Info Available                |
+   * | 28  | G Hyd Available                   |
+   * | 29  | Y Hyd Available                   |
+   */
+  fcdc_discrete_word_12: number;
+
+  /**
+   * Left side sidestick roll command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_capt_roll_command_deg: number;
+  /**
+   * Right side sidestick roll command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_fo_roll_command_deg: number;
+  /**
+   * Left side sidestick pitch command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_capt_pitch_command_deg: number;
+  /**
+   * Right side sidestick pitch command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_fo_pitch_command_deg: number;
+  /**
+   * The rudder pedal deflection angle, in degrees. Raw ARINC word.
+   */
+  fcdc_rudder_pedal_position_deg: number;
+  /**
+   * The deflection angle of the left inner aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_inner_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left middle aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_middle_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left outer aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_outer_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right inner aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_inner_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right middle aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_middle_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right outer aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_outer_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left inner elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_left_inner_elevator_position_deg: number;
+  /**
+   * The deflection angle of the left outer elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_left_outer_elevator_position_deg: number;
+  /**
+   * The deflection angle of the right inner elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_right_inner_elevator_position_deg: number;
+  /**
+   * The deflection angle of the right outer elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_right_outer_elevator_position_deg: number;
+  /**
+   * The deflection angle of trimmable horizontal stabilizer, in degrees. Raw ARINC word.
+   */
+  fcdc_ths_position_deg: number;
+  /**
+   * The deflection angle of the upper rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_upper_rudder_position_deg: number;
+  /**
+   * The deflection angle of the lower rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_lower_rudder_position_deg: number;
+  /**
+   * The deflection angle of the rudder trim, in degrees. Raw ARINC word.
+   */
+  fcdc_rudder_trim_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 1, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_1_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 2, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_2_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 3, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_3_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 4, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_4_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 5, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_5_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 6, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_6_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 7, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_7_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 8, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_8_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 1, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_1_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 2, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_2_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 3, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_3_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 4, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_4_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 5, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_5_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 6, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_6_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 7, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_7_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 8, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_8_position_deg: number;
+
+  /**
    * FCDC FG Discrete word 1. Raw ARINC Word.
    * No references available, so defined our own bit allocation.
    * Bit(s)   | Meaning
@@ -478,6 +646,330 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_11',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_11',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_12',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_12',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_capt_roll_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_CAPT_ROLL_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_fo_roll_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_FO_ROLL_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_capt_pitch_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_CAPT_PITCH_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_fo_pitch_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_FO_PITCH_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_rudder_pedal_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_PEDAL_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_inner_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_middle_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_MIDDLE_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_outer_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_inner_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_middle_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_MIDDLE_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_outer_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_inner_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_outer_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_inner_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_outer_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_ths_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_TRIM_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_upper_rudder_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_UPPER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_lower_rudder_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_LOWER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_rudder_trim_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_TRIM_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_1_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_1_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_2_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_2_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_3_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_3_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_4_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_4_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_5_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_5_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_6_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_6_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_7_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_7_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_8_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_8_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_1_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_1_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_2_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_2_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_3_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_3_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_4_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_4_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_5_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_5_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_6_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_6_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_7_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_7_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_8_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_8_POS',
           type: SimVarValueType.Number,
           indexed: true,
           defaultIndex: null,
