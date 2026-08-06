@@ -1498,6 +1498,8 @@ mod indication_light_tests {
 
 #[cfg(test)]
 mod value_knob_tests {
+    use more_asserts::*;
+
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
@@ -1507,7 +1509,7 @@ mod value_knob_tests {
         let test_bed =
             SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
-        assert!(test_bed.query_element(|e| e.value()) < f64::EPSILON);
+        assert_lt!(test_bed.query_element(|e| e.value()), f64::EPSILON);
     }
 
     #[test]
@@ -1516,7 +1518,10 @@ mod value_knob_tests {
             ValueKnob::new_with_value(context, "TEST", 10.)
         }));
 
-        assert!((test_bed.query_element(|e| e.value()) - 10.).abs() < f64::EPSILON);
+        assert_lt!(
+            (test_bed.query_element(|e| e.value()) - 10.).abs(),
+            f64::EPSILON
+        );
     }
 
     #[test]
@@ -1526,7 +1531,10 @@ mod value_knob_tests {
 
         test_bed.command_element(|e| e.set_value(20.));
 
-        assert!((test_bed.query_element(|e| e.value()) - 20.).abs() < f64::EPSILON);
+        assert_lt!(
+            (test_bed.query_element(|e| e.value()) - 20.).abs(),
+            f64::EPSILON
+        );
     }
 
     #[test]
@@ -1538,7 +1546,10 @@ mod value_knob_tests {
 
         test_bed.run();
 
-        assert!((test_bed.query_element(|knob| knob.value()) - 10.).abs() < f64::EPSILON);
+        assert_lt!(
+            (test_bed.query_element(|knob| knob.value()) - 10.).abs(),
+            f64::EPSILON
+        );
     }
 
     #[test]
