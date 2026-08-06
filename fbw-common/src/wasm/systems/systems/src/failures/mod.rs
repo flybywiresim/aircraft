@@ -47,6 +47,9 @@ pub enum FailureType {
     // ATA26
     SetOnFire(FireDetectionZone),
     FireDetectionLoop(FireDetectionLoopID, FireDetectionZone),
+    // ATA27
+    SlatWtb,
+    FlapWtb,
     // ATA29
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),

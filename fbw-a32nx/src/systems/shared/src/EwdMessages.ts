@@ -453,6 +453,8 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['240060001', { group: 'ELEC$4', text: ' BAT 1 OFF' }],
   ['240061001', { group: 'ELEC$4', text: ' BAT 2 OFF' }],
   ['240062001', { group: 'ELEC$4', text: ' EMER GEN 1 LINE OFF' }],
+  ['270055001', { group: 'F/CTL$6', text: ' SLAT TIP BRK FAULT' }],
+  ['270056001', { group: 'F/CTL$6', text: ' FLAP TIP BRK FAULT' }],
   ['270055501', { group: 'F/CTL$6', text: ' FCDC 1 FAULT' }],
   ['270055701', { group: 'F/CTL$6', text: ' FCDC 2 FAULT' }],
   ['220021001', { group: 'AUTO FLT$4', text: ' FCU 1 FAULT' }],

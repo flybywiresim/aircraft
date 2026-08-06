@@ -1064,23 +1064,49 @@ impl A380RudderFactory {
 
 struct A380FlapsFactory {}
 impl A380FlapsFactory {
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 122.2, 215.68, 259.28, 279.84, 297.59, 338.99, 338.99, 338.99, 338.99, 338.99, 338.99,
+    ];
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 0., 8., 17., 22., 26., 33., 33., 33., 33., 33., 33.];
+
     fn a380_flaps_factory(
         context: &mut InitContext,
         side: SecondarySurfaceSide,
     ) -> SecondarySurface {
         // 1 is most inboard. 3 is most outboard.
-        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 3)
+        SecondarySurface::new(
+            context,
+            side,
+            SecondarySurfaceType::Flaps,
+            3,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
     }
 }
 
 struct A380SlatsFactory {}
 impl A380SlatsFactory {
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 286.48, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39,
+    ];
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 20., 23., 23., 23., 23., 23., 23., 23., 23., 23., 23.];
+
     fn a380_slats_factory(
         context: &mut InitContext,
         side: SecondarySurfaceSide,
     ) -> SecondarySurface {
         // 1 is most inboard. 8 is most outboard.
-        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 8)
+        SecondarySurface::new(
+            context,
+            side,
+            SecondarySurfaceType::Slats,
+            8,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
     }
 }
 
@@ -1732,18 +1758,6 @@ pub(super) struct A380Hydraulic {
     aux_gear_doors: A380AuxiliaryGearDoorSet,
 }
 impl A380Hydraulic {
-    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 122.2, 215.68, 259.28, 279.84, 297.59, 338.99, 338.99, 338.99, 338.99, 338.99, 338.99,
-    ];
-    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 8., 17., 22., 26., 33., 33., 33., 33., 33., 33.];
-
-    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 286.48, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39,
-    ];
-    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 20., 23., 23., 23., 23., 23., 23., 23., 23., 23., 23.];
-
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -2003,12 +2017,9 @@ impl A380Hydraulic {
                 left_flaps,
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.07),
+                AngularVelocity::new::<revolution_per_minute>(210.6),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
                 Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
@@ -2017,12 +2028,9 @@ impl A380Hydraulic {
                 left_slats,
                 right_slats,
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.08),
+                AngularVelocity::new::<revolution_per_minute>(240.7),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
                 Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
@@ -2535,16 +2543,36 @@ impl A380Hydraulic {
             context,
             self.slats_flaps_complex.flap_pcu(0),
             self.slats_flaps_complex.flap_pcu(1),
-            self.green_circuit.system_section(),
-            self.yellow_circuit.system_section(),
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
         );
 
         self.slat_system.update(
             context,
             self.slats_flaps_complex.slat_pcu(0),
             self.slats_flaps_complex.slat_pcu(1),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.green_circuit.system_section(), // NOTE: inherited from A320. Should be E1.
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.green_circuit.system_section(), // NOTE: inherited from A320. Should be E1.
+                self.yellow_circuit.system_section(), // NOTE: inherited from A320. Should be E2.
+            ],
+            [
+                self.green_circuit.system_section(), // NOTE: inherited from A320. Should be E1.
+                self.yellow_circuit.system_section(), // NOTE: inherited from A320. Should be E2.
+            ],
         );
 
         self.forward_cargo_door_controller.update(
@@ -3139,11 +3167,11 @@ impl SurfacesPositions for A380Hydraulic {
     }
 
     fn left_flaps_position(&self) -> f64 {
-        self.flap_system.left_position()
+        self.flap_system.left_surfaces().get_surface_ratio()
     }
 
     fn right_flaps_position(&self) -> f64 {
-        self.flap_system.right_position()
+        self.flap_system.right_surfaces().get_surface_ratio()
     }
 }
 
