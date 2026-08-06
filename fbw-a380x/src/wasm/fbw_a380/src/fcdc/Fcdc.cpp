@@ -64,14 +64,19 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus6.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus7.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus8.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus9.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus10.setSsm(Arinc429SignStatus::FailureWarning);
+    output.efcsStatus11.setSsm(Arinc429SignStatus::FailureWarning);
     output.fcdcFgDiscreteWord1.setSsm(Arinc429SignStatus::FailureWarning);
     output.fcdcFgDiscreteWord2.setSsm(Arinc429SignStatus::FailureWarning);
     output.fcdcFgDiscreteWord3.setSsm(Arinc429SignStatus::FailureWarning);
+
     return output;
   }
 
-  // Phase 1 of refactoring: Populate FCDC discrete words as per a32nx spec, disregarding the obvious differences.
-  // Target: Should behave unsuspiciously in normal ops
   Arinc429SignStatus ssm = Arinc429SignStatus::NormalOperation;
 
   PitchLaw systemPitchLaw = allPrimsDead
@@ -82,77 +87,320 @@ FcdcBus Fcdc::getBusOutputs() {
 
   output.efcsStatus1.setSsm(ssm);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
-  output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A || systemPitchLaw == PitchLaw::AlternateLaw1B ||
-                                    systemPitchLaw == PitchLaw::AlternateLaw1C);
-  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw2A || systemPitchLaw == PitchLaw::AlternateLaw2B);
-  output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1A);
-  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::DirectLaw);
-  output.efcsStatus1.setBit(16, false);
-  output.efcsStatus1.setBit(17, false);
-  output.efcsStatus3.setBit(19, allPrimsDead);
-  output.efcsStatus3.setBit(20, allPrimsDead);
-  output.efcsStatus3.setBit(21, allPrimsDead);
-  output.efcsStatus3.setBit(22, allPrimsDead);
-  output.efcsStatus3.setBit(23, allPrimsDead);
-  output.efcsStatus3.setBit(24, allPrimsDead);
-  output.efcsStatus3.setBit(25, allPrimsDead);
-  output.efcsStatus3.setBit(26, allPrimsDead);
-  output.efcsStatus3.setBit(29, allPrimsDead);
+  output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A);
+  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw1B);
+  output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1C);
+  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::AlternateLaw2);
+  output.efcsStatus1.setBit(18, systemPitchLaw == PitchLaw::DirectLaw);
+  output.efcsStatus1.setBit(19, false);
+  output.efcsStatus1.setBit(23, !isNo(busInputs.prims[0].fctl.fctl_law_status_word));
+  output.efcsStatus1.setBit(24, !isNo(busInputs.prims[1].fctl.fctl_law_status_word));
+  output.efcsStatus1.setBit(25, !isNo(busInputs.prims[2].fctl.fctl_law_status_word));
+  output.efcsStatus1.setBit(26, !isNo(busInputs.secs[0].fctl_law_status_word));
+  output.efcsStatus1.setBit(27, !isNo(busInputs.secs[1].fctl_law_status_word));
+  output.efcsStatus1.setBit(28, !isNo(busInputs.secs[2].fctl_law_status_word));
+  output.efcsStatus1.setBit(29, !discreteInputs.otherFcdcHealthy);
+
+  const auto [prim1LeftAileron1Fault, prim1RightAileron1Fault, prim1LeftAileron2Fault, prim1RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.prims[0].fctl.aileron_status_word, 2, true);
+
+  const auto [prim2LeftAileron1Fault, prim2RightAileron1Fault, prim2LeftAileron2Fault, prim2RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.prims[1].fctl.aileron_status_word, 2, true);
+
+  const auto [prim3LeftAileron1Fault, prim3RightAileron1Fault, prim3LeftAileron2Fault, prim3RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.prims[2].fctl.aileron_status_word, 2, true);
+
+  const auto [sec1LeftAileron1Fault, sec1RightAileron1Fault, sec1LeftAileron2Fault, sec1RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.secs[0].aileron_status_word, 2, true);
+
+  const auto [sec2LeftAileron1Fault, sec2RightAileron1Fault, sec2LeftAileron2Fault, sec2RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.secs[1].aileron_status_word, 2, true);
+
+  const auto [sec3LeftAileron1Fault, sec3RightAileron1Fault, sec3LeftAileron2Fault, sec3RightAileron2Fault] =
+      computeAileronStatusFromComputer(busInputs.secs[2].aileron_status_word, 2, true);
 
   output.efcsStatus2.setSsm(ssm);
-  output.efcsStatus2.setBit(11, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
-  output.efcsStatus2.setBit(12, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
-  output.efcsStatus2.setBit(13, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
-  output.efcsStatus2.setBit(14, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
-  output.efcsStatus2.setBit(15, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
-  output.efcsStatus2.setBit(16, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
-  output.efcsStatus2.setBit(17, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
-  output.efcsStatus2.setBit(18, !bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
+  output.efcsStatus2.setBit(11, prim2LeftAileron2Fault && sec2LeftAileron2Fault);
+  output.efcsStatus2.setBit(12, prim1LeftAileron1Fault && sec1LeftAileron1Fault);
+  output.efcsStatus2.setBit(13, prim1LeftAileron2Fault && sec1LeftAileron2Fault);
+  output.efcsStatus2.setBit(14, prim3LeftAileron1Fault && sec3LeftAileron1Fault);
+  output.efcsStatus2.setBit(15, prim3LeftAileron2Fault);
+  output.efcsStatus2.setBit(16, prim2LeftAileron1Fault);
+  output.efcsStatus2.setBit(17, false);
+  output.efcsStatus2.setBit(18, false);
+  output.efcsStatus2.setBit(19, prim2RightAileron2Fault && sec2RightAileron2Fault);
+  output.efcsStatus2.setBit(20, prim1RightAileron1Fault && sec1RightAileron1Fault);
+  output.efcsStatus2.setBit(21, prim1RightAileron2Fault && sec1RightAileron2Fault);
+  output.efcsStatus2.setBit(22, prim3RightAileron1Fault && sec3RightAileron1Fault);
+  output.efcsStatus2.setBit(23, prim3RightAileron2Fault);
+  output.efcsStatus2.setBit(24, prim2RightAileron1Fault);
+  output.efcsStatus2.setBit(25, false);
+  output.efcsStatus2.setBit(26, false);
+
+  const auto [prim1LeftAileron1Avail, prim1RightAileron1Avail, prim1LeftAileron2Avail, prim1RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.prims[0].fctl.aileron_status_word, 0, false);
+
+  const auto [prim2LeftAileron1Avail, prim2RightAileron1Avail, prim2LeftAileron2Avail, prim2RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.prims[1].fctl.aileron_status_word, 0, false);
+
+  const auto [prim3LeftAileron1Avail, prim3RightAileron1Avail, prim3LeftAileron2Avail, prim3RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.prims[2].fctl.aileron_status_word, 0, false);
+
+  const auto [sec1LeftAileron1Avail, sec1RightAileron1Avail, sec1LeftAileron2Avail, sec1RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.secs[0].aileron_status_word, 0, false);
+
+  const auto [sec2LeftAileron1Avail, sec2RightAileron1Avail, sec2LeftAileron2Avail, sec2RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.secs[1].aileron_status_word, 0, false);
+
+  const auto [sec3LeftAileron1Avail, sec3RightAileron1Avail, sec3LeftAileron2Avail, sec3RightAileron2Avail] =
+      computeAileronStatusFromComputer(busInputs.secs[2].aileron_status_word, 0, false);
 
   output.efcsStatus3.setSsm(ssm);
-  output.efcsStatus3.setBit(11, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
-  output.efcsStatus3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 11, false));
-  output.efcsStatus3.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
-  output.efcsStatus3.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.aileron_status_word, 14, false));
-  output.efcsStatus3.setBit(15, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
-  output.efcsStatus3.setBit(16, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 11, false));
-  output.efcsStatus3.setBit(17, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
-  output.efcsStatus3.setBit(18, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.elevator_status_word, 14, false));
-  output.efcsStatus3.setBit(21, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(22, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(23, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(24, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
-  output.efcsStatus3.setBit(25, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.spoiler_status_word, 11, false));
+  output.efcsStatus3.setBit(11, prim2LeftAileron2Avail || sec2LeftAileron2Avail);
+  output.efcsStatus3.setBit(12, prim1LeftAileron1Avail || sec1LeftAileron1Avail);
+  output.efcsStatus3.setBit(13, prim1LeftAileron2Avail || sec1LeftAileron2Avail);
+  output.efcsStatus3.setBit(14, prim3LeftAileron1Avail || sec3LeftAileron1Avail);
+  output.efcsStatus3.setBit(15, prim3LeftAileron2Avail);
+  output.efcsStatus3.setBit(16, prim2LeftAileron1Avail);
+  output.efcsStatus3.setBit(19, prim2RightAileron2Avail || sec2RightAileron2Avail);
+  output.efcsStatus3.setBit(20, prim1RightAileron1Avail || sec1RightAileron1Avail);
+  output.efcsStatus3.setBit(21, prim1RightAileron2Avail || sec1RightAileron2Avail);
+  output.efcsStatus3.setBit(22, prim3RightAileron1Avail || sec3RightAileron1Avail);
+  output.efcsStatus3.setBit(23, prim3RightAileron2Avail);
+  output.efcsStatus3.setBit(24, prim2RightAileron1Avail);
 
-  // FIXME inaccurate atm, improve
+  const auto [prim1Elevator1Fault, prim1Elevator2Fault, prim1Elevator3Fault, prim1ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.prims[0].fctl.elevator_status_word, 2, true);
+
+  const auto [prim2Elevator1Fault, prim2Elevator2Fault, prim2Elevator3Fault, prim2ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.prims[1].fctl.elevator_status_word, 2, true);
+
+  const auto [prim3Elevator1Fault, prim3Elevator2Fault, prim3Elevator3Fault, prim3ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.prims[2].fctl.elevator_status_word, 2, true);
+
+  const auto [sec1Elevator1Fault, sec1Elevator2Fault, sec1Elevator3Fault, sec1ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.secs[0].elevator_status_word, 2, true);
+
+  const auto [sec2Elevator1Fault, sec2Elevator2Fault, sec2Elevator3Fault, sec2ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.secs[1].elevator_status_word, 2, true);
+
+  const auto [sec3Elevator1Fault, sec3Elevator2Fault, sec3Elevator3Fault, sec3ThsFault] =
+      computeElevatorStatusFromComputer(busInputs.secs[2].elevator_status_word, 2, true);
+
   output.efcsStatus4.setSsm(ssm);
-  output.efcsStatus4.setBit(11, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(12, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(13, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(14, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(15, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(16, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(17, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(18, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(19, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -2.5);
-  output.efcsStatus4.setBit(20, valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0) < -2.5);
-  bool spoilerValid = isNo(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg) &&
-                      isNo(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg);
-  output.efcsStatus4.setBit(21, spoilerValid);
-  output.efcsStatus4.setBit(22, spoilerValid);
-  output.efcsStatus4.setBit(23, spoilerValid);
-  output.efcsStatus4.setBit(24, spoilerValid);
-  output.efcsStatus4.setBit(25, spoilerValid);
-  output.efcsStatus4.setBit(26, valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0) < -5);
-  output.efcsStatus4.setBit(27, discreteInputs.spoilersArmed);
-  output.efcsStatus4.setBit(28, analogInputs.spoilersLeverPos > 0.9);
+  output.efcsStatus4.setBit(11, prim1Elevator2Fault && sec1Elevator2Fault);
+  output.efcsStatus4.setBit(12, prim3Elevator1Fault && sec3Elevator1Fault);
+  output.efcsStatus4.setBit(13, prim2Elevator2Fault && sec2Elevator2Fault);
+  output.efcsStatus4.setBit(14, prim1Elevator1Fault && sec1Elevator1Fault);
+  output.efcsStatus4.setBit(15, false);
+  output.efcsStatus4.setBit(16, false);
+  output.efcsStatus4.setBit(17, prim2Elevator3Fault && sec2Elevator3Fault);
+  output.efcsStatus4.setBit(18, prim3Elevator2Fault && sec3Elevator2Fault);
+  output.efcsStatus4.setBit(19, prim1Elevator3Fault && sec1Elevator3Fault);
+  output.efcsStatus4.setBit(20, prim2Elevator1Fault && sec2Elevator1Fault);
+  output.efcsStatus4.setBit(21, false);
+  output.efcsStatus4.setBit(22, false);
+  output.efcsStatus4.setBit(25, prim3ThsFault && sec3ThsFault);
+  output.efcsStatus4.setBit(26, prim1ThsFault && sec1ThsFault);
+  output.efcsStatus4.setBit(27, prim2ThsFault);
+  output.efcsStatus4.setBit(29, false);
 
-  output.efcsStatus5.setData(0);
+  const auto [prim1Elevator1Avail, prim1Elevator2Avail, prim1Elevator3Avail, prim1ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.prims[0].fctl.elevator_status_word, 0, false);
+
+  const auto [prim2Elevator1Avail, prim2Elevator2Avail, prim2Elevator3Avail, prim2ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.prims[1].fctl.elevator_status_word, 0, false);
+
+  const auto [prim3Elevator1Avail, prim3Elevator2Avail, prim3Elevator3Avail, prim3ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.prims[2].fctl.elevator_status_word, 0, false);
+
+  const auto [sec1Elevator1Avail, sec1Elevator2Avail, sec1Elevator3Avail, sec1ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.secs[0].elevator_status_word, 0, false);
+
+  const auto [sec2Elevator1Avail, sec2Elevator2Avail, sec2Elevator3Avail, sec2ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.secs[1].elevator_status_word, 0, false);
+
+  const auto [sec3Elevator1Avail, sec3Elevator2Avail, sec3Elevator3Avail, sec3ThsAvail] =
+      computeElevatorStatusFromComputer(busInputs.secs[2].elevator_status_word, 0, false);
 
   output.efcsStatus5.setSsm(ssm);
-  bool spoilersRetracted = valueOr(busInputs.prims[masterPrimIndex].fctl.left_spoiler_position_deg, 0.0f) >= -2.5f &&
-                           valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0.0f) >= -2.5f;
-  output.efcsStatus5.setBit(26, (analogInputs.spoilersLeverPos > 0.05) && spoilersRetracted);
+  output.efcsStatus5.setBit(11, prim1Elevator2Avail || sec1Elevator2Avail);
+  output.efcsStatus5.setBit(12, prim3Elevator1Avail || sec3Elevator1Avail);
+  output.efcsStatus5.setBit(13, prim2Elevator2Avail || sec2Elevator2Avail);
+  output.efcsStatus5.setBit(14, prim1Elevator1Avail || sec1Elevator1Avail);
+  output.efcsStatus5.setBit(17, prim2Elevator3Avail || sec2Elevator3Avail);
+  output.efcsStatus5.setBit(18, prim3Elevator2Avail || sec3Elevator2Avail);
+  output.efcsStatus5.setBit(19, prim1Elevator3Avail || sec1Elevator3Avail);
+  output.efcsStatus5.setBit(20, prim2Elevator1Avail || sec2Elevator1Avail);
+  output.efcsStatus5.setBit(25, prim3ThsAvail || sec3ThsAvail);
+  output.efcsStatus5.setBit(26, prim1ThsAvail || sec1ThsAvail);
+  output.efcsStatus5.setBit(27, prim2ThsAvail);
+
+  const auto [prim1Rudder1HydAvail, prim1Rudder1ElecAvail, prim1Rudder2HydAvail, prim1Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.prims[0].fctl.rudder_status_word, 0, false);
+
+  const auto [prim2Rudder1HydAvail, prim2Rudder1ElecAvail, prim2Rudder2HydAvail, prim2Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.prims[1].fctl.rudder_status_word, 0, false);
+
+  const auto [prim3Rudder1HydAvail, prim3Rudder1ElecAvail, prim3Rudder2HydAvail, prim3Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.prims[2].fctl.rudder_status_word, 0, false);
+
+  const auto [sec1Rudder1HydAvail, sec1Rudder1ElecAvail, sec1Rudder2HydAvail, sec1Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.secs[0].rudder_status_word, 0, false);
+
+  const auto [sec2Rudder1HydAvail, sec2Rudder1ElecAvail, sec2Rudder2HydAvail, sec2Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.secs[1].rudder_status_word, 0, false);
+
+  const auto [sec3Rudder1HydAvail, sec3Rudder1ElecAvail, sec3Rudder2HydAvail, sec3Rudder2ElecAvail] =
+      computeRudderStatusFromComputer(busInputs.secs[2].rudder_status_word, 0, false);
+
+  const auto [prim1Rudder1Fault, prim1Rudder1ElecFault, prim1Rudder2Fault, prim1Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.prims[0].fctl.rudder_status_word, 2, true);
+
+  const auto [prim2Rudder1Fault, prim2Rudder1ElecFault, prim2Rudder2Fault, prim2Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.prims[1].fctl.rudder_status_word, 2, true);
+
+  const auto [prim3Rudder1Fault, prim3Rudder1ElecFault, prim3Rudder2Fault, prim3Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.prims[2].fctl.rudder_status_word, 2, true);
+
+  const auto [sec1Rudder1Fault, sec1Rudder1ElecFault, sec1Rudder2Fault, sec1Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.secs[0].rudder_status_word, 2, true);
+
+  const auto [sec2Rudder1Fault, sec2Rudder1ElecFault, sec2Rudder2Fault, sec2Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.secs[1].rudder_status_word, 2, true);
+
+  const auto [sec3Rudder1Fault, sec3Rudder1ElecFault, sec3Rudder2Fault, sec3Rudder2ElecFault] =
+      computeRudderStatusFromComputer(busInputs.secs[2].rudder_status_word, 2, true);
+
+  output.efcsStatus6.setSsm(ssm);
+  output.efcsStatus6.setBit(11, prim1Rudder1Fault && sec1Rudder1Fault);
+  output.efcsStatus6.setBit(12, prim2Rudder1Fault && sec2Rudder1Fault);
+  output.efcsStatus6.setBit(13, prim1Rudder1ElecFault && sec1Rudder1ElecFault);
+  output.efcsStatus6.setBit(14, prim2Rudder1ElecFault && sec2Rudder1ElecFault);
+  output.efcsStatus6.setBit(15, prim1Rudder2Fault && sec1Rudder2Fault);
+  output.efcsStatus6.setBit(16, prim3Rudder1Fault && sec3Rudder1Fault);
+  output.efcsStatus6.setBit(17, prim1Rudder2ElecFault && sec1Rudder2ElecFault);
+  output.efcsStatus6.setBit(18, prim3Rudder1ElecFault && sec3Rudder1ElecFault);
+  output.efcsStatus6.setBit(19, prim1Rudder1Fault);
+  output.efcsStatus6.setBit(20, prim1Rudder2Fault);
+  output.efcsStatus6.setBit(21, prim2Rudder1Fault);
+  output.efcsStatus6.setBit(22, prim3Rudder1Fault);
+  output.efcsStatus6.setBit(25, prim1Rudder1HydAvail || sec1Rudder1HydAvail || prim1Rudder1ElecAvail || sec1Rudder1ElecAvail);
+  output.efcsStatus6.setBit(26, prim2Rudder1HydAvail || sec2Rudder1HydAvail || prim2Rudder1ElecAvail || sec2Rudder1ElecAvail);
+  output.efcsStatus6.setBit(27, prim1Rudder2HydAvail || sec1Rudder2HydAvail || prim1Rudder2ElecAvail || sec1Rudder2ElecAvail);
+  output.efcsStatus6.setBit(28, prim3Rudder1HydAvail || sec3Rudder1HydAvail || prim3Rudder1ElecAvail || sec3Rudder1ElecAvail);
+
+  const auto [prim1LeftSpoilerHydFault, prim1LeftSpoilerElecFault, prim1RightSpoilerHydFault, prim1RightSpoilerElecFault] =
+      computeSpoilerStatusFromPrim(busInputs.prims[0].fctl.spoiler_status_word, 2, true);
+
+  const auto [prim2LeftSpoilerHydFault, prim2LeftSpoilerElecFault, prim2RightSpoilerHydFault, prim2RightSpoilerElecFault] =
+      computeSpoilerStatusFromPrim(busInputs.prims[1].fctl.spoiler_status_word, 2, true);
+
+  const auto [prim3LeftSpoilerHydFault, prim3LeftSpoilerElecFault, prim3RightSpoilerHydFault, prim3RightSpoilerElecFault] =
+      computeSpoilerStatusFromPrim(busInputs.prims[2].fctl.spoiler_status_word, 2, true);
+
+  const auto [sec1LeftSpoiler1Fault, sec1RightSpoiler1Fault, sec1LeftSpoiler2Fault, sec1RightSpoiler2Fault] =
+      computeSpoilerStatusFromSec(busInputs.secs[0].spoiler_status_word, 2, true);
+
+  const auto [sec2LeftSpoiler1Fault, sec2RightSpoiler1Fault, sec2LeftSpoiler2Fault, sec2RightSpoiler2Fault] =
+      computeSpoilerStatusFromSec(busInputs.secs[1].spoiler_status_word, 2, true);
+
+  const auto [sec3LeftSpoiler1Fault, sec3RightSpoiler1Fault, sec3LeftSpoiler2Fault, sec3RightSpoiler2Fault] =
+      computeSpoilerStatusFromSec(busInputs.secs[2].spoiler_status_word, 2, true);
+
+  output.efcsStatus7.setSsm(ssm);
+  output.efcsStatus7.setBit(11, sec3LeftSpoiler1Fault || sec3RightSpoiler1Fault);
+  output.efcsStatus7.setBit(12, sec2LeftSpoiler1Fault || sec2RightSpoiler1Fault);
+  output.efcsStatus7.setBit(13, sec1LeftSpoiler1Fault || sec1RightSpoiler1Fault);
+  output.efcsStatus7.setBit(14, sec2LeftSpoiler2Fault || sec2RightSpoiler2Fault);
+  output.efcsStatus7.setBit(15, sec3LeftSpoiler2Fault || sec3RightSpoiler2Fault);
+  output.efcsStatus7.setBit(16, prim3LeftSpoilerHydFault && prim3LeftSpoilerElecFault);
+  output.efcsStatus7.setBit(17, prim2LeftSpoilerHydFault && prim2LeftSpoilerElecFault);
+  output.efcsStatus7.setBit(18, prim1LeftSpoilerHydFault && prim1LeftSpoilerElecFault);
+  output.efcsStatus7.setBit(19, prim3RightSpoilerHydFault && prim3RightSpoilerElecFault);
+  output.efcsStatus7.setBit(20, prim2RightSpoilerHydFault && prim2RightSpoilerElecFault);
+  output.efcsStatus7.setBit(21, prim1RightSpoilerHydFault && prim1RightSpoilerElecFault);
+  output.efcsStatus7.setBit(26, false);
+  output.efcsStatus7.setBit(27, false);
+  output.efcsStatus7.setBit(28, false);
+  output.efcsStatus7.setBit(29, false);
+
+  const auto [prim1LeftSpoilerHydAvail, prim1LeftSpoilerElecAvail, prim1RightSpoilerHydAvail, prim1RightSpoilerElecAvail] =
+      computeSpoilerStatusFromPrim(busInputs.prims[0].fctl.spoiler_status_word, 0, false);
+
+  const auto [prim2LeftSpoilerHydAvail, prim2LeftSpoilerElecAvail, prim2RightSpoilerHydAvail, prim2RightSpoilerElecAvail] =
+      computeSpoilerStatusFromPrim(busInputs.prims[1].fctl.spoiler_status_word, 0, false);
+
+  const auto [prim3LeftSpoilerHydAvail, prim3LeftSpoilerElecAvail, prim3RightSpoilerHydAvail, prim3RightSpoilerElecAvail] =
+      computeSpoilerStatusFromPrim(busInputs.prims[2].fctl.spoiler_status_word, 0, false);
+
+  const auto [sec1LeftSpoiler1Avail, sec1RightSpoiler1Avail, sec1LeftSpoiler2Avail, sec1RightSpoiler2Avail] =
+      computeSpoilerStatusFromSec(busInputs.secs[0].spoiler_status_word, 0, false);
+
+  const auto [sec2LeftSpoiler1Avail, sec2RightSpoiler1Avail, sec2LeftSpoiler2Avail, sec2RightSpoiler2Avail] =
+      computeSpoilerStatusFromSec(busInputs.secs[1].spoiler_status_word, 0, false);
+
+  const auto [sec3LeftSpoiler1Avail, sec3RightSpoiler1Avail, sec3LeftSpoiler2Avail, sec3RightSpoiler2Avail] =
+      computeSpoilerStatusFromSec(busInputs.secs[2].spoiler_status_word, 0, false);
+
+  output.efcsStatus8.setSsm(ssm);
+  output.efcsStatus8.setBit(11, sec3LeftSpoiler1Avail && sec3RightSpoiler1Avail);
+  output.efcsStatus8.setBit(12, sec2LeftSpoiler1Avail && sec2RightSpoiler1Avail);
+  output.efcsStatus8.setBit(13, sec1LeftSpoiler1Avail && sec1RightSpoiler1Avail);
+  output.efcsStatus8.setBit(14, sec2LeftSpoiler2Avail && sec2RightSpoiler2Avail);
+  output.efcsStatus8.setBit(15, sec3LeftSpoiler2Avail && sec3RightSpoiler2Avail);
+  output.efcsStatus8.setBit(16, prim3LeftSpoilerHydAvail || prim3LeftSpoilerElecAvail);
+  output.efcsStatus8.setBit(17, prim2LeftSpoilerHydAvail || prim2LeftSpoilerElecAvail);
+  output.efcsStatus8.setBit(18, prim1LeftSpoilerHydAvail || prim1LeftSpoilerElecAvail);
+  output.efcsStatus8.setBit(19, prim3RightSpoilerHydAvail || prim3RightSpoilerElecAvail);
+  output.efcsStatus8.setBit(20, prim2RightSpoilerHydAvail || prim2RightSpoilerElecAvail);
+  output.efcsStatus8.setBit(21, prim1RightSpoilerHydAvail || prim1RightSpoilerElecAvail);
+  output.efcsStatus8.setBit(25, false);
+  output.efcsStatus8.setBit(26, false);
+  output.efcsStatus8.setBit(27, false);
+  output.efcsStatus8.setBit(28, false);
+  output.efcsStatus8.setBit(29, false);
+
+  output.efcsStatus9.setSsm(ssm);
+  output.efcsStatus9.setBit(11, bitFromValueOr(busInputs.secs[0].rudder_status_word, 29, true));
+  output.efcsStatus9.setBit(12, bitFromValueOr(busInputs.secs[3].rudder_status_word, 29, true));
+  output.efcsStatus9.setBit(13, bitFromValueOr(busInputs.secs[0].rudder_status_word, 27, false));
+  output.efcsStatus9.setBit(14, bitFromValueOr(busInputs.secs[3].rudder_status_word, 27, false));
+  output.efcsStatus9.setBit(15, false);
+  output.efcsStatus9.setBit(18, false);
+  output.efcsStatus9.setBit(19, false);
+  output.efcsStatus9.setBit(20, false);
+  output.efcsStatus9.setBit(25, false);
+  output.efcsStatus9.setBit(26, false);
+  output.efcsStatus9.setBit(27, false);
+  output.efcsStatus9.setBit(28, false);
+  output.efcsStatus9.setBit(29, false);
+
+  const auto prim1LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 11),
+                                                     bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 12),
+                                                     bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 13));
+
+  const auto prim2LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
+                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
+                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
+
+  const auto prim3LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
+                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
+                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
+
+  output.efcsStatus10.setSsm(ssm);
+  output.efcsStatus10.setBit(11, discreteInputs.primOff[0]);
+  output.efcsStatus10.setBit(12, discreteInputs.primOff[1]);
+  output.efcsStatus10.setBit(13, discreteInputs.primOff[2]);
+  output.efcsStatus10.setBit(14, discreteInputs.secOff[0]);
+  output.efcsStatus10.setBit(15, discreteInputs.secOff[1]);
+  output.efcsStatus10.setBit(16, discreteInputs.secOff[2]);
+  output.efcsStatus10.setBit(18, false);
+  output.efcsStatus10.setBit(19, prim1LawCap != PitchLaw::NormalLaw);
+  output.efcsStatus10.setBit(20, prim2LawCap != PitchLaw::NormalLaw);
+  output.efcsStatus10.setBit(25, prim3LawCap != PitchLaw::NormalLaw);
+  output.efcsStatus10.setBit(26, false);
+  output.efcsStatus10.setBit(27, false);
 
   output.fcdcFgDiscreteWord1.setSsm(ssm);
   output.fcdcFgDiscreteWord1.setBit(24, land2Capacity);
@@ -212,6 +460,61 @@ FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
   output.btvLost = btvLost;
 
   return output;
+}
+
+std::tuple<bool, real32_T> computeElevatorPosition(base_arinc_429 pos1,
+                                                   bool computer1Engaged,
+                                                   base_arinc_429 pos2,
+                                                   bool computer2Engaged,
+                                                   base_arinc_429 pos3,
+                                                   bool computer3Engaged,
+                                                   base_arinc_429 pos4,
+                                                   bool computer4Engaged) {
+  const auto anyEngaged = computer1Engaged || computer2Engaged || computer3Engaged || computer4Engaged;
+  real32_T pos;
+  bool posValid = true;
+
+  if ((!anyEngaged || computer1Engaged) && isNo(pos1)) {
+    pos = pos1.Data;
+  } else if ((!anyEngaged || computer2Engaged) && isNo(pos2)) {
+    pos = pos2.Data;
+  } else if ((!anyEngaged || computer3Engaged) && isNo(pos3)) {
+    pos = pos3.Data;
+  } else if ((!anyEngaged || computer4Engaged) && isNo(pos4)) {
+    pos = pos4.Data;
+  } else {
+    pos = 0;
+    posValid = false;
+  }
+
+  return {posValid, pos};
+}
+
+bool computeElevatorPosition(base_arinc_429 pos1,
+                             bool computer1Engaged,
+                             base_arinc_429 pos2,
+                             bool computer2Engaged,
+                             base_arinc_429 pos3,
+                             bool computer3Engaged,
+                             base_arinc_429 pos4,
+                             bool computer4Engaged,
+                             real32_T& result) {
+  const auto anyEngaged = computer1Engaged || computer2Engaged || computer3Engaged || computer4Engaged;
+
+  if ((!anyEngaged || computer1Engaged) && isNo(pos1)) {
+    result = pos1.Data;
+  } else if ((!anyEngaged || computer2Engaged) && isNo(pos2)) {
+    result = pos2.Data;
+  } else if ((!anyEngaged || computer3Engaged) && isNo(pos3)) {
+    result = pos3.Data;
+  } else if ((!anyEngaged || computer4Engaged) && isNo(pos4)) {
+    result = pos4.Data;
+  } else {
+    result = 0;
+    return false;
+  }
+
+  return true;
 }
 
 void Fcdc::updateApproachCapability(double deltaTime) {
@@ -421,4 +724,39 @@ PitchLaw Fcdc::getLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   } else {
     return PitchLaw::None;
   }
+}
+
+LateralLaw Fcdc::getLateralLawStatusFromBits(bool bit1, bool bit2) {
+  if (bit1) {
+    return LateralLaw::NormalLaw;
+  } else if (bit2) {
+    return LateralLaw::DirectLaw;
+  } else {
+    return LateralLaw::None;
+  }
+}
+
+std::tuple<bool, bool, bool, bool> Fcdc::computeAileronStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue) {
+  return {bitFromValueOr(word, 11 + offset, defaultValue), bitFromValueOr(word, 14 + offset, defaultValue),
+          bitFromValueOr(word, 17 + offset, defaultValue), bitFromValueOr(word, 20 + offset, defaultValue)};
+}
+
+std::tuple<bool, bool, bool, bool> Fcdc::computeElevatorStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue) {
+  return {bitFromValueOr(word, 11 + offset, defaultValue), bitFromValueOr(word, 14 + offset, defaultValue),
+          bitFromValueOr(word, 17 + offset, defaultValue), bitFromValueOr(word, 20 + offset, defaultValue)};
+}
+
+std::tuple<bool, bool, bool, bool> Fcdc::computeRudderStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue) {
+  return {bitFromValueOr(word, 11 + offset * 2, defaultValue), bitFromValueOr(word, 12 + offset * 2, defaultValue),
+          bitFromValueOr(word, 17 + offset * 2, defaultValue), bitFromValueOr(word, 18 + offset * 2, defaultValue)};
+}
+
+std::tuple<bool, bool, bool, bool> Fcdc::computeSpoilerStatusFromPrim(base_arinc_429& word, int offset, bool defaultValue) {
+  return {bitFromValueOr(word, 11 + offset * 2, defaultValue), bitFromValueOr(word, 12 + offset * 2, defaultValue),
+          bitFromValueOr(word, 17 + offset * 2, defaultValue), bitFromValueOr(word, 18 + offset * 2, defaultValue)};
+}
+
+std::tuple<bool, bool, bool, bool> Fcdc::computeSpoilerStatusFromSec(base_arinc_429& word, int offset, bool defaultValue) {
+  return {bitFromValueOr(word, 11 + offset, defaultValue), bitFromValueOr(word, 14 + offset, defaultValue),
+          bitFromValueOr(word, 17 + offset, defaultValue), bitFromValueOr(word, 20 + offset, defaultValue)};
 }
