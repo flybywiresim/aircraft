@@ -63,34 +63,34 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
           />
 
           <text
-            x={72}
+            x={70}
             y={17}
             visibility={this.leftRightLabelVisible.map((leftRightLabelVisible) =>
               leftRightLabelVisible ? 'visible' : 'hidden',
             )}
-            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F22`)}
+            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F26`)}
           >
             {this.fcdcRudderTrimPosition.map((rudderTrim) => (Math.sign(rudderTrim.valueOr(0)) === 1 ? 'L' : 'R'))}
           </text>
           <text
-            x={159}
+            x={144}
             y={17}
-            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F22 EndAlign`)}
+            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F26 EndAlign`)}
           >
             {this.fcdcRudderTrimPosition.map((rudderTrim) => Math.abs(rudderTrim.valueOr(0)).toFixed(1))}
           </text>
-          <text x={159} y={19} class="Cyan F22">
+          <text x={159} y={19} class="Cyan F26">
             °
           </text>
         </g>
 
         <text
-          x={96}
-          y={20}
+          x={94}
+          y={17}
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'visible' : 'hidden',
           )}
-          class="Amber F22"
+          class="Amber F28"
         >
           XX
         </text>
@@ -100,7 +100,7 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'visible' : 'hidden',
           )}
-          class="Amber F22"
+          class="Amber F28"
         >
           X
         </text>

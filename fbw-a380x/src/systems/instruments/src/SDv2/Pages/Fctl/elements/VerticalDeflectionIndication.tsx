@@ -90,9 +90,9 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
         />
 
         <text
-          x={-1}
+          x={0}
           y={70}
-          class="Amber F32"
+          class="Amber F28"
           visibility={this.props.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'inherit' : 'hidden',
           )}

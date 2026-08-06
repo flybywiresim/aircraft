@@ -92,8 +92,8 @@ export class HorizontalDeflectionIndication extends DisplayComponent<HorizontalD
 
         <text
           x={49}
-          y={this.props.position === RudderPosition.Upper ? 15 : 20}
-          class="Amber F26"
+          y={19}
+          class="Amber F28"
           visibility={this.props.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'inherit' : 'hidden',
           )}
