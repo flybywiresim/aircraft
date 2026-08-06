@@ -244,15 +244,21 @@ void Fcdc::updateApproachCapability(double deltaTime) {
 
   const auto fwsAudioFunctionAvailable =
       bitFromValueOr(busInputs.fwsDiscreteWord126[0], 16, false) + bitFromValueOr(busInputs.fwsDiscreteWord126[1], 16, false);
-  const auto northRefTrue = bitFromValueOr(busInputs.prims[0].fg.discrete_word_5, 13, false);
+  const auto numEnginesOperative = discreteInputs.engineOperative[0] + discreteInputs.engineOperative[1] +
+                                   discreteInputs.engineOperative[2] + discreteInputs.engineOperative[3];
 
-  const auto land2Capability = primLand2Capability && fwsAudioFunctionAvailable > 0;
-  const auto land3FailPassiveCapability = land2Capability && primLand3FailPassiveCapability;
+  const bool oneEngineOnEachSide = (discreteInputs.engineOperative[0] || discreteInputs.engineOperative[1]) &&
+                                   (discreteInputs.engineOperative[2] || discreteInputs.engineOperative[3]);
+  bool land3FailOperationalEngineCriteria = numEnginesOperative == 4 || (numEnginesOperative == 3 && discreteInputs.apuGenConnected);
+
+  const auto land2Capability = primLand2Capability && fwsAudioFunctionAvailable > 0 && oneEngineOnEachSide;
+  const auto land3FailPassiveCapability = land2Capability && primLand3FailPassiveCapability && numEnginesOperative >= 3;
   const auto land3FailOperationalCapability = primLand3FailOperationalCapability && fwsAudioFunctionAvailable >= 2 &&
                                               discreteInputs.otherFcdcHealthy && discreteInputs.everyDcSuppliedByTr &&
-                                              discreteInputs.antiskidAvailable;
+                                              discreteInputs.antiskidAvailable && land3FailOperationalEngineCriteria;
 
   const auto memorizeLand3Capability = radioAlt < 200 && oneApEngaged && landModeArmedOrEngaged;
+  const auto northRefTrue = bitFromValueOr(busInputs.prims[0].fg.discrete_word_5, 13, false);
 
   land3FailOperationalCapacity =
       (land3FailOperationalCapacity && memorizeLand3Capability) ||
