@@ -72,15 +72,17 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use more_asserts::*;
     use ntest::assert_about_eq;
+
+    use super::*;
 
     use uom::si::{f64::*, length::meter};
 
     #[test]
     fn rate_limiter_init_f64() {
         let rate_limiter = RateLimiter::<f64>::new(1., -2.);
-        assert!(rate_limiter.output() == 0.);
+        assert_eq!(rate_limiter.output(), 0.);
     }
 
     #[test]
@@ -88,7 +90,7 @@ mod tests {
         let rate_limiter =
             RateLimiter::<Length>::new(Length::new::<meter>(1.), Length::new::<meter>(-2.));
 
-        assert!(rate_limiter.output().get::<meter>() == 0.);
+        assert_eq!(rate_limiter.output().get::<meter>(), 0.);
     }
 
     #[test]
@@ -97,7 +99,7 @@ mod tests {
         rate_limiter.update(Duration::from_secs_f64(0.1), 0.);
 
         rate_limiter.update(Duration::from_secs_f64(0.1), 1.);
-        assert!(rate_limiter.output() > 0.);
+        assert_gt!(rate_limiter.output(), 0.);
 
         assert_about_eq!(rate_limiter.update(Duration::from_secs_f64(0.1), 1.), 0.2);
 
