@@ -568,6 +568,22 @@ export class SyntheticRunway extends DisplayComponent<{
         'p6 lat: ' + this.centerLineCoords[1].lat,
         'p6 lon: ' + this.centerLineCoords[1].long,
         'p6 alt: ' + this.centerLineCoords[1].alt,
+
+        'pl1 lat: ' + this.papiCoords[0].lat,
+        'pl1 lon: ' + this.papiCoords[0].long,
+        'pl1 alt: ' + this.papiCoords[0].alt,
+
+        'pl2 lat: ' + this.papiCoords[1].lat,
+        'pl2 lon: ' + this.papiCoords[1].long,
+        'pl2 alt: ' + this.papiCoords[1].alt,
+
+        'pl3 lat: ' + this.papiCoords[2].lat,
+        'pl3 lon: ' + this.papiCoords[2].long,
+        'pl3 alt: ' + this.papiCoords[2].alt,
+
+        'pl4 lat: ' + this.papiCoords[3].lat,
+        'pl4 lon: ' + this.papiCoords[3].long,
+        'pl4 alt: ' + this.papiCoords[3].alt,
       );
     }
     // papi line calcs
