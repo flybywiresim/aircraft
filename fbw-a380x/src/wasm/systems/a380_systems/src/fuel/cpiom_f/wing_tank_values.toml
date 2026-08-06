@@ -1,0 +1,25 @@
+[stages]
+a = 18000.0
+b = 26000.0
+c = 36000.0
+d = 47000.0
+e = 103788.0
+f = 158042.0
+g = 215702.0
+h = 223028.0
+
+[limits]
+feed_a = 4500.0
+feed_c = 7000.0
+outer_feed_e = 20558.0
+inner_feed_e = 21836.0
+outer_tank_b = 4000.0
+outer_tank_h = 7693.0
+inner_tank_d = 5500.0
+inner_tank_g = 34300.0
+mid_tank_f = 27127.0
+outer_feed_tank_size = 7299.6
+inner_feed_tank_size = 7753.2
+outer_tank_tank_size = 2731.5
+mid_tank_tank_size = 9632.0
+inner_tank_tank_size = 12189.4
