@@ -5,16 +5,97 @@
 
 struct FcdcBus {
   // F/CTL outputs
-  // Label 040
   Arinc429DiscreteWord efcsStatus1;
-  // Label 041
+
   Arinc429DiscreteWord efcsStatus2;
-  // Label 042
+
   Arinc429DiscreteWord efcsStatus3;
-  // Label 043
+
   Arinc429DiscreteWord efcsStatus4;
-  // Label 044
+
   Arinc429DiscreteWord efcsStatus5;
+
+  Arinc429DiscreteWord efcsStatus6;
+
+  Arinc429DiscreteWord efcsStatus7;
+
+  Arinc429DiscreteWord efcsStatus8;
+
+  Arinc429DiscreteWord efcsStatus9;
+
+  Arinc429DiscreteWord efcsStatus10;
+
+  Arinc429DiscreteWord efcsStatus11;
+
+  Arinc429NumericWord captRollCommand;
+
+  Arinc429NumericWord foRollCommand;
+
+  Arinc429NumericWord rudderPedalPosition;
+
+  Arinc429NumericWord captPitchCommand;
+
+  Arinc429NumericWord foPitchCommand;
+
+  Arinc429NumericWord aileronLeftInnerPos;
+
+  Arinc429NumericWord aileronLeftMiddlePos;
+
+  Arinc429NumericWord aileronLeftOuterPos;
+
+  Arinc429NumericWord aileronRightInnerPos;
+
+  Arinc429NumericWord aileronRightMiddlePos;
+
+  Arinc429NumericWord aileronRightOuterPos;
+
+  Arinc429NumericWord elevatorLeftInnerPos;
+
+  Arinc429NumericWord elevatorLeftOuterPos;
+
+  Arinc429NumericWord elevatorRightInnerPos;
+
+  Arinc429NumericWord elevatorRightOuterPos;
+
+  Arinc429NumericWord horizStabTrimPos;
+
+  Arinc429NumericWord rudderUpperPos;
+
+  Arinc429NumericWord rudderLowerPos;
+
+  Arinc429NumericWord rudderTrimPos;
+
+  Arinc429NumericWord spoilerLeft1Pos;
+
+  Arinc429NumericWord spoilerLeft2Pos;
+
+  Arinc429NumericWord spoilerLeft3Pos;
+
+  Arinc429NumericWord spoilerLeft4Pos;
+
+  Arinc429NumericWord spoilerLeft5Pos;
+
+  Arinc429NumericWord spoilerLeft6Pos;
+
+  Arinc429NumericWord spoilerLeft7Pos;
+
+  Arinc429NumericWord spoilerLeft8Pos;
+
+  Arinc429NumericWord spoilerRight1Pos;
+
+  Arinc429NumericWord spoilerRight2Pos;
+
+  Arinc429NumericWord spoilerRight3Pos;
+
+  Arinc429NumericWord spoilerRight4Pos;
+
+  Arinc429NumericWord spoilerRight5Pos;
+
+  Arinc429NumericWord spoilerRight6Pos;
+
+  Arinc429NumericWord spoilerRight7Pos;
+
+  Arinc429NumericWord spoilerRight8Pos;
 
   // FG outputs
   Arinc429DiscreteWord fcdcFgDiscreteWord1;
@@ -27,13 +108,13 @@ struct FcdcBus {
 };
 
 struct FcdcDiscreteInputs {
-  bool spoilersArmed;
-
   bool noseGearPressed;
 
-  bool primHealthy[3];
-
   bool otherFcdcHealthy;
+
+  bool primOff[3];
+
+  bool secOff[3];
 
   bool btvExitMissed;
 
@@ -65,13 +146,6 @@ struct FcdcDiscreteInputs {
   bool autoBrakeActive;
   int autoBrakeMode;
   int btvState;
-
-  /* FIXME use proper bus messages */
-  SimData simData;
-};
-
-struct FcdcAnalogInputs {
-  double spoilersLeverPos;
 };
 
 struct FcdcBusInputs {
