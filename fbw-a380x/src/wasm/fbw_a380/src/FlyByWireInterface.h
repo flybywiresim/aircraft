@@ -389,6 +389,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord9[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord10[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord11[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord12[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord3[2];
@@ -398,21 +399,36 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoPitchCommand[2];
   std::unique_ptr<LocalVariable> idFcdcRudderPedalPos[2];
-  std::unique_ptr<LocalVariable> idFcdcAileronLeftPos[2];
-  std::unique_ptr<LocalVariable> idFcdcElevatorLeftPos[2];
-  std::unique_ptr<LocalVariable> idFcdcAileronRightPos[2];
-  std::unique_ptr<LocalVariable> idFcdcElevatorRightPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronLeftInnerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronLeftMiddlePos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronLeftOuterPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronRightInnerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronRightMiddlePos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronRightOuterPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorLeftInnerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorLeftOuterPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorRightInnerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorRightOuterPos[2];
   std::unique_ptr<LocalVariable> idFcdcElevatorTrimPos[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderUpperPos[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderLowerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderTrimPos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft1Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft2Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft3Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft5Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft6Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft7Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft8Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight1Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight2Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight3Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight6Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight7Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight8Pos[2];
 
   // FCDC discrete output Lvars
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];
@@ -559,7 +575,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEhaBusPowered;
   std::unique_ptr<LocalVariable> idElecDc1BusPowered;
   std::unique_ptr<LocalVariable> idElecDc2BusPowered;
+  std::unique_ptr<LocalVariable> idElecAcEssBusPowered;
+  std::unique_ptr<LocalVariable> idElecAc1BusPowered;
   std::unique_ptr<LocalVariable> idElecAc2BusPowered;
+  std::unique_ptr<LocalVariable> idElecAcEhaBusPowered;
   std::unique_ptr<LocalVariable> idRatContactorClosed;
   std::unique_ptr<LocalVariable> idRatPosition;
 

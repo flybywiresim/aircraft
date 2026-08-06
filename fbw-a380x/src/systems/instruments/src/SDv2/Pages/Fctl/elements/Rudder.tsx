@@ -1,7 +1,6 @@
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subscribable } from '@microsoft/msfs-sdk';
 import { EbhaActuatorIndication, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { HORIZONTAL_MAX_DEFLECTION, HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { HorizontalDeflectionIndication } from './HorizontalDeflectionIndicator';
 import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
@@ -23,37 +22,27 @@ export class Rudder extends DisplayComponent<RudderProps> {
 
   private readonly fcdcDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_6'));
 
-  private readonly deflectionInfoValid = Subject.create(true);
+  private readonly fcdcDiscreteWord12 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_12'));
 
-  private readonly rudderDeflection = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.props.position}RudderDeflection`).atFrequency(10),
-    0,
+  private readonly fcdcRudderPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.position}_rudder_position_deg`),
   );
 
-  private readonly hydGreenAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`greenPressureSwitch`),
-    false,
-  );
+  private readonly deflectionInfoValid = this.fcdcRudderPosition.map((word) => !word.isInvalid());
 
-  private readonly hydYellowAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`yellowPressureSwitch`),
-    false,
-  );
+  private readonly hydGreenAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(28));
 
-  private readonly elecAc1Available = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`ac1Powered`),
-    false,
-  );
+  private readonly hydYellowAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(29));
 
-  private readonly elecAcEhaAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`acEhaPowered`),
-    false,
-  );
+  private readonly hydInfoAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValueOr(27, false));
 
-  private readonly elecAcEssAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`acEssPowered`),
-    false,
-  );
+  private readonly elecAc1Available = this.fcdcDiscreteWord12.map((word) => word.bitValue(25));
+
+  private readonly elecAcEhaAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(26));
+
+  private readonly elecAcEssAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(24));
+
+  private readonly elecInfoAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValueOr(23, false));
 
   private readonly failHydBit1: number;
 
@@ -105,7 +94,7 @@ export class Rudder extends DisplayComponent<RudderProps> {
         <HorizontalDeflectionIndication
           powerAvail={this.powerAvail}
           deflectionInfoValid={this.deflectionInfoValid}
-          deflection={this.rudderDeflection.map((rudderDeflection) => rudderDeflection * HORIZONTAL_MAX_DEFLECTION)}
+          deflection={this.fcdcRudderPosition.map((rudderDeflection) => -rudderDeflection.value)}
           position={this.props.position}
           onGround={this.props.onGround}
         />
@@ -120,9 +109,9 @@ export class Rudder extends DisplayComponent<RudderProps> {
           hydPowerAvailable={
             this.props.position === RudderPosition.Upper ? this.hydYellowAvailable : this.hydGreenAvailable
           }
-          hydPowerInfoAvailable={Subject.create(true)}
+          hydPowerInfoAvailable={this.hydInfoAvailable}
           elecPowerAvailable={this.elecAcEssAvailable}
-          elecPowerInfoAvailable={Subject.create(true)}
+          elecPowerInfoAvailable={this.elecInfoAvailable}
           hydActuatorFailed={this.actuator1Failed}
           elecActuatorFailed={this.actuator1ElecFailed}
         />
@@ -136,11 +125,11 @@ export class Rudder extends DisplayComponent<RudderProps> {
           hydPowerAvailable={
             this.props.position === RudderPosition.Upper ? this.hydGreenAvailable : this.hydYellowAvailable
           }
-          hydPowerInfoAvailable={Subject.create(true)}
+          hydPowerInfoAvailable={this.hydInfoAvailable}
           elecPowerAvailable={
             this.props.position === RudderPosition.Upper ? this.elecAcEhaAvailable : this.elecAc1Available
           }
-          elecPowerInfoAvailable={Subject.create(true)}
+          elecPowerInfoAvailable={this.elecInfoAvailable}
           hydActuatorFailed={this.actuator2Failed}
           elecActuatorFailed={this.actuator2ElecFailed}
         />

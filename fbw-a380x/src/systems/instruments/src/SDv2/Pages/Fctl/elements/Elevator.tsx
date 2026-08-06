@@ -1,7 +1,13 @@
-import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { ActuatorIndication, ActuatorType, ElecPowerSource, HydraulicPowerSource } from './ActuatorIndication';
-import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { DisplayComponent, EventBus, FSComponent, Subscribable } from '@microsoft/msfs-sdk';
+import {
+  ActuatorIndication,
+  ActuatorType,
+  ElecPowerSource,
+  getFcdcBitForPowerSource,
+  getFcdcBitForPowerSourceInfoAvail,
+  HydraulicPowerSource,
+} from './ActuatorIndication';
+import { VerticalDeflectionIndication } from './VerticalDeflectionIndication';
 import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
@@ -11,8 +17,8 @@ export enum ElevatorSide {
 }
 
 export enum ElevatorPosition {
-  Inboard = 'Inner',
-  Outboard = 'Outer',
+  Inboard = 'inner',
+  Outboard = 'outer',
 }
 
 interface ElevatorProps {
@@ -31,15 +37,13 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
 
   private readonly fcdcDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_5'));
 
-  private readonly deflectionInfoValid = Subject.create(true);
+  private readonly fcdcDiscreteWord12 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_12'));
 
-  private readonly elevatorDeflection = ConsumerSubject.create(
-    this.props.bus
-      .getSubscriber<SDSimvars>()
-      .on(`${this.props.side}${this.props.position}ElevatorDeflection`)
-      .atFrequency(10),
-    0,
+  private readonly fcdcElevatorPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.side}_${this.props.position}_elevator_position_deg`),
   );
+
+  private readonly deflectionInfoValid = this.fcdcElevatorPosition.map((word) => !word.isInvalid());
 
   private readonly hydPowerSource =
     this.props.side === ElevatorSide.Left ? HydraulicPowerSource.Green : HydraulicPowerSource.Yellow;
@@ -50,14 +54,20 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
       ? ElecPowerSource.AcEha
       : ElecPowerSource.AcEss;
 
-  private readonly hydPowerAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.hydPowerSource}PressureSwitch`),
-    false,
+  private readonly powerSource1Avail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValue(getFcdcBitForPowerSource(this.hydPowerSource)),
   );
 
-  private readonly elecPowerAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`${this.elecPowerSource}Powered`),
-    false,
+  private readonly powerSource1InfoAvail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValueOr(getFcdcBitForPowerSourceInfoAvail(this.hydPowerSource), false),
+  );
+
+  private readonly powerSource2Avail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValue(getFcdcBitForPowerSource(this.elecPowerSource)),
+  );
+
+  private readonly powerSource2InfoAvail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValueOr(getFcdcBitForPowerSourceInfoAvail(this.elecPowerSource), false),
   );
 
   private readonly failAvailBit1: number;
@@ -103,7 +113,7 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
         <VerticalDeflectionIndication
           powerAvail={this.powerAvail}
           deflectionInfoValid={this.deflectionInfoValid}
-          deflection={this.elevatorDeflection.map((elevatorDeflection) => elevatorDeflection * MIN_VERTICAL_DEFLECTION)}
+          deflection={this.fcdcElevatorPosition.map((elevatorDeflection) => elevatorDeflection.value)}
           onGround={this.props.onGround}
         />
 
@@ -112,8 +122,8 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
           y={131}
           type={ActuatorType.Conventional}
           powerSource={this.hydPowerSource}
-          powerSourceAvailable={this.hydPowerAvailable}
-          powerSourceInfoAvailable={Subject.create(true)}
+          powerSourceAvailable={this.powerSource1Avail}
+          powerSourceInfoAvailable={this.powerSource1InfoAvail}
           actuatorFailed={this.actuator1Failed}
         />
         <ActuatorIndication
@@ -121,8 +131,8 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
           y={161}
           type={ActuatorType.EHA}
           powerSource={this.elecPowerSource}
-          powerSourceAvailable={this.elecPowerAvailable}
-          powerSourceInfoAvailable={Subject.create(true)}
+          powerSourceAvailable={this.powerSource2Avail}
+          powerSourceInfoAvailable={this.powerSource2InfoAvail}
           actuatorFailed={this.actuator2Failed}
         />
       </g>

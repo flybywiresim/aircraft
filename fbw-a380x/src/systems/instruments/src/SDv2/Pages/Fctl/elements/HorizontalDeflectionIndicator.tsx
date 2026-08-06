@@ -8,8 +8,8 @@ import {
 import { RudderPosition } from './Rudder';
 
 const SCALE_LENGTH = 116;
-export const HORIZONTAL_MAX_DEFLECTION = 30;
-export const HORIZONTAL_MIN_DEFLECTION = -30;
+const HORIZONTAL_MAX_DEFLECTION = 30;
+const HORIZONTAL_MIN_DEFLECTION = -30;
 
 interface HorizontalDeflectionIndicationProps {
   x?: number;
@@ -56,7 +56,7 @@ export class HorizontalDeflectionIndication extends DisplayComponent<HorizontalD
 
   render() {
     return (
-      <g transform={`translate(${this.props.x} ${this.props.y})`}>
+      <g transform={`translate(${this.props.x ?? 0} ${this.props.y ?? 0})`}>
         <path class="Grey Fill" d="m0,0 h 116 v15 h-116 z" />
 
         <path class="Green SW2" visibility={this.maxDeflectionVisibility} d="m-1,0 v 15 M117,0 v 15" />
