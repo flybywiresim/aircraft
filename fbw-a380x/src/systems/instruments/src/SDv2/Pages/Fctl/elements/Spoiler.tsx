@@ -1,14 +1,11 @@
 import {
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
   MappedSubject,
-  Subject,
   Subscribable,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { SDSimvars } from '../../../SDSimvarPublisher';
 import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
@@ -45,19 +42,21 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
 
   private readonly fcdcDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_8'));
 
-  private readonly deflectionInfoValid = Subject.create(true);
-
-  private readonly spoilerDeflection = ConsumerSubject.create(
-    this.props.bus
-      .getSubscriber<SDSimvars>()
-      .on(`${this.props.side}Spoiler${this.props.position}Deflection`)
-      .atFrequency(10),
-    0,
+  private readonly fcdcSpoilerPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.side}_spoiler_${this.props.position}_position_deg`),
   );
+
+  private readonly deflectionInfoValid = this.fcdcSpoilerPosition.map((word) => !word.isInvalid());
 
   private readonly availBit: number;
 
   private readonly powerAvail = this.fcdcDiscreteWord8.map((word) => word.bitValue(this.availBit));
+
+  private readonly powerNotAvailLinesVisible = MappedSubject.create(
+    ([powerAvail, deflectionInfoValid]) => deflectionInfoValid && !powerAvail,
+    this.powerAvail,
+    this.deflectionInfoValid,
+  );
 
   private readonly maxDeflectionVisible = MappedSubject.create(
     ([powerAvail, deflectionInfoValid, onGround]) =>
@@ -116,14 +115,16 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             deflectionInfoValid ? 'inherit' : 'hidden',
           )}
-          d={this.spoilerDeflection.map(
-            (spoilerDeflection) => `m0,0 h15 v${deflectionToYOffset(spoilerDeflection * 50, maxDeflection)} h-16 z`,
+          d={this.fcdcSpoilerPosition.map(
+            (spoilerDeflection) => `m0,0 h15 v${deflectionToYOffset(-spoilerDeflection.value, maxDeflection)} h-16 z`,
           )}
         />
 
         <path
           class="Amber SW4 LineRound"
-          visibility={this.powerAvail.map((spoilersFailed) => (!spoilersFailed ? 'inherit' : 'hidden'))}
+          visibility={this.powerNotAvailLinesVisible.map((powerNotAvailLinesVisible) =>
+            powerNotAvailLinesVisible ? 'inherit' : 'hidden',
+          )}
           d="m1,-2 v-31 M14,-2 v-31"
         />
 

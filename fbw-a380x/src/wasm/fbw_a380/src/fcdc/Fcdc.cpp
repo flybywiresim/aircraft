@@ -70,6 +70,43 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus9.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus10.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus11.setSsm(Arinc429SignStatus::FailureWarning);
+
+    output.captRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.foRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rudderPedalPosition.setSsm(Arinc429SignStatus::FailureWarning);
+    output.captPitchCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.foPitchCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronLeftInnerPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronLeftMiddlePos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronLeftOuterPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronRightInnerPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronRightMiddlePos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.aileronRightOuterPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.elevatorLeftInnerPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.elevatorLeftOuterPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.elevatorRightInnerPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.elevatorRightOuterPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.horizStabTrimPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rudderUpperPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rudderLowerPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rudderTrimPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft1Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft2Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft3Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft4Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft5Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft6Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft7Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerLeft8Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight1Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight2Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight3Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight4Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight5Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight6Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight7Pos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.spoilerRight8Pos.setSsm(Arinc429SignStatus::FailureWarning);
+
     output.fcdcFgDiscreteWord1.setSsm(Arinc429SignStatus::FailureWarning);
     output.fcdcFgDiscreteWord2.setSsm(Arinc429SignStatus::FailureWarning);
     output.fcdcFgDiscreteWord3.setSsm(Arinc429SignStatus::FailureWarning);
@@ -85,6 +122,14 @@ FcdcBus Fcdc::getBusOutputs() {
                                                        bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
                                                        bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
 
+  const auto prim1Fault = !isNo(busInputs.prims[0].fctl.fctl_law_status_word);
+  const auto prim2Fault = !isNo(busInputs.prims[1].fctl.fctl_law_status_word);
+  const auto prim3Fault = !isNo(busInputs.prims[2].fctl.fctl_law_status_word);
+
+  const auto sec1Fault = !isNo(busInputs.secs[0].fctl_law_status_word);
+  const auto sec2Fault = !isNo(busInputs.secs[1].fctl_law_status_word);
+  const auto sec3Fault = !isNo(busInputs.secs[2].fctl_law_status_word);
+
   output.efcsStatus1.setSsm(ssm);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A);
@@ -93,12 +138,12 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::AlternateLaw2);
   output.efcsStatus1.setBit(18, systemPitchLaw == PitchLaw::DirectLaw);
   output.efcsStatus1.setBit(19, false);
-  output.efcsStatus1.setBit(23, !isNo(busInputs.prims[0].fctl.fctl_law_status_word));
-  output.efcsStatus1.setBit(24, !isNo(busInputs.prims[1].fctl.fctl_law_status_word));
-  output.efcsStatus1.setBit(25, !isNo(busInputs.prims[2].fctl.fctl_law_status_word));
-  output.efcsStatus1.setBit(26, !isNo(busInputs.secs[0].fctl_law_status_word));
-  output.efcsStatus1.setBit(27, !isNo(busInputs.secs[1].fctl_law_status_word));
-  output.efcsStatus1.setBit(28, !isNo(busInputs.secs[2].fctl_law_status_word));
+  output.efcsStatus1.setBit(23, prim1Fault);
+  output.efcsStatus1.setBit(24, prim2Fault);
+  output.efcsStatus1.setBit(25, prim3Fault);
+  output.efcsStatus1.setBit(26, sec1Fault);
+  output.efcsStatus1.setBit(27, sec2Fault);
+  output.efcsStatus1.setBit(28, sec3Fault);
   output.efcsStatus1.setBit(29, !discreteInputs.otherFcdcHealthy);
 
   const auto [prim1LeftAileron1Fault, prim1RightAileron1Fault, prim1LeftAileron2Fault, prim1RightAileron2Fault] =
@@ -363,9 +408,9 @@ FcdcBus Fcdc::getBusOutputs() {
 
   output.efcsStatus9.setSsm(ssm);
   output.efcsStatus9.setBit(11, bitFromValueOr(busInputs.secs[0].rudder_status_word, 29, true));
-  output.efcsStatus9.setBit(12, bitFromValueOr(busInputs.secs[3].rudder_status_word, 29, true));
+  output.efcsStatus9.setBit(12, bitFromValueOr(busInputs.secs[2].rudder_status_word, 29, true));
   output.efcsStatus9.setBit(13, bitFromValueOr(busInputs.secs[0].rudder_status_word, 27, false));
-  output.efcsStatus9.setBit(14, bitFromValueOr(busInputs.secs[3].rudder_status_word, 27, false));
+  output.efcsStatus9.setBit(14, bitFromValueOr(busInputs.secs[2].rudder_status_word, 27, false));
   output.efcsStatus9.setBit(15, false);
   output.efcsStatus9.setBit(18, false);
   output.efcsStatus9.setBit(19, false);
@@ -401,6 +446,118 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus10.setBit(25, prim3LawCap != PitchLaw::NormalLaw);
   output.efcsStatus10.setBit(26, false);
   output.efcsStatus10.setBit(27, false);
+
+  output.efcsStatus11.setSsm(ssm);
+
+  output.efcsStatus12.setSsm(ssm);
+  output.efcsStatus12.setBit(11, prim1Elevator2Fault);
+  output.efcsStatus12.setBit(12, prim1Elevator1Fault);
+  output.efcsStatus12.setBit(13, prim1Elevator3Fault);
+  output.efcsStatus12.setBit(14, prim2Elevator2Fault);
+  output.efcsStatus12.setBit(15, prim2Elevator3Fault);
+  output.efcsStatus12.setBit(16, prim2Elevator1Fault);
+  output.efcsStatus12.setBit(17, prim3Elevator1Fault);
+  output.efcsStatus12.setBit(18, prim3Elevator2Fault);
+  output.efcsStatus12.setBit(23, true);
+  output.efcsStatus12.setBit(24, discreteInputs.acEssAvail);
+  output.efcsStatus12.setBit(25, discreteInputs.ac1Avail);
+  output.efcsStatus12.setBit(26, discreteInputs.acEhaAvail);
+  // TODO Hyd info should come from F/CTL Computers
+  output.efcsStatus12.setBit(27, !(prim1Fault && prim2Fault && prim3Fault && sec1Fault && sec2Fault && sec3Fault));
+  output.efcsStatus12.setBit(28, discreteInputs.greenHydraulicAvailable);
+  output.efcsStatus12.setBit(29, discreteInputs.yellowHydraulicAvailable);
+
+  auto setSurfacePosition4 = [&](Arinc429NumericWord& target, base_arinc_429 pos1, base_arinc_429 pos2, base_arinc_429 pos3,
+                                 base_arinc_429 pos4) {
+    const auto [surfacePosition, surfacePositionValid] = computeSurfacePosition(pos1, pos2, pos3, pos4);
+    target.setFromData(surfacePosition, surfacePositionValid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData);
+  };
+
+  auto setSurfacePosition2 = [&](Arinc429NumericWord& target, base_arinc_429 pos1, base_arinc_429 pos2) {
+    const auto [surfacePosition, surfacePositionValid] = computeSurfacePosition(pos1, pos2);
+    target.setFromData(surfacePosition, surfacePositionValid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData);
+  };
+
+  setSurfacePosition4(output.captPitchCommand, busInputs.prims[masterPrimIndex].fctl.left_sidestick_pitch_command_deg,
+                      busInputs.secs[0].left_sidestick_pitch_command_deg, busInputs.secs[1].left_sidestick_pitch_command_deg,
+                      busInputs.secs[2].left_sidestick_pitch_command_deg);
+  setSurfacePosition4(output.captRollCommand, busInputs.prims[masterPrimIndex].fctl.left_sidestick_roll_command_deg,
+                      busInputs.secs[0].left_sidestick_roll_command_deg, busInputs.secs[1].left_sidestick_roll_command_deg,
+                      busInputs.secs[2].left_sidestick_roll_command_deg);
+  setSurfacePosition4(output.foPitchCommand, busInputs.prims[masterPrimIndex].fctl.right_sidestick_pitch_command_deg,
+                      busInputs.secs[0].right_sidestick_pitch_command_deg, busInputs.secs[1].right_sidestick_pitch_command_deg,
+                      busInputs.secs[2].right_sidestick_pitch_command_deg);
+  setSurfacePosition4(output.foRollCommand, busInputs.prims[masterPrimIndex].fctl.right_sidestick_roll_command_deg,
+                      busInputs.secs[0].right_sidestick_roll_command_deg, busInputs.secs[1].right_sidestick_roll_command_deg,
+                      busInputs.secs[2].right_sidestick_roll_command_deg);
+  setSurfacePosition4(output.foRollCommand, busInputs.prims[masterPrimIndex].fctl.rudder_pedal_position_deg,
+                      busInputs.secs[0].rudder_pedal_position_deg, busInputs.secs[1].rudder_pedal_position_deg,
+                      busInputs.secs[2].rudder_pedal_position_deg);
+
+  setSurfacePosition4(output.aileronLeftInnerPos, busInputs.prims[0].fctl.left_aileron_1_position_deg,
+                      busInputs.prims[1].fctl.left_aileron_2_position_deg, busInputs.secs[0].left_aileron_1_position_deg,
+                      busInputs.secs[1].left_aileron_2_position_deg);
+  setSurfacePosition4(output.aileronLeftMiddlePos, busInputs.prims[2].fctl.left_aileron_1_position_deg,
+                      busInputs.prims[0].fctl.left_aileron_2_position_deg, busInputs.secs[2].left_aileron_1_position_deg,
+                      busInputs.secs[0].left_aileron_2_position_deg);
+  setSurfacePosition2(output.aileronLeftOuterPos, busInputs.prims[1].fctl.left_aileron_1_position_deg,
+                      busInputs.prims[2].fctl.left_aileron_2_position_deg);
+
+  setSurfacePosition4(output.aileronRightInnerPos, busInputs.prims[0].fctl.right_aileron_1_position_deg,
+                      busInputs.prims[1].fctl.right_aileron_2_position_deg, busInputs.secs[0].right_aileron_1_position_deg,
+                      busInputs.secs[1].right_aileron_2_position_deg);
+  setSurfacePosition4(output.aileronRightMiddlePos, busInputs.prims[2].fctl.right_aileron_1_position_deg,
+                      busInputs.prims[0].fctl.right_aileron_2_position_deg, busInputs.secs[2].right_aileron_1_position_deg,
+                      busInputs.secs[0].right_aileron_2_position_deg);
+  setSurfacePosition2(output.aileronRightOuterPos, busInputs.prims[1].fctl.right_aileron_1_position_deg,
+                      busInputs.prims[2].fctl.right_aileron_2_position_deg);
+
+  setSurfacePosition4(output.elevatorLeftInnerPos, busInputs.prims[2].fctl.elevator_1_position_deg,
+                      busInputs.prims[0].fctl.elevator_2_position_deg, busInputs.secs[2].elevator_1_position_deg,
+                      busInputs.secs[0].elevator_2_position_deg);
+  setSurfacePosition4(output.elevatorLeftOuterPos, busInputs.prims[0].fctl.elevator_1_position_deg,
+                      busInputs.prims[1].fctl.elevator_2_position_deg, busInputs.secs[0].elevator_1_position_deg,
+                      busInputs.secs[1].elevator_2_position_deg);
+  setSurfacePosition4(output.elevatorRightInnerPos, busInputs.prims[2].fctl.elevator_1_position_deg,
+                      busInputs.prims[1].fctl.elevator_3_position_deg, busInputs.secs[2].elevator_1_position_deg,
+                      busInputs.secs[1].elevator_3_position_deg);
+  setSurfacePosition4(output.elevatorRightOuterPos, busInputs.prims[1].fctl.elevator_1_position_deg,
+                      busInputs.prims[0].fctl.elevator_3_position_deg, busInputs.secs[1].elevator_1_position_deg,
+                      busInputs.secs[0].elevator_3_position_deg);
+
+  setSurfacePosition4(output.horizStabTrimPos, busInputs.prims[2].fctl.ths_position_deg, busInputs.prims[0].fctl.ths_position_deg,
+                      busInputs.secs[2].ths_position_deg, busInputs.secs[0].ths_position_deg);
+
+  setSurfacePosition4(output.rudderUpperPos, busInputs.prims[0].fctl.rudder_1_position_deg, busInputs.prims[1].fctl.rudder_1_position_deg,
+                      busInputs.secs[0].rudder_1_position_deg, busInputs.secs[1].rudder_1_position_deg);
+  setSurfacePosition4(output.rudderLowerPos, busInputs.prims[0].fctl.rudder_2_position_deg, busInputs.prims[2].fctl.rudder_1_position_deg,
+                      busInputs.secs[0].rudder_2_position_deg, busInputs.secs[2].rudder_1_position_deg);
+
+  setSurfacePosition2(output.rudderTrimPos, busInputs.secs[0].rudder_trim_actual_pos_deg, busInputs.secs[2].rudder_trim_actual_pos_deg);
+
+  auto setSpoilerPosition = [&](Arinc429NumericWord& target, base_arinc_429 pos) {
+    const auto posValid = isNo(pos);
+
+    target.setFromData(pos.Data, posValid ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData);
+  };
+
+  setSpoilerPosition(output.spoilerLeft1Pos, busInputs.secs[2].left_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerLeft2Pos, busInputs.secs[1].left_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerLeft3Pos, busInputs.secs[0].left_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerLeft4Pos, busInputs.prims[2].fctl.left_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerLeft5Pos, busInputs.prims[1].fctl.left_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerLeft6Pos, busInputs.prims[0].fctl.left_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerLeft7Pos, busInputs.secs[1].left_spoiler_2_position_deg);
+  setSpoilerPosition(output.spoilerLeft8Pos, busInputs.secs[2].left_spoiler_2_position_deg);
+
+  setSpoilerPosition(output.spoilerRight1Pos, busInputs.secs[2].right_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerRight2Pos, busInputs.secs[1].right_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerRight3Pos, busInputs.secs[0].right_spoiler_1_position_deg);
+  setSpoilerPosition(output.spoilerRight4Pos, busInputs.prims[2].fctl.right_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerRight5Pos, busInputs.prims[1].fctl.right_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerRight6Pos, busInputs.prims[0].fctl.right_spoiler_position_deg);
+  setSpoilerPosition(output.spoilerRight7Pos, busInputs.secs[1].right_spoiler_2_position_deg);
+  setSpoilerPosition(output.spoilerRight8Pos, busInputs.secs[2].right_spoiler_2_position_deg);
 
   output.fcdcFgDiscreteWord1.setSsm(ssm);
   output.fcdcFgDiscreteWord1.setBit(24, land2Capacity);
@@ -488,33 +645,6 @@ std::tuple<bool, real32_T> computeElevatorPosition(base_arinc_429 pos1,
   }
 
   return {posValid, pos};
-}
-
-bool computeElevatorPosition(base_arinc_429 pos1,
-                             bool computer1Engaged,
-                             base_arinc_429 pos2,
-                             bool computer2Engaged,
-                             base_arinc_429 pos3,
-                             bool computer3Engaged,
-                             base_arinc_429 pos4,
-                             bool computer4Engaged,
-                             real32_T& result) {
-  const auto anyEngaged = computer1Engaged || computer2Engaged || computer3Engaged || computer4Engaged;
-
-  if ((!anyEngaged || computer1Engaged) && isNo(pos1)) {
-    result = pos1.Data;
-  } else if ((!anyEngaged || computer2Engaged) && isNo(pos2)) {
-    result = pos2.Data;
-  } else if ((!anyEngaged || computer3Engaged) && isNo(pos3)) {
-    result = pos3.Data;
-  } else if ((!anyEngaged || computer4Engaged) && isNo(pos4)) {
-    result = pos4.Data;
-  } else {
-    result = 0;
-    return false;
-  }
-
-  return true;
 }
 
 void Fcdc::updateApproachCapability(double deltaTime) {
@@ -759,4 +889,40 @@ std::tuple<bool, bool, bool, bool> Fcdc::computeSpoilerStatusFromPrim(base_arinc
 std::tuple<bool, bool, bool, bool> Fcdc::computeSpoilerStatusFromSec(base_arinc_429& word, int offset, bool defaultValue) {
   return {bitFromValueOr(word, 11 + offset, defaultValue), bitFromValueOr(word, 14 + offset, defaultValue),
           bitFromValueOr(word, 17 + offset, defaultValue), bitFromValueOr(word, 20 + offset, defaultValue)};
+}
+
+// These should also consider which computer is engaged and use that position as priority, but this is not currently implemented as there
+// cannot currently be a difference between surface position feedbacks.
+std::tuple<real_T, bool> Fcdc::computeSurfacePosition(base_arinc_429 pos1, base_arinc_429 pos2, base_arinc_429 pos3, base_arinc_429 pos4) {
+  bool positionInfoValid = true;
+  real_T surfacePosition;
+  if (isNo(pos1)) {
+    surfacePosition = pos1.Data;
+  } else if (isNo(pos2)) {
+    surfacePosition = pos2.Data;
+  } else if (isNo(pos3)) {
+    surfacePosition = pos3.Data;
+  } else if (isNo(pos4)) {
+    surfacePosition = pos4.Data;
+  } else {
+    surfacePosition = 0;
+    positionInfoValid = false;
+  }
+
+  return {surfacePosition, positionInfoValid};
+}
+
+std::tuple<real_T, bool> Fcdc::computeSurfacePosition(base_arinc_429 pos1, base_arinc_429 pos2) {
+  bool positionInfoValid = true;
+  real_T surfacePosition;
+  if (isNo(pos1)) {
+    surfacePosition = pos1.Data;
+  } else if (isNo(pos2)) {
+    surfacePosition = pos2.Data;
+  } else {
+    surfacePosition = 0;
+    positionInfoValid = false;
+  }
+
+  return {surfacePosition, positionInfoValid};
 }

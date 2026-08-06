@@ -27,6 +27,8 @@ struct FcdcBus {
 
   Arinc429DiscreteWord efcsStatus11;
 
+  Arinc429DiscreteWord efcsStatus12;
+
   Arinc429NumericWord captRollCommand;
 
   Arinc429NumericWord foRollCommand;
@@ -142,6 +144,10 @@ struct FcdcDiscreteInputs {
   bool dcEssFailed;
   bool dc2Failed;
   bool ac2Failed;
+
+  bool acEssAvail;
+  bool ac1Avail;
+  bool acEhaAvail;
 
   bool autoBrakeActive;
   int autoBrakeMode;
