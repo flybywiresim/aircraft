@@ -401,6 +401,10 @@ export class SyntheticRunway extends DisplayComponent<{
       this.srwyP8,
       this.srwyP9,
       this.fmsLandingRunway,
+      this.srwyPl1,
+      this.srwyPl2,
+      this.srwyPl3,
+      this.srwyPl4,
     );
 
     this.subscriptions.push(this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda)));
