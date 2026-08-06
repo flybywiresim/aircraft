@@ -1,5 +1,4 @@
 import {
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -8,7 +7,8 @@ import {
   Subscribable,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 
 interface FctlComputerShapeProps {
   x: number;
@@ -84,20 +84,15 @@ interface PrimSecFlapsSlatsProps {
 }
 
 export class Prims extends DisplayComponent<PrimSecFlapsSlatsProps> {
-  private infoAvailable = Subject.create(true);
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
 
-  private readonly prim1Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('prim1Healthy'),
-    false,
-  );
-  private readonly prim2Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('prim2Healthy'),
-    false,
-  );
-  private readonly prim3Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('prim3Healthy'),
-    false,
-  );
+  private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
+
+  private infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
+
+  private readonly prim1Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(23));
+  private readonly prim2Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(24));
+  private readonly prim3Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(25));
 
   render() {
     return (
@@ -132,20 +127,15 @@ export class Prims extends DisplayComponent<PrimSecFlapsSlatsProps> {
 }
 
 export class Secs extends DisplayComponent<PrimSecFlapsSlatsProps> {
-  private infoAvailable = Subject.create(true);
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
 
-  private readonly sec1Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('sec1Healthy'),
-    false,
-  );
-  private readonly sec2Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('sec2Healthy'),
-    false,
-  );
-  private readonly sec3Healthy = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on('sec3Healthy'),
-    false,
-  );
+  private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
+
+  private infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
+
+  private readonly sec1Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(26));
+  private readonly sec2Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(27));
+  private readonly sec3Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(28));
 
   render() {
     return (
