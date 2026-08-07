@@ -20,6 +20,7 @@ import {
   LagFilter,
   getSmallestAngle,
   HudElems,
+  HudMode,
 } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -507,6 +508,7 @@ class PitchScale extends DisplayComponent<{
   private threeDegPath = FSComponent.createRef<SVGPathElement>();
   private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
   private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 0);
   private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
   private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
@@ -514,12 +516,16 @@ class PitchScale extends DisplayComponent<{
   private readonly verticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode').whenChanged(), 0);
 
   private readonly threeDegLineVis = MappedSubject.create(
-    ([ls1btn, ls2btn, decMode, flightPhase, verticalMode]) => {
+    ([ls1btn, ls2btn, decMode, flightPhase, verticalMode, hudMode]) => {
       if (ls1btn || ls2btn) {
-        if (flightPhase === FmgcFlightPhase.Approach) {
-          return verticalMode === VerticalMode.FLARE || verticalMode === VerticalMode.ROLL_OUT ? 'none' : 'block';
+        if (hudMode === HudMode.NORMAL) {
+          if (flightPhase === FmgcFlightPhase.Approach) {
+            return verticalMode === VerticalMode.FLARE ? 'none' : 'block';
+          } else {
+            return decMode === 2 ? 'none' : 'block';
+          }
         } else {
-          return decMode === 2 ? 'none' : 'block';
+          return 'none';
         }
       } else {
         return 'none';
@@ -530,6 +536,7 @@ class PitchScale extends DisplayComponent<{
     this.decMode,
     this.flightPhase,
     this.verticalMode,
+    this.hudMode,
   );
   private data: LSPath = {
     roll: new Arinc429Word(0),
