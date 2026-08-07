@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "가속 고도 (ft)",
       "EngineOutAccelerationHeight": "엔진 손상 중 가속 고도 (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS 기압 단위",
       "IsisMetricAltitude": "ISIS 고도 미터로 표기",
       "LatLonExtendedFormat": "FMGC 위도/경도 항로 형식",

@@ -53,7 +53,7 @@ enum ArmedVerticalMode {
   TCAS = 6,
 }
 
-function isArmed(bitmask, armedBit: ArmedVerticalMode | ArmedLateralMode): boolean {
+function isArmed(bitmask: number, armedBit: ArmedVerticalMode | ArmedLateralMode): boolean {
   return ((bitmask >> armedBit) & 1) === 1;
 }
 
