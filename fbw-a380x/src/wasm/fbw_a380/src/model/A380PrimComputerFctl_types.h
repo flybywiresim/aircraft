@@ -506,6 +506,20 @@ struct base_time
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
 #define DEFINED_TYPEDEF_FOR_base_sim_data_
 
@@ -1046,20 +1060,6 @@ struct base_prim_lateral_surface_positions
   real_T right_spoiler_8_deg;
   real_T upper_rudder_deg;
   real_T lower_rudder_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
 };
 
 #endif
