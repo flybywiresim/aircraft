@@ -149,7 +149,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
 
   private readonly papiLineVis = MappedSubject.create(([hasDme]) => {
-    return hasDme ? 'block' : 'none';
+    return hasDme ? true : false;
   }, this.hasDme);
 
   private readonly papiLineLength = MappedSubject.create(
@@ -587,7 +587,7 @@ export class SyntheticRunway extends DisplayComponent<{
       );
     }
     // papi line calcs
-    if (this.data2 !== undefined) {
+    if (this.data2 !== undefined && this.papiLineVis.get()) {
       if (this.papiLineLength.get() > Number(this.data2.width) / 3) {
         this.dirLeftPapi.set((Number(this.data2.direction) + 90 + 180) % 360);
         this.dirRightPapi.set((Number(this.data2.direction) - 90 + 180) % 360);
@@ -611,6 +611,9 @@ export class SyntheticRunway extends DisplayComponent<{
         this.data2.papiCoordinates[3].long,
       );
       this.papiCoords[2].alt = this.data2.papiCoordinates[2].alt - this.threshHeighAbvGnd;
+
+      this.papiLinePathRefs[0].instance.setAttribute('d', this.drawPath(this.papiCoords[0], this.papiCoords[1]));
+      this.papiLinePathRefs[1].instance.setAttribute('d', this.drawPath(this.papiCoords[2], this.papiCoords[3]));
     }
 
     if (this.JKCoords.length === 4) {
@@ -623,8 +626,6 @@ export class SyntheticRunway extends DisplayComponent<{
           this.drawPath(this.centerLineCoords[i], this.centerLineCoords[i + 1]),
         );
       }
-      this.papiLinePathRefs[0].instance.setAttribute('d', this.drawPath(this.papiCoords[0], this.papiCoords[1]));
-      this.papiLinePathRefs[1].instance.setAttribute('d', this.drawPath(this.papiCoords[2], this.papiCoords[3]));
     } else {
       return;
     }
@@ -707,7 +708,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }
     for (let i = 0; i < 2; i++) {
       const papiLinePathRef = FSComponent.createRef<SVGTextElement>();
-      res.push(<path class="SmallStroke Green" display={this.papiLineVis.get()} ref={papiLinePathRef} d="" />);
+      res.push(<path class="SmallStroke Green" ref={papiLinePathRef} d="" />);
       this.papiLinePathRefs.push(papiLinePathRef);
     }
 
