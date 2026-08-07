@@ -1767,6 +1767,7 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
         }
       } else {
         this.showMach = false;
+        this.machTextSub.set('');
       }
       if (this.showMach) {
         this.machTextSub.set(`.${machPermille}`);
