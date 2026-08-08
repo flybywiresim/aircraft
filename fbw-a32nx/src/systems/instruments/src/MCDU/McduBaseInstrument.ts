@@ -20,7 +20,6 @@ export class McduBaseInstrument extends FsBaseInstrument<McduFsInstrument> {
     new FbwAircraftSentryClient().onInstrumentLoaded({
       dsn: process.env.SENTRY_DSN,
       buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
-      root: false,
     });
 
     return new McduFsInstrument(this);

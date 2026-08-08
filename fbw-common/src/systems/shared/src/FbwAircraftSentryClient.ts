@@ -1,11 +1,9 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
 
 import { NXDataStore } from './persistence';
-import { PopUpDialog } from './LegacyPopupTypes';
 import { SentryReporter } from './SentryReporter';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
@@ -26,11 +24,6 @@ export interface FbwAircraftSentryClientConfiguration {
    * Prefix of `build_info.json` file, for fetching commit SHA
    */
   buildInfoFilePrefix?: string;
-
-  /**
-   * Whether this is the root client (ONLY SET THIS ONCE)
-   */
-  root: boolean;
 }
 
 /**
@@ -44,8 +37,7 @@ export class FbwAircraftSentryClient {
   private static lifecycleGeneration = 0;
 
   /**
-   * Method called when a panel is initialized. If root client, runs the normal flow (ask for consent if state is unknown). Otherwise,
-   * wait for `DataStore` property changes.
+   * Method called when a panel is initialized. Waits for `DataStore` property changes.
    *
    * @param config a {@link FbwAircraftSentryClientConfiguration} object
    *
@@ -59,12 +51,6 @@ export class FbwAircraftSentryClient {
     }
 
     this.runClientSubscription(config);
-
-    if (config.root) {
-      console.log('[SentryClient] Starting as root client');
-
-      return this.runRootClientFlow(config);
-    }
 
     return Promise.resolve(false);
   }
@@ -84,85 +70,6 @@ export class FbwAircraftSentryClient {
         console.log('[SentryClient] Synchronised consent state is Refused. Shutting down the client');
         FbwAircraftSentryClient.closeSentry();
       }
-    });
-  }
-
-  /**
-   * Runs the root client flow, checking if consent state is known, asking for it otherwise, then initializing appropriately
-   *
-   * @param config a {@link FbwAircraftSentryClientConfiguration} object
-   *
-   * @returns a `Promise<boolean>` that indicates the result of the root client flow
-   */
-  private async runRootClientFlow(config: FbwAircraftSentryClientConfiguration): Promise<boolean> {
-    const consentValue = NXDataStore.getLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Unknown) as SentryConsentState;
-
-    switch (consentValue) {
-      case SentryConsentState.Given:
-        console.log('[SentryClient] Consent state is Given. Initializing sentry');
-
-        return FbwAircraftSentryClient.attemptInitializeSentry(config);
-      case SentryConsentState.Unknown:
-        console.log('[SentryClient] Consent state is Unknown. Asking for consent');
-
-        // It seems that for some people, spawning the popup / writing to NXDataStore can cause a CTD if the flight is not fully loaded.
-        // So instead, we wait for a bit after the FlightStart event to show it and gather consent.
-        return new Promise((resolve, reject) => {
-          // FIXME find a consent solution that works for FS2024
-          const instrument = null; // document.querySelector('vcockpit-panel > *');
-
-          if (instrument) {
-            resolve(
-              FbwAircraftSentryClient.requestConsent()
-                .then((didConsent) => {
-                  if (didConsent) {
-                    NXDataStore.setLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Given);
-
-                    console.log('[SentryClient] User requested consent state Given. Initializing sentry');
-
-                    return FbwAircraftSentryClient.attemptInitializeSentry(config);
-                  }
-
-                  NXDataStore.setLegacy(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-
-                  console.log('[SentryClient] User requested consent state Refused. Doing nothing');
-
-                  return false;
-                })
-                .catch(() => false),
-            );
-          } else {
-            reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
-          }
-        });
-      case SentryConsentState.Refused:
-        console.log('[SentryClient] Consent state is Refused. Doing nothing');
-        break;
-      default:
-        console.log('[SentryClient] Consent state is corrupted. Doing nothing');
-        break;
-    }
-
-    return false;
-  }
-
-  /**
-   * Displays an MSFS popup request consent for error reporting
-   *
-   * @returns a `Promise<boolean` indicating the consent state
-   */
-  static async requestConsent() {
-    const popup = new PopUpDialog();
-
-    return new Promise<boolean>((resolve) => {
-      popup.showPopUp(
-        'AIRCRAFT - ERROR REPORTING',
-        'Are you willing to help FlyByWire Simulations by enabling anonymous reporting of errors that may occur in the future? ' +
-          'This is 100% optional and we will never collect your personal data, but it will help us diagnose issues quickly.',
-        'normal',
-        () => resolve(true),
-        () => resolve(false),
-      );
     });
   }
 

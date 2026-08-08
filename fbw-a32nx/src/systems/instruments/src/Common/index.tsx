@@ -11,12 +11,11 @@ declare const process: any;
 /**
  * Use the given React element to render the instrument using React.
  */
-export const render = (Slot: React.ReactElement, sentryRootClient = false) => {
+export const render = (Slot: React.ReactElement) => {
   const doRender = () => {
     new FbwAircraftSentryClient().onInstrumentLoaded({
       dsn: process.env.SENTRY_DSN,
       buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
-      root: sentryRootClient,
     });
 
     ReactDOM.render(Slot, getRenderTarget());
