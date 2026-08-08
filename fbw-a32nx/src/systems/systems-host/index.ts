@@ -26,6 +26,7 @@ import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublis
 import { FakeDmc } from './systems/ECP/FakeDmc';
 import { FwsManager } from './systems/FWC/FwsManager';
 import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
+import { FbwAircraftSentryClient } from '@flybywiresim/fbw-sdk';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -115,6 +116,11 @@ class SystemsHost extends BaseInstrument {
       },
       true,
     );
+
+    new FbwAircraftSentryClient().onInstrumentLoaded({
+      dsn: process.env.SENTRY_DSN,
+      buildInfoFilePrefix: process.env.AIRCRAFT_PROJECT_PREFIX,
+    });
 
     this.backplane.init();
   }
