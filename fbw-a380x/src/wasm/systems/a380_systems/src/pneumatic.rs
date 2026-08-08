@@ -1453,6 +1453,7 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
     use ntest::assert_about_eq;
     use rstest::rstest;
     use systems::{
@@ -2609,8 +2610,14 @@ mod tests {
             test_bed.run_with_delta(Duration::from_millis(16));
         }
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, yellow_pressures];
@@ -2767,31 +2774,46 @@ mod tests {
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.ip_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
         assert_about_eq!(
             test_bed.ip_pressure(3).get::<psi>(),
             ambient_pressure.get::<psi>(),
             pressure_tolerance().get::<psi>()
         );
 
-        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.hp_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
         assert_about_eq!(
             test_bed.hp_pressure(3).get::<psi>(),
             ambient_pressure.get::<psi>(),
             pressure_tolerance().get::<psi>()
         );
 
-        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.transfer_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
         assert_about_eq!(
             test_bed.transfer_pressure(3).get::<psi>(),
             ambient_pressure.get::<psi>(),
             pressure_tolerance().get::<psi>()
         );
 
-        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_inlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
         assert!(!test_bed.precooler_inlet_pressure(3).is_nan());
 
-        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert_gt!(
+            (test_bed.precooler_outlet_pressure(1) - ambient_pressure),
+            pressure_tolerance()
+        );
         assert!(!test_bed.precooler_outlet_pressure(3).is_nan());
 
         assert!(test_bed.hp_valve_is_open(1));
@@ -2822,9 +2844,18 @@ mod tests {
             assert!(test_bed.hp_valve_is_powered(i));
             assert!(test_bed.pr_valve_is_powered(i));
 
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > pressure_tolerance());
-            assert!(test_bed.hp_pressure(i) - ambient_pressure > pressure_tolerance());
-            assert!(test_bed.transfer_pressure(i) - ambient_pressure > pressure_tolerance());
+            assert_gt!(
+                test_bed.ip_pressure(i) - ambient_pressure,
+                pressure_tolerance()
+            );
+            assert_gt!(
+                test_bed.hp_pressure(i) - ambient_pressure,
+                pressure_tolerance()
+            );
+            assert_gt!(
+                test_bed.transfer_pressure(i) - ambient_pressure,
+                pressure_tolerance()
+            );
             assert!(
                 (test_bed.precooler_inlet_pressure(i) - ambient_pressure) > pressure_tolerance()
             );
@@ -2852,10 +2883,22 @@ mod tests {
             .mach_number(MachNumber(0.))
             .and_stabilize();
 
-        assert!(test_bed.precooler_outlet_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.precooler_outlet_pressure(2) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.precooler_outlet_pressure(3) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.precooler_outlet_pressure(4) - ambient_pressure > pressure_tolerance());
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(2) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(3) - ambient_pressure,
+            pressure_tolerance()
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(4) - ambient_pressure,
+            pressure_tolerance()
+        );
 
         test_bed = test_bed.set_bleed_air_running();
 
@@ -3198,10 +3241,22 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(3));
         assert!(!test_bed.pr_valve_is_open(4));
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(30.));
-        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(30.));
-        assert!(test_bed.precooler_outlet_pressure(3) > Pressure::new::<psi>(30.));
-        assert!(test_bed.precooler_outlet_pressure(4) > Pressure::new::<psi>(30.));
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(1),
+            Pressure::new::<psi>(30.)
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(2),
+            Pressure::new::<psi>(30.)
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(3),
+            Pressure::new::<psi>(30.)
+        );
+        assert_gt!(
+            test_bed.precooler_outlet_pressure(4),
+            Pressure::new::<psi>(30.)
+        );
     }
 
     #[test]
@@ -3215,8 +3270,14 @@ mod tests {
             .set_bleed_air_running()
             .and_stabilize();
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(35.)
+        );
     }
 
     #[test]
@@ -3237,8 +3298,14 @@ mod tests {
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(25.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(25.));
+        assert_lt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(25.)
+        );
+        assert_lt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(25.)
+        );
 
         // Make sure bleed valves are closed because reservoirs should be pressurized by HP pipes directly
         assert!(!test_bed.pr_valve_is_open(1));
@@ -3250,8 +3317,14 @@ mod tests {
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(40.)
+        );
     }
 
     #[test]
@@ -3275,8 +3348,14 @@ mod tests {
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
+        assert_lt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(20.)
+        );
+        assert_lt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(20.)
+        );
 
         // Make sure HP valves are closed because reservoirs should be pressurized by inboard engines system, not the HP pipe directly
         assert!(!test_bed.hp_valve_is_open(2));
@@ -3289,15 +3368,27 @@ mod tests {
             .run_multiple_frames(Duration::from_secs(16));
 
         // We still expect them not to be pressurized because the crossbleed valves are closed
-        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
+        assert_lt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(20.)
+        );
+        assert_lt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(20.)
+        );
 
         test_bed = test_bed
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_stabilize();
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(30.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(30.));
+        assert_gt!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(30.)
+        );
+        assert_gt!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            Pressure::new::<psi>(30.)
+        );
     }
 
     #[test]
@@ -3320,8 +3411,14 @@ mod tests {
 
         test_bed = test_bed.stop_eng2().stop_eng3().and_stabilize();
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() >= pressure_before_green);
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() >= pressure_before_yellow);
+        assert_ge!(
+            test_bed.green_hydraulic_reservoir_pressure(),
+            pressure_before_green
+        );
+        assert_ge!(
+            test_bed.yellow_hydraulic_reservoir_pressure(),
+            pressure_before_yellow
+        );
     }
 
     #[test]
@@ -3485,20 +3582,32 @@ mod tests {
                 .both_packs_auto()
                 .and_stabilize();
 
-            assert!(test_bed.left_pack_flow_valve_flow(1) > flow_rate_tolerance());
-            assert!(test_bed.right_pack_flow_valve_flow(1) > flow_rate_tolerance());
-            assert!(test_bed.left_pack_flow_valve_flow(2) > flow_rate_tolerance());
-            assert!(test_bed.right_pack_flow_valve_flow(2) > flow_rate_tolerance());
+            assert_gt!(test_bed.left_pack_flow_valve_flow(1), flow_rate_tolerance());
+            assert_gt!(
+                test_bed.right_pack_flow_valve_flow(1),
+                flow_rate_tolerance()
+            );
+            assert_gt!(test_bed.left_pack_flow_valve_flow(2), flow_rate_tolerance());
+            assert_gt!(
+                test_bed.right_pack_flow_valve_flow(2),
+                flow_rate_tolerance()
+            );
 
             test_bed = test_bed
                 .set_pack_flow_pb_is_auto(1, false)
                 .set_pack_flow_pb_is_auto(2, false)
                 .and_stabilize();
 
-            assert!(test_bed.left_pack_flow_valve_flow(1) < flow_rate_tolerance());
-            assert!(test_bed.right_pack_flow_valve_flow(1) < flow_rate_tolerance());
-            assert!(test_bed.left_pack_flow_valve_flow(2) < flow_rate_tolerance());
-            assert!(test_bed.right_pack_flow_valve_flow(2) < flow_rate_tolerance());
+            assert_lt!(test_bed.left_pack_flow_valve_flow(1), flow_rate_tolerance());
+            assert_lt!(
+                test_bed.right_pack_flow_valve_flow(1),
+                flow_rate_tolerance()
+            );
+            assert_lt!(test_bed.left_pack_flow_valve_flow(2), flow_rate_tolerance());
+            assert_lt!(
+                test_bed.right_pack_flow_valve_flow(2),
+                flow_rate_tolerance()
+            );
         }
     }
 }
