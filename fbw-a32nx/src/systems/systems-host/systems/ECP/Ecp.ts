@@ -29,6 +29,7 @@ import {
 } from '../../../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { DmcEcpLightStatus, FakeDmcEvents } from './FakeDmc';
 import { A320Failure } from '../../../failures/src/a320';
+import { CircuitMonitor, UpstreamBus } from '../../../shared/src/electrical/CircuitMonitor';
 
 const OUTPUT_BUS_TRANSMIT_INTERVAL_MS = 33;
 
@@ -124,8 +125,7 @@ export class Ecp implements Instrument {
   private readonly simTime = ConsumerSubject.create(this.sub.on('simTime'), 0);
   private lastSimTime = 0;
 
-  // FIXME CB 15WT 49VU
-  private readonly isInputPowerHealthy = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
+  private readonly isInputPowerHealthy = new CircuitMonitor(this.bus, UpstreamBus.DcEss, '49VU', 'E', 12);
   private readonly powerRideThroughTimer = new DebounceTimer();
   private readonly isPowerHealthy = Subject.create(false);
   private readonly isEcpFailed = Subject.create(false);
