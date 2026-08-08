@@ -1,6 +1,6 @@
 @echo off
 
-set image="ghcr.io/flybywiresim/dev-env@sha256:8d3377bdd506aab35b7a2b19a8848efc2f6e778a636f177e61635ab9584f1b08"
+set image="ghcr.io/flybywiresim/dev-env@sha256:28b1f55c047b9ec338c3d676a82225fe135b0b1061fa7993c03b9a75b5e470cd"
 set envfile="%cd%\.env"
 
 if not exist %envfile% (
