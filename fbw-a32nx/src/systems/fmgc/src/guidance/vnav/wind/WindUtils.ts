@@ -16,7 +16,7 @@ export class WindUtils {
    */
   static interpolateWindEntries(entries: WindEntry[], altitude: number, result: WindVector): WindVector {
     if (entries.length === 0) {
-      return copyWindVector({ magnitude: undefined, direction: undefined }, result);
+      return this.copyEmptyWindVector(result);
     } else if (entries.length === 1) {
       return cloneWindVector(entries[0].vector);
     }
@@ -53,7 +53,7 @@ export class WindUtils {
       }
     }
 
-    return copyWindVector({ magnitude: undefined, direction: undefined }, result);
+    return this.copyEmptyWindVector(result);
   }
 
   public static computeTailwindComponent(wind: WindVector, trueCourseDegrees: number): number {

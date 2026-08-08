@@ -59,22 +59,13 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import {
-  BitFlags,
-  EventBus,
-  Subscription,
-  SimVarValueType,
-  ClockEvents,
-  ConsumerSubject,
-  Vec2Math,
-} from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Subscription, SimVarValueType, ClockEvents, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { HistoryWind } from '@fmgc/wind/HistoryWind';
 import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
@@ -95,6 +86,7 @@ import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindU
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
+import { FmsWindEvents } from '@fmgc/wind/FmsWindEvents';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -303,7 +295,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public efisInterfaces?: Record<EfisSide, EfisInterface>;
   public guidanceController?: GuidanceController;
   public navigation?: Navigation;
-  private historyWinds?: HistoryWind;
 
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
@@ -404,7 +395,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
-    this.historyWinds = new HistoryWind(this.bus);
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
@@ -3838,12 +3828,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean {
     if (s === Keypad.clrValue) {
-      this.flightPlanService.setPerformanceData('approachWindDirection', null, forPlan);
-      this.flightPlanService.setPerformanceData('approachWindMagnitude', null, forPlan);
-      this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', false, forPlan);
-
-      this.flightPlanService.setDescentWindEntry(0, null, forPlan);
-
+      this.bus.getPublisher<FmsWindEvents>().pub('delete_approach_wind', forPlan, false, false);
       return true;
     }
 
@@ -3857,20 +3842,19 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.flightPlanService.setPerformanceData('approachWindDirection', dir % 360, forPlan); // 360 is displayed as 0
-    this.flightPlanService.setPerformanceData('approachWindMagnitude', mag, forPlan);
-    this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', true, forPlan);
 
-    const plan = this.getFlightPlan(forPlan);
-
-    const destinationMagVar = plan.destinationAirport
-      ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
-      : 0;
-
-    const theta = MagVar.magneticToTrue(dir, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS;
-
-    const groundWind = { altitude: 0, vector: Vec2Math.setFromPolar(mag, theta, Vec2Math.create()), flags: 0 };
-    this.flightPlanService.setDescentWindEntry(0, groundWind, forPlan, false);
+    this.bus.getPublisher<FmsWindEvents>().pub(
+      'set_approach_wind',
+      {
+        vector: {
+          direction: dir,
+          magnitude: mag,
+        },
+        plan: forPlan,
+      },
+      false,
+      false,
+    );
 
     return true;
   }
@@ -5678,8 +5662,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     await this.flightPlanService.insertWindUplink(forPlan);
   }
 
-  public getHistoryWinds(cruiseLevel: number | null) {
-    return this.historyWinds?.getRecordedWinds(cruiseLevel);
+  public getHistoryWinds() {
+    return this.flightPlanService.getHistoryWindsEntries();
   }
   // ---------------------------
   // CDUMainDisplay Types

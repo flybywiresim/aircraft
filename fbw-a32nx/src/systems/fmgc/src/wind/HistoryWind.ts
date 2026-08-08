@@ -9,8 +9,7 @@ import { WindUtils } from '../guidance/vnav/wind/WindUtils';
 import { WindEntry } from '../flightplanning/data/wind';
 
 export class HistoryWind {
-  private static readonly LOCALSTORAGE_KEY: string =
-    (process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK') + '.HistoryWinds';
+  private static readonly LOCALSTORAGE_KEY: string = 'A380X' + '.HistoryWinds';
 
   private readonly sub = this.bus.getSubscriber<NavigationEvents & FlightPhaseManagerEvents>();
 

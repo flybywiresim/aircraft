@@ -791,7 +791,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
   ): Promise<void> {
-    const entries = this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get();
+    const entries = this.prepareClimbWindDraftModification() ?? this.performanceData.climbWindEntries.get();
     const hasDraft = this.draftClimbWindExists;
 
     // Partial entries not allowed on non draft winds
@@ -828,16 +828,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
-   * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
-   * the destination altitude
+   * @param shouldUpdateTwrWindAndCreateDraft whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
+   * the destination altitude.
    */
   async setDescentWindEntry(
     altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
-    shouldUpdateTwrWind: boolean = true,
+    shouldUpdateTwrWindAndCreateDraft: boolean = true,
   ): Promise<void> {
-    const entries = this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get();
+    const entries = shouldUpdateTwrWindAndCreateDraft
+      ? this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get()
+      : this.performanceData.descentWindEntries.get();
     const hasDraft = this.draftDescentWindExists;
 
     // Partial entries not allowed on non draft winds
@@ -854,7 +856,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.parseGroundWindEntryAndSetTwrWind(
       entry,
-      shouldUpdateTwrWind && !this.draftDescentWindExists,
+      shouldUpdateTwrWindAndCreateDraft && !this.draftDescentWindExists,
       destinationElevation,
     );
 
@@ -893,7 +895,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
           'approachWindDirection',
           MagVar.trueToMagnetic(extractTheta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
         );
-        this.setPerformanceData('approachWindMagnitude', entry.vector.magnitude);
+        this.setPerformanceData('approachWindMagnitude', entry.vector.magnitude ?? null);
         this.setPerformanceData('isApproachWindPilotEntered', false);
       }
     }

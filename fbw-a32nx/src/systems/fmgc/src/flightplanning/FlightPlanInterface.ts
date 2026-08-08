@@ -524,4 +524,21 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param planIndex which flight plan index to insert the wind uplink into
    */
   insertWindUplink(planIndex: number): Promise<void>;
+
+  /**
+   * Gets the history winds entries stored by the fms.
+   * @param sortByAltitudeAscending whether to sort the wind entries by ascending order of altitude
+   */
+  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Readonly<WindEntry>[];
+
+  /**
+   * Tries to insert the history wind entries into the climb winds of the active flight-plan.
+   * @returns true if the insertion was succesful, false otherwise
+   */
+  insertHistoryWinds(): Promise<boolean>;
+
+  /**
+   * Returns whether history wind insertion is allowed.
+   */
+  historyWindInsertionAllowed(): boolean;
 }

@@ -386,19 +386,22 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const hasTmpy = this.tmpyActive.get();
     if (subPage === WindSubPageMenu.History) {
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
-      const historyWinds = this.props.fmcService.master.getHistoryWinds(cruiseFlightLevel);
+      const historyWinds = this.props.flightPlanInterface.getHistoryWindsEntries();
       let hasNonEmptyWind = false;
       for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
         const windEntry = historyWinds[i];
         if (windEntry) {
           const windVector = windEntry.vector;
-          hasNonEmptyWind = hasNonEmptyWind || windVector !== undefined;
+          hasNonEmptyWind =
+            hasNonEmptyWind || (windVector.direction !== undefined && windVector.magnitude !== undefined);
           this.historyWindFlightLevels[i].set((windEntry.altitude! / 100).toFixed(0).padStart(3, '0'));
-          this.historyWindSpeeds[i].set(windVector === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`);
-          this.historyWindDirections[i].set(
-            windVector === undefined ? '---' : formatWindTrueDegrees(windVector, false),
+          this.historyWindSpeeds[i].set(
+            windVector.magnitude === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`,
           );
-          this.historyWindUnitsVisible[i].set(windVector !== undefined);
+          this.historyWindDirections[i].set(
+            windVector.direction === undefined ? '---' : formatWindTrueDegrees(windVector, false),
+          );
+          this.historyWindUnitsVisible[i].set(windVector.direction !== undefined && windVector.magnitude !== undefined);
           this.historyWindValidEntry[i].set(true);
           this.isHistoryWindCruiseFlightLevel[i].set(
             cruiseFlightLevel !== null && windEntry.altitude == cruiseFlightLevel * 100,
@@ -407,9 +410,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
           this.historyWindValidEntry[i].set(false);
         }
       }
-      this.historyWindButtonVisible.set(
-        hasNonEmptyWind && this.props.fmcService.master.fmgc.data.flightPhase.get() === FmgcFlightPhase.Preflight,
-      );
+      this.historyWindButtonVisible.set(this.props.flightPlanInterface.historyWindInsertionAllowed());
     } else if (subPage === WindSubPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
@@ -604,10 +605,11 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   }
 
   private insertHistoryWind() {
-    const success = this.props.fmcService.master.insertHistoryWinds();
-    if (success) {
-      this.selectedSubPage.set(WindSubPageMenu.Climb);
-    }
+    this.props.flightPlanInterface.insertHistoryWinds().then((v) => {
+      if (v) {
+        this.selectedSubPage.set(WindSubPageMenu.Climb);
+      }
+    });
   }
 
   private clearDisplayWindEntry(entries: WindDisplayEntry[], index: number) {
@@ -1104,7 +1106,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedClimbWindDirections[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
                         <InputField
@@ -1119,7 +1121,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindSpeedFormat()}
                           value={this.displayedClimbWindSpeeds[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>
@@ -1244,7 +1246,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedCruiseWindDirections[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
@@ -1260,7 +1262,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindSpeedFormat()}
                           value={this.displayedCruiseWindSpeeds[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
@@ -1376,7 +1378,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindDirectionFormat()}
                           value={this.displayedDescentWindDirections[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
                         <InputField
@@ -1391,7 +1393,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindSpeedFormat()}
                           value={this.displayedDescentWindSpeeds[value]}
-                          canBeCleared={false}
+                          canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>

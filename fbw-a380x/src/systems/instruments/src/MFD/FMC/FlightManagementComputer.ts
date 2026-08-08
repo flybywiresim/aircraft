@@ -73,13 +73,6 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
-import { HistoryWind } from '@fmgc/wind/HistoryWind';
-import {
-  cloneWindVector,
-  FlightPlanWindEntry,
-  FlightPlanWindEntryFlags,
-  WindEntry,
-} from '@fmgc/flightplanning/data/wind';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { AtsuStatusCodes } from '@datalink/common';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '@providers/FmsAtsuBusPublisher';
@@ -87,6 +80,7 @@ import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindU
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 import { FmsToDatalinkSubsystemEvents } from '../shared/FmsDatalinkEvents';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
+import { FmsWindEvents } from '@fmgc/wind/FmsWindEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -209,8 +203,6 @@ export class FlightManagementComputer implements FmcInterface {
 
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
-
-  private historyWinds: HistoryWind;
 
   private readonly sub = this.bus.getSubscriber<FlightPhaseManagerEvents & MfdUIData>();
 
@@ -413,7 +405,6 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPhaseManager.init();
     this.#guidanceController.init();
     this.fmgc.guidanceController = this.#guidanceController;
-    this.historyWinds = new HistoryWind(this.bus);
 
     this.initSimVars();
 
@@ -1973,35 +1964,33 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry>[] {
-    return this.historyWinds.getRecordedWinds(cruiseFlightLevel, false);
-  }
-
-  public insertHistoryWinds(): boolean {
-    if (
-      this.flightPhase.get() === FmgcFlightPhase.Preflight &&
-      !this.flightPlanInterface.hasTemporary &&
-      this.flightPlanInterface.hasActive
-    ) {
-      const fp = this.flightPlanInterface.active;
-      if (!fp.hasDraftWindEntries()) {
-        const historyWinds = this.historyWinds
-          .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
-          .filter((entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined);
-        if (historyWinds.length > 0) {
-          const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
-            return {
-              altitude: entry.altitude,
-              vector: cloneWindVector(entry.vector),
-              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-            };
-          });
-          fp.setPerformanceData('climbWindEntries', entries);
-          return true;
-        }
-      }
+  setApproachWindDirection(value: number | null, forPlan: number): void {
+    const pub = this.bus.getPublisher<FmsWindEvents>();
+    if (value === null) {
+      pub.pub('delete_approach_wind', forPlan);
+    } else {
+      pub.pub('set_approach_wind', {
+        vector: {
+          direction: value!,
+          magnitude: undefined,
+        },
+        plan: forPlan,
+      });
     }
-    return false;
+  }
+  setApproachWindSpeed(value: number | null, forPlan: number): void {
+    const pub = this.bus.getPublisher<FmsWindEvents>();
+    if (value === null) {
+      pub.pub('delete_approach_wind', forPlan);
+    } else {
+      pub.pub('set_approach_wind', {
+        vector: {
+          magnitude: value!,
+          direction: undefined,
+        },
+        plan: forPlan,
+      });
+    }
   }
 
   private setCi0AndLrcIfActiveFlightplanHasNoCi(): void {

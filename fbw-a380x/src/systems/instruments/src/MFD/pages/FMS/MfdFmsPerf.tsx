@@ -3046,8 +3046,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindDirectionFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.flightPlanInterface.setPerformanceData(
-                                'approachWindDirection',
+                              this.props.fmcService.master.setApproachWindDirection(
                                 v,
                                 this.loadedFlightPlanIndex.get(),
                               );
@@ -3061,11 +3060,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.flightPlanInterface.setPerformanceData(
-                                'approachWindMagnitude',
-                                v,
-                                this.loadedFlightPlanIndex.get(),
-                              );
+                              this.props.fmcService.master.setApproachWindSpeed(v, this.loadedFlightPlanIndex.get());
                             }}
                             readonlyValue={this.approachWindMagnitude}
                             containerStyle="margin-left: 10px;"
