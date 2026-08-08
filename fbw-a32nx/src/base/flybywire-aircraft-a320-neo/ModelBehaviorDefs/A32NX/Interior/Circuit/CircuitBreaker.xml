@@ -1,0 +1,71 @@
+<!-- Copyright (c) 2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_A32NX_CB_Panel">
+        <Component ID="#CB_PANEL#">
+            <Loop>
+                <Setup>
+                    <Param>CUR_ID</Param>
+                    <From>1</From>
+                    <Inc>1</Inc>
+                    <While>
+                        <Arg Valid="CB_#CUR_ID#"/>
+                    </While>
+                </Setup>
+                <Do>
+                    <Parameters Type="Override">
+                        <CB_ID Process="Param">CB_#CUR_ID#</CB_ID>
+                    </Parameters>
+                    <UseTemplate Name="FBW_A32NX_CIRCUIT_BREAKER" />
+                </Do>
+            </Loop>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A32NX_CIRCUIT_BREAKER">
+        <Parameters Type="Override">
+            <CB_ROW Process="String">'#CB_ID#' 0 symb</CB_ROW>
+            <CB_COLUMN Process="String">'#CB_ID#' 1 '#CB_ID#' slen 1 - ssub</CB_COLUMN>
+        </Parameters>
+        <Parameters Type="Override">
+            <CB_VAR_INDEX Process="Int">#CB_COLUMN# 1 - 32 / flr</CB_VAR_INDEX>
+            <CB_BIT Process="Int">#CB_COLUMN# 1 - 32 %</CB_BIT>
+        </Parameters>
+        <Parameters Type="Override">
+            <CB_VAR>L:1:A32NX_CB_#CB_PANEL#_#CB_ROW#_TRIPPED_#CB_VAR_INDEX#</CB_VAR>
+            <IE_NAME>#CB_PANEL#_#CB_ID#</IE_NAME>
+            <CB_SET_MASK Process="Int">1 #CB_BIT# &lt;&lt;</CB_SET_MASK>
+            <CB_CLEAR_MASK Process="Int">1 #CB_BIT# &lt;&lt; ~</CB_CLEAR_MASK>
+        </Parameters>
+        <Parameters Type="Default">
+            <INPUT_EVENT_ID_SOURCE>A32NX_CB</INPUT_EVENT_ID_SOURCE>
+            <PART_ID>CB_#CB_PANEL#_#CB_ROW#_#CB_COLUMN#</PART_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <TOOLTIP_TITLE>A32NX.TOOLTIPS.CIRCUIT_BREAKER_TITLE</TOOLTIP_TITLE>
+            <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.CIRCUIT_BREAKER_ACTION</TT_DESCRIPTION_ID>
+        </Parameters>
+        <Parameters Type="Default">
+            <ANIM_NAME>#PART_ID#</ANIM_NAME>
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <ANIM_LAG>200</ANIM_LAG>
+            <NODE_ID>#PART_ID#</NODE_ID>
+        </Parameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <SET_STATE_EXTERNAL>(#CB_VAR#, enum) p0 if{ #CB_SET_MASK# | } els{ #CB_CLEAR_MASK# &amp; } (&gt;#CB_VAR#, enum)</SET_STATE_EXTERNAL>
+                <GET_STATE_EXTERNAL>(#CB_VAR#, enum) #CB_SET_MASK# &amp; 0 &gt; s0</GET_STATE_EXTERNAL>
+                <LOCAL_VAR_TO_WATCH_0_NAME>#CB_VAR#</LOCAL_VAR_TO_WATCH_0_NAME>
+                <CREATE_COMPONENT>False</CREATE_COMPONENT>
+                <OVERRIDE_ANIM_CODE>(B:#INPUT_EVENT_ID_SOURCE#_#IE_NAME#) #ANIM_LENGTH# *</OVERRIDE_ANIM_CODE>
+                <STR_STATE_OFF>CLOSED</STR_STATE_OFF>
+                <TT_VALUE_OFF>A32NX.TOOLTIPS.CIRCUIT_BREAKER_CLOSED</TT_VALUE_OFF>
+                <STR_STATE_ON>TRIPPED</STR_STATE_ON>
+                <TT_VALUE_ON>A32NX.TOOLTIPS.CIRCUIT_BREAKER_TRIPPED</TT_VALUE_ON>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>
