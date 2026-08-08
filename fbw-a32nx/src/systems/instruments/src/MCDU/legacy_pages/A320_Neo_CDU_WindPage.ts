@@ -4,8 +4,6 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
-  areWindEntriesTheSame,
-  cloneWindVector,
   FlightPlanWindEntry,
   FlightPlanWindEntryFlags,
   formatWindVector,
@@ -750,11 +748,7 @@ export class CDUWindPage {
 
     historyWinds.sort((a, b) => a.altitude! - b.altitude!);
 
-    const shouldAllowInsertion =
-      historyWinds.some((wind) => wind.vector !== undefined) &&
-      !plan.pendingWindUplink.isWindUplinkInProgress() &&
-      !plan.pendingWindUplink.isWindUplinkReadyToInsert() &&
-      !this.haveHistoryWindsBeenInserted(plan, historyWinds);
+    const shouldAllowInsertion = mcdu.flightPlanService.historyWindInsertionAllowed();
 
     const template = [
       ['HISTORY WIND'],
@@ -792,21 +786,12 @@ export class CDUWindPage {
     if (shouldAllowInsertion) {
       template[12][1] = 'INSERT*[color]amber';
 
-      mcdu.onRightInput[5] = async () => {
-        await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
-
-        for (const wind of historyWinds) {
-          if (wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) {
-            const windEntryToInsert: FlightPlanWindEntry = {
-              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-              altitude: wind.altitude,
-              vector: cloneWindVector(wind.vector),
-            };
-            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
+      mcdu.onRightInput[5] = () => {
+        mcdu.flightPlanService.insertHistoryWinds().then((v) => {
+          if (v) {
+            this.ShowCLBPage(mcdu, forPlan);
           }
-        }
-
-        this.ShowCLBPage(mcdu, forPlan);
+        });
       };
     }
 
@@ -1053,15 +1038,6 @@ export class CDUWindPage {
   private static formatCruiseWindAltitude(alt: number): string {
     // The cruise page always shows flight levels
     return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
-  }
-
-  private static haveHistoryWindsBeenInserted(plan: FlightPlan, historyWinds: WindEntry[]) {
-    const climbWinds = plan.performanceData.climbWindEntries.get();
-    if (climbWinds === null || climbWinds.length !== historyWinds.length) {
-      return false;
-    }
-
-    return climbWinds.every((wind, i) => areWindEntriesTheSame(wind, historyWinds[i]));
   }
 
   private static allowClimbWindPageAccess(plan: FlightPlan, phase: FmgcFlightPhase) {

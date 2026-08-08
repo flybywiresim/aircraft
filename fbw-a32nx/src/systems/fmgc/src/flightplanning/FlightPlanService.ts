@@ -8,7 +8,7 @@ import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Airway, AltitudeConstraint, Fix, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { BitFlags, ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -20,13 +20,32 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
-import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
+import {
+  WindEntry,
+  PropagatedWindEntry,
+  WindVector,
+  FlightPlanWindEntry,
+  cloneWindVector,
+  FlightPlanWindEntryFlags,
+  areWindEntriesTheSame,
+} from './data/wind';
 import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
+import { HistoryWind } from '../wind/HistoryWind';
+import { FlightPhaseManagerEvents } from '../flightphase';
+import { FmgcFlightPhase } from '../../../shared/src/flightphase';
+import { FmsWindEvents } from '../wind/FmsWindEvents';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
+
+  private readonly historyWinds = new HistoryWind(this.bus);
+
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   public syncClientID = MathUtils.randomInt32();
 
@@ -46,6 +65,56 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       master,
       config.DRAFT_ON_WIND_EDIT,
     );
+    this.bus
+      .getSubscriber<FmsWindEvents>()
+      .on('delete_approach_wind')
+      .handle((fp) => {
+        if (this.has(fp)) {
+          const plan = this.get(fp);
+          if (!plan.destinationRunway) {
+            return;
+          }
+          plan.setPerformanceData('approachWindDirection', null);
+          plan.setPerformanceData('approachWindMagnitude', null);
+          plan.setPerformanceData('isApproachWindPilotEntered', false);
+          plan.setDescentWindEntry(0, null, this.config.NUM_DESCENT_WIND_LEVELS, false);
+        }
+      });
+
+    this.bus
+      .getSubscriber<FmsWindEvents>()
+      .on('set_approach_wind')
+      .handle((data) => {
+        if (this.has(data.plan)) {
+          const plan = this.get(data.plan);
+          if (!plan.destinationRunway) {
+            return;
+          }
+          const windVector = data.vector;
+          plan.setPerformanceData(
+            'approachWindDirection',
+            windVector.direction !== undefined ? windVector.direction % 360 : null,
+          );
+          plan.setPerformanceData('approachWindMagnitude', windVector.magnitude ?? null);
+          plan.setPerformanceData('isApproachWindPilotEntered', true);
+          const destinationMagVar = plan.destinationAirport
+            ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
+            : 0;
+
+          const directionTouse = windVector.direction ?? plan.performanceData.approachWindDirection.get();
+          const theta =
+            directionTouse !== null
+              ? MagVar.magneticToTrue(directionTouse, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS
+              : undefined;
+          windVector.direction = theta;
+          windVector.magnitude = windVector.magnitude ?? plan.performanceData.approachWindMagnitude.get() ?? undefined;
+          plan.setDescentWindEntry(
+            0,
+            { flags: 0, altitude: 0, vector: windVector },
+            this.config.NUM_DESCENT_WIND_LEVELS,
+          );
+        }
+      });
   }
 
   createFlightPlans() {
@@ -971,10 +1040,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
     planIndex: number,
-    shouldUpdateTwrWind: boolean = true,
   ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS, shouldUpdateTwrWind);
+    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS);
   }
 
   async deleteAllClimbWindEntries() {
@@ -1010,5 +1078,58 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.config.NUM_CRUISE_WIND_LEVELS,
       this.config.NUM_DESCENT_WIND_LEVELS,
     );
+  }
+
+  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Readonly<WindEntry>[] {
+    return this.historyWinds.getRecordedWinds(
+      this.active.performanceData.cruiseFlightLevel.get(),
+      sortByAltitudeAscending,
+    );
+  }
+
+  async insertHistoryWinds(): Promise<boolean> {
+    if (this.historyWindInsertionAllowed()) {
+      const fp = this.active;
+      await this.deleteAllClimbWindEntries();
+      if (!fp.hasDraftWindEntries()) {
+        const historyWinds = this.historyWinds
+          .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
+          .filter((entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined);
+        if (historyWinds.length > 0) {
+          const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
+            return {
+              altitude: entry.altitude,
+              vector: cloneWindVector(entry.vector),
+              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+            };
+          });
+          fp.setPerformanceData('climbWindEntries', entries);
+          return Promise.resolve(true);
+        }
+      }
+    }
+    return Promise.resolve(false);
+  }
+
+  historyWindInsertionAllowed() {
+    const historyWindEntries = this.getHistoryWindsEntries();
+    return (
+      !this.hasTemporary &&
+      this.hasActive &&
+      this.flightPhase.get() === FmgcFlightPhase.Preflight &&
+      historyWindEntries.some((wind) => wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) &&
+      !this.active.pendingWindUplink.isWindUplinkInProgress() &&
+      !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
+      !this.haveHistoryWindsBeenInserted(historyWindEntries)
+    );
+  }
+
+  private haveHistoryWindsBeenInserted(historyWinds: WindEntry[]) {
+    const climbWinds = this.active.performanceData.climbWindEntries.get();
+    if (climbWinds === null || climbWinds.length !== historyWinds.length) {
+      return false;
+    }
+
+    return climbWinds.every((wind, i) => areWindEntriesTheSame(wind, historyWinds[i]));
   }
 }
