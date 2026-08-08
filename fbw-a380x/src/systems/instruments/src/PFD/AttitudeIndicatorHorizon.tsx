@@ -1,15 +1,24 @@
 // @ts-strict-ignore
 import {
   ClockEvents,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429ConsumerSubject, Arinc429Register, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
+  Arinc429Word,
+  ArincEventBus,
+} from '@flybywiresim/fbw-sdk';
 import {
   calculateHorizonOffsetFromPitch,
   calculateVerticalOffsetFromRoll,
@@ -19,85 +28,74 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
 
 class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolean; yOffset: Subscribable<number> }> {
-  private isActive = false;
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & ClockEvents & Arinc429Values>();
 
-  private selectedHeading = 0;
+  private fgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private heading = new Arinc429Word(0);
+  private fgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
+  private selectedHdgTrk = Arinc429LocalVarConsumerSubject.create(null);
 
-  private yOffset = 0;
+  private heading = ConsumerSubject.create(this.sub.on('headingAr'), new Arinc429Word(0));
 
-  private calculateAndSetOffset() {
-    const headingDelta = getSmallestAngle(this.selectedHeading, this.heading.value);
+  private readonly trkFpaModeActive = this.fgDiscreteWord5.map((word) => word.bitValueOr(11, true));
 
-    const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
+  private anyFdEngaged = this.fgDiscreteWord1.map((word) => word.bitValueOr(13, false) || word.bitValueOr(14, false));
 
-    if (Math.abs(offset) <= DisplayRange + 10) {
-      this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-      this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${this.yOffset}px, 0px)`;
-    } else {
-      this.horizonHeadingBug.instance.classList.add('HiddenElement');
-    }
-  }
+  private headingDelta = MappedSubject.create(
+    ([heading, selectedHeading]) => {
+      return getSmallestAngle(selectedHeading.value, heading.value);
+    },
+    this.heading,
+    this.selectedHdgTrk,
+  );
+
+  private readonly transform = MappedSubject.create(
+    ([delta, yOffset]) => `translate3d(${(delta * DistanceSpacing) / ValueSpacing}px, ${yOffset}px, 0px)`,
+    this.headingDelta,
+    this.props.yOffset,
+  );
+
+  private readonly visible = MappedSubject.create(
+    ([delta, selectedHdgTrk, anyFdEngaged]) =>
+      !anyFdEngaged &&
+      (selectedHdgTrk.isNormalOperation() || selectedHdgTrk.isFunctionalTest()) &&
+      Math.abs(delta) <= DisplayRange + 10,
+    this.headingDelta,
+    this.selectedHdgTrk,
+    this.anyFdEngaged,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
+    this.trkFpaModeActive.sub((trkFpaModeActive) => {
+      this.selectedHdgTrk.setConsumer(this.sub.on(trkFpaModeActive ? 'prim_selected_track' : 'prim_selected_heading'));
+    }, true);
 
-    sub
-      .on('selectedHeading')
-      .whenChanged()
-      .handle((s) => {
-        this.selectedHeading = s;
-        if (this.isActive) {
-          this.calculateAndSetOffset();
-        }
-      });
-
-    sub.on('headingAr').handle((h) => {
-      this.heading = h;
-      if (this.isActive) {
-        this.calculateAndSetOffset();
-      }
-    });
-
-    sub
-      .on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.isActive = !fd;
-        if (this.isActive) {
-          this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-        } else {
-          this.horizonHeadingBug.instance.classList.add('HiddenElement');
-        }
-      });
-
-    this.props.yOffset.sub((yOffset) => {
-      this.yOffset = yOffset;
-      if (this.isActive) {
-        this.calculateAndSetOffset();
-      }
+    this.heading.sub(() => {
+      this.transform;
     });
   }
 
   render(): VNode {
     return (
-      <g ref={this.horizonHeadingBug} id="HorizonHeadingBug">
-        <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
-        <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+      <g
+        style={{ transform: this.transform }}
+        class={{ HiddenElement: this.visible.map(SubscribableMapFunctions.not()) }}
+        id="HorizonHeadingBug"
+      >
+        <path class="ThickOutline" d="m68.906 80.823v-7" />
+        <path class="ThickStroke Cyan" d="m68.906 80.823v-7" />
       </g>
     );
   }
@@ -108,11 +106,10 @@ interface HorizonProps {
   readonly instrument: BaseInstrument;
   readonly isAttExcessive: Subscribable<boolean>;
   readonly filteredRadioAlt: Subscribable<number>;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & FcdcBusEvents>();
 
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -120,8 +117,15 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private yOffset = Subject.create(0);
 
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
 
   onAfterRender(node: VNode): void {
