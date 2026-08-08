@@ -205,7 +205,7 @@ export class LatchedDescentGuidance {
       return;
     }
 
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', this.speedTarget);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', this.speedTarget); //TODO: set the managed speed via the event bus in vnav driver.
 
     const guidanceTarget =
       this.speedState === DescentSpeedGuidanceState.TargetAndMargins

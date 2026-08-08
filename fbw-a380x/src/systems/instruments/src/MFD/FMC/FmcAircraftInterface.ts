@@ -3,6 +3,7 @@
 
 import {
   ConsumerSubject,
+  ConsumerValue,
   EventBus,
   GameStateProvider,
   MappedSubject,
@@ -47,6 +48,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { VnavEvents } from '@fmgc/events/VnavEvents';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 /**
@@ -244,6 +246,10 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
+  private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
+    null,
+  );
   private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
     Arinc429Register.empty().rawWord,
@@ -391,7 +397,11 @@ export class FmcAircraftInterface {
     );
 
     this.subs.push(this.speedsManagedAthr.sub((v) => this.speedsManagedAthrVar.set(v ?? 0), true));
-    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
+    this.subs.push(
+      this.speedsManagedPfd.sub((v) => {
+        this.speedsManagedPfdVar.set(v ?? 0);
+      }, true),
+    );
   }
 
   thrustReductionAccelerationChecks() {
@@ -1070,7 +1080,7 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = this.speedsManagedPfdVar.get();
+          vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? this.fmgc.getManagedDescentSpeed();
           this.managedSpeedTarget = this.speedsManagedAthrVar.get();
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
