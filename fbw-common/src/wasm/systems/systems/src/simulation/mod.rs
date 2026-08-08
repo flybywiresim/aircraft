@@ -866,8 +866,10 @@ impl<T: Writer> Write<Duration> for T {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use more_asserts::*;
     use rstest::rstest;
+
+    use super::*;
 
     mod start_state {
         use super::*;
@@ -906,7 +908,7 @@ mod tests {
 
         #[test]
         fn includes_partial_ord_operators() {
-            assert!(StartState::Climb < StartState::Cruise);
+            assert_lt!(StartState::Climb, StartState::Cruise);
         }
 
         #[test]

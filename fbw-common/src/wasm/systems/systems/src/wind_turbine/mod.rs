@@ -271,6 +271,8 @@ impl SimulationElement for WindTurbine {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
     use crate::electrical;
     use crate::hydraulic;
@@ -406,7 +408,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()).abs() < 0.1);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()).abs(), 0.1);
 
         test_bed.command(|a| {
             a.set_stow_position(Ratio::new::<ratio>(
@@ -415,7 +417,7 @@ mod tests {
         });
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()).abs() < 0.1);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()).abs(), 0.1);
     }
 
     /// A380 turbine TESTS
@@ -434,7 +436,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3500.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3500.);
     }
 
     #[test]
@@ -451,7 +453,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3500.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3500.);
     }
 
     #[test]
@@ -470,7 +472,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 3200.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 3200.);
     }
 
     #[test]
@@ -489,7 +491,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(58.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3200.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3200.);
     }
 
     #[test]
@@ -507,7 +509,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 500.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 500.);
     }
 
     #[test]
@@ -525,15 +527,15 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3800.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3800.);
 
         test_bed.set_true_airspeed(Velocity::default());
 
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 200.);
 
         test_bed.run_with_delta(Duration::from_secs_f64(3.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 5.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 5.);
     }
 
     #[test]
@@ -551,12 +553,12 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3800.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3800.);
 
         test_bed.set_true_airspeed(Velocity::new::<knot>(30.));
 
         test_bed.run_with_delta(Duration::from_secs_f64(10.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 50.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 50.);
     }
 
     /// A320 turbine TESTS
@@ -575,7 +577,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 4000.);
     }
 
     #[test]
@@ -592,7 +594,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 4000.);
     }
 
     #[test]
@@ -610,7 +612,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 4000.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 4000.);
     }
 
     #[test]
@@ -628,7 +630,7 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(5.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 3000.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 3000.);
     }
 
     #[test]
@@ -646,7 +648,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 500.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 500.);
     }
 
     #[test]
@@ -664,15 +666,15 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(3.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 5000.);
 
         test_bed.set_true_airspeed(Velocity::default());
 
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 200.);
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 5.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 5.);
     }
 
     #[test]
@@ -690,12 +692,12 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
+        assert_gt!(test_bed.query(|a| a.turbine_rpm()), 5000.);
 
         test_bed.set_true_airspeed(Velocity::new::<knot>(30.));
 
         test_bed.run_with_delta(Duration::from_secs_f64(10.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) < 50.);
+        assert_lt!(test_bed.query(|a| a.turbine_rpm()), 50.);
     }
 
     fn a380_wind_turbine(context: &mut InitContext) -> WindTurbine {
