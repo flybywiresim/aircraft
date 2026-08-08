@@ -15,7 +15,6 @@ import {
   Subscribable,
   SubscribableMapFunctions,
   Subscription,
-  Vec2Math,
 } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
@@ -75,7 +74,12 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { HistoryWind } from '@fmgc/wind/HistoryWind';
-import { FlightPlanWindEntry, FlightPlanWindEntryFlags, WindEntry } from '@fmgc/flightplanning/data/wind';
+import {
+  cloneWindVector,
+  FlightPlanWindEntry,
+  FlightPlanWindEntryFlags,
+  WindEntry,
+} from '@fmgc/flightplanning/data/wind';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { AtsuStatusCodes } from '@datalink/common';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '@providers/FmsAtsuBusPublisher';
@@ -1983,12 +1987,12 @@ export class FlightManagementComputer implements FmcInterface {
       if (!fp.hasDraftWindEntries()) {
         const historyWinds = this.historyWinds
           .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
-          .filter((entry) => entry.vector !== undefined);
+          .filter((entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined);
         if (historyWinds.length > 0) {
           const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
             return {
               altitude: entry.altitude,
-              vector: Vec2Math.copy(entry.vector!, Vec2Math.create()),
+              vector: cloneWindVector(entry.vector),
               flags: FlightPlanWindEntryFlags.InsertedFromHistory,
             };
           });

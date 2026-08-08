@@ -918,6 +918,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     } else {
       if (existingEntryIndex !== -1) {
         // Edit
+        const old = windEntries[existingEntryIndex];
+        if (
+          old.vector.direction !== undefined &&
+          old.vector.magnitude !== undefined &&
+          old.altitude !== undefined &&
+          (entry.altitude === undefined || entry.vector.magnitude === undefined || entry.vector.direction === undefined)
+        ) {
+          // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
+          entry.vector.magnitude = undefined;
+          entry.vector.direction = undefined;
+          entry.altitude = undefined;
+        }
         windEntries[existingEntryIndex] = entry;
       } else {
         // Add

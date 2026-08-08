@@ -8,7 +8,6 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  Vec2Math,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from '../../MFD';
@@ -23,7 +22,6 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import './MfdFmsWindPage.scss';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
-  createWindVector,
   extractWindDirectionFromVector,
   extractWindSpeedFromVector,
   FlightPlanWindEntry,
@@ -395,7 +393,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         if (windEntry) {
           const windVector = windEntry.vector;
           hasNonEmptyWind = hasNonEmptyWind || windVector !== undefined;
-          this.historyWindFlightLevels[i].set((windEntry.altitude / 100).toFixed(0).padStart(3, '0'));
+          this.historyWindFlightLevels[i].set((windEntry.altitude! / 100).toFixed(0).padStart(3, '0'));
           this.historyWindSpeeds[i].set(windVector === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`);
           this.historyWindDirections[i].set(
             windVector === undefined ? '---' : formatWindTrueDegrees(windVector, false),
@@ -445,11 +443,15 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       if (winds !== null) {
         for (let i = 0; i < winds.length; i++) {
           const wind = winds[i];
-          this.cruiseWindDisplayEntries[i].altitude = wind.altitude / 100;
+          this.cruiseWindDisplayEntries[i].altitude = wind.altitude !== undefined ? wind.altitude / 100 : null;
           this.cruiseWindDisplayEntries[i].direction =
-            wind.type !== PropagationType.Backward && wind.vector ? extractWindDirectionFromVector(wind.vector) : null;
+            wind.type !== PropagationType.Backward && wind.vector.direction !== undefined
+              ? extractWindDirectionFromVector(wind.vector) ?? null
+              : null;
           this.cruiseWindDisplayEntries[i].speed =
-            wind.type !== PropagationType.Backward && wind.vector ? extractWindSpeedFromVector(wind.vector) : null;
+            wind.type !== PropagationType.Backward && wind.vector.magnitude !== undefined
+              ? extractWindSpeedFromVector(wind.vector) ?? null
+              : null;
           this.cruiseWindDisplayEntries[i].speedOrDirectionIsPropagated = wind.type === PropagationType.Forward;
           this.cruiseWindDisplayEntries[i].isPropagated = wind.type !== PropagationType.Entry;
         }
@@ -470,8 +472,12 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
       const hasAlternate = fp?.alternateDestinationAirport !== undefined;
       const alternateWind = fp?.getAlternateWind();
-      this.alternateWindDirection.set(alternateWind !== null ? extractWindDirectionFromVector(alternateWind!) : null);
-      this.alternateWindSpeed.set(alternateWind !== null ? extractWindSpeedFromVector(alternateWind!) : null);
+      this.alternateWindDirection.set(
+        alternateWind?.direction !== undefined ? extractWindDirectionFromVector(alternateWind) ?? null : null,
+      );
+      this.alternateWindSpeed.set(
+        alternateWind?.magnitude !== undefined ? extractWindSpeedFromVector(alternateWind) ?? null : null,
+      );
       this.alternateWindDisabled.set(!hasAlternate || hasTmpy);
       this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
@@ -670,16 +676,16 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       if (windEntry) {
         // Copy the flightplan entry to the display entry.
         const row = displayEntries[i];
-        row.altitude = windEntry.altitude;
-        row.direction = windEntry.vector !== undefined ? extractWindDirectionFromVector(windEntry.vector) : null;
-        row.speed = windEntry.vector !== undefined ? extractWindSpeedFromVector(windEntry.vector) : null;
+        row.altitude = windEntry.altitude ?? null;
+        row.direction =
+          windEntry.vector.direction !== undefined ? extractWindDirectionFromVector(windEntry.vector) ?? null : null;
+        row.speed =
+          windEntry.vector.magnitude !== undefined ? extractWindSpeedFromVector(windEntry.vector) ?? null : null;
         row.enteredByPilot =
           (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) !==
           FlightPlanWindEntryFlags.InsertedFromHistory;
       }
     }
-
-    this.sortDisplayWindEntriesByAltitude(displayEntries);
   }
 
   /**
@@ -715,10 +721,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     }
   }
 
-  private sortDisplayWindEntriesByAltitude(entries: WindDisplayEntry[]) {
-    entries.sort((a, b) => (b.altitude ?? 0) - (a.altitude ?? 0));
-  }
-
   private onWindEntryModified(index: number, value: number | null, dataType: WindEntryData, isDescentWind = false) {
     const displayEntries = isDescentWind ? this.descentWindDisplayEntries : this.climbWindDisplayEntries;
     const altitudesVisible = isDescentWind ? this.descentWindAltitudesVisible : this.climbWindAltitudesVisible;
@@ -728,27 +730,26 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const displayedAltitudes = isDescentWind ? this.displayedDescentWindAltitudes : this.displayedClimbWindAltitudes;
     const displayEntry = displayEntries[index];
     const oldAltitude = displayEntry.altitude;
-    // If null is specified, we are clearing the entry.
+    const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
+    const currentSpeed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
     if (value === null && oldAltitude !== null && dataType === WindEntryData.Altitude) {
       if (isDescentWind) {
         this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
           oldAltitude,
-          null,
+          this.getWindEntryFromValues(null, currentDir, currentSpeed),
           this.loadedFlightPlanIndex.get(),
           true,
         );
       } else {
         this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
           oldAltitude,
-          null,
+          this.getWindEntryFromValues(null, currentDir, currentSpeed),
           this.loadedFlightPlanIndex.get(),
         );
       }
       this.shiftUpDisplayedWindEntriesFromIndex(displayEntries, index);
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
-      const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
-      const currentSpeed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
       displayEntry.altitude = currentAlt;
       displayEntry.direction = currentDir;
       displayEntry.speed = currentSpeed;
@@ -756,10 +757,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         displayEntry.enteredByPilot = true;
       }
       if (currentAlt !== null) {
-        const altitudeChanged = oldAltitude !== currentAlt;
-        if (altitudeChanged) {
-          this.sortDisplayWindEntriesByAltitude(displayEntries);
-        }
         const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
         if (isDescentWind) {
           this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
@@ -805,14 +802,11 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       return;
     }
 
-    // Altitude was cleared meaning we need to delete the entry and shift rows accordingly.
+    // Should never enter here
     if (value === null && dataType === WindEntryData.Altitude && oldAltitude !== null) {
-      this.shiftUpDisplayedCruiseWindEntriesFromIndex(index);
-      this.props.fmcService.master.flightPlanInterface.deleteCruiseWindEntry(
-        selectedLegIndex,
-        oldAltitude * 100,
-        this.loadedFlightPlanIndex.get(),
-      );
+      console.warn('Cruise entry flight level altitude deletion attempt!');
+      this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+      return;
     } else {
       const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
       const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
@@ -834,12 +828,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       }
 
       if (currentAlt !== null) {
-        const altitudeChanged = oldAltitude !== currentAlt;
-        if (altitudeChanged) {
-          this.sortDisplayWindEntriesByAltitude(displayEntries);
-        }
         const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
-        entry.altitude *= 100;
         if (oldAltitude !== null) {
           this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
             selectedLegIndex,
@@ -876,7 +865,10 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     }
     if (currentDir !== null && currentSpeed !== null) {
       this.props.fmcService.master.flightPlanInterface.setAlternateWind(
-        createWindVector(currentDir, currentSpeed),
+        {
+          direction: currentDir * MathUtils.DEGREES_TO_RADIANS,
+          magnitude: currentSpeed,
+        },
         this.loadedFlightPlanIndex.get(),
       );
     } else {
@@ -899,13 +891,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     }
   }
 
-  private getWindEntryFromValues(altitude: number, direction: number | null, speed: number | null): WindEntry {
+  private getWindEntryFromValues(altitude: number | null, direction: number | null, speed: number | null): WindEntry {
     return {
-      altitude: altitude,
-      vector:
-        direction !== null && speed !== null
-          ? Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create())
-          : undefined,
+      altitude: altitude ?? undefined,
+      vector: {
+        direction: direction !== null ? direction * MathUtils.DEGREES_TO_RADIANS : undefined,
+        magnitude: speed !== null ? speed : undefined,
+      },
     };
   }
 
@@ -1232,7 +1224,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           interactionMode={this.props.mfd.interactionMode}
                           dataEntryFormat={new WindFlightLevelFormat()}
                           value={this.displayedCruiseWindFlightLevels[value]}
-                          canBeCleared={true}
+                          canBeCleared={false}
                           tmpyActive={this.draftWindsExist}
                         ></InputField>
                       </div>

@@ -2908,10 +2908,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
           if (existingEntryIndex >= 0) {
             if (windPropagationType !== PropagationType.Backward) {
-              result[existingEntryIndex].altitude = windEntry.altitude;
-              result[existingEntryIndex].vector = windEntry.vector;
-              result[existingEntryIndex].type = windPropagationType;
-              result[existingEntryIndex].sourceLegIndex = i;
+              const existing = result[existingEntryIndex];
+              if (
+                existing.vector.magnitude !== undefined &&
+                existing.vector.direction !== undefined &&
+                (windEntry.vector.magnitude === undefined || windEntry.vector.magnitude === undefined)
+              ) {
+                windEntry.vector.magnitude = undefined;
+                windEntry.vector.direction = undefined;
+              }
+              existing.altitude = windEntry.altitude;
+              existing.vector = windEntry.vector;
+              existing.type = windPropagationType;
+              existing.sourceLegIndex = i;
             }
           } else if (numWindEntries < maxNumEntries) {
             if (numWindEntries >= result.length) {
