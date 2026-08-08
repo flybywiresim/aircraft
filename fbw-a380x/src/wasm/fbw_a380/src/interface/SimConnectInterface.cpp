@@ -2900,25 +2900,25 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::AP_SPD_VAR_INC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_INC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = 1;
       std::cout << "WASM: event triggered: AP_SPD_VAR_INC" << std::endl;
       break;
     }
 
     case Events::AP_SPD_VAR_DEC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_DEC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = -1;
       std::cout << "WASM: event triggered: AP_SPD_VAR_DEC" << std::endl;
       break;
     }
 
     case Events::AP_MACH_VAR_INC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_INC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = 1;
       std::cout << "WASM: event triggered: AP_MACH_VAR_INC" << std::endl;
       break;
     }
 
     case Events::AP_MACH_VAR_DEC: {
-      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_DEC)", nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.spd_knob.turns = -1;
       std::cout << "WASM: event triggered: AP_MACH_VAR_DEC" << std::endl;
       break;
     }
@@ -2935,17 +2935,13 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::HEADING_BUG_INC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_INC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_INC_HEADING) }",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.turns = 1;
       std::cout << "WASM: event triggered: HEADING_BUG_INC" << std::endl;
       break;
     }
 
     case Events::HEADING_BUG_DEC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_DEC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_DEC_HEADING) }",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.hdg_trk_knob.turns = -1;
       std::cout << "WASM: event triggered: HEADING_BUG_DEC" << std::endl;
       break;
     }
@@ -2962,22 +2958,20 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::AP_ALT_VAR_INC: {
-      execute_calculator_code(
-          "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
-          "(L:XMLVAR_Autopilot_Altitude_Increment) % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
-          "(>H:A320_Neo_CDU_AP_INC_ALT)",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.alt_knob.turns = 1;
       std::cout << "WASM: event triggered: AP_ALT_VAR_INC" << std::endl;
       break;
     }
 
     case Events::AP_ALT_VAR_DEC: {
-      execute_calculator_code(
-          "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) - (L:XMLVAR_Autopilot_Altitude_Increment) "
-          "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) % - (L:XMLVAR_Autopilot_Altitude_Increment) % "
-          "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
-          nullptr, nullptr, nullptr);
+      fcuAfsPanelInputs.alt_knob.turns = -1;
       std::cout << "WASM: event triggered: AP_ALT_VAR_DEC" << std::endl;
+      break;
+    }
+
+    case Events::AP_ALT_VAR_SET: {
+      simInputAutopilot.ALT_set = static_cast<long>(data0);
+      std::cout << "WASM: event triggered: AP_ALT_VAR_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
@@ -2993,17 +2987,13 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::AP_VS_VAR_INC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_INC_FPA) } els{ (>H:A320_Neo_FCU_VS_INC_VS) }", nullptr,
-          nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.turns = 1;
       std::cout << "WASM: event triggered: AP_VS_VAR_INC" << std::endl;
       break;
     }
 
     case Events::AP_VS_VAR_DEC: {
-      execute_calculator_code(
-          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_DEC_FPA) } els{ (>H:A320_Neo_FCU_VS_DEC_VS) }", nullptr,
-          nullptr, nullptr);
+      fcuAfsPanelInputs.vs_fpa_knob.turns = -1;
       std::cout << "WASM: event triggered: AP_VS_VAR_DEC" << std::endl;
       break;
     }

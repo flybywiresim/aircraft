@@ -1536,6 +1536,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   }
 
   bool athr_instinctive_disc = simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
+  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect;
 
   auto& modelInputs = prims[primIndex].externalInputs();
 
@@ -1558,7 +1559,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
   modelInputs.in.discrete_inputs.is_unit_2 = primIndex == 1;
   modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
-  modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
+  modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get() || ap_instinctive_disc;
   modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
   modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = simInputAutopilot.AP_1_push;
   modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = simInputAutopilot.AP_2_push;
