@@ -1970,10 +1970,8 @@ export class FlightManagementComputer implements FmcInterface {
       pub.pub('delete_approach_wind', forPlan);
     } else {
       pub.pub('set_approach_wind', {
-        vector: {
-          direction: value!,
-          magnitude: undefined,
-        },
+        speed: value,
+        direction: null,
         plan: forPlan,
       });
     }
@@ -1984,10 +1982,8 @@ export class FlightManagementComputer implements FmcInterface {
       pub.pub('delete_approach_wind', forPlan);
     } else {
       pub.pub('set_approach_wind', {
-        vector: {
-          magnitude: value!,
-          direction: undefined,
-        },
+        speed: value,
+        direction: null,
         plan: forPlan,
       });
     }

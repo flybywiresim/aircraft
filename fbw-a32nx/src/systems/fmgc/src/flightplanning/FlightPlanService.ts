@@ -90,12 +90,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
           if (!plan.destinationRunway) {
             return;
           }
-          const windVector = data.vector;
           plan.setPerformanceData(
             'approachWindDirection',
-            windVector.direction !== undefined ? windVector.direction % 360 : null,
+            data.direction !== null ? data.direction % 360 : plan.performanceData.approachWindDirection.get(),
           );
-          plan.setPerformanceData('approachWindMagnitude', windVector.magnitude ?? null);
+          plan.setPerformanceData(
+            'approachWindMagnitude',
+            data.speed ?? plan.performanceData.approachWindMagnitude.get(),
+          );
           plan.setPerformanceData('isApproachWindPilotEntered', true);
           const destinationMagVar = plan.destinationAirport
             ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
@@ -112,6 +114,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
             0,
             { flags: 0, altitude: 0, vector: windVector },
             this.config.NUM_DESCENT_WIND_LEVELS,
+            false,
           );
         }
       });

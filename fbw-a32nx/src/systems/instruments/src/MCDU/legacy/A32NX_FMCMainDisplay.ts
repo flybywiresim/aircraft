@@ -3846,10 +3846,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.bus.getPublisher<FmsWindEvents>().pub(
       'set_approach_wind',
       {
-        vector: {
-          direction: dir,
-          magnitude: mag,
-        },
+        speed: mag,
+        direction: dir,
         plan: forPlan,
       },
       false,
