@@ -5,7 +5,7 @@ import { FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
-import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 interface OitAvncsFooterProps {
   readonly uiService: OitUiService;
