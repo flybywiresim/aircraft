@@ -1,9 +1,11 @@
+// Copyright (c) 2026 FlyByWire Simulations
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   areWindEntriesTheSame,
+  cloneWindVector,
   FlightPlanWindEntry,
   FlightPlanWindEntryFlags,
   formatWindVector,
@@ -13,7 +15,6 @@ import {
   WindVector,
 } from '@fmgc/flightplanning/data/wind';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
@@ -119,8 +120,8 @@ export class CDUWindPage {
 
         template[i * 2 + 2][0] =
           wind.flags & FlightPlanWindEntryFlags.InsertedFromHistory
-            ? `{small}${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude)}{end}[color]${canModifyWinds ? 'cyan' : 'green'}`
-            : `${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
+            ? `{small}${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude!)}{end}[color]${canModifyWinds ? 'cyan' : 'green'}`
+            : `${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude!)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
         numEntries = i + 1;
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
@@ -325,14 +326,14 @@ export class CDUWindPage {
         switch (wind.type) {
           case PropagationType.Forward:
             template[i * 2 + 4][0] =
-              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
           case PropagationType.Entry:
             template[i * 2 + 4][0] =
-              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
           case PropagationType.Backward:
-            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
         }
 
@@ -347,7 +348,7 @@ export class CDUWindPage {
                 return;
               }
 
-              await mcdu.flightPlanService.deleteCruiseWindEntry(nextSuitableLegIndex, wind.altitude, forPlan);
+              await mcdu.flightPlanService.deleteCruiseWindEntry(nextSuitableLegIndex, wind.altitude!, forPlan);
             } else {
               const entry = this.parseWindEntryEdit(mcdu, value, wind, NaN);
 
@@ -544,7 +545,7 @@ export class CDUWindPage {
         const wind = descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
         template[i * 2 + 2][0] =
-          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude)}[color]${canModifyDesWinds ? 'cyan' : 'green'}`;
+          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude!)}[color]${canModifyDesWinds ? 'cyan' : 'green'}`;
 
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
           if (!canModifyDesWinds) {
@@ -747,7 +748,7 @@ export class CDUWindPage {
 
     const historyWinds: WindEntry[] = mcdu.getHistoryWinds(cruiseLevel) ?? [];
 
-    historyWinds.sort((a, b) => a.altitude - b.altitude);
+    historyWinds.sort((a, b) => a.altitude! - b.altitude!);
 
     const shouldAllowInsertion =
       historyWinds.some((wind) => wind.vector !== undefined) &&
@@ -779,7 +780,7 @@ export class CDUWindPage {
       }
 
       template[i * 2 + 2][0] =
-        `{small}${formatWindVector(wind.vector)}\xa0\xa0${this.formatCruiseWindAltitude(wind.altitude)}{end}[color]green`;
+        `{small}${formatWindVector(wind.vector)}\xa0\xa0${this.formatCruiseWindAltitude(wind.altitude!)}{end}[color]green`;
     }
 
     // RETURN
@@ -795,11 +796,11 @@ export class CDUWindPage {
         await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
 
         for (const wind of historyWinds) {
-          if (wind.vector !== undefined) {
+          if (wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) {
             const windEntryToInsert: FlightPlanWindEntry = {
               flags: FlightPlanWindEntryFlags.InsertedFromHistory,
               altitude: wind.altitude,
-              vector: Vec2Math.copy(wind.vector, Vec2Math.create()),
+              vector: cloneWindVector(wind.vector),
             };
             await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
           }
@@ -907,7 +908,10 @@ export class CDUWindPage {
       return null;
     }
 
-    return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+    return {
+      magnitude: magnitude,
+      direction: trueDegrees * MathUtils.DEGREES_TO_RADIANS,
+    };
   }
 
   private static parseWindEntryAltitude(

@@ -1,24 +1,36 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
 import { isDiscontinuity } from '../../../flightplanning/legs/FlightPlanLeg';
-import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
-import { PropagatedWindEntry, TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
+import { EventBus } from '@microsoft/msfs-sdk';
+import {
+  copyWindVector,
+  PropagatedWindEntry,
+  scaleWindVector,
+  TailwindComponent,
+  WindVector,
+} from '../../../flightplanning/data/wind';
 import { Common } from '../common';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 import { FlightPlanService } from '../../../flightplanning/FlightPlanService';
-import { Arinc429Register, MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
 import { ProfilePhase } from '../profile/NavGeometryProfile';
 import { FlightPlanTrackProfile } from './FlightPlanTrackProfile';
 import { WindMeasurement, WindObserver } from './WindObserver';
 import { WindUtils } from './WindUtils';
 
 export class WindProfile implements WindInterface {
-  private static readonly VectorCache = [Vec2Math.create(), Vec2Math.create()] as const;
+  private static readonly VectorCache = [
+    { direction: undefined, magnitude: undefined },
+    { direction: undefined, magnitude: undefined },
+  ] as const;
 
-  private static readonly WindMeasurementCache: WindMeasurement = { altitude: NaN, vector: Vec2Math.create() };
+  private static readonly WindMeasurementCache: WindMeasurement = {
+    altitude: NaN,
+    vector: { direction: undefined, magnitude: undefined },
+  };
 
   private readonly tracks: FlightPlanTrackProfile = new FlightPlanTrackProfile(this.plan);
 
@@ -63,7 +75,7 @@ export class WindProfile implements WindInterface {
 
     const originAlt = this.plan.originRunway?.thresholdLocation.alt ?? this.plan.originAirport?.location.alt ?? 0;
 
-    if (firstclimbWindEntry !== undefined && firstclimbWindEntry.vector !== undefined) {
+    if (firstclimbWindEntry !== undefined && firstclimbWindEntry.altitude !== undefined) {
       const lowestAltitude = firstclimbWindEntry.altitude;
       if (altitude < lowestAltitude) {
         // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
@@ -72,7 +84,7 @@ export class WindProfile implements WindInterface {
           Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
         );
 
-        return Vec2Math.multScalar(firstclimbWindEntry.vector, scaling, result);
+        return scaleWindVector(firstclimbWindEntry.vector, scaling, result);
       }
 
       return WindUtils.interpolateWindEntries(climbWindEntries, altitude, result);
@@ -82,7 +94,7 @@ export class WindProfile implements WindInterface {
       );
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 
   getDescentTailwind(distanceFromStart: NauticalMiles, altitude: Feet): TailwindComponent {
@@ -114,7 +126,7 @@ export class WindProfile implements WindInterface {
 
     const lowestDescentWindEntry = descentWindEntries[descentWindEntries.length - 1];
 
-    if (lowestDescentWindEntry !== undefined && lowestDescentWindEntry.vector !== undefined) {
+    if (lowestDescentWindEntry !== undefined && lowestDescentWindEntry.altitude !== undefined) {
       const lowestAltitude = lowestDescentWindEntry.altitude;
 
       if (altitude < lowestAltitude) {
@@ -130,7 +142,7 @@ export class WindProfile implements WindInterface {
           ),
         );
 
-        return Vec2Math.multScalar(lowestDescentWindEntry.vector, scaling, result);
+        return scaleWindVector(lowestDescentWindEntry.vector, scaling, result);
       } else {
         return WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
       }
@@ -141,7 +153,7 @@ export class WindProfile implements WindInterface {
       );
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 
   getCruiseTailwind(distanceFromStart: NauticalMiles, distanceFromAircraft: number, altitude: Feet): TailwindComponent {
@@ -165,8 +177,8 @@ export class WindProfile implements WindInterface {
 
     const measurement = this.measurementDevice.get(WindProfile.WindMeasurementCache);
 
-    if (measurement === null) {
-      return Vec2Math.copy(forecast, result);
+    if (measurement === null || measurement.altitude === undefined) {
+      return copyWindVector(forecast, result);
     }
 
     const forecastAtCurrentAlt = this.getCruiseWindVectorForecast(
@@ -176,23 +188,23 @@ export class WindProfile implements WindInterface {
     );
 
     // Blend the measurement at the current altitude with the forecast at the current altitude
-    const predictionAtCurrentAlt = Vec2Utils.interpolate(
+    const predictionAtCurrentAlt = WindUtils.interpolateWindVector(
+      WindProfile.VectorCache[1],
       MathUtils.clamp(Math.abs(distanceFromAircraft), 0, WindConfig.MaxCruiseWindBlendDistance),
       0,
       WindConfig.MaxCruiseWindBlendDistance,
-      measurement.vector!,
+      measurement.vector,
       forecastAtCurrentAlt,
-      WindProfile.VectorCache[1],
     );
 
     // Blend the prediction at the current altitude with the forecast at the target altitude
-    return Vec2Utils.interpolate(
+    return WindUtils.interpolateWindVector(
+      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
       predictionAtCurrentAlt,
       forecast,
-      result,
     );
   }
 
@@ -235,22 +247,22 @@ export class WindProfile implements WindInterface {
 
       if (!prevLeg.calculated || !leg.calculated) {
         console.warn('[FMS] Cruise wind interpolation failed, leg had no distance');
-        return Vec2Math.set(0, 0, result);
+        return WindUtils.copyEmptyWindVector(result);
       }
 
-      return Vec2Utils.interpolate(
+      return WindUtils.interpolateWindVector(
+        result,
         distanceFromStart,
         prevLeg.calculated.cumulativeDistanceWithTransitions,
         leg.calculated.cumulativeDistanceWithTransitions,
         prevLegWind,
         legWind,
-        result,
       );
     } else if (hasTripWindEntry) {
       return tripWind;
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 
   getWindForecast(
@@ -302,17 +314,17 @@ export class WindProfile implements WindInterface {
   private blendWithMeasurement(forecast: WindVector, altitude: Feet, result: WindVector): WindVector {
     const measurement = this.measurementDevice.get(WindProfile.WindMeasurementCache);
 
-    if (measurement === null) {
-      return Vec2Math.copy(forecast, result);
+    if (measurement === null || measurement.altitude === undefined) {
+      return copyWindVector(forecast, result);
     }
 
-    return Vec2Utils.interpolate(
+    return WindUtils.interpolateWindVector(
+      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
-      measurement.vector!,
+      measurement.vector,
       forecast,
-      result,
     );
   }
 
@@ -330,19 +342,25 @@ export class WindProfile implements WindInterface {
     const leg = this.tracks.getLeg(distanceFromStart);
 
     if (leg?.calculated?.trueTrack === undefined) {
-      return Vec2Math.set(0, 0, result);
+      return WindUtils.copyEmptyWindVector(result);
     }
 
     // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
     // true track points in the direction that the aircraft is going.
-    return Vec2Math.setFromPolar(-tailwind, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+    return WindUtils.setPolar(-tailwind, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
   }
 }
 
 export class ConstantWindProfile implements WindInterface {
-  private static readonly VectorCache = [Vec2Math.create(), Vec2Math.create()] as const;
+  private static readonly VectorCache = [
+    { direction: undefined, magnitude: undefined },
+    { direction: undefined, magnitude: undefined },
+  ] as const;
 
-  private static readonly WindMeasurementCache: WindMeasurement = { altitude: NaN, vector: Vec2Math.create() };
+  private static readonly WindMeasurementCache: WindMeasurement = {
+    altitude: NaN,
+    vector: { direction: undefined, magnitude: undefined },
+  };
 
   private readonly measurementDevice: WindObserver = new WindObserver(this.bus);
 
@@ -374,7 +392,7 @@ export class ConstantWindProfile implements WindInterface {
     const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
     const lowestClimbWindEntry = climbWindEntries[climbWindEntries.length - 1];
 
-    if (lowestClimbWindEntry !== undefined && lowestClimbWindEntry.vector !== undefined) {
+    if (lowestClimbWindEntry !== undefined && lowestClimbWindEntry.altitude !== undefined) {
       const lowestAltitude = lowestClimbWindEntry.altitude;
 
       if (altitude < lowestAltitude) {
@@ -385,13 +403,13 @@ export class ConstantWindProfile implements WindInterface {
           Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
         );
 
-        return Vec2Math.multScalar(lowestClimbWindEntry.vector, scaling, result);
+        return scaleWindVector(lowestClimbWindEntry.vector, scaling, result);
       }
 
       return WindUtils.interpolateWindEntries(climbWindEntries, altitude, result);
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 
   getClimbTailwind(distanceFromStart: NauticalMiles, altitude: Feet): TailwindComponent {
@@ -410,7 +428,7 @@ export class ConstantWindProfile implements WindInterface {
     const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const lowestDescentWindEntry = descentWindEntries[descentWindEntries.length - 1];
 
-    if (lowestDescentWindEntry !== undefined && lowestDescentWindEntry.vector !== undefined) {
+    if (lowestDescentWindEntry !== undefined && lowestDescentWindEntry.altitude !== undefined) {
       const lowestAltitude = lowestDescentWindEntry.altitude;
       if (altitude < lowestAltitude) {
         const destinationAlt =
@@ -426,13 +444,13 @@ export class ConstantWindProfile implements WindInterface {
           ),
         );
 
-        return Vec2Math.multScalar(lowestDescentWindEntry.vector, scaling, result);
+        return scaleWindVector(lowestDescentWindEntry.vector, scaling, result);
       } else {
         WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
       }
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 
   getDescentTailwind(distanceFromStart: NauticalMiles, altitude: Feet): TailwindComponent {
@@ -453,17 +471,17 @@ export class ConstantWindProfile implements WindInterface {
   private blendWithMeasurement(forecast: WindVector, altitude: Feet, result: WindVector): WindVector {
     const measurement = this.measurementDevice.get(ConstantWindProfile.WindMeasurementCache);
 
-    if (measurement === null) {
-      return Vec2Math.copy(forecast, result);
+    if (measurement === null || measurement.altitude === undefined) {
+      return copyWindVector(forecast, result);
     }
 
-    return Vec2Utils.interpolate(
+    return WindUtils.interpolateWindVector(
+      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
       measurement.vector!,
       forecast,
-      result,
     );
   }
 }
@@ -487,12 +505,12 @@ class LegWinds {
       const leg = this.plan.legElementAt(legIndex);
 
       if (leg.calculated?.trueTrack === undefined) {
-        return Vec2Math.set(0, 0, result);
+        return WindUtils.copyEmptyWindVector(result);
       }
 
       // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
       // true track points in the direction that the aircraft is going.
-      return Vec2Math.setFromPolar(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+      return WindUtils.setPolar(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
     }
 
     return result;
@@ -518,7 +536,7 @@ class LegWinds {
       return tripWind;
     }
 
-    return Vec2Math.set(0, 0, result);
+    return WindUtils.copyEmptyWindVector(result);
   }
 }
 

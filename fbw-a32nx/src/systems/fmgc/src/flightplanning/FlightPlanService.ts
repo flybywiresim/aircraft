@@ -952,18 +952,23 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.deleteCruiseWindEntry(atIndex, altitude);
   }
 
-  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
+  editCruiseWindEntry(
+    atIndex: number,
+    altitude: number | undefined,
+    newEntry: WindEntry,
+    planIndex: number,
+  ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
     return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
   }
 
-  setClimbWindEntry(altitude: number, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
+  setClimbWindEntry(altitude: number | undefined, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
     return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
   }
 
   setDescentWindEntry(
-    altitude: number,
+    altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
     planIndex: number,
     shouldUpdateTwrWind: boolean = true,

@@ -2,19 +2,22 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface WindEntry {
-  /** Undefined for altitude only wind entries. */
-  vector: WindVector | undefined;
-  altitude: number;
+  vector: WindVector;
+
+  altitude: number | undefined;
 }
 
 export interface FlightPlanWindEntry extends WindEntry {
   flags: number;
 }
 
-export type WindVector = Float64Array;
+export type WindVector = {
+  magnitude: number | undefined;
+  direction: number | undefined;
+};
+
 export type TailwindComponent = number;
 
 export enum PropagationType {
@@ -32,46 +35,70 @@ export enum FlightPlanWindEntryFlags {
   InsertedFromHistory = 1 << 0,
 }
 
-export const extractWindSpeedFromVector = (vector: WindVector) => Math.round(Vec2Math.abs(vector));
+export const extractWindSpeedFromVector = (vector: WindVector) =>
+  vector.magnitude !== undefined ? Math.round(vector.magnitude) : undefined;
 export const extractWindDirectionFromVector = (vector: WindVector) =>
-  MathUtils.normalise360(Vec2Math.theta(vector) * MathUtils.RADIANS_TO_DEGREES);
+  vector.direction !== undefined && vector.magnitude !== undefined
+    ? MathUtils.normalise360(extractTheta(vector) * MathUtils.RADIANS_TO_DEGREES)
+    : undefined;
 
-export const formatWindVector = (vector: WindVector | undefined) =>
-  `${vector !== undefined ? formatWindTrueDegrees(vector) : '---'}/${vector !== undefined ? formatWindMagnitude(vector) : '---'}`;
+export const formatWindVector = (vector: WindVector) =>
+  `${vector.direction !== null ? formatWindTrueDegrees(vector) : '---'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
 
 export const debugFormatWindEntry = (entry: WindEntry) =>
   `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
 const formatWindAltitude = (entry: WindEntry) =>
-  `FL${Math.round(entry.altitude / 100)
-    .toFixed(0)
-    .padStart(3, '0')}`;
+  entry.altitude !== undefined
+    ? `FL${Math.round(entry.altitude / 100)
+        .toFixed(0)
+        .padStart(3, '0')}`
+    : '---';
 
 export const formatWindTrueDegrees = (vector: WindVector, appendUnit = true) =>
-  `${extractWindDirectionFromVector(vector).toFixed(0).padStart(3, '0')}${appendUnit ? '°' : ''}`;
+  `${extractWindDirectionFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---'}${appendUnit ? '°' : ''}`;
 export const formatWindPredictionDirection = (prediction: WindVector | TailwindComponent) =>
   typeof prediction === 'number' ? (prediction > 0 ? 'TAIL' : 'HEAD') : formatWindTrueDegrees(prediction);
 
 export const formatWindMagnitude = (vector: WindVector) =>
-  extractWindSpeedFromVector(vector).toFixed(0).padStart(3, '0');
-export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) =>
-  Math.round(typeof prediction === 'number' ? Math.abs(prediction) : Vec2Math.abs(prediction))
-    .toFixed(0)
-    .padStart(3, '0');
+  extractWindSpeedFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---';
+export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) => {
+  const predictionValue =
+    typeof prediction === 'number'
+      ? Math.abs(prediction)
+      : prediction.magnitude !== undefined && prediction.direction !== undefined
+        ? Math.hypot(prediction.magnitude, prediction.direction)
+        : undefined;
+
+  return predictionValue !== undefined ? Math.round(predictionValue).toFixed(0).padStart(3, '0') : '---';
+};
 
 export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
-  MathUtils.isAboutEqual(one.altitude, two.altitude) && areWindVectorsTheSame(one.vector, two.vector);
-export const areWindVectorsTheSame = (one: WindVector | undefined, two: WindVector | undefined) =>
+  MathUtils.isAboutEqual(one.altitude ?? 0, two.altitude ?? 0) && areWindVectorsTheSame(one.vector, two.vector);
+export const areWindVectorsTheSame = (one: WindVector, two: WindVector) =>
   one !== undefined &&
   two !== undefined &&
-  MathUtils.isAboutEqual(one[0], two[0]) &&
-  MathUtils.isAboutEqual(one[1], two[1]);
+  MathUtils.isAboutEqual(one.direction ?? 0, two.direction ?? 0) &&
+  MathUtils.isAboutEqual(one.magnitude ?? 0, two.magnitude ?? 0);
 
-/**
- * Creates a wind vector from a direction in degrees and a speed in knots.
- * @param directionDegrees the direction in degrees.
- * @param speed the speed in knots
- * @returns the resulting wind vector.
- */
-export function createWindVector(direction: number, speed: number): WindVector {
-  return Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+export function cloneWindVector(source: WindVector): WindVector {
+  return {
+    direction: source.direction,
+    magnitude: source.magnitude,
+  };
+}
+
+export function copyWindVector(source: WindVector, destination: WindVector): WindVector {
+  destination.direction = source.direction;
+  destination.magnitude = source.magnitude;
+  return destination;
+}
+
+export function scaleWindVector(vector: WindVector, scale: number, result: WindVector): WindVector {
+  result.direction = vector.direction !== undefined ? vector.direction * scale : undefined;
+  result.magnitude = vector.magnitude !== undefined ? vector.magnitude * scale : undefined;
+  return result;
+}
+
+export function extractTheta(vector: WindVector) {
+  return Math.atan2(vector.direction!, vector.magnitude!);
 }

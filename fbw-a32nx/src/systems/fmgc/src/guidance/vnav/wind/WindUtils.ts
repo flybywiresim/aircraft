@@ -1,9 +1,11 @@
 import { Vec2Math } from '@microsoft/msfs-sdk';
-import { WindEntry, WindVector } from '../../../flightplanning/data/wind';
-import { MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
+import { copyWindVector, cloneWindVector, WindEntry, WindVector } from '../../../flightplanning/data/wind';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class WindUtils {
   private static readonly VectorCache = Vec2Math.create();
+
+  private static readonly emptyWindVector: WindVector = { direction: 0, magnitude: 0 };
 
   /**
    *
@@ -14,46 +16,94 @@ export class WindUtils {
    */
   static interpolateWindEntries(entries: WindEntry[], altitude: number, result: WindVector): WindVector {
     if (entries.length === 0) {
-      return Vec2Math.set(0, 0, result);
+      return copyWindVector({ magnitude: undefined, direction: undefined }, result);
     } else if (entries.length === 1) {
-      return Vec2Math.copy(entries[0].vector ?? Vec2Math.create(), result);
+      return cloneWindVector(entries[0].vector);
     }
 
-    const isDescendingOrder = entries[1].altitude < entries[0].altitude;
+    const isDescendingOrder = (entries[1].altitude ?? 0) < (entries[0].altitude ?? 0);
 
     const lowest = isDescendingOrder ? entries[entries.length - 1] : entries[0];
     const highest = isDescendingOrder ? entries[0] : entries[entries.length - 1];
 
-    if (lowest.vector !== undefined && altitude <= lowest.altitude) {
-      return Vec2Math.copy(lowest.vector, result);
-    } else if (highest.vector !== undefined && altitude >= highest.altitude) {
-      return Vec2Math.copy(highest.vector, result);
+    if (lowest.vector !== undefined && lowest.altitude !== undefined && altitude <= lowest.altitude) {
+      return copyWindVector(lowest.vector, result);
+    } else if (highest.vector !== undefined && highest.altitude !== undefined && altitude >= highest.altitude) {
+      return copyWindVector(highest.vector, result);
     } else {
       for (let i = 0; i < entries.length - 1; i++) {
         const lower = isDescendingOrder ? entries[i + 1] : entries[i];
         const upper = !isDescendingOrder ? entries[i + 1] : entries[i];
 
         if (
-          lower.vector !== undefined &&
-          upper.vector !== undefined &&
+          lower.altitude !== undefined &&
           lower.altitude <= altitude &&
+          upper.altitude !== undefined &&
           altitude <= upper.altitude
         ) {
-          return Vec2Utils.interpolate(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
+          return WindUtils.interpolateWindVector(
+            result,
+            altitude,
+            lower.altitude,
+            upper.altitude,
+            lower.vector,
+            upper.vector,
+          );
         }
       }
     }
 
-    return Vec2Math.set(0, 0, result);
+    return copyWindVector({ magnitude: undefined, direction: undefined }, result);
   }
 
   public static computeTailwindComponent(wind: WindVector, trueCourseDegrees: number): number {
     // We need a minus here because the wind vector points in the direction that the wind is coming from,
     // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
     // the wind is actually a headwind.
-    return -Vec2Math.dot(
-      wind,
-      Vec2Math.setFromPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache),
+    return wind.direction !== undefined && wind.magnitude !== undefined
+      ? -Vec2Math.dot(
+          Vec2Math.setFromPolar(wind.magnitude, wind.direction, Vec2Math.create()),
+          Vec2Math.setFromPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache),
+        )
+      : 0;
+  }
+
+  public static interpolateWindVector(
+    result: WindVector,
+    value: number,
+    lowerValue: number,
+    higherValue: number,
+    first: WindVector,
+    second: WindVector,
+  ): WindVector {
+    return copyWindVector(
+      {
+        direction:
+          first.direction === undefined || second.direction === undefined
+            ? undefined
+            : MathUtils.interpolate(value, lowerValue, higherValue, first.direction, first.direction),
+        magnitude:
+          first.magnitude === undefined || second.magnitude === undefined
+            ? undefined
+            : MathUtils.interpolate(value, lowerValue, higherValue, first.magnitude, second.magnitude),
+      },
+      result,
     );
+  }
+  /**
+   * Sets the polar components of a vector.
+   * @param r - the new length (magnitude).
+   * @param theta - the new polar angle theta, in radians.
+   * @param vector - the vector to change.
+   * @returns the vector after it has been changed.
+   */
+  public static setPolar(r: number, theta: number, vector: WindVector) {
+    vector.direction = r * Math.cos(theta);
+    vector.magnitude = r * Math.sin(theta);
+    return vector;
+  }
+
+  public static copyEmptyWindVector(result: WindVector) {
+    return copyWindVector(WindUtils.emptyWindVector, result);
   }
 }

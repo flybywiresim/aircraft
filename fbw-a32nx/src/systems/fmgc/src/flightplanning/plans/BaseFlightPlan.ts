@@ -62,7 +62,7 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { BitFlags, EventBus, Publisher, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -80,7 +80,14 @@ import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendi
 import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAirways';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
-import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
+import {
+  cloneWindVector,
+  debugFormatWindEntry,
+  FlightPlanWindEntry,
+  PropagatedWindEntry,
+  PropagationType,
+  WindEntry,
+} from '../data/wind';
 import { FlightPlanIndex } from '../FlightPlanManager';
 
 export interface FlightPlanContext {
@@ -2950,6 +2957,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.prepareCruiseWindDraftModification();
 
+    const hasDraft = this.draftCruiseWindEntries !== undefined;
+
+    if (!hasDraft && BaseFlightPlan.isInvalidWindEntryForNonDraft(entry)) {
+      return;
+    }
+
     const windEntries = this.draftCruiseWindEntries?.get(atIndex) ?? leg.cruiseWindEntries;
 
     if (windEntries.some((e) => Math.round(e.altitude / 100) === Math.round(entry.altitude / 100))) {
@@ -2958,7 +2971,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     } else {
       windEntries.push(entry);
     }
-    if (this.draftCruiseWindEntries === undefined) {
+    if (!hasDraft) {
       this.syncCruiseWindChange(atIndex);
     } else {
       this.incrementVersion();
@@ -3000,7 +3013,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   async editCruiseWindEntry(
     atIndex: number,
-    altitude: number,
+    altitude: number | undefined,
     newEntry: WindEntry,
     maxNumEntries: number,
   ): Promise<void> {
@@ -3021,6 +3034,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (!leg.isXF()) {
       console.error('[FMS/FPM] Tried to edit a cruise wind entry to a non-XF leg');
+      return;
+    }
+
+    this.prepareCruiseWindDraftModification();
+    if (!this.draftCruiseWindEntriesExist && BaseFlightPlan.isInvalidWindEntryForNonDraft(newEntry)) {
       return;
     }
 
@@ -3163,8 +3181,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected static cloneWindEntry(entry: WindEntry): WindEntry {
     return {
       ...entry,
-      vector: entry.vector !== undefined ? Vec2Math.copy(entry.vector, Vec2Math.create()) : undefined,
+      vector: entry.vector !== undefined ? cloneWindVector(entry.vector) : undefined,
     };
+  }
+
+  protected static isInvalidWindEntryForNonDraft(entry: WindEntry | FlightPlanWindEntry) {
+    return entry.altitude === undefined || entry.vector.direction === undefined || entry.vector.magnitude === undefined;
   }
 }
 

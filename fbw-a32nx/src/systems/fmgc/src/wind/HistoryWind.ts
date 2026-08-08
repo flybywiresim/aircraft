@@ -1,6 +1,6 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { ConsumerSubject, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManagerEvents } from '../flightphase';
@@ -23,13 +23,19 @@ export class HistoryWind {
   private flightPhase = FmgcFlightPhase.Preflight;
 
   private readonly defaultRecordedWind: WindEntry[] = [
-    { altitude: 5_000, vector: undefined },
-    { altitude: 15_000, vector: undefined },
-    { altitude: 25_000, vector: undefined },
+    { altitude: 5_000, vector: { direction: undefined, magnitude: undefined } },
+    { altitude: 15_000, vector: { direction: undefined, magnitude: undefined } },
+    { altitude: 25_000, vector: { direction: undefined, magnitude: undefined } },
   ];
-  private readonly recordedCruiseWind: WindEntry = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly recordedCruiseWind: WindEntry = {
+    altitude: NaN,
+    vector: { direction: undefined, magnitude: undefined },
+  };
 
-  private readonly interpolationCache: WindEntry = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly interpolationCache: WindEntry = {
+    altitude: NaN,
+    vector: { direction: undefined, magnitude: undefined },
+  };
 
   private readonly historyWinds: (WindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
@@ -52,11 +58,9 @@ export class HistoryWind {
         const windEntry = this.defaultRecordedWind[i];
         const recordedAlt = windEntry.altitude;
 
-        if (currentAltitude <= recordedAlt && this.previousAltitude > recordedAlt) {
-          if (windEntry.vector === undefined) {
-            windEntry.vector = Vec2Math.create();
-          }
-          Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, windEntry.vector);
+        if (recordedAlt !== undefined && currentAltitude <= recordedAlt && this.previousAltitude > recordedAlt) {
+          windEntry.vector.magnitude = windSpeed;
+          windEntry.vector.direction = windDirection * MathUtils.DEGREES_TO_RADIANS;
           this.historyWinds[i] = windEntry;
           requiresSync = true;
         }
@@ -88,7 +92,10 @@ export class HistoryWind {
 
     if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
       this.recordedCruiseWind.altitude = cruiseAltitude;
-      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector!);
+      this.recordedCruiseWind.vector = {
+        direction: windDirection * MathUtils.DEGREES_TO_RADIANS,
+        magnitude: windSpeed,
+      };
       this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
     }
 
@@ -104,7 +111,7 @@ export class HistoryWind {
   }
 
   public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<WindEntry>[] {
-    const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude - b.altitude);
+    const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude! - b.altitude!);
     const interpolationSourceWinds = historyWinds.filter((entry) => entry.vector !== undefined);
     const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
 
@@ -112,20 +119,20 @@ export class HistoryWind {
       cruiseAltitude !== null &&
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
       interpolationSourceWinds.length >= 0 && // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
-      interpolationSourceWinds.some((wind) => wind.altitude < cruiseAltitude && wind.vector !== undefined) &&
-      interpolationSourceWinds.some((wind) => wind.altitude > cruiseAltitude && wind.vector !== undefined);
+      interpolationSourceWinds.some((wind) => wind.altitude! < cruiseAltitude && wind.vector !== undefined) &&
+      interpolationSourceWinds.some((wind) => wind.altitude! > cruiseAltitude && wind.vector !== undefined);
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;
-      WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector!);
+      WindUtils.interpolateWindEntries(interpolationSourceWinds, cruiseAltitude, this.interpolationCache.vector);
       historyWinds.push(this.interpolationCache);
     } else if (cruiseAltitude !== null && !historyWinds.some((wind) => wind.altitude === cruiseAltitude)) {
       historyWinds.push({
         altitude: cruiseAltitude,
-        vector: undefined,
+        vector: { direction: undefined, magnitude: undefined },
       });
     }
-    return historyWinds.sort((a, b) => (sortAscending ? a.altitude - b.altitude : b.altitude - a.altitude));
+    return historyWinds.sort((a, b) => (sortAscending ? a.altitude! - b.altitude! : b.altitude! - a.altitude!));
   }
 
   private syncToLocalStorage() {
