@@ -1579,10 +1579,10 @@ export class A320_Neo_CDU_MainDisplay
       return;
     }
 
-    this.mcduServerUpdateDebounceTimer.schedule(() => this.sendUpdateToMcduServer(), 0);
+    this.mcduServerUpdateDebounceTimer.schedule(this.sendUpdateToMcduServer, 0);
   }
 
-  private sendUpdateToMcduServer() {
+  private sendUpdateToMcduServer = (): void => {
     // Only calculate the update when mcduServerClient is established.
     if (!this.mcduServerClient?.isConnected()) {
       return;
@@ -1637,7 +1637,7 @@ export class A320_Neo_CDU_MainDisplay
 
     const content = { right, left };
     this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
-  }
+  };
 
   /**
    * Clears the remote MCDU clients' screens
