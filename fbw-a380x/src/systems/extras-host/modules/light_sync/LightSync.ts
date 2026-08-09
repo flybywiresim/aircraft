@@ -84,15 +84,15 @@ export class LightSync implements Instrument {
     this.setPotentiometer(97, 0); // F/O
 
     // Glareshield
-    this.setPotentiometer(84, integralLtValue); // Integral
-    this.setPotentiometer(87, autoBrightness); // LCD
-    this.setPotentiometer(10, 0); // Table Capt
-    this.setPotentiometer(11, 0); // Table F/O
+    this.setPotentiometer(84, integralLtValue); // Int Lt
+    this.setPotentiometer(87, autoBrightness); // Lcd Brt
+    this.setPotentiometer(10, 0); // table Cpt
+    this.setPotentiometer(11, 0); // table F/O
 
-    // Instruments Capt
+    // Instruments Cpt
     this.setPotentiometer(88, autoBrightness); // PFD
     this.setPotentiometer(89, autoBrightness); // ND
-    this.setPotentiometer(94, autoBrightness / 2); // Wx Radar
+    this.setPotentiometer(94, autoBrightness / 2); // wxRadar
     this.setPotentiometer(98, autoBrightness); // MFD
     this.setPotentiometer(8, 0); // Console
     this.setPotentiometer(78, autoBrightness); // OIT
@@ -100,21 +100,21 @@ export class LightSync implements Instrument {
     // Instruments F/O
     this.setPotentiometer(90, autoBrightness); // PFD
     this.setPotentiometer(91, autoBrightness); // ND
-    this.setPotentiometer(95, autoBrightness / 2); // Wx Radar
+    this.setPotentiometer(95, autoBrightness / 2); // wxRadar
     this.setPotentiometer(99, autoBrightness); // MFD
     this.setPotentiometer(9, 0); // Console
     this.setPotentiometer(79, autoBrightness); // OIT
 
     // Pedestal
-    this.setRmpBrightness(1, autoBrightness * 100); // RMP Capt
-    this.setRmpBrightness(2, autoBrightness * 100); // RMP F/O
-    this.setRmpBrightness(3, autoBrightness * 100); // RMP OVHD
-    this.setPotentiometer(92, autoBrightness); // ECAM Upper
-    this.setPotentiometer(93, autoBrightness); // ECAM Lower
-    this.setPotentiometer(76, pedFloodLtValue); // Ped Flood
-    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, mainPnlFloodLtValue / 100); // Main Pnl Flood
-    this.setPotentiometer(85, integralLtValue); // Integral
-    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, ambientLtValue / 100); // Ambient
+    this.setRmpBrightness(1, autoBrightness * 100); // rmpCptLightLevel
+    this.setRmpBrightness(2, autoBrightness * 100); // rmpFoLightLevel
+    this.setRmpBrightness(3, autoBrightness * 100); // rmpOvhdLightLevel
+    this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
+    this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
+    this.setPotentiometer(76, pedFloodLtValue); // pedFloodLightLevel
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, mainPnlFloodLtValue / 100); // mainPnlFloodLightLevel
+    this.setPotentiometer(85, integralLtValue); // integralLightLevel
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, ambientLtValue / 100); // ambianceLightLevel
   }
 
   public onUpdate(): void {}
