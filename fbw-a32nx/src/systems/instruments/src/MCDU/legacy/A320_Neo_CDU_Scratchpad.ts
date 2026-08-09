@@ -8,7 +8,7 @@ import { Keypad } from './A320_Neo_CDU_Keypad';
 export class ScratchpadDisplay {
   public readonly guid = `SP-${Utils.generateGUID()}`;
   constructor(
-    private mcdu: { sendUpdate: () => void },
+    private mcdu: { requestServerUpdate: () => void },
     private scratchpadElement: HTMLElement,
   ) {
     this.mcdu = mcdu;
@@ -19,7 +19,7 @@ export class ScratchpadDisplay {
   write(value = '', color = 'white') {
     this.scratchpadElement.textContent = value;
     this.scratchpadElement.className = color;
-    this.mcdu.sendUpdate();
+    this.mcdu.requestServerUpdate();
   }
 
   setStyle(style: string) {

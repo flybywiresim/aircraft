@@ -48,7 +48,7 @@ export enum SimbriefOfpState {
 }
 
 interface LegacyFmsPageDrawingInterface {
-  clearDisplay(webSocketDraw?: boolean): void;
+  clearDisplay(): void;
   setTemplate(template: any[][], large?: boolean): void;
   setTitle(title: string): void;
   setArrows(up: boolean, down: boolean, left: boolean, right: boolean): void;
