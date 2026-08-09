@@ -450,7 +450,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(!gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -504,7 +504,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(!gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -565,7 +565,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -628,7 +628,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
