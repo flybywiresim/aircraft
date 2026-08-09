@@ -1348,9 +1348,7 @@ export class FmcAircraftInterface {
         const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
         const fgModesSuitedForLevelChange =
           primFgDiscreteWord3.bitValueOr(11, false) || // CLB
-          primFgDiscreteWord3.bitValue(12) || // DES
           primFgDiscreteWord3.bitValue(13) || // OP CLB
-          primFgDiscreteWord3.bitValue(14) || // OP DES
           primFgDiscreteWord3.bitValue(17) || // VS
           primFgDiscreteWord3.bitValue(18) || // FPA
           (primFgDiscreteWord3.bitValue(20) && !primFgDiscreteWord3.bitValue(28)) || // ALT without constraint
@@ -1359,10 +1357,7 @@ export class FmcAircraftInterface {
         if (fgModesSuitedForLevelChange) {
           const fcuAltitude = this.masterPrimAltitude.get().valueOr(null);
           const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
-          if (
-            fcuFlightLevel !== null &&
-            ((isClimb && fcuFlightLevel > cruiseLevel) || (isCruise && fcuFlightLevel !== cruiseLevel))
-          ) {
+          if (fcuFlightLevel !== null && fcuFlightLevel > cruiseLevel) {
             const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
             if (changeCruiseFlightLevel) {
               this.fmc.addMessageToQueue(
