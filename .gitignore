@@ -18,6 +18,8 @@
 !.prettierignore
 !.prettierrc
 
+!pnpm-workspace.yaml
+
 !AGENTS.md
 !GEMINI.md
 !CLAUDE.md
