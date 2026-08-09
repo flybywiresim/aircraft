@@ -66,7 +66,7 @@ export class ArincValueProvider implements Instrument {
 
   private readonly unfilteredAltitude = Arinc429RegisterSubject.createEmpty();
 
-  private readonly baroCorrectedAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('baroCorrectedAltitude'));
+  private readonly baroCorrectedAltitude = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly pressureAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('pressureAltitude'));
 
@@ -122,6 +122,8 @@ export class ArincValueProvider implements Instrument {
     this.fcuEisDiscreteWord2.setConsumer(
       this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
+
+    this.baroCorrectedAltitude.setConsumer(this.sub.on(isFo ? 'baroCorrectedAltitude2' : 'baroCorrectedAltitude1'));
 
     const publisher = this.bus.getPublisher<Arinc429Values>();
     const subscriber = this.bus.getSubscriber<PFDSimvars>();

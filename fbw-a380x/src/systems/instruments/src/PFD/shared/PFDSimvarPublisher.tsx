@@ -10,7 +10,8 @@ export interface PFDSimvars {
   pitch: number;
   roll: number;
   heading: number;
-  baroCorrectedAltitude: number;
+  baroCorrectedAltitude1: number;
+  baroCorrectedAltitude2: number;
   pressureAltitude: number;
   speed: number;
   staticPressureRaw: number;
@@ -116,6 +117,7 @@ export enum PFDVars {
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   heading = 'L:A32NX_ADIRS_IR_1_HEADING',
   baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
+  baroCorrectedAltitude2 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_2',
   pressureAltitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
   speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
   staticPressureRaw = 'L:A32NX_ADIRS_ADR_1_CORRECTED_AVERAGE_STATIC_PRESSURE',
@@ -220,7 +222,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['pitch', { name: PFDVars.pitch, type: SimVarValueType.Number }],
     ['roll', { name: PFDVars.roll, type: SimVarValueType.Number }],
     ['heading', { name: PFDVars.heading, type: SimVarValueType.Number }],
-    ['baroCorrectedAltitude', { name: PFDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
+    ['baroCorrectedAltitude1', { name: PFDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
+    ['baroCorrectedAltitude2', { name: PFDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
     ['pressureAltitude', { name: PFDVars.pressureAltitude, type: SimVarValueType.Number }],
     ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
     ['staticPressureRaw', { name: PFDVars.staticPressureRaw, type: SimVarValueType.Number }],
