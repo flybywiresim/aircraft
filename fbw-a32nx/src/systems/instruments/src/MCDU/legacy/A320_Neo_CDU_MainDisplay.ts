@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
@@ -15,7 +15,7 @@ import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
-import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
+import { DebounceTimer, EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
 import { EngineOutTargetPage } from '@fmgc/events/EngineOutEvents';
@@ -34,6 +34,8 @@ export class A320_Neo_CDU_MainDisplay
   private readonly minPageUpdateThrottler = new UpdateThrottler(100);
   private readonly mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
   private readonly powerCheckUpdateThrottler = new UpdateThrottler(500);
+
+  private readonly mcduServerUpdateDebounceTimer = new DebounceTimer();
 
   public readonly fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -334,7 +336,7 @@ export class A320_Neo_CDU_MainDisplay
           timeout: 5000,
         });
         this.sendToMcduServerClient('mcduConnected');
-        this.sendUpdate();
+        this.requestServerUpdate();
         break;
       }
       case 'close': {
@@ -356,7 +358,7 @@ export class A320_Neo_CDU_MainDisplay
           SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex}_${button}`, 'Number', 1);
         }
         if (messageType === 'requestUpdate') {
-          this.sendUpdate();
+          this.requestServerUpdate();
         }
         break;
       }
@@ -486,7 +488,7 @@ export class A320_Neo_CDU_MainDisplay
         this.onFmPowerStateChanged(isPoweredL);
 
         if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
-          this.sendUpdate();
+          this.requestServerUpdate();
         }
       }
     }
@@ -565,7 +567,7 @@ export class A320_Neo_CDU_MainDisplay
     }
 
     if (updateNeeded) {
-      this.sendUpdate();
+      this.requestServerUpdate();
     }
   }
 
@@ -611,7 +613,7 @@ export class A320_Neo_CDU_MainDisplay
     }
 
     if (updateNeeded) {
-      this.sendUpdate();
+      this.requestServerUpdate();
     }
   }
 
@@ -689,6 +691,7 @@ export class A320_Neo_CDU_MainDisplay
     this._title = content.split('[color]')[0];
     this._title = `{${color}}${this._title}{end}`;
     this._titleElement.textContent = this._title;
+    this.requestServerUpdate();
   }
 
   private setPageCurrent(value: string | number) {
@@ -698,6 +701,7 @@ export class A320_Neo_CDU_MainDisplay
       this._pageCurrent = parseInt(value);
     }
     this._pageCurrentElement.textContent = (this._pageCurrent > 0 ? this._pageCurrent : '') + '';
+    this.requestServerUpdate();
   }
 
   private setPageCount(value: string | number) {
@@ -712,9 +716,10 @@ export class A320_Neo_CDU_MainDisplay
     } else {
       this.getChildById('page-slash').textContent = '/';
     }
+    this.requestServerUpdate();
   }
 
-  private setLabel(label: string, row: number, col = -1, websocketDraw = true) {
+  private setLabel(label: string, row: number, col = -1) {
     if (col >= this._labelElements[row].length) {
       return;
     }
@@ -752,13 +757,10 @@ export class A320_Neo_CDU_MainDisplay
     }
     this._labels[row][col] = label;
     this._labelElements[row][col].textContent = label;
-
-    if (websocketDraw) {
-      this.sendUpdate();
-    }
+    this.requestServerUpdate();
   }
 
-  private setLine(content: string | CDU_Field, row: number, col = -1, websocketDraw = true) {
+  private setLine(content: string | CDU_Field, row: number, col = -1) {
     if (content instanceof CDU_Field) {
       const field = content;
       (col === 0 || col === -1 ? this.onLeftInput : this.onRightInput)[row] = (value) => {
@@ -800,10 +802,7 @@ export class A320_Neo_CDU_MainDisplay
     }
     this._lines[row][col] = content;
     this._lineElements[row][col].textContent = this._lines[row][col];
-
-    if (websocketDraw) {
-      this.sendUpdate();
-    }
+    this.requestServerUpdate();
   }
 
   public setTemplate(template: any[][], large = false) {
@@ -817,33 +816,33 @@ export class A320_Neo_CDU_MainDisplay
       if (template[tIndex]) {
         if (large) {
           if (template[tIndex][1] !== undefined) {
-            this.setLine(template[tIndex][0], i, 0, false);
-            this.setLine(template[tIndex][1], i, 1, false);
-            this.setLine(template[tIndex][2], i, 2, false);
-            this.setLine(template[tIndex][3], i, 3, false);
+            this.setLine(template[tIndex][0], i, 0);
+            this.setLine(template[tIndex][1], i, 1);
+            this.setLine(template[tIndex][2], i, 2);
+            this.setLine(template[tIndex][3], i, 3);
           } else {
-            this.setLine(template[tIndex][0], i, -1, false);
+            this.setLine(template[tIndex][0], i, -1);
           }
         } else {
           if (template[tIndex][1] !== undefined) {
-            this.setLabel(template[tIndex][0], i, 0, false);
-            this.setLabel(template[tIndex][1], i, 1, false);
-            this.setLabel(template[tIndex][2], i, 2, false);
-            this.setLabel(template[tIndex][3], i, 3, false);
+            this.setLabel(template[tIndex][0], i, 0);
+            this.setLabel(template[tIndex][1], i, 1);
+            this.setLabel(template[tIndex][2], i, 2);
+            this.setLabel(template[tIndex][3], i, 3);
           } else {
-            this.setLabel(template[tIndex][0], i, -1, false);
+            this.setLabel(template[tIndex][0], i, -1);
           }
         }
       }
       tIndex = 2 * i + 2;
       if (template[tIndex]) {
         if (template[tIndex][1] !== undefined) {
-          this.setLine(template[tIndex][0], i, 0, false);
-          this.setLine(template[tIndex][1], i, 1, false);
-          this.setLine(template[tIndex][2], i, 2, false);
-          this.setLine(template[tIndex][3], i, 3, false);
+          this.setLine(template[tIndex][0], i, 0);
+          this.setLine(template[tIndex][1], i, 1);
+          this.setLine(template[tIndex][2], i, 2);
+          this.setLine(template[tIndex][3], i, 3);
         } else {
-          this.setLine(template[tIndex][0], i, -1, false);
+          this.setLine(template[tIndex][0], i, -1);
         }
       }
     }
@@ -869,7 +868,6 @@ export class A320_Neo_CDU_MainDisplay
         }
       });
     });
-    this.sendUpdate();
   }
 
   /**
@@ -897,19 +895,20 @@ export class A320_Neo_CDU_MainDisplay
     } else {
       this.arrowHorizontal.innerHTML = '←\xa0\xa0';
     }
+    this.requestServerUpdate();
   }
 
-  public clearDisplay(webSocketDraw = false) {
+  public clearDisplay() {
     this.onUnload();
     this.onUnload = () => {};
     this.setTitle('');
     this.setPageCurrent(0);
     this.setPageCount(0);
     for (let i = 0; i < 6; i++) {
-      this.setLabel('', i, -1, webSocketDraw);
+      this.setLabel('', i, -1);
     }
     for (let i = 0; i < 6; i++) {
-      this.setLine('', i, -1, webSocketDraw);
+      this.setLine('', i, -1);
     }
     this.onLeftInput = [];
     this.onRightInput = [];
@@ -1568,13 +1567,27 @@ export class A320_Neo_CDU_MainDisplay
   }
 
   /**
-   * Sends an update to the websocket server (if connected) with the current state of the MCDU
+   * Schedules an update to the websocket server with the current state of the MCDU.
+   * Multiple synchronous state changes are combined into one update.
    */
-  public sendUpdate() {
-    // only calculate update when mcduServerClient is established.
-    if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
+  public requestServerUpdate() {
+    if (
+      this.mcduServerUpdateDebounceTimer.isPending() ||
+      !this.mcduServerClient ||
+      !this.mcduServerClient.isConnected()
+    ) {
       return;
     }
+
+    this.mcduServerUpdateDebounceTimer.schedule(this.sendUpdateToMcduServer, 0);
+  }
+
+  private sendUpdateToMcduServer = (): void => {
+    // Only calculate the update when mcduServerClient is established.
+    if (!this.mcduServerClient?.isConnected()) {
+      return;
+    }
+
     let left = this.emptyLines;
     let right = this.emptyLines;
 
@@ -1624,7 +1637,7 @@ export class A320_Neo_CDU_MainDisplay
 
     const content = { right, left };
     this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
-  }
+  };
 
   /**
    * Clears the remote MCDU clients' screens

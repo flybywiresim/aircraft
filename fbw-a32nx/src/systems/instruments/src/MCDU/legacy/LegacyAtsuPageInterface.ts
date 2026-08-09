@@ -1,4 +1,4 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FmsClient } from '@atsu/fmsclient';
@@ -11,7 +11,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ISimbriefData } from '@flybywiresim/fbw-sdk';
 
 interface LegacyAtsuPageDrawingInterface {
-  clearDisplay(webSocketDraw?: boolean): void;
+  clearDisplay(): void;
   setTemplate(template: any[][], large?: boolean): void;
   setTitle(title: string): void;
   setArrows(up: boolean, down: boolean, left: boolean, right: boolean): void;

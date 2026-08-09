@@ -1,11 +1,11 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { McduMessage } from '../messages/NXSystemMessages';
 
 interface LegacyAidsPageDrawingInterface {
-  clearDisplay(webSocketDraw?: boolean): void;
+  clearDisplay(): void;
   setTemplate(template: any[][], large?: boolean): void;
   getDelaySwitchPage(): number;
   onRightInput: LskCallback[];
