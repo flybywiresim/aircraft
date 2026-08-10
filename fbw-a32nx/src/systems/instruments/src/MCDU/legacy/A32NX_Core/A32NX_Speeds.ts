@@ -24,7 +24,6 @@ export class A32NX_Speeds {
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', 0);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC', 'number', 0);

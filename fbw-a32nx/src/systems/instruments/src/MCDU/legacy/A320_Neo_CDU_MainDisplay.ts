@@ -1376,13 +1376,7 @@ export class A320_Neo_CDU_MainDisplay
   /* END OF MCDU MESSAGE SYSTEM */
   /* MCDU EVENTS */
 
-  public onPowerOn() {
-    super.onPowerOn();
-  }
-
   protected onEvent(_event) {
-    super.onEvent(_event);
-
     // MCDU should not accept input while unpowered
     if (!SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Number')) {
       return;

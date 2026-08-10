@@ -320,7 +320,7 @@
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_SPEEDS_LANDING_CONF3
+- A32NX_FM_LANDING_CONF3
     - Bool
     - True if FLAPS 3 is selected in perf page
 
@@ -330,12 +330,12 @@
 
 - A32NX_SPEEDS_VLS_APP
     - Number
-    - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
+    - vls calculated for config full whether A32NX_FM_LANDING_CONF3 or not
     - is mach corrected
 
 - A32NX_SPEEDS_VAPP
     - Number
-    - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
+    - vapp calculated for config full whether A32NX_FM_LANDING_CONF3 or not
     - is mach corrected
 
 - A32NX_APU_EGT_CAUTION
