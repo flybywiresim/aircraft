@@ -29,6 +29,7 @@ import {
   Waypoint,
   MagVar,
   Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -283,8 +284,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincFlightNumber2 = new FmArinc429OutputWord('FLIGHT_NUMBER_2');
   private readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
   private readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
-  private readonly approachHeadwindComponent = new FmArinc429OutputWord('APPROACH_HEADWIND_COMPONENT');
-
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   private readonly arincBusOutputs = [
     this.arincDiscreteWord2,
@@ -308,7 +307,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincFlightNumber2,
     this.arincFlightNumber3,
     this.arincFlightNumber4,
-    this.approachHeadwindComponent,
   ];
 
   private navDbIdent: DatabaseIdent | null = null;
@@ -442,6 +440,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
+
+  private static readonly fmApproachHeadWindRegisterdSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
+    SimVarValueType.String,
+  );
+  private readonly arincHeadWindComponent = Arinc429Register.empty();
+  private readonly arincHeadWindComponentRaw = Subject.create(0);
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -588,6 +593,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.isInitialised = true;
 
     this.subscriptions.push(
+      this.arincHeadWindComponentRaw.sub((v) => {
+        FMCMainDisplay.fmApproachHeadWindRegisterdSimVar.set(v.toString());
+      }),
       this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true),
       this.fcuSelectedAltitude.sub((v) => {
         if (v.isNormalOperation()) {
@@ -758,6 +766,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.setRequest('FMGC');
 
     this.clearEtt();
+
+    this.arincHeadWindComponentRaw.set(0);
+    this.arincHeadWindComponent.set(0);
   }
 
   public onUpdate(deltaTime: number) {
@@ -3627,7 +3638,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.flightPlanService.setPerformanceData('approachWindMagnitude', null, forPlan);
       this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', false, forPlan);
       this.flightPlanService.setDescentWindEntry(0, null, forPlan);
-      this.approachHeadwindComponent.setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 10, 500, -500);
+      this.arincHeadWindComponent.setValue(0);
+      this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+      this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
 
       return true;
     }
@@ -3653,14 +3666,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       : null;
 
     const validRunway = plan.destinationRunway !== undefined;
-
-    this.approachHeadwindComponent.setBnrValue(
+    this.arincHeadWindComponent.setValue(
       validRunway ? NXSpeedsUtils.getHeadwind(mag, dir, plan.destinationRunway.magneticBearing) : 0,
-      validRunway ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-      10,
-      500,
-      -500,
     );
+    this.arincHeadWindComponent.setSsm(
+      validRunway ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NoComputedData,
+    );
+    this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
 
     const theta = MagVar.magneticToTrue(dir, destinationMagVar ?? 0) * MathUtils.DEGREES_TO_RADIANS;
 
@@ -5745,7 +5757,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
       if (cruiseLevel !== null && (isClimb || isCruise)) {
         const fmgcDiscreteWord1 = this.fmgcDiscreteWord1.get();
-        const altitudeConstraintInvalid = this.fmgc1AltitudeConstraint.get().valueOr(null) !== null;
+        const altitudeConstraintInvalid = this.fmgcAltitudeConstraint.get().valueOr(null) !== null;
         const dashMode = fmgcDiscreteWord1.bitValueOr(26, false);
         const trackMode = fmgcDiscreteWord1.bitValueOr(20, false);
         const altMode = fmgcDiscreteWord1.bitValueOr(19, false);
