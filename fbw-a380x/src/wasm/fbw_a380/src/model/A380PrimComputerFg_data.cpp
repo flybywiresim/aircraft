@@ -31,6 +31,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   { 5.0, 5.0, 1.0, 1.0 },
 
   { 1.0, 0.01 },
+  11.0,
   23.0,
   21.0,
   21.0,
@@ -39,7 +40,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   11.0,
   12.0,
   11.0,
-  28.0,
   21.0,
   11.0,
   22.0,
@@ -222,8 +222,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   1.0,
   1.0,
   1.0,
-  1.0,
-  0.0,
   0.0,
   0.0,
   -2.0,
@@ -5202,24 +5200,28 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   -5.0,
   -5.0,
   -20.0,
+  1.0,
+  1.0,
   0.5,
   600000.0,
   250000.0,
-  0.0,
   9.81,
   9.81,
   -1.0,
   9.81,
   0.0,
+  1.0,
+  0.0,
+  0.0,
   0.0,
   0.5,
   600000.0,
   250000.0,
-  0.0,
   9.81,
   9.81,
   -1.0,
   9.81,
+  0.0,
   0.0,
   0.0,
   0.017453292519943295,
@@ -5376,7 +5378,21 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  true,
   false,
+  false,
+
+  {
+    11.0
+  }
+  ,
+
+
+  {
+    11.0
+  }
+  ,
+
 
   {
     { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }

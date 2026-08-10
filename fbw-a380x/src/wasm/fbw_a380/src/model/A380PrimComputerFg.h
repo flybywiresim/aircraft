@@ -28,7 +28,7 @@ class A380PrimComputerFg final
     boolean_T pU_not_empty;
   };
 
-  struct rtDW_MATLABFunction_A380PrimComputerFg_kx_T {
+  struct rtDW_MATLABFunction_A380PrimComputerFg_k_T {
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
@@ -58,7 +58,7 @@ class A380PrimComputerFg final
 
   struct BlockIO_A380PrimComputerFg_T {
     prim_outputs BusAssignment_i;
-    prim_outputs BusAssignment_f;
+    prim_outputs BusAssignment_ic;
     real_T u;
     real_T u_d;
     real_T u_l;
@@ -178,27 +178,27 @@ class A380PrimComputerFg final
     boolean_T Runtime_MODE;
     rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_f;
     rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter_c;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_aqw;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_aqw;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_jqs;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lk;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_cia;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_jfh;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kdl;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nvo;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_erf;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_j2;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oks;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_jfh;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kdl;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_nvo;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_erf;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_oks;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_lq;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_gg;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_n11;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_jo;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ocv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kq;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_lwx;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dm;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ef;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_n11;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_jo;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ocv;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kq;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_lwx;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_dm;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ef;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fk;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_j0;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_j0;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ok;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lth;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_a0p;
@@ -206,157 +206,157 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ep5;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_dxb;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_llo;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dth;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_gw;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_hq5;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_fhn;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_dth;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_gw;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_hq5;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_fhn;
     rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_d;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lis;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bby;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_bby;
     rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_l;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cbh;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ckt;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cbh;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ckt;
     rtDW_MATLABFunction1_A380PrimComputerFg_T sf_MATLABFunction1_o;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem1;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nv;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_nv;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem4_c;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_g0v;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_h5;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g0v;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_h5;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem_c;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kmp;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kmp;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem3;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_du;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nc;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kl;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_hp;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_av;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_du;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_nc;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kl;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_hp;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_av;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oyv;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fy;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_hw;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_hw;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_pw;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_h4e;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_h4e;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oz;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oy;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_eow;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_oy;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_eow;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_f34;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_bii;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ob;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_l0a;
     rtDW_LagFilter_A380PrimComputerFg_b_T sf_LagFilter_b4;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_l1;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oh;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cd0;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cn;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_isd;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_oh;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cd0;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cn;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_isd;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oa;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cm;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_os;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cm;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kv;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_os;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_je;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_on;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nab;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_on;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_nab;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_d0;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_bc;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ep;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ep;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fb;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ed;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_lx;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_mm;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_n4;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dxv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_b1;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_az;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_kdz;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ak;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_lx;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_mm;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_n4;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_dxv;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_b1;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_az;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kdz;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ak;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_is;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_n3;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_p4;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_jp;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_iy;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_dvt;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_jx;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_nm;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_aq;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_b2;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_jx;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_nm;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_aq;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_b2;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oqd;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_g1d;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_hs;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ab;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bf;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a0v;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_g13;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g1d;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_hs;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ab;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_bf;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_a0v;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g13;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_my;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_ju;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cd;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cd;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ph;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_hv2;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oe;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ll;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_gm;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_na;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_c4;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_c4;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ks;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_eu;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fre;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_lw;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_li;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_li;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_b4;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_oq;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dv;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a0;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_byg;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_eo;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_dv;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_a0;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_byg;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_eo;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_mn;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ai;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ai;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_it;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_h0;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_pq0;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_cg;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fcu;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ld;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_oxn;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_br;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ld;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ox;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_an;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_mva;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_g2i;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_k1;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_k1;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_bq;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_o3;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_o3;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_pl;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_bl;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem4;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_l0;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bo;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_l0;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_bo;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_iv;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_dgp;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ar;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_ps;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_kw;
     rtDW_SRFlipFlopwithSyncInput_A380PrimComputerFg_T SRFlipFlopwithSyncInput_d;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_dg;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a5;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_dg;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_a5;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_fh;
     rtDW_SRFlipFlopwithSyncInput_A380PrimComputerFg_T SRFlipFlopwithSyncInput;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_eh;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_cs;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_mp;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_gf;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_eh;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_cs;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_mp;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g2;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_gf;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_pv;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_cj;
     rtDW_MATLABFunction_A380PrimComputerFg_b_T sf_MATLABFunction_at;
     rtDW_MATLABFunction_A380PrimComputerFg_l_T sf_MATLABFunction_hf;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem_n;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_fr;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_bu;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_d;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_o5;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_fr;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_bu;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_d;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_o5;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_fp;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_pa;
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T sf_MATLABFunction_ci;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_fp;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_a;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_pa;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_ci;
     rtDW_LagFilter_A380PrimComputerFg_b_T sf_LagFilter_b;
     rtDW_LagFilter_A380PrimComputerFg_T sf_LagFilter;
     rtDW_LeadLagFilter_A380PrimComputerFg_T sf_LeadLagFilter_c;
@@ -377,6 +377,10 @@ class A380PrimComputerFg final
 
   struct rtP_SRFlipFlopwithSyncInput_A380PrimComputerFg_T {
     boolean_T Logic_table[16];
+  };
+
+  struct rtP_AltitudeChoice_A380PrimComputerFg_T {
+    real_T BitfromLabel1_bit;
   };
 
   struct Parameters_A380PrimComputerFg_T {
@@ -406,6 +410,7 @@ class A380PrimComputerFg final
     real_T ScheduledGain2_Table[4];
     real_T ScheduledGain4_Table[2];
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel1_bit_k;
     real_T BitfromLabel1_bit_d;
     real_T BitfromLabel6_bit;
     real_T BitfromLabel2_bit;
@@ -413,7 +418,6 @@ class A380PrimComputerFg final
     real_T BitfromLabel2_bit_d;
     real_T BitfromLabel1_bit_b;
     real_T BitfromLabel2_bit_dp;
-    real_T BitfromLabel1_bit_p;
     real_T BitfromLabel1_bit_l;
     real_T BitfromLabel6_bit_h;
     real_T BitfromLabel2_bit_k;
@@ -479,7 +483,7 @@ class A380PrimComputerFg final
     real_T BitfromLabel3_bit_kr;
     real_T BitfromLabel3_bit_er;
     real_T BitfromLabel3_bit_a;
-    real_T BitfromLabel1_bit_pb;
+    real_T BitfromLabel1_bit_p;
     real_T BitfromLabel2_bit_es;
     real_T BitfromLabel1_bit_hz;
     real_T BitfromLabel2_bit_ji;
@@ -596,8 +600,6 @@ class A380PrimComputerFg final
     real_T MTrigNode1_isRisingEdge_mw;
     real_T MTrigNode_isRisingEdge_k;
     real_T MTrigNode_isRisingEdge_kv;
-    real_T FGOuterLoopDataPreparation_isSide1;
-    real_T FGOuterLoopDataPreparation1_isSide1;
     real_T APEngagedLogic_isSide2;
     real_T APEngagedLogic1_isSide2;
     real_T RateLimiterVariableTs_lo;
@@ -1124,25 +1126,29 @@ class A380PrimComputerFg final
     real_T Bias_Bias_b;
     real_T Bias_Bias_mk;
     real_T Bias_Bias_n;
+    real_T Constant4_Value;
+    real_T Constant3_Value_k;
     real_T Gain3_Gain;
     real_T Saturation_UpperSat_n;
     real_T Saturation_LowerSat_n;
-    real_T Switch6_Threshold;
     real_T Gain_Gain_me;
     real_T Gain1_Gain_o;
     real_T Bias_Bias_mq;
     real_T Gain2_Gain;
     real_T Constant_Value_a;
+    real_T Constant5_Value;
     real_T Switch9_Threshold;
+    real_T Constant4_Value_f;
+    real_T Constant3_Value_i;
     real_T Gain3_Gain_k;
     real_T Saturation_UpperSat_m;
     real_T Saturation_LowerSat_m;
-    real_T Switch6_Threshold_j;
     real_T Gain_Gain_l;
     real_T Gain1_Gain_i;
     real_T Bias_Bias_bi;
     real_T Gain2_Gain_i;
     real_T Constant_Value_ag;
+    real_T Constant5_Value_h;
     real_T Switch9_Threshold_f;
     real_T Gain1_Gain_p;
     real_T fpmtoms_Gain;
@@ -1247,7 +1253,11 @@ class A380PrimComputerFg final
     boolean_T Logic_table_fj[16];
     boolean_T Logic_table_fg[16];
     boolean_T Logic_table_nr[16];
+    boolean_T Constant2_Value_d;
+    boolean_T Constant2_Value_o;
     boolean_T Constant_Value_e;
+    rtP_AltitudeChoice_A380PrimComputerFg_T AltitudeChoice_g;
+    rtP_AltitudeChoice_A380PrimComputerFg_T AltitudeChoice_m;
     rtP_Subsystem_A380PrimComputerFg_T Subsystem1;
     rtP_Subsystem_A380PrimComputerFg_T Subsystem4_c;
     rtP_Subsystem_A380PrimComputerFg_T Subsystem_c;
@@ -1285,15 +1295,15 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_LagFilter_b(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
     rtDW_LagFilter_A380PrimComputerFg_b_T *localDW);
   static void A380PrimComputerFg_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
-  static void A380PrimComputerFg_MATLABFunction_o(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380PrimComputerFg_MATLABFunction_h(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void A380PrimComputerFg_MATLABFunction_e(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void A380PrimComputerFg_APEngagedLogic(boolean_T rtu_pulsedFcuButton, boolean_T rtu_prevApEngaged, boolean_T
     rtu_groundEngineStartCondition, boolean_T rtu_dualApDiscCondition, boolean_T rtu_groundGa, boolean_T
     rtu_envelopeInhibition, boolean_T rtu_apFdSpecificCondition, const prim_outputs *rtu_apFdSpecificCondition_l,
     boolean_T *rty_engagementCondition, boolean_T *rty_disengagementCondition, boolean_T *rty_ap_inop);
-  static void A380PrimComputerFg_MATLABFunction_o_Reset(rtDW_MATLABFunction_A380PrimComputerFg_kx_T *localDW);
+  static void A380PrimComputerFg_MATLABFunction_o_Reset(rtDW_MATLABFunction_A380PrimComputerFg_k_T *localDW);
   static void A380PrimComputerFg_MATLABFunction_c(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_A380PrimComputerFg_kx_T *localDW);
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T *localDW);
   static void A380PrimComputerFg_Subsystem_Init(boolean_T rtp_initial_condition, rtDW_Subsystem_A380PrimComputerFg_T
     *localDW);
   static void A380PrimComputerFg_Subsystem_Reset(boolean_T rtp_initial_condition, rtDW_Subsystem_A380PrimComputerFg_T
@@ -1301,11 +1311,11 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_Subsystem(boolean_T rtu_S, boolean_T rtu_R, boolean_T rtu_externalActive, boolean_T
     rtu_syncEnable, boolean_T rty_Q[2], rtDW_Subsystem_A380PrimComputerFg_T *localDW, rtP_Subsystem_A380PrimComputerFg_T
     *localP);
-  static void A380PrimComputerFg_MATLABFunction_l_Reset(rtDW_MATLABFunction_A380PrimComputerFg_l_T *localDW);
-  static void A380PrimComputerFg_MATLABFunction_h(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T
+  static void A380PrimComputerFg_MATLABFunction_e_Reset(rtDW_MATLABFunction_A380PrimComputerFg_l_T *localDW);
+  static void A380PrimComputerFg_MATLABFunction_hf(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T
     rtp_isRisingEdge, real_T rtp_retriggerable, real_T rtp_triggerDuration, rtDW_MATLABFunction_A380PrimComputerFg_l_T
     *localDW);
-  static void A380PrimComputerFg_MATLABFunction_e_Reset(rtDW_MATLABFunction_A380PrimComputerFg_b_T *localDW);
+  static void A380PrimComputerFg_MATLABFunction_em_Reset(rtDW_MATLABFunction_A380PrimComputerFg_b_T *localDW);
   static void A380PrimComputerFg_MATLABFunction_a(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerFg_b_T *localDW);
   static void A380PrimComputerFg_SRFlipFlopwithSyncInput_Init(boolean_T rtp_initial_condition,
@@ -1321,6 +1331,9 @@ class A380PrimComputerFg final
   static void A380PrimComputerFg_MATLABFunction1(const prim_outputs *rtu_in, boolean_T rtu_set_dashes, boolean_T
     rtu_set_selection, boolean_T *rty_dashes, rtDW_MATLABFunction1_A380PrimComputerFg_T *localDW);
   static void A380PrimComputerFg_MATLABFunction_a5(const base_arinc_429 *rtu_u, real32_T *rty_y);
+  static void A380PrimComputerFg_AltitudeChoice(const base_arinc_429 *rtu_altitude_standard_ft, const base_arinc_429
+    *rtu_altitude_corrected_1, const base_arinc_429 *rtu_altitude_corrected_2, boolean_T rtu_useApFdSource1, const
+    prim_outputs *rtu_in_Inport_5, base_arinc_429 *rty_alt_ind, rtP_AltitudeChoice_A380PrimComputerFg_T *localP);
   static void A380PrimComputerFg_betaestimation1(real32_T rtu_Vcas_kn, real32_T rtu_n_y_g, real_T rtu_zeta_deg, real_T
     rtu_gross_weight_kg, real32_T *rty_beta);
   A380FgOuterLoops LawMDLOBJ1;
