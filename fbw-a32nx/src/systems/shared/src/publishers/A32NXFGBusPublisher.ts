@@ -176,7 +176,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_5',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_5',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_5',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -184,7 +184,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_4',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_4',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_4',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -192,7 +192,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_3',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_4',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_4',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -200,7 +200,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_1',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_1',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_1',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -208,7 +208,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_2',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_2',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_2',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -216,7 +216,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_7',
         {
-          name: 'A32NX_FMGC_#index#_DISCRETE_WORD_7',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_7',
           indexed: true,
           type: SimVarValueType.Enum,
         },
@@ -224,7 +224,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_altitude_constraint',
         {
-          name: 'A32NX_FMGC_#index#_FM_ALTITUDE_CONSTRAINT',
+          name: 'L:A32NX_FMGC_#index#_FM_ALTITUDE_CONSTRAINT',
           indexed: true,
           type: SimVarValueType.Enum,
         },
