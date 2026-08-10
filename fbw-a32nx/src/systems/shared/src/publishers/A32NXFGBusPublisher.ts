@@ -140,6 +140,11 @@ interface A32NXFgBusBaseEvents {
       | 29  | ? TCAS RA Nose Down               |
    */
   fmgc_discrete_word_7: number;
+
+  /** Arinc 429 word in feet
+   * Next applicable altitude constraint
+   */
+  fmgc_altitude_constraint: number;
 }
 
 type IndexedTopics = keyof A32NXFgBusBaseEvents;
@@ -212,6 +217,14 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
         'fmgc_discrete_word_7',
         {
           name: 'A32NX_FMGC_#index#_DISCRETE_WORD_7',
+          indexed: true,
+          type: SimVarValueType.Enum,
+        },
+      ],
+      [
+        'fmgc_altitude_constraint',
+        {
+          name: 'A32NX_FMGC_#index#_FM_ALTITUDE_CONSTRAINT',
           indexed: true,
           type: SimVarValueType.Enum,
         },

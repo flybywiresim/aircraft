@@ -136,6 +136,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
   private readonly _progBrgDistUpdateThrottler = new UpdateThrottler(2000);
   private readonly fuelPredUpdateThrottler = new UpdateThrottler(5000);
+  private readonly guidanceUpdateThrottler = new UpdateThrottler(1000);
   private readonly _apCooldown = 500;
   private lastFlightPlanVersion = 0;
   private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
@@ -422,13 +423,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     ([fg1, fg2]) => {
       return fg1.isNormalOperation() ? fg1 : fg2;
     },
-    this.fmgc1DiscreteWord4,
-    this.fmgc2DiscreteWord4,
+    this.fmgc1DiscreteWord1,
+    this.fmgc2DiscreteWord1,
   );
 
   private readonly openOrManagedVerticalModeActive = this.fmgc1DiscreteWord1.map((v) => {
     return v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(14);
   });
+
+  private readonly fmgc1AltitudeConstraint = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_altitude_constraint_1'),
+  );
+
+  private readonly fmgc2AltitudeConstraint = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_altitude_constraint_2'),
+  );
+
+  private readonly fmgcAltitudeConstraint = MappedSubject.create(
+    ([fg1, fg2]) => {
+      return fg1.isNormalOperation() ? fg1 : fg2;
+    },
+    this.fmgc1AltitudeConstraint,
+    this.fmgc2AltitudeConstraint,
+  );
 
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
 
@@ -810,6 +827,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
         this.runFuelPredComputation(FlightPlanIndex.FirstSecondary);
       }
+    }
+
+    const guidanceThrottledDt = this.guidanceUpdateThrottler.canUpdate(deltaTime);
+    if (guidanceThrottledDt !== -1) {
+      this.updateGuidance(guidanceThrottledDt);
     }
 
     if (this.guidanceController) {
@@ -5755,13 +5777,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const isClimb = flightPhase === FmgcFlightPhase.Climb;
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
       if (cruiseLevel !== null && (isClimb || isCruise)) {
-        const fmgcDiscreteWord1 = this.fmgc1DiscreteWord1.get();
+        const fmgcDiscreteWord1 = this.fmgcDiscreteWord1.get();
+        const altitudeConstraintInvalid = this.fmgc1AltitudeConstraint.get().valueOr(null) !== null;
+        const dashMode = fmgcDiscreteWord1.bitValueOr(26, false);
+        const trackMode = fmgcDiscreteWord1.bitValueOr(20, false);
+        const altMode = fmgcDiscreteWord1.bitValueOr(19, false);
         const fgModesSuitedForLevelChange =
           fmgcDiscreteWord1.bitValueOr(11, false) || // CLB or OP CLB
           fmgcDiscreteWord1.bitValue(17) || // VS
           fmgcDiscreteWord1.bitValue(18) || // FPA
-          (primFgDiscreteWord3.bitValue(20) && !primFgDiscreteWord3.bitValue(28)) || // ALT without constraint
-          primFgDiscreteWord3.bitValue(29); // ALT CRZ;
+          (trackMode && altMode && !dashMode && altitudeConstraintInvalid) || // ALT without constraint
+          (dashMode && (!altMode || altitudeConstraintInvalid)); // ALT CRZ;
 
         if (fgModesSuitedForLevelChange) {
           const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
@@ -5787,5 +5813,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.cruiseAltitudeChangeConfirm.write(false, deltaTime);
       this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
     }
+  }
+
+  private updateGuidance(deltaTime: number) {
+    this.updatePerfSpeeds();
+    this.updateConstraints();
+    this.updateManagedSpeed();
+    this.checkCruiseLevelChangeDueToFcu(deltaTime);
   }
 }
