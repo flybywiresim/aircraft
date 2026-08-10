@@ -187,10 +187,9 @@ export class LightSync implements Instrument {
 
   /**
    * Gets the automatic brightness level from the sim.
-   * @returns Brightness in the range [0, 1].
+   * @returns Brightness in the range [15, 85], clamped from raw [0, 100] ambient-light reading.
    */
   private getAutoBrightness(): number {
-    /** automatic brightness based on ambient light, [0, 1] scale */
     return Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));
   }
 }
