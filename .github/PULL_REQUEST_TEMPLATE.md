@@ -8,6 +8,10 @@ Fixes #[issue_no]
 ## Summary of Changes
 <!-- Please provide a summary of changes for this pull request, ensuring all changes are explained. -->
 
+## SimVar Changes
+<!-- If applicable, list any SimVars added, removed, renamed, or otherwise changed by this PR. -->
+<!-- Ensure the corresponding documentation in `fbw-a32nx/docs/a320-simvars.md` or `fbw-a380x/docs/a380-simvars.md` is updated. -->
+
 ## Screenshots (if necessary)
 <!-- If your PR includes visual changes, screenshots from before and after your change should always be included. -->
 <!-- Please make your best efforts to provide useful before and after screenshots. They should match camera angle, zoom, size, time of day, etc. -->
