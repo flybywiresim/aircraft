@@ -5527,7 +5527,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? -1), true),
+      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true), // Simulink model uses 0 as invalid.
     );
     // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
     this.subscriptions.push(
