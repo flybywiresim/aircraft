@@ -949,8 +949,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
 
-        SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-
         /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Climb) {
           this.triggerCheckSpeedModeMessage(plan.performanceData.preselectedCruiseSpeed.get() ?? undefined);
@@ -987,8 +985,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
-
-        SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
         this.checkDestData();
         this.flightPlanService.deleteAllClimbWindEntries();
 
@@ -996,8 +992,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
 
       case FmgcFlightPhase.GoAround: {
-        SimVar.SetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number', Simplane.getIndicatedSpeed());
-
         this.flightPlanService.stringMissedApproach(
           /** @type {FlightPlanLeg} */ (map) => {
             this.addMessageToQueue(NXSystemMessages.cstrDelUpToWpt.getModifiedMessage(map.ident));
@@ -1882,19 +1876,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const onlyTemp = flString.length === 0;
 
     if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
-      if (forPlan === FlightPlanIndex.Active) {
-        const newLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
-
-        if (
-          SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
-          SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
-        ) {
-          SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', newLevel);
-        } else {
-          SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
-        }
-      }
-
       if (!tempString) {
         return true;
       }
