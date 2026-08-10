@@ -598,7 +598,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.atsu?.onFmsReset();
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', -1);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0); // Simulink model uses 0 as non valid
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
@@ -1168,7 +1168,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateManagedSpeed() {
-    let vPfd = -1;
+    let vPfd = 0;
     let isMach = false;
 
     this.updateHoldingSpeed();

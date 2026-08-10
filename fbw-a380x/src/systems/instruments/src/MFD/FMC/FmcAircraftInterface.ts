@@ -398,7 +398,7 @@ export class FmcAircraftInterface {
           }
         }),
     );
-    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? -1), true));
+    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
     this.subs.push(
       this.arincHeadWindComponentRaw.sub((v) => {
         FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v.toString());
@@ -549,7 +549,7 @@ export class FmcAircraftInterface {
     }
 
     SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? -1);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? -1);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? 0); // Simulink model uses 0 as not valid
     SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr.get() ?? -1);
   }
 

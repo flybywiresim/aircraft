@@ -785,7 +785,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     // Reset SimVars
     SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', -1);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', -1);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', 0); // Simulink model uses 0 as non valid.
     SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', -1);
     SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'knots', -1);
   }
