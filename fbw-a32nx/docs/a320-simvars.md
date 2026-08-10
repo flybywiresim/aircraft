@@ -3171,6 +3171,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
+- `L:A32NX_FM{number}_APPROACH_HEADWIND_COMPONENT`
+    - Arinc429<number> (knots)
+    - The calculated headwind component by the fms based on the inserted wind on the PERF APPR page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 ### Flight Control Unit (FCU)
 
 - A32NX_FCU_HEALTHY

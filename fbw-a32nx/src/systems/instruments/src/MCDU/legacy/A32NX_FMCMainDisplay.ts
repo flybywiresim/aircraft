@@ -191,12 +191,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public computedVls?: number;
   public approachSpeeds?: NXSpeedsApp; // based on selected config, not current config
   public constraintAlt = 0;
-  private _forceNextAltitudeUpdate = undefined;
-  private _lastUpdateAPTime = undefined;
-  private updateAutopilotCooldown = undefined;
-  private _apMasterStatus = undefined;
-  private _lastRequestedFLCModeWaypointIndex = undefined;
-
   private _progBrgDist?: {
     icao: string;
     ident: string;
@@ -217,8 +211,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public managedSpeedDescend = 290;
   public managedSpeedDescendMach = 0.78;
   // private managedSpeedDescendMachIsPilotEntered = undefined;
-  private cruiseFlightLevelTimeOut?: ReturnType<typeof setTimeout>;
-  private activeWpIdx = undefined;
   private efisSymbolsLeft?: EfisSymbols<A320EfisNdRangeValue>;
   private efisSymbolsRight?: EfisSymbols<A320EfisNdRangeValue>;
   /**
@@ -675,11 +667,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.computedVls = undefined;
     this.approachSpeeds = undefined; // based on selected config, not current config
     this.constraintAlt = 0;
-    this._forceNextAltitudeUpdate = false;
-    this._lastUpdateAPTime = NaN;
-    this.updateAutopilotCooldown = 0;
-    this._apMasterStatus = false;
-    this._lastRequestedFLCModeWaypointIndex = -1;
 
     this._activeCruiseFlightLevelDefaulToFcu = false;
     this._progBrgDist = undefined;
@@ -696,7 +683,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.managedSpeedDescend = 290;
     this.managedSpeedDescendMach = 0.78;
     // this.managedSpeedDescendMachIsPilotEntered = false;
-    this.cruiseFlightLevelTimeOut = undefined;
     this.activeUnconfirmedBlockFuel = null;
     this.secUnconfirmedBlockFuel = null;
     this.holdSpeedTarget = undefined;
