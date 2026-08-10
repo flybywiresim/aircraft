@@ -656,6 +656,10 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   tcas_submode::ALT_ACQ,
   tcas_submode::ALT_HOLD,
   tcas_submode::VS,
@@ -857,6 +861,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   1,
   1,
   1,
+  4,
 
   {
     {
@@ -949,7 +954,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0.0,
         0.0,
         0.0,
-        0.0
+
+        {
+          0U,
+          0.0F
+        },
+        false
       },
 
       {
@@ -3984,6 +3994,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
   0.0,
   0.0,
+  -1.0,
+  1.0,
+  360.0,
+  0.0,
+  0.017453292519943295,
+  0.33333333333333331,
+  0.0,
   -5.0,
   9.81,
   9.81,
@@ -4023,6 +4040,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
   -1.0F,
+  -5.0F,
   0.0F,
   0.0F,
   -2.0F,

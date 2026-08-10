@@ -775,6 +775,10 @@ class FmgcComputer final
     real32_T A429ValueOrDefault3_defaultValue_a;
     real32_T A429ValueOrDefault_defaultValue_mh;
     real32_T A429ValueOrDefault2_defaultValue_b;
+    real32_T A429ValueOrDefault4_defaultValue_ei;
+    real32_T A429ValueOrDefault3_defaultValue_ot;
+    real32_T A429ValueOrDefault1_defaultValue_ap;
+    real32_T A429ValueOrDefault2_defaultValue_k;
     real32_T A429ValueOrDefault3_defaultValue_h;
     real32_T A429ValueOrDefault4_defaultValue_c;
     real32_T A429ValueOrDefault5_defaultValue_j;
@@ -794,7 +798,7 @@ class FmgcComputer final
     real32_T A429ValueOrDefault3_defaultValue_k;
     real32_T A429ValueOrDefault_defaultValue_hw;
     real32_T A429ValueOrDefault1_defaultValue_o2;
-    real32_T A429ValueOrDefault2_defaultValue_k;
+    real32_T A429ValueOrDefault2_defaultValue_kq;
     real32_T A429ValueOrDefault3_defaultValue_l;
     real32_T A429ValueOrDefault4_defaultValue_m;
     real32_T A429ValueOrDefault5_defaultValue_fk;
@@ -1015,6 +1019,7 @@ class FmgcComputer final
     int8_T CompareToConstant_const_b;
     int8_T CompareToConstant_const_cq;
     int8_T CompareToConstant_const_ja;
+    int8_T CompareToConstant_const_d4;
     fmgc_outputs out_Y0;
     base_fmgc_logic_outputs Constant1_Value;
     base_fmgc_bus_outputs Constant4_Value;
@@ -1036,10 +1041,17 @@ class FmgcComputer final
     real_T Y_Y0_i;
     real_T Y_Y0_h;
     real_T Y_Y0_g;
+    real_T Constant_Value_b;
+    real_T Gain1_Gain;
+    real_T Gain_Gain_o;
+    real_T Constant3_Value;
+    real_T Constant_Value_g;
+    real_T Gain1_Gain_m;
+    real_T Gain_Gain_on;
     real_T Y_Y0_c;
     real_T Bias_Bias;
     real_T Gain_Gain_h;
-    real_T Gain1_Gain;
+    real_T Gain1_Gain_n;
     real_T Bias_Bias_p;
     real_T Gain2_Gain;
     real_T Constant_Value_i;
@@ -1074,6 +1086,7 @@ class FmgcComputer final
     real32_T uDLookupTable_tableData[7];
     real32_T uDLookupTable_bp01Data[7];
     real32_T Gain_Gain_f;
+    real32_T Bias_Bias_j;
     real32_T Y_Y0_j;
     real32_T Y_Y0_d;
     real32_T Bias_Bias_e;
@@ -1154,7 +1167,7 @@ class FmgcComputer final
     boolean_T Constant_Value_m5;
     boolean_T Constant1_Value_i5;
     boolean_T Constant10_Value;
-    boolean_T Constant3_Value;
+    boolean_T Constant3_Value_m;
     boolean_T Constant4_Value_g;
     boolean_T Constant5_Value;
     boolean_T Constant6_Value;

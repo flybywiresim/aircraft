@@ -81,6 +81,19 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
 
@@ -148,19 +161,6 @@ struct base_fmgc_discrete_inputs
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
   boolean_T tcas_ta_display;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
-
-struct base_ils_bus
-{
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -273,9 +273,10 @@ struct base_fms_inputs
   boolean_T fms_mach_mode_activate;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
-  real_T acceleration_alt_eo_ft;
   real_T thrust_reduction_alt_ft;
   real_T cruise_alt_ft;
+  base_arinc_429 tower_headwind_kts;
+  boolean_T flap_3_approach_selected;
 };
 
 #endif
