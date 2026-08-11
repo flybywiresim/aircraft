@@ -1250,34 +1250,36 @@ export class FmcAircraftInterface {
   }
 
   updateConstraints() {
-    const activeFpIndex = this.flightPlanService.activeLegIndex;
-    const constraints = this.managedProfile.get(activeFpIndex);
     const fcuSelAlt = this.masterPrimAltitude.get().valueOr(null);
+    if (fcuSelAlt !== null) {
+      const activeFpIndex = this.flightPlanService.activeLegIndex;
+      const constraints = this.managedProfile.get(activeFpIndex);
 
-    let constraintAlt = 0;
-    if (constraints && fcuSelAlt !== null) {
-      const phase = this.flightPhase.get();
-      if (
-        (phase < FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.GoAround) &&
-        Number.isFinite(constraints.climbAltitude) &&
-        constraints.climbAltitude < fcuSelAlt
-      ) {
-        constraintAlt = constraints.climbAltitude;
+      let constraintAlt = 0;
+      if (constraints) {
+        const phase = this.flightPhase.get();
+        if (
+          (phase < FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.GoAround) &&
+          Number.isFinite(constraints.climbAltitude) &&
+          constraints.climbAltitude < fcuSelAlt
+        ) {
+          constraintAlt = constraints.climbAltitude;
+        }
+
+        if (
+          phase > FmgcFlightPhase.Cruise &&
+          phase < FmgcFlightPhase.GoAround &&
+          Number.isFinite(constraints.descentAltitude) &&
+          constraints.descentAltitude > fcuSelAlt
+        ) {
+          constraintAlt = constraints.descentAltitude;
+        }
       }
 
-      if (
-        phase > FmgcFlightPhase.Cruise &&
-        phase < FmgcFlightPhase.GoAround &&
-        Number.isFinite(constraints.descentAltitude) &&
-        constraints.descentAltitude > fcuSelAlt
-      ) {
-        constraintAlt = constraints.descentAltitude;
+      if (constraintAlt !== this.constraintAlt) {
+        this.constraintAlt = constraintAlt;
+        SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
       }
-    }
-
-    if (constraintAlt !== this.constraintAlt) {
-      this.constraintAlt = constraintAlt;
-      SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
     }
   }
 
