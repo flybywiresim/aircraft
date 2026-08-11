@@ -1211,14 +1211,10 @@ export class FlightManagementComputer implements FmcInterface {
 
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
-   * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
    * @param prevPhase Previous FmgcFlightPhase
    * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
-    this.acInterface.updateConstraints();
-    this.acInterface.updateManagedSpeed();
-
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     this.isReset.set(false);
 
@@ -1310,6 +1306,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Descent: {
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
         this.checkDestData();
 
         this.triggerCheckSpeedModeMessage(null);
@@ -1322,6 +1319,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Approach: {
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
         this.checkDestData();
 
         break;
@@ -1402,7 +1400,7 @@ export class FlightManagementComputer implements FmcInterface {
   clearCheckSpeedModeMessage() {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
-    if (checkSpeedModeMessageActive && this.acInterface.isAirspeedManaged()) {
+    if (checkSpeedModeMessageActive && (this.acInterface.isAirspeedManaged() ?? true)) {
       this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
@@ -1499,8 +1497,10 @@ export class FlightManagementComputer implements FmcInterface {
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
         this.acInterface.updateDestinationPredictions(destPred);
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+        this.acInterface.updatePerfSpeeds();
         this.acInterface.checkCruiseLevelChangeDueToFcu(throttledDt);
         this.acInterface.updateManagedSpeed();
+        this.acInterface.updateConstraints();
       } else {
         this.acInterface.resetDestinationPredictions();
       }

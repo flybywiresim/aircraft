@@ -1116,8 +1116,6 @@ export class FmcAircraftInterface {
     }
   }
 
-  private forceNextAltitudeUpdate: boolean = true;
-
   /** in feet */
   private constraintAlt: number | null = null;
 
