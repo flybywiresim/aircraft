@@ -64,6 +64,8 @@
 1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
 1. [FMS] Fix a bug where the flight number was not retained when entering a new FROM/TO - @tracernz (Mike)
 1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord) & Saschl
+1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
+1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [A380X/FLIGHT MODEL] Fixes premature takeoff rotation in CONF 3 - @donstim (donbikes)
 
 ## 2024.1.0
