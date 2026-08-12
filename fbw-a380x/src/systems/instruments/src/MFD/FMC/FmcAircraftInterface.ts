@@ -87,7 +87,7 @@ export class FmcAircraftInterface {
   public readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
   public readonly arincFlightNumber5 = new FmArinc429OutputWord('FLIGHT_NUMBER_5');
   private readonly arincHeadWindComponent = Arinc429Register.empty();
-  private readonly arincHeadWindComponentRaw = Subject.create(Arinc429Register.empty().rawWord);
+  private readonly arincHeadWindComponentRaw = Subject.create(0);
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   public arincBusOutputs = [

@@ -261,6 +261,8 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly approachTemperature = Subject.create<number | null>(null);
   private readonly approachWindDirection = Subject.create<number | null>(null);
   private readonly approachWindMagnitude = Subject.create<number | null>(null);
+  /** For the active flight plan */
+  private readonly destinationRunwayBearing = Subject.create<number | null>(null);
 
   /** For the active flight plan */
   private readonly approachHeadWindComponent = Subject.create<number | null>(null);
@@ -422,6 +424,11 @@ export class FlightManagementComputer implements FmcInterface {
         );
       }),
       this.approachWindMagnitude.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.destinationRunwayBearing.sub((v) => {
         this.approachHeadWindComponent.set(
           v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
         );
@@ -1791,9 +1798,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
     this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
     this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
-    if (flightplan?.destinationRunway === undefined) {
-      this.approachHeadWindComponent.set(null);
-    }
+    this.destinationRunwayBearing.set(flightplan?.destinationRunway?.magneticBearing ?? null);
   }
 
   public trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active): boolean {
