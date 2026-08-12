@@ -5,6 +5,7 @@ export enum PopupUuid {
   MsfsVersion = 'msfs-version',
   /** Special popup with the pause/unpause functions. */
   TodPause = 'tod-pause',
+  VersionOutdated = 'version-outdated',
 }
 
 export interface PopupDefinition {

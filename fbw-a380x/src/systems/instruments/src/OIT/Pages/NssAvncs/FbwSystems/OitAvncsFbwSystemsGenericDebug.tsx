@@ -3,7 +3,7 @@
 
 import { FSComponent, Subscribable, VNode, ConsumerSubject, Subject, ArraySubject } from '@microsoft/msfs-sdk';
 import { AbstractOitAvncsPageProps } from '../../../OIT';
-import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import {
   OisDebugDataControlEvents,
   OisDebugDataEvents,

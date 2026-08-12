@@ -58,9 +58,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private readonly approachName = Subject.create<string>('');
 
-  private readonly approachLsFrequencyChannel = Subject.create<string>('');
+  private readonly approachLsFrequencyChannel = Subject.create<string>('---.--');
 
-  private readonly approachLsIdent = Subject.create('');
+  private readonly approachLsIdent = Subject.create('----');
 
   private readonly via = Subject.create<string>('');
 
@@ -175,8 +175,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         this.approachName.set(getApproachName(flightPlan.approach, false));
         const ls = flightPlan.approach ? LandingSystemUtils.getLsFromApproach(flightPlan.approach) : undefined;
         // FIXME handle non-localizer types
-        this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '');
-        this.approachLsIdent.set(ls?.ident ?? '');
+        this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '---.--');
+        this.approachLsIdent.set(ls?.ident ?? '----');
         const isRnp = !!flightPlan.approach.authorisationRequired;
 
         if (flightPlan.availableApproachVias.length > 0) {
@@ -224,12 +224,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       } else if (flightPlan.availableApproaches?.length > 0) {
         this.approachName.set('------');
         this.approachLsFrequencyChannel.set('---.--');
-        this.approachLsIdent.set('');
+        this.approachLsIdent.set('----');
         this.viaDisabled.set(true);
       } else {
         this.approachName.set('NONE');
         this.approachLsFrequencyChannel.set('---.--');
-        this.approachLsIdent.set('');
+        this.approachLsIdent.set('----');
         this.viaDisabled.set(true);
       }
 

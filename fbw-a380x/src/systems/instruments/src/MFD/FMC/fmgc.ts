@@ -502,8 +502,8 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in nautical miles. null if not set */
-  getDistanceToDestination(): number | null {
-    return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
+  getDistanceToDestination(forPlan = FlightPlanIndex.Active): number | null {
+    return this.guidanceController?.getAlongTrackDistanceToDestination(forPlan) ?? null;
   }
 
   /** In percentage. Null if not set */
