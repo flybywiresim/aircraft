@@ -317,12 +317,11 @@
 
 - A32NX_FM_LANDING_CONF3
     - Bool
-    - True if FLAPS 3 is selected in perf page
+    - True if CONF 3 is selected in the performance approach page.
 
 - A32NX_SPEEDS_VAPP
-    - Number
-    - The VAPP calculated by the FMS based on A32NX_FM_LANDING_CONF3 or not
-    - is mach corrected
+    - Number (Knots)
+    - The VAPP pilot entry if it exists or the VAPP calculated by the FMS.
 
 - A32NX_APU_EGT_CAUTION
     - `Arinc429Word<Celsius>`
