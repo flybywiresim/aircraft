@@ -1297,7 +1297,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateManagedSpeed() {
-    let vPfd = 0;
+    let vPfd: number | null = 0;
 
     this.updateHoldingSpeed();
     this.clearCheckSpeedModeMessage();
