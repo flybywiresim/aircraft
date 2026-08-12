@@ -4063,11 +4063,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (mag === null || direction === null || runwayBearing === null) {
       this.arincHeadWindComponent.setValue(0);
       this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-      this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
     } else {
       this.arincHeadWindComponent.setValue(NXSpeedsUtils.getHeadwind(mag, direction, runwayBearing));
       this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     }
+    this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
   }
 
   /**
