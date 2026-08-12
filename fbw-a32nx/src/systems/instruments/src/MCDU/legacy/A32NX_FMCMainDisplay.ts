@@ -722,7 +722,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.atsu?.onFmsReset();
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
@@ -1315,10 +1314,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const engineOut = this.isEngineOutCondition.get();
 
       switch (this.flightPhaseManager.phase) {
-        case FmgcFlightPhase.Preflight: {
-          vPfd = this.v2Speed;
-          break;
-        }
+        case FmgcFlightPhase.Preflight:
         case FmgcFlightPhase.Takeoff: {
           vPfd = this.v2Speed;
           break;
