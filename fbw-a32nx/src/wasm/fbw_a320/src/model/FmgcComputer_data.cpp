@@ -476,6 +476,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   fmgc_approach_type::ILS,
   fmgc_approach_type::RNAV,
   fmgc_des_submode::SPEED_THRUST,
+  fmgc_des_submode::VPATH_SPEED,
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Takeoff,
   fmgc_flight_phase::Goaround,
@@ -660,6 +661,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0F,
   0.0F,
   0.0F,
+  0.0F,
   tcas_submode::ALT_ACQ,
   tcas_submode::ALT_HOLD,
   tcas_submode::VS,
@@ -688,6 +690,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   true,
+  false,
   false,
   false,
   false,
@@ -4154,6 +4157,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

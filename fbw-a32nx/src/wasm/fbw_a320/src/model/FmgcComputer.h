@@ -120,6 +120,7 @@ class FmgcComputer final
     boolean_T Memory_PreviousInput_cu;
     boolean_T Memory_PreviousInput_hk;
     boolean_T Memory_PreviousInput_bo;
+    boolean_T Memory_PreviousInput_dh;
     boolean_T Memory_PreviousInput_ak;
     boolean_T Memory_PreviousInput_jb;
     boolean_T Memory_PreviousInput_hu;
@@ -636,12 +637,13 @@ class FmgcComputer final
     fmgc_approach_type EnumeratedConstant_Value_a;
     fmgc_approach_type EnumeratedConstant_Value_f;
     fmgc_des_submode EnumeratedConstant1_Value_i;
+    fmgc_des_submode EnumeratedConstant2_Value;
     fmgc_flight_phase EnumeratedConstant_Value_i;
     fmgc_flight_phase EnumeratedConstant_Value_ah;
     fmgc_flight_phase EnumeratedConstant1_Value_dg;
     fmgc_flight_phase EnumeratedConstant_Value_p;
     fmgc_flight_phase EnumeratedConstant1_Value_m;
-    fmgc_flight_phase EnumeratedConstant2_Value;
+    fmgc_flight_phase EnumeratedConstant2_Value_h;
     fmgc_flight_phase EnumeratedConstant1_Value_f;
     fmgc_flight_phase EnumeratedConstant2_Value_p;
     fmgc_flight_phase EnumeratedConstant3_Value;
@@ -785,6 +787,7 @@ class FmgcComputer final
     real32_T A429ValueOrDefault2_defaultValue_m;
     real32_T A429ValueOrDefault1_defaultValue_i;
     real32_T A429ValueOrDefault3_defaultValue_cz;
+    real32_T A429ValueOrDefault1_defaultValue_n4;
     real32_T A429ValueOrDefault6_defaultValue_g;
     real32_T A429ValueOrDefault4_defaultValue_h;
     real32_T A429ValueOrDefault5_defaultValue_p;
@@ -869,6 +872,7 @@ class FmgcComputer final
     boolean_T SRFlipFlop1_initial_condition_on;
     boolean_T SRFlipFlop_initial_condition_n1;
     boolean_T SRFlipFlop_initial_condition_e5;
+    boolean_T SRFlipFlop_initial_condition_iy;
     boolean_T SRFlipFlop_initial_condition_er;
     boolean_T SRFlipFlop1_initial_condition_d;
     boolean_T SRFlipFlop_initial_condition_nm;
@@ -1156,6 +1160,7 @@ class FmgcComputer final
     boolean_T Logic_table_ds[16];
     boolean_T Delay_InitialCondition_a;
     boolean_T Logic_table_ap[16];
+    boolean_T Logic_table_gr[16];
     boolean_T Logic_table_am[16];
     boolean_T Logic_table_lwo[16];
     boolean_T Logic_table_lm[16];
