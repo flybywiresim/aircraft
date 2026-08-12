@@ -110,6 +110,21 @@ import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
+  private static readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
+    'L:A32NX_SPEEDS_MANAGED_PFD',
+    SimVarValueType.Knots,
+  );
+
+  private static readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
+    SimVarValueType.String,
+  );
+
+  private static readonly approachVappRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_SPEEDS_VAPP',
+    SimVarValueType.Enum,
+  );
+
   protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
@@ -137,8 +152,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
   private readonly _progBrgDistUpdateThrottler = new UpdateThrottler(2000);
   private readonly fuelPredUpdateThrottler = new UpdateThrottler(5000);
-  private readonly guidanceUpdateThrottler = new UpdateThrottler(1000);
-  private readonly _apCooldown = 500;
+  private readonly speedsUpdateThrottler = new UpdateThrottler(1000);
   private lastFlightPlanVersion = 0;
   private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
   private subscriptions: Subscription[] = [];
@@ -199,8 +213,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     bearing: number;
     distance: number;
   };
-  public managedSpeedTarget = NaN;
-  public managedSpeedTargetIsMach = false;
   public managedSpeedClimb = 290;
   private managedSpeedClimbIsPilotEntered = false;
   public managedSpeedClimbMach = 0.78;
@@ -333,11 +345,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private static readonly MILISECONDS_IN_DAY = 86400000;
 
-  private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
-    'L:A32NX_SPEEDS_MANAGED_PFD',
-    SimVarValueType.Knots,
-  );
-
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
 
   private readonly fcuSelectedAltitude = Arinc429LocalVarConsumerSubject.create(
@@ -441,12 +448,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
 
-  private static readonly fmApproachHeadWindRegisterdSimVar = RegisteredSimVar.create(
-    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
-    SimVarValueType.String,
-  );
   private readonly arincHeadWindComponent = Arinc429Register.empty();
   private readonly arincHeadWindComponentRaw = Subject.create(0);
+
+  private readonly approachVapp = Subject.create<number | null>(null);
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -594,9 +599,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.subscriptions.push(
       this.arincHeadWindComponentRaw.sub((v) => {
-        FMCMainDisplay.fmApproachHeadWindRegisterdSimVar.set(v.toString());
+        FMCMainDisplay.fmApproachHeadWindRegisteredSimVar.set(v.toString());
       }),
-      this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true),
+      this.speedsManagedPfd.sub((v) => FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0), true),
       this.fcuSelectedAltitude.sub((v) => {
         if (v.isNormalOperation()) {
           this.handleFcuAltKnobTurn();
@@ -619,6 +624,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.onStepClimbDescent();
         }
       }),
+      this.approachVapp.sub((v) => FMCMainDisplay.approachVappRegisteredSimVar.set(v ?? 0), true),
     );
   }
 
@@ -678,8 +684,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this._activeCruiseFlightLevelDefaulToFcu = false;
     this._progBrgDist = undefined;
-    this.managedSpeedTarget = NaN;
-    this.managedSpeedTargetIsMach = false;
     this.managedSpeedClimb = 290;
     this.managedSpeedClimbIsPilotEntered = false;
     this.managedSpeedClimbMach = 0.78;
@@ -826,9 +830,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
 
-    const guidanceThrottledDt = this.guidanceUpdateThrottler.canUpdate(deltaTime);
-    if (guidanceThrottledDt !== -1) {
-      this.updateGuidance(guidanceThrottledDt);
+    const speedsThrottlerDt = this.speedsUpdateThrottler.canUpdate(deltaTime);
+    if (speedsThrottlerDt !== -1) {
+      this.updateSpeeds();
+      this.checkCruiseLevelChangeDueToFcu(speedsThrottlerDt);
     }
 
     if (this.guidanceController) {
@@ -1300,7 +1305,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget;
-      this.managedSpeedTarget = this.holdSpeedTarget;
     } else {
       if (this.setHoldSpeedMessageActive) {
         this.setHoldSpeedMessageActive = false;
@@ -1348,12 +1352,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
-          this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots');
+          vPfd = FMCMainDisplay.speedsManagedPfdVar.get();
           break;
         }
         case FmgcFlightPhase.Approach: {
           vPfd = this.getVApp();
+          this.approachVapp.set(vPfd);
           break;
         }
         case FmgcFlightPhase.GoAround:
@@ -1486,6 +1490,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.approachSpeeds = new NXSpeedsApp(weight, plan.performanceData.approachFlapsThreeSelected.get());
     }
     this.approachSpeeds.valid = this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || Number.isFinite(weight);
+    this.approachVapp.set(this.approachSpeeds.valid ? this.approachSpeeds.vapp : null);
   }
 
   public updateConstraints() {
@@ -2628,7 +2633,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.flightPlanService.setPerformanceData('vr', speed, forPlan);
   }
 
-  private get v2Speed() {
+  private get v2Speed(): number | null {
     return this.flightPlanService.active.performanceData.v2.get();
   }
 
@@ -5794,10 +5799,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  private updateGuidance(deltaTime: number) {
+  private updateSpeeds() {
     this.updatePerfSpeeds();
     this.updateConstraints();
     this.updateManagedSpeed();
-    this.checkCruiseLevelChangeDueToFcu(deltaTime);
   }
 }

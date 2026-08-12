@@ -267,8 +267,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   _toFlexChecked: boolean;
   perfClbPredToAltitudePilot?: number;
   perfDesPredToAltitudePilot?: number;
-  managedSpeedTarget: number;
-  managedSpeedTargetIsMach: boolean;
   managedSpeedClimb: number;
   managedSpeedClimbMach: number;
   climbSpeedLimit: number;

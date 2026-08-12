@@ -297,11 +297,6 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_SPEEDS_VS
-    - Number
-    - Current config stall speed
-    - is mach corrected
-
 - A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
@@ -324,18 +319,9 @@
     - Bool
     - True if FLAPS 3 is selected in perf page
 
-- A32NX_SPEEDS_TO_CONF
-    - Number
-    - Flaps config for TakeOff, 1, 2 or 3
-
-- A32NX_SPEEDS_VLS_APP
-    - Number
-    - vls calculated for config full whether A32NX_FM_LANDING_CONF3 or not
-    - is mach corrected
-
 - A32NX_SPEEDS_VAPP
     - Number
-    - vapp calculated for config full whether A32NX_FM_LANDING_CONF3 or not
+    - The VAPP calculated by the FMS based on A32NX_FM_LANDING_CONF3 or not
     - is mach corrected
 
 - A32NX_APU_EGT_CAUTION
