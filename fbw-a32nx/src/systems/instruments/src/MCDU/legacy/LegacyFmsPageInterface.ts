@@ -104,7 +104,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   updateConstraints(): void;
   setScratchpadMessage(message: McduMessage): void;
   logTroubleshootingError(msg: any): void;
-  updateTowerHeadwind(): void;
   onToRwyChanged(): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;

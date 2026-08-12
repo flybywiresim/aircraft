@@ -453,6 +453,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly approachVapp = Subject.create<number | null>(null);
 
+  private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
     this.currFlightPlanService.createFlightPlans();
@@ -601,7 +603,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.arincHeadWindComponentRaw.sub((v) => {
         FMCMainDisplay.fmApproachHeadWindRegisteredSimVar.set(v.toString());
       }),
-      this.speedsManagedPfd.sub((v) => FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0), true),
+      this.speedsManagedPfd.sub((v) => {
+        FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0);
+      }, true),
       this.fcuSelectedAltitude.sub((v) => {
         if (v.isNormalOperation()) {
           this.handleFcuAltKnobTurn();
@@ -625,6 +629,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
       }),
       this.approachVapp.sub((v) => FMCMainDisplay.approachVappRegisteredSimVar.set(v ?? 0), true),
+      this.destinationRunwayMagneticBearing.sub((v) => {
+        const pd = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
+        this.updateTowerHeadwind(pd?.approachWindMagnitude.get() ?? null, pd?.approachWindDirection.get() ?? null, v);
+      }),
     );
   }
 
@@ -833,6 +841,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (speedsThrottlerDt !== -1) {
       this.updateSpeeds();
       this.checkCruiseLevelChangeDueToFcu(speedsThrottlerDt);
+      this.destinationRunwayMagneticBearing.set(
+        this.flightPlanService.hasActive
+          ? this.flightPlanService.active.destinationRunway?.magneticBearing ?? null
+          : null,
+      );
     }
 
     if (this.guidanceController) {
@@ -886,9 +899,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @param nextPhase New FmgcFlightPhase
    */
   private onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
-    this.updateConstraints();
-    this.updateManagedSpeed();
-
     this.setRequest('FMGC');
 
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
@@ -1353,7 +1363,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Approach: {
           vPfd = this.getVApp();
-          this.approachVapp.set(vPfd);
           break;
         }
         case FmgcFlightPhase.GoAround:
@@ -1486,7 +1495,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.approachSpeeds = new NXSpeedsApp(weight, plan.performanceData.approachFlapsThreeSelected.get());
     }
     this.approachSpeeds.valid = this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || Number.isFinite(weight);
-    this.approachVapp.set(this.approachSpeeds.valid ? this.approachSpeeds.vapp : null);
+    const pilotVapp = plan.performanceData.pilotVapp.get();
+    this.approachVapp.set(!pilotVapp && this.approachSpeeds?.valid ? this.approachSpeeds.vapp : pilotVapp);
   }
 
   public updateConstraints() {
@@ -3639,10 +3649,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.flightPlanService.setPerformanceData('approachWindMagnitude', null, forPlan);
       this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', false, forPlan);
       this.flightPlanService.setDescentWindEntry(0, null, forPlan);
-      this.arincHeadWindComponent.setValue(0);
-      this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-      this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
-
+      this.updateTowerHeadwind(null, null, null);
       return true;
     }
 
@@ -3666,14 +3673,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
       : null;
 
-    const validRunway = plan.destinationRunway !== undefined;
-    this.arincHeadWindComponent.setValue(
-      validRunway ? NXSpeedsUtils.getHeadwind(mag, dir, plan.destinationRunway.magneticBearing) : 0,
-    );
-    this.arincHeadWindComponent.setSsm(
-      validRunway ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NoComputedData,
-    );
-    this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
+    this.updateTowerHeadwind(mag, dir, plan.destinationRunway?.magneticBearing ?? null);
 
     const theta = MagVar.magneticToTrue(dir, destinationMagVar ?? 0) * MathUtils.DEGREES_TO_RADIANS;
 
@@ -4059,20 +4059,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  public updateTowerHeadwind() {
-    const activePlan = this.getFlightPlan(FlightPlanIndex.Active);
-
-    if (
-      Number.isFinite(activePlan.performanceData.approachWindDirection.get()) &&
-      Number.isFinite(activePlan.performanceData.approachWindMagnitude.get())
-    ) {
-      if (activePlan.destinationRunway) {
-        this._towerHeadwind = NXSpeedsUtils.getHeadwind(
-          activePlan.performanceData.approachWindMagnitude.get(),
-          activePlan.performanceData.approachWindDirection.get(),
-          activePlan.destinationRunway.magneticBearing,
-        );
-      }
+  private updateTowerHeadwind(mag: number | null, direction: number | null, runwayBearing: number | null) {
+    if (mag === null || direction === null || runwayBearing === null) {
+      this.arincHeadWindComponent.setValue(0);
+      this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NoComputedData);
+      this.arincHeadWindComponentRaw.set(this.arincHeadWindComponent.rawWord);
+    } else {
+      this.arincHeadWindComponent.setValue(NXSpeedsUtils.getHeadwind(mag, direction, runwayBearing));
+      this.arincHeadWindComponent.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     }
   }
 
