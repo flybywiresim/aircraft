@@ -15,9 +15,14 @@ import {
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 describe('FlightPlanManager', () => {
-  const ctx = { syncClientID: Math.round(Math.random() * 10_000_000), batchStack: [] };
+  const ctx = {
+    syncClientID: Math.round(Math.random() * 10_000_000),
+    batchStack: [],
+    fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
+  };
   const fpm = new FlightPlanManager(ctx, testEventBus, new A320FlightPlanPerformanceData(), ctx.syncClientID, true);
 
   beforeEach(() => {

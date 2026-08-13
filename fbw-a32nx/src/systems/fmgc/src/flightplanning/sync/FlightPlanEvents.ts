@@ -120,6 +120,7 @@ export interface FlightPlanEvents {
   'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
   'flightPlan.autoDeleteCruiseStep': FlightPlanEditSyncEvent;
+  'flightPlan.constraintsDeletedAboveCruiseLevel': FlightPlanEditSyncEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;

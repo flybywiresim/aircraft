@@ -33,6 +33,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   public batchStack: FlightPlanBatch[] = [];
 
+  get fpmConfig() {
+    return this.config;
+  }
+
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
