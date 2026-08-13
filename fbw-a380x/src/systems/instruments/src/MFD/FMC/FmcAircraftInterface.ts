@@ -1289,7 +1289,7 @@ export class FmcAircraftInterface {
     const isCruise = flightPhase === FmgcFlightPhase.Cruise;
     const isClimbPhase = flightPhase === FmgcFlightPhase.Climb;
 
-    if (cruiseLevel === null || (!isClimbPhase && !isCruise)) {
+    if (!isClimbPhase && !isCruise) {
       return;
     }
 
@@ -1298,9 +1298,11 @@ export class FmcAircraftInterface {
 
     if (
       targetFlightLevel !== null &&
-      ((isClimbPhase && targetFlightLevel > cruiseLevel) || (isCruise && targetFlightLevel !== cruiseLevel))
+      ((isClimbPhase && targetFlightLevel > (cruiseLevel ?? 0)) || (isCruise && targetFlightLevel !== cruiseLevel))
     ) {
-      this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
+      if (cruiseLevel !== null) {
+        this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
+      }
       this.fmc.addMessageToQueue(
         NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
         undefined,
@@ -1344,7 +1346,7 @@ export class FmcAircraftInterface {
       const flightPhase = this.flightPhase.get();
       const isClimb = flightPhase === FmgcFlightPhase.Climb;
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
-      if (cruiseLevel !== null && (isClimb || isCruise)) {
+      if (isClimb || isCruise) {
         const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
         const fgModesSuitedForLevelChange =
           primFgDiscreteWord3.bitValueOr(11, false) || // CLB
@@ -1357,7 +1359,7 @@ export class FmcAircraftInterface {
         if (fgModesSuitedForLevelChange) {
           const fcuAltitude = this.masterPrimAltitude.get().valueOr(null);
           const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
-          if (fcuFlightLevel !== null && fcuFlightLevel > cruiseLevel) {
+          if (fcuFlightLevel !== null && fcuFlightLevel > (cruiseLevel ?? 0)) {
             const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
             if (changeCruiseFlightLevel) {
               this.fmc.addMessageToQueue(
