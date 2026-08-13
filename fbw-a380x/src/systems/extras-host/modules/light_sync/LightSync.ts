@@ -96,9 +96,9 @@ export class LightSync implements Instrument {
 
     // Pedestal
 
-    this.setRmpBrightness(1, autoBrightness * 100); // rmpCptLightLevel
-    this.setRmpBrightness(2, autoBrightness * 100); // rmpFoLightLevel
-    this.setRmpBrightness(3, autoBrightness * 100); // rmpOvhdLightLevel
+    this.setRmpBrightness(1, autoBrightness); // rmpCptLightLevel
+    this.setRmpBrightness(2, autoBrightness); // rmpFoLightLevel
+    this.setRmpBrightness(3, autoBrightness); // rmpOvhdLightLevel
     this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
     this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
     this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
@@ -182,15 +182,14 @@ export class LightSync implements Instrument {
    */
   private setRmpBrightness(rmp: 1 | 2 | 3, brightness: number): void {
     // FIXME should use the B events, but not supported in FS2020.
-    SimVar.SetSimVarValue(`L:A380X_RMP_#RMP_ID#_BRIGHTNESS_KNOB`, SimVarValueType.Number, brightness);
+    SimVar.SetSimVarValue(`L:A380X_RMP_${rmp}_BRIGHTNESS_KNOB`, SimVarValueType.Number, brightness);
   }
 
   /**
    * Gets the automatic brightness level from the sim.
-   * @returns Brightness in the range [0, 1].
+   * @returns Brightness in the range [15, 85], clamped from raw [0, 100] ambient-light reading.
    */
   private getAutoBrightness(): number {
-    /** automatic brightness based on ambient light, [0, 1] scale */
     return Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));
   }
 }
