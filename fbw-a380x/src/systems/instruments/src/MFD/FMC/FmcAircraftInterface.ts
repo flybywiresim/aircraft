@@ -263,6 +263,10 @@ export class FmcAircraftInterface {
     (v) => !v.isInvalid() && (v.bitValue(16) || v.bitValue(17)),
   );
 
+  private readonly isVsOrFpaActive = this.masterPrimFgWord3.map((v) => {
+    return !v.isInvalid() && (v.bitValue(17) || v.bitValue(18));
+  });
+
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
@@ -429,6 +433,11 @@ export class FmcAircraftInterface {
           this.onStepClimbDescent();
         }
       }),
+      this.isVsOrFpaActive.sub((v) => {
+        if (v) {
+          this.fmc.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
+        }
+      }),
     );
   }
 
@@ -540,12 +549,6 @@ export class FmcAircraftInterface {
   public updatePerformanceData() {
     if (!this.flightPlanService.hasActive) {
       return;
-    }
-
-    // If spawned after T/O, set reasonable V2
-    if (this.flightPhase.get() > FmgcFlightPhase.Preflight && !this.flightPlanService.active.performanceData.v2.get()) {
-      const fSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number') as number;
-      this.flightPlanService.setPerformanceData('v2', Math.round(fSpeed));
     }
 
     SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? -1);
