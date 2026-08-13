@@ -66,6 +66,7 @@
 1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord) & Saschl
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
+1. [A32NX/FMS] Fixed an issue where the hold page would sometimes bug when creating a hold - @tracernz (Mike)
 
 ## 2024.1.0
 
