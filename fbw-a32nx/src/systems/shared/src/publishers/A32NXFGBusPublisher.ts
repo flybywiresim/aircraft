@@ -192,7 +192,7 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
       [
         'fmgc_discrete_word_3',
         {
-          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_4',
+          name: 'L:A32NX_FMGC_#index#_DISCRETE_WORD_3',
           indexed: true,
           type: SimVarValueType.Enum,
         },

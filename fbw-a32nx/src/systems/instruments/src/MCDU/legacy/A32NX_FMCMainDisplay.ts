@@ -155,7 +155,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly speedsUpdateThrottler = new UpdateThrottler(1000);
   private lastFlightPlanVersion = 0;
   private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
-  private subscriptions: Subscription[] = [];
+
+  /** The active flight plan performance data subscriptions. Re-created when the active flightplan changes */
+  private activeFlightPlanPerformanceDataSubscriptions: Subscription[] = [];
+
+  private readonly subscriptions: Subscription[] = [];
 
   public _deltaTime = 0;
 
@@ -1809,7 +1813,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         (isCruise && (cruiseLevel === null || targetFlightLevel !== cruiseLevel)))
     ) {
       this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
-      this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude * 100));
+      this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude.toFixed(0)));
 
       this.flightPlanService.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
     }
@@ -5282,8 +5286,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private connectPerfDataToSimvars() {
-    this.subscriptions.forEach((s) => s.destroy());
-    this.subscriptions.length = 0;
+    this.activeFlightPlanPerformanceDataSubscriptions.forEach((s) => s.destroy());
+    this.activeFlightPlanPerformanceDataSubscriptions.length = 0;
 
     if (!this.flightPlanService.hasActive) {
       return;
@@ -5291,53 +5295,53 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     const activePlan = this.flightPlanService.active;
 
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? 0), true),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? 0), true),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true),
     );
     // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.flexTakeoffTemperature.sub(
         (flex) => SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex ?? 0),
         true,
       ),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.takeoffFlaps.sub((flaps) =>
         SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number', flaps ?? -1),
       ),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.approachQnh.sub((qnh) => {
         const qnhValue = qnh ?? 0;
         const qnhMillibar = qnhValue < 500 ? Units.inchOfMercuryToHectopascal(qnhValue) : qnhValue;
         SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
       }, true),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.approachBaroMinimum.sub(
         (baro) => SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', baro ?? 0),
         true,
       ),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.approachRadioMinimum.sub(
         (radio) => SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', radio ?? -1),
         true,
       ),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.approachFlapsThreeSelected.sub(
         (flaps3) => SimVar.SetSimVarValue('L:A32NX_FM_LANDING_CONF3', 'boolean', flaps3),
         true,
       ),
     );
-    this.subscriptions.push(
+    this.activeFlightPlanPerformanceDataSubscriptions.push(
       activePlan.performanceData.cruiseFlightLevel.sub(
         (cruiseLevel) =>
           SimVar.SetSimVarValue(
@@ -5750,7 +5754,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const flightPhase = this.flightPhaseManager.phase;
       const isClimb = flightPhase === FmgcFlightPhase.Climb;
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
-      if (cruiseLevel !== null && (isClimb || isCruise)) {
+      if (isClimb || isCruise) {
         const fmgcDiscreteWord1 = this.fmgcDiscreteWord1.get();
         const altitudeConstraintInvalid = this.fmgcAltitudeConstraint.get().valueOr(null) !== null;
         const dashMode = fmgcDiscreteWord1.bitValueOr(26, false);
@@ -5766,7 +5770,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         if (fgModesSuitedForLevelChange) {
           const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
           const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
-          if (fcuFlightLevel !== null && fcuFlightLevel > cruiseLevel) {
+          if (fcuFlightLevel !== null && fcuFlightLevel > (cruiseLevel ?? 0)) {
             const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
             if (changeCruiseFlightLevel) {
               this.addMessageToQueue(
