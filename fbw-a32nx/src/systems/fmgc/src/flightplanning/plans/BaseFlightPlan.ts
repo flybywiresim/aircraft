@@ -8,6 +8,7 @@ import {
   Airport,
   Airway,
   AltitudeConstraint,
+  AltitudeDescriptor,
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
@@ -416,6 +417,78 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       if (leg.isDiscontinuity === false) {
         leg.clearConstraints();
       }
+    }
+  }
+
+  /**
+   * Per A380 FCOM (DSC-22-FMS-10-40-60), the FMS automatically deletes altitude constraints whose
+   * value is equal to or greater than the CRZ FL, and altitude constraint windows whose upper bound
+   * is equal to or greater than the CRZ FL. Triggered by SID/STAR insertion, a new CRZ FL, or step
+   * climb insertion. The deleted constraints are no longer used for climb/descent profile computation.
+   *
+   * Does not apply to alternate flight plans. Notifies the FMS via `flightPlan.constraintsDeletedAboveCruiseLevel`
+   * if any constraint was deleted.
+   */
+  deleteConstraintsAboveCruiseLevel() {
+    if (this instanceof AlternateFlightPlan) {
+      return;
+    }
+
+    const cruiseFl = this.performanceData.cruiseFlightLevel.get();
+    if (cruiseFl === null || cruiseFl === undefined) {
+      return;
+    }
+
+    const cruiseAltFt = cruiseFl * 100;
+    let deletedAny = false;
+
+    for (let i = this.activeLegIndex; i < this.legCount; i++) {
+      const element = this.allLegs[i];
+      if (!element || element.isDiscontinuity === true) {
+        continue;
+      }
+
+      const constraint = element.altitudeConstraint;
+      if (constraint && BaseFlightPlan.isConstraintAboveOrAtCruise(constraint, cruiseAltFt)) {
+        element.clearAltitudeConstraints();
+        this.syncLegDefinitionChange(i);
+        deletedAny = true;
+      }
+    }
+
+    if (deletedAny) {
+      this.sendEvent('flightPlan.constraintsDeletedAboveCruiseLevel', {
+        syncClientID: this.context.syncClientID,
+        planIndex: this.index,
+        batchStack: this.context.batchStack,
+        forAlternate: false,
+      });
+
+      this.incrementVersion();
+    }
+  }
+
+  /**
+   * Returns true if the constraint should be deleted under the "constraints above CRZ FL" rule.
+   * Covers AT (altitude1), AT OR ABOVE alt1 (altitude1), AT OR ABOVE alt2 (altitude2), and WINDOW
+   * constraints whose upper bound (altitude1) is >= CRZ FL.
+   *
+   * AT OR BELOW is intentionally excluded: its altitude1 is a ceiling (maximum altitude), not a floor.
+   * A ceiling above CRZ FL does not require the aircraft to fly above cruise, so the constraint
+   * remains meaningful for descent profile computation and must not be deleted.
+   *
+   * Glide-slope/angle variants are not listed in the FCOM rule and are left untouched.
+   */
+  private static isConstraintAboveOrAtCruise(constraint: AltitudeConstraint, cruiseAltFt: number): boolean {
+    switch (constraint.altitudeDescriptor) {
+      case AltitudeDescriptor.AtAlt1:
+      case AltitudeDescriptor.AtOrAboveAlt1:
+      case AltitudeDescriptor.BetweenAlt1Alt2:
+        return constraint.altitude1 !== undefined && constraint.altitude1 >= cruiseAltFt;
+      case AltitudeDescriptor.AtOrAboveAlt2:
+        return constraint.altitude2 !== undefined && constraint.altitude2 >= cruiseAltFt;
+      default:
+        return false;
     }
   }
 
@@ -1815,6 +1888,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.unignoreAllCruiseSteps();
 
+    // Step climb insertion is one of the triggers for automatic deletion of constraints at or
+    // above the cruise level (FCOM DSC-22-FMS-10-40-60)
+    this.deleteConstraintsAboveCruiseLevel();
+
     this.incrementVersion();
   }
 
@@ -2152,6 +2229,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.incrementVersion();
     this.selectActiveLeg();
+
+    // Procedure insertion or removal can bring in legs with constraints at or above the cruise level,
+    // which the FMS must automatically delete (FCOM DSC-22-FMS-10-40-60)
+    this.deleteConstraintsAboveCruiseLevel();
   }
 
   private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {

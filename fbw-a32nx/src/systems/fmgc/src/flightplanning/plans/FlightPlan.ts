@@ -652,6 +652,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       );
     }
 
+    // Entry of a new cruise level triggers automatic deletion of constraints at or above it
+    // (FCOM DSC-22-FMS-10-40-60)
+    if (key === 'cruiseFlightLevel') {
+      this.deleteConstraintsAboveCruiseLevel();
+    }
+
     this.incrementVersion();
   }
 
