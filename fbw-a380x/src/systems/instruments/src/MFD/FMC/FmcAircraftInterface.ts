@@ -396,7 +396,9 @@ export class FmcAircraftInterface {
         .getSubscriber<FlightPlanEvents>()
         .on('flightPlan.constraintsDeletedAboveCruiseLevel')
         .handle(({ planIndex }) => {
-          if (planIndex !== FlightPlanIndex.Uplink) {
+          // Lateral revisions of the active plan are applied to the temporary plan, so it has to be
+          // annunciated as well. Secondary plans are not, as the message does not name a plan.
+          if (planIndex === FlightPlanIndex.Active || planIndex === FlightPlanIndex.Temporary) {
             this.fmc.addMessageToQueue(NXSystemMessages.cstrDelAboveCrzFl, undefined, undefined);
           }
         }),
@@ -1742,6 +1744,7 @@ export class FmcAircraftInterface {
         undefined,
       );
       this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
+      this.flightPlanService.active.deleteConstraintsAboveCruiseLevel();
       SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
     }
   }
@@ -1818,6 +1821,7 @@ export class FmcAircraftInterface {
               undefined,
             );
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
+            this.flightPlanService.active.deleteConstraintsAboveCruiseLevel();
             // used by FlightPhaseManager
             SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
           }
@@ -1857,6 +1861,7 @@ export class FmcAircraftInterface {
       }
     }
     plan.setPerformanceData('cruiseFlightLevel', fl);
+    plan.deleteConstraintsAboveCruiseLevel();
     if (fl > (this.fmc.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
       this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
     }

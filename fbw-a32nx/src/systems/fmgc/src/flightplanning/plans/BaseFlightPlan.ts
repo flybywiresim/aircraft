@@ -426,6 +426,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * is equal to or greater than the CRZ FL. Triggered by SID/STAR insertion, a new CRZ FL, or step
    * climb insertion. The deleted constraints are no longer used for climb/descent profile computation.
    *
+   * Only legs from the active leg up to the missed approach are considered: constraints on legs
+   * already sequenced no longer affect the profile, and missed approach altitudes are not part of
+   * the climb/cruise profile this rule governs.
+   *
    * Does not apply to alternate flight plans. Notifies the FMS via `flightPlan.constraintsDeletedAboveCruiseLevel`
    * if any constraint was deleted.
    */
@@ -435,28 +439,41 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const cruiseFl = this.performanceData.cruiseFlightLevel.get();
-    if (cruiseFl === null || cruiseFl === undefined) {
+    if (!Number.isFinite(cruiseFl) || cruiseFl <= 0) {
       return;
     }
 
     const cruiseAltFt = cruiseFl * 100;
-    let deletedAny = false;
+    const touchedSegments = new Set<FlightPlanSegment>();
 
-    for (let i = this.activeLegIndex; i < this.legCount; i++) {
+    // `firstMissedApproachLegIndex` is derived from the segments, which can be mid-rebuild
+    const end = Math.min(this.legCount, this.firstMissedApproachLegIndex);
+
+    for (let i = this.activeLegIndex; i < end; i++) {
       const element = this.allLegs[i];
       if (!element || element.isDiscontinuity === true) {
+        continue;
+      }
+
+      // On altitude terminated legs, altitude1 is the termination altitude rather than a constraint
+      if (element.isXA()) {
         continue;
       }
 
       const constraint = element.altitudeConstraint;
       if (constraint && BaseFlightPlan.isConstraintAboveOrAtCruise(constraint, cruiseAltFt)) {
         element.clearAltitudeConstraints();
-        this.syncLegDefinitionChange(i);
-        deletedAny = true;
+        touchedSegments.add(element.segment);
       }
     }
 
-    if (deletedAny) {
+    if (touchedSegments.size > 0) {
+      // Sync whole segments rather than leg definitions: leg indices can be stale on other
+      // instruments mid-revision, and only the serialized segment carries pilot entered constraints
+      for (const segment of touchedSegments) {
+        this.syncSegmentLegsChange(segment);
+      }
+
       this.sendEvent('flightPlan.constraintsDeletedAboveCruiseLevel', {
         syncClientID: this.context.syncClientID,
         planIndex: this.index,
@@ -994,6 +1011,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.originSegment.setRunway(runwayIdent);
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1009,6 +1027,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.departureSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1025,6 +1044,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.departureEnrouteTransitionSegment.setProcedure(databaseId);
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1041,6 +1061,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.arrivalEnrouteTransitionSegment.setProcedure(databaseId);
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1052,6 +1073,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.arrivalSegment.setProcedure(databaseId).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1072,6 +1094,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(databaseId);
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1087,6 +1110,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   async setApproach(databaseId: string | undefined) {
     await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -1109,6 +1133,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.destinationSegment.setRunway(runwayIdent).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
+    this.deleteConstraintsAboveCruiseLevel();
     this.incrementVersion();
   }
 
@@ -2229,10 +2254,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.incrementVersion();
     this.selectActiveLeg();
-
-    // Procedure insertion or removal can bring in legs with constraints at or above the cruise level,
-    // which the FMS must automatically delete (FCOM DSC-22-FMS-10-40-60)
-    this.deleteConstraintsAboveCruiseLevel();
   }
 
   private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
