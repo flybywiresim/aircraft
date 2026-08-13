@@ -82,6 +82,7 @@ import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendi
 import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAirways';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
+import { FpmConfig } from '@fmgc/flightplanning/FpmConfig';
 import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
 import { EngineOutDepartureSegment } from '../segments/EngineOutDepartureSegment';
 
@@ -89,6 +90,8 @@ export interface FlightPlanContext {
   get syncClientID(): number;
 
   get batchStack(): FlightPlanBatch[];
+
+  get fpmConfig(): FpmConfig;
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
@@ -421,10 +424,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   /**
-   * Per A380 FCOM (DSC-22-FMS-10-40-60), the FMS automatically deletes altitude constraints whose
-   * value is equal to or greater than the CRZ FL, and altitude constraint windows whose upper bound
-   * is equal to or greater than the CRZ FL. Triggered by SID/STAR insertion, a new CRZ FL, or step
-   * climb insertion. The deleted constraints are no longer used for climb/descent profile computation.
+   * Only applies to aircraft whose `FpmConfig` enables `DELETE_CONSTRAINTS_ABOVE_CRZ_FL`.
+   *
+   * Per A380 FCOM (DSC-22-FMS-10-40-60), the FMS automatically deletes the altitude constraints
+   * (AT, AT OR ABOVE, or AT OR BELOW) with values equal to or greater than the CRZ FL, and the
+   * altitude constraint windows with the upper constraint equal to or greater than the CRZ FL.
+   * This may occur when a SID, a STAR, a new CRZ FL or step altitudes are inserted. The deleted
+   * constraints are no longer used for the computation of the climb and descent profile.
    *
    * Only legs from the active leg up to the missed approach are considered: constraints on legs
    * already sequenced no longer affect the profile, and missed approach altitudes are not part of
@@ -434,7 +440,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * if any constraint was deleted.
    */
   deleteConstraintsAboveCruiseLevel() {
-    if (this instanceof AlternateFlightPlan) {
+    if (!this.context.fpmConfig.DELETE_CONSTRAINTS_ABOVE_CRZ_FL || this instanceof AlternateFlightPlan) {
       return;
     }
 
@@ -487,20 +493,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   /**
    * Returns true if the constraint should be deleted under the "constraints above CRZ FL" rule.
-   * Covers AT (altitude1), AT OR ABOVE alt1 (altitude1), AT OR ABOVE alt2 (altitude2), and WINDOW
-   * constraints whose upper bound (altitude1) is >= CRZ FL.
    *
-   * AT OR BELOW is intentionally excluded: its altitude1 is a ceiling (maximum altitude), not a floor.
-   * A ceiling above CRZ FL does not require the aircraft to fly above cruise, so the constraint
-   * remains meaningful for descent profile computation and must not be deleted.
+   * The FCOM lists AT, AT OR ABOVE and AT OR BELOW constraints whose value is at or above the
+   * CRZ FL, and altitude windows whose upper constraint is at or above the CRZ FL. A ceiling at or
+   * above the CRZ FL can never bind, as the aircraft does not climb above the cruise level.
    *
-   * Glide-slope/angle variants are not listed in the FCOM rule and are left untouched.
+   * The upper constraint of a window is altitude1. For the glide slope and vertical angle variants,
+   * altitude2 describes the glide path rather than a constraint, so only altitude1 is considered.
    */
   private static isConstraintAboveOrAtCruise(constraint: AltitudeConstraint, cruiseAltFt: number): boolean {
     switch (constraint.altitudeDescriptor) {
       case AltitudeDescriptor.AtAlt1:
       case AltitudeDescriptor.AtOrAboveAlt1:
+      case AltitudeDescriptor.AtOrBelowAlt1:
       case AltitudeDescriptor.BetweenAlt1Alt2:
+      case AltitudeDescriptor.AtAlt1GsMslAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2:
+      case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+      case AltitudeDescriptor.AtAlt1AngleAlt2:
+      case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
         return constraint.altitude1 !== undefined && constraint.altitude1 >= cruiseAltFt;
       case AltitudeDescriptor.AtOrAboveAlt2:
         return constraint.altitude2 !== undefined && constraint.altitude2 >= cruiseAltFt;

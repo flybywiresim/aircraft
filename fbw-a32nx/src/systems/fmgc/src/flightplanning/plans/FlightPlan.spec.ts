@@ -13,6 +13,7 @@ import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanS
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 describe('a base flight plan', () => {
   beforeAll(() => {
@@ -73,8 +74,9 @@ describe('a base flight plan', () => {
   });
 
   describe('deleting constraints at or above the cruise flight level', () => {
+    // The rule is only enabled for the A380
     const planWithNosus = async () => {
-      const fp = emptyFlightPlan();
+      const fp = emptyFlightPlan(FpmConfigs.A380);
 
       await fp.setOriginAirport('CYVR');
       await fp.setDestinationAirport('CYYZ');
@@ -144,7 +146,7 @@ describe('a base flight plan', () => {
       });
     });
 
-    it('keeps an AT OR BELOW constraint whose value is above the cruise level', async () => {
+    it('deletes an AT OR BELOW constraint above the cruise level', async () => {
       const fp = await planWithNosus();
 
       fp.setPilotEnteredAltitudeConstraintAt(1, false, {
@@ -155,9 +157,57 @@ describe('a base flight plan', () => {
       fp.setPerformanceData('cruiseFlightLevel', 240);
       fp.deleteConstraintsAboveCruiseLevel();
 
+      expect(fp.legElementAt(1).altitudeConstraint).toBeUndefined();
+    });
+
+    it('keeps an AT OR BELOW constraint below the cruise level', async () => {
+      const fp = await planWithNosus();
+
+      fp.setPilotEnteredAltitudeConstraintAt(1, false, {
+        altitudeDescriptor: AltitudeDescriptor.AtOrBelowAlt1,
+        altitude1: 10_000,
+      });
+
+      fp.setPerformanceData('cruiseFlightLevel', 240);
+      fp.deleteConstraintsAboveCruiseLevel();
+
       expect(fp.legElementAt(1).altitudeConstraint).toEqual({
         altitudeDescriptor: AltitudeDescriptor.AtOrBelowAlt1,
-        altitude1: 25_000,
+        altitude1: 10_000,
+      });
+    });
+
+    it('deletes a window constraint whose upper constraint is at the cruise level', async () => {
+      const fp = await planWithNosus();
+
+      fp.setPilotEnteredAltitudeConstraintAt(1, false, {
+        altitudeDescriptor: AltitudeDescriptor.BetweenAlt1Alt2,
+        altitude1: 24_000,
+        altitude2: 10_000,
+      });
+
+      fp.setPerformanceData('cruiseFlightLevel', 240);
+      fp.deleteConstraintsAboveCruiseLevel();
+
+      expect(fp.legElementAt(1).altitudeConstraint).toBeUndefined();
+    });
+
+    it('keeps a window constraint entirely below the cruise level', async () => {
+      const fp = await planWithNosus();
+
+      fp.setPilotEnteredAltitudeConstraintAt(1, false, {
+        altitudeDescriptor: AltitudeDescriptor.BetweenAlt1Alt2,
+        altitude1: 12_000,
+        altitude2: 10_000,
+      });
+
+      fp.setPerformanceData('cruiseFlightLevel', 240);
+      fp.deleteConstraintsAboveCruiseLevel();
+
+      expect(fp.legElementAt(1).altitudeConstraint).toEqual({
+        altitudeDescriptor: AltitudeDescriptor.BetweenAlt1Alt2,
+        altitude1: 12_000,
+        altitude2: 10_000,
       });
     });
 
@@ -180,7 +230,7 @@ describe('a base flight plan', () => {
     });
 
     it('does not delete constraints on the alternate flight plan', async () => {
-      const fp = emptyFlightPlan();
+      const fp = emptyFlightPlan(FpmConfigs.A380);
 
       await fp.setOriginAirport('CYVR');
       await fp.setDestinationAirport('CYYZ');
@@ -248,11 +298,7 @@ describe('a base flight plan', () => {
         .handle(handlerFn);
       onTestFinished(() => sub.destroy());
 
-      await testFlightPlanService.newCityPair('CYVR', 'CYYZ');
-      const plan = testFlightPlanService.active;
-
-      const nosus = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
-      await plan.insertWaypointBefore(1, nosus[0]);
+      const plan = await planWithNosus();
       const dutil = await NavigationDatabaseService.activeDatabase.searchWaypoint('DUTIL');
       await plan.insertWaypointBefore(2, dutil[0]);
 
@@ -281,11 +327,7 @@ describe('a base flight plan', () => {
         .handle(handlerFn);
       onTestFinished(() => sub.destroy());
 
-      await testFlightPlanService.newCityPair('CYVR', 'CYYZ');
-      const plan = testFlightPlanService.active;
-
-      const nosus = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
-      await plan.insertWaypointBefore(1, nosus[0]);
+      const plan = await planWithNosus();
 
       plan.setPilotEnteredAltitudeConstraintAt(1, false, {
         altitudeDescriptor: AltitudeDescriptor.AtOrAboveAlt1,
@@ -296,6 +338,29 @@ describe('a base flight plan', () => {
       plan.deleteConstraintsAboveCruiseLevel();
 
       expect(handlerFn).not.toHaveBeenCalled();
+    });
+
+    it('does not delete constraints on an aircraft that does not implement the rule', async () => {
+      const fp = emptyFlightPlan(FpmConfigs.A320_HONEYWELL_H3);
+
+      await fp.setOriginAirport('CYVR');
+      await fp.setDestinationAirport('CYYZ');
+
+      const waypoint = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+      await fp.insertWaypointBefore(1, waypoint[0]);
+
+      fp.setPilotEnteredAltitudeConstraintAt(1, false, {
+        altitudeDescriptor: AltitudeDescriptor.AtOrAboveAlt1,
+        altitude1: 25_000,
+      });
+
+      fp.setPerformanceData('cruiseFlightLevel', 240);
+      fp.deleteConstraintsAboveCruiseLevel();
+
+      expect(fp.legElementAt(1).altitudeConstraint).toEqual({
+        altitudeDescriptor: AltitudeDescriptor.AtOrAboveAlt1,
+        altitude1: 25_000,
+      });
     });
   });
 

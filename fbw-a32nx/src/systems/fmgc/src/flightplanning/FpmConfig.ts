@@ -53,6 +53,9 @@ export interface FpmConfig {
 
   /** The number of different flight levels for which descent wind entries may be made */
   NUM_DESCENT_WIND_LEVELS: number;
+
+  /** Whether the FMS automatically deletes altitude constraints at or above the cruise flight level */
+  DELETE_CONSTRAINTS_ABOVE_CRZ_FL: boolean;
 }
 
 export class FpmConfigs {
@@ -71,6 +74,7 @@ export class FpmConfigs {
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
     NUM_DESCENT_WIND_LEVELS: 5,
+    DELETE_CONSTRAINTS_ABOVE_CRZ_FL: true,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -89,5 +93,7 @@ export class FpmConfigs {
     NUM_CLIMB_WIND_LEVELS: 5,
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
+    // Not implemented for the A320, which has no message for it
+    DELETE_CONSTRAINTS_ABOVE_CRZ_FL: false,
   };
 }

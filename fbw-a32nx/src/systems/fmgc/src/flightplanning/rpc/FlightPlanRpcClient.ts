@@ -5,6 +5,7 @@
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { Airway, AltitudeConstraint, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   EventBus,
@@ -62,10 +63,15 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   public syncClientID = MathUtils.randomInt32();
 
+  get fpmConfig() {
+    return this.config;
+  }
+
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
     private readonly useBatches = true,
+    private readonly config = FpmConfigs.A320_HONEYWELL_H3,
   ) {
     this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
     this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
