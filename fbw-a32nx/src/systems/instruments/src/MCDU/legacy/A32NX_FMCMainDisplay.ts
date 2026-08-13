@@ -432,6 +432,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(14);
   });
 
+  private readonly vsOrFpaActive = this.fmgc1DiscreteWord1.map((v) => {
+    return !v.isInvalid() && (v.bitValue(17) || v.bitValue(18));
+  });
+
   private readonly fmgc1AltitudeConstraint = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_altitude_constraint_1'),
   );
@@ -630,6 +634,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         if (v) {
           this.handleFcuAltKnobPushPull();
           this.onStepClimbDescent();
+        }
+      }),
+      this.vsOrFpaActive.sub((v) => {
+        if (v) {
+          this.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
         }
       }),
       this.approachVapp.sub((v) => FMCMainDisplay.approachVappRegisteredSimVar.set(v ?? 0), true),
