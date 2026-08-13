@@ -150,6 +150,7 @@ class A380PrimComputerFg final
     boolean_T Memory_PreviousInput_od;
     boolean_T Memory_PreviousInput_hx;
     boolean_T Memory_PreviousInput_py;
+    boolean_T Memory_PreviousInput_dp;
     boolean_T Memory_PreviousInput_i5;
     boolean_T Memory_PreviousInput_ou;
     boolean_T Memory_PreviousInput_jm;
@@ -699,12 +700,13 @@ class A380PrimComputerFg final
     fmgc_approach_type EnumeratedConstant_Value;
     fmgc_approach_type EnumeratedConstant_Value_g;
     fmgc_des_submode EnumeratedConstant1_Value;
+    fmgc_des_submode EnumeratedConstant2_Value;
     fms_flight_phase EnumeratedConstant_Value_m;
     fms_flight_phase EnumeratedConstant_Value_i;
     fms_flight_phase EnumeratedConstant1_Value_d;
     fms_flight_phase EnumeratedConstant_Value_a;
     fms_flight_phase EnumeratedConstant1_Value_n;
-    fms_flight_phase EnumeratedConstant2_Value;
+    fms_flight_phase EnumeratedConstant2_Value_e;
     fms_flight_phase EnumeratedConstant1_Value_e;
     fms_flight_phase EnumeratedConstant2_Value_g;
     fms_flight_phase EnumeratedConstant3_Value;
@@ -718,7 +720,7 @@ class A380PrimComputerFg final
     fms_flight_phase EnumeratedConstant4_Value_m;
     fms_flight_phase EnumeratedConstant_Value_e;
     fms_flight_phase EnumeratedConstant1_Value_b;
-    fms_flight_phase EnumeratedConstant2_Value_e;
+    fms_flight_phase EnumeratedConstant2_Value_ec;
     fms_flight_phase EnumeratedConstant_Value_p;
     fms_flight_phase EnumeratedConstant1_Value_p;
     fms_flight_phase EnumeratedConstant_Value_gt;
@@ -910,6 +912,7 @@ class A380PrimComputerFg final
     boolean_T SRFlipFlop1_initial_condition_j;
     boolean_T SRFlipFlop_initial_condition_pb;
     boolean_T SRFlipFlop_initial_condition_mv;
+    boolean_T SRFlipFlop_initial_condition_f;
     boolean_T SRFlipFlop_initial_condition_pq;
     boolean_T SRFlipFlop1_initial_condition_jw;
     boolean_T Subsystem4_initial_condition_p;
@@ -1246,6 +1249,7 @@ class A380PrimComputerFg final
     boolean_T Logic_table_g[16];
     boolean_T Logic_table_iv[16];
     boolean_T Logic_table_bk[16];
+    boolean_T Logic_table_b4[16];
     boolean_T Logic_table_lp[16];
     boolean_T Logic_table_ho[16];
     boolean_T Logic_table_ja[16];

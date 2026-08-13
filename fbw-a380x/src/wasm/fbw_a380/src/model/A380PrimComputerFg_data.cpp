@@ -321,6 +321,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   fmgc_approach_type::ILS,
   fmgc_approach_type::RNAV,
   fmgc_des_submode::SPEED_THRUST,
+  fmgc_des_submode::VPATH_SPEED,
   fms_flight_phase::Approach,
   fms_flight_phase::Takeoff,
   fms_flight_phase::Goaround,
@@ -510,6 +511,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   false,
   false,
   true,
+  false,
   false,
   false,
   false,
@@ -5358,6 +5360,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

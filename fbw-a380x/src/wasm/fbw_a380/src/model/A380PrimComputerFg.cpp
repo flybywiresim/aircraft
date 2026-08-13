@@ -606,6 +606,7 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_DWork.Memory_PreviousInput_od = A380PrimComputerFg_P.SRFlipFlop1_initial_condition_j;
       A380PrimComputerFg_DWork.Memory_PreviousInput_hx = A380PrimComputerFg_P.SRFlipFlop_initial_condition_pb;
       A380PrimComputerFg_DWork.Memory_PreviousInput_py = A380PrimComputerFg_P.SRFlipFlop_initial_condition_mv;
+      A380PrimComputerFg_DWork.Memory_PreviousInput_dp = A380PrimComputerFg_P.SRFlipFlop_initial_condition_f;
       A380PrimComputerFg_DWork.DelayInput1_DSTATE_d = A380PrimComputerFg_P.DetectChange_vinit_d;
       A380PrimComputerFg_DWork.Memory_PreviousInput_i5 = A380PrimComputerFg_P.SRFlipFlop_initial_condition_pq;
       A380PrimComputerFg_DWork.Memory_PreviousInput_ou = A380PrimComputerFg_P.SRFlipFlop1_initial_condition_jw;
@@ -2946,7 +2947,7 @@ void A380PrimComputerFg::step()
        (A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase ==
         A380PrimComputerFg_P.EnumeratedConstant1_Value_n) ||
        (A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase ==
-        A380PrimComputerFg_P.EnumeratedConstant2_Value) ||
+        A380PrimComputerFg_P.EnumeratedConstant2_Value_e) ||
        ((!A380PrimComputerFg_DWork.Delay_DSTATE_c.lateral_modes.nav_active) &&
         (!A380PrimComputerFg_DWork.Delay_DSTATE_c.lateral_modes.loc_cpt_active) &&
         (!A380PrimComputerFg_DWork.Delay_DSTATE_c.lateral_modes.loc_trk_active)) ||
@@ -3196,7 +3197,7 @@ void A380PrimComputerFg::step()
                  (A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase !=
                   A380PrimComputerFg_P.EnumeratedConstant1_Value_b) &&
                  (A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase !=
-                  A380PrimComputerFg_P.EnumeratedConstant2_Value_e)) &&
+                  A380PrimComputerFg_P.EnumeratedConstant2_Value_ec)) &&
                 ((A380PrimComputerFg_DWork.Delay_DSTATE_c.armed_modes.des_armed &&
                   (A380PrimComputerFg_U.in.data.adcn_inputs.fms.next_alt_cstr_ft !=
                    A380PrimComputerFg_DWork.DelayInput1_DSTATE_j)) || (rtb_y_gn && ((!rtb_y_at) || (rtb_y_at &&
@@ -3724,6 +3725,13 @@ void A380PrimComputerFg::step()
       rtb_Mod2_j = A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_2_kts;
     }
 
+    A380PrimComputerFg_DWork.Memory_PreviousInput_dp = A380PrimComputerFg_P.Logic_table_b4[(((static_cast<uint32_T>
+      ((rtb_Y_m < A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_lower_margin_kts) &&
+       (A380PrimComputerFg_U.in.data.adcn_inputs.fms.requested_des_submode ==
+        A380PrimComputerFg_P.EnumeratedConstant2_Value)) << 1) + ((rtb_Y_m >
+      A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_managed_kts) ||
+      (A380PrimComputerFg_U.in.data.adcn_inputs.fms.requested_des_submode !=
+       A380PrimComputerFg_P.EnumeratedConstant2_Value))) << 1) + A380PrimComputerFg_DWork.Memory_PreviousInput_dp];
     if (A380PrimComputerFg_DWork.Memory_PreviousInput_e || A380PrimComputerFg_DWork.Memory_PreviousInput_ov ||
         rtb_AND2_ci) {
       if (rtb_y_at) {
@@ -3754,10 +3762,13 @@ void A380PrimComputerFg::step()
 
       rtb_Switch5_d_idx_0 = std::fmax(rtb_Mod1_o, rtb_Mod2_j);
     } else if (!rtb_y_o0) {
+      rtb_LowerRelop1 = (A380PrimComputerFg_DWork.Memory_PreviousInput_kj &&
+                         A380PrimComputerFg_U.in.data.adcn_inputs.fms.show_speed_margins);
       if ((A380PrimComputerFg_U.in.data.adcn_inputs.fms.requested_des_submode ==
-           A380PrimComputerFg_P.EnumeratedConstant1_Value) && A380PrimComputerFg_DWork.Memory_PreviousInput_kj &&
-          A380PrimComputerFg_U.in.data.adcn_inputs.fms.show_speed_margins) {
+           A380PrimComputerFg_P.EnumeratedConstant1_Value) && rtb_LowerRelop1) {
         rtb_DataTypeConversion23 = A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_upper_margin_kts;
+      } else if (rtb_LowerRelop1 && A380PrimComputerFg_DWork.Memory_PreviousInput_dp) {
+        rtb_DataTypeConversion23 = A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_lower_margin_kts;
       } else {
         rtb_DataTypeConversion23 = A380PrimComputerFg_U.in.data.adcn_inputs.fms.v_managed_kts;
       }
@@ -5159,6 +5170,7 @@ void A380PrimComputerFg::initialize()
   A380PrimComputerFg_DWork.Memory_PreviousInput_od = A380PrimComputerFg_P.SRFlipFlop1_initial_condition_j;
   A380PrimComputerFg_DWork.Memory_PreviousInput_hx = A380PrimComputerFg_P.SRFlipFlop_initial_condition_pb;
   A380PrimComputerFg_DWork.Memory_PreviousInput_py = A380PrimComputerFg_P.SRFlipFlop_initial_condition_mv;
+  A380PrimComputerFg_DWork.Memory_PreviousInput_dp = A380PrimComputerFg_P.SRFlipFlop_initial_condition_f;
   A380PrimComputerFg_DWork.DelayInput1_DSTATE_d = A380PrimComputerFg_P.DetectChange_vinit_d;
   A380PrimComputerFg_DWork.Memory_PreviousInput_i5 = A380PrimComputerFg_P.SRFlipFlop_initial_condition_pq;
   A380PrimComputerFg_DWork.Memory_PreviousInput_ou = A380PrimComputerFg_P.SRFlipFlop1_initial_condition_jw;
