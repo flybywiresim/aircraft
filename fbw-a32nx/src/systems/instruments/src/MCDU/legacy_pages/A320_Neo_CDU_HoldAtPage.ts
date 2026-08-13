@@ -368,10 +368,6 @@ export class CDUHoldAtPage {
     forPlan,
     inAlternate,
   ) {
-    if (waypointData.modifiedHold === undefined) {
-      waypointData.modifiedHold = undefined;
-    }
-
     waypointData.modifiedHold.type = HoldType.Modified;
 
     if (param === 'time') {
