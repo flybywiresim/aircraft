@@ -2139,13 +2139,13 @@ void A380FcuComputer::step()
         A380FcuComputer_P.PulseNode_isRisingEdge, &rtb_Equal7, &A380FcuComputer_DWork.sf_MATLABFunction_ny);
       A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.baro_knob.pulled,
         A380FcuComputer_P.PulseNode1_isRisingEdge_m, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_nb);
-      if (rtb_Equal7 && A380FcuComputer_DWork.std_active) {
+      if (rtb_Compare_j && A380FcuComputer_DWork.std_active) {
         A380FcuComputer_DWork.std_active = false;
-      } else if (rtb_Equal7 && (!A380FcuComputer_DWork.std_active)) {
+      } else if (rtb_Compare_j && (!A380FcuComputer_DWork.std_active)) {
         A380FcuComputer_DWork.qnh_active = !A380FcuComputer_DWork.qnh_active;
         A380FcuComputer_DWork.qfe_active = !A380FcuComputer_DWork.qfe_active;
       } else {
-        A380FcuComputer_DWork.std_active = ((rtb_Compare_j && (!A380FcuComputer_DWork.std_active)) ||
+        A380FcuComputer_DWork.std_active = ((rtb_Equal7 && (!A380FcuComputer_DWork.std_active)) ||
           A380FcuComputer_DWork.std_active);
       }
 
