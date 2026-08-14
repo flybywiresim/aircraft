@@ -7,18 +7,31 @@ import {
   Subscribable,
 } from '@microsoft/msfs-sdk';
 
+interface MonitorVarDefinition {
+  /** The var to read the circuit breaker tripped states from. */
+  var: RegisteredSimVar<number>;
+  /** A bitmask of the circuit breakers to be monitored (green caps on the physical panel). */
+  monitoredMask: number;
+}
+
+/** A monitor for a group of circuit breakers. */
 class CircuitBreakerMonitor extends AbstractSubscribable<boolean> implements Instrument, Subscribable<boolean> {
-  private readonly vars: { var: RegisteredSimVar<number>; mask: number }[] = [];
+  private readonly vars: MonitorVarDefinition[] = [];
 
   private isAnyTripped = false;
 
+  /**
+   * Constructs a new monitor.
+   * @param monitoredVars A map of the var to read the circuit breaker tripped states from,
+   * to a bitmask of the circuit breakers to be monitored (green caps on the physical panel).
+   */
   public constructor(monitoredVars: Record<string, number>) {
     super();
 
     for (const [varName, mask] of Object.entries(monitoredVars)) {
       this.vars.push({
         var: RegisteredSimVar.create(varName, SimVarValueType.Enum),
-        mask,
+        monitoredMask: mask,
       });
     }
   }
@@ -28,11 +41,12 @@ class CircuitBreakerMonitor extends AbstractSubscribable<boolean> implements Ins
     // noop
   }
 
+  /** @inheritdoc */
   public onUpdate(): void {
     let isAnyTripped = false;
     for (let i = 0; i < this.vars.length; i++) {
       const tripped = this.vars[i].var.get();
-      isAnyTripped ||= (tripped & this.vars[i].mask) > 0;
+      isAnyTripped ||= (tripped & this.vars[i].monitoredMask) > 0;
     }
 
     if (this.isAnyTripped !== isAnyTripped) {
@@ -41,6 +55,7 @@ class CircuitBreakerMonitor extends AbstractSubscribable<boolean> implements Ins
     }
   }
 
+  /** @inheritdoc */
   public get(): boolean {
     return this.isAnyTripped;
   }
