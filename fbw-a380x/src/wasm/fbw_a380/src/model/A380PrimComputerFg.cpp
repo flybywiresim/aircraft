@@ -933,9 +933,8 @@ void A380PrimComputerFg::step()
     rtb_OR_lr = !rtb_y_gn;
     rtb_ap_fd_condition = ((rtb_OR_lr || (A380PrimComputerFg_DWork.Delay_DSTATE_c.lateral_modes.land_active ||
       A380PrimComputerFg_DWork.Delay_DSTATE_c.longitudinal_modes.pitch_goaround_active)) &&
-      ((A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability == a380_pitch_efcs_law::NormalLaw) ||
-       (A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability == a380_pitch_efcs_law::AlternateLaw1A) ||
-       (A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability == a380_pitch_efcs_law::AlternateLaw1B)) &&
+      ((A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability != a380_pitch_efcs_law::AlternateLaw2) &&
+       (A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability != a380_pitch_efcs_law::DirectLaw)) &&
       (!A380PrimComputerFg_U.in.general_logic.double_adr_failure) &&
       (!A380PrimComputerFg_U.in.general_logic.double_ir_failure) &&
       ((!A380PrimComputerFg_U.in.general_logic.all_ra_failure) ||
@@ -4350,9 +4349,7 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_B.BusAssignment_ic.fg_mode_logic.land_3_fail_op_capability = (rtb_OR4_kx && rtb_AND2 &&
       rtb_OR2_nm && rtb_LowerRelop1 && rtb_y_gn && A380PrimComputerFg_U.in.general_logic.is_yellow_hydraulic_power_avail
       && A380PrimComputerFg_U.in.general_logic.is_green_hydraulic_power_avail &&
-      (((!A380PrimComputerFg_U.in.general_logic.ra_a_rejected) && (!A380PrimComputerFg_U.in.general_logic.ra_b_rejected))
-       || ((!A380PrimComputerFg_U.in.general_logic.ra_a_rejected) &&
-           (!A380PrimComputerFg_U.in.general_logic.ra_c_rejected))) &&
+      (!A380PrimComputerFg_U.in.general_logic.two_ra_failure) &&
       A380PrimComputerFg_B.BusAssignment_i.fg_logic.both_ils_valid &&
       ((!A380PrimComputerFg_U.in.general_logic.adr_1_rejected) && (!A380PrimComputerFg_U.in.general_logic.adr_2_rejected)
        && (!A380PrimComputerFg_U.in.general_logic.adr_3_rejected)) &&
