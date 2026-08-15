@@ -67,6 +67,7 @@
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
+1. [A32NX] Added ECAM control panel circuit breaker - @tracernz (Mike)
 
 ## 2024.1.0
 
