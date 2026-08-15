@@ -67,6 +67,8 @@
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
+1. [A32NX] Added ECAM control panel circuit breaker - @tracernz (Mike)
+1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (matze2346)
 1. [A32NX/FMS] Fixed an issue where the hold page would sometimes bug when creating a hold - @tracernz (Mike)
 
 ## 2024.1.0
