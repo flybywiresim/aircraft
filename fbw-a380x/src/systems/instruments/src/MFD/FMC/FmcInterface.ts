@@ -221,17 +221,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   ): void;
 
   /**
-   * @deprecated Use removeMessageFromQueueByType instead.
-   * Removes a message from the queue by its text content.
-   * @param value {String}
+   * Removes a message from the queue
+   * @param message {TypeIIMessage}
    */
-  removeMessageFromQueue(value: string): void;
-
-  /**
-   * Removes a message from the queue by its type
-   * @param message  the message to remove.
-   */
-  removeMessageFromQueueByType(message: TypeIMessage | TypeIIMessage): void;
+  removeMessageFromQueue(message: TypeIIMessage): void;
 
   /**
    * Checks whether a waypoint is currently in use

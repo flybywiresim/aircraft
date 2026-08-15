@@ -377,7 +377,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.ZfwOrZfwCgUndefined,
       this.ZfwOrZfwCgUndefined.sub((v) => {
         if (!v) {
-          this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
+          this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg);
         }
       }),
 
@@ -385,13 +385,13 @@ export class FlightManagementComputer implements FmcInterface {
         if (v) {
           this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         } else {
-          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
+          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         }
       }),
       this.destDataEntered,
       this.destDataEntered.sub((v) => {
         if (v) {
-          this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
+          this.removeMessageFromQueue(NXSystemMessages.enterDestData);
         }
       }),
       this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
@@ -415,22 +415,22 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.bus
         .getSubscriber<FmsNavigationEvents>()
-        .on('pilot_rnp_greater_than_area_rnp')
+        .on('fms_pilot_rnp_greater_than_area_rnp')
         .handle((v) => {
           if (v !== undefined) {
             this.addMessageToQueue(NXSystemMessages.areaRnpis.getModifiedMessage(v.toFixed(2)));
           } else {
-            this.removeMessageFromQueueByType(NXSystemMessages.areaRnpis);
+            this.removeMessageFromQueue(NXSystemMessages.areaRnpis);
           }
         }),
       this.bus
         .getSubscriber<FmsNavigationEvents>()
-        .on('pilot_rnp_greater_than_proc_rnp')
+        .on('fms_pilot_rnp_greater_than_proc_rnp')
         .handle((v) => {
           if (v !== undefined) {
             this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(v.toFixed(2)));
           } else {
-            this.removeMessageFromQueueByType(NXSystemMessages.procedureRnpIs);
+            this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs);
           }
         }),
     );
@@ -921,7 +921,7 @@ export class FlightManagementComputer implements FmcInterface {
     if (zfwDiff !== null && zfwDiff > 5 && zfwCgDiff !== null && zfwCgDiff > 0.5) {
       this.addMessageToQueue(NXSystemMessages.checkZfw);
       const sub = this.#flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
-        this.removeMessageFromQueue(NXSystemMessages.checkZfw.text);
+        this.removeMessageFromQueue(NXSystemMessages.checkZfw);
         sub.destroy();
       });
     }
@@ -1133,14 +1133,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   /** Removes a message from the fms message queue by its text content.
    */
-  removeMessageFromQueue(value: string) {
-    const index = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);
-    if (index !== -1) {
-      this.fmsErrors.removeAt(index);
-    }
-  }
-
-  removeMessageFromQueueByType(message: TypeIMessage | TypeIIMessage) {
+  removeMessageFromQueue(message: TypeIIMessage) {
     const index = this.findMessageIndexInQueue(message);
     if (index !== -1) {
       this.fmsErrors.removeAt(index);
@@ -1151,9 +1144,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.fmsErrors
       .getArray()
       .findIndex((el) =>
-        isTypeIIMessage(message)
-          ? el.messageText.includes(message.getTextExcludingReplace())
-          : el.messageText === message.text,
+        isTypeIIMessage(message) ? message.isSameMessage(el.message) : el.messageText === message.text,
       );
   }
 
@@ -1399,7 +1390,7 @@ export class FlightManagementComputer implements FmcInterface {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
     if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
-      this.removeMessageFromQueueByType(NXSystemMessages.checkSpeedMode);
+      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }

@@ -43,11 +43,11 @@ export class RequiredPerformance {
     private flightPlanService: FlightPlanService,
   ) {
     this.pilotRnpGreaterThanAreaRnp.sub((areaRnp) => {
-      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
+      this.rnpEventsPublisher.pub('fms_pilot_rnp_greater_than_area_rnp', areaRnp, false, false);
     });
 
     this.pilotRnpGreaterThanProcedureRnp.sub((procedureRnp) => {
-      this.rnpEventsPublisher.pub('pilot_rnp_greater_than_proc_rnp', procedureRnp, false, false);
+      this.rnpEventsPublisher.pub('fms_pilot_rnp_greater_than_proc_rnp', procedureRnp, false, false);
     });
   }
 
