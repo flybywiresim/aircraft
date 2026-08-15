@@ -67,6 +67,9 @@
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
+1. [A380X/FMS] Added AREA RNP IS and PROCEDURE RNP IS fms messages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Display leg RNP on F-PLN page if present in the navigation database - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed F-PLN page crashing when alternate flightplan contained a hold - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
