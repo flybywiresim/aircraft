@@ -1585,6 +1585,8 @@ mod delayed_pulse_true_logic_gate_tests {
 
 #[cfg(test)]
 mod interpolation_tests {
+    use more_asserts::*;
+
     use super::*;
 
     const XS1: [f64; 10] = [
@@ -1598,7 +1600,10 @@ mod interpolation_tests {
     #[test]
     fn interpolation_before_first_element_test() {
         // We expect to get first element of YS1
-        assert!((interpolation(&XS1, &YS1, -500.0) - YS1[0]).abs() < f64::EPSILON);
+        assert_lt!(
+            (interpolation(&XS1, &YS1, -500.0) - YS1[0]).abs(),
+            f64::EPSILON
+        );
     }
 
     #[test]
@@ -1630,19 +1635,19 @@ mod interpolation_tests {
     #[test]
     fn interpolation_middle_element_test() {
         let res = interpolation(&XS1, &YS1, 358.0);
-        assert!((res - 10186.589).abs() < 0.001);
+        assert_lt!((res - 10186.589).abs(), 0.001);
     }
 
     #[test]
     fn interpolation_last_segment_element_test() {
         let res = interpolation(&XS1, &YS1, 22200.0);
-        assert!((res - 40479.579).abs() < 0.001);
+        assert_lt!((res - 40479.579).abs(), 0.001);
     }
 
     #[test]
     fn interpolation_first_segment_element_test() {
         let res = interpolation(&XS1, &YS1, -50.0);
-        assert!((res - (-83.3333)).abs() < 0.001);
+        assert_lt!((res - (-83.3333)).abs(), 0.001);
     }
 }
 
@@ -1771,6 +1776,8 @@ mod average_tests {
 
 #[cfg(test)]
 mod height_over_ground {
+    use more_asserts::*;
+
     use super::*;
 
     use crate::simulation::{
@@ -1790,7 +1797,10 @@ mod height_over_ground {
     fn at_zero_altitude_zero_reference_default_attitude() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
             .with_update_after_power_distribution(|_, context| {
-                assert!(height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>() == 0.);
+                assert_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    0.
+                );
                 assert!(
                     height_over_ground(context, Vector3::new(0., 10., 0.)).get::<meter>() == 10.
                 );
@@ -1848,7 +1858,10 @@ mod height_over_ground {
                     height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
                     10.
                 );
-                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() < 8.);
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    8.
+                );
                 assert!(
                     height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() > 12.
                 );
@@ -1860,7 +1873,10 @@ mod height_over_ground {
                     height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
                     10.
                 );
-                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>(),
+                    15.
+                );
             });
 
         // MSFS bank right is negative angle
@@ -1878,8 +1894,14 @@ mod height_over_ground {
                     height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
                     10.
                 );
-                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() > 12.);
-                assert!(height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() < 8.);
+                assert_gt!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    12.
+                );
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>(),
+                    8.
+                );
                 assert_about_eq!(
                     height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>(),
                     10.
@@ -1888,7 +1910,10 @@ mod height_over_ground {
                     height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
                     10.
                 );
-                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>(),
+                    15.
+                );
             });
 
         // MSFS bank right is negative angle
@@ -1920,7 +1945,10 @@ mod height_over_ground {
                 assert!(
                     height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() > 12.
                 );
-                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>(),
+                    15.
+                );
             });
 
         // MSFS bank right is negative angle
@@ -1949,8 +1977,14 @@ mod height_over_ground {
                 assert!(
                     height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>() > 12.
                 );
-                assert!(height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() < 8.);
-                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
+                    8.
+                );
+                assert_lt!(
+                    height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>(),
+                    15.
+                );
             });
 
         // MSFS bank right is negative angle
@@ -2008,14 +2042,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // Pitch up accel
         test_bed.write_by_name("ROTATION VELOCITY BODY X", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., 1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., 1., 0.)
+        );
 
         // Pitch up accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2025,7 +2065,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., 1., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., 1., -1.)
+        );
     }
 
     #[test]
@@ -2040,14 +2083,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // Yaw right accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(1., 0., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(1., 0., 0.)
+        );
 
         // Yaw right accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2057,14 +2106,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(1., 0., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(1., 0., -1.)
+        );
 
         // Yaw left accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., 0., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., 0., 0.)
+        );
 
         // Yaw left accel with velocity adds centripetal force
         test_bed.write_by_name(
@@ -2074,7 +2129,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., 0., -1.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., 0., -1.)
+        );
     }
 
     #[test]
@@ -2089,14 +2147,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(cabin_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel -> Aligned on roll axis we expect no effect
         test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel with velocity -> Aligned on roll axis we expect no effect
         test_bed.write_by_name(
@@ -2106,7 +2170,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
     }
 
     #[test]
@@ -2121,14 +2188,20 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.command_element(|e| e.set_point_position(right_wing_position));
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::default()
+        );
 
         // roll right accel -> expect down accel
         test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., -1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(0., -1., 0.)
+        );
 
         // roll right accel with velocity -> Down Force plus centripetal left
         test_bed.write_by_name(
@@ -2138,7 +2211,10 @@ mod local_acceleration_at_plane_coordinate {
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
-        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., -1., 0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.local_accel),
+            Vector3::new(-1., -1., 0.)
+        );
     }
 }
 

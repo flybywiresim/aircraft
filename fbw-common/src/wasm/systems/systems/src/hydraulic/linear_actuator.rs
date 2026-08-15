@@ -1344,6 +1344,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     }
 
     pub fn actuator(&mut self, index: usize) -> &mut impl Actuator {
+        // FIXME no runtime panics please!
         assert!(index < N);
         &mut self.linear_actuators[index]
     }
@@ -1983,6 +1984,7 @@ impl AerodynamicBody for LinearActuatedRigidBodyOnHingeAxis {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
     use nalgebra::Vector3;
     use ntest::assert_about_eq;
 
@@ -2162,33 +2164,33 @@ mod tests {
         }
 
         fn command_active_damping_mode(&mut self, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_mode(LinearActuatorMode::ActiveDamping);
         }
 
         fn command_closed_circuit_damping_mode(&mut self, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
         fn command_closed_valve_mode(&mut self, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_mode(LinearActuatorMode::ClosedValves);
         }
 
         fn command_position_control(&mut self, position: Ratio, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_mode(LinearActuatorMode::PositionControl);
             self.controllers[actuator_id].set_position_target(position);
         }
 
         fn command_electro_backup(&mut self, is_active: bool, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_elec_backup(is_active);
         }
 
         fn command_electro_backup_refill(&mut self, is_active: bool, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             self.controllers[actuator_id].set_elec_backup_refill(is_active);
         }
 
@@ -2207,7 +2209,7 @@ mod tests {
         }
 
         fn command_empty_eha_accumulator(&mut self, actuator_id: usize) {
-            assert!(actuator_id < N);
+            assert_lt!(actuator_id, N);
             if let Some(eha) = self.hydraulic_assembly.linear_actuators[actuator_id]
                 .electro_hydrostatic_backup
                 .as_mut()
@@ -2605,7 +2607,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_init);
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_init
+        );
     }
 
     #[test]
@@ -2619,12 +2624,18 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_init);
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_init
+        );
 
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_init
+        );
     }
 
     #[test]
@@ -2643,11 +2654,17 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_init
+        );
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
     }
 
     #[test]
@@ -2664,13 +2681,19 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
 
         test_bed.command(|a| a.command_closed_valve_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.7));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.7)
+        );
     }
 
     #[test]
@@ -2687,14 +2710,23 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
 
         test_bed.command(|a| a.command_active_damping_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.9));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.5));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.5)
+        );
     }
 
     #[test]
@@ -2711,14 +2743,23 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.9));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.5));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.5)
+        );
     }
 
     #[test]
@@ -2735,7 +2776,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(25));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.3));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.3)
+        );
     }
 
     #[test]
@@ -2779,8 +2823,14 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(25));
 
         // At 45 degrees bank angle we expect door around mid position
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.4));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.6));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.4)
+        );
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.6)
+        );
     }
 
     #[test]
@@ -2795,14 +2845,20 @@ mod tests {
         let actuator_position_at_init = test_bed.query(|a| a.body_position());
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_at_init);
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
 
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_active_damping_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_at_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
     }
 
     #[test]
@@ -2817,21 +2873,30 @@ mod tests {
         let actuator_position_at_init = test_bed.query(|a| a.body_position());
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_at_init);
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
 
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_active_damping_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_at_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.3)));
 
         test_bed.run_with_delta(Duration::from_secs(20));
 
         assert!(test_bed.query(|a| a.is_locked()));
-        assert!(test_bed.query(|a| a.body_position()) == Ratio::new::<ratio>(0.3));
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.3)
+        );
     }
 
     #[test]
@@ -2846,14 +2911,20 @@ mod tests {
         let actuator_position_at_init = test_bed.query(|a| a.body_position());
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_at_init);
+        assert_eq!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
 
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_active_damping_mode(0));
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_at_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_at_init
+        );
 
         let actuator_position_before_soft_lock = test_bed.query(|a| a.body_position());
 
@@ -2887,14 +2958,26 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.68));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.72));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.68)
+        );
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.72)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.18));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.22));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.18)
+        );
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.22)
+        );
     }
 
     #[test]
@@ -2908,7 +2991,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(7));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -2922,7 +3008,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
     }
 
     #[test]
@@ -2939,7 +3028,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.8));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.8)
+        );
     }
 
     #[test]
@@ -2954,7 +3046,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs_f64(3.5));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
 
         test_bed.command(|a| a.command_closed_valve_mode(0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
@@ -2963,7 +3058,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(4.));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.001)
+        );
     }
 
     #[test]
@@ -2978,7 +3076,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs_f64(2.5));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
 
         test_bed.command(|a| a.command_closed_valve_mode(0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
@@ -2987,7 +3088,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(3.));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.001)
+        );
     }
 
     #[test]
@@ -3001,7 +3105,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(7));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3016,7 +3123,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3031,7 +3141,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(4));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3046,7 +3159,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3057,12 +3173,18 @@ mod tests {
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
         assert!(test_bed.query(|a| a.is_locked()));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
     }
 
     #[test]
@@ -3080,7 +3202,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.999)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
@@ -3099,7 +3224,10 @@ mod tests {
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs(10));
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.999)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
 
         //Gravity extension
@@ -3111,7 +3239,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
         test_bed.run_with_delta(Duration::from_secs(13));
 
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.011)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
@@ -3127,7 +3258,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3142,7 +3276,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(35));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.98)
+        );
     }
 
     #[test]
@@ -3153,12 +3290,18 @@ mod tests {
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
         assert!(test_bed.query(|a| a.is_locked()));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
     }
 
     #[test]
@@ -3176,7 +3319,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.999)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
@@ -3195,7 +3341,10 @@ mod tests {
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
         test_bed.run_with_delta(Duration::from_secs(10));
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.999)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
 
         //Gravity extension
@@ -3207,7 +3356,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
         test_bed.run_with_delta(Duration::from_secs(13));
 
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.011)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
@@ -3226,7 +3378,10 @@ mod tests {
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert_le!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
@@ -3242,7 +3397,10 @@ mod tests {
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.1)
+        );
     }
 
     #[test]
@@ -3260,7 +3418,10 @@ mod tests {
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.95)
+        );
     }
 
     #[test]
@@ -3275,10 +3436,16 @@ mod tests {
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(20.));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.1));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.1)
+        );
 
         test_bed.run_with_delta(Duration::from_secs_f64(20.));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.1)
+        );
     }
 
     #[test]
@@ -3293,11 +3460,17 @@ mod tests {
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(30.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.1)
+        );
 
         for _ in 0..20 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.01)
+            );
         }
     }
 
@@ -3321,8 +3494,14 @@ mod tests {
         //Now check position is stable for 20s
         for _ in 0..20 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
-            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+            assert_gt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.75)
+            );
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.85)
+            );
         }
 
         // Step demand in 0.3s to position 0.2
@@ -3332,8 +3511,14 @@ mod tests {
         //Now check position is stable for 20s
         for _ in 0..20 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
-            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+            assert_gt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.15)
+            );
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.25)
+            );
         }
     }
 
@@ -3353,12 +3538,18 @@ mod tests {
         test_bed.command(|a| a.command_active_damping_mode(0));
         test_bed.command(|a| a.command_active_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.95)
+        );
     }
 
     #[test]
@@ -3373,13 +3564,22 @@ mod tests {
         test_bed.command(|a| a.command_active_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.1)
+        );
 
         test_bed.command(|a| a.command_assembly_trim(Angle::new::<degree>(-90.)));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.6));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.4));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.6)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.4)
+        );
     }
 
     #[test]
@@ -3398,16 +3598,28 @@ mod tests {
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.5), 0));
         test_bed.command(|a| a.command_active_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.51)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.49)
+        );
 
         test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
 
         println!("APPLYING UP FORCE");
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.51)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.49)
+        );
     }
 
     #[test]
@@ -3436,11 +3648,20 @@ mod tests {
             test_force += Force::new::<newton>(400.);
 
             if test_force < Force::new::<newton>(10000.) {
-                assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
-                assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+                assert_lt!(
+                    test_bed.query(|a| a.body_position()),
+                    Ratio::new::<ratio>(0.51)
+                );
+                assert_gt!(
+                    test_bed.query(|a| a.body_position()),
+                    Ratio::new::<ratio>(0.49)
+                );
             }
         }
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.6));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.6)
+        );
         // test_bed.run_with_delta(Duration::from_secs_f64(1.));
     }
 
@@ -3474,11 +3695,20 @@ mod tests {
             test_pressure = test_pressure.max(Pressure::new::<psi>(0.));
 
             if test_pressure > Pressure::new::<psi>(2500.) {
-                assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
-                assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+                assert_lt!(
+                    test_bed.query(|a| a.body_position()),
+                    Ratio::new::<ratio>(0.51)
+                );
+                assert_gt!(
+                    test_bed.query(|a| a.body_position()),
+                    Ratio::new::<ratio>(0.49)
+                );
             }
         }
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.6));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.6)
+        );
 
         println!("Pressure back to 3000");
         test_bed.command(|a| {
@@ -3486,8 +3716,14 @@ mod tests {
         });
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.51)
+        );
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.49)
+        );
     }
 
     #[test]
@@ -3506,12 +3742,18 @@ mod tests {
         test_bed.command(|a| a.command_active_damping_mode(0));
         test_bed.command(|a| a.command_active_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.95)
+        );
     }
 
     #[test]
@@ -3535,8 +3777,14 @@ mod tests {
         //Now check position is stable for 20s
         for _ in 0..20 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
-            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+            assert_gt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.75)
+            );
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.85)
+            );
         }
 
         // Step demand in 0.3s to position 0.2
@@ -3547,8 +3795,14 @@ mod tests {
         // Now check position is stable for 20s
         for _ in 0..20 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
-            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+            assert_gt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.15)
+            );
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                Ratio::new::<ratio>(0.25)
+            );
         }
     }
 
@@ -3575,7 +3829,10 @@ mod tests {
             }
         }
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.8)
+        );
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
@@ -3589,7 +3846,10 @@ mod tests {
         // Now check position slowly decrease
         for _ in 0..10 {
             test_bed.run_with_delta(Duration::from_secs_f64(1.));
-            assert!(test_bed.query(|a| a.body_position()) < damping_start_position);
+            assert_lt!(
+                test_bed.query(|a| a.body_position()),
+                damping_start_position
+            );
         }
     }
 
@@ -3603,12 +3863,18 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.95)
+        );
     }
 
     #[test]
@@ -3663,7 +3929,10 @@ mod tests {
         test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.2));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.2)
+        );
     }
 
     #[test]
@@ -3741,7 +4010,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.4));
+        assert_ge!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.4)
+        );
     }
 
     #[test]
@@ -3754,12 +4026,18 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.95)
+        );
     }
 
     #[test]
@@ -3772,12 +4050,18 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
     }
 
     #[test]
@@ -3790,13 +4074,19 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.command_electro_backup(true, 0));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
     }
 
     #[test]
@@ -3809,14 +4099,20 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.command_electro_backup(true, 0));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.8)
+        );
     }
 
     #[test]
@@ -3829,7 +4125,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.command_electro_backup(true, 0));
@@ -3854,7 +4153,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.command_electro_backup(true, 0));
@@ -3879,7 +4181,10 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.command_electro_backup(false, 0));
@@ -3904,20 +4209,29 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+        assert_lt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.01)
+        );
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.command_electro_backup(true, 0));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.8)
+        );
 
         test_bed.command(|a| a.command_empty_eha_accumulator(0));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.3), 0));
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.8)
+        );
     }
 
     #[test]
@@ -3934,8 +4248,14 @@ mod tests {
         test_bed.command(|a| a.command_electro_backup_refill(true, 0));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.accumulator_pressure(0)) > accumulator_press_init);
-        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) >= 0.0001);
+        assert_gt!(
+            test_bed.query(|a| a.accumulator_pressure(0)),
+            accumulator_press_init
+        );
+        assert_ge!(
+            test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()),
+            0.0001
+        );
     }
 
     #[test]
@@ -3953,8 +4273,14 @@ mod tests {
         test_bed.command(|a| a.command_electro_backup_refill(true, 0));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.accumulator_pressure(0)) == accumulator_press_init);
-        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) <= 0.0001);
+        assert_eq!(
+            test_bed.query(|a| a.accumulator_pressure(0)),
+            accumulator_press_init
+        );
+        assert_le!(
+            test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()),
+            0.0001
+        );
     }
 
     #[test]
@@ -3973,11 +4299,17 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            actuator_position_init
+        );
 
         test_bed.run_with_delta(Duration::from_secs(33));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert_gt!(
+            test_bed.query(|a| a.body_position()),
+            Ratio::new::<ratio>(0.9)
+        );
     }
 
     fn cargo_door_actuator(

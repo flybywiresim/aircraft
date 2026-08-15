@@ -559,11 +559,15 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.query(|a| {
-            a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
-        }));
+        assert_eq!(
+            test_bed.query(|a| a.emergency_gen.speed()),
+            AngularVelocity::new::<radian_per_second>(0.)
+        );
 
-        assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
+        assert_eq!(
+            test_bed.query(|a| a.gcu.valve_position_command()),
+            Ratio::new::<ratio>(0.)
+        );
     }
 
     #[test]
@@ -575,9 +579,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| {
-            a.emergency_gen.speed() == AngularVelocity::new::<revolution_per_minute>(0.)
-        }));
+        assert_eq!(
+            test_bed.query(|a| a.emergency_gen.speed()),
+            AngularVelocity::new::<revolution_per_minute>(0.)
+        );
     }
 
     #[test]
@@ -600,9 +605,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| {
-            a.emergency_gen.speed() == AngularVelocity::new::<revolution_per_minute>(0.)
-        }));
+        assert_eq!(
+            test_bed.query(|a| a.emergency_gen.speed()),
+            AngularVelocity::new::<revolution_per_minute>(0.)
+        );
 
         test_bed.command(|a| a.set_in_emergency(true));
 
@@ -622,9 +628,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| {
-            a.emergency_gen.speed() == AngularVelocity::new::<revolution_per_minute>(0.)
-        }));
+        assert_eq!(
+            test_bed.query(|a| a.emergency_gen.speed()),
+            AngularVelocity::new::<revolution_per_minute>(0.)
+        );
     }
 
     #[test]
