@@ -1349,32 +1349,33 @@ export class FmcAircraftInterface {
       const flightPhase = this.flightPhase.get();
       const isClimb = flightPhase === FmgcFlightPhase.Climb;
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
-      if (isClimb || isCruise) {
+      const fcuAltitude = this.masterPrimAltitude.get().valueOr(null);
+      const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
+      if (
+        fcuFlightLevel !== null &&
+        ((isClimb && fcuFlightLevel > (cruiseLevel ?? 0)) || (isCruise && fcuFlightLevel !== cruiseLevel))
+      ) {
         const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
         const fgModesSuitedForLevelChange =
           primFgDiscreteWord3.bitValueOr(11, false) || // CLB
+          primFgDiscreteWord3.bitValue(12) || // DES
           primFgDiscreteWord3.bitValue(13) || // OP CLB
+          primFgDiscreteWord3.bitValue(14) || // OP DES
           primFgDiscreteWord3.bitValue(17) || // VS
-          primFgDiscreteWord3.bitValue(18) || // FPA
-          (primFgDiscreteWord3.bitValue(20) && !primFgDiscreteWord3.bitValue(28)) || // ALT without constraint
-          primFgDiscreteWord3.bitValue(29); // ALT CRZ;
+          primFgDiscreteWord3.bitValue(18); // FPA
 
         if (fgModesSuitedForLevelChange) {
-          const fcuAltitude = this.masterPrimAltitude.get().valueOr(null);
-          const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
-          if (fcuFlightLevel !== null && fcuFlightLevel > (cruiseLevel ?? 0)) {
-            const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
-            if (changeCruiseFlightLevel) {
-              this.fmc.addMessageToQueue(
-                NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude!.toFixed(0)),
-                undefined,
-                undefined,
-              );
-              this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFlightLevel);
-              // used by FlightPhaseManager
-              SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
-              this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
-            }
+          const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
+          if (changeCruiseFlightLevel) {
+            this.fmc.addMessageToQueue(
+              NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude!.toFixed(0)),
+              undefined,
+              undefined,
+            );
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFlightLevel);
+            // used by FlightPhaseManager
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
+            this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
             return;
           }
         }
@@ -1406,7 +1407,7 @@ export class FmcAircraftInterface {
       primFgDiscreteWord4.bitValue(13) || // LOC CPT
       primFgDiscreteWord4.bitValue(14) || /// LOC TRACK
       primFgDiscreteWord4.bitValue(25) || /// LAND
-      this.masterPrimFgWord3.get().bitValueOr(25, false) || // FLARE
+      this.masterPrimFgWord3.get().bitValueOr(24, false) || // FLARE
       primFgDiscreteWord4.bitValue(26) // ROLLOUT
     );
   }
