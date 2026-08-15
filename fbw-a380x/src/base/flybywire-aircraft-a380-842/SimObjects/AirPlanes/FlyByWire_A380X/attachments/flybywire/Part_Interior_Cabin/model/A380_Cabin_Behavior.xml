@@ -1,0 +1,31 @@
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+	<Include ModelBehaviorFile="Asobo\Common.xml"/>
+    <Include Path="fbw_a380x\Index.xml" />
+
+    <Component ID="DOOR_ANIMATIONS_CABIN">
+            <UseTemplate Name="FBW_A380X_Components_DoorAnimations" />
+    </Component>
+
+    <Component ID="CABIN_LIGHTING">
+        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+            <NODE_ID>FWD_STAIRS</NODE_ID>
+            <POTENTIOMETER>60</POTENTIOMETER>
+            <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+            <NODE_ID>FWD_BAR</NODE_ID>
+            <POTENTIOMETER>60</POTENTIOMETER>
+            <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+            <NODE_ID>AFT_STAIRS</NODE_ID>
+            <POTENTIOMETER>60</POTENTIOMETER>
+            <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+        </UseTemplate>
+    </Component>
+</ModelBehaviors>

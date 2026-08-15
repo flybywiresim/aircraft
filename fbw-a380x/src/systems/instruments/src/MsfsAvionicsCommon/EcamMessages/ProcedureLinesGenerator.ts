@@ -101,40 +101,56 @@ export class ProcedureLinesGenerator {
     itemsChecked: boolean[],
     itemsActive: boolean[],
     itemsTimeStamp?: (number | null | undefined)[],
+    itemsToShow?: boolean[],
   ) {
-    // Additional logic for conditions: Modify itemsActive based on condition activation status
-    if (proc?.items && proc.items.some((v) => isChecklistCondition(v))) {
-      proc.items.forEach((v, i) => {
-        if (v.level) {
-          // Look for parent condition(s)
-          let active = true;
-          for (let recI = i; recI >= 0; recI--) {
-            const parent = proc.items[recI];
-            const timeStamp = itemsTimeStamp !== undefined ? itemsTimeStamp[recI] : undefined;
-            const isParentCondition =
-              (parent && parent?.level ? parent.level : 0) < v.level && isChecklistCondition(parent);
-            active = isParentCondition
-              ? active &&
-                (itemsChecked[recI] ||
-                  (isChecklistTimedCondition(parent) &&
-                    timeStamp !== undefined &&
-                    timeStamp !== null &&
-                    ProcedureLinesGenerator.hasTimedItemElapsed(timeStamp, parent)))
-              : active;
-
-            if (isParentCondition) {
-              if (isChecklistTimedCondition(parent)) {
-                itemsChecked[recI] = active; // Enforce checked on the timed condition
-              }
-
+    const levelConditionMap = new Map<number, boolean>();
+    if (proc?.items) {
+      let previousItemLevel: number | null = null;
+      for (let i = 0; i < proc.items.length; i++) {
+        // Iterate procedure top to bottom and keep track of the checked state for the most recent parent at each level.
+        const item = proc.items[i];
+        const itemLevel = item.level ?? 0;
+        // If we went up a level in the chain and it current is active, reset future child elements.
+        // This has to happen before handling the current item, otherwise sibling conditions can be overwritten.
+        if (previousItemLevel !== null && previousItemLevel > itemLevel && (levelConditionMap.get(itemLevel) ?? true)) {
+          for (let level = previousItemLevel; level > itemLevel; level--) {
+            levelConditionMap.set(level, true);
+          }
+        }
+        let itemIsActive = true;
+        if (itemLevel !== 0) {
+          // Iterate the level to check if any parent is inactive, i.e. condition is at L1 but the child is only at L3.
+          for (let level = 1; level <= itemLevel; level++) {
+            if (!(levelConditionMap.get(level) ?? true)) {
+              itemIsActive = false;
               break;
             }
           }
-          itemsActive[i] = active;
         }
-      });
+        const isParentCondition =
+          isChecklistCondition(item) && itemsToShow !== undefined ? itemsToShow[i] ?? true : false;
+        // If is condition, enforce the active on the current level.
+        if (isParentCondition) {
+          const isTimed = isChecklistTimedCondition(item);
+          const timeStamp = itemsTimeStamp !== undefined ? itemsTimeStamp[i] : undefined;
+          const childLevel = itemLevel + 1;
+          const parentIsActive =
+            itemsChecked[i] ||
+            (isTimed &&
+              timeStamp !== undefined &&
+              timeStamp !== null &&
+              ProcedureLinesGenerator.hasTimedItemElapsed(timeStamp, item));
+          // Set the child level.
+          levelConditionMap.set(childLevel, parentIsActive);
+          if (isTimed) {
+            // Enforce checked on the timed condition
+            itemsChecked[i] = parentIsActive;
+          }
+        }
+        itemsActive[i] = itemIsActive;
+        previousItemLevel = itemLevel;
+      }
     }
-    return itemsActive;
   }
 
   public numLinesUntilSelected(): number {
@@ -296,7 +312,13 @@ export class ProcedureLinesGenerator {
       if (clState.itemsChecked[this.sii]) {
         if (isChecklistCondition(this.selectedItem) && this.selectedItem.condition) {
           // Force 'active' status update
-          ProcedureLinesGenerator.conditionalActiveItems(this.procedure, clState.itemsChecked, clState.itemsActive);
+          ProcedureLinesGenerator.conditionalActiveItems(
+            this.procedure,
+            clState.itemsChecked,
+            clState.itemsActive,
+            clState.itemsTimeStamp,
+            clState.itemsToShow,
+          );
         }
         this.moveDown();
       }
@@ -496,8 +518,15 @@ export class ProcedureLinesGenerator {
 
         if (isCondition && !item.sensed) {
           // Insert CONFIRM <condition>, remove trailing colon
-          const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
+          const itemName = item.name.endsWith(':') ? item.name.slice(0, -1) : item.name;
+          // Remove leading IF or WHEN from the condition name for the confirm line
+          const itemNameWithoutConditionHeader =
+            itemName.substring(0, 2) === 'IF'
+              ? itemName.substring(2)
+              : itemName.substring(0, 4) === 'WHEN'
+                ? itemName.substring(4)
+                : itemName;
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemNameWithoutConditionHeader}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),
@@ -638,8 +667,9 @@ export class ProcedureLinesGenerator {
     checklistState: ChecklistState,
   ) {
     let text = item.level ? '\xa0'.repeat(item.level) : '';
+    const hasDoubleColon = item.name.endsWith(':');
     if (item.name.substring(0, 4) === 'WHEN') {
-      text += `.${item.name} :`;
+      text += `.${item.name} ${hasDoubleColon ? '' : ':'}`;
     } else {
       // TODO support time only text in the future e.g. AFTER 30S
       let timedText: string | null = null;
@@ -648,7 +678,7 @@ export class ProcedureLinesGenerator {
         timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
       }
 
-      const appendText = ' :';
+      const appendText = hasDoubleColon ? ' ' : ' :';
       text +=
         itemComplete || (isTimedItem && timedText === null)
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`

@@ -3,6 +3,7 @@ const MINUTES_TO_SECONDS: u64 = 60;
 
 use std::time::Duration;
 
+use more_asserts::*;
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use systems::electrical::Electricity;
@@ -257,7 +258,7 @@ impl BoardingTestBed {
     fn load_pax(&mut self, ps: usize, pax_qty: i8) {
         let test_bed = test_bed();
 
-        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
+        assert_le!(pax_qty, test_bed.query(|a| a.max_pax(ps)));
 
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
@@ -282,7 +283,7 @@ impl BoardingTestBed {
 
     fn target_pax(&mut self, ps: usize, pax_qty: i8) {
         let test_bed = test_bed();
-        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
+        assert_le!(pax_qty, test_bed.query(|a| a.max_pax(ps)));
 
         let seed = 747777;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
@@ -304,7 +305,7 @@ impl BoardingTestBed {
     }
 
     fn load_cargo(&mut self, cs: usize, cargo_qty: Mass) {
-        assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
+        assert_le!(cargo_qty, test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
             A320Payload::A320_CARGO[cs].cargo_id,
@@ -317,7 +318,7 @@ impl BoardingTestBed {
     }
 
     fn target_cargo(&mut self, cs: usize, cargo_qty: Mass) {
-        assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
+        assert_le!(cargo_qty, test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
             &format!("{}_DESIRED", A320Payload::A320_CARGO[cs].cargo_id),

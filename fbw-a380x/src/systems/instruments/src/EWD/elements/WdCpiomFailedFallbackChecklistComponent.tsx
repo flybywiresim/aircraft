@@ -1,5 +1,5 @@
 import { DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { FormattedFwcText } from './FormattedFwcText';
 import { CpiomEwdAvailabilityChecker } from '../EWD';
 
