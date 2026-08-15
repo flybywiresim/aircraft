@@ -121,6 +121,8 @@ export class FMA extends DisplayComponent<{
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
   );
 
+  private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
+
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
@@ -129,7 +131,29 @@ export class FMA extends DisplayComponent<{
 
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
 
-  private readonly disconnectApForLdg = Subject.create(false);
+  private readonly B1Message = this.primFgDiscreteWord3.map((primFgDiscreteWord3) =>
+    computeB1Message(primFgDiscreteWord3),
+  );
+
+  private readonly disconnectApForLdg = MappedSubject.create(
+    ([ap1, ap2, ra, altitude, landingElevation, B1Message]) => {
+      return (
+        (ap1 || ap2) &&
+        (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
+        (B1Message === B1Messages.DES ||
+          B1Message === B1Messages.OP_DES ||
+          B1Message === B1Messages.FPA ||
+          B1Message === B1Messages.VS ||
+          B1Message === B1Messages.APP_DES)
+      );
+    },
+    this.ap1Engaged,
+    this.ap2Engaged,
+    this.radioHeight,
+    this.altitude,
+    this.landingElevation,
+    this.B1Message,
+  );
 
   private readonly BC3Message = MappedSubject.create(
     ([
@@ -254,7 +278,12 @@ export class FMA extends DisplayComponent<{
           <path d="m133.72 0.33732v20.864" />
         </g>
 
-        <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} A1A2CellMessage={this.A1A2Message} />
+        <Row1
+          bus={this.props.bus}
+          isAttExcessive={this.props.isAttExcessive}
+          A1A2CellMessage={this.A1A2Message}
+          B1CellMessage={this.B1Message}
+        />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} A1A2CellMessage={this.A1A2Message} />
         <Row3
           bus={this.props.bus}
@@ -271,6 +300,7 @@ class Row1 extends DisplayComponent<{
   readonly bus: EventBus;
   readonly isAttExcessive: Subscribable<boolean>;
   readonly A1A2CellMessage: Subscribable<number>;
+  readonly B1CellMessage: Subscribable<number>;
 }> {
   private b1Cell = FSComponent.createRef<B1Cell>();
 
@@ -306,7 +336,7 @@ class Row1 extends DisplayComponent<{
         <A1A2Cell bus={this.props.bus} A1A2CellMessage={this.props.A1A2CellMessage} />
 
         <g ref={this.cellsToHide}>
-          <B1Cell ref={this.b1Cell} bus={this.props.bus} />
+          <B1Cell ref={this.b1Cell} bus={this.props.bus} B1Message={this.props.B1CellMessage} />
           <C1Cell ref={this.c1Cell} bus={this.props.bus} />
           <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} />
           <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
@@ -741,7 +771,11 @@ class AB3Cell extends DisplayComponent<AB3CellProps> {
   }
 }
 
-class B1Cell extends ShowForSecondsComponent<CellProps> {
+interface B1CellProps extends CellProps {
+  B1Message: Subscribable<B1Messages>;
+}
+
+class B1Cell extends ShowForSecondsComponent<B1CellProps> {
   private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
   private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
@@ -753,10 +787,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   private primFgSelectedVs = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_vertical_speed'));
 
   private primFgSelectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_flight_path_angle'));
-
-  private readonly message = this.primFgDiscreteWord3.map((primFgDiscreteWord3) =>
-    computeB1Message(primFgDiscreteWord3),
-  );
 
   private readonly fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
@@ -824,7 +854,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
           return '';
       }
     },
-    this.message,
+    this.props.B1Message,
     this.primFgSelectedFpa,
   );
 
@@ -848,7 +878,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         return '';
       }
     },
-    this.message,
+    this.props.B1Message,
     this.primFgSelectedVs,
     this.primFgSelectedFpa,
   );
@@ -890,7 +920,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       : 'FontMedium MiddleAlign Green';
   });
 
-  constructor(props: CellProps) {
+  constructor(props: B1CellProps) {
     super(props, 10);
   }
 
