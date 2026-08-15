@@ -5763,37 +5763,32 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const flightPhase = this.flightPhaseManager.phase;
       const isClimb = flightPhase === FmgcFlightPhase.Climb;
       const isCruise = flightPhase === FmgcFlightPhase.Cruise;
-      if (isClimb || isCruise) {
+      const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
+      const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
+      if (
+        fcuFlightLevel !== null &&
+        ((isClimb && fcuFlightLevel > (cruiseLevel ?? 0)) || (isCruise && fcuFlightLevel !== cruiseLevel))
+      ) {
         const fmgcDiscreteWord1 = this.fmgcDiscreteWord1.get();
-        const altitudeConstraintInvalid = this.fmgcAltitudeConstraint.get().valueOr(null) !== null;
-        const dashMode = fmgcDiscreteWord1.bitValueOr(26, false);
-        const trackMode = fmgcDiscreteWord1.bitValueOr(20, false);
-        const altMode = fmgcDiscreteWord1.bitValueOr(19, false);
         const fgModesSuitedForLevelChange =
-          fmgcDiscreteWord1.bitValueOr(11, false) || // CLB or OP CLB
+          fmgcDiscreteWord1.bitValueOr(11, false) || // CLB or OP CLB´
+          fmgcDiscreteWord1.bitValue(12) || // DES OR OP DES
           fmgcDiscreteWord1.bitValue(17) || // VS
-          fmgcDiscreteWord1.bitValue(18) || // FPA
-          (trackMode && altMode && !dashMode && altitudeConstraintInvalid) || // ALT without constraint
-          (dashMode && (!altMode || altitudeConstraintInvalid)); // ALT CRZ;
-
+          fmgcDiscreteWord1.bitValue(18); // FPA
         if (fgModesSuitedForLevelChange) {
-          const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
-          const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
-          if (fcuFlightLevel !== null && fcuFlightLevel > (cruiseLevel ?? 0)) {
-            const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
-            if (changeCruiseFlightLevel) {
-              this.addMessageToQueue(
-                NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude!.toFixed(0)),
-                undefined,
-                undefined,
-              );
-              this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFlightLevel);
-              // used by FlightPhaseManager
-              SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
-              this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
-            }
-            return;
+          const changeCruiseFlightLevel = this.cruiseAltitudeChangeConfirm.write(true, deltaTime);
+          if (changeCruiseFlightLevel) {
+            this.addMessageToQueue(
+              NXSystemMessages.newCrzAlt.getModifiedMessage(fcuAltitude!.toFixed(0)),
+              undefined,
+              undefined,
+            );
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFlightLevel);
+            // used by FlightPhaseManager
+            SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
+            this.fcuAltitudeChangeCheckCruiseFlightLevel = false;
           }
+          return;
         }
       }
       // Reset helpers
