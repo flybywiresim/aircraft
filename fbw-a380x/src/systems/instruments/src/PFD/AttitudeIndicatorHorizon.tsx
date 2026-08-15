@@ -81,6 +81,14 @@ class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolea
     this.trkFpaModeActive.sub((trkFpaModeActive) => {
       this.selectedHdgTrk.setConsumer(this.sub.on(trkFpaModeActive ? 'prim_selected_track' : 'prim_selected_heading'));
     }, true);
+
+    this.visible.sub((visible) => {
+      if (visible) {
+        this.transform.resume();
+      } else {
+        this.transform.pause();
+      }
+    }, true);
   }
 
   render(): VNode {
