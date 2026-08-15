@@ -23,6 +23,7 @@ import {
   NXLogicConfirmNode,
   NXUnits,
   Units,
+  Arinc429LocalVarConsumerSubject,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -31,6 +32,7 @@ import {
   MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { A32NXFcuBusEvents } from '../../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
@@ -105,7 +107,7 @@ import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
-  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
@@ -336,6 +338,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly fmgc2DiscreteWord4 = RegisteredSimVar.create<number>(
     'L:A32NX_FMGC_2_DISCRETE_WORD_4',
     SimVarValueType.Enum,
+  );
+
+  private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
+  );
+  private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
   );
 
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
@@ -649,6 +658,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUpdate(deltaTime: number) {
     this._deltaTime = deltaTime;
+
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -5823,6 +5833,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
+  }
+
+  public isInhgSelected(): boolean {
+    const leftWord = this.fcuEisLeftDiscreteWord1.get();
+    if (!leftWord.isInvalid()) {
+      return leftWord.bitValueOr(11, false);
+    }
+    return this.fcuEisRightDiscreteWord1.get().bitValueOr(11, false);
   }
 
   getPerformanceFactorPercent(): number | null {
