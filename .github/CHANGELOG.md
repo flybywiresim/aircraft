@@ -68,6 +68,7 @@
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
 1. [A32NX] Added ECAM control panel circuit breaker - @tracernz (Mike)
+1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (matze2346)
 
 ## 2024.1.0
 
