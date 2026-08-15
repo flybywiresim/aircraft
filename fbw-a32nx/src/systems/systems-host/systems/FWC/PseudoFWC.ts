@@ -17,6 +17,7 @@ import {
   GameStateProvider,
   Wait,
   KeyEvents,
+  InstrumentBackplane,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -33,7 +34,6 @@ import {
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
   RegisteredSimVar,
-  UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { EwdMessageCodeOrder, getEwdMessageGroup } from '../../../shared/src/EwdMessages';
 import { SdPages as EcamSysPage } from '../../../shared/src/SdPages';
@@ -52,6 +52,8 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 export const DEFAULT_MONITOR_TIME = 0.3;
 import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { CircuitBreakerMonitors } from './Acquisition/CircuitBreakerMonitors';
+import { CircuitBreakerLogic } from './Logic/CircuitBreakerLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -151,9 +153,7 @@ export class PseudoFWC {
       StallWarningEvents
   >();
 
-  private readonly fwsSoundUpdateThrottler = new UpdateThrottler(100);
-
-  private readonly fwsUpdateThrottler = new UpdateThrottler(240); // has to be > 100 due to pulse nodes
+  private readonly acquisitionBackplane = new InstrumentBackplane();
 
   private keyEventManager?: KeyEventManager;
 
@@ -278,6 +278,8 @@ export class PseudoFWC {
   private alignTime = 0;
   private oneIrsInAlign = false;
   private navMode = false;
+
+  private readonly sdacCbMonitors = new CircuitBreakerMonitors();
 
   /* Plugs */
   private readonly ltp: Plug<'07C'> = { '07C': false };
@@ -1127,6 +1129,24 @@ export class PseudoFWC {
 
   private readonly toConfigOrPhase3 = Subject.create(false);
 
+  /** 31 - CB */
+  private readonly cbRearJMWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearJMTripped);
+  private readonly cbRearNRWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearNRTripped);
+  private readonly cbRearSVWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearSVTripped);
+  private readonly cbRearWZWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearWZTripped);
+  private readonly cbOverheadWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.overheadTripped,
+  );
+  private readonly cbLeftElecBayWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.leftElecBayTripped,
+  );
+  private readonly cbRightElecBayWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.rightElecBayTripped,
+  );
+
   /** 31 - EIS */
   private readonly dmcLeftDiscreteWord272 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_272_left'),
@@ -1752,6 +1772,16 @@ export class PseudoFWC {
   /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
 
+  private readonly onLogicUpdate: { onUpdate: (deltaTime: number) => void }[] = [
+    this.cbRearJMWarning,
+    this.cbRearNRWarning,
+    this.cbRearSVWarning,
+    this.cbRearWZWarning,
+    this.cbOverheadWarning,
+    this.cbLeftElecBayWarning,
+    this.cbRightElecBayWarning,
+  ];
+
   constructor(
     private readonly bus: EventBus,
     private readonly soundManager: FwsSoundManager,
@@ -1985,6 +2015,9 @@ export class PseudoFWC {
       }
       this.soundManager.handleSoundCondition('minimums', v);
     });
+
+    this.acquisitionBackplane.addInstrument('SdacCbMonitors', this.sdacCbMonitors);
+    this.acquisitionBackplane.init();
   }
 
   public getMinimumEmitted() {
@@ -2260,6 +2293,8 @@ export class PseudoFWC {
    * Periodic update
    */
   update(deltaTime: number) {
+    this.acquisitionBackplane.onUpdate();
+
     // Inputs update
     this.processEcpButtons(deltaTime);
 
@@ -4493,6 +4528,10 @@ export class PseudoFWC {
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
 
+    for (let i = 0; i < this.onLogicUpdate.length; i++) {
+      this.onLogicUpdate[i].onUpdate(deltaTime);
+    }
+
     this.updateEwdFailureTimers(deltaTime);
 
     /* CLEAR AND RECALL */
@@ -5921,6 +5960,76 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.FCTL,
+      side: 'LEFT',
+    },
+    3100110: {
+      // TRIPPED REAR PNL J-M
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearJMWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310011001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100120: {
+      // TRIPPED REAR PNL N-R
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearNRWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310012001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100130: {
+      // TRIPPED REAR PNL S-V
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearSVWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310013001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100140: {
+      // TRIPPED REAR PNL W-Z
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearWZWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310014001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100150: {
+      // TRIPPED OVERHEAD
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbOverheadWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310015001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100160: {
+      // TRIPPED L ELEC BAY
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbLeftElecBayWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310016001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100220: {
+      // TRIPPED R ELEC BAY
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRightElecBayWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310022001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },
     2700400: {
