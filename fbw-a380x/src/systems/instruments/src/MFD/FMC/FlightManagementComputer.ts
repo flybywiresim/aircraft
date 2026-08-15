@@ -1815,25 +1815,21 @@ export class FlightManagementComputer implements FmcInterface {
       this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
       return false;
     }
+    let flightLevelToInsert = fl;
     if (plan.isActiveOrCopiedFromActive()) {
       const phase = this.flightPhase.get();
-      const fcuAltitude = this.acInterface.getFcuSelectedAltitude();
-      const selFl = fcuAltitude !== null ? Math.floor(Math.max(0, fcuAltitude) / 100) : null;
-      if (
-        selFl !== null &&
-        fl < selFl &&
-        (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)
-      ) {
-        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-        return false;
+      if (phase >= FmgcFlightPhase.Climb && phase < FmgcFlightPhase.Done) {
+        const fcuAltitude = this.acInterface.getFcuSelectedAltitude();
+        // Select the maximum of CRZ FL and FCU altitude, i.e. if crew entry < FCU, we set FCU
+        flightLevelToInsert = Math.max(fl, Math.floor(Math.max(0, fcuAltitude ?? 0) / 100));
       }
     }
-    plan.setPerformanceData('cruiseFlightLevel', fl);
-    if (fl > (this.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
+    plan.setPerformanceData('cruiseFlightLevel', flightLevelToInsert);
+    if (flightLevelToInsert > (this.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
       this.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
     }
     if (intoPlan === FlightPlanIndex.Active) {
-      this.acInterface.onUpdateCruiseLevel(fl);
+      this.acInterface.onUpdateCruiseLevel(flightLevelToInsert);
     }
     return true;
   }
