@@ -480,6 +480,8 @@ export class Ecp implements Instrument {
   public init(): void {
     this.failuresConsumer.register(A320Failure.EcamControlPanel);
 
+    this.isInputPowerHealthy.init();
+
     for (const sub of this.subs) {
       sub.resume(true);
     }
@@ -507,6 +509,8 @@ export class Ecp implements Instrument {
   public onUpdate(): void {
     this.failuresConsumer.update();
     this.isEcpFailed.set(this.failuresConsumer.isActive(A320Failure.EcamControlPanel));
+
+    this.isInputPowerHealthy.onUpdate();
 
     const simTime = this.simTime.get();
     const deltaTime = simTime - this.lastSimTime;
