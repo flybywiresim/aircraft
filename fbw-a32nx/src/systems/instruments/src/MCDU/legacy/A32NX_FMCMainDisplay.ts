@@ -1086,7 +1086,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private triggerCheckSpeedModeMessage(preselectedSpeed) {
-    const isSpeedSelected = this.fmgcDiscreteWord5.get().bitValueOr(20, true);
+    const isSpeedSelected = this.fmgcDiscreteWord5.get().bitValueOr(20, false);
     const hasPreselectedSpeed = preselectedSpeed !== undefined;
 
     if (!this.setManagedSpeedMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
