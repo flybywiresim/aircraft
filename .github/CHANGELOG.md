@@ -71,6 +71,13 @@
 1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (matze2346)
 1. [A32NX/FMS] Fixed an issue where the hold page would sometimes bug when creating a hold - @tracernz (Mike)
 1. [A380X/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
+1. [A380X/FG] Add Flight Guidance part to the PRIMs - @lukecologne (luke)
+1. [A380X/FG] Add new A380 specific modes: OP CLB armed, RWY armed ALT CRZ armed - @lukecologne (luke)
+1. [A380X/FG] Add ALT Button (push to level off) functionality - @lukecologne (luke)
+1. [A380X/PFD] FPV/VV is now small while the FDs are active - @lukecologne (luke)
+1. [A380X/PFD] FDs in TRK/FPA mode are now also displayed in crossed bars style instead of FPD - @lukecologne (luke)
+1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
+1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
 
 ## 2024.1.0
 
