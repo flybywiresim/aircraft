@@ -752,6 +752,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_TRAF_PUSH, "A32NX.FCU_EFIS_R_TRAF_PUSH", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_MACH_MODE_ACTIVATE, "AP_MANAGED_SPEED_IN_MACH_ON", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_SPD_MODE_ACTIVATE, "AP_MANAGED_SPEED_IN_MACH_OFF", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_PRESET_SPD_ACTIVATE, "A32NX.FMS_PRESET_SPD_ACTIVATE", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
