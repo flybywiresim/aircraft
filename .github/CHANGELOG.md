@@ -78,6 +78,7 @@
 1. [A380X/PFD] FDs in TRK/FPA mode are now also displayed in crossed bars style instead of FPD - @lukecologne (luke)
 1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
 1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
+1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
 
 ## 2024.1.0
 
