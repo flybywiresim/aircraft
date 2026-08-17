@@ -796,11 +796,7 @@ export class FmcAircraftInterface {
 
   activatePreSelSpeedMach(preSel: number) {
     if (preSel) {
-      if (preSel < 1) {
-        SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_MACH', 'number', 1);
-      } else {
-        SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_SPEED', 'number', 1);
-      }
+      SimVar.SetSimVarValue('K:A32NX.FMS_PRESET_SPD_ACTIVATE', 'number', 1);
     }
   }
 
@@ -963,6 +959,8 @@ export class FmcAircraftInterface {
 
   /** in knots or mach */
 
+  private managedSpeedTargetIsMach = false;
+
   private holdDecelReached = false;
 
   private holdSpeedTarget: number | null = null;
@@ -979,6 +977,7 @@ export class FmcAircraftInterface {
       return;
     }
     let vPfd: number | null = null;
+    let isMach = false;
     const phase = this.flightPhase.get();
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
@@ -1016,7 +1015,7 @@ export class FmcAircraftInterface {
               speed = cas ? cas - (cas - greenDotSpeed) * (FMS_CYCLE_TIME / 1_000) : greenDotSpeed;
             }
           }
-          vPfd = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach())[0] ?? speed;
+          [vPfd, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach());
           break;
         }
         case FmgcFlightPhase.Cruise: {
@@ -1025,12 +1024,19 @@ export class FmcAircraftInterface {
           if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
             speed = Math.min(speed, speedLimit.speed);
           }
-          vPfd = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach())[0] ?? speed;
+          [vPfd, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
           break;
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
           vPfd = this.speedsManagedPfdVar.get();
+
+          // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
+          // Also, VNAV already does the conversion from Mach if necessary
+          isMach = this.getManagedTargets(
+            this.fmgc.getManagedDescentSpeed(),
+            this.fmgc.getManagedDescentSpeedMach(),
+          )[1];
           break;
         }
         case FmgcFlightPhase.Approach: {
@@ -1048,6 +1054,16 @@ export class FmcAircraftInterface {
       }
     }
     this.speedsManagedPfd.set(vPfd);
+
+    // Automatically change fcu mach/speed mode
+    if (this.managedSpeedTargetIsMach !== isMach) {
+      if (isMach) {
+        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
+      } else {
+        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
+      }
+      this.managedSpeedTargetIsMach = isMach;
+    }
   }
 
   public invalidateManagedSpeed() {
