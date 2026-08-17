@@ -266,6 +266,14 @@ export class FMA extends DisplayComponent<{
     this.A3Message.sub(() => {
       this.handleFMABorders();
     }, true);
+
+    this.machPresel.sub(() => {
+      this.handleFMABorders();
+    }, true);
+
+    this.speedPresel.sub(() => {
+      this.handleFMABorders();
+    }, true);
   }
 
   render(): VNode {
