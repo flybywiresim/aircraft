@@ -21,6 +21,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
+  SubscribableMapFunctions,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -220,20 +221,20 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
-  private readonly isSelectedVerticalMode = MappedSubject.create(
+  private readonly isManagedVerticalMode = MappedSubject.create(
     ([mode, cstr]) =>
-      cstr === 0 &&
-      (mode === VerticalMode.OP_CLB ||
-        mode === VerticalMode.OP_DES ||
-        mode === VerticalMode.VS ||
-        mode === VerticalMode.FPA),
+      cstr !== 0 &&
+      (mode === VerticalMode.DES ||
+        mode === VerticalMode.CLB ||
+        mode === VerticalMode.ALT_CST ||
+        mode === VerticalMode.ALT_CST_CPT),
     this.activeVerticalMode,
     this.fgAltConstraint,
   );
   private readonly targetAltitude = MappedSubject.create(
-    ([selAlt, isSelected, altCstr]) => (isSelected || !altCstr ? selAlt : altCstr),
+    ([selAlt, isManaged, altCstr]) => (isManaged && altCstr ? altCstr : selAlt),
     this.selectedAltitude,
-    this.isSelectedVerticalMode,
+    this.isManagedVerticalMode,
     this.fgAltConstraint,
   );
   private readonly targetAltitudeFormatted = MappedSubject.create(
@@ -261,8 +262,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly altitudeTargetColor = MappedSubject.create(
-    ([mode, altCstr]) => {
-      if (mode === VerticalMode.ALT_CST || mode === VerticalMode.ALT_CST_CPT || altCstr) {
+    ([mode, altCstr, isManagedVerticalMode]) => {
+      if (isManagedVerticalMode && altCstr) {
         return '#ff94ff';
       } else if (
         mode === VerticalMode.FINAL ||
@@ -278,6 +279,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     },
     this.activeVerticalMode,
     this.fgAltConstraint,
+    this.isManagedVerticalMode,
   );
 
   private readonly altitudeTapeLineY = Array.from(Array(8), (_, index) =>
@@ -455,7 +457,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.activeVerticalMode,
       this.fgAltConstraint,
       this.selectedAltitude,
-      this.isSelectedVerticalMode,
+      this.isManagedVerticalMode,
       this.targetAltitude,
       this.altitudeTargetTransform,
       this.targetAltitudeTextVisibility,
@@ -602,7 +604,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           fmsTargetVdProfile={this.fmsTargetVdProfile}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
-          isSelectedVerticalMode={this.isSelectedVerticalMode}
+          isSelectedVerticalMode={this.isManagedVerticalMode.map(SubscribableMapFunctions.not())}
           shouldShowTrackLine={this.shouldShowTrackLine}
           fpa={this.fpa}
           selectedAltitude={this.selectedAltitude}
