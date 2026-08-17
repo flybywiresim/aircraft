@@ -729,38 +729,28 @@ interface AB3CellProps extends CellProps {
 }
 
 class AB3Cell extends DisplayComponent<AB3CellProps> {
-  // TODO: Connect this to the correct FMGC bus
-  private speedPresel = Arinc429Word.empty();
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
-  // TODO: Connect these to the correct FMGC bus
-  private machPresel = Arinc429Word.empty();
+  private machPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_mach'));
 
-  private A3Message = A3Messages.NONE;
+  private speedPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_speed'));
 
-  private readonly textSub = Subject.create('');
-
-  private getText() {
-    if (this.A3Message === A3Messages.NONE) {
-      if (this.speedPresel.isNormalOperation() && !this.machPresel.isNormalOperation()) {
-        const text = Math.round(this.speedPresel.value);
-        this.textSub.set(`SPEED SEL ${text}`);
-      } else if (this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
-        this.textSub.set(`MACH SEL ${this.machPresel.value.toFixed(2)}`);
-      } else if (!this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
-        this.textSub.set('');
+  private readonly textSub = MappedSubject.create(
+    ([machPresel, speedPresel, A3Message]) => {
+      if (A3Message !== A3Messages.NONE) {
+        return '';
+      } else if (speedPresel.isNormalOperation() && !machPresel.isNormalOperation()) {
+        return `SPEED SEL ${speedPresel.value}`;
+      } else if (!speedPresel.isNormalOperation() && machPresel.isNormalOperation()) {
+        return `MACH SEL ${machPresel.value.toFixed(2)}`;
+      } else {
+        return '';
       }
-    } else {
-      this.textSub.set('');
-    }
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    this.props.A3Message.sub((message) => {
-      this.A3Message = message;
-      this.getText();
-    });
-  }
+    },
+    this.machPresel,
+    this.speedPresel,
+    this.props.A3Message,
+  );
 
   render(): VNode {
     return (
