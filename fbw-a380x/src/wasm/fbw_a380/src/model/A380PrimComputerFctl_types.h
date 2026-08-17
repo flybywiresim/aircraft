@@ -494,6 +494,20 @@ enum class fmgc_des_submode
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -506,16 +520,35 @@ struct base_time
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
 
-struct base_prim_pitch_surface_positions
+struct base_prim_lateral_surface_positions
 {
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
+  real_T left_inboard_aileron_deg;
+  real_T right_inboard_aileron_deg;
+  real_T left_midboard_aileron_deg;
+  real_T right_midboard_aileron_deg;
+  real_T left_outboard_aileron_deg;
+  real_T right_outboard_aileron_deg;
+  real_T left_spoiler_1_deg;
+  real_T right_spoiler_1_deg;
+  real_T left_spoiler_2_deg;
+  real_T right_spoiler_2_deg;
+  real_T left_spoiler_3_deg;
+  real_T right_spoiler_3_deg;
+  real_T left_spoiler_4_deg;
+  real_T right_spoiler_4_deg;
+  real_T left_spoiler_5_deg;
+  real_T right_spoiler_5_deg;
+  real_T left_spoiler_6_deg;
+  real_T right_spoiler_6_deg;
+  real_T left_spoiler_7_deg;
+  real_T right_spoiler_7_deg;
+  real_T left_spoiler_8_deg;
+  real_T right_spoiler_8_deg;
+  real_T upper_rudder_deg;
+  real_T lower_rudder_deg;
 };
 
 #endif
@@ -1027,39 +1060,6 @@ struct base_prim_flight_envelope_outputs
   real_T gamma_t_deg;
   boolean_T pitch_pitch_warning_active;
   boolean_T low_energy_warning_active;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-
-struct base_prim_lateral_surface_positions
-{
-  real_T left_inboard_aileron_deg;
-  real_T right_inboard_aileron_deg;
-  real_T left_midboard_aileron_deg;
-  real_T right_midboard_aileron_deg;
-  real_T left_outboard_aileron_deg;
-  real_T right_outboard_aileron_deg;
-  real_T left_spoiler_1_deg;
-  real_T right_spoiler_1_deg;
-  real_T left_spoiler_2_deg;
-  real_T right_spoiler_2_deg;
-  real_T left_spoiler_3_deg;
-  real_T right_spoiler_3_deg;
-  real_T left_spoiler_4_deg;
-  real_T right_spoiler_4_deg;
-  real_T left_spoiler_5_deg;
-  real_T right_spoiler_5_deg;
-  real_T left_spoiler_6_deg;
-  real_T right_spoiler_6_deg;
-  real_T left_spoiler_7_deg;
-  real_T right_spoiler_7_deg;
-  real_T left_spoiler_8_deg;
-  real_T right_spoiler_8_deg;
-  real_T upper_rudder_deg;
-  real_T lower_rudder_deg;
 };
 
 #endif

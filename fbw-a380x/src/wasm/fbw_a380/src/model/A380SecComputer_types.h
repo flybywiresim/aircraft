@@ -154,30 +154,6 @@ struct base_prim_fg_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-
-struct base_sec_discrete_inputs
-{
-  boolean_T sec_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T rudder_trim_left_pressed;
-  boolean_T rudder_trim_right_pressed;
-  boolean_T rudder_trim_reset_pressed;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T rat_deployed;
-  boolean_T rat_contactor_closed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
 
@@ -197,30 +173,6 @@ struct base_sec_discrete_outputs
   boolean_T rudder_2_electric_active_mode;
   boolean_T rudder_trim_active_mode;
   boolean_T sec_healthy;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
-
-struct base_sec_analog_outputs
-{
-  real_T elevator_1_pos_order_deg;
-  real_T elevator_2_pos_order_deg;
-  real_T elevator_3_pos_order_deg;
-  real_T ths_pos_order_deg;
-  real_T left_aileron_1_pos_order_deg;
-  real_T left_aileron_2_pos_order_deg;
-  real_T right_aileron_1_pos_order_deg;
-  real_T right_aileron_2_pos_order_deg;
-  real_T left_spoiler_1_pos_order_deg;
-  real_T right_spoiler_1_pos_order_deg;
-  real_T left_spoiler_2_pos_order_deg;
-  real_T right_spoiler_2_pos_order_deg;
-  real_T rudder_1_pos_order_deg;
-  real_T rudder_2_pos_order_deg;
-  real_T rudder_trim_command_deg;
 };
 
 #endif
@@ -260,15 +212,55 @@ struct base_sec_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
 
-struct base_lgciu_bus
+struct base_sec_analog_inputs
 {
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  real_T capt_pitch_stick_pos;
+  real_T fo_pitch_stick_pos;
+  real_T capt_roll_stick_pos;
+  real_T fo_roll_stick_pos;
+  real_T elevator_1_pos_deg;
+  real_T elevator_2_pos_deg;
+  real_T elevator_3_pos_deg;
+  real_T ths_pos_deg;
+  real_T left_aileron_1_pos_deg;
+  real_T left_aileron_2_pos_deg;
+  real_T right_aileron_1_pos_deg;
+  real_T right_aileron_2_pos_deg;
+  real_T left_spoiler_1_pos_deg;
+  real_T right_spoiler_1_pos_deg;
+  real_T left_spoiler_2_pos_deg;
+  real_T right_spoiler_2_pos_deg;
+  real_T rudder_1_pos_deg;
+  real_T rudder_2_pos_deg;
+  real_T rudder_pedal_pos_deg;
+  real_T rudder_trim_actual_pos_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_analog_outputs_
+
+struct base_sec_analog_outputs
+{
+  real_T elevator_1_pos_order_deg;
+  real_T elevator_2_pos_order_deg;
+  real_T elevator_3_pos_order_deg;
+  real_T ths_pos_order_deg;
+  real_T left_aileron_1_pos_order_deg;
+  real_T left_aileron_2_pos_order_deg;
+  real_T right_aileron_1_pos_order_deg;
+  real_T right_aileron_2_pos_order_deg;
+  real_T left_spoiler_1_pos_order_deg;
+  real_T right_spoiler_1_pos_order_deg;
+  real_T left_spoiler_2_pos_order_deg;
+  real_T right_spoiler_2_pos_order_deg;
+  real_T rudder_1_pos_order_deg;
+  real_T rudder_2_pos_order_deg;
+  real_T rudder_trim_command_deg;
 };
 
 #endif
@@ -305,31 +297,39 @@ struct base_sec_pitch_surface_positions
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
 
-struct base_sec_analog_inputs
+struct base_sec_discrete_inputs
 {
-  real_T capt_pitch_stick_pos;
-  real_T fo_pitch_stick_pos;
-  real_T capt_roll_stick_pos;
-  real_T fo_roll_stick_pos;
-  real_T elevator_1_pos_deg;
-  real_T elevator_2_pos_deg;
-  real_T elevator_3_pos_deg;
-  real_T ths_pos_deg;
-  real_T left_aileron_1_pos_deg;
-  real_T left_aileron_2_pos_deg;
-  real_T right_aileron_1_pos_deg;
-  real_T right_aileron_2_pos_deg;
-  real_T left_spoiler_1_pos_deg;
-  real_T right_spoiler_1_pos_deg;
-  real_T left_spoiler_2_pos_deg;
-  real_T right_spoiler_2_pos_deg;
-  real_T rudder_1_pos_deg;
-  real_T rudder_2_pos_deg;
-  real_T rudder_pedal_pos_deg;
-  real_T rudder_trim_actual_pos_deg;
+  boolean_T sec_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T rudder_trim_left_pressed;
+  boolean_T rudder_trim_right_pressed;
+  boolean_T rudder_trim_reset_pressed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -468,6 +468,41 @@ struct base_sec_bus_inputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_eec_
+#define DEFINED_TYPEDEF_FOR_base_eec_
+
+struct base_eec
+{
+  base_arinc_429 selected_tla_deg;
+  base_arinc_429 n1_ref_percent;
+  base_arinc_429 selected_flex_temp_deg;
+  base_arinc_429 ecu_status_word_1;
+  base_arinc_429 ecu_status_word_2;
+  base_arinc_429 ecu_status_word_3;
+  base_arinc_429 ecu_status_word_4;
+  base_arinc_429 n1_limit_percent;
+  base_arinc_429 n1_maximum_percent;
+  base_arinc_429 n1_command_percent;
+  base_arinc_429 selected_n2_actual_percent;
+  base_arinc_429 selected_n1_actual_percent;
+  base_arinc_429 ecu_maintenance_word_6;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_adcn_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_adcn_inputs_
+
+struct base_sec_adcn_inputs
+{
+  base_eec eec_1;
+  base_eec eec_2;
+  base_eec eec_3;
+  base_eec eec_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_sec_inputs_
 #define DEFINED_TYPEDEF_FOR_sec_inputs_
 
@@ -478,6 +513,7 @@ struct sec_inputs
   base_sec_discrete_inputs discrete_inputs;
   base_sec_analog_inputs analog_inputs;
   base_sec_bus_inputs bus_inputs;
+  base_sec_adcn_inputs adcn_inputs;
 };
 
 #endif
@@ -600,6 +636,8 @@ struct base_sec_logic_outputs
   boolean_T aileron_droop_active;
   boolean_T ths_automatic_mode_active;
   real_T ths_manual_mode_c_deg_s;
+  boolean_T engine_out;
+  boolean_T engine_running;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
   boolean_T eha_ebha_elec_mode_inhibited;

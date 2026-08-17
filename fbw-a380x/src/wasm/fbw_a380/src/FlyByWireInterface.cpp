@@ -2175,6 +2175,11 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.bus_inputs.sec_y_bus = secsBusOutputs[1];
   }
 
+  secs[secIndex].modelInputs.in.adcn_inputs.eec_1 = fadecBusOutputs[0];
+  secs[secIndex].modelInputs.in.adcn_inputs.eec_2 = fadecBusOutputs[1];
+  secs[secIndex].modelInputs.in.adcn_inputs.eec_3 = fadecBusOutputs[2];
+  secs[secIndex].modelInputs.in.adcn_inputs.eec_4 = fadecBusOutputs[3];
+
   if (secIndex == secDisabled) {
     simConnectInterface.setClientDataSecDiscretes(secs[secIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataSecAnalog(secs[secIndex].modelInputs.in.analog_inputs);
@@ -2992,7 +2997,7 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
     fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
 
-  if (primDisabled != -1) {
+  if (primDisabled != -1 || secDisabled != -1) {
     simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
   }
 

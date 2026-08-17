@@ -782,7 +782,10 @@ void A380PrimComputerFctl::step()
                  (((!A380PrimComputerFctl_U.in.general_logic.is_yellow_hydraulic_power_avail) ||
                    (!A380PrimComputerFctl_P.Constant_Value_a)) &&
                   ((!A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail) ||
-                   (!A380PrimComputerFctl_P.Constant_Value_a)))));
+                   (!A380PrimComputerFctl_P.Constant_Value_a))) &&
+                 ((!A380PrimComputerFctl_U.in.general_logic.is_yellow_hydraulic_power_avail) ||
+                  (!A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail) ||
+                  (!A380PrimComputerFctl_U.in.general_logic.engine_running))));
     if (A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_1) {
       rtb_OR1_l = A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail;
       rtb_OR_jr = A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail;
