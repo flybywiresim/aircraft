@@ -350,7 +350,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private static readonly MILISECONDS_IN_DAY = 86400000;
 
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
-
+  
+  private readonly managedSpeedIsMach = Subject.create(false);
+  
   private readonly fcuSelectedAltitude = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<A32NXFcuBusEvents>().on('a32nx_fcu_selected_altitude'),
   );
@@ -614,6 +616,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.speedsManagedPfd.sub((v) => {
         FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0);
       }, true),
+      this.managedSpeedIsMach.sub((v) => {
+        if (v) {
+        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
+        } else {
+        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
+        }
+      }),
       this.fcuSelectedAltitude.sub((v) => {
         if (v.isNormalOperation()) {
           this.handleFcuAltKnobTurn();
@@ -1321,6 +1330,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private updateManagedSpeed() {
     let vPfd: number | null = 0;
+    let isMach = false;
 
     this.updateHoldingSpeed();
     this.clearCheckSpeedModeMessage();
@@ -1353,7 +1363,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
           speed = Math.min(speed, this.getSpeedConstraint());
 
-          vPfd = this.getManagedTargets(speed, this.getManagedClimbSpeedMach())[0] ?? speed;
+          [vPfd, isMach] = this.getManagedTargets(speed, this.getManagedClimbSpeedMach());
           break;
         }
         case FmgcFlightPhase.Cruise: {
@@ -1366,12 +1376,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             speed = Math.min(speed, this.climbSpeedLimit);
           }
 
-          vPfd = this.getManagedTargets(speed, this.getManagedCruiseSpeedMach())[0] ?? speed;
+          [vPfd, isMach] = this.getManagedTargets(speed, this.getManagedCruiseSpeedMach());
           break;
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
           vPfd = FMCMainDisplay.speedsManagedPfdVar.get();
+          isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
           break;
         }
         case FmgcFlightPhase.Approach: {
@@ -1396,6 +1407,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.speedsManagedPfd.set(vPfd);
+    this.managedSpeedIsMach.set(isMach);
   }
 
   private activatePreSelSpeedMach(preSel) {
