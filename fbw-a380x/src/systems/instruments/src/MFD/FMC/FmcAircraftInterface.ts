@@ -242,7 +242,7 @@ export class FmcAircraftInterface {
     this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_l_discrete_word_2'),
   );
   private readonly fcuEfisRightDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),  
+    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),
   );
 
   private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
@@ -1040,10 +1040,7 @@ export class FmcAircraftInterface {
           vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? this.fmgc.getManagedDescentSpeed();
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
-          isMach = this.getManagedTargets(
-            vPfd,
-            this.fmgc.getManagedDescentSpeedMach(),
-          )[1];
+          isMach = this.getManagedTargets(vPfd, this.fmgc.getManagedDescentSpeedMach())[1];
           break;
         }
         case FmgcFlightPhase.Approach: {
