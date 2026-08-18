@@ -262,7 +262,7 @@ export class Router {
 
     if (index < icaos.length) {
       if (requestMetar === true) {
-        const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
+        const storedMetarSrc = NXDataStore.getSetting('CONFIG_METAR_SRC').get();
 
         if (storedMetarSrc === 'MSFS') {
           retval = await MsfsConnector.receiveMsfsMetar(icaos[index], message).then(() =>
