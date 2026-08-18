@@ -237,13 +237,12 @@ export class FmcAircraftInterface {
   );
   private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
+  );
   private readonly fcuEfisLeftDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_l_discrete_word_2'),
-    Arinc429Register.empty().rawWord,
   );
   private readonly fcuEfisRightDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),
-    Arinc429Register.empty().rawWord,
+    this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),  
   );
 
   private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
