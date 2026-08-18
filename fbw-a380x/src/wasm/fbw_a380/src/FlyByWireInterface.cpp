@@ -2442,10 +2442,10 @@ bool FlyByWireInterface::updateEfisSync() {
 
     // FIXME need to handle QFE and we won't be able to do it this way
     if (!isLeftStd && isRightStd) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
       std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
     } else if (!isLeftQnh && isRightQnh) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
       std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
     }
   } else {
@@ -2463,10 +2463,10 @@ bool FlyByWireInterface::updateEfisSync() {
 
     // FIXME need to handle QFE and we won't be able to do it this way
     if (isLeftStd && !isRightStd) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
       std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
     } else if (isLeftQnh && !isRightQnh) {
-      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
+      simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
       std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
     }
   }
