@@ -350,17 +350,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private static readonly MILISECONDS_IN_DAY = 86400000;
 
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
-  
+
   private readonly managedSpeedIsMach = Subject.create(false);
-  
+
   private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
-  
   );
   private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
   );
-  
+
   private readonly fcuSelectedAltitude = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_fcu_selected_altitude'),
   );
@@ -369,9 +368,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.sub.on('a32nx_fcu_selected_vertical_speed'),
   );
 
-  private readonly fcuSelectedFpa = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a32nx_fcu_selected_fpa'),
-  );
+  private readonly fcuSelectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_selected_fpa'));
 
   //FIXME: Each FM should use its own onside FG.
   private readonly fmgc1DiscreteWord5 = Arinc429LocalVarConsumerSubject.create(
@@ -626,9 +623,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }, true),
       this.managedSpeedIsMach.sub((v) => {
         if (v) {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
+          SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
         } else {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
+          SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
         }
       }),
       this.fcuSelectedAltitude.sub((v) => {
