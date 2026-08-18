@@ -30,6 +30,7 @@ export class McduFsInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
 
   //private readonly isFailedKey = A320Failure.Mcdu1;
   private readonly isFailed = Subject.create(false);
@@ -59,8 +60,8 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
-    this.backplane.addPublisher('fcu', this.fcuBusPublisher);
-    this.backplane.addPublisher('fg', this.fgBusPublisher);
+    this.backplane.addPublisher('fgBus', this.fgBusPublisher);
+    this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
 
     this.doInit();
   }

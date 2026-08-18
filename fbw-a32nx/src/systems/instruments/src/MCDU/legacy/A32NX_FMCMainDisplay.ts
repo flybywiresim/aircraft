@@ -22,6 +22,7 @@ import {
   NXLogicConfirmNode,
   NXUnits,
   Units,
+  Arinc429LocalVarConsumerSubject,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -32,6 +33,7 @@ import {
   Arinc429Register,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { A32NXFcuBusEvents } from '../../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
@@ -125,7 +127,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
-  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
@@ -353,16 +355,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   
   private readonly managedSpeedIsMach = Subject.create(false);
   
+  private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
+  
+  );
+  private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
+  );
+  
   private readonly fcuSelectedAltitude = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXFcuBusEvents>().on('a32nx_fcu_selected_altitude'),
+    this.sub.on('a32nx_fcu_selected_altitude'),
   );
 
   private readonly fcuSelectedVerticalSpeed = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXFcuBusEvents>().on('a32nx_fcu_selected_vertical_speed'),
+    this.sub.on('a32nx_fcu_selected_vertical_speed'),
   );
 
   private readonly fcuSelectedFpa = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXFcuBusEvents>().on('a32nx_fcu_selected_fpa'),
+    this.sub.on('a32nx_fcu_selected_fpa'),
   );
 
   //FIXME: Each FM should use its own onside FG.
@@ -806,6 +816,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUpdate(deltaTime: number) {
     this._deltaTime = deltaTime;
+
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -5606,6 +5617,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   protected abstract setScratchpadText(value: string): void;
   protected abstract setScratchpadMessage(message: McduMessage): void;
   protected abstract addNewAtsuMessage(code: AtsuStatusCodes): void;
+
+  public isInhgSelected(): boolean {
+    const leftWord = this.fcuEisLeftDiscreteWord1.get();
+    if (!leftWord.isInvalid()) {
+      return leftWord.bitValueOr(11, false);
+    }
+    return this.fcuEisRightDiscreteWord1.get().bitValueOr(11, false);
+  }
 
   getPerformanceFactorPercent(): number | null {
     return null; // TODO implement with PERF FACTOR in AC STATUS page
