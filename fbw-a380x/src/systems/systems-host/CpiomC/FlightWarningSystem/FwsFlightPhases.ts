@@ -202,7 +202,7 @@ export class FwsFlightPhases {
 
     const v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
     let acAboveV1: boolean;
-    if (v1) {
+    if (v1 > 0) {
       acAboveV1 = this.speedAboveV1Memo.write(ias > v1 + 3, ias < v1 - 3);
     } else {
       acAboveV1 = false;

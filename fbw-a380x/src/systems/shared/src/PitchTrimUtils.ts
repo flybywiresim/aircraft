@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2024 FlyByWire Simulations
+﻿// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,21 +7,21 @@ export default class PitchTrimUtils {
   static cgToPitchTrim(cg: number): number {
     if (cg < 29) {
       return 5.8;
-    } else if (cg <= 35) {
-      return 5.8 - ((cg - 29) * 1) / 6;
+    } else if (cg <= 34.5) {
+      return 5.8 - ((cg - 29) * 56) / 275;
     } else if (cg <= 43) {
-      return 4.8 - ((cg - 35) * 5) / 8;
+      return 4.68 - ((cg - 34.5) * 243) / 425;
     } else {
-      return -0.2;
+      return -0.18;
     }
   }
 
   /** Find corresponding CG for pitch trim setting */
   static pitchTrimToCg(trim: number) {
-    if (trim > 4.8) {
-      return 35 - (trim - 4.8) * 6;
+    if (trim > 4.68) {
+      return 34.5 - ((trim - 4.68) * 275) / 56;
     } else {
-      return 43 - ((trim + 0.2) * 8) / 5;
+      return 43 - ((trim + 0.18) * 425) / 243;
     }
   }
 
@@ -29,7 +29,7 @@ export default class PitchTrimUtils {
    * @param pitchTrim pitch trim in degrees. Down is negative
    */
   static pitchTrimOutOfRange(pitchTrim: number) {
-    return pitchTrim > 5.8 || pitchTrim < -0.2;
+    return pitchTrim > 5.8 || pitchTrim < -0.18;
   }
 
   /** Checks for a given pitch trim setting and CG, whether it's within the allowed green band

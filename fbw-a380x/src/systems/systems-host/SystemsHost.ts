@@ -47,7 +47,7 @@ import { BrakeToVacate } from './PseudoPRIM/BrakeToVacate';
 // FIXME should not import from instruments
 import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
 // FIXME should not import from instruments
 import {
   ResetPanelSimvarPublisher,
@@ -65,7 +65,6 @@ import { FGDataPublisher } from '../instruments/src/MsfsAvionicsCommon/providers
 // FIXME should not import from instruments
 import { AesuBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
-import { AutoThsTrimmer } from './PseudoPRIM/AutoThsTrimmer';
 import { EfisTawsBridge } from './Misc/EfisTawsBridge';
 // FIXME should not import from ND!!
 import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
@@ -138,7 +137,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+  private readonly fcdcPublisher = new FcdcBusPublisher(this.bus);
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
@@ -191,9 +190,6 @@ class SystemsHost extends BaseInstrument {
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
-  // FIXME delete this when PRIM gets the THS auto trim
-  private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
-
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -240,7 +236,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
-    this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();
@@ -261,7 +256,6 @@ class SystemsHost extends BaseInstrument {
         this.soundManager?.update(dt);
         this.gpws?.update(dt);
         this.fwsCore?.update(dt);
-        this.autoThsTrimmer.autoTrim();
       });
 
     this.allFwsFailed.sub((a) => {
