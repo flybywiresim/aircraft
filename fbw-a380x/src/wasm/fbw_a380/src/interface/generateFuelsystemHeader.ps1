@@ -11,7 +11,7 @@ $namePattern = 'Name:([^#]+)'
 $typePattern = '^([A-Za-z]+)\.(\d+)\s*='
 
 # Allowed types
-$allowedTypes = @("tank", "line", "junction", "valve", "pump", "trigger")
+$allowedTypes = @("tank", "line", "valve", "pump", "trigger")
 
 # Function to convert "CamelCase" → "camel_case" with your special rules
 function Convert-NameFormat {
