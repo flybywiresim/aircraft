@@ -103,6 +103,7 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
+import { FmgcMonitor } from '@fmgc/modules/FmgcMonitor';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -365,6 +366,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
 
     this.addModule(new EngineOutMonitor(this.bus));
+    this.addModule(new FmgcMonitor(this.bus));
   }
 
   protected addModule(module: FmsModule) {

@@ -8,10 +8,11 @@ import { Fmgc } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { UnitType } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, UnitType } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, LateralMode, VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
+import { NavigationEvents } from '../../navigation/Navigation';
 
 export interface VerticalProfileComputationParameters {
   presentPosition: LatLongAlt;
@@ -65,7 +66,18 @@ export interface VerticalProfileComputationParameters {
 export class VerticalProfileComputationParametersObserver {
   private parameters: VerticalProfileComputationParameters;
 
+  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+
+  private readonly indicatedAltitude = ConsumerSubject.create(this.sub.on('fms_nav_indicated_altitude'), null);
+
+  private readonly presentPosition = new LatLongAlt(
+    SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+    SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+    this.indicatedAltitude.get(),
+  );
+
   constructor(
+    private bus: EventBus,
     private fmgc: Fmgc,
     private flightPlanService: FlightPlanService,
   ) {
@@ -74,8 +86,10 @@ export class VerticalProfileComputationParametersObserver {
 
   update() {
     const efobTonnes = this.fmgc.getDestEFOB(false);
+    this.updatePresentPosition();
+
     this.parameters = {
-      presentPosition: this.getPresentPosition(),
+      presentPosition: this.presentPosition,
 
       fcuAltitude: Simplane.getAutoPilotDisplayedAltitudeLockValue(),
       fcuVerticalMode: SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum'),
@@ -151,12 +165,10 @@ export class VerticalProfileComputationParametersObserver {
     }
   }
 
-  private getPresentPosition(): LatLongAlt {
-    return new LatLongAlt(
-      SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-      SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet'),
-    );
+  private updatePresentPosition() {
+    this.presentPosition.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+    this.presentPosition.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.presentPosition.alt = this.indicatedAltitude.get();
   }
 
   private getV2Speed(): Knots {
@@ -192,13 +204,15 @@ export class VerticalProfileComputationParametersObserver {
     const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
     const hasTakeoffParameters =
       this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
+    const hasValidPosition = Number.isFinite(this.parameters.presentPosition.alt);
 
     return (
       (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) &&
       areApproachSpeedsValid &&
       hasZeroFuelWeight &&
       hasGrossWeight &&
-      hasCruiseAltitude
+      hasCruiseAltitude &&
+      hasValidPosition
     );
   }
 
