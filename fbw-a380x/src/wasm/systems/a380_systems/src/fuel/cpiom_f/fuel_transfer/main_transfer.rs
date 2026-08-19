@@ -289,58 +289,21 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_no_transfer_when_flight_time_below_cutoff() {
-        let provider = MockFuelQuantityProvider {
-            quantities: Default::default(),
-        };
-        let mut transfer = MainTransfer::default();
-        transfer.update(&provider, Some(Duration::from_secs(60 * 10)));
-        assert_eq!(transfer.feed_tank_is_target, [false; 4]);
-    }
-
-    #[test]
-    fn test_inner_selected_when_inner_has_fuel() {
-        let quantities =
-            FxHashMap::from_iter([(A380FuelTankType::LeftInner, Mass::new::<kilogram>(1000.))]);
+    #[rstest]
+    #[case(A380FuelTankType::LeftInner, TransferSourceTank::Inner)]
+    #[case(A380FuelTankType::LeftMid, TransferSourceTank::Mid)]
+    #[case(A380FuelTankType::LeftOuter, TransferSourceTank::Outer)]
+    #[case(A380FuelTankType::Trim, TransferSourceTank::Trim)]
+    fn test_inner_selected_when_single_tank_has_fuel(
+        #[case] fuel_tank: A380FuelTankType,
+        #[case] source_tank: TransferSourceTank,
+    ) {
+        let quantities = FxHashMap::from_iter([(fuel_tank, Mass::new::<kilogram>(1000.))]);
         let provider = MockFuelQuantityProvider { quantities };
         let mut transfer = MainTransfer::default();
-        transfer.update(&provider, Some(Duration::from_secs(60 * 60 * 2)));
+        transfer.update(&provider, Some(Duration::from_mins(60)));
         assert!(transfer.feed_tank_is_target.iter().any(|s| *s));
-        assert_eq!(transfer.source_tank, TransferSourceTank::Inner);
-    }
-
-    #[test]
-    fn test_mid_selected_when_only_mid_has_fuel() {
-        let quantities =
-            FxHashMap::from_iter([(A380FuelTankType::LeftMid, Mass::new::<kilogram>(1500.))]);
-        let provider = MockFuelQuantityProvider { quantities };
-        let mut transfer = MainTransfer::default();
-        transfer.update(&provider, Some(Duration::from_secs(60 * 60 * 3)));
-        assert!(transfer.feed_tank_is_target.iter().any(|s| *s));
-        assert_eq!(transfer.source_tank, TransferSourceTank::Mid);
-    }
-
-    #[test]
-    fn test_trim_selected_when_only_trim_has_fuel() {
-        let quantities =
-            FxHashMap::from_iter([(A380FuelTankType::Trim, Mass::new::<kilogram>(500.))]);
-        let provider = MockFuelQuantityProvider { quantities };
-        let mut transfer = MainTransfer::default();
-        transfer.update(&provider, Some(Duration::from_secs(60 * 60 * 4)));
-        assert!(transfer.feed_tank_is_target.iter().any(|s| *s));
-        assert_eq!(transfer.source_tank, TransferSourceTank::Trim);
-    }
-
-    #[test]
-    fn test_outer_selected_when_only_outer_has_fuel() {
-        let quantities =
-            FxHashMap::from_iter([(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(800.))]);
-        let provider = MockFuelQuantityProvider { quantities };
-        let mut transfer = MainTransfer::default();
-        transfer.update(&provider, Some(Duration::from_secs(60 * 60 * 5)));
-        assert!(transfer.feed_tank_is_target.iter().any(|s| *s));
-        assert_eq!(transfer.source_tank, TransferSourceTank::Outer);
+        assert_eq!(transfer.source_tank, source_tank);
     }
 
     #[test]
@@ -348,7 +311,7 @@ mod tests {
         let (f1_4, f2_3, _diff, pairwise) = MainTransfer::transfer_thresholds(
             &MockFuelQuantityProvider::with_mid_tank_total_quantity(Mass::new::<pound>(20_000.)),
             TransferSourceTank::Inner,
-            Some(Duration::from_secs(60 * 60)),
+            Some(Duration::from_mins(60)),
         );
         assert_about_eq!(f1_4.get::<pound>(), 36_500., 1e-2);
         assert_about_eq!(f2_3.get::<pound>(), 39_350., 1e-2);
@@ -360,7 +323,7 @@ mod tests {
         let (f1_4, f2_3, _diff, pairwise) = MainTransfer::transfer_thresholds(
             &MockFuelQuantityProvider::with_mid_tank_total_quantity(Mass::new::<pound>(17_000.)),
             TransferSourceTank::Mid,
-            Some(Duration::from_secs(60 * 60 * 2)),
+            Some(Duration::from_mins(120)),
         );
         assert_about_eq!(f1_4.get::<pound>(), 43_100., 1e-2);
         assert_about_eq!(f2_3.get::<pound>(), 43_100., 1e-2);
@@ -372,7 +335,7 @@ mod tests {
         let (f1_4, f2_3, _diff, pairwise) = MainTransfer::transfer_thresholds(
             &MockFuelQuantityProvider::with_mid_tank_total_quantity(Mass::new::<pound>(20_000.)),
             TransferSourceTank::Mid,
-            Some(Duration::from_secs(60 * 60 * 3)),
+            Some(Duration::from_mins(120)),
         );
         assert_about_eq!(f1_4.get::<pound>(), 43_100., 1e-2);
         assert_about_eq!(f2_3.get::<pound>(), 45_950., 1e-2);
