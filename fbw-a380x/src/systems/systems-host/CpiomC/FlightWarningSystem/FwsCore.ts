@@ -90,7 +90,7 @@ import {
   OisDebugDataControlEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -136,7 +136,7 @@ export interface FwsSuppressableItemDict {
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
-      FcdcSimvars &
+      FcdcBusEvents &
       FqmsBusEvents &
       FGVars &
       FmsMessageVars &
@@ -685,18 +685,18 @@ export class FwsCore {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly fcdc1FgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_fg_discrete_word_4_1'),
+  public readonly fcdc1FgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_2_1'),
   );
-  public readonly fcdc2FgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_fg_discrete_word_4_2'),
+  public readonly fcdc2FgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_2_2'),
   );
 
-  public readonly fcdc1FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_fg_discrete_word_8_1'),
+  public readonly fcdc1FgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_3_1'),
   );
-  public readonly fcdc2FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_fg_discrete_word_8_2'),
+  public readonly fcdc2FgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_3_2'),
   );
 
   public readonly fcdc1LandingFctDiscreteWord = Arinc429LocalVarConsumerSubject.create(
@@ -1740,29 +1740,29 @@ export class FwsCore {
     ([fcdc1, fcdc2, flightPhase]) =>
       flightPhase !== 1 &&
       flightPhase !== 12 &&
-      ((fcdc1.bitValueOr(22, false) && !fcdc1.bitValueOr(21, false) && !fcdc1.bitValueOr(20, false)) ||
-        (fcdc2.bitValueOr(22, false) && !fcdc2.bitValueOr(21, false) && !fcdc2.bitValueOr(20, false))),
-    this.fcdc1FgDiscreteWord4,
-    this.fcdc2FgDiscreteWord4,
+      ((fcdc1.bitValueOr(26, false) && !fcdc1.bitValueOr(25, false) && !fcdc1.bitValueOr(24, false)) ||
+        (fcdc2.bitValueOr(26, false) && !fcdc2.bitValueOr(25, false) && !fcdc2.bitValueOr(24, false))),
+    this.fcdc1FgDiscreteWord2,
+    this.fcdc2FgDiscreteWord2,
     this.flightPhase,
   );
   public readonly land3FailPassiveInop = MappedSubject.create(
     ([fcdc1, fcdc2, flightPhase]) =>
       flightPhase !== 1 &&
       flightPhase !== 12 &&
-      ((fcdc1.bitValueOr(21, false) && !fcdc1.bitValueOr(20, false)) ||
-        (fcdc2.bitValueOr(21, false) && !fcdc2.bitValueOr(20, false))),
-    this.fcdc1FgDiscreteWord4,
-    this.fcdc2FgDiscreteWord4,
+      ((fcdc1.bitValueOr(25, false) && !fcdc1.bitValueOr(24, false)) ||
+        (fcdc2.bitValueOr(25, false) && !fcdc2.bitValueOr(24, false))),
+    this.fcdc1FgDiscreteWord2,
+    this.fcdc2FgDiscreteWord2,
     this.flightPhase,
   );
   public readonly land2Inop = MappedSubject.create(
     ([fcdc1, fcdc2, flightPhase]) =>
       flightPhase !== 1 &&
       flightPhase !== 12 &&
-      (fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false) || (fcdc1.isInvalid() && fcdc2.isInvalid())),
-    this.fcdc1FgDiscreteWord4,
-    this.fcdc2FgDiscreteWord4,
+      (fcdc1.bitValueOr(24, false) || fcdc2.bitValueOr(24, false) || (fcdc1.isInvalid() && fcdc2.isInvalid())),
+    this.fcdc1FgDiscreteWord2,
+    this.fcdc2FgDiscreteWord2,
     this.flightPhase,
   );
 
@@ -3495,7 +3495,7 @@ export class FwsCore {
     const v1Threshold = v1 - 4;
     const v1ConfirmNodeStatus = this.v1SpeedConfirmNode.read();
     this.v1SpeedConfirmNode.write(
-      v1 &&
+      v1 > 0 &&
         (this.adr1Cas.get().valueOr(0) > v1Threshold ||
           this.adr2Cas.get().valueOr(0) > v1Threshold ||
           this.adr3Cas.get().valueOr(0) > v1Threshold),
@@ -3691,21 +3691,19 @@ export class FwsCore {
 
     // Triple clicks from FCDC: Capability downgrade or BTV exit missed
     this.fcdcDualFaultTripleClick.write(
-      this.fcdc1FgDiscreteWord8.get().isInvalid() && this.fcdc2FgDiscreteWord8.get().isInvalid(),
+      this.fcdc1FgDiscreteWord2.get().isInvalid() && this.fcdc2FgDiscreteWord2.get().isInvalid(),
       deltaTime,
     );
 
     const fcdcTripleClickDemand =
-      (this.fcdc1FgDiscreteWord8.get().bitValueOr(11, false) ||
-        this.fcdc2FgDiscreteWord8.get().bitValueOr(11, false) ||
-        this.fcdc1FgDiscreteWord8.get().bitValueOr(12, false) ||
-        this.fcdc2FgDiscreteWord8.get().bitValueOr(12, false) ||
+      (this.fcdc1FgDiscreteWord3.get().bitValueOr(16, false) ||
+        this.fcdc2FgDiscreteWord3.get().bitValueOr(16, false) ||
         this.fcdcDualFaultTripleClick.read()) &&
       flightPhase !== 10 &&
       flightPhase !== 11;
 
     const btvTripleClick =
-      this.fcdc1FgDiscreteWord8.get().bitValueOr(13, false) || this.fcdc2FgDiscreteWord8.get().bitValueOr(13, false);
+      this.fcdc1FgDiscreteWord3.get().bitValueOr(17, false) || this.fcdc2FgDiscreteWord3.get().bitValueOr(17, false);
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
@@ -3715,9 +3713,7 @@ export class FwsCore {
     }
 
     // ROLLOUT FAULT
-    this.rollOutFault.set(
-      this.fcdc1FgDiscreteWord8.get().bitValueOr(18, false) || this.fcdc2FgDiscreteWord8.get().bitValueOr(18, false),
-    );
+    this.rollOutFault.set(false);
 
     // A/THR OFF
     const athrEngagedOrArmed = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;

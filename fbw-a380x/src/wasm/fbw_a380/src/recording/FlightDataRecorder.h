@@ -3,9 +3,6 @@
 #include <fstream>
 
 #include "../interface/FuelSystemData.h"
-#include "../model/AutopilotLaws.h"
-#include "../model/AutopilotStateMachine.h"
-#include "../model/Autothrust.h"
 #include "../prim/Prim.h"
 #include "../sec/Sec.h"
 #include "LocalVariable.h"
@@ -26,9 +23,6 @@ class FlightDataRecorder {
               const AircraftSpecificData& aircraftSpecificData,
               Prim (&prims)[3],
               Sec (&secs)[3],
-              const AutopilotStateMachine& autopilotStateMachine,
-              const AutopilotLawsModelClass& autopilotLaws,
-              const Autothrust& autoThrust,
               const FuelSystemData& fuelSystemData);
 
   void terminate();
@@ -50,7 +44,9 @@ class FlightDataRecorder {
 
   void loadConfiguration();
 
-  void writePrim(Prim& prim);
+  void writePrimOutputs(Prim& prim);
+
+  void writeMasterPrim(int masterPrim, Prim& prim);
 
   void writeSec(Sec& sec);
 };
