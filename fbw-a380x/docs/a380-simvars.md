@@ -13,7 +13,9 @@
     - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
-  - [Flaps / Slats (ATA 27)](#flight-controls-ata-27)
+  - [Flight Controls ATA 27](#flight-controls-ata-27)
+    - [Flaps and Slats](#flaps-and-slats)
+    - [Electronic Flight Control System EFCS](#electronic-flight-control-system-efcs)
   - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
@@ -449,6 +451,8 @@
 
 ## Auto Flight System ATA 22
 
+### Flight Management System (FMS)
+
 - A380X_MFD_{side}_ACTIVE_PAGE
     - String
     - URI of activate page on respective MFD (e.g. fms/active/init)
@@ -458,12 +462,6 @@
     - Number
     - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
 
-- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
-    - Number
-    - The short term managed speed displayed on the PFD
-
-## Flight Management System ATA 22
-
 - A32NX_FMS_SWITCHING_KNOB
     - FMS used
     - Position (0-2)
@@ -472,6 +470,467 @@
 - A380X_FMS_DEST_EFOB_BELOW_MIN
     - Bool
     - Indicates if the FMS predicted fuel at destination is below minimum.
+
+- A380X_FM_APPROACH_HEADWIND_COMPONENT
+    - Arinc429<Knots>
+    - The headwind component calculated by the fms based on the inserted approach wind and runway. Negative value indicates a tailwind component.
+
+### Flight Guidance and Flight Envelope (FG/FE)
+
+#### Flight Control Data Concentrators (FCDCs)
+
+The FCDCs receive FG and FE data from the PRIMs and from these compute warning data for the FWC
+and the auto flight system approach capacity for display on the PFDs.
+
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    -   | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        |  11 | AP 1 Engaged                      |
+        |  12 | AP 2 Engaged                      |
+        |  13 | FD Engaged                        |
+        |  14 | A/THR Engaged                     |
+        |  15 | A/THR Active                      |
+        |  16 | Spare                             |
+        |  17 | LAND Mode Armed                   |
+        |  18 | LAND Mode Active                  |
+        |  19 | GA Active                         |
+        |  20 | BTV Active                        |
+        |  21 |                                   |
+        |  -  | Spare                             |
+        |  23 |                                   |
+        |  24 | Land 2 Capacity                   |
+        |  25 | Land 3 Fail Passive Capacity      |
+        |  26 | Land 3 Fail Op. Capacity          |
+        |  27 | F-APP Capacity                    |
+        |  28 | F-APP+RAW Capacity                |
+        |  29 | RAW ONLY Capacity                 |
+
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    -   | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        |  11 | Low energy Warning                |
+        |  12 | PITCH PITCH Warning               |
+        |  13 | BANK BANK Warning                 |
+        |  14 | Reactive Windshear Warning        |
+        |  15 | Reactive Windshear Fault          |
+        |  16 | Triple Click demand               |
+        |  17 | Triple Click demand (BTV)         |
+
+#### Primary Computers (PRIMs)
+
+The PRIMs perform the flight guidance and flight envelope functions.
+
+##### FE Function
+
+- A32NX_PRIM_{number}_GAMMA_A
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The aerodynamic flight path angle
+
+- A32NX_PRIM_{number}_GAMMA_T
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The energy angle
+
+- A32NX_PRIM_{number}_V_LS
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The minimum selectable speed Vls
+
+- A32NX_PRIM_{number}_V_STALL_1G
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The 1g stall speed
+
+- A32NX_PRIM_{number}_SPEED_TREND
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The airspeed trend
+
+- A32NX_PRIM_{number}_V_3
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The PFD F speed
+
+- A32NX_PRIM_{number}_V_4
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The PFD S speed
+
+- A32NX_PRIM_{number}_V_MAN
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The PFD green dot speed
+
+- A32NX_PRIM_{number}_V_MAX
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The maximum allowable speed
+
+- A32NX_PRIM_{number}_V_FE_NEXT
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The maximum allowable speed of the next flap/slat config
+
+##### FG Function
+
+
+- A32NX_PRIM_{number}_PFD_SELECTED_SPEED
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The speed target for display on the PFD
+
+- A32NX_PRIM_{number}_PFD_SHORT_TERM_MANAGED_SPEED
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The short term managed speed target for display on the PFD
+
+- A32NX_PRIM_{number}_SELECTED_AIRSPEED
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The selected speed target for display on the FCU
+
+- A32NX_PRIM_{number}_SELECTED_MACH
+    - Arinc429<unitless>
+    - number: 1, 2 or 3
+    - The selected mach target for display on the FCU
+
+- A32NX_PRIM_{number}_SELECTED_HEADING
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The selected heading for display on the FCU, PFD and ND
+
+- A32NX_PRIM_{number}_SELECTED_TRACK
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The selected track for display on the FCU, PFD and ND
+
+- A32NX_PRIM_{number}_SELECTED_ALTITUDE
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - The selected track for display on the FCU, PFD and VD
+
+- A32NX_PRIM_{number}_SELECTED_VERTICAL_SPEED
+    - Arinc429<feet/min>
+    - number: 1, 2 or 3
+    - The selected heading for display on the FCU, PFD and ND
+
+- A32NX_PRIM_{number}_SELECTED_FPA
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The selected track for display on the FCU, PFD and ND
+
+- A32NX_PRIM_{number}_PRESEL_MACH
+    - Arinc429<unitless>
+    - number: 1, 2 or 3
+    - The preselected mach target from the FMS, for display on the PFD
+
+- A32NX_PRIM_{number}_PRESEL_SPEED
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The preselected speed target from the FMS, for display on the PFD
+
+- A32NX_PRIM_{number}_ROLL_FD_COMMAND_1
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director roll command for the left side
+
+- A32NX_PRIM_{number}_PITCH_FD_COMMAND_1
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director pitch command for the left side
+
+- A32NX_PRIM_{number}_YAW_FD_COMMAND_1
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director yaw command for the left side
+
+- A32NX_PRIM_{number}_ROLL_FD_COMMAND_2
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director roll command for the right side
+
+- A32NX_PRIM_{number}_PITCH_FD_COMMAND_2
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director pitch command for the right side
+
+- A32NX_PRIM_{number}_YAW_FD_COMMAND_2
+    - Arinc429<degrees>
+    - number: 1, 2 or 3
+    - The flight director yaw command for the right side
+
+- A32NX_PRIM_{number}_FM_ALTITUDE_CONSTRAINT
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - The altitude constraint for display on the PFD and VD, if applicable
+
+- A32NX_PRIM_{number}_SPEED_MARGIN_HIGH
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - The upper speed margin for display on the PFD, if applicable
+
+- A32NX_PRIM_{number}_SPEED_MARGIN_LOW
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - The lower speed margin for display on the PFD, if applicable
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_1
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 1 of the PRIM, carrying information about the AP/FD status of this PRIM
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | AP 1 Engaged                      |
+        | 12  | AP 2 Engaged                      |
+        | 13  | FD 1 Engaged                      |
+        | 14  | FD 2 Engaged                      |
+        | 15  | AP 1 Inop.                        |
+        | 16  | AP 2 Inop.                        |
+        | 17  | FD 1 Inop.                        |
+        | 18  | FD 2 Inop.                        |
+        | 19  |                                   |
+        | -   | Spare                             |
+        | 22  |                                   |
+        | 23  | LAND Mode Active                  |
+        | 24  | Spare                             |
+        | 25  | Spare                             |
+        | 26  | Spare                             |
+        | 27  | Land 2 Capability                 |
+        | 28  | Land 3 Fail Passive Capability    |
+        | 29  | Land 3 Fail Op. Capability        |
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_2
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 2 of the PRIM, carrying information about the AP/FD
+        armed modes
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | ALT Acq Armed                     |
+        | 12  | ALT Acq Arm possible              |
+        | 13  | G/S Armed                         |
+        | 14  | APP DES Armed                     |
+        | 15  | CLB Armed                         |
+        | 16  | DES Armed                         |
+        | 17  | OP CLB Armed                      |
+        | 18  | TCAS Armed                        |
+        | 19  |                                   |
+        | -   | Spare                             |
+        | 21  |                                   |
+        | 22  | NAV Armed                         |
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_3
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 3 of the PRIM, carrying information about the AP/FD
+        longitudinal modes
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | CLB Active                        |
+        | 12  | DES Active                        |
+        | 13  | OP CLB Active                     |
+        | 14  | OP DES Active                     |
+        | 15  | PITCH TO Active                   |
+        | 16  | PITCH GA Active                   |
+        | 17  | VS Active                         |
+        | 18  | FPA Active                        |
+        | 19  | ALT ACQ Active                    |
+        | 20  | ALT HOLD Active                   |
+        | 21  | GS CAPT Active                    |
+        | 22  | GS TRK Active                     |
+        | 23  | APP DES Active                    |
+        | 24  | FLARE Active                      |
+        | 25  | TCAS Active                       |
+        | 26  | Spare                             |
+        | 27  | Spare                             |
+        | 28  | ALT CSTR Applicable               |
+        | 29  | ALT CRZ                           |
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_4
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 4 of the PRIM, carrying information about the AP/FD
+        lateral modes
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | RWY Active                        |
+        | 12  | NAV Active                        |
+        | 13  | LOC CAPT Active                   |
+        | 14  | LOC TRK Active                    |
+        | 15  | ROLL GA Active                    |
+        | 16  | HDG Active                        |
+        | 17  | TRK Active                        |
+        | 18  | RWY LOC Submode Active            |
+        | 19  | RWY TRK Submode Active            |
+        | 20  |                                   |
+        | -   | Spare                             |
+        | 24  |                                   |
+        | 25  | ALIGN Submode Active              |
+        | 26  | ROLL OUT Submode Active           |
+        | 27  | Spare                             |
+        | 28  | Spare                             |
+        | 29  | Backbeam Selected                 |
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_5
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 5 of the PRIM, carrying information about the AP/FD
+        miscellaneous modes
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | TRK/FPA Mode Active               |
+        | 12  | MACH Selection Active             |
+        | 13  | True Mode Active                  |
+        | 14  | Metric Alt Active                 |
+        | 15  | Spare                             |
+        | 16  | Spare                             |
+        | 17  | Auto SPD Control Active           |
+        | 18  | Manual SPD Control Active         |
+        | 19  | Spare                             |
+        | 20  | Spare                             |
+        | 21  | ILS Tune Inhibit                  |
+        | 22  | Spare                             |
+        | 23  | Spare                             |
+        | 24  | Spare                             |
+        | 25  | Spare                             |
+        | 26  | Pitch FD Bars Flashing            |
+        | 27  | Roll FD Bars Flashing             |
+        | 28  | AP/FD Mode Reversion              |
+        | 29  | V/S Target not held               |
+
+- A32NX_PRIM_{number}_FG_DISCRETE_WORD_6
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG Discrete word 6 of the PRIM, carrying information about the AP/FD
+        caution and advisory modes
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | TCAS large box on FMA             |
+        | 12  | TCAS RA Inihibited                |
+        | 13  | TRK FPA Deselected                |
+        | 14  | TCAS RA Corrective                |
+        | 15  | FCU ALT ABV A/C                   |
+        | 16  | FCU ALT BLW A/C                   |
+        | 17  |                                   |
+        | -   | Spare                             |
+        | 29  |                                   |
+
+- A32NX_PRIM_{number}_FG_ATS_DISCRETE_WORD
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG A/THR discrete word.
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | A/THR Engaged                     |
+        | 12  | A/THR Active                      |
+        | 13  | A/THR Inop.                       |
+        | 14  | A/THR Limited                     |
+        | 15  | Spare                             |
+        | 16  | Spare                             |
+        | 17  | Spare                             |
+        | 18  | SPD/MACH Mode Active              |
+        | 19  | RETARD Mode Active                |
+        | 20  | THRUST Mode Active                |
+        | 21  | Spare                             |
+        | 22  | Spare                             |
+        | 23  | Spare                             |
+        | 24  | ALPHA FLOOR Mode Active           |
+        | 25  |                                   |
+        | -   | Spare                             |
+        | 29  |                                   |
+
+- A32NX_PRIM_{number}_FG_ATS_FMA_DISCRETE_WORD
+    - Arinc429<feet>
+    - number: 1, 2 or 3
+    - FG A/THR FMA discrete word.
+        | Bit |            Description            |
+        |:---:|:---------------------------------:|
+        | 11  | TOGA Display                      |
+        | 12  | MCT Display                       |
+        | 13  | FLX Display                       |
+        | 14  | CLB Display                       |
+        | 15  | THR Display                       |
+        | 16  | IDLE Display                      |
+        | 17  | AFLOOR Display                    |
+        | 18  | TOGALK Display                    |
+        | 19  | SPEED Display                     |
+        | 20  | MACH Display                      |
+        | 21  | DES Display                       |
+        | 22  | NOISE Display                     |
+        | 23  | DCLB Display                      |
+        | 24  | STAR Display                      |
+        | 25  | Spare                             |
+        | 26  | ASYM Display                      |
+        | 27  | CLB Demand Display                |
+        | 28  | MCT Demand Display                |
+        | 29  | TOGA Demand Display               |
+        | 23  | LOC Armed                         |
+        | 24  | RWY Armed                         |
+        | 25  |                                   |
+        | -   | Spare                             |
+        | 27  |                                   |
+        | 28  | LAND Armed                        |
+        | 29  | Spare                             |
+
+#### Flight Control Unit (FCU)
+
+- A32NX_FCU_EFIS_{side}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - Side: L or R
+    - Information related to the ND mode and range selections
+       | Bit |            Description            |
+       |:---:|:---------------------------------:|
+       |     | EFIS Mode Selection               |
+       | 11  | PLAN                              |
+       | 12  | ARC                               |
+       | 13  | ROSE NAV                          |
+       | 14  | ROSE VOR                          |
+       | 15  | ROSE ILS                          |
+       | 16  |                                   |
+       | -   | Spare                             |
+       | 18  |                                   |
+       |     | EFIS Range Selection              |
+       | 19  | ZOOM 0.2                          |
+       | 20  | ZOOM 0.5                          |
+       | 21  | ZOOM 1                            |
+       | 22  | ZOOM 2                            |
+       | 23  | ZOOM 5                            |
+       | 24  | 10                                |
+       | 25  | 20                                |
+       | 26  | 40                                |
+       | 27  | 80                                |
+       | 28  | 160                               |
+       | 29  | 320                               |
+       |     | 640 (All others false)            |
+
+- A32NX_FCU_EFIS_{side}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - Side: L or R
+    - Information related to EFIS selections
+       | Bit |            Description            |
+       |:---:|:---------------------------------:|
+       | 11  | Baro is STD                       |
+       | 12  | Baro is QNH                       |
+       | 13  | Baro is inHG                      |
+       | 14  | LS On                             |
+       | 15  | VV On                             |
+       | 16  | TAXI On                           |
+       | 17  | CSTR On                           |
+       | 18  | WPT On                            |
+       | 19  | VORD On                           |
+       | 20  | NDB  On                           |
+       | 21  | ARPT On                           |
+       | 22  | Spare                             |
+       | 23  | WX On                             |
+       | 24  | TERR On                           |
+       | 25  | TRAF On                           |
+       | 26  | NAVAID 1 ADF                      |
+       | 27  | NAVAID 2 ADF                      |
+       | 28  | NAVAID 1 VOR                      |
+       | 29  | NAVAID 2 VOR                      |
 
 ## Communications ATA 23
 
@@ -838,6 +1297,53 @@
 
 ## Flight Controls (ATA 27)
 
+### Electronic Flight Control System (EFCS)
+
+#### Flight Control Data Concentrators (FCDCs)
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Pitch Normal Law Active                  |
+      | 12  | Pitch Alternate Law 1 Active             |
+      | 13  | Pitch Alternate Law 2 Active             |
+      | 14  | Pitch Alternate Law 1A Active            |
+      | 15  | Pitch Direct Law Active                  |
+      | 16  | Roll Normal Law Active                   |
+      | 17  | Roll Direct Law Active                   |
+      | 18  |                                          |
+      | 19  | ELAC 1 Pitch Fault                       |
+      | 20  | ELAC 1 Roll Fault                        |
+      | 21  | ELAC 2 Pitch Fault                       |
+      | 22  | ELAC 2 Roll Fault                        |
+      | 23  | ELAC 1 Fault                             |
+      | 24  | ELAC 2 Fault                             |
+      | 25  | SEC 1 Fault                              |
+      | 26  | SEC 2 Fault                              |
+      | 27  |                                          |
+      | 28  | FCDC Opposite Fault                      |
+      | 29  | SEC 3 Fault                              |
+
+#### Primary Computers (PRIMs)
+
+- A32NX_PRIM_{number}_V_ALPHA_LIM
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The speed associated with alpha lim
+
+- A32NX_PRIM_{number}_V_ALPHA_PROT
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The speed associated with alpha prot
+
+- A32NX_PRIM_{number}_V_STALL_WARN
+    - Arinc429<knots>
+    - number: 1, 2 or 3
+    - The speed associated with the stall warning
+
+### Flaps and Slats
+
 - A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
     - Percent
     - Indicates the angle of the flaps out of 40 degrees
@@ -873,68 +1379,6 @@
         - RIGHT
     - Number
         - From 1 (inboard) to 8
-
-- A32NX_FCDC_{number}_DISCRETE_WORD_1
-    - Arinc429<Discrete>
-    - | Bit |                Description               |
-      |:---:|:----------------------------------------:|
-      | 11  | Pitch Normal Law Active                  |
-      | 12  | Pitch Alternate Law 1 Active             |
-      | 13  | Pitch Alternate Law 2 Active             |
-      | 14  | Pitch Alternate Law 1A Active            |
-      | 15  | Pitch Direct Law Active                  |
-      | 16  | Roll Normal Law Active                   |
-      | 17  | Roll Direct Law Active                   |
-      | 18  |                                          |
-      | 19  | ELAC 1 Pitch Fault                       |
-      | 20  | ELAC 1 Roll Fault                        |
-      | 21  | ELAC 2 Pitch Fault                       |
-      | 22  | ELAC 2 Roll Fault                        |
-      | 23  | ELAC 1 Fault                             |
-      | 24  | ELAC 2 Fault                             |
-      | 25  | SEC 1 Fault                              |
-      | 26  | SEC 2 Fault                              |
-      | 27  |                                          |
-      | 28  | FCDC Opposite Fault                      |
-      | 29  | SEC 3 Fault                              |
-
-- A32NX_FCDC_{number}_FG_DISCRETE_WORD_4
-    - Arinc429<Discrete>
-    - Bits marked with ? are guessed/unknown
-      | Bit |            Description            |
-      |:---:|:---------------------------------:|
-      | 11  | AP Instinctive Disc               |
-      | 12  | AP Engaged                        |
-      | 13  | FD Engaged                        |
-      | 14  | LAND TRK mode active              |
-      | 16  | LAND 2 Capability                 |
-      | 17  | LAND 3 FAIL PASSIVE Capability    |
-      | 18  | LAND 3 FAIL OP Capability         |
-      | 19  | AP Inop                           |
-      | 20  | LAND 2 Inop                       |
-      | 21  | LAND 3 FAIL PASSIVE Inop          |
-      | 22  | LAND 3 FAIL OP Inop               |
-      | 23  | LAND 2 Capacity                   |
-      | 24  | LAND 3 FAIL PASSIVE Capacity      |
-      | 25  | LAND 3 FAIL OP Capacity           |
-      | 26  | RWY Heading memorized             |
-      | 27  | ? FD Auto Disengage Command       |
-      | 28  | AP/FD Mode reversion              |
-      | 29  | V/S Target not held               |
-
-- A32NX_FCDC_{number}_FG_DISCRETE_WORD_8
-    - Arinc429<Discrete>
-    - Bits marked with ? are guessed/unknown
-      | Bit |            Description            |
-      |:---:|:---------------------------------:|
-      | 11  | Capability Downgrade triple click |
-      | 12  | Mode reversion triple click       |
-      | 13  | BTV triple click                  |
-      | 14  | AP 1 INOP                         |
-      | 15  | AP 2 INOP                         |
-      | 16  | FD 1 INOP                         |
-      | 17  | FD 1 INOP                         |
-      | 18  | ROLLOUT INOP                      |
 
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
     - {number} is 1 or 2

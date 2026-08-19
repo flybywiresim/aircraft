@@ -32,6 +32,7 @@ module.exports = {
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
     msfsAvionicsInstrument('HUD'),
+    msfsAvionicsInstrument('FCU'),
     msfsAvionicsInstrument('MFD'),
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('OIT'),
