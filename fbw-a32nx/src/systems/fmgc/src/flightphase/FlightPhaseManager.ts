@@ -16,9 +16,10 @@ import {
 } from '@fmgc/flightphase/Phase';
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
-import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
+import { FmgcFlightPhase, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
+import { EngineOutEvents } from '../events/EngineOutEvents';
 
 export interface FlightPhaseManagerEvents {
   /** The FMGC flight phase. */
@@ -32,29 +33,32 @@ function canInitiateDes(distanceToDestination: number): boolean {
 
   // Can initiate descent? OR Can initiate early descent?
   return (
-    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
-    (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200)
+    cruiseFl > 0 &&
+    (((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
+      (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200))
   );
 }
 
 export class FlightPhaseManager {
-  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+  private readonly sub = this.bus.getSubscriber<EngineOutEvents & NavigationEvents>();
 
   private readonly pressureAltitude = ConsumerValue.create(this.sub.on('fms_nav_pressure_altitude'), null);
+
+  private readonly isEngineOutCondition = ConsumerValue.create(this.sub.on('fms_engine_out_active'), false);
 
   private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
   private readonly activePhase = Subject.create(FmgcFlightPhase.Preflight);
 
   private phases: { [key in FmgcFlightPhase]: Phase } = {
-    [FmgcFlightPhase.Preflight]: new PreFlightPhase(this.pressureAltitude),
-    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(this.pressureAltitude),
-    [FmgcFlightPhase.Climb]: new ClimbPhase(this.pressureAltitude),
-    [FmgcFlightPhase.Cruise]: new CruisePhase(this.pressureAltitude),
-    [FmgcFlightPhase.Descent]: new DescentPhase(this.pressureAltitude),
-    [FmgcFlightPhase.Approach]: new ApproachPhase(this.pressureAltitude),
-    [FmgcFlightPhase.GoAround]: new GoAroundPhase(this.pressureAltitude),
-    [FmgcFlightPhase.Done]: new DonePhase(this.pressureAltitude),
+    [FmgcFlightPhase.Preflight]: new PreFlightPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Climb]: new ClimbPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Cruise]: new CruisePhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Descent]: new DescentPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Approach]: new ApproachPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.GoAround]: new GoAroundPhase(this.bus, this.pressureAltitude),
+    [FmgcFlightPhase.Done]: new DonePhase(this.bus, this.pressureAltitude),
   };
 
   private phaseChangeListeners: Array<(prev: FmgcFlightPhase, next: FmgcFlightPhase) => void> = [];
@@ -185,9 +189,10 @@ export class FlightPhaseManager {
 
   handleNewDestinationAirportEntered(): void {
     if (this.phase === FmgcFlightPhase.GoAround) {
-      const accAlt = isAllEngineOn()
-        ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_ACC_ALT')
-        : Arinc429Word.fromSimVarValue('L:A32NX_FM1_MISSED_EO_ACC_ALT');
+      // FIXME: EO ACC ALT is advisory only.
+      const accAlt = this.isEngineOutCondition.get()
+        ? Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT')
+        : Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
       if (Simplane.getAltitude() > accAlt.valueOr(0)) {
         this.changePhase(FmgcFlightPhase.Climb);
       }

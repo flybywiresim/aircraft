@@ -226,22 +226,24 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const fp = this.loadedFlightPlan;
+    if (!this.creationInProgress) {
+      const fp = this.loadedFlightPlan;
 
-    const fpIndex = this.loadedFlightPlanIndex.get();
-    const pd = fp?.performanceData;
+      const fpIndex = this.loadedFlightPlanIndex.get();
+      const pd = fp?.performanceData;
 
-    this.tropopause.set(pd?.tropopause.get() ?? null);
-    this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
-    this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
-    this.flightNumber.set(
-      this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
-    );
-    this.tripWind.set(pd?.pilotTripWind.get() ?? null);
-    this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
-    this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
-    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
-    this.costIndex.set(pd?.costIndex.get() ?? null);
+      this.tropopause.set(pd?.tropopause.get() ?? null);
+      this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
+      this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
+      this.flightNumber.set(
+        this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
+      );
+      this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+      this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
+      this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
+      this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
+      this.costIndex.set(pd?.costIndex.get() ?? null);
+    }
   }
 
   protected onNewData() {
@@ -518,7 +520,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number>
                 dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
                 dataHandlerDuringValidation={async (v) =>
-                  v ? this.props.fmcService.master.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
+                  v ? this.props.fmcService.master.trySetCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                 }
                 mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}

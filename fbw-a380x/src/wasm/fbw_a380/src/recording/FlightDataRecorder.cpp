@@ -29,10 +29,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 const AircraftSpecificData& aircraftSpecificData,
                                 Prim (&prims)[3],
                                 Sec (&secs)[3],
-                                Fac (&facs)[2],
-                                const AutopilotStateMachine& autopilotStateMachine,
-                                const AutopilotLawsModelClass& autopilotLaws,
-                                const Autothrust& autoThrust,
                                 const FuelSystemData& fuelSystemData) {
   // check if enabled
   if (!idIsEnabled->get()) {
@@ -50,36 +46,32 @@ void FlightDataRecorder::update(const BaseData& baseData,
 
   // write PRIM data
   for (int i = 0; i < NUMBER_OF_PRIM_TO_WRITE; ++i) {
-    writePrim(prims[i]);
+    writePrimOutputs(prims[i]);
   }
+
+  int masterPrim = 0;
+  if (prims[0].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 0;
+  } else if (prims[1].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 1;
+  } else if (prims[2].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 2;
+  } else {
+    masterPrim = 0;
+  }
+
+  writeMasterPrim(masterPrim, prims[masterPrim]);
 
   // write SEC data
   for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
     writeSec(secs[i]);
   }
 
-  // write Pseudo FACs data
-  for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
-    writeFac(facs[i]);
-  }
-
-  // write AP state machine data
-  auto autopilotStateMachineOut = autopilotStateMachine.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotStateMachineOut), sizeof(autopilotStateMachineOut));
-
-  // write AP laws data
-  auto autopilotLawsOut = autopilotLaws.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotLawsOut), sizeof(autopilotLawsOut));
-
-  // write ATHR data
-  auto autoThrustOut = autoThrust.getExternalOutputs().out;
-  fileStream->write((char*)(&autoThrustOut), sizeof(autoThrustOut));
-
   // write fuel system data
   fileStream->write((char*)(&fuelSystemData), sizeof(fuelSystemData));
 }
 
-void FlightDataRecorder::writePrim(Prim& prim) {
+void FlightDataRecorder::writePrimOutputs(Prim& prim) {
   auto bus_outputs = prim.getBusOutputs();
   fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
   auto discrete_outputs = prim.getDiscreteOutputs();
@@ -88,21 +80,24 @@ void FlightDataRecorder::writePrim(Prim& prim) {
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 
+void FlightDataRecorder::writeMasterPrim(int masterPrim, Prim& prim) {
+  auto primDebugOutputs = prim.getDebugOutputs();
+  fileStream->write((char*)(&masterPrim), sizeof(masterPrim));
+  fileStream->write((char*)(&primDebugOutputs.general_logic), sizeof(primDebugOutputs.general_logic));
+  fileStream->write((char*)(&primDebugOutputs.flight_envelope), sizeof(primDebugOutputs.flight_envelope));
+  fileStream->write((char*)(&primDebugOutputs.fg_logic), sizeof(primDebugOutputs.fg_logic));
+  fileStream->write((char*)(&primDebugOutputs.fg_mode_logic), sizeof(primDebugOutputs.fg_mode_logic));
+  fileStream->write((char*)(&primDebugOutputs.fg_laws), sizeof(primDebugOutputs.fg_laws));
+  fileStream->write((char*)(&primDebugOutputs.fctl_logic), sizeof(primDebugOutputs.fctl_logic));
+  fileStream->write((char*)(&primDebugOutputs.laws), sizeof(primDebugOutputs.laws));
+}
+
 void FlightDataRecorder::writeSec(Sec& sec) {
   auto bus_outputs = sec.getBusOutputs();
   fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
   auto discrete_outputs = sec.getDiscreteOutputs();
   fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
   auto analog_outputs = sec.getAnalogOutputs();
-  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
-}
-
-void FlightDataRecorder::writeFac(Fac& fac) {
-  auto bus_outputs = fac.getBusOutputs();
-  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
-  auto discrete_outputs = fac.getDiscreteOutputs();
-  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
-  auto analog_outputs = fac.getAnalogOutputs();
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 

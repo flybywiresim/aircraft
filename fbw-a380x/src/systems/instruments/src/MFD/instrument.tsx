@@ -15,7 +15,7 @@ import { FmcService } from './FMC/FmcService';
 import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
-import { FailuresConsumer, RaBusPublisher } from '@flybywiresim/fbw-sdk';
+import { EnginePublisher, FailuresConsumer, RaBusPublisher } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
@@ -23,6 +23,10 @@ import { FmsMessagePublisher } from '../MsfsAvionicsCommon/providers/FmsMessageP
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { dataStatusUri } from './shared/utils';
+import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
+import { PrimFgBusPublisher } from '@shared/publishers/PrimFgPublisher';
+import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -45,6 +49,8 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
+  private readonly fcuEfisBusPublisher = new FcuEfisCpBusPublisher(this.bus);
+
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
   private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
@@ -59,6 +65,12 @@ class MfdInstrument implements FsInstrument {
 
   private readonly failuresConsumer = new FailuresConsumer();
 
+  private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
+
+  private readonly primFgPublisher = new PrimFgBusPublisher(this.bus);
+
+  private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
+
   constructor(public readonly instrument: BaseInstrument) {
     this.backplane.addPublisher('mfd', this.simVarPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
@@ -68,6 +80,10 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
     this.backplane.addPublisher('fqms', this.fqmsPublisher);
+    this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
+    this.backplane.addPublisher('fcu', this.fcuEfisBusPublisher);
+    this.backplane.addPublisher('primFg', this.primFgPublisher);
+    this.backplane.addPublisher('primFctl', this.primFctlPublisher);
 
     this.fmcService = new FmcService(
       this.bus,
@@ -134,6 +150,7 @@ class MfdInstrument implements FsInstrument {
     this.failuresConsumer.register(A380Failure.FmcA);
     this.failuresConsumer.register(A380Failure.FmcB);
     this.failuresConsumer.register(A380Failure.FmcC);
+    this.primChoiceProvider.init();
   }
 
   /**

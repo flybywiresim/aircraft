@@ -10,8 +10,9 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
-#include "../model/A380FacComputer_types.h"
-#include "../model/A380PrimComputer_types.h"
+#include "../model/A380FadecComputer_types.h"
+#include "../model/A380FcuComputer_types.h"
+#include "../model/A380PrimComputerGeneralLogic_types.h"
 #include "../model/A380SecComputer_types.h"
 
 class SimConnectInterface {
@@ -54,6 +55,7 @@ class SimConnectInterface {
     A32NX_FCU_AP_DISCONNECT_PUSH,
     A32NX_FCU_ATHR_PUSH,
     A32NX_FCU_ATHR_DISCONNECT_PUSH,
+    A32NX_FCU_FD_PUSH,
     A32NX_FCU_SPD_INC,
     A32NX_FCU_SPD_DEC,
     A32NX_FCU_SPD_SET,
@@ -66,8 +68,7 @@ class SimConnectInterface {
     A32NX_FCU_HDG_PUSH,
     A32NX_FCU_HDG_PULL,
     A32NX_FCU_TRK_FPA_TOGGLE_PUSH,
-    A32NX_FCU_TO_AP_HDG_PUSH,
-    A32NX_FCU_TO_AP_HDG_PULL,
+    A32NX_FCU_TRUE_TOGGLE_PUSH,
     A32NX_FCU_ALT_INC,
     A32NX_FCU_ALT_DEC,
     A32NX_FCU_ALT_SET,
@@ -75,16 +76,67 @@ class SimConnectInterface {
     A32NX_FCU_ALT_PULL,
     A32NX_FCU_ALT_INCREMENT_TOGGLE,
     A32NX_FCU_ALT_INCREMENT_SET,
+    A32NX_FCU_METRIC_ALT_TOGGLE_PUSH,
     A32NX_FCU_VS_INC,
     A32NX_FCU_VS_DEC,
     A32NX_FCU_VS_SET,
     A32NX_FCU_VS_PUSH,
     A32NX_FCU_VS_PULL,
-    A32NX_FCU_TO_AP_VS_PULL,
     A32NX_FCU_LOC_PUSH,
     A32NX_FCU_APPR_PUSH,
-    A32NX_FCU_EXPED_PUSH,
+    A32NX_FCU_ALT_BUTTON_PUSH,
+    A32NX_FCU_EFIS_L_RANGE_INC,
+    A32NX_FCU_EFIS_L_RANGE_DEC,
+    A32NX_FCU_EFIS_L_RANGE_SET,
+    A32NX_FCU_EFIS_L_MODE_INC,
+    A32NX_FCU_EFIS_L_MODE_DEC,
+    A32NX_FCU_EFIS_L_MODE_SET,
+    A32NX_FCU_EFIS_L_VV_PUSH,
+    A32NX_FCU_EFIS_L_LS_PUSH,
+    A32NX_FCU_EFIS_L_TAXI_PUSH,
+    A32NX_FCU_EFIS_L_BARO_INC,
+    A32NX_FCU_EFIS_L_BARO_DEC,
+    A32NX_FCU_EFIS_L_BARO_SET,
+    A32NX_FCU_EFIS_L_BARO_PUSH,
+    A32NX_FCU_EFIS_L_BARO_PULL,
+    A32NX_FCU_EFIS_L_CSTR_PUSH,
+    A32NX_FCU_EFIS_L_WPT_PUSH,
+    A32NX_FCU_EFIS_L_VORD_PUSH,
+    A32NX_FCU_EFIS_L_NDB_PUSH,
+    A32NX_FCU_EFIS_L_ARPT_PUSH,
+    A32NX_FCU_EFIS_L_NAVAID_1_PUSH,
+    A32NX_FCU_EFIS_L_NAVAID_2_PUSH,
+    A32NX_FCU_EFIS_L_WX_PUSH,
+    A32NX_FCU_EFIS_L_TERR_PUSH,
+    A32NX_FCU_EFIS_L_TRAF_PUSH,
+    A32NX_FCU_EFIS_R_RANGE_INC,
+    A32NX_FCU_EFIS_R_RANGE_DEC,
+    A32NX_FCU_EFIS_R_RANGE_SET,
+    A32NX_FCU_EFIS_R_MODE_INC,
+    A32NX_FCU_EFIS_R_MODE_DEC,
+    A32NX_FCU_EFIS_R_MODE_SET,
+    A32NX_FCU_EFIS_R_VV_PUSH,
+    A32NX_FCU_EFIS_R_LS_PUSH,
+    A32NX_FCU_EFIS_R_TAXI_PUSH,
+    A32NX_FCU_EFIS_R_BARO_INC,
+    A32NX_FCU_EFIS_R_BARO_DEC,
+    A32NX_FCU_EFIS_R_BARO_SET,
+    A32NX_FCU_EFIS_R_BARO_PUSH,
+    A32NX_FCU_EFIS_R_BARO_PULL,
+    A32NX_FCU_EFIS_R_CSTR_PUSH,
+    A32NX_FCU_EFIS_R_WPT_PUSH,
+    A32NX_FCU_EFIS_R_VORD_PUSH,
+    A32NX_FCU_EFIS_R_NDB_PUSH,
+    A32NX_FCU_EFIS_R_ARPT_PUSH,
+    A32NX_FCU_EFIS_R_NAVAID_1_PUSH,
+    A32NX_FCU_EFIS_R_NAVAID_2_PUSH,
+    A32NX_FCU_EFIS_R_WX_PUSH,
+    A32NX_FCU_EFIS_R_TERR_PUSH,
+    A32NX_FCU_EFIS_R_TRAF_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    A32NX_FMGC_PRESET_SPD_ACTIVATE,
+    A32NX_FMGC_SPD_MODE_ACTIVATE,
+    A32NX_FMGC_MACH_MODE_ACTIVATE,
     A32NX_EFIS_L_CHRONO_PUSHED,
     A32NX_EFIS_R_CHRONO_PUSHED,
     AP_AIRSPEED_ON,
@@ -98,14 +150,17 @@ class SimConnectInterface {
     AP_SPEED_SLOT_INDEX_SET,
     AP_SPD_VAR_INC,
     AP_SPD_VAR_DEC,
+    AP_SPD_VAR_SET,
     AP_MACH_VAR_INC,
     AP_MACH_VAR_DEC,
     AP_HEADING_SLOT_INDEX_SET,
     HEADING_BUG_INC,
     HEADING_BUG_DEC,
+    HEADING_BUG_SET,
     AP_ALTITUDE_SLOT_INDEX_SET,
     AP_ALT_VAR_INC,
     AP_ALT_VAR_DEC,
+    AP_ALT_VAR_SET,
     AP_VS_SLOT_INDEX_SET,
     AP_VS_VAR_INC,
     AP_VS_VAR_DEC,
@@ -115,6 +170,11 @@ class SimConnectInterface {
     AP_VS_HOLD,
     AP_ATT_HOLD,
     AP_MACH_HOLD,
+    KOHLSMAN_SET,
+    KOHLSMAN_INC,
+    KOHLSMAN_DEC,
+    BAROMETRIC_STD_PRESSURE,
+    BAROMETRIC,
     AUTO_THROTTLE_ARM,
     AUTO_THROTTLE_DISCONNECT,
     A32NX_AUTO_THROTTLE_DISCONNECT,
@@ -204,12 +264,14 @@ class SimConnectInterface {
   ~SimConnectInterface() = default;
 
   bool connect(bool clientDataEnabled,
-               bool autopilotStateMachineEnabled,
-               bool autopilotLawsEnabled,
-               bool flyByWireEnabled,
                int primDisabled,
+               bool primGeneralLogicDisabled,
+               bool primFctlDisabled,
+               bool primFeDisabled,
+               bool primFgDisabled,
                int secDisabled,
-               int facDisabled,
+               int fcuDisabled,
+               int fadecDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                double keyChangeAileron,
@@ -239,19 +301,21 @@ class SimConnectInterface {
 
   bool sendData(SimOutputAltimeter output);
 
+  bool sendData(SimOutputAltimeter output, int altimeterIndex);
+
   bool sendEvent(Events eventId);
 
   bool sendEvent(Events eventId, DWORD data);
 
   bool sendEvent(Events eventId, DWORD data, DWORD priority);
 
-  bool setClientDataLocalVariables(ClientDataLocalVariables& output);
-
-  bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust& output);
+  bool sendEventEx1(Events eventId, DWORD priority, DWORD data0, DWORD data1 = 0, DWORD data2 = 0, DWORD data3 = 0, DWORD data4 = 0);
 
   void resetSimInputPitchTrim();
 
   void resetSimInputRudderTrim();
+
+  void resetFcuFrontPanelInputs();
 
   void resetSimInputAutopilot();
 
@@ -265,35 +329,35 @@ class SimConnectInterface {
 
   SimInputAutopilot& getSimInputAutopilot();
 
+  base_fcu_afs_panel_inputs& getFcuAfsPanelInputs();
+
+  base_fcu_efis_panel_inputs& getFcuEfisPanelInputs(int side);
+
   SimInputPitchTrim& getSimInputPitchTrim();
 
   SimInputRudderTrim& getSimInputRudderTrim();
 
   SimInputThrottles& getSimInputThrottles();
 
-  bool setClientDataAutopilotStateMachine(ClientDataAutopilotStateMachine& output);
-  ClientDataAutopilotStateMachine& getClientDataAutopilotStateMachine();
-
-  bool setClientDataAutopilotLaws(ClientDataAutopilotLaws& output);
-  ClientDataAutopilotLaws& getClientDataAutopilotLaws();
-
-  ClientDataAutothrust& getClientDataAutothrust();
-
-  ClientDataAutothrustA380& getClientDataAutothrustA380();
-
-  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput& output);
-
-  bool setClientDataFlyByWire(ClientDataFlyByWire& output);
-  ClientDataFlyByWire& getClientDataFlyByWire();
-
   bool setClientDataPrimDiscretes(base_prim_discrete_inputs& output);
   bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
-  bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
+  bool setClientDataPrimGeneralLogicOutput(const base_prim_general_logic_outputs& output);
+  bool setClientDataPrimFlightEnvelopeOutput(const base_prim_flight_envelope_outputs& output);
+  bool setClientDataPrimFgLogicOutput(const base_prim_fg_logic_output& output);
+  bool setClientDataPrimFgModeLogicOutput(const base_prim_ap_fd_logic_outputs& output);
+  bool setClientDataPrimFgLawsOutput(const base_prim_fg_laws_outputs& output);
+  bool setClientDataPrimFctlLogicOutput(const base_prim_fctl_logic_outputs& output);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
   base_prim_analog_outputs& getClientDataPrimAnalogsOutput();
   base_prim_out_bus& getClientDataPrimBusOutput();
+  base_prim_general_logic_outputs& getClientDataPrimGeneralLogicOutput();
+  base_prim_flight_envelope_outputs& getClientDataPrimFlightEnvelopeOutput();
+  base_prim_fg_logic_output& getClientDataPrimFgLogicOutput();
+  base_prim_ap_fd_logic_outputs& getClientDataPrimFgModeLogicOutput();
+  base_prim_fg_laws_outputs& getClientDataPrimFgLawsOutput();
+  base_prim_fctl_logic_outputs& getClientDataPrimFctlLogicOutput();
 
   bool setClientDataSecDiscretes(base_sec_discrete_inputs& output);
   bool setClientDataSecAnalog(base_sec_analog_inputs& output);
@@ -303,20 +367,28 @@ class SimConnectInterface {
   base_sec_analog_outputs& getClientDataSecAnalogsOutput();
   base_sec_out_bus& getClientDataSecBusOutput();
 
-  bool setClientDataFacDiscretes(base_fac_discrete_inputs& output);
-  bool setClientDataFacAnalog(base_fac_analog_inputs& output);
-  bool setClientDataFacBus(base_fac_bus& output, int facIndex);
+  bool setClientDataFcuDiscretes(base_fcu_discrete_inputs& output);
+  bool setClientDataFcuBus(base_fcu_bus& output, int fcuIndex);
 
-  base_fac_discrete_outputs& getClientDataFacDiscretesOutput();
-  base_fac_analog_outputs& getClientDataFacAnalogsOutput();
-  base_fac_bus& getClientDataFacBusOutput();
+  base_fcu_discrete_outputs& getClientDataFcuDiscreteOutput();
+  base_fcu_bus& getClientDataFcuBusOutput();
+
+  bool setClientDataFadecData(athr_data& output);
+  bool setClientDataFadecInput(athr_input& output);
+
+  athr_output& getClientDataFadecOutput();
 
   bool setClientDataAdr(base_adr_bus& output, int adrIndex);
   bool setClientDataIr(base_ir_bus& output, int irIndex);
   bool setClientDataRa(base_ra_bus& output, int raIndex);
   bool setClientDataLgciu(base_lgciu_bus& output, int lgciuIndex);
   bool setClientDataSfcc(base_sfcc_bus& output, int sfccIndex);
-  bool setClientDataFmgcB(base_fmgc_b_bus& output, int fmgcIndex);
+  bool setClientDataIls(base_ils_bus& output, int ilsIndex);
+  bool setClientDataFadec(base_eec& output, int fadecIndex);
+  bool setClientDataFms(base_fms_inputs& output);
+  bool setClientDataFqms(base_fqms& output);
+  bool setClientDataTcas(base_tcas& output);
+  bool setClientDataAesu(base_aesu_bus& output);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -333,20 +405,23 @@ class SimConnectInterface {
   bool isSimInActivePause();
   bool isSimInPause();
 
+  bool wasLastBaroInputRightSide() const { return lastBaroInputWasRightSide; }
+
  private:
   enum ClientData {
-    AUTOPILOT_STATE_MACHINE,
-    AUTOPILOT_LAWS,
-    AUTOTHRUST,
-    AUTOTHRUST_A380,
     PRIM_DISCRETE_INPUTS,
     PRIM_ANALOG_INPUTS,
-    PRIM_TEMPORARY_AP_INPUTS,
     PRIM_DISCRETE_OUTPUTS,
     PRIM_ANALOG_OUTPUTS,
     PRIM_1_BUS_OUTPUT,
     PRIM_2_BUS_OUTPUT,
     PRIM_3_BUS_OUTPUT,
+    PRIM_GENERAL_LOGIC_OUTPUT,
+    PRIM_FLIGHT_ENVELOPE_OUTPUT,
+    PRIM_FLIGHT_FG_LOGIC_OUTPUT,
+    PRIM_FLIGHT_FG_MODE_LOGIC_OUTPUT,
+    PRIM_FLIGHT_FG_LAWS_OUTPUT,
+    PRIM_FCTL_LOGIC_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
     SEC_DISCRETE_OUTPUTS,
@@ -354,12 +429,17 @@ class SimConnectInterface {
     SEC_1_BUS_OUTPUT,
     SEC_2_BUS_OUTPUT,
     SEC_3_BUS_OUTPUT,
-    FAC_DISCRETE_INPUTS,
-    FAC_ANALOG_INPUTS,
-    FAC_DISCRETE_OUTPUTS,
-    FAC_ANALOG_OUTPUTS,
-    FAC_1_BUS_OUTPUT,
-    FAC_2_BUS_OUTPUT,
+    FCU_DISCRETE_INPUTS,
+    FCU_DISCRETE_OUTPUTS,
+    FCU_1_BUS_OUTPUT,
+    FCU_2_BUS_OUTPUT,
+    FADEC_DATA,
+    FADEC_INPUTS,
+    FADEC_OUTPUTS,
+    FADEC_1_BUS,
+    FADEC_2_BUS,
+    FADEC_3_BUS,
+    FADEC_4_BUS,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -373,10 +453,12 @@ class SimConnectInterface {
     LGCIU_2_BUS,
     SFCC_1_BUS,
     SFCC_2_BUS,
-    FMGC_1_B_BUS,
-    FMGC_2_B_BUS,
-    LOCAL_VARIABLES,
-    LOCAL_VARIABLES_AUTOTHRUST,
+    ILS_1_BUS,
+    ILS_2_BUS,
+    FMS_INPUTS,
+    FQMS_BUS,
+    TCAS_BUS,
+    AESU_BUS,
   };
 
   bool isConnected = false;
@@ -390,8 +472,13 @@ class SimConnectInterface {
   bool clientDataEnabled = false;
 
   int primDisabled = -1;
+  bool primGeneralLogicDisabled = false;
+  bool primFctlDisabled = false;
+  bool primFeDisabled = false;
+  bool primFgDisabled = false;
   int secDisabled = -1;
-  int facDisabled = -1;
+  int fcuDisabled = -1;
+  int fadecDisabled = -1;
 
   long pauseState = 0;
 
@@ -406,29 +493,32 @@ class SimConnectInterface {
   SimInputPitchTrim simInputPitchTrim = {};
   SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
+  base_fcu_afs_panel_inputs fcuAfsPanelInputs = {};
+  base_fcu_efis_panel_inputs fcuEfisPanelInputs[2] = {};
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
-  ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
-  ClientDataAutopilotLaws clientDataAutopilotLaws = {};
-  ClientDataAutothrust clientDataAutothrust = {};
-  ClientDataAutothrustA380 clientDataAutothrustA380 = {};
-  ClientDataFlyByWire clientDataFlyByWire = {};
-
   base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
   base_prim_out_bus clientDataPrimBusOutputs = {};
+  base_prim_general_logic_outputs clientDataPrimGeneralLogicOutput = {};
+  base_prim_flight_envelope_outputs clientDataPrimFlightEnvelopeOutput = {};
+  base_prim_fg_logic_output clientDataPrimFgLogicOutput = {};
+  base_prim_ap_fd_logic_outputs clientDataPrimFgModeLogicOutput = {};
+  base_prim_fg_laws_outputs clientDataPrimFgLawsOutput = {};
+  base_prim_fctl_logic_outputs clientDataPrimFctlLogicOutput = {};
 
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   base_sec_analog_outputs clientDataSecAnalogOutputs = {};
   base_sec_out_bus clientDataSecBusOutputs = {};
 
-  base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
-  base_fac_analog_outputs clientDataFacAnalogOutputs = {};
-  base_fac_bus clientDataFacBusOutputs = {};
+  base_fcu_discrete_outputs clientDataFcuDiscreteOutputs = {};
+  base_fcu_bus clientDataFcuBusOutputs = {};
+
+  athr_output clientDataFadecOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
@@ -442,9 +532,9 @@ class SimConnectInterface {
   double rudderLeftAxis = -1;
   double rudderRightAxis = -1;
 
-  std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
-  std::unique_ptr<LocalVariable> idFcuEventSetHDG;
-  std::unique_ptr<LocalVariable> idFcuEventSetVS;
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  bool lastBaroInputWasRightSide = false;
 
   bool prepareSimDataSimConnectDataDefinitions();
 
@@ -516,5 +606,5 @@ class SimConnectInterface {
    * @param eventId Specifies the ID of the client event.
    * @param data0 Double word containing any additional number required by the event.
    */
-  void processEventWithOneParam(const DWORD eventId, const DWORD data0);
+  void processEvent(const DWORD eventId, const DWORD data0, const DWORD data1 = 0);
 };

@@ -3029,7 +3029,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The acceleration altitude
+    - The acceleration altitude during the preflight and takeoff phases. The missed approach acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3085,7 +3085,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_EO_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The engine out acceleration altitude
+    - The engine out acceleration altitude during preflight and takeoff phases. The missed engine out acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3108,27 +3108,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- `L:A32NX_FM{number}_MISSED_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_EO_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_THR_RED_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
 - `L:A32NX_FM{number}_NAV_DISCRETE`
     - Arinc429<Discrete>
     - {number}
@@ -3145,7 +3124,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_THR_RED_ALT`
     - ARINC429<number> (feet MSL)
-    - The thrust reduction altitude
+    - The thrust reduction altitude during the preflight and takeoff phases. The missed thrust reduction altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -4008,6 +3987,34 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
    - Right DMC IRS 3 discrete word. Raw ARINC word.
    - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
 
+- `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`
+   - The left DMC discrete word 272. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     |     | ADIRU used for ADR                |
+     |     | ADR1 ADR2 ADR3                    |
+     | 13  | 1    0    1                       |
+     | 14  | 0    1    1                       |
+
+- `L:A32NX_DMC_DISCRETE_WORD_272_RIGHT`
+   - The right DMC discrete word 272. Raw ARINC word.
+   - Same as `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`.
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_LEFT`
+   - The left DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on CAPT side        |
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_RIGHT`
+   - The right DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on F/O side         |
+
 - `L:A32NX_DMC_DISCRETE_WORD_350_LEFT`
    - The left DMC discrete word. Raw ARINC word.
      | Bit |            Description            |
@@ -4021,6 +4028,14 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
      |:---:|:---------------------------------:|
      | 11  | STD baro mode                     |
      | 12  | QNH baro mode                     |
+
+- `L:A32NX_DMC_BARO_CORRECTION_LEFT`
+  - Left DMC BCD word 222, baro correction CAPT side. Raw ARINC word.
+  - Arinc429Word<hPa>
+
+- `L:A32NX_DMC_BARO_CORRECTION_RIGHT`
+  - Right DMC BCD word 223, baro correction F/O side. Raw ARINC word.
+  - Arinc429Word<hPa>
 
 - `L:A32NX_DMC_ALTITUDE_LEFT`
   - The left DMC displayed altitude feedback. Raw ARINC word.
@@ -4509,13 +4524,13 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 ## ROW / ROP / OANS (ATA 34)
 
 - A32NX_ROW_ROP_WORD_1
-    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD.
+    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD and generating warnings on the FWC.
     - Arinc429<Discrete>
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
-      | 11  | ROW/ROP operative                 |
-      | 12  | ROP: Active with autobrake        |
-      | 13  | ROP: Active with manual braking   |
+      | 11  | BRAKE MAX BRAKING Requested       |
+      | 12  | SET MAX REVERSE Requested         |
+      | 13  | KEEP MAX REVERSE Requested        |
       | 14  | ROW Wet: Runway too short         |
       | 15  | ROW Dry: Runway too short         |
 

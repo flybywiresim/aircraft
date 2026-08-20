@@ -17,6 +17,7 @@ import {
   GameStateProvider,
   Wait,
   KeyEvents,
+  InstrumentBackplane,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -33,7 +34,6 @@ import {
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
   RegisteredSimVar,
-  UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { EwdMessageCodeOrder, getEwdMessageGroup } from '../../../shared/src/EwdMessages';
 import { SdPages as EcamSysPage } from '../../../shared/src/SdPages';
@@ -52,6 +52,8 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 export const DEFAULT_MONITOR_TIME = 0.3;
 import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { CircuitBreakerMonitors } from './Acquisition/CircuitBreakerMonitors';
+import { CircuitBreakerLogic } from './Logic/CircuitBreakerLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -151,9 +153,7 @@ export class PseudoFWC {
       StallWarningEvents
   >();
 
-  private readonly fwsSoundUpdateThrottler = new UpdateThrottler(100);
-
-  private readonly fwsUpdateThrottler = new UpdateThrottler(240); // has to be > 100 due to pulse nodes
+  private readonly acquisitionBackplane = new InstrumentBackplane();
 
   private keyEventManager?: KeyEventManager;
 
@@ -278,6 +278,8 @@ export class PseudoFWC {
   private alignTime = 0;
   private oneIrsInAlign = false;
   private navMode = false;
+
+  private readonly sdacCbMonitors = new CircuitBreakerMonitors();
 
   /* Plugs */
   private readonly ltp: Plug<'07C'> = { '07C': false };
@@ -1111,13 +1113,15 @@ export class PseudoFWC {
 
   public readonly flightPhase4PulseNode = new NXLogicPulseNode();
 
+  private readonly flightPhase5MrtrigFor15Seconds = new NXLogicTriggeredMonostableNode(15, true, true);
+
+  private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
+
   public readonly flightPhase8PulseNode = new NXLogicPulseNode();
 
   public readonly flightPhase7PulseNode = new NXLogicPulseNode();
 
   public readonly flightPhase9PulseNode = new NXLogicPulseNode();
-
-  private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
@@ -1125,18 +1129,48 @@ export class PseudoFWC {
 
   private readonly toConfigOrPhase3 = Subject.create(false);
 
+  /** 31 - CB */
+  private readonly cbRearJMWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearJMTripped);
+  private readonly cbRearNRWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearNRTripped);
+  private readonly cbRearSVWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearSVTripped);
+  private readonly cbRearWZWarning = new CircuitBreakerLogic(this.fwcFlightPhase, this.sdacCbMonitors.rearWZTripped);
+  private readonly cbOverheadWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.overheadTripped,
+  );
+  private readonly cbLeftElecBayWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.leftElecBayTripped,
+  );
+  private readonly cbRightElecBayWarning = new CircuitBreakerLogic(
+    this.fwcFlightPhase,
+    this.sdacCbMonitors.rightElecBayTripped,
+  );
+
   /** 31 - EIS */
-  private readonly dmcLeftDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(
+  private readonly dmcLeftDiscreteWord272 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_272_left'),
   );
-  private readonly dmcRightDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(
+  private readonly dmcRightDiscreteWord272 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_272_right'),
   );
-  private readonly dmcLeftDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+  private readonly dmcLeftDiscreteWord276 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_276_left'),
+  );
+  private readonly dmcRightDiscreteWord276 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_276_right'),
+  );
+  private readonly dmcLeftDiscreteWord350 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_350_left'),
   );
-  private readonly dmcRightDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+  private readonly dmcRightDiscreteWord350 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_350_right'),
+  );
+  private readonly dmcLeftBaroCorrection = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_baro_correction_left'),
+  );
+  private readonly dmcRightBaroCorrection = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_baro_correction_right'),
   );
   private readonly dmcLeftAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_left'));
   private readonly dmcRightAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_right'));
@@ -1379,12 +1413,17 @@ export class PseudoFWC {
   private readonly baroRefDiscrepancyConf1 = new NXLogicConfirmNode(10, true);
   private readonly baroRefDiscrepancyConf2 = new NXLogicConfirmNode(20, true);
   private readonly baroRefDiscrepancy = Subject.create(false);
+  private readonly baroRefDiscrepancyWarning = Subject.create(false);
+
+  private readonly baroValueDisagreeConf1 = new NXLogicConfirmNode(15, true);
+  private readonly baroValueDisagreeConf2 = new NXLogicConfirmNode(15, true);
+  private readonly baroValueDisagreeWarning = Subject.create(false);
 
   private readonly altiDiscrepancyConf1 = new NXLogicConfirmNode(5, true);
   private readonly altiDiscrepancyConf2 = new NXLogicConfirmNode(5, true);
   private readonly altiStdDiscrepancy = Subject.create(false);
   private readonly altiBaroDiscrepancy = Subject.create(false);
-  private readonly altiDiscrepancy = MappedSubject.create(
+  private readonly altDiscrepancy = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.altiBaroDiscrepancy,
     this.altiStdDiscrepancy,
@@ -1733,6 +1772,16 @@ export class PseudoFWC {
   /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
 
+  private readonly onLogicUpdate: { onUpdate: (deltaTime: number) => void }[] = [
+    this.cbRearJMWarning,
+    this.cbRearNRWarning,
+    this.cbRearSVWarning,
+    this.cbRearWZWarning,
+    this.cbOverheadWarning,
+    this.cbLeftElecBayWarning,
+    this.cbRightElecBayWarning,
+  ];
+
   constructor(
     private readonly bus: EventBus,
     private readonly soundManager: FwsSoundManager,
@@ -1966,6 +2015,9 @@ export class PseudoFWC {
       }
       this.soundManager.handleSoundCondition('minimums', v);
     });
+
+    this.acquisitionBackplane.addInstrument('SdacCbMonitors', this.sdacCbMonitors);
+    this.acquisitionBackplane.init();
   }
 
   public getMinimumEmitted() {
@@ -2241,6 +2293,8 @@ export class PseudoFWC {
    * Periodic update
    */
   update(deltaTime: number) {
+    this.acquisitionBackplane.onUpdate();
+
     // Inputs update
     this.processEcpButtons(deltaTime);
 
@@ -2254,6 +2308,7 @@ export class PseudoFWC {
     this.flightPhase7PulseNode.write(flightPhase === 7);
     this.flightPhase8PulseNode.write(flightPhase === 8);
     this.flightPhase9PulseNode.write(flightPhase === 9);
+    this.flightPhase5MrtrigFor15Seconds.write(flightPhase === 5, deltaTime);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
 
     // flight phase convenience vars
@@ -4178,24 +4233,46 @@ export class PseudoFWC {
     this.elecEmerGen12Reset.set(!(this.elecEmerGen1ResetMemoryNode.read() && this.elecEmerGen2ResetMemoryNode.read()));
 
     /* NAV logic */
-    const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
-    const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
+    const dmcLStdBit = this.dmcLeftDiscreteWord350.get().bitValueOr(11, false) && fcu1Healthy;
+    const dmcLQnhBit = this.dmcLeftDiscreteWord350.get().bitValueOr(12, false) && fcu1Healthy;
     const dmcLIsQnh = dmcLQnhBit && !dmcLStdBit;
     const dmcLIsStd = dmcLStdBit && !dmcLQnhBit;
     const dmcLIsQfe = !dmcLQnhBit && !dmcLStdBit && fcu1Healthy;
 
-    const dmcRStdBit = this.dmcRightDiscreteWord.get().bitValueOr(11, false) && fcu2Healthy;
-    const dmcRQnhBit = this.dmcRightDiscreteWord.get().bitValueOr(12, false) && fcu2Healthy;
+    const dmcRStdBit = this.dmcRightDiscreteWord350.get().bitValueOr(11, false) && fcu2Healthy;
+    const dmcRQnhBit = this.dmcRightDiscreteWord350.get().bitValueOr(12, false) && fcu2Healthy;
     const dmcRIsQnh = dmcRQnhBit && !dmcRStdBit;
     const dmcRIsStd = dmcRStdBit && !dmcRQnhBit;
     const dmcRIsQfe = !dmcRQnhBit && !dmcRStdBit && fcu2Healthy;
 
-    this.baroRefDiscrepancyConf1.write((dmcLIsQnh && dmcRIsQfe) || (dmcLIsQfe && dmcRIsQnh), deltaTime);
-    this.baroRefDiscrepancyConf2.write(
-      ((dmcRIsQfe || dmcRIsQnh) && dmcLIsStd) || ((dmcLIsQfe || dmcLIsQnh) && dmcRIsStd),
+    const baroRefDiscrepancy1 = (dmcLIsQnh && dmcRIsQfe) || (dmcLIsQfe && dmcRIsQnh);
+    const baroRefDiscrepancy2 = ((dmcRIsQfe || dmcRIsQnh) && dmcLIsStd) || ((dmcLIsQfe || dmcLIsQnh) && dmcRIsStd);
+    this.baroRefDiscrepancy.set(baroRefDiscrepancy1 || baroRefDiscrepancy2);
+    this.baroRefDiscrepancyConf1.write(baroRefDiscrepancy1, deltaTime);
+    this.baroRefDiscrepancyConf2.write(baroRefDiscrepancy2, deltaTime);
+    this.baroRefDiscrepancyWarning.set(this.baroRefDiscrepancyConf1.read() || this.baroRefDiscrepancyConf2.read());
+
+    const baroValueDisagreeInhibit = this.baroRefDiscrepancy.get() || (dmcLIsStd && dmcRIsStd);
+    this.baroValueDisagreeConf1.write(
+      !this.dmcLeftDiscreteWord276.get().isInvalid() &&
+        !this.dmcRightDiscreteWord276.get().isInvalid() &&
+        xor(this.dmcLeftDiscreteWord276.get().bitValue(19), this.dmcRightDiscreteWord276.get().bitValue(19)) &&
+        !baroValueDisagreeInhibit &&
+        (fcu1Healthy || fcu2Healthy),
       deltaTime,
     );
-    this.baroRefDiscrepancy.set(this.baroRefDiscrepancyConf1.read() || this.baroRefDiscrepancyConf2.read());
+    this.baroValueDisagreeConf2.write(
+      this.dmcLeftBaroCorrection.get().isNormalOperation() &&
+        this.dmcRightBaroCorrection.get().isNormalOperation() &&
+        Math.abs(this.dmcLeftBaroCorrection.get().value - this.dmcRightBaroCorrection.get().value) >= 0.3 &&
+        !baroValueDisagreeInhibit &&
+        (fcu1Healthy || fcu2Healthy),
+      deltaTime,
+    );
+    this.baroValueDisagreeWarning.set(
+      (this.baroValueDisagreeConf1.read() || this.baroValueDisagreeConf2.read()) &&
+        !this.flightPhase5MrtrigFor15Seconds.read(),
+    );
 
     const leftAdrCorrectedAlt =
       this.airKnob.get() === AirDataSwitchingKnob.Capt
@@ -4450,6 +4527,10 @@ export class PseudoFWC {
     this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
+
+    for (let i = 0; i < this.onLogicUpdate.length; i++) {
+      this.onLogicUpdate[i].onUpdate(deltaTime);
+    }
 
     this.updateEwdFailureTimers(deltaTime);
 
@@ -4819,42 +4900,10 @@ export class PseudoFWC {
         PseudoFWC.AURAL_SC_INHIBIT_TIME,
       );
     }
-
-    this.updateRowRopWarnings();
-
     // Reset all buffered inputs
     this.apDiscInputBuffer.write(false, true);
     this.autoThrustInstinctiveDisconnectPressed = false;
     this.apInstinctiveDisconnectPressed = false;
-  }
-
-  updateRowRopWarnings() {
-    const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
-
-    // ROW
-    this.soundManager.handleSoundCondition('runwayTooShort', w.bitValueOr(15, false));
-
-    // ROP
-    // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
-    const maxBrakingSet =
-      SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
-      SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
-    const maxBraking = w.bitValueOr(13, false) && !maxBrakingSet;
-    this.soundManager.handleSoundCondition('brakeMaxBraking', maxBraking);
-
-    // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
-    const maxReverseSet =
-      SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
-      SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
-    const maxReverse = (w.bitValueOr(12, false) || w.bitValueOr(13, false)) && !maxReverseSet;
-    this.soundManager.handleSoundCondition('setMaxReverse', !maxBraking && maxReverse);
-
-    // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
-    const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
-    this.soundManager.handleSoundCondition(
-      'keepMaxReverse',
-      ias <= 80 && ias > 4 && (w.bitValueOr(12, false) || w.bitValueOr(13, false)),
-    );
   }
 
   private updateEwdFailureTimers(deltaTime: number): void {
@@ -5384,7 +5433,7 @@ export class PseudoFWC {
     3400100: {
       // BARO REF DISCREPANCY
       flightPhaseInhib: [3, 4, 8],
-      simVarIsActive: this.baroRefDiscrepancy,
+      simVarIsActive: this.baroRefDiscrepancyWarning,
       whichCodeToReturn: () => [0, 1],
       codesToReturn: ['340010001', '340010002'],
       memoInhibit: () => false,
@@ -5392,16 +5441,28 @@ export class PseudoFWC {
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },
+    3400101: {
+      // BARO VALUE DISAGREE
+      flightPhaseInhib: [3, 4, 8],
+      simVarIsActive: this.baroValueDisagreeWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['340010101', '340010102'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
     3400105: {
-      // ALTI DISCREPANCY
+      // ALT DISCREPANCY
       flightPhaseInhib: [4, 5, 8],
-      simVarIsActive: this.altiDiscrepancy,
+      simVarIsActive: this.altDiscrepancy,
       whichCodeToReturn: () => [0, 1, 2],
       codesToReturn: ['340010501', '340010502', '340010503'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     3400170: {
       // OVER SPEED VMO/MMO
@@ -5899,6 +5960,76 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: EcamSysPage.FCTL,
+      side: 'LEFT',
+    },
+    3100110: {
+      // TRIPPED REAR PNL J-M
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearJMWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310011001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100120: {
+      // TRIPPED REAR PNL N-R
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearNRWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310012001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100130: {
+      // TRIPPED REAR PNL S-V
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearSVWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310013001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100140: {
+      // TRIPPED REAR PNL W-Z
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRearWZWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310014001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100150: {
+      // TRIPPED OVERHEAD
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbOverheadWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310015001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100160: {
+      // TRIPPED L ELEC BAY
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbLeftElecBayWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310016001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    3100220: {
+      // TRIPPED R ELEC BAY
+      flightPhaseInhib: [],
+      simVarIsActive: this.cbRightElecBayWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['310022001'],
+      failure: 2,
+      sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },
     2700400: {

@@ -1,11 +1,10 @@
 #pragma once
 
 #include "../interface/SimConnectData.h"
-#include "../model/A380PrimComputer.h"
-#include "../model/AutopilotLaws.h"
-#include "../model/Autothrust.h"
+#include "../model/A380PrimComputerGeneralLogic.h"
 
 struct FcdcBus {
+  // F/CTL outputs
   // Label 040
   Arinc429DiscreteWord efcsStatus1;
   // Label 041
@@ -17,10 +16,12 @@ struct FcdcBus {
   // Label 044
   Arinc429DiscreteWord efcsStatus5;
 
-  // similar to fmgcDiscreteWord4, no references available
-  Arinc429DiscreteWord primFgDiscreteWord4;
+  // FG outputs
+  Arinc429DiscreteWord fcdcFgDiscreteWord1;
 
-  Arinc429DiscreteWord primFgDiscreteWord8;
+  Arinc429DiscreteWord fcdcFgDiscreteWord2;
+
+  Arinc429DiscreteWord fcdcFgDiscreteWord3;
 
   Arinc429DiscreteWord landingFctDiscreteWord;
 };
@@ -36,8 +37,6 @@ struct FcdcDiscreteInputs {
 
   bool btvExitMissed;
 
-  bool fmaModeReversion;
-
   // Some of these might be bus inputs, no refs though
   bool engineOperative[4];
 
@@ -48,8 +47,6 @@ struct FcdcDiscreteInputs {
   bool antiskidAvailable;
 
   bool nwsCommunicationAvailable;
-
-  bool fcuNorthRefTrue;
 
   bool yellowHydraulicAvailable;
 
@@ -70,8 +67,6 @@ struct FcdcDiscreteInputs {
   int btvState;
 
   /* FIXME use proper bus messages */
-  ap_raw_laws_input autopilotStateMachineOutput;
-  athr_output autoThrustOutput;
   SimData simData;
 };
 
@@ -100,8 +95,6 @@ struct FcdcDiscreteOutputs {
   bool foRedPriorityLightOn;
 
   bool foGreenPriorityLightOn;
-
-  bool autolandWarning;
 
   // This is architecturally not accurate, in the real thing this is done inside the PRIMs.
   // However, as BTV is implemented in Rust and the BTV INOP status is checked here, this would be good place to put it.

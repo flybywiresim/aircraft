@@ -156,10 +156,10 @@ export class FwsNormalChecklists {
                 },
                 (newState) => {
                   // Handle procedure activation/deactivation
-                  const whichItemsActive = this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsActive;
+                  const whichItemsActive = this.fws.allEwdDeferredProcs[proc.id].whichItemsActive;
                   const deferredItemsActive = whichItemsActive
                     ? whichItemsActive()
-                    : Array(this.fws.abnormalSensed.ewdDeferredProcs[proc.id].whichItemsChecked().length).fill(
+                    : Array(this.fws.allEwdDeferredProcs[proc.id].whichItemsChecked().length).fill(
                         newState.procedureActivated,
                       );
                   newState.itemsActive = deferredItemsActive;
@@ -584,9 +584,9 @@ export class FwsNormalChecklists {
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+        (!SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+          (SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
       ],
     },
