@@ -707,7 +707,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private setText() {
     let boxLength = 95.7;
     let text = '0';
-    const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+    const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
     if (isStd) {
       text = Math.round(this.shownTargetAltitude.value / 100)
         .toString()
