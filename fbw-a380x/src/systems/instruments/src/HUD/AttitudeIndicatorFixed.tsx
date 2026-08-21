@@ -20,6 +20,8 @@ import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
 import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { getDisplayIndex } from './HUD';
 
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
@@ -260,16 +262,28 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 }
 
 class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
-  private readonly sub = this.props.bus.getSubscriber<SelectedFdEvents & Arinc429Values & HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<
+    SelectedFdEvents & Arinc429Values & HUDSimvars & HudElems & PrimFgBusBaseEvents
+  >();
 
   private fdYawCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_yaw_fd_command'));
 
   private groundYawGroupRef = FSComponent.createRef<SVGGElement>();
   private GroundYawRef = FSComponent.createRef<SVGPathElement>();
   private onGround = true;
+  private fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+
+  private readonly transform = this.fdYawCommand.map((word) => {
+    const offset = -Math.max(Math.min(word.value, 45), -45) * 0.44;
+
+    return `translate3d(${offset}px, 400px, 0px)`;
+  });
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const isFo = getDisplayIndex() === 2;
+    this.fdYawCommand.setConsumer(this.sub.on(isFo ? 'prim_yaw_fd_command_2' : 'prim_yaw_fd_command_1'));
 
     this.sub
       .on('hudFlightPhaseMode')
@@ -281,14 +295,6 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
           : (this.groundYawGroupRef.instance.style.display = 'none');
       });
   }
-
-  private fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
-
-  private readonly transform = this.fdYawCommand.map((word) => {
-    const offset = -Math.max(Math.min(word.value, 45), -45) * 0.44;
-
-    return `translate3d(${offset}px, 0px, 0px)`;
-  });
 
   private readonly visibility = MappedSubject.create(
     ([fdActive, fdYawCommand]) => {
