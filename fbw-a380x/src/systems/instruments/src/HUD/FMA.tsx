@@ -467,6 +467,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
       .handle((am) => {
         if (am) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
         } else {
           this.autoBrkRef.instance.style.visibility = 'visible';
         }
@@ -1330,9 +1331,9 @@ class C2Cell extends DisplayComponent<CellProps> {
   private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
   private readonly modeArmedVis = MappedSubject.create(
-    ([navArmed, locArmed, rwyArmed, land, declutterMode]) => {
+    ([navArmed, locArmed, rwyArmed, declutterMode]) => {
       if (declutterMode != 2) {
-        if (navArmed || locArmed || rwyArmed || land) {
+        if (navArmed || locArmed || rwyArmed) {
           return 'block';
         } else {
           return 'none';
@@ -1344,7 +1345,6 @@ class C2Cell extends DisplayComponent<CellProps> {
     this.navArmed,
     this.locArmed,
     this.rwyArmed,
-    this.land,
     this.declutterMode,
   );
 
