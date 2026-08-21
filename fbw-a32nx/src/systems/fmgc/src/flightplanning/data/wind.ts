@@ -35,12 +35,12 @@ export enum FlightPlanWindEntryFlags {
   InsertedFromHistory = 1 << 0,
 }
 
-export const extractWindSpeedFromVector = (vector: WindVector) =>
-  vector.magnitude !== undefined ? Math.round(vector.magnitude) : undefined;
-export const extractWindDirectionFromVector = (vector: WindVector) =>
+export const extractWindSpeedFromVector = (vector: WindVector, zeroIfUndefined = false) =>
+  getVectorMagnitude(vector) ?? (zeroIfUndefined ? 0 : undefined);
+export const extractWindDirectionFromVector = (vector: WindVector, zeroIfUndefined = false) =>
   vector.direction !== undefined && vector.magnitude !== undefined
     ? MathUtils.normalise360(extractTheta(vector) * MathUtils.RADIANS_TO_DEGREES)
-    : undefined;
+    : vector.direction ?? (zeroIfUndefined ? 0 : undefined);
 
 export const formatWindVector = (vector: WindVector) =>
   `${vector.direction !== null ? formatWindTrueDegrees(vector) : '---'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
@@ -57,19 +57,16 @@ const formatWindAltitude = (entry: WindEntry) =>
 export const formatWindTrueDegrees = (vector: WindVector, appendUnit = true) =>
   `${extractWindDirectionFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---'}${appendUnit ? '°' : ''}`;
 export const formatWindPredictionDirection = (prediction: WindVector | TailwindComponent) =>
-  typeof prediction === 'number' ? (prediction > 0 ? 'TAIL' : 'HEAD') : formatWindTrueDegrees(prediction);
+  typeof prediction === 'number' ? (prediction > 0 ? 'TAIL' : 'HEAD') : formatWindTrueDegrees(prediction, true);
 
 export const formatWindMagnitude = (vector: WindVector) =>
   extractWindSpeedFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---';
 export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) => {
-  const predictionValue =
-    typeof prediction === 'number'
-      ? Math.abs(prediction)
-      : prediction.magnitude !== undefined && prediction.direction !== undefined
-        ? Math.hypot(prediction.magnitude, prediction.direction)
-        : undefined;
+  const predictionValue = typeof prediction === 'number' ? Math.abs(prediction) : getVectorMagnitude(prediction);
 
-  return predictionValue !== undefined ? Math.round(predictionValue).toFixed(0).padStart(3, '0') : '---';
+  return Math.round(predictionValue ?? 0)
+    .toFixed(0)
+    .padStart(3, '0');
 };
 
 export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
@@ -100,5 +97,30 @@ export function scaleWindVector(vector: WindVector, scale: number, result: WindV
 }
 
 export function extractTheta(vector: WindVector) {
-  return Math.atan2(vector.direction!, vector.magnitude!);
+  return Math.atan2(vector.magnitude!, vector.direction!);
+}
+
+export function getVectorMagnitude(vector: WindVector) {
+  return vector.direction !== undefined && vector.magnitude !== undefined
+    ? Math.hypot(vector.direction, vector.magnitude)
+    : vector.magnitude;
+}
+
+export function createVectorFromMagnitudeAndDirection(
+  magnitude: number | undefined,
+  direction: number | undefined,
+): WindVector {
+  const theta = direction !== undefined ? direction * MathUtils.DEGREES_TO_RADIANS : undefined;
+  //
+  if (theta === undefined) {
+    return {
+      direction: undefined,
+      magnitude: magnitude,
+    };
+  } else {
+    return {
+      direction: magnitude !== undefined ? magnitude * Math.cos(theta) : direction,
+      magnitude: magnitude !== undefined ? magnitude * Math.sin(theta) : undefined,
+    };
+  }
 }

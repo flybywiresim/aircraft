@@ -1970,8 +1970,8 @@ export class FlightManagementComputer implements FmcInterface {
       pub.pub('delete_approach_wind', forPlan);
     } else {
       pub.pub('set_approach_wind', {
-        speed: value,
-        direction: null,
+        direction: value,
+        speed: null,
         plan: forPlan,
       });
     }

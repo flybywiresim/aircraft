@@ -22,6 +22,7 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import './MfdFmsWindPage.scss';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  createVectorFromMagnitudeAndDirection,
   extractWindDirectionFromVector,
   extractWindSpeedFromVector,
   FlightPlanWindEntry,
@@ -680,9 +681,11 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         const row = displayEntries[i];
         row.altitude = windEntry.altitude ?? null;
         row.direction =
-          windEntry.vector.direction !== undefined ? extractWindDirectionFromVector(windEntry.vector) ?? null : null;
+          windEntry.vector.direction !== undefined
+            ? extractWindDirectionFromVector(windEntry.vector, false) ?? null
+            : null;
         row.speed =
-          windEntry.vector.magnitude !== undefined ? extractWindSpeedFromVector(windEntry.vector) ?? null : null;
+          windEntry.vector.magnitude !== undefined ? extractWindSpeedFromVector(windEntry.vector, false) ?? null : null;
         row.enteredByPilot =
           (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) !==
           FlightPlanWindEntryFlags.InsertedFromHistory;
@@ -830,7 +833,8 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       }
 
       if (currentAlt !== null) {
-        const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
+        // Cruise winds are always in FL.
+        const entry = this.getWindEntryFromValues(currentAlt * 100, currentDir, currentSpeed);
         if (oldAltitude !== null) {
           this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
             selectedLegIndex,
@@ -896,10 +900,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   private getWindEntryFromValues(altitude: number | null, direction: number | null, speed: number | null): WindEntry {
     return {
       altitude: altitude ?? undefined,
-      vector: {
-        direction: direction !== null ? direction * MathUtils.DEGREES_TO_RADIANS : undefined,
-        magnitude: speed !== null ? speed : undefined,
-      },
+      vector: createVectorFromMagnitudeAndDirection(speed ?? undefined, direction ?? undefined),
     };
   }
 

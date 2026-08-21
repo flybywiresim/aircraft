@@ -28,6 +28,7 @@ import {
   cloneWindVector,
   FlightPlanWindEntryFlags,
   areWindEntriesTheSame,
+  createVectorFromMagnitudeAndDirection,
 } from './data/wind';
 import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 import { HistoryWind } from '../wind/HistoryWind';
@@ -90,32 +91,22 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
           if (!plan.destinationRunway) {
             return;
           }
-          plan.setPerformanceData(
-            'approachWindDirection',
-            data.direction !== null ? data.direction % 360 : plan.performanceData.approachWindDirection.get(),
-          );
-          plan.setPerformanceData(
-            'approachWindMagnitude',
-            data.speed ?? plan.performanceData.approachWindMagnitude.get(),
-          );
+
+          const dir = data.direction !== null ? data.direction % 360 : plan.performanceData.approachWindDirection.get();
+          plan.setPerformanceData('approachWindDirection', dir);
+          const mag = data.speed ?? plan.performanceData.approachWindMagnitude.get();
+          plan.setPerformanceData('approachWindMagnitude', mag);
           plan.setPerformanceData('isApproachWindPilotEntered', true);
           const destinationMagVar = plan.destinationAirport
             ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
             : 0;
-
-          const directionTouse = windVector.direction ?? plan.performanceData.approachWindDirection.get();
-          const theta =
-            directionTouse !== null
-              ? MagVar.magneticToTrue(directionTouse, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS
-              : undefined;
-          windVector.direction = theta;
-          windVector.magnitude = windVector.magnitude ?? plan.performanceData.approachWindMagnitude.get() ?? undefined;
-          plan.setDescentWindEntry(
-            0,
-            { flags: 0, altitude: 0, vector: windVector },
-            this.config.NUM_DESCENT_WIND_LEVELS,
-            false,
-          );
+          const trueDir = dir !== null ? MagVar.magneticToTrue(dir, destinationMagVar) : undefined;
+          const windEntry: FlightPlanWindEntry = {
+            vector: createVectorFromMagnitudeAndDirection(mag ?? undefined, trueDir),
+            flags: 0,
+            altitude: 0,
+          };
+          plan.setDescentWindEntry(0, windEntry, this.config.NUM_DESCENT_WIND_LEVELS, false);
         }
       });
   }

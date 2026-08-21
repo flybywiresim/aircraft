@@ -3195,7 +3195,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   protected static isInvalidWindEntryForNonDraft(entry: WindEntry | FlightPlanWindEntry) {
-    return entry.vector.direction === undefined || entry.vector.magnitude === undefined;
+    return (
+      (entry.vector.direction !== undefined && entry.vector.magnitude === undefined) ||
+      (entry.vector.direction === undefined && entry.vector.magnitude !== undefined)
+    );
   }
 }
 
