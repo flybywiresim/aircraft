@@ -22,7 +22,7 @@ import {
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
+import { HudMode, RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { WindMode, HudElems } from './HUDUtils';
@@ -1322,7 +1322,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private sub = this.props.bus.getArincSubscriber<PrimFgBusBaseEvents & Arinc429Values & HUDSimvars & HudElems>();
 
   private decelActive = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
-
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
   private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
@@ -1404,15 +1404,25 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   }
 
   private handleLowerUpperBound(): boolean {
-    const currentTargetSpeed = this.isSpeedManaged.get() ? this.managedSpeed : this.selectedSpeed;
+    let currentTargetSpeed;
+
+    if (this.hudMode.get() === HudMode.TAKEOFF) {
+      this.isSpeedManaged.get().valueOf()
+        ? (currentTargetSpeed = this.managedSpeed.get().value - 10)
+        : (currentTargetSpeed = this.selectedSpeed.get().value - 10);
+    } else {
+      this.isSpeedManaged.get().valueOf()
+        ? (currentTargetSpeed = this.managedSpeed.get().value)
+        : (currentTargetSpeed = this.selectedSpeed.get().value);
+    }
     let inRange = false;
     this.handleCrosswinMode();
     this.setTargetSpeedBugBg();
-    if (this.speed.get().value - currentTargetSpeed.get().value > DisplayRange) {
+    if (this.speed.get().value - currentTargetSpeed > DisplayRange) {
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset + (DisplayRange / ValueSpacing) * DistanceSpacing + 15}px, 0px)`;
-    } else if (this.speed.get().value - currentTargetSpeed.get().value < -DisplayRange && !this.decelActive.get()) {
+    } else if (this.speed.get().value - currentTargetSpeed < -DisplayRange && !this.decelActive.get()) {
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset - (DisplayRange / ValueSpacing) * DistanceSpacing - 15}px, 0px)`;
-    } else if (Math.abs(this.speed.get().value - currentTargetSpeed.get().value) < DisplayRange) {
+    } else if (Math.abs(this.speed.get().value - currentTargetSpeed) < DisplayRange) {
       inRange = true;
     }
 
@@ -1456,6 +1466,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           class={{
             FontSmallest: true,
             MiddleAlign: true,
+            Green: true,
             HiddenElement: this.speedTargetUpperVisible.map(SubscribableMapFunctions.not()),
           }}
           x="94"
@@ -1469,6 +1480,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           class={{
             FontSmallest: true,
             MiddleAlign: true,
+            Green: true,
             HiddenElement: this.speedTargetLowerVisible.map(SubscribableMapFunctions.not()),
           }}
           x="94"
