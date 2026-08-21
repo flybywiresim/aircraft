@@ -358,6 +358,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   -5.0,
 
+  -5.0,
+
+  -17.0,
+
   -12.0,
 
   -1.0,
@@ -375,10 +379,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   -30.0,
 
   -30.0,
-
-  -5.0,
-
-  -17.0,
 
   -0.03,
 
@@ -454,6 +454,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   5.0,
 
+  5.0,
+
+  17.0,
+
   12.0,
 
   1.0,
@@ -471,10 +475,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   30.0,
 
   30.0,
-
-  5.0,
-
-  17.0,
 
   0.03,
 
@@ -3548,6 +3548,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       false,
       false,
       false,
+      0.0,
       false,
       false,
       false,
@@ -4379,10 +4380,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   1.2,
 
-  -15.0,
-
-  0.0,
-
   -5.0,
 
   0.0,
@@ -4395,8 +4392,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   0.0,
 
-  -50.0,
-
   -1.0,
 
   -1.0,
@@ -4406,6 +4401,12 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   3.5,
 
   -11.0,
+
+  -15.0,
+
+  0.0,
+
+  -50.0,
 
   0.0,
 
