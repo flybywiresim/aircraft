@@ -676,18 +676,23 @@ class FlareIndicator extends DisplayComponent<{
   private flareGroup = FSComponent.createRef<SVGGElement>();
   private verticalMode = 0;
   private readonly primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+  private readonly flareModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(24, false));
+  private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    const flareModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(24, false));
+  private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
 
-    flareModeActive.sub((v) => {
-      v ? this.flareVis.set('block') : this.flareVis.set('none');
-    }, true);
-  }
+  private readonly flareModeVis = MappedSubject.create(
+    ([leftMainGearCompressed, rightMainGearCompressed, flareModeActive]) => {
+      return flareModeActive && !(leftMainGearCompressed || rightMainGearCompressed) ? 'block' : 'none';
+    },
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+    this.flareModeActive,
+  );
+
   render(): VNode {
     return (
-      <g ref={this.flareGroup} id="FlareArrows" display={this.flareVis}>
+      <g ref={this.flareGroup} id="FlareArrows" display={this.flareModeVis}>
         <path class="NormalStroke Green" d="m 615,512 v -32" />
         <path class="NormalStroke Green" d="m 609,496 l 6 -16  l 6 16" />
         <path class="NormalStroke Green" d="m 665,512 v -32" />
