@@ -90,6 +90,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
 1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
 1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
+1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
 
 ## 2024.1.0
 
