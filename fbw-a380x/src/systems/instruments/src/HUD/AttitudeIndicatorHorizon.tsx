@@ -538,7 +538,6 @@ class PitchScale extends DisplayComponent<{
 
   private readonly threeDegLineVis = MappedSubject.create(
     ([lsButtonPressed, decMode, flightPhase, isFlareMode, hudMode]) => {
-      console.log(lsButtonPressed + '   ' + hudMode + '   ' + flightPhase + '   ' + isFlareMode + '   ' + decMode);
       if (lsButtonPressed) {
         if (hudMode === HudMode.NORMAL) {
           if (flightPhase === FmgcFlightPhase.Approach) {
