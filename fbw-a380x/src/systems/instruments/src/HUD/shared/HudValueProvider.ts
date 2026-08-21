@@ -213,29 +213,7 @@ export class HudValueProvider implements Instrument {
           this.logCase = ' D ';
         } else {
           //HudMode Normal
-          if (this.flightPhase === FmgcFlightPhase.Descent) {
-            if (this.declutterMode === 0) {
-              if (this.crosswindMode === false) {
-                // flightPhase Des dec 0 xwind 0
-                this.elems.syntheticRunwway = 'block';
-                this.elems.hudFlightPhaseMode = this.hudMode.get();
-              } else {
-                // flightPhase Des dec 0 xwind 1
-                this.elems.syntheticRunwway = 'block';
-                this.elems.hudFlightPhaseMode = this.hudMode.get();
-              }
-            } else if (!(this.declutterMode === 0)) {
-              if (this.crosswindMode === false) {
-                // flightPhase Des dec !0 xwind 0
-                this.elems.syntheticRunwway = 'none';
-                this.elems.hudFlightPhaseMode = this.hudMode.get();
-              } else {
-                // flightPhase Des dec !0 xwind 1
-                this.elems.syntheticRunwway = 'none';
-                this.elems.hudFlightPhaseMode = this.hudMode.get();
-              }
-            }
-          } else if (this.flightPhase === FmgcFlightPhase.Approach) {
+          if (this.flightPhase === FmgcFlightPhase.Approach) {
             if (this.declutterMode === 0) {
               if (this.crosswindMode === false) {
                 // flightPhase App dec 0 xwind 0
@@ -402,7 +380,9 @@ export class HudValueProvider implements Instrument {
                 this.elems.IlsGS = 'block';
                 this.elems.IlsLoc = 'block';
                 this.elems.IlsHorizonTrk = 'block';
-                this.elems.syntheticRunwway = 'none';
+                this.flightPhase === FmgcFlightPhase.Descent
+                  ? (this.elems.syntheticRunwway = 'block')
+                  : (this.elems.syntheticRunwway = 'none');
                 this.elems.windIndicator = 'block';
                 this.elems.QFE = 'block';
                 this.elems.metricAlt = true;
@@ -430,7 +410,9 @@ export class HudValueProvider implements Instrument {
                 this.elems.IlsGS = 'block';
                 this.elems.IlsLoc = 'block';
                 this.elems.IlsHorizonTrk = 'block';
-                this.elems.syntheticRunwway = 'none';
+                this.flightPhase === FmgcFlightPhase.Descent
+                  ? (this.elems.syntheticRunwway = 'block')
+                  : (this.elems.syntheticRunwway = 'none');
                 this.elems.windIndicator = 'block';
                 this.elems.QFE = 'block';
                 this.elems.metricAlt = true;
