@@ -3294,7 +3294,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns {boolean} input passed checks
    */
   private trySetCruiseFl(fl: number, forPlan: number): boolean {
-    if (!isFinite(fl)) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (!isFinite(fl) || plan === null) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -3306,26 +3307,36 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const phase = this.flightPhaseManager.phase;
-    const selFl = Math.floor(Math.max(0, this.fcuSelectedAltitude.get().valueOr(0)) / 100);
+    let flightLevelToInsert = fl;
+    let newCrzAltMessage = false;
+    if (forPlan === FlightPlanIndex.Active) {
+      const phase = this.flightPhaseManager.phase;
+      if (phase >= FmgcFlightPhase.Climb && phase < FmgcFlightPhase.Done) {
+        // Select the maximum of CRZ FL and FCU altitude, i.e. if crew entry < FCU, we set FCU
+        const fcuFl = Math.floor(Math.max(0, this.fcuSelectedAltitude.get().valueOr(0)) / 100);
+        if (fl < fcuFl) {
+          flightLevelToInsert = fcuFl;
+          newCrzAltMessage = phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach;
+        } else {
+          flightLevelToInsert = fl;
+        }
+      }
+    }
 
-    // TODO check if it's correct to skip this logic for SEC
-    if (
-      forPlan === FlightPlanIndex.Active &&
-      fl < selFl &&
-      (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)
-    ) {
+    if (flightLevelToInsert <= 0 || flightLevelToInsert > this.maximumAllowedCruiseFlightLevel) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
 
-    if (fl <= 0 || fl > this.maximumAllowedCruiseFlightLevel) {
-      this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-      return false;
+    plan.setPerformanceData('cruiseFlightLevel', flightLevelToInsert);
+    if (newCrzAltMessage) {
+      this.addMessageToQueue(
+        NXSystemMessages.newCrzAlt.getModifiedMessage(flightLevelToInsert * 100),
+        undefined,
+        undefined,
+      );
     }
-
-    this.flightPlanService.setPerformanceData('cruiseFlightLevel', fl, forPlan);
-    this.onUpdateCruiseLevel(fl, forPlan);
+    this.onUpdateCruiseLevel(flightLevelToInsert, forPlan);
 
     return true;
   }
