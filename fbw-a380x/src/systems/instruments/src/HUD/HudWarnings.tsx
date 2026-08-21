@@ -1,21 +1,24 @@
 import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
+import { PrimFgBusEvents } from '@shared/publishers/PrimFgPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
+import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
 
 interface HudWarningsProps {
   bus: ArincEventBus;
   instrument: BaseInstrument;
-  fcdcData: FcdcValueProvider;
 }
 
 export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values & FcdcValueProvider>();
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & HudElems & Arinc429Values & FcdcBusEvents & PrimFgBusEvents & PrimFeBusBaseEvents
+  >();
   private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
-  private readonly vStallWarn = Arinc429ConsumerSubject.create(this.sub.on('vStallWarn').whenChanged());
+  private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_stall_warn'));
   private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').whenChanged());
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 1);
 
@@ -25,8 +28,15 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly brakePedalInputRight = ConsumerSubject.create(this.sub.on('brakePedalInputRight').whenChanged(), 0);
   private readonly throttle2Position = ConsumerSubject.create(this.sub.on('throttle2Position').whenChanged(), 0);
   private readonly throttle3Position = ConsumerSubject.create(this.sub.on('throttle3Position').whenChanged(), 0);
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);

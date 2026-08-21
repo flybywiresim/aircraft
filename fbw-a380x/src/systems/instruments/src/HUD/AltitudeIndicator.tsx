@@ -9,7 +9,6 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { VerticalMode } from '@shared/autopilot';
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
@@ -20,15 +19,16 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { getDisplayIndex } from './HUD';
 import { ALT_TAPE_XPOS, ALT_TAPE_YPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 import { HudElems, WindMode, MdaMode } from './HUDUtils';
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 let DisplayRange = 600;
 const ValueSpacing = 100;
@@ -178,7 +178,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
 }
 
 class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
 
   private readonly altitude = Arinc429ConsumerSubject.create(
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
@@ -203,8 +203,8 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
   private landingElevation = new Arinc429Word(0);
 
   private updateIndication(): void {
-    const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
-    const isQfe = !isQnh && !this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+    const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(12, false);
+    const isQfe = !isQnh && !this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
 
     this.qnhLandingAltValid =
       !this.landingElevation.isFailureWarning() &&
@@ -237,10 +237,10 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     const isFo = getDisplayIndex() === 2;
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
     sub
       .on('chosenRa')
       .whenArinc429SsmChanged()
@@ -359,11 +359,43 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   private altTapeRef = FSComponent.createRef<SVGGElement>();
   private xWindAltTapeRef = FSComponent.createRef<SVGGElement>();
 
-  private readonly altitude = Arinc429ConsumerSubject.create(
-    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
-  );
+  private readonly sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & Arinc429Values>();
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
 
   private readonly altFlagVisible = this.altitude.map((v) => !v.isNormalOperation() && !v.isFunctionalTest());
+
+  private readonly selectedAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_altitude'));
+
+  private readonly altConstraint = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fm_alt_constraint'));
+
+  private readonly fgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
+
+  private readonly fgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+
+  private readonly selectedAltIgnored = MappedSubject.create(
+    ([fgDiscreteWord1, fgDiscreteWord3]) => {
+      const landTrackActive = fgDiscreteWord1.bitValueOr(23, false);
+      const gsCaptActive = fgDiscreteWord3.bitValueOr(21, false);
+      const gsTrkActive = fgDiscreteWord3.bitValueOr(22, false);
+      const finalDesActive = fgDiscreteWord3.bitValueOr(23, false);
+
+      return landTrackActive || gsCaptActive || gsTrkActive || finalDesActive;
+    },
+    this.fgDiscreteWord1,
+    this.fgDiscreteWord3,
+  );
+
+  private readonly useAltConstraint = MappedSubject.create(
+    ([altConstraint, selectedAltIgnored]) =>
+      !(selectedAltIgnored || altConstraint.isFailureWarning() || altConstraint.isNoComputedData()),
+    this.altConstraint,
+    this.selectedAltIgnored,
+  );
+
+  private readonly shownTargetAltitude = Arinc429RegisterSubject.createEmpty();
+
+  private readonly selectedAltPipe = this.selectedAlt.pipe(this.shownTargetAltitude, false);
+  private readonly altConstraintPipe = this.altConstraint.pipe(this.shownTargetAltitude, true);
 
   private tcasFailed = FSComponent.createRef<SVGGElement>();
 
@@ -372,6 +404,15 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    this.useAltConstraint.sub((useAltConstraint) => {
+      if (useAltConstraint) {
+        this.selectedAltPipe.pause();
+        this.altConstraintPipe.resume();
+      } else {
+        this.selectedAltPipe.resume();
+        this.altConstraintPipe.pause();
+      }
+    }, true);
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     sub
       .on('altTape')
@@ -439,7 +480,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             <path id="AltTapeOutlineUpper" class="NormalStroke Green" d="m528 288.5 h100" />
             <path id="AltTapeOutlineLower" class="NormalStroke Green" d="m528 438.5 h100" />
             <MinimumDescentAltitudeIndicator bus={this.props.bus} />
-            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.CrossWind} />
+            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.CrossWind} targetAlt={this.shownTargetAltitude} />
             <path id="AltReadoutBackground" class="BlackFill" d="m528 341.25 h 100 v45 h -100z" />
             <RadioAltIndicator bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAltitude} />
             <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
@@ -450,7 +491,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             <path id="AltTapeOutlineUpper" class="NormalStroke Green" d="m528 170.834h100" />
             <path id="AltTapeOutlineLower" class="NormalStroke Green" d="m528 554.167h100" />
             <MinimumDescentAltitudeIndicator bus={this.props.bus} />
-            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.Normal} />
+            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.Normal} targetAlt={this.shownTargetAltitude} />
             <path
               id="AltReadoutBackground"
               class="BlackFill"
@@ -461,7 +502,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           </g>
         </g>
         <AltimeterIndicator bus={this.props.bus} altitude={this.altitude.map((v) => v.value)} />
-        <MetricAltIndicator bus={this.props.bus} />
+        <MetricAltIndicator bus={this.props.bus} targetAlt={this.shownTargetAltitude} />
       </g>
     );
   }
@@ -470,10 +511,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 interface SelectedAltIndicatorProps {
   bus: ArincEventBus;
   mode: WindMode;
+  targetAlt: Arinc429RegisterSubject;
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents & HUDSimvars & Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<
+    FcuEfisCpBusEvents & PrimFgBusBaseEvents & HUDSimvars & Arinc429Values
+  >();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
@@ -484,6 +528,8 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private selectedAltLowerFLText = FSComponent.createRef<SVGTextElement>();
 
   private selectedAltUpperGroupRef = FSComponent.createRef<SVGGElement>();
+
+  private readonly selectedAltFailed = Subject.create(false);
 
   private selectedAltUpperText = FSComponent.createRef<SVGTextElement>();
 
@@ -499,30 +545,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private minimumLowerText = FSComponent.createRef<SVGTextElement>();
 
-  private targetAltitudeSelected = 0;
-
-  private shownTargetAltitude = 0;
-
-  private constraint = 0;
+  private shownTargetAltitude = Arinc429Register.empty();
 
   private textSub = Subject.create('');
-
-  private isManaged = false;
-
-  private activeVerticalMode = 0;
-
-  private handleAltManagedChange() {
-    // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
-    const clbActive =
-      this.activeVerticalMode !== VerticalMode.OP_CLB &&
-      this.activeVerticalMode !== VerticalMode.OP_DES &&
-      this.activeVerticalMode !== VerticalMode.VS &&
-      this.activeVerticalMode !== VerticalMode.FPA;
-
-    this.isManaged = this.constraint > 0 && clbActive;
-
-    this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
-  }
 
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 0);
@@ -594,53 +619,27 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     const isFo = getDisplayIndex() === 2;
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
+    this.props.targetAlt.sub((targetAlt) => {
+      this.shownTargetAltitude.set(targetAlt.rawWord);
+
+      this.getOffset();
+      this.handleAltitudeDisplay();
+      this.setText();
+    }, true);
 
     this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
     this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
 
-    sub
+    this.sub
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((value) => {
         value === FmgcFlightPhase.Approach
           ? this.targetSymbolRef.instance.setAttribute('stroke-dasharray', '3 6')
           : this.targetSymbolRef.instance.setAttribute('stroke-dasharray', '');
-      });
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((v) => {
-        this.activeVerticalMode = v;
-        this.handleAltManagedChange();
-        this.getOffset();
-        this.handleAltitudeDisplay();
-        this.setText();
-      });
-
-    sub
-      .on('selectedAltitude')
-      .whenChanged()
-      .handle((m) => {
-        this.targetAltitudeSelected = m;
-        this.handleAltManagedChange();
-        this.getOffset();
-        this.handleAltitudeDisplay();
-        this.setText();
-      });
-
-    sub
-      .on('altConstraint')
-      .whenChanged()
-      .handle((m) => {
-        this.constraint = m;
-        this.handleAltManagedChange();
-        this.getOffset();
-        this.handleAltitudeDisplay();
-        this.setText();
       });
 
     this.altitude.sub(() => {
@@ -650,7 +649,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     }, true);
 
     this.fcuEisDiscreteWord2.sub(() => {
-      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
 
       if (isStd) {
         this.selectedAltLowerFLText.instance.style.visibility = 'visible';
@@ -665,23 +664,27 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     }, true);
   }
 
-  private updateTargetAltitude(targetAltitude: number, isManaged: boolean, constraint: number) {
-    return isManaged ? constraint : targetAltitude;
-  }
-
   private handleAltitudeDisplay() {
-    if (this.altitude.get().value - this.shownTargetAltitude > DisplayRange) {
+    if (this.shownTargetAltitude.isNoComputedData() || this.shownTargetAltitude.isFailureWarning()) {
+      this.selectedAltUpperGroupRef.instance.style.display = 'none';
+      this.selectedAltLowerGroupRef.instance.style.display = 'none';
+      this.targetGroupRef.instance.style.display = 'none';
+      this.selectedAltFailed.set(true);
+    } else if (this.altitude.get().value - this.shownTargetAltitude.value > DisplayRange) {
       this.selectedAltLowerGroupRef.instance.style.display = 'block';
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
-    } else if (this.altitude.get().value - this.shownTargetAltitude < -DisplayRange) {
+      this.selectedAltFailed.set(false);
+    } else if (this.altitude.get().value - this.shownTargetAltitude.value < -DisplayRange) {
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltUpperGroupRef.instance.style.display = 'block';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
+      this.selectedAltFailed.set(false);
     } else {
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'inline';
+      this.selectedAltFailed.set(false);
     }
   }
 
@@ -706,19 +709,19 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     let text = '0';
     const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
     if (isStd) {
-      text = Math.round(this.shownTargetAltitude / 100)
+      text = Math.round(this.shownTargetAltitude.value / 100)
         .toString()
         .padStart(3, '0');
       boxLength = 62.5;
     } else {
-      text = Math.round(this.shownTargetAltitude).toString().padStart(5, ' ');
+      text = Math.round(this.shownTargetAltitude.value).toString().padStart(5, ' ');
     }
     this.textSub.set(text);
     this.blackFill.instance.setAttribute('d', `m 528.109 348.861 h ${boxLength}v 27.123 h-${boxLength} z`);
   }
 
   private getOffset() {
-    const offset = ((this.altitude.get().value - this.shownTargetAltitude) * DistanceSpacing) / ValueSpacing;
+    const offset = ((this.altitude.get().value - this.shownTargetAltitude.value) * DistanceSpacing) / ValueSpacing;
     this.targetGroupRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
   }
 
@@ -795,6 +798,11 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           >
             {this.textSub}
           </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.selectedAltFailed}>
+            <text id="SelectedAltUpperText" class="FontSmall EndAlign Red" x="620" y="167">
+              ALT SEL
+            </text>
+          </FlashOneHertz>
         </g>
       </>
     );
@@ -809,7 +817,7 @@ interface AltimeterIndicatorProps {
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private QFERef = FSComponent.createRef<SVGGElement>();
   private readonly sub = this.props.bus.getSubscriber<
-    A380XFcuBusEvents & HUDSimvars & SimplaneValues & Arinc429Values & HudElems & ClockEvents
+    HUDSimvars & FcuEfisCpBusEvents & Arinc429Values & HudElems & ClockEvents
   >();
 
   private readonly fcuEisDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(null);
@@ -820,7 +828,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private readonly fcuBaroCorrectionHpa = Arinc429LocalVarConsumerSubject.create(null);
 
-  private readonly isHg = this.fcuEisDiscreteWord1.map((v) => v.bitValueOr(11, false));
+  private readonly isHg = this.fcuEisDiscreteWord2.map((v) => v.bitValueOr(13, false));
 
   private readonly text = Subject.create('');
 
@@ -863,20 +871,19 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     const isFo = getDisplayIndex() === 2;
 
-    this.fcuEisDiscreteWord1.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_1_right' : 'a380x_fcu_eis_discrete_word_1_left'),
-    );
     this.fcuEisDiscreteWord2.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
-    this.fcuBaroCorrectionHg.setConsumer(this.sub.on(isFo ? 'a380x_fcu_eis_baro_right' : 'a380x_fcu_eis_baro_left'));
-    this.fcuBaroCorrectionHpa.setConsumer(
-      this.sub.on(isFo ? 'a380x_fcu_eis_baro_hpa_right' : 'a380x_fcu_eis_baro_hpa_left'),
+    this.fcuBaroCorrectionHg.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_baro_setting_inhg' : 'fcu_efis_l_baro_setting_inhg'),
     );
+    this.fcuBaroCorrectionHpa.setConsumer(this.sub.on(isFo ? 'fcu_efis_r_baro_setting' : 'fcu_efis_l_baro_setting'));
+
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
 
     this.fcuEisDiscreteWord2.sub(() => {
-      const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
-      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+      const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(12, false);
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(11, true);
       const isQfe = !isQnh && !isStd;
 
       if (isQfe) {
@@ -897,7 +904,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       }
     }, true);
 
-    this.sub
+    sub
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
@@ -906,7 +913,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.handleBlink();
       });
 
-    this.sub
+    sub
       .on('fmTransAltRaw')
       .whenChanged()
       .handle((ta) => {
@@ -915,7 +922,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.handleBlink();
       });
 
-    this.sub
+    sub
       .on('fmTransLvlRaw')
       .whenChanged()
       .handle((tl) => {
@@ -988,41 +995,36 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   }
 }
 
-interface MetricAltIndicatorState {
-  MDA: number;
-  targetAltSelected: number;
-  targetAltManaged: number;
-  altIsManaged: boolean;
-  metricAltToggle: boolean;
+interface MetricAltIndicatorProps {
+  bus: ArincEventBus;
+  targetAlt: Arinc429RegisterSubject;
 }
 
-class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly altitude = Arinc429ConsumerSubject.create(
-    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
-  );
+class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & Arinc429Values & HUDSimvars>();
+  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  private needsUpdate = true;
-  private metricAltHudVis = false;
+  private readonly metricAltActive = this.primFgDiscreteWord5.map((word) => word.bitValueOr(14, false));
 
-  private metricAlt = FSComponent.createRef<SVGGElement>();
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
 
+  private currentMetricAlt = this.altitude.map((alt) => Math.round((alt.value * 0.3048) / 10) * 10);
+
+  private metricTargetAlt = this.props.targetAlt.map((alt) => Math.round((alt.value * 0.3048) / 10) * 10);
+
+  private readonly mda = ConsumerSubject.create(this.sub.on('mda'), 0);
+
+  private readonly belowMda = MappedSubject.create(([mda, altitude]) => altitude.value < mda, this.mda, this.altitude);
   private metricAltText = FSComponent.createRef<SVGTextElement>();
 
+  private metricAltHudVis = false;
   private metricAltTargetText = FSComponent.createRef<SVGTextElement>();
   private metricAltTargetMText = FSComponent.createRef<SVGTextElement>();
-
-  private state: MetricAltIndicatorState = {
-    MDA: 0,
-    targetAltSelected: 0,
-    targetAltManaged: 0,
-    altIsManaged: false,
-    metricAltToggle: false,
-  };
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & SimplaneValues & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     sub
       .on('cWndMode')
       .whenChanged()
@@ -1045,67 +1047,11 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .handle((v) => {
         v ? (this.metricAltHudVis = true) : (this.metricAltHudVis = false);
       });
-
-    sub
-      .on('mda')
-      .whenChanged()
-      .handle((mda) => {
-        this.state.MDA = mda;
-        this.needsUpdate = true;
-      });
-
-    this.altitude.sub(() => (this.needsUpdate = true));
-
-    sub
-      .on('selectedAltitude')
-      .whenChanged()
-      .handle((m) => {
-        this.state.targetAltSelected = m;
-        this.needsUpdate = true;
-      });
-    sub.on('altConstraint').handle((m) => {
-      this.state.targetAltManaged = m;
-      this.needsUpdate = true;
-    });
-
-    sub
-      .on('metricAltToggle')
-      .whenChanged()
-      .handle((m) => {
-        this.state.metricAltToggle = m;
-        this.needsUpdate = true;
-      });
-
-    sub.on('realTime').handle(this.updateState.bind(this));
-  }
-
-  private updateState(_time: number) {
-    if (this.needsUpdate) {
-      this.needsUpdate = false;
-      const showMetricAlt = this.state.metricAltToggle;
-      if (showMetricAlt) {
-        if (this.metricAltHudVis) {
-          this.metricAlt.instance.style.display = 'inline';
-          const currentMetricAlt = Math.round((this.altitude.get().value * 0.3048) / 10) * 10;
-          this.metricAltText.instance.textContent = currentMetricAlt.toString();
-
-          const targetMetric =
-            Math.round(
-              ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
-            ) * 10;
-          this.metricAltTargetText.instance.textContent = targetMetric.toString();
-        } else {
-          this.metricAlt.instance.style.display = 'none';
-        }
-      } else {
-        this.metricAlt.instance.style.display = 'none';
-      }
-    }
   }
 
   render(): VNode {
     return (
-      <g id="MetricAltGroup" ref={this.metricAlt}>
+      <g id="MetricAltGroup" visibility={this.metricAltActive.map((active) => (active ? 'inherit' : 'hidden'))}>
         <path class="NormalStroke Green" d="m522.772 628.887h131.02v31.644h-131.02z" />
         <text class="FontMedium Green MiddleAlign" x="637.0286344499999" y="654.2220165">
           M
@@ -1113,11 +1059,15 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         <text
           ref={this.metricAltText}
           id="MetricAltText"
-          class="FontMedium Green MiddleAlign"
+          class={{
+            FontMedium: true,
+            MiddleAlign: true,
+            Green: true,
+          }}
           x="576.9821538"
           y="654.19066635"
         >
-          0
+          {this.currentMetricAlt}
         </text>
         <g id="MetricAltTargetGroup">
           <text
@@ -1127,7 +1077,7 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             x="457.47"
             y="170.100877245"
           >
-            0
+            {this.metricTargetAlt}
           </text>
           <text
             ref={this.metricAltTargetMText}

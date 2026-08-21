@@ -13,23 +13,35 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   Arinc429Word,
-  Arinc429WordData,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex } from './HUD';
 import { HudElems } from './HUDUtils';
-import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
-import { AutoThrustModeMessage } from '@shared/autopilot';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import {
+  A1A2Messages,
+  A3Messages,
+  B1Messages,
+  BC3Messages,
+  C1Messages,
+  computeA1A2Message,
+  computeA3Message,
+  computeB1Message,
+  computeBC3Message,
+  computeC1Message,
+  computeD1D2Message,
+  D1D2Messages,
+} from './FMADefinitions';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { FcuEfisCpBusEvents } from '../../../shared/src/publishers/EfisCpBusPublisher';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -92,39 +104,52 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 export class FMA extends DisplayComponent<{
   readonly bus: ArincEventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly fcdcData: FcdcValueProvider;
 }> {
   private sub = this.props.bus.getSubscriber<
-    HUDSimvars & Arinc429Values & SimplaneValues & HudElems & DmcLogicEvents & FGVars
+    HUDSimvars & Arinc429Values & HudElems & DmcLogicEvents & PrimFgBusBaseEvents & FcdcBusBaseEvents
   >();
 
   private FMA = '';
 
   private FMARef = FSComponent.createRef<SVGGElement>();
 
-  private activeLateralMode: LateralMode = LateralMode.NONE;
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private armedVerticalModeSub = Subject.create(0);
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
 
-  private athrModeMessage = 0;
+  private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
 
-  private machPresel = Arinc429Word.empty();
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
 
-  private speedPresel = Arinc429Word.empty();
+  private primFgDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_6'));
 
-  private setHoldSpeed = false;
+  private primFgAtsDiscreteWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_ats_discrete_word'));
 
-  private tdReached = false;
+  private primFgAtsFmaDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_fg_ats_fma_discrete_word'),
+  );
 
-  private tcasRaInhibited = Subject.create(false);
+  private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
 
-  private trkFpaDeselected = Subject.create(false);
+  private readonly ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
+
+  private readonly ap2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(12, false));
+
+  private readonly athrEngaged = this.primFgAtsDiscreteWord.map((word) => word.bitValueOr(11, false));
+
+  private readonly athrActive = this.primFgAtsDiscreteWord.map((word) => word.bitValueOr(12, false));
+
+  private machPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_mach'));
+
+  private speedPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_speed'));
+
+  private setHoldSpeed = ConsumerSubject.create(this.sub.on('setHoldSpeed'), false);
+
+  private tdReached = ConsumerSubject.create(this.sub.on('tdReached'), false);
 
   private firstBorderRef = FSComponent.createRef<SVGPathElement>();
 
   private secondBorderRef = FSComponent.createRef<SVGPathElement>();
-
-  private AB3Message = Subject.create(false);
 
   private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
@@ -134,119 +159,108 @@ export class FMA extends DisplayComponent<{
 
   private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
 
-  private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active'), false);
-
-  private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active'), false);
-
-  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), null);
-
-  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), null);
-
-  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), null);
-
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-
-  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
 
-  private readonly autoThrustModeMessage = ConsumerSubject.create(
-    this.sub.on('fg.athr.message'),
-    AutoThrustModeMessage.None,
+  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive'), false);
+
+  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
+
+  private readonly B1Message = this.primFgDiscreteWord3.map((primFgDiscreteWord3) =>
+    computeB1Message(primFgDiscreteWord3),
   );
 
   private readonly disconnectApForLdg = MappedSubject.create(
-    ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, autolandCapacity]) => {
+    ([ap1, ap2, ra, altitude, landingElevation, B1Message]) => {
       return (
         (ap1 || ap2) &&
         (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
-        (!autolandCapacity ||
-          verticalMode === VerticalMode.DES ||
-          verticalMode === VerticalMode.OP_DES ||
-          (verticalMode === VerticalMode.FPA && selectedFpa <= 0) ||
-          (verticalMode === VerticalMode.VS && selectedVs <= 0))
+        (B1Message === B1Messages.DES ||
+          B1Message === B1Messages.OP_DES ||
+          B1Message === B1Messages.FPA ||
+          B1Message === B1Messages.VS ||
+          B1Message === B1Messages.APP_DES)
       );
     },
-    this.ap1Active,
-    this.ap2Active,
+    this.ap1Engaged,
+    this.ap2Engaged,
     this.radioHeight,
     this.altitude,
     this.landingElevation,
-    this.activeVerticalMode,
-    this.selectedFpa,
-    this.selectedVs,
-    this.props.fcdcData.autolandCapacity,
+    this.B1Message,
   );
 
-  private readonly unrestrictedClimbDescent = MappedSubject.create(
-    ([activeVerticalMode, selectedFpa, selectedVs, selectedAltitude, altitude]) => {
-      if (activeVerticalMode === VerticalMode.FPA || activeVerticalMode === VerticalMode.VS) {
-        if ((selectedFpa > 0 || selectedVs > 0) && selectedAltitude < altitude.value) {
-          return 1;
-        } else if ((selectedFpa < 0 || selectedVs < 0) && selectedAltitude > altitude.value) {
-          return 2;
-        }
-      }
-      return 0;
+  private readonly BC3Message = MappedSubject.create(
+    ([
+      isAttExcessive,
+      primFgDiscreteWord2,
+      setHoldSpeed,
+      fcdcDiscreteWord1,
+      fwcFlightPhase,
+      primFgDiscreteWord6,
+      tdReached,
+      disconnectApForLdg,
+      btvExitMissed,
+    ]) => {
+      return computeBC3Message(
+        isAttExcessive,
+        setHoldSpeed,
+        fcdcDiscreteWord1,
+        fwcFlightPhase,
+        tdReached,
+        disconnectApForLdg,
+        btvExitMissed,
+        primFgDiscreteWord2,
+        primFgDiscreteWord6,
+      );
     },
-    this.activeVerticalMode,
-    this.selectedFpa,
-    this.selectedVs,
-    this.selectedAltitude,
-    this.altitude,
+    this.props.isAttExcessive,
+    this.primFgDiscreteWord2,
+    this.setHoldSpeed,
+    this.fcdcDiscreteWord1,
+    this.fwcFlightPhase,
+    this.primFgDiscreteWord6,
+    this.tdReached,
+    this.disconnectApForLdg,
+    this.btvExitMissed,
+  );
+
+  private readonly A1A2Message = MappedSubject.create(
+    ([athrEngaged, athrActive, primFgAtsFmaDiscreteWord, autoBrakeActive, autoBrakeMode]) => {
+      return computeA1A2Message(athrEngaged, athrActive, primFgAtsFmaDiscreteWord, autoBrakeActive, autoBrakeMode);
+    },
+    this.athrEngaged,
+    this.athrActive,
+    this.primFgAtsFmaDiscreteWord,
+    this.autoBrakeActive,
+    this.autoBrakeMode,
+  );
+
+  private readonly A3Message = MappedSubject.create(
+    ([primFgAtsFmaDiscreteWord, autoBrakeActive, autoBrakeMode]) => {
+      return computeA3Message(primFgAtsFmaDiscreteWord, false, autoBrakeActive, autoBrakeMode);
+    },
+    this.primFgAtsFmaDiscreteWord,
+    this.autoBrakeActive,
+    this.autoBrakeMode,
+  );
+
+  private readonly sharedModeActive = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord3, primFgDiscreteWord4]) => {
+      const rollOutActive = primFgDiscreteWord4.bitValueOr(26, false);
+      const flareActive = primFgDiscreteWord3.bitValueOr(24, false);
+      const landActive = primFgDiscreteWord1.bitValueOr(23, false);
+
+      return landActive || rollOutActive || flareActive;
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord3,
+    this.primFgDiscreteWord4,
   );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.sub
-      .on('FMA')
-      .whenChanged()
-      .handle((v) => {
-        this.FMA = v;
-        this.FMARef.instance.style.display = `${this.FMA}`;
-      });
-    this.sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((a) => {
-        this.armedVerticalModeSub.set(a);
-      });
-
-    this.sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((activeLateralMode) => {
-        this.activeLateralMode = activeLateralMode;
-      });
-
-    this.sub
-      .on('setHoldSpeed')
-      .whenChanged()
-      .handle((shs) => {
-        this.setHoldSpeed = shs;
-      });
-
-    this.sub
-      .on('tcasRaInhibited')
-      .whenChanged()
-      .handle((tra) => {
-        this.tcasRaInhibited.set(tra);
-      });
-
-    this.sub
-      .on('trkFpaDeselectedTCAS')
-      .whenChanged()
-      .handle((trk) => {
-        this.trkFpaDeselected.set(trk);
-      });
-
-    this.sub
-      .on('tdReached')
-      .whenChanged()
-      .handle((tdr) => {
-        this.tdReached = tdr;
-      });
   }
 
   render(): VNode {
@@ -267,17 +281,18 @@ export class FMA extends DisplayComponent<{
           <path class="NormalStroke Green" d="m 1024 0 v100" />
         </g>
 
-        <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} fcdcData={this.props.fcdcData} />
-        <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+        <Row1
+          bus={this.props.bus}
+          isAttExcessive={this.props.isAttExcessive}
+          A1A2CellMessage={this.A1A2Message}
+          B1CellMessage={this.B1Message}
+        />
+        <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} A1A2CellMessage={this.A1A2Message} />
         <Row3
           bus={this.props.bus}
           isAttExcessive={this.props.isAttExcessive}
-          disconnectApForLdg={this.disconnectApForLdg}
-          autoThrustModeMessage={this.autoThrustModeMessage}
-          unrestrictedClimbDescent={this.unrestrictedClimbDescent}
-          btvExitMissed={this.btvExitMissed}
-          AB3Message={this.AB3Message}
-          fcdcData={this.props.fcdcData}
+          BC3Message={this.BC3Message}
+          A3Message={this.A3Message}
         />
       </g>
     );
@@ -287,7 +302,8 @@ export class FMA extends DisplayComponent<{
 class Row1 extends DisplayComponent<{
   readonly bus: EventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly fcdcData: FcdcValueProvider;
+  readonly A1A2CellMessage: Subscribable<number>;
+  readonly B1CellMessage: Subscribable<number>;
 }> {
   private b1Cell = FSComponent.createRef<B1Cell>();
 
@@ -320,13 +336,13 @@ class Row1 extends DisplayComponent<{
   render(): VNode {
     return (
       <g>
-        <A1A2Cell bus={this.props.bus} />
+        <A1A2Cell bus={this.props.bus} A1A2CellMessage={this.props.A1A2CellMessage} />
 
         <g ref={this.cellsToHide}>
-          <B1Cell ref={this.b1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <C1Cell ref={this.c1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <B1Cell ref={this.b1Cell} bus={this.props.bus} B1Message={this.props.B1CellMessage} />
+          <C1Cell ref={this.c1Cell} bus={this.props.bus} />
+          <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} />
+          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
         </g>
         <E1Cell bus={this.props.bus} />
       </g>
@@ -334,7 +350,11 @@ class Row1 extends DisplayComponent<{
   }
 }
 
-class Row2 extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
+class Row2 extends DisplayComponent<{
+  bus: EventBus;
+  isAttExcessive: Subscribable<boolean>;
+  A1A2CellMessage: Subscribable<number>;
+}> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
   onAfterRender(node: VNode): void {
@@ -352,7 +372,7 @@ class Row2 extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribabl
   render(): VNode {
     return (
       <g>
-        <A2Cell bus={this.props.bus} />
+        <A2Cell bus={this.props.bus} A1A2CellMessage={this.props.A1A2CellMessage} />
         <g ref={this.cellsToHide}>
           <B2Cell bus={this.props.bus} />
           <C2Cell bus={this.props.bus} />
@@ -363,7 +383,7 @@ class Row2 extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribabl
   }
 }
 
-class A2Cell extends DisplayComponent<{ bus: EventBus }> {
+class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscribable<A1A2Messages> }> {
   private decMode = 0;
 
   private text = Subject.create('');
@@ -452,17 +472,14 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
         }
       });
 
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((athrMode) => {
-        // ATHR mode overrides BRK LO and MED memo
-        if (athrMode > 0 && athrMode <= 6) {
-          this.autoBrkRef.instance.style.visibility = 'hidden';
-        } else {
-          this.handleDecMode();
-        }
-      });
+    this.props.A1A2CellMessage.sub((message) => {
+      // ATHR mode overrides BRK LO and MED memo
+      if (message > A1A2Messages.NONE && message <= A1A2Messages.MAN_THR) {
+        this.autoBrkRef.instance.style.visibility = 'hidden';
+      } else {
+        this.autoBrkRef.instance.style.visibility = 'visible';
+      }
+    }, true);
   }
 
   render(): VNode {
@@ -486,12 +503,8 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 class Row3 extends DisplayComponent<{
   readonly bus: ArincEventBus;
   readonly isAttExcessive: Subscribable<boolean>;
-  readonly disconnectApForLdg: Subscribable<boolean>;
-  readonly unrestrictedClimbDescent: Subscribable<number>;
-  readonly btvExitMissed: Subscribable<boolean>;
-  readonly AB3Message: Subscribable<boolean>;
-  readonly fcdcData: FcdcValueProvider;
-  readonly autoThrustModeMessage: Subscribable<AutoThrustModeMessage>;
+  readonly BC3Message: Subscribable<BC3Messages>;
+  readonly A3Message: Subscribable<A3Messages>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -510,24 +523,12 @@ class Row3 extends DisplayComponent<{
   render(): VNode {
     return (
       <g>
-        <A3Cell
-          bus={this.props.bus}
-          AB3Message={this.props.AB3Message}
-          autoThrustModeMessage={this.props.autoThrustModeMessage}
-        />
+        <A3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
         <g ref={this.cellsToHide}>
-          <AB3Cell bus={this.props.bus} autoThrustModeMessage={this.props.autoThrustModeMessage} />
+          <AB3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell
-          isAttExcessive={this.props.isAttExcessive}
-          disconnectApForLdg={this.props.disconnectApForLdg}
-          unrestrictedClimbDescent={this.props.unrestrictedClimbDescent}
-          btvExitMissed={this.props.btvExitMissed}
-          bus={this.props.bus}
-          fcdcData={this.props.fcdcData}
-          autoThrustModeMessage={this.props.autoThrustModeMessage}
-        />
+        <BC3Cell BC3Message={this.props.BC3Message} />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -538,31 +539,38 @@ interface CellProps extends ComponentProps {
   bus: EventBus;
 }
 
-class A1A2Cell extends ShowForSecondsComponent<CellProps> {
+interface A1A2CellProps extends CellProps {
+  A1A2CellMessage: Subscribable<A1A2Messages>;
+}
+
+class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
   private decMode = 0;
-
-  private athrMode = 0;
-
-  private isAutoBrkChange = false;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
 
   private cellRef = FSComponent.createRef<SVGGElement>();
 
-  private flexTemp = 0;
+  private flexTemp = ConsumerSubject.create(this.sub.on('flexTemp'), 0);
 
-  private autoBrakeActive = false;
+  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
 
-  private autoBrakeMode = 0;
+  private prevAutoBrkMode = 0;
 
-  constructor(props) {
-    super(props, 9);
+  private readonly isAutoBrkChange = MappedSubject.create(([autoBrakeMode]) => {
+    const res = autoBrakeMode === this.prevAutoBrkMode ? true : false;
+    this.prevAutoBrkMode = autoBrakeMode;
+    return res;
+  }, this.autoBrakeMode);
+
+  constructor(props: A1A2CellProps) {
+    super(props, 10);
   }
 
   private setText() {
     let text: string = '';
     this.isShown = true;
 
-    switch (this.athrMode) {
-      case 1:
+    switch (this.props.A1A2CellMessage.get()) {
+      case A1A2Messages.MAN_TOGA:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `
@@ -571,7 +579,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">TOGA</text>
                             `;
         break;
-      case 2:
+      case A1A2Messages.MAN_GA_SOFT:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `<g>
@@ -580,10 +588,10 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">GA SOFT</text>
                             </g>`;
         break;
-      case 3: {
+      case A1A2Messages.MAN_FLEX: {
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
-        const FlexTemp = Math.round(this.flexTemp);
+        const FlexTemp = Math.round(this.flexTemp.get());
         const FlexText = FlexTemp.toString();
         text = `<g>
                                 <path class="NormalStroke Green" d="m 271 9 v 67.5 h 140 v -67.5 z" />
@@ -597,16 +605,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
         break;
       }
-      case 4:
-        this.displayModeChangedPath(true);
-        this.handleDeclutterMode(true, this.decMode, this.cellRef);
-        text = `<g>
-                                <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
-                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
-                                <text class="FontMedium MiddleAlign Green" x="341" y="71.75">DTO</text>
-                            </g>`;
-        break;
-      case 5:
+      case A1A2Messages.MAN_MCT:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `<g>
@@ -615,7 +614,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">MCT</text>
                             </g>`;
         break;
-      case 6:
+      case A1A2Messages.MAN_THR:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `<g>
@@ -624,49 +623,37 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">THR</text>
                             </g>`;
         break;
-      case 7:
+      case A1A2Messages.SPEED:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">SPEED</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 8:
+      case A1A2Messages.MACH:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">MACH</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 9:
+      case A1A2Messages.THR_MCT:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR MCT</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 10:
+      case A1A2Messages.THR_CLB:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR CLB</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 11:
+      case A1A2Messages.THR_LVR:
         text = '<text  class="FontMedium MiddleAlign Green" x="341" y="35.6">THR LVR</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 12:
+      case A1A2Messages.THR_IDLE:
         text = '<text  class="FontMediumSmaller MiddleAlign Green" x="341" y="35.6">THR IDLE</text>';
-        this.isAutoBrkChange ? this.displayModeChangedPath(true) : this.displayModeChangedPath();
-        this.isAutoBrkChange
-          ? this.handleDeclutterMode(true, this.decMode, this.cellRef)
-          : this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
         break;
-      case 13:
+      case A1A2Messages.A_FLOOR:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `<g>
@@ -674,7 +661,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="35.6">A.FLOOR</text>
                             </g>`;
         break;
-      case 14:
+      case A1A2Messages.TOGA_LK:
         this.displayModeChangedPath(true);
         this.handleDeclutterMode(true, this.decMode, this.cellRef);
         text = `<g>
@@ -682,56 +669,45 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign Green" x="341" y="35.6">TOGA LK</text>
                             </g>`;
         break;
+
+      case A1A2Messages.BTV:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BTV</text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
+      case A1A2Messages.BRK_LO:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK LO</text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
+      case A1A2Messages.BRK_2:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK 2 </text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
+      case A1A2Messages.BRK_3:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK 3 </text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
+      case A1A2Messages.BRK_HI:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK HI </text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
+      case A1A2Messages.BRK_RTO:
+        text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK RTO</text>';
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        break;
       default:
-        if (this.autoBrakeActive) {
-          switch (this.autoBrakeMode) {
-            case 1:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BTV</text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            case 2:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK LO</text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            case 3:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK 2 </text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            case 4:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK 3 </text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            case 5:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK HI </text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            case 6:
-              text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK RTO</text>';
-              this.displayModeChangedPath();
-              this.handleDeclutterMode(false, this.decMode, this.cellRef);
-              break;
-            default:
-              text = '';
-              this.isShown = false;
-              this.displayModeChangedPath(true);
-              this.handleDeclutterMode(true, this.decMode, this.cellRef);
-          }
-        } else {
-          text = '';
-          this.isShown = false;
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellRef);
-        }
+        text = '';
+        this.isShown = false;
+        this.displayModeChangedPath(true);
+        this.handleDeclutterMode(true, this.decMode, this.cellRef);
     }
 
     this.cellRef.instance.innerHTML = text;
-
-    this.isAutoBrkChange = false;
   }
 
   onAfterRender(node: VNode): void {
@@ -747,40 +723,15 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.isShown = false;
         this.handleDeclutterMode(false, this.decMode, this.cellRef);
       });
-    sub
-      .on('flexTemp')
-      .whenChanged()
-      .handle((f) => {
-        this.flexTemp = f;
-        this.setText();
-      });
 
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((athrMode) => {
-        this.athrMode = athrMode;
-        this.setText();
-      });
+    this.props.A1A2CellMessage.sub(() => {
+      this.setText();
+    }, true);
 
-    sub
-      .on('autoBrakeActive')
-      .whenChanged()
-      .handle((a) => {
-        this.autoBrakeActive = a;
-        this.setText();
-      });
-
-    sub
-      .on('autoBrakeMode')
-      .whenChanged()
-      .handle((a) => {
-        this.autoBrakeMode = a;
-        this.isAutoBrkChange = true;
-        this.setText();
-      });
+    this.flexTemp.sub(() => {
+      this.setText();
+    }, true);
   }
-
   render(): VNode {
     return (
       <>
@@ -797,8 +748,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 interface A3CellProps extends CellProps {
-  AB3Message: Subscribable<boolean>;
-  autoThrustModeMessage: Subscribable<AutoThrustModeMessage>;
+  A3Message: Subscribable<A3Messages>;
 }
 
 class A3Cell extends DisplayComponent<A3CellProps> {
@@ -808,36 +758,34 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private textSub = Subject.create('');
 
-  private autobrakeMode = 0;
-
-  private AB3Message = false;
-
-  private autoBrakeActive = false;
-
   private modeArmed = FSComponent.createRef<SVGPathElement>();
 
-  private onUpdateAthrModeMessage(message: AutoThrustModeMessage) {
+  private onUpdateAthrModeMessage(message: A3Messages) {
     let text: string = '';
     let className: string = '';
     switch (message) {
-      case AutoThrustModeMessage.ThrustLock:
+      case A3Messages.THR_LK:
         text = 'THR LK';
-        className = 'Green BlinkInfinite';
+        className = 'Green ';
         break;
-      case AutoThrustModeMessage.LeverToga:
-        className = 'Green BlinkInfinite';
+      case A3Messages.LVR_TOGA:
+        className = 'Green ';
         break;
-      case AutoThrustModeMessage.LeverClb:
+      case A3Messages.LVR_CLB:
         text = 'LVR CLB';
-        className = 'Green BlinkInfinite';
+        className = 'Green ';
         break;
-      case AutoThrustModeMessage.LeverMct:
+      case A3Messages.LVR_MCT:
         text = 'LVR MCT';
-        className = 'Green BlinkInfinite';
+        className = 'Green ';
         break;
-      case AutoThrustModeMessage.LeverAsym:
+      case A3Messages.LVR_ASYM:
         text = 'LVR ASYM';
         className = 'Green';
+        break;
+      case A3Messages.BRK_RTO:
+        text = 'BRK RTO';
+        className = 'Green ';
         break;
       default:
         text = '';
@@ -847,28 +795,13 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
   }
 
-  private handleAutobrakeMode() {
-    if (this.autobrakeMode === 6 && !this.AB3Message && !this.autoBrakeActive) {
-      if (this.decMode !== 2) {
-        this.modeArmed.instance.setAttribute('visibility', 'visible');
-      }
-      this.textSub.set('BRK RTO');
-      this.classSub.set('FontMediumSmaller MiddleAlign Green');
-    } else {
-      this.modeArmed.instance.setAttribute('visibility', 'hidden');
-      this.textSub.set('');
-    }
-  }
-
+  private readonly shouldFlash = this.props.A3Message.map(
+    (A3Message) => A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    this.props.autoThrustModeMessage.sub((message) => {
-      this.onUpdateAthrModeMessage(message);
-    });
-
     sub
       .on('decMode')
       .whenChanged()
@@ -876,26 +809,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         this.decMode = mode;
       });
 
-    sub
-      .on('autoBrakeMode')
-      .whenChanged()
-      .handle((am) => {
-        this.autobrakeMode = am;
-        this.handleAutobrakeMode();
-      });
-
-    this.props.AB3Message.sub((ab3) => {
-      this.AB3Message = ab3;
-      this.handleAutobrakeMode();
-    });
-
-    sub
-      .on('autoBrakeActive')
-      .whenChanged()
-      .handle((a) => {
-        this.autoBrakeActive = a;
-        this.handleAutobrakeMode();
-      });
+    this.props.A3Message.sub((a3) => {
+      this.onUpdateAthrModeMessage(a3);
+    }, true);
   }
 
   render(): VNode {
@@ -908,52 +824,43 @@ class A3Cell extends DisplayComponent<A3CellProps> {
           d="m263.9 79.2 h 160"
           stroke-dasharray="10 8"
         />
-        <text class={this.classSub} x="341" y="108">
-          {this.textSub}
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
+          <text class={this.classSub} x="341" y="108">
+            {this.textSub}
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }
 }
 
 interface AB3CellProps extends CellProps {
-  autoThrustModeMessage: Subscribable<AutoThrustModeMessage>;
+  A3Message: Subscribable<A3Messages>;
 }
 
 class AB3Cell extends DisplayComponent<AB3CellProps> {
-  // TODO: Connect this to the correct FMGC bus
-  private speedPresel = Arinc429Word.empty();
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
-  // TODO: Connect these to the correct FMGC bus
-  private machPresel = Arinc429Word.empty();
+  private machPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_mach'));
 
-  private athrModeMessage = AutoThrustModeMessage.None;
+  private speedPresel = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_presel_speed'));
 
-  private readonly textSub = Subject.create('');
-
-  private getText() {
-    if (this.athrModeMessage === AutoThrustModeMessage.None) {
-      if (this.speedPresel.isNormalOperation() && !this.machPresel.isNormalOperation()) {
-        const text = Math.round(this.speedPresel.value);
-        this.textSub.set(`SPEED SEL ${text}`);
-      } else if (this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
-        this.textSub.set(`MACH SEL ${this.machPresel.value.toFixed(2)}`);
-      } else if (!this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
-        this.textSub.set('');
+  private readonly textSub = MappedSubject.create(
+    ([machPresel, speedPresel, A3Message]) => {
+      if (A3Message !== A3Messages.NONE) {
+        return '';
+      } else if (speedPresel.isNormalOperation() && !machPresel.isNormalOperation()) {
+        return `SPEED SEL ${speedPresel.value}`;
+      } else if (!speedPresel.isNormalOperation() && machPresel.isNormalOperation()) {
+        return `MACH SEL ${machPresel.value.toFixed(2)}`;
+      } else {
+        return '';
       }
-    } else {
-      this.textSub.set('');
-    }
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    this.props.autoThrustModeMessage.sub((message) => {
-      this.athrModeMessage = message;
-      this.getText();
-    });
-  }
+    },
+    this.machPresel,
+    this.speedPresel,
+    this.props.A3Message,
+  );
 
   render(): VNode {
     return (
@@ -964,181 +871,161 @@ class AB3Cell extends DisplayComponent<AB3CellProps> {
   }
 }
 
-class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
-  private readonly boxClassSub = Subject.create('');
+interface B1CellProps extends CellProps {
+  B1Message: Subscribable<B1Messages>;
+}
 
-  private readonly boxPathStringSub = Subject.create('');
+class B1Cell extends ShowForSecondsComponent<B1CellProps> {
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents>();
 
-  private readonly activeVerticalModeSub = Subject.create(VerticalMode.NONE);
+  private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
 
-  private readonly activeVerticalModeClassSub = Subject.create('');
+  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  private readonly speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
+  private primFgDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_6'));
 
-  private readonly inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
+  private primFgSelectedVs = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_vertical_speed'));
+
+  private primFgSelectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_flight_path_angle'));
 
   private readonly fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
-  private selectedVS = 0;
+  private readonly tcasLargeBoxDemand = this.primFgDiscreteWord6.map((word) => word.bitValueOr(11, false));
 
-  private inSpeedProtection = false;
-
-  private fmaModeReversion = false;
-
-  private expediteMode = false;
-
-  private crzAltMode = false;
-
-  private tcasModeDisarmed = false;
-
-  private FPA = 0;
+  private readonly targetNotHeld = this.primFgDiscreteWord5.map((word) => word.bitValueOr(29, false));
 
   private decMode = 0;
 
   private readonly displayedVerticalModeText = Subject.create('');
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
-    super(props, 10);
-  }
+  private readonly text = MappedSubject.create(
+    ([B1Message, primFgSelectedFpa]) => {
+      this.isShown = true;
 
-  private getText(): boolean {
-    let text: string;
-    let additionalText: string = '';
+      switch (B1Message) {
+        case B1Messages.NONE:
+          this.isShown = false;
+          return '';
 
-    this.isShown = true;
-    switch (this.activeVerticalModeSub.get()) {
-      case VerticalMode.GS_TRACK:
-        text = 'G/S';
-        break;
-      /*  case 2:
-            text = 'F-G/S';
-            break; */
-      case VerticalMode.GS_CPT:
-        text = 'G/S*';
-        break;
-      /*  case 4:
-            text = 'F-G/S*';
-            break; */
-      case VerticalMode.SRS:
-      case VerticalMode.SRS_GA:
-        text = 'SRS';
-        break;
-      case VerticalMode.TCAS:
-        text = 'TCAS';
-        break;
-      case VerticalMode.DES:
-        text = 'DES';
-        break;
-      case VerticalMode.OP_DES:
-        if (this.expediteMode) {
-          text = 'EXP DES';
-        } else {
-          text = 'OP DES';
-        }
-        break;
-      case VerticalMode.CLB:
-        text = 'CLB';
-        break;
-      case VerticalMode.OP_CLB:
-        if (this.expediteMode) {
-          text = 'EXP CLB';
-        } else {
-          text = 'OP CLB';
-        }
-        break;
-      case VerticalMode.ALT:
-        if (this.crzAltMode) {
-          text = 'ALT CRZ';
-        } else {
-          text = 'ALT';
-        }
-        break;
-      case VerticalMode.ALT_CPT:
-        if (this.crzAltMode) {
-          // TODO hook to new FG var if necessary
-          text = 'ALT CRZ *';
-        } else {
-          text = 'ALT*';
-        }
-        break;
-      case VerticalMode.ALT_CST_CPT:
-        text = 'ALT CST*';
-        break;
-      case VerticalMode.ALT_CST:
-        text = 'ALT CST';
-        break;
-      case VerticalMode.FPA: {
-        const FPAText = `${this.FPA > 0 ? '+' : ''}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
+        case B1Messages.GS:
+          return 'G/S';
+        case B1Messages.F_GS:
+          return 'F-G/S';
+        case B1Messages.GS_STAR:
+          return 'G/S*';
+        case B1Messages.F_GS_STAR:
+          return 'F-G/S*';
+        case B1Messages.SRS:
+          return 'SRS';
+        case B1Messages.TCAS:
+          return 'TCAS';
+        case B1Messages.APP_DES:
+          return 'APP-DES';
+        case B1Messages.DES:
+          return 'DES';
+        case B1Messages.OP_DES:
+          return 'OP DES';
+        case B1Messages.CLB:
+          return 'CLB';
+        case B1Messages.OP_CLB:
+          return 'OP CLB';
+        case B1Messages.ALT:
+          return 'ALT';
+        case B1Messages.ALT_STAR:
+          return 'ALT*';
+        case B1Messages.ALT_CST:
+          return 'ALT CST';
+        case B1Messages.ALT_CST_STAR:
+          return 'ALT CST*';
+        case B1Messages.ALT_CRZ:
+          return 'ALT CRZ';
+        case B1Messages.ALT_CRZ_STAR:
+          return 'ALT CRZ*';
+        case B1Messages.FPA: {
+          let text = 'FPA';
+          const fpaValue = primFgSelectedFpa.value;
 
-        text = 'FPA';
-        // if FPA is 0 give it an empty space for where the '+' and '-' will be.
-        if (this.FPA === 0) {
-          text += ' ';
+          // if FPA is 0 give it an empty space for where the '+' and '-' will be.
+          if (!(primFgSelectedFpa.isNoComputedData() || primFgSelectedFpa.isFailureWarning()) && fpaValue === 0) {
+            text += ' ';
+          }
+          return text;
         }
-        additionalText = FPAText;
-        break;
+        case B1Messages.VS:
+          return 'V/S';
+        default:
+          this.isShown = false;
+          return '';
       }
-      case VerticalMode.VS: {
-        const VSText = `${this.selectedVS > 0 ? '+' : ''}${Math.round(this.selectedVS).toString()}`.padStart(6, ' ');
+    },
+    this.props.B1Message,
+    this.primFgSelectedFpa,
+  );
 
-        text = 'V/S';
-
-        additionalText = VSText;
-        break;
-      }
-      case VerticalMode.LAND:
-        if (!this.props.fcdcData.autolandCapacity.get()) {
-          text = 'G/S';
+  private readonly additionalText = MappedSubject.create(
+    ([B1Message, primFgSelectedVs, primFgSelectedFpa]) => {
+      if (B1Message === B1Messages.FPA) {
+        if (!(primFgSelectedFpa.isNoComputedData() || primFgSelectedFpa.isFailureWarning())) {
+          const fpaValue = primFgSelectedFpa.value;
+          return `${fpaValue > 0 ? '+' : ''}${(Math.round(fpaValue * 10) / 10).toFixed(1)}°`;
         } else {
-          text = '';
+          return '-----';
         }
+      } else if (B1Message === B1Messages.VS) {
+        if (!(primFgSelectedVs.isNoComputedData() || primFgSelectedVs.isFailureWarning())) {
+          const vsValue = primFgSelectedVs.value;
+          return `${vsValue > 0 ? '+' : ''}${Math.round(vsValue).toString()}`.padStart(5, '\xa0');
+        } else {
+          return '-----';
+        }
+      } else {
+        return '';
+      }
+    },
+    this.props.B1Message,
+    this.primFgSelectedVs,
+    this.primFgSelectedFpa,
+  );
 
-        break;
-      default:
-        text = '';
-    }
+  private readonly inSpeedProtection = MappedSubject.create(
+    ([text, targetNotHeld]) => {
+      return targetNotHeld && text !== '';
+    },
+    this.text,
+    this.targetNotHeld,
+  );
 
-    if (text === '') {
-      this.isShown = false;
-      this.displayModeChangedPath(true);
-      this.handleDeclutterMode(true, this.decMode, this.fmaTextRef);
-    }
+  private readonly boxClassSub = this.inSpeedProtection.map((inSpeedProtection) =>
+    inSpeedProtection ? 'NormalStroke None' : 'NormalStroke Green',
+  );
 
-    const inSpeedProtection =
-      this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
-
-    if (inSpeedProtection || this.fmaModeReversion) {
-      this.boxClassSub.set('NormalStroke None');
-    } else {
-      this.boxClassSub.set('NormalStroke Green');
-    }
-
-    if (inSpeedProtection) {
-      this.speedProtectionPathRef.instance.setAttribute('visibility', 'visible');
-    } else {
-      this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
-    }
-
-    const boxPathString =
-      this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed
+  private readonly boxPathStringSub = MappedSubject.create(
+    ([tcasLargeBoxDemand, primFgDiscreteWord3]) => {
+      return tcasLargeBoxDemand && primFgDiscreteWord3.bitValueOr(25, false)
         ? 'm 433 9 h 135 v 67.5 h -135 z'
         : 'm 433 9 h 135 v 30.2 h -135 z';
+    },
+    this.tcasLargeBoxDemand,
+    this.primFgDiscreteWord3,
+  );
 
-    this.boxPathStringSub.set(boxPathString);
-
+  private readonly activeVerticalModeClassSub = this.primFgDiscreteWord3.map((word) => {
     // VS FPA has a smaller font than the other active modes
-    const VsFPA = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15;
+    const fpaMode = word.bitValueOr(18, false);
+    const vsMode = word.bitValueOr(17, false);
 
-    this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
+    // ALT CRZ* also has a smaller font, as it otherwise would be too large for the box.
+    const altCstrApplicable = word.bitValueOr(28, false);
+    const altIsCrzAlt = word.bitValueOr(29, false);
+    const altAcqMode = word.bitValueOr(19, false);
 
-    this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseGreenFill' : 'Green'}>${additionalText}</tspan>`;
+    return vsMode || fpaMode || (altAcqMode && !altCstrApplicable && altIsCrzAlt)
+      ? 'FontMediumSmaller MiddleAlign Green'
+      : 'FontMedium MiddleAlign Green';
+  });
 
-    if (text.length !== 0 && this.displayedVerticalModeText.get() !== text) {
-      this.displayModeChangedPath();
-    }
-    this.displayedVerticalModeText.set(text);
-
-    return text.length > 0;
+  constructor(props: B1CellProps) {
+    super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
@@ -1150,104 +1037,36 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.getText();
         this.isShown = false;
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
-      });
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((activeVerticalMode) => {
-        this.activeVerticalModeSub.set(activeVerticalMode);
-        this.getText();
-        this.displayModeChangedPath();
         this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
       });
 
-    sub
-      .on('selectedFpa')
-      .whenChanged()
-      .handle((fpa) => {
-        this.FPA = fpa;
-        this.getText();
-      });
-
-    sub
-      .on('selectedVs')
-      .whenChanged()
-      .handle((svs) => {
-        this.selectedVS = svs;
-        this.getText();
-      });
-
-    sub
-      .on('fmaModeReversion')
-      .whenChanged()
-      .handle((reversion) => {
-        this.fmaModeReversion = reversion;
-        if (reversion) {
-          this.inModeReversionPathRef.instance.setAttribute('visibility', 'visible');
-        } else {
-          this.inModeReversionPathRef.instance.setAttribute('visibility', 'hidden');
-        }
-        this.getText();
-      });
-
-    sub
-      .on('fmaSpeedProtection')
-      .whenChanged()
-      .handle((protection) => {
-        this.inSpeedProtection = protection;
-        this.getText();
-      });
-
-    sub
-      .on('expediteMode')
-      .whenChanged()
-      .handle((e) => {
-        this.expediteMode = e;
-        this.getText();
-      });
-
-    sub
-      .on('crzAltMode')
-      .whenChanged()
-      .handle((c) => {
-        this.crzAltMode = c;
-        this.getText();
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
-      });
-
-    sub
-      .on('tcasModeDisarmed')
-      .whenChanged()
-      .handle((t) => {
-        this.tcasModeDisarmed = t;
-        this.getText();
-      });
-
-    this.props.fcdcData.autolandCapacity.sub(() => this.getText());
+    this.text.sub(() => {
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
+    });
   }
 
   render(): VNode {
     return (
       <g id="B1">
         <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
-        <path
-          ref={this.speedProtectionPathRef}
-          class="NormalStroke Green BlinkInfinite"
-          d="m 433 9 h 135 v 30.2 h -135 z"
-        />
-        <path
-          ref={this.inModeReversionPathRef}
-          class="NormalStroke Green BlinkInfinite"
-          d="m 433 9 h 135 v 30.2 h -135 z"
-        />
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.inSpeedProtection}>
+          <path class="NormalStroke Green " d="m 433 9 h 135 v 30.2 h -135 z" />
+        </FlashOneHertz>
 
         <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="501" y="36">
-          {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
+          <tspan>{this.text}</tspan>
+          <FlashOneHertz
+            bus={this.props.bus}
+            flashDuration={Infinity}
+            flashing={this.inSpeedProtection}
+            className1={'Green'}
+            className2={'DimmedGreen Fill'}
+          >
+            <tspan xml:space="preserve">{this.additionalText}</tspan>
+          </FlashOneHertz>
         </text>
       </g>
     );
@@ -1259,104 +1078,117 @@ class B2Cell extends DisplayComponent<CellProps> {
 
   private cellTextRef2 = FSComponent.createRef<SVGTextElement>();
 
+  private modeArmedRef = FSComponent.createRef<SVGPathElement>();
+
   private decMode = 0;
 
-  private text1Sub = Subject.create('');
+  private sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & PrimFgBusBaseEvents>();
 
-  private text2Sub = Subject.create('');
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
+  private readonly altArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(11, false));
+  private readonly gsArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(13, false));
+  private readonly appDesArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(14, false));
+  private readonly clbArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(15, false));
+  private readonly desArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(16, false));
+  private readonly opClbArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(17, false));
+  private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+  private classSub = MappedSubject.create(
+    ([primFgDiscreteWord2, primFgDiscreteWord3]) => {
+      const altAcqArmed = primFgDiscreteWord2.bitValueOr(11, false);
 
-  private classSub = Subject.create('');
+      const altCstrApplicable = primFgDiscreteWord3.bitValueOr(28, false);
 
-  private modeArmed = FSComponent.createRef<SVGPathElement>();
+      return altAcqArmed && altCstrApplicable
+        ? 'FontMediumSmaller MiddleAlign Green'
+        : 'FontMediumSmaller MiddleAlign Green';
+    },
+    this.primFgDiscreteWord2,
+    this.primFgDiscreteWord3,
+  );
+
+  private text1Sub = MappedSubject.create(
+    ([primFgDiscreteWord2, primFgDiscreteWord3]) => {
+      const altAcqArmed = primFgDiscreteWord2.bitValueOr(11, false);
+      const clbArmed = primFgDiscreteWord2.bitValueOr(15, false);
+      const desArmed = primFgDiscreteWord2.bitValueOr(16, false);
+      const opClbArmed = primFgDiscreteWord2.bitValueOr(17, false);
+
+      const gsArmed = primFgDiscreteWord2.bitValueOr(13, false);
+      const altCstrApplicable = primFgDiscreteWord3.bitValueOr(28, false);
+      const altIsCrzAlt = primFgDiscreteWord3.bitValueOr(29, false);
+
+      if (opClbArmed) {
+        return '      OP CLB';
+      } else if (clbArmed) {
+        return '      CLB';
+      } else if (desArmed) {
+        return gsArmed ? 'DES ' : '      DES';
+      } else if (altAcqArmed && altCstrApplicable) {
+        return gsArmed ? 'ALT ' : '      ALT';
+      } else if (altAcqArmed && altIsCrzAlt) {
+        return '     ALT CRZ';
+      } else if (altAcqArmed) {
+        return gsArmed ? 'ALT ' : '      ALT';
+      } else if (gsArmed) {
+        return '      G/S';
+      } else {
+        return '';
+      }
+    },
+    this.primFgDiscreteWord2,
+    this.primFgDiscreteWord3,
+  );
+
+  private readonly modeArmed = MappedSubject.create(
+    ([altArmed, gsArmed, appDesArmed, clbArmed, desArmed, opClbArmed, declutterMode]) => {
+      if (declutterMode != 2) {
+        return altArmed || gsArmed || appDesArmed || clbArmed || desArmed || opClbArmed ? 'visible' : 'hidden';
+      } else {
+        return 'hidden';
+      }
+    },
+    this.altArmed,
+    this.gsArmed,
+    this.appDesArmed,
+    this.clbArmed,
+    this.desArmed,
+    this.opClbArmed,
+    this.declutterMode,
+  );
+
+  private text2Sub = MappedSubject.create(
+    ([primFgDiscreteWord2, text1Sub]) => {
+      const gsArmed = primFgDiscreteWord2.bitValueOr(13, false);
+
+      //TODO Improve this logic, very ugly
+      if (gsArmed && text1Sub !== '      G/S') {
+        return '  G/S';
+      } else if (primFgDiscreteWord2.bitValueOr(14, false)) {
+        return 'APP-DES';
+      } else {
+        return '';
+      }
+    },
+    this.primFgDiscreteWord2,
+    this.text1Sub,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
+    this.sub
       .on('decMode')
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
         if (this.decMode !== 2) {
-          this.text1Sub.get() === ''
-            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-            : this.modeArmed.instance.setAttribute('visibility', 'visible');
+          // this.text1Sub.get() === ''
+          //   ? this.modeArmedRef.instance.setAttribute('visibility', 'hidden')
+          //   : this.modeArmedRef.instance.setAttribute('visibility', 'visible');
           this.cellTextRef.instance.setAttribute('visibility', 'visible');
           this.cellTextRef2.instance.setAttribute('visibility', 'visible');
         } else {
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
-          this.cellTextRef.instance.setAttribute('visibility', 'hidden');
-          this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
-        }
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fmv) => {
-        const altArmed = (fmv >> 0) & 1;
-        const altCstArmed = (fmv >> 1) & 1;
-        const clbArmed = (fmv >> 2) & 1;
-        const desArmed = (fmv >> 3) & 1;
-        const gsArmed = (fmv >> 4) & 1;
-
-        // TODO hook to FG once implemented
-        const openClimbArmed = false;
-        const altCruiseArmed = false;
-
-        let text1: string;
-        let color1 = 'Green';
-        let vertModeActive = true;
-        if (openClimbArmed) {
-          text1 = '      OP CLB';
-        } else if (clbArmed) {
-          text1 = '      CLB';
-        } else if (desArmed) {
-          text1 = gsArmed ? 'DES ' : '      DES';
-        } else if (altCstArmed) {
-          text1 = gsArmed ? 'ALT ' : '      ALT';
-          color1 = 'Green';
-        } else if (altArmed) {
-          text1 = gsArmed ? 'ALT ' : '      ALT';
-        } else if (altCruiseArmed) {
-          text1 = '      ALT CRZ';
-        } else {
-          text1 = '';
-          vertModeActive = false;
-        }
-
-        let text2;
-        if (gsArmed) {
-          if (vertModeActive) {
-            text2 = '  G/S';
-          } else {
-            text1 = '      G/S';
-          }
-        } else {
-          if (!vertModeActive) {
-            text1 = '';
-          }
-          text2 = '';
-        }
-
-        this.text1Sub.set(text1);
-        this.text2Sub.set(text2);
-        this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
-
-        if (gsArmed || openClimbArmed || altArmed || altCstArmed || clbArmed || desArmed) {
-          if (this.decMode !== 2) {
-            this.text1Sub.get() === ''
-              ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-              : this.modeArmed.instance.setAttribute('visibility', 'visible');
-            this.cellTextRef.instance.setAttribute('visibility', 'visible');
-            this.cellTextRef2.instance.setAttribute('visibility', 'visible');
-          }
-        } else {
-          this.text1Sub.get() === ''
-            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-            : this.modeArmed.instance.setAttribute('visibility', 'visible');
+          //this.modeArmedRef.instance.setAttribute('visibility', 'hidden');
           this.cellTextRef.instance.setAttribute('visibility', 'hidden');
           this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
         }
@@ -1367,8 +1199,8 @@ class B2Cell extends DisplayComponent<CellProps> {
     return (
       <g id="B2">
         <path
-          ref={this.modeArmed}
-          visibility="hidden"
+          ref={this.modeArmedRef}
+          visibility={this.modeArmed}
           class="NormalStroke Green"
           d="m433 39.2 h 140"
           stroke-dasharray="10 8"
@@ -1390,109 +1222,80 @@ class B2Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class C1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
-  private textSub = Subject.create('');
+class C1Cell extends ShowForSecondsComponent<CellProps> {
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & PrimFgBusBaseEvents>();
   private decMode = 0;
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
   private activeLateralMode = 0;
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
+
+  private readonly message = this.primFgDiscreteWord4.map((primFgDiscreteWord4) =>
+    computeC1Message(primFgDiscreteWord4),
+  );
+
+  private readonly text = this.message.map((C1Message) => {
+    this.isShown = true;
+    switch (C1Message) {
+      case C1Messages.GA_TRK:
+        return 'GA TRK';
+      case C1Messages.LOC_BC_STAR:
+        return 'LOC B/C*';
+      case C1Messages.LOC_STAR:
+        return 'LOC *';
+      case C1Messages.F_LOC_STAR:
+        return 'F-LOC *';
+      case C1Messages.HDG:
+        return 'HDG';
+      case C1Messages.RWY:
+        return 'RWY';
+      case C1Messages.RWY_TRK:
+        return 'RWY TRK';
+      case C1Messages.TRACK:
+        return 'TRACK';
+      case C1Messages.LOC_BC:
+        return 'LOC B/C';
+      case C1Messages.LOC:
+        return 'LOC';
+      case C1Messages.F_LOC:
+        return 'F-LOC';
+      case C1Messages.NAV:
+        return 'NAV';
+      default:
+        this.isShown = false;
+        return '';
+    }
+  });
+
+  constructor(props: CellProps) {
     super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-    sub
+    this.sub
       .on('decMode')
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        const isShown = this.updateText();
-        if (isShown) {
-          this.displayModeChangedPath();
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
+        this.isShown = false;
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        // const isShown = this.text.get().length == 0 ? false : true;
+        // if (isShown) {
+        //   this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        // } else {
+        //   this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+        // }
       });
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.activeLateralMode = lm;
 
-        const isShown = this.updateText();
-
-        if (isShown) {
-          this.displayModeChangedPath();
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
-      });
-  }
-
-  private updateText(): boolean {
-    let text: string;
-    this.isShown = true;
-    if (this.activeLateralMode === LateralMode.GA_TRACK) {
-      text = 'GA TRK';
-    } else if (this.activeLateralMode === LateralMode.LOC_CPT) {
-      text = 'LOC *';
-    } else if (this.activeLateralMode === LateralMode.HDG) {
-      text = 'HDG';
-    } else if (this.activeLateralMode === LateralMode.RWY) {
-      text = 'RWY';
-    } else if (this.activeLateralMode === LateralMode.RWY_TRACK) {
-      text = 'RWY TRK';
-    } else if (this.activeLateralMode === LateralMode.TRACK) {
-      text = 'TRACK';
-    } else if (
-      this.activeLateralMode === LateralMode.LOC_TRACK ||
-      (this.activeLateralMode === LateralMode.LAND && !this.props.fcdcData.autolandCapacity.get())
-    ) {
-      text = 'LOC';
-    } else if (this.activeLateralMode === LateralMode.NAV) {
-      text = 'NAV';
-    } else {
-      text = '';
-      this.isShown = false;
-    }
-
-    const hasChanged = text.length > 0 && text !== this.textSub.get();
-
-    if (hasChanged || text.length === 0) {
-      this.textSub.set(text);
-    }
-    return hasChanged;
+    this.text.sub(() => {
+      this.displayModeChangedPath();
+    });
   }
 
   render(): VNode {
-    // case 2:
-    //     text = 'LOC B/C*';
-    //     id = 2;
-    //     break;
-    // case 4:
-    //     text = 'F-LOC*';
-    //     id = 4;
-    //     break;
-    // case 9:
-    //     text = 'LOC B/C';
-    //     id = 9;
-    //     break;
-    // case 11:
-    //     text = 'F-LOC';
-    //     id = 11;
-    //     break;
-    // case 12:
-    //     text = 'APP NAV';
-    //     id = 12;
-    //     break;
-
     return (
       <g id="C1">
         <path
@@ -1502,7 +1305,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
           d="m 582.5 9 v 30.2 h 135 v -30.2 z"
         />
         <text ref={this.cellTextRef} class="FontMedium MiddleAlign Green" x="650.5" y="36">
-          {this.textSub}
+          {this.text}
         </text>
       </g>
     );
@@ -1514,69 +1317,80 @@ class C2Cell extends DisplayComponent<CellProps> {
 
   private decMode = 0;
 
-  private fmaLateralArmed: number = 0;
+  private sub = this.props.bus.getSubscriber<HudElems & HUDSimvars & PrimFgBusBaseEvents>();
 
-  private textSub = Subject.create('');
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
 
-  private modeArmed = FSComponent.createRef<SVGPathElement>();
+  private readonly navArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(22, false));
+  private readonly locArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(23, false));
+  private readonly rwyArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(24, false));
+  private readonly land = this.primFgDiscreteWord2.map((word) => word.bitValueOr(28, false));
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
 
-  private getText() {
-    const navArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.NAV);
-    const locArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LOC);
-    const runwayArmed = false;
+  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
-    let text: string = '';
-    if (locArmed) {
-      // case 1:
-      //     text = 'LOC B/C';
-      //     break;
-      text = 'LOC';
-      // case 3:
-      //     text = 'F-LOC';
-      //     break;
-    } else if (runwayArmed) {
-      text = 'RWY' + (navArmed ? '  NAV' : '');
-    } else if (navArmed) {
-      text = 'NAV';
-    }
-    this.textSub.set(text);
-    if (navArmed || locArmed) {
-      this.setDeclutterMode();
-    } else {
-      this.modeArmed.instance.setAttribute('visibility', 'hidden');
-    }
-  }
+  private readonly modeArmedVis = MappedSubject.create(
+    ([navArmed, locArmed, rwyArmed, land, declutterMode]) => {
+      if (declutterMode != 2) {
+        if (navArmed || locArmed || rwyArmed || land) {
+          return 'block';
+        } else {
+          return 'none';
+        }
+      } else {
+        return 'none';
+      }
+    },
+    this.navArmed,
+    this.locArmed,
+    this.rwyArmed,
+    this.land,
+    this.declutterMode,
+  );
+
+  private readonly text = MappedSubject.create(
+    ([primFgDiscreteWord2, primFgDiscreteWord4]) => {
+      const navArmed = primFgDiscreteWord2.bitValueOr(22, false);
+      const locArmed = primFgDiscreteWord2.bitValueOr(23, false);
+      const rwyArmed = primFgDiscreteWord2.bitValueOr(24, false);
+      const land = primFgDiscreteWord2.bitValueOr(28, false);
+      const backbeamMode = primFgDiscreteWord4.bitValueOr(29, false);
+
+      if (!navArmed && !locArmed && !rwyArmed && !land) {
+        return '';
+      }
+
+      if (locArmed && backbeamMode) {
+        return 'LOC B/C';
+      } else if (locArmed) {
+        return 'LOC';
+      } else if (false) {
+        return 'F-LOC';
+      } else if (rwyArmed) {
+        return 'RWY' + (navArmed ? '  NAV' : '');
+      } else if (navArmed) {
+        return 'NAV';
+      }
+    },
+    this.primFgDiscreteWord2,
+    this.primFgDiscreteWord4,
+  );
 
   private setDeclutterMode() {
     if (this.decMode !== 2) {
       this.cellTextRef.instance.setAttribute('visibility', 'visible');
-      this.textSub.get() === ''
-        ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
-        : this.modeArmed.instance.setAttribute('visibility', 'visible');
     } else {
       this.cellTextRef.instance.setAttribute('visibility', 'hidden');
-      this.modeArmed.instance.setAttribute('visibility', 'hidden');
     }
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
+    this.sub
       .on('decMode')
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.setDeclutterMode();
-      });
-
-    sub
-      .on('fmaLateralArmed')
-      .whenChanged()
-      .handle((fla) => {
-        this.fmaLateralArmed = fla;
-        this.getText();
         this.setDeclutterMode();
       });
   }
@@ -1584,13 +1398,7 @@ class C2Cell extends DisplayComponent<CellProps> {
   render(): VNode {
     return (
       <g id="C2">
-        <path
-          ref={this.modeArmed}
-          visibility="hidden"
-          class="NormalStroke Green"
-          d="m583 39.2 h 138"
-          stroke-dasharray="10 8"
-        />
+        <path display={this.modeArmedVis} class="NormalStroke Green" d="m583 39.2 h 138" stroke-dasharray="10 8" />
         <text
           ref={this.cellTextRef}
           style="white-space: pre"
@@ -1598,67 +1406,63 @@ class C2Cell extends DisplayComponent<CellProps> {
           x="650.5"
           y="68"
         >
-          {this.textSub}
+          {this.text}
         </text>
       </g>
     );
   }
 }
 
-class BC1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
-  private decMode = 0;
+class BC1Cell extends ShowForSecondsComponent<CellProps> {
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
   private lastVerticalMode = 0;
 
-  private textSub = Subject.create('');
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & HudElems>();
 
-  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
-    super(props, 9);
-  }
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private setText() {
-    let text: string;
-    this.isShown = true;
-    if (this.lastVerticalMode === VerticalMode.ROLL_OUT) {
-      text = 'ROLL OUT';
-    } else if (this.lastVerticalMode === VerticalMode.FLARE) {
-      text = 'FLARE';
-    } else if (this.lastVerticalMode === VerticalMode.LAND && this.props.fcdcData.autolandCapacity.get()) {
-      text = 'LAND';
-    } else {
-      text = '';
-    }
-    if (text !== '') {
-      this.displayModeChangedPath();
-      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-    } else {
-      this.isShown = false;
-      this.displayModeChangedPath(true);
-      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-    }
-    this.textSub.set(text);
+  private primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
+
+  private decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+
+  private readonly text = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord3, primFgDiscreteWord4, decMode]) => {
+      const rollOutActive = primFgDiscreteWord4.bitValueOr(26, false);
+      const flareActive = primFgDiscreteWord3.bitValueOr(24, false);
+      const landActive = primFgDiscreteWord1.bitValueOr(23, false) && !flareActive && !rollOutActive;
+
+      this.isShown = true;
+      if (rollOutActive) {
+        this.handleDeclutterMode(true, decMode, this.cellTextRef);
+        return 'ROLL OUT';
+      } else if (flareActive) {
+        return 'FLARE';
+      } else if (landActive) {
+        return 'LAND';
+      } else {
+        this.isShown = false;
+        return '';
+      }
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord3,
+    this.primFgDiscreteWord4,
+    this.decMode,
+  );
+
+  constructor(props: CellProps) {
+    super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.decMode = mode;
-        this.setText();
-      });
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((v) => {
-        this.lastVerticalMode = v;
-        this.setText();
-      });
-
-    this.props.fcdcData.autolandCapacity.sub(() => this.setText(), true);
+    this.text.sub(() => {
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+    });
   }
 
   render(): VNode {
@@ -1671,130 +1475,93 @@ class BC1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueP
           d="m 506 9h 150 v 30.2 h -150 z"
         />
         <text ref={this.cellTextRef} class="FontMedium MiddleAlign Green" x="576" y="36">
-          {this.textSub}
+          {this.text}
         </text>
       </g>
     );
   }
 }
 
-const getBC3Message = (
-  isAttExcessive: boolean,
-  armedVerticalMode: number,
-  setHoldSpeed: boolean,
-  fcdcWord1: Arinc429WordData,
-  fwcFlightPhase: number,
-  trkFpaDeselectedTCAS: boolean,
-  tcasRaInhibited: boolean,
-  tdReached: boolean,
-  disconnectApForLdg: boolean,
-  unrestrictedClimbDescent: number,
-  exitMissed: boolean,
-  thrustLocked: boolean,
-) => {
-  const flightPhaseForWarning =
-    fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
-  const armedVerticalBitmask = armedVerticalMode;
-  const TCASArmed = (armedVerticalBitmask >> 6) & 1;
-
-  let text: string;
-  let className: string;
-
-  // All currently unused message are set to false
-  if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
-    text = 'USE MAN PITCH TRIM';
-    className = 'PulseGreen9Seconds Green';
-  } else if (false) {
-    text = 'FOR GA: SET TOGA';
-    className = 'PulseGreen9Seconds Green';
-  } else if (disconnectApForLdg) {
-    text = 'DISCONNECT AP FOR LDG';
-    className = 'FontSmall PulseGreen9Seconds Green';
-  } else if (TCASArmed && !isAttExcessive) {
-    text = 'TCAS           ';
-    className = 'FontMediumSmaller Green';
-  } else if (tcasRaInhibited && !isAttExcessive) {
-    text = 'TCAS RA INHIBITED';
-    className = 'FontMedium Green';
-  } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
-    text = 'TRK FPA DESELECTED';
-    className = 'FontMedium Green';
-  } else if (thrustLocked) {
-    text = 'MOVE THR LEVERS';
-    className = 'BlinkInfinite Amber';
-  } else if (tdReached) {
-    text = 'T/D REACHED';
-    className = 'FontMedium Green';
-  } else if (false) {
-    text = 'EXTEND SPD BRK';
-    className = 'Green';
-  } else if (false) {
-    text = 'RETRACT SPD BRK';
-    className = 'Green';
-  } else if (false) {
-    text = 'CHECK APPR SEL';
-    className = 'Green';
-  } else if (setHoldSpeed) {
-    text = 'SET HOLD SPD';
-    className = 'FontMedium Green';
-  } else if (exitMissed) {
-    text = 'EXIT MISSED';
-    className = 'Green';
-  } else if (unrestrictedClimbDescent === 1) {
-    text = 'FCU ALT BELOW A/C';
-    className = 'FontMediumSmaller  Green';
-  } else if (unrestrictedClimbDescent === 2) {
-    text = 'FCU ALT ABOVE A/C';
-    className = 'DisappearAfter10Seconds FontMediumSmaller Green';
-  } else {
-    return [null, null];
-  }
-
-  return [text, className];
-};
-
 class BC3Cell extends DisplayComponent<{
-  readonly isAttExcessive: Subscribable<boolean>;
-  readonly disconnectApForLdg: Subscribable<boolean>;
-  readonly unrestrictedClimbDescent: Subscribable<number>;
-  readonly btvExitMissed: Subscribable<boolean>;
-  readonly bus: EventBus;
-  readonly fcdcData: FcdcValueProvider;
-  readonly autoThrustModeMessage: Subscribable<AutoThrustModeMessage>;
+  readonly BC3Message: Subscribable<BC3Messages>;
 }> {
-  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
   private classNameSub = Subject.create('');
 
-  private armedVerticalMode = 0;
+  private getBC3MessageText(BC3Message: BC3Messages) {
+    let text: string;
+    let className: string;
 
-  private setHoldSpeed = false;
+    switch (BC3Message) {
+      case BC3Messages.USE_MAN_PITCH_TRIM:
+        text = 'USE MAN PITCH TRIM';
+        className = 'PulseAmber9Seconds Amber';
+        break;
+      case BC3Messages.FOR_GA_SET_TOGA:
+        text = 'FOR GA: SET TOGA';
+        className = 'PulseAmber9Seconds Amber';
+        break;
+      case BC3Messages.DISCONNECT_AP_FOR_LDG:
+        text = 'DISCONNECT AP FOR LDG';
+        className = 'FontSmall PulseAmber9Seconds Amber';
+        break;
+      case BC3Messages.TCAS_ARMED:
+        text = 'TCAS           ';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.TCAS_RA_INHIBITED:
+        text = 'TCAS RA INHIBITED';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.TRK_FPA_DESELECTED:
+        text = 'TRK FPA DESELECTED';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.MOVE_THR_LEVERS:
+        text = 'MOVE THR LEVERS';
+        className = 'BlinkInfinite Amber';
+        break;
+      case BC3Messages.TD_REACHED:
+        text = 'T/D REACHED';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.EXTEND_SPD_BRK:
+        text = 'EXTEND SPD BRK';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.RETRACT_SPD_BRK:
+        text = 'RETRACT SPD BRK';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.CHECK_APPR_SEL:
+        text = 'CHECK APPR SEL';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.SET_HOLD_SPD:
+        text = 'SET HOLD SPD';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.EXIT_MISSED:
+        text = 'EXIT MISSED';
+        className = 'FontMediumSmaller Green';
+        break;
+      case BC3Messages.FCU_ALT_BELOW_AC:
+        text = 'FCU ALT BELOW A/C';
+        className = 'FontMediumSmaller  Green';
+        break;
+      case BC3Messages.FCU_ALT_ABOVE_AC:
+        text = 'FCU ALT ABOVE A/C';
+        className = 'FontMediumSmaller Green';
+        break;
+      default:
+        return [null, null];
+    }
 
-  private tcasRaInhibited = false;
-
-  private trkFpaDeselected = false;
-
-  private tdReached = false;
-
-  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-
+    return [text, className];
+  }
   private fillBC3Cell() {
-    const [text, className] = getBC3Message(
-      this.props.isAttExcessive.get(),
-      this.armedVerticalMode,
-      this.setHoldSpeed,
-      this.props.fcdcData.fcdcDiscreteWord1.get(),
-      this.fwcFlightPhase.get(),
-      this.trkFpaDeselected,
-      this.tcasRaInhibited,
-      this.tdReached,
-      this.props.disconnectApForLdg.get(),
-      this.props.unrestrictedClimbDescent.get(),
-      this.props.btvExitMissed.get(),
-      this.props.autoThrustModeMessage.get() == AutoThrustModeMessage.ThrustLock,
-    );
+    const [text, className] = this.getBC3MessageText(this.props.BC3Message.get());
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
       this.bc3Cell.instance.innerHTML = text;
@@ -1806,68 +1573,9 @@ class BC3Cell extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.fillBC3Cell());
-    this.fwcFlightPhase.sub(() => this.fillBC3Cell());
-
-    this.props.isAttExcessive.sub(() => {
+    this.props.BC3Message.sub(() => {
       this.fillBC3Cell();
-    });
-
-    this.props.disconnectApForLdg.sub(() => {
-      this.fillBC3Cell();
-    });
-
-    this.props.unrestrictedClimbDescent.sub(() => {
-      this.fillBC3Cell();
-    });
-
-    this.props.btvExitMissed.sub(() => {
-      this.fillBC3Cell();
-    });
-
-    this.sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((v) => {
-        this.armedVerticalMode = v;
-        this.fillBC3Cell();
-      });
-
-    this.sub
-      .on('setHoldSpeed')
-      .whenChanged()
-      .handle((shs) => {
-        this.setHoldSpeed = shs;
-        this.fillBC3Cell();
-      });
-
-    this.sub
-      .on('tcasRaInhibited')
-      .whenChanged()
-      .handle((tra) => {
-        this.tcasRaInhibited = tra;
-        this.fillBC3Cell();
-      });
-
-    this.sub
-      .on('trkFpaDeselectedTCAS')
-      .whenChanged()
-      .handle((trk) => {
-        this.trkFpaDeselected = trk;
-        this.fillBC3Cell();
-      });
-
-    this.sub
-      .on('tdReached')
-      .whenChanged()
-      .handle((tdr) => {
-        this.tdReached = tdr;
-        this.fillBC3Cell();
-      });
-
-    this.props.autoThrustModeMessage.sub(() => {
-      this.fillBC3Cell();
-    });
+    }, true);
   }
 
   render(): VNode {
@@ -1875,133 +1583,146 @@ class BC3Cell extends DisplayComponent<{
   }
 }
 
-class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
-  private delay: number = 0;
+class D1D2Cell extends ShowForSecondsComponent<CellProps> {
+  private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm 732  9.5 h 135 v 30.2 h -135 z';
+  private static readonly SixCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
+  private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   private cellTextRef2 = FSComponent.createRef<SVGTextElement>();
+  private prevDecMode = -1;
 
-  private prevDecMode = 0;
+  private sub = this.props.bus.getSubscriber<
+    PrimFgBusBaseEvents & FcdcBusBaseEvents & FcuEfisCpBusEvents & HUDSimvars & HudElems
+  >();
 
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & DmcLogicEvents & HudElems>();
+  private readonly primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private readonly lsButton = ConsumerSubject.create(
-    this.sub.on(getDisplayIndex() == 1 ? 'ls1Button' : 'ls2Button'),
-    false,
-  );
-  private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
-  private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
+  private readonly primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
 
-  private readonly fmaVerticalActive = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
-  private readonly fmaVerticalArmed = ConsumerSubject.create(this.sub.on('fmaVerticalArmed'), 0);
+  private readonly fcdcFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_fg_discrete_word_1'));
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
+
+  private readonly hasGs = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
-  private readonly landModesArmedOrActive = MappedSubject.create(
-    ([latAct, latArm, vertAct, vertArm]) =>
-      ((latAct >= 30 && latAct <= 34) || isArmed(latArm, ArmedLateralMode.LOC)) &&
-      ((vertAct >= 30 && vertAct <= 34) || isArmed(vertArm, ArmedVerticalMode.GS)),
-    this.fmaLateralActive,
-    this.fmaLateralArmed,
-    this.fmaVerticalActive,
-    this.fmaVerticalArmed,
+  private readonly appr1Condition = MappedSubject.create(
+    ([lsButton, hasLoc, hasGs]) => lsButton && hasGs && hasLoc,
+    this.lsButton,
+    this.hasLoc,
+    this.hasGs,
   );
 
-  private readonly text1Sub = Subject.create('');
+  private readonly D1D2Message = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1, appr1Condition]) => {
+      return computeD1D2Message(primFgDiscreteWord1, primFgDiscreteWord2, fcdcFgDiscreteWord1, appr1Condition);
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord2,
+    this.fcdcFgDiscreteWord1,
+    this.appr1Condition,
+  );
 
-  private readonly text2Sub = Subject.create('');
-
-  private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm 732  9.5 h 135 v 30.2 h -135 z';
-
-  private static readonly FiveCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
-
-  private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
-
-  constructor(props: CellProps & { readonly fcdcData: FcdcValueProvider }) {
-    super(props, 9);
-  }
-
-  private setText() {
-    let text1: string;
-    let text2: string | undefined;
-    let modeChangedPath: string | undefined;
+  private readonly text1Sub = this.D1D2Message.map((message) => {
     this.isShown = true;
-    if (this.props.fcdcData.land2Capacity.get()) {
-      text1 = 'LAND2';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
-      text1 = 'LAND3';
-      text2 = 'SINGLE';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
-    } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
-      text1 = 'LAND3';
-      text2 = 'DUAL';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (false) {
-      text1 = 'LAND1';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
-    } else if (false) {
-      text1 = 'F-APP';
-    } else if (false) {
-      text1 = 'F-APP';
-      text2 = '+ RAW';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
-    } else if (false) {
-      text1 = 'RAW';
-      text2 = 'ONLY';
-      modeChangedPath = D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
-    } else if (this.lsButton.get() || this.landModesArmedOrActive.get()) {
-      text1 = 'APPR1';
-      text2 = '';
-      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
+
+    if (message == D1D2Messages.LAND_2) {
+      return 'LAND2';
+    } else if (message == D1D2Messages.LAND_3_DUAL || message == D1D2Messages.LAND_3_SINGLE) {
+      return 'LAND3';
+    } else if (message == D1D2Messages.APPR_1) {
+      return 'APPR1';
+    } else if (message == D1D2Messages.F_APP || message == D1D2Messages.F_APP_RAW) {
+      return 'F-APP';
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return 'RAW';
+    } else if (message == D1D2Messages.LAND_1) {
+      return 'LAND1';
     } else {
-      text1 = '';
-      text2 = '';
-      modeChangedPath = '';
       this.isShown = false;
+
+      return '';
     }
+  });
 
-    const hasChanged = text1 !== this.text1Sub.get() || text2 !== this.text2Sub.get();
+  private readonly text2Sub = this.D1D2Message.map((message) => {
+    this.isShown = true;
 
-    if (hasChanged) {
-      this.text1Sub.set(text1);
-      this.text2Sub.set(text2);
-
-      this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath!);
-      if (this.decMode.get() === 2) {
-        this.displayModeChangedPath(true);
-        this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
-      } else {
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
-      }
-    } else if (!this.isShown) {
-      this.displayModeChangedPath(true);
+    if (
+      message == D1D2Messages.LAND_1 ||
+      message == D1D2Messages.APPR_1 ||
+      message == D1D2Messages.LAND_2 ||
+      message == D1D2Messages.F_APP
+    ) {
+      return '';
+    } else if (message == D1D2Messages.LAND_3_SINGLE) {
+      return 'SINGLE';
+    } else if (message == D1D2Messages.LAND_3_DUAL) {
+      return 'DUAL';
+    } else if (message == D1D2Messages.F_APP_RAW) {
+      return '+RAW';
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return 'ONLY';
+    } else {
+      return '';
     }
+  });
 
-    if (this.prevDecMode !== this.decMode.get()) {
-      if (this.decMode.get() === 2) {
-        this.cellTextRef.instance.style.visibility = 'hidden';
-        this.cellTextRef2.instance.style.visibility = 'hidden';
-      } else {
-        this.cellTextRef.instance.style.visibility = 'visible';
-        this.cellTextRef2.instance.style.visibility = 'visible';
-      }
-      this.prevDecMode = this.decMode.get();
+  private readonly modeChangePath = this.D1D2Message.map((message) => {
+    if (
+      message == D1D2Messages.LAND_1 ||
+      message == D1D2Messages.APPR_1 ||
+      message == D1D2Messages.LAND_2 ||
+      message == D1D2Messages.F_APP
+    ) {
+      return D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
+    } else if (
+      message == D1D2Messages.LAND_3_DUAL ||
+      message == D1D2Messages.LAND_3_SINGLE ||
+      message == D1D2Messages.F_APP_RAW
+    ) {
+      return D1D2Cell.SixCharactersPerLineTwoLinesModeChangePath;
+    } else if (message == D1D2Messages.RAW_ONLY) {
+      return D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
+    } else {
+      return '';
     }
+  });
+
+  constructor(props: CellProps) {
+    super(props, 9);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    MappedSubject.create(
-      () => this.setText(),
-      this.props.fcdcData.fcdcFgDiscreteWord4,
-      this.landModesArmedOrActive,
-      this.lsButton,
-      this.decMode,
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
+
+    this.D1D2Message.sub(() => {
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
+
+      if (this.prevDecMode !== this.decMode.get()) {
+        if (this.decMode.get() === 2) {
+          this.cellTextRef.instance.style.visibility = 'hidden';
+          this.cellTextRef2.instance.style.visibility = 'hidden';
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+          this.cellTextRef2.instance.style.visibility = 'visible';
+        }
+        this.prevDecMode = this.decMode.get();
+      }
+    });
   }
 
   render(): VNode {
@@ -2013,7 +1734,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
         <text ref={this.cellTextRef2} class="FontMedium MiddleAlign Green" x="800" y="72">
           {this.text2Sub}
         </text>
-        <path ref={this.modeChangedPathRef} class="NormalStroke Green" visibility="hidden" />
+        <path ref={this.modeChangedPathRef} d={this.modeChangePath} class="NormalStroke Green" visibility="hidden" />
       </g>
     );
   }
@@ -2144,72 +1865,46 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class E1Cell extends ShowForSecondsComponent<CellProps> {
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & HudElems>();
+
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
-  private decMode = 0;
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private ap1Active = false;
+  private decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
-  private ap2Active = false;
+  private ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
 
-  private textSub = Subject.create('');
+  private ap2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(12, false));
+
+  private textSub = MappedSubject.create(
+    ([ap1Engaged, ap2Engaged]) => {
+      this.isShown = true;
+      if (ap1Engaged && ap2Engaged) {
+        return 'AP1+2';
+      } else if (ap1Engaged) {
+        return 'AP1';
+      } else if (ap2Engaged) {
+        return 'AP2';
+      } else {
+        this.isShown = false;
+        return '';
+      }
+    },
+    this.ap1Engaged,
+    this.ap2Engaged,
+  );
 
   constructor(props: CellProps) {
-    super(props, 9);
-  }
-
-  private setText() {
-    let text: string;
-    this.isShown = true;
-    if (this.ap1Active && !this.ap2Active) {
-      text = 'AP1';
-    } else if (this.ap2Active && !this.ap1Active) {
-      text = 'AP2';
-    } else if (!this.ap2Active && !this.ap1Active) {
-      text = '';
-      this.isShown = false;
-    } else {
-      text = 'AP1+2';
-    }
-    this.displayModeChangedPath();
-    this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-    this.textSub.set(text);
+    super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.decMode = mode;
-        this.isShown = false;
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-      });
-
-    sub
-      .on('ap1Active')
-      .whenChanged()
-      .handle((ap) => {
-        this.ap1Active = ap;
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        this.setText();
-      });
-
-    sub
-      .on('ap2Active')
-      .whenChanged()
-      .handle((ap) => {
-        this.ap2Active = ap;
-        this.displayModeChangedPath();
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        this.setText();
-      });
+    this.textSub.sub(() => {
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+    });
   }
 
   render(): VNode {
@@ -2232,88 +1927,53 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
 class E2Cell extends ShowForSecondsComponent<CellProps> {
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
-  private decMode = 0;
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & HudElems>();
 
-  private fd1Active = false;
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private fd2Active = false;
+  private decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
-  private ap1Active = false;
+  private ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
 
-  private ap2Active = false;
+  private ap2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(12, false));
 
-  private textSub = Subject.create('');
+  private fd1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(13, false));
+
+  private fd2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(14, false));
+
+  private textSub = MappedSubject.create(
+    ([ap1Engaged, ap2Engaged, fd1Engaged, fd2Engaged]) => {
+      this.isShown = true;
+      if (!ap1Engaged && !ap2Engaged && !fd1Engaged && !fd2Engaged) {
+        this.isShown = false;
+        return '';
+      } else {
+        return `${fd1Engaged ? '1' : '-'}FD${fd2Engaged ? '2' : '-'}`;
+      }
+    },
+    this.ap1Engaged,
+    this.ap2Engaged,
+    this.fd1Engaged,
+    this.fd2Engaged,
+  );
 
   constructor(props: CellProps) {
-    super(props, 9);
-  }
-
-  private getText() {
-    this.isShown = true;
-    if (!this.ap1Active && !this.ap2Active && !this.fd1Active && !this.fd2Active) {
-      this.isShown = false;
-      this.textSub.set('');
-    } else {
-      const text = `${this.fd1Active ? '1' : '-'}FD${this.fd2Active ? '2' : '-'}`;
-      this.textSub.set(text);
-    }
+    super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.decMode = mode;
-        if (this.decMode !== 2) {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.isShown = false;
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
-      });
-
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.fd1Active = fd;
-        fd ? this.displayModeChangedPath() : this.displayModeChangedPath(true);
+    this.textSub.sub(() => {
+      if (this.decMode.get() !== 2) {
+        this.displayModeChangedPath();
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        this.getText();
-      });
-
-    sub
-      .on('ap1Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.ap1Active = fd;
-        this.getText();
-      });
-
-    sub
-      .on('ap2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.ap2Active = fd;
-        this.getText();
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.fd2Active = fd;
-        fd ? this.displayModeChangedPath() : this.displayModeChangedPath(true);
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        this.getText();
-      });
+      } else {
+        this.isShown = false;
+        this.displayModeChangedPath(true);
+        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+      }
+    });
   }
 
   render(): VNode {
@@ -2342,63 +2002,50 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
 class E3Cell extends ShowForSecondsComponent<CellProps> {
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
-  private decMode = 0;
-  private className = '';
-  private classSub = Subject.create('');
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & HudElems>();
+
+  private primFgAtsDiscreteWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_ats_discrete_word'));
+
+  private athrEngaged = this.primFgAtsDiscreteWord.map((word) => word.bitValueOr(11, false));
+
+  private athrActive = this.primFgAtsDiscreteWord.map((word) => word.bitValueOr(12, false));
+
+  private decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+
+  private classSub = MappedSubject.create(
+    ([athrEngaged, athrActive]) => {
+      this.isShown = true;
+      if (athrEngaged && athrActive) {
+        this.isShown = false;
+        return 'FontMedium MiddleAlign Green';
+      } else if (athrEngaged) {
+        return 'FontMedium MiddleAlign Green';
+      } else {
+        this.isShown = false;
+        return 'HiddenElement';
+      }
+    },
+    this.athrEngaged,
+    this.athrActive,
+  );
 
   constructor(props: CellProps) {
-    super(props, 9);
-  }
-
-  private getClass(athrStatus: number): string {
-    let className: string = '';
-    this.isShown = true;
-    switch (athrStatus) {
-      case 1:
-        className = 'Green';
-        break;
-      case 2:
-        className = 'Green';
-        break;
-      default:
-        this.isShown = false;
-        className = 'HiddenElement';
-    }
-    return className;
-  }
-
-  private setText() {
-    this.classSub.set(`FontMedium MiddleAlign ${this.className}`);
-    if (this.className !== 'HiddenElement') {
-      this.displayModeChangedPath();
-      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-    } else {
-      this.displayModeChangedPath(true);
-      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-    }
+    super(props, 10);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.decMode = mode;
-        this.isShown = false;
-        this.setText();
-      });
-
-    sub
-      .on('athrStatus')
-      .whenChanged()
-      .handle((a) => {
-        this.className = this.getClass(a);
-        this.setText();
-      });
+    this.classSub.sub(() => {
+      if (this.classSub.get() !== 'HiddenElement') {
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+      } else {
+        this.displayModeChangedPath(true);
+        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+      }
+      this.displayModeChangedPath();
+    });
   }
 
   render(): VNode {

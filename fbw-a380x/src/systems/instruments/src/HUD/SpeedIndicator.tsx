@@ -14,6 +14,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
+  Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
   Arinc429Word,
@@ -24,15 +25,15 @@ import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { WindMode, HudElems } from './HUDUtils';
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
-import { AutoThrustMode } from '../../../shared/autopilot';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 45.6;
@@ -52,7 +53,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   private crosswindMode = false;
   private bitMask = 0;
   private athMode = 0;
-  private onToPower = false;
   private sDecelVis = Subject.create<String>('none');
   private sCrosswindModeOn = Subject.create<String>('');
   private sCrosswindModeOff = Subject.create<String>('');
@@ -129,18 +129,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
       .handle((v) => {
         this.xWindSpdTape = v;
         this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-      });
-
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
       });
 
     sub
@@ -263,15 +251,15 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                     class="ThickStroke Green"
                     d="m87 365 h-14.354m0 -7.04h14.354"
                   />
-                  <VProtBug bus={this.props.bus} fcdcData={this.props.fcdcData} />
+                  <VProtBug bus={this.props.bus} />
                 </VerticalTape>
                 <VMaxBar bus={this.props.bus} />
-                <VAlphaProtBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
-                <VStallWarnBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+                <VAlphaProtBar bus={this.props.bus} />
+                <VStallWarnBar bus={this.props.bus} />
                 <g ref={this.showBarsRef}>
-                  <VLsBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+                  <VLsBar bus={this.props.bus} />
                 </g>
-                <VAlphaLimBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+                <VAlphaLimBar bus={this.props.bus} />
                 <SpeedTrendArrow
                   airspeed={this.speedSub}
                   instrument={this.props.instrument}
@@ -307,16 +295,16 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                 class="ThickStroke Green"
                 d="m87 365 h-14.354m0 -7.04h14.354"
               />
-              <VProtBug bus={this.props.bus} fcdcData={this.props.fcdcData} />
+              <VProtBug bus={this.props.bus} />
             </VerticalTape>
 
             <VMaxBar bus={this.props.bus} />
-            <VAlphaProtBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
-            <VStallWarnBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+            <VAlphaProtBar bus={this.props.bus} />
+            <VStallWarnBar bus={this.props.bus} />
             <g ref={this.showBarsRef}>
-              <VLsBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+              <VLsBar bus={this.props.bus} />
             </g>
-            <VAlphaLimBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+            <VAlphaLimBar bus={this.props.bus} />
             <SpeedTrendArrow
               airspeed={this.speedSub}
               instrument={this.props.instrument}
@@ -373,7 +361,7 @@ class V1BugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getV1Visibility() {
-    if (this.flightPhase <= 5 && this.v1Speed !== 0) {
+    if (this.flightPhase <= 5 && this.v1Speed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -428,7 +416,7 @@ class VRBugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 
   private getVrVisibility() {
-    if (this.flightPhase <= 5 && this.vrSpeed !== 0) {
+    if (this.flightPhase <= 5 && this.vrSpeed > 0) {
       this.visibilitySub.set('visible');
     } else {
       this.visibilitySub.set('hidden');
@@ -450,7 +438,6 @@ class VRBugElement extends DisplayComponent<{ bus: EventBus }> {
 
 class VAlphaProtBar extends DisplayComponent<{
   readonly bus: ArincEventBus;
-  readonly fcdcData: FcdcValueProvider;
 }> {
   private readonly sub = this.props.bus.getSubscriber<PrimFeBusBaseEvents>();
 
@@ -461,14 +448,10 @@ class VAlphaProtBar extends DisplayComponent<{
   private vAlphaProt = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_prot'));
 
   private setAlphaProtBarPath() {
-    const normalLawActive =
-      this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false) ||
-      this.props.fcdcData.fcdcDiscreteWord2.get().bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vAlphaProt.get().value > DisplayRange ||
       this.vAlphaProt.get().isFailureWarning() ||
-      this.vAlphaProt.get().isNoComputedData() ||
-      !normalLawActive
+      this.vAlphaProt.get().isNoComputedData()
     ) {
       this.VAprotIndicator.instance.style.visibility = 'hidden';
     } else {
@@ -497,10 +480,6 @@ class VAlphaProtBar extends DisplayComponent<{
     this.vAlphaProt.sub(() => {
       this.setAlphaProtBarPath();
     }, true);
-
-    this.props.fcdcData.fcdcDiscreteWord1.sub(() => {
-      this.setAlphaProtBarPath();
-    }, true);
   }
 
   render(): VNode {
@@ -517,7 +496,9 @@ class VAlphaProtBar extends DisplayComponent<{
 }
 
 class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & PrimFeBusBaseEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<
+    HUDSimvars & Arinc429Values & PrimFeBusBaseEvents & PrimFgBusBaseEvents
+  >();
 
   private greenDotBug = FSComponent.createRef<SVGGElement>();
 
@@ -531,42 +512,38 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly v4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_4'));
 
-  private readonly shortTermManagedSpeedConsumer = ConsumerSubject.create(
-    this.sub.on('shortTermManagedSpeed').whenChanged(),
-    0,
+  private readonly shortTermManagedSpeed = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_pfd_short_term_managed_speed').whenChanged(),
   );
-
-  private readonly leftMainGearCompressedConsumer = ConsumerSubject.create(
-    this.sub.on('leftMainGearCompressed').whenChanged(),
-    true,
-  );
-
-  private readonly rightMainGearCompressedConsumer = ConsumerSubject.create(
-    this.sub.on('rightMainGearCompressed').whenChanged(),
-    true,
-  );
+  private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
 
   private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
 
   private readonly airspeed = Arinc429RegisterSubject.createEmpty();
 
-  private readonly shortTermManagedSpeedExists = MappedSubject.create(
-    ([shortTermManagedSpeed, leftGearCompressed, rightGearCompressed]) =>
-      shortTermManagedSpeed > 0 && (!leftGearCompressed || !rightGearCompressed),
-    this.shortTermManagedSpeedConsumer,
-    this.leftMainGearCompressedConsumer,
-    this.rightMainGearCompressedConsumer,
+  private readonly selectedSpeedActive = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_fg_discrete_word_5'),
+  ).map((v) => !v.isInvalid() && v.bitValue(18));
+
+  private readonly shortTermManagedSpeedVisible = MappedSubject.create(
+    ([shortTermManagedSpeed, pfdTargetSpeed, selectedSpeed]) =>
+      !shortTermManagedSpeed.isInvalid() &&
+      !pfdTargetSpeed.isInvalid() &&
+      (selectedSpeed || Math.abs(shortTermManagedSpeed.value - pfdTargetSpeed.value) > 2),
+    this.shortTermManagedSpeed,
+    this.pfdTargetSpeed,
+    this.selectedSpeedActive,
   );
 
-  private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
+  private readonly shortTermVisibility = this.shortTermManagedSpeedVisible.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly shortTermPath = MappedSubject.create(
     ([ias, shortTermSpeed]) => {
       if (ias.isNormalOperation() && shortTermSpeed) {
-        const diff = Math.abs(ias.value - shortTermSpeed);
+        const diff = Math.abs(ias.value - shortTermSpeed.value);
         if (diff < DisplayRange) {
           return `m93 361.5 a 6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z`;
-        } else if (ias.value > shortTermSpeed) {
+        } else if (ias.value > shortTermSpeed.value) {
           return `m83.55 361.5 c 0.002 3.119 2.692 5.646 6.01 5.646 3.317 0 6.008 -2.527 6.01 -5.646h-6.01z`;
         } else {
           return `m83.55 361.5 c 0.002 3.372 2.806 6.103 6.265 6.103 3.458 0 6.262 -2.732 6.265 -6.103h-6.265z`;
@@ -576,19 +553,19 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
       }
     },
     this.airspeed,
-    this.shortTermManagedSpeedConsumer,
+    this.shortTermManagedSpeed,
   );
 
   private readonly shortTermStyle = MappedSubject.create(
     ([shortTermVisible, ias, shortTermManagedSpeed]) => {
       if (shortTermVisible && ias.isNormalOperation()) {
-        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, shortTermManagedSpeed)}px)`;
+        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, shortTermManagedSpeed.value)}px)`;
       }
       return '';
     },
-    this.shortTermManagedSpeedExists,
+    this.shortTermManagedSpeedVisible,
     this.airspeed,
-    this.shortTermManagedSpeedConsumer,
+    this.shortTermManagedSpeed,
   );
 
   render(): VNode {
@@ -674,7 +651,6 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   private crosswindMode = false;
   private bitMask = 0;
   private athMode = 0;
-  private onToPower = false;
   private onPower = false;
   private finalGnd = false;
   private sCrosswindModeOn = Subject.create<String>('');
@@ -720,18 +696,6 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .handle((v) => {
         this.xWindSpdTape = v;
         this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-      });
-
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
       });
 
     sub
@@ -941,7 +905,6 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
 class VStallWarnBar extends DisplayComponent<{
   readonly bus: ArincEventBus;
-  readonly fcdcData: FcdcValueProvider;
 }> {
   private readonly sub = this.props.bus.getArincSubscriber<PrimFeBusBaseEvents>();
 
@@ -952,14 +915,10 @@ class VStallWarnBar extends DisplayComponent<{
   private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_stall_warn'));
 
   private setVStallWarnBarPath() {
-    const normalLawActive =
-      this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false) ||
-      this.props.fcdcData.fcdcDiscreteWord2.get().bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vStallWarn.get().value > DisplayRange ||
       this.vStallWarn.get().isFailureWarning() ||
-      this.vStallWarn.get().isNoComputedData() ||
-      normalLawActive
+      this.vStallWarn.get().isNoComputedData()
     ) {
       this.VStallWarnIndicator.instance.style.visibility = 'hidden';
     } else {
@@ -988,10 +947,6 @@ class VStallWarnBar extends DisplayComponent<{
     this.vStallWarn.sub(() => {
       this.setVStallWarnBarPath();
     }, true);
-
-    this.props.fcdcData.fcdcDiscreteWord2.sub(() => {
-      this.setVStallWarnBarPath();
-    }, true);
   }
 
   render(): VNode {
@@ -1010,7 +965,6 @@ class VStallWarnBar extends DisplayComponent<{
 interface AirspeedIndicatorProps {
   readonly bus: ArincEventBus;
   readonly instrument: BaseInstrument;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
@@ -1032,7 +986,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   render(): VNode {
     return (
       <>
-        <AirspeedIndicatorBase bus={this.props.bus} instrument={this.props.instrument} fcdcData={this.props.fcdcData} />
+        <AirspeedIndicatorBase bus={this.props.bus} instrument={this.props.instrument} />
       </>
     );
   }
@@ -1116,7 +1070,7 @@ class SpeedTrendArrow extends DisplayComponent<{
   }
 }
 
-class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus; readonly fcdcData: FcdcValueProvider }> {
+class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getArincSubscriber<PrimFeBusBaseEvents>();
 
   private vlsPath = Subject.create<string>('');
@@ -1135,12 +1089,12 @@ class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus; readonly fc
     if (this.vls.get().isNormalOperation()) {
       this.vlsVisbility.set('visible');
 
-      const normalLawActive = this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false);
+      const vAlphaProtVisible = !(this.vAlphaProt.get().isFailureWarning() || this.vAlphaProt.get().isNoComputedData());
 
       const VLsPos = ((this.airSpeed.value - this.vls.get().value) * DistanceSpacing) / ValueSpacing + neutralPos;
       const offset =
         ((this.vls.get().value -
-          (normalLawActive ? this.vAlphaProt.get().valueOr(0) : this.vStallWarn.get().valueOr(0))) *
+          (vAlphaProtVisible ? this.vAlphaProt.get().valueOr(0) : this.vStallWarn.get().valueOr(0))) *
           DistanceSpacing) /
         ValueSpacing;
 
@@ -1174,8 +1128,6 @@ class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus; readonly fc
     this.vls.sub(() => {
       this.setVlsPath();
     }, true);
-
-    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.setVlsPath());
   }
 
   render(): VNode {
@@ -1185,7 +1137,6 @@ class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus; readonly fc
 
 class VAlphaLimBar extends DisplayComponent<{
   readonly bus: ArincEventBus;
-  readonly fcdcData: FcdcValueProvider;
 }> {
   private readonly sub = this.props.bus.getArincSubscriber<PrimFeBusBaseEvents>();
 
@@ -1196,12 +1147,10 @@ class VAlphaLimBar extends DisplayComponent<{
   private readonly vAlphaLim = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_lim'));
 
   private setAlphaLimBarPath() {
-    const normalLawActive = this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false);
     if (
       this.vAlphaLim.get().value - this.airSpeed.value < -DisplayRange ||
       this.vAlphaLim.get().isFailureWarning() ||
-      this.vAlphaLim.get().isNoComputedData() ||
-      !normalLawActive
+      this.vAlphaLim.get().isNoComputedData()
     ) {
       this.VAlimIndicator.instance.style.visibility = 'hidden';
     } else {
@@ -1230,8 +1179,6 @@ class VAlphaLimBar extends DisplayComponent<{
     this.vAlphaLim.sub(() => {
       this.setAlphaLimBarPath();
     }, true);
-
-    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.setAlphaLimBarPath(), true);
   }
 
   render(): VNode {
@@ -1240,46 +1187,35 @@ class VAlphaLimBar extends DisplayComponent<{
 }
 
 class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
-  private v1TextRef = FSComponent.createRef<SVGTextElement>();
+  private readonly v1 = ConsumerSubject.create(this.props.bus.getSubscriber<HUDSimvars>().on('v1'), 0);
 
-  private v1Speed = 0;
+  private readonly fwcFlightPhase = ConsumerSubject.create(
+    this.props.bus.getSubscriber<HUDSimvars>().on('fwcFlightPhase'),
+    1,
+  );
+  private readonly speed = Arinc429ConsumerSubject.create(this.props.bus.getSubscriber<Arinc429Values>().on('speedAr'));
 
-  onAfterRender() {
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    sub.on('speed').handle((s) => {
-      const speed = new Arinc429Word(s);
-      if (this.v1Speed - speed.value > DisplayRange) {
-        this.v1TextRef.instance.style.visibility = 'visible';
+  private readonly visibility = MappedSubject.create(
+    ([v1, flightphase, speed]) => {
+      if (!speed.isFailureWarning() && v1 > 0 && flightphase <= 5 && v1 - speed.valueOr(30) > DisplayRange) {
+        return 'visible';
       } else {
-        this.v1TextRef.instance.style.visibility = 'hidden';
+        return 'hidden';
       }
-    });
+    },
+    this.v1,
+    this.fwcFlightPhase,
+    this.speed,
+  );
 
-    sub
-      .on('v1')
-      .whenChanged()
-      .handle((v1) => {
-        this.v1Speed = v1;
-        this.v1TextRef.instance.textContent = Math.round(v1).toString();
-      });
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((p) => {
-        if (p <= 5) {
-          this.v1TextRef.instance.style.visibility = 'visible';
-        } else {
-          this.v1TextRef.instance.style.visibility = 'hidden';
-        }
-      });
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
   }
 
   render() {
     return (
-      <text ref={this.v1TextRef} id="V1SpeedText" class="FontTiny Green" x="89.7" y="188.37">
-        0
+      <text id="V1SpeedText" class="FontTiny Green" x="89.7" y="188.37" style={{ visibility: this.visibility }}>
+        {this.v1}
       </text>
     );
   }
@@ -1372,204 +1308,118 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-interface SpeedStateInfo {
-  targetSpeed: number;
-  managedTargetSpeed: number;
-  holdValue: number;
-  isSpeedManaged: boolean;
-  isMach: boolean;
-  speed: Arinc429Word;
-}
-
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode }> {
   private xwindOffset = 0;
 
   private BoundBgRef = FSComponent.createRef<SVGPathElement>();
+
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
   private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
+
   private speedTargetRef = FSComponent.createRef<SVGPathElement>();
 
-  private currentVisible: NodeReference<SVGElement> = this.upperBoundRef;
+  private sub = this.props.bus.getArincSubscriber<PrimFgBusBaseEvents & Arinc429Values & HUDSimvars & HudElems>();
 
-  private textSub = Subject.create('0');
+  private decelActive = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
 
-  private decelActive = false;
+  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
 
-  private needsUpdate = true;
-  private crosswindMode = false;
-  private speedState: SpeedStateInfo = {
-    speed: new Arinc429Word(0),
-    targetSpeed: 100,
-    managedTargetSpeed: 100,
-    holdValue: 100,
-    isSpeedManaged: false,
-    isMach: false,
-  };
+  private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
+  private readonly selectedSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_speed'));
+  private readonly managedSpeed = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_pfd_short_term_managed_speed'),
+  );
 
-  private handleManagedSpeed() {
-    if (this.speedState.isSpeedManaged) {
-      this.currentVisible.instance.classList.replace('Green', 'Green');
-      const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-      this.textSub.set(text);
-    } else {
-      this.currentVisible.instance.classList.replace('Green', 'Green');
-      const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-      this.textSub.set(text);
-    }
-  }
+  private readonly fgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    this.needsUpdate = true;
+  private readonly isSpeedManaged = this.fgDiscreteWord5.map((word) => word.bitValueOr(17, false));
 
-    const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
-    >();
+  private readonly targetSpeedValid = this.pfdTargetSpeed.map(
+    (speed) => speed.isNormalOperation() || speed.isFunctionalTest(),
+  );
+  private readonly cWndMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
 
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        this.handleCrosswinMode();
-      });
-    sub
-      .on('isSelectedSpeed')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.isSpeedManaged = !s;
-        this.needsUpdate = true;
-      });
+  private readonly spdSelFlagVisible = this.pfdTargetSpeed.map((speed) => speed.isFailureWarning());
 
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.speedState.speed = s;
+  private readonly speedTargetBugVisible = MappedSubject.create(
+    ([speedTarget, speed, targetSpeedValid]) =>
+      targetSpeedValid && Math.abs(speed.value - speedTarget.value) < DisplayRange,
+    this.pfdTargetSpeed,
+    this.speed,
+    this.targetSpeedValid,
+    this.cWndMode,
+  );
 
-        this.needsUpdate = true;
-      });
+  private readonly speedTargetUpperVisible = MappedSubject.create(
+    ([speedTarget, speed, targetSpeedValid]) => targetSpeedValid && speed.value - speedTarget.value > DisplayRange,
+    this.pfdTargetSpeed,
+    this.speed,
+    this.targetSpeedValid,
+  );
 
-    sub
-      .on('holdValue')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.holdValue = s;
-        this.needsUpdate = true;
-      });
+  private readonly speedTargetLowerVisible = MappedSubject.create(
+    ([speedTarget, speed, targetSpeedValid, decelActive]) =>
+      targetSpeedValid && !decelActive && speed.value - speedTarget.value < -DisplayRange,
+    this.pfdTargetSpeed,
+    this.speed,
+    this.targetSpeedValid,
+    this.decelActive,
+  );
 
-    sub
-      .on('machActive')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.isMach = s;
-        this.needsUpdate = true;
-      });
+  private readonly speedTargetText = this.pfdTargetSpeed.map((target) =>
+    Math.round(target.value).toString().padStart(3, '0'),
+  );
+  private windMode = this.props.mode;
+  private readonly speedTargetTransform = MappedSubject.create(
+    ([speedTarget, speed]) => {
+      const multiplier = 100;
+      const currentValueAtPrecision = Math.round(speed.value * multiplier) / multiplier;
+      const offset =
+        ((currentValueAtPrecision - speedTarget.value) * DistanceSpacing) / ValueSpacing + this.xwindOffset;
 
-    sub
-      .on('targetSpeedManaged')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.managedTargetSpeed = s;
-        this.needsUpdate = true;
-      });
+      return `translate3d(0px, ${offset}px, 0px)`;
+    },
+    this.pfdTargetSpeed,
+    this.speed,
+  );
 
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((a) => {
-        this.decelActive = a;
-        this.needsUpdate = true;
-      });
-
-    sub.on('realTime').handle(this.onFrameUpdate.bind(this));
-  }
-
-  private onFrameUpdate(_realTime: number): void {
-    if (this.needsUpdate === true) {
-      this.needsUpdate = false;
-
-      this.determineTargetSpeed();
-      const inRange = this.handleLowerUpperBound();
-      this.handleManagedSpeed();
-
-      if (inRange) {
-        const multiplier = 100;
-        const currentValueAtPrecision = Math.round(this.speedState.speed.value * multiplier) / multiplier;
-        const offset =
-          ((currentValueAtPrecision -
-            (this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed)) *
-            DistanceSpacing) /
-            ValueSpacing +
-          this.xwindOffset;
-        this.speedTargetRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-      } else {
-        const text = Math.round(
-          this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed,
-        )
-          .toString()
-          .padStart(3, '0');
-        this.textSub.set(text);
-      }
-    }
-    if (this.speedState.isSpeedManaged) {
+  private setTargetSpeedBugBg() {
+    if (this.isSpeedManaged.get()) {
       this.speedTargetRef.instance.classList.add('GreenFill2');
     } else {
       this.speedTargetRef.instance.classList.remove('GreenFill2');
     }
   }
-
-  private determineTargetSpeed() {
-    const isSelected = !this.speedState.isSpeedManaged;
-    if (isSelected) {
-      if (this.speedState.isMach) {
-        const { holdValue } = this.speedState;
-        this.speedState.targetSpeed = SimVar.GetGameVarValue(
-          'FROM MACH TO KIAS',
-          'number',
-          holdValue === null ? undefined : holdValue,
-        );
-      } else {
-        this.speedState.targetSpeed = this.speedState.holdValue;
-      }
+  private handleCrosswinMode() {
+    if (this.props.mode === WindMode.Normal) {
+      this.xwindOffset = 0;
+      this.upperBoundRef.instance.setAttribute('y', '578');
+      this.lowerBoundRef.instance.setAttribute('y', '166');
+    } else {
+      this.xwindOffset = XWIND_TO_AIR_REF_OFFSET;
+      this.upperBoundRef.instance.setAttribute('y', `${165 - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}`);
+      this.lowerBoundRef.instance.setAttribute('y', `${-45 - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}`);
     }
   }
 
   private handleLowerUpperBound(): boolean {
+    const currentTargetSpeed = this.isSpeedManaged.get() ? this.managedSpeed : this.selectedSpeed;
     let inRange = false;
     this.handleCrosswinMode();
-    const currentTargetSpeed = this.speedState.isSpeedManaged
-      ? this.speedState.managedTargetSpeed
-      : this.speedState.targetSpeed;
-    if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
-      this.upperBoundRef.instance.style.visibility = 'visible';
-      this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.speedTargetRef.instance.style.visibility = 'hidden';
+    this.setTargetSpeedBugBg();
+    if (this.speed.get().value - currentTargetSpeed.get().value > DisplayRange) {
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset + (DisplayRange / ValueSpacing) * DistanceSpacing + 15}px, 0px)`;
-      this.currentVisible = this.upperBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
-      this.lowerBoundRef.instance.style.visibility = 'visible';
-      this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.speedTargetRef.instance.style.visibility = 'hidden';
+    } else if (this.speed.get().value - currentTargetSpeed.get().value < -DisplayRange && !this.decelActive.get()) {
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset - (DisplayRange / ValueSpacing) * DistanceSpacing - 15}px, 0px)`;
-      this.currentVisible = this.lowerBoundRef;
-    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
-      this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.speedTargetRef.instance.style.visibility = 'visible';
-      this.currentVisible = this.speedTargetRef;
+    } else if (Math.abs(this.speed.get().value - currentTargetSpeed.get().value) < DisplayRange) {
       inRange = true;
-    } else {
-      this.lowerBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.speedTargetRef.instance.style.visibility = 'hidden';
     }
 
     if (inRange) {
       this.BoundBgRef.instance.style.visibility = 'hidden';
     } else {
-      if (this.speedState.isSpeedManaged) {
+      if (this.isSpeedManaged.get()) {
         this.BoundBgRef.instance.style.visibility = 'visible';
         this.upperBoundRef.instance.classList.add('InverseGreen');
         this.upperBoundRef.instance.classList.remove('Green');
@@ -1584,22 +1434,16 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       }
     }
 
-    if (this.decelActive) {
+    if (this.decelActive.get()) {
       this.BoundBgRef.instance.style.visibility = 'hidden';
     }
     return inRange;
   }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
 
-  private handleCrosswinMode() {
-    if (this.props.mode === WindMode.Normal) {
-      this.xwindOffset = 0;
-      this.upperBoundRef.instance.setAttribute('y', '578');
-      this.lowerBoundRef.instance.setAttribute('y', '166');
-    } else {
-      this.xwindOffset = XWIND_TO_AIR_REF_OFFSET;
-      this.upperBoundRef.instance.setAttribute('y', `${165 - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}`);
-      this.lowerBoundRef.instance.setAttribute('y', `${-45 - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}`);
-    }
+    this.speed.sub(this.handleLowerUpperBound.bind(this));
+    this.cWndMode.sub(this.handleCrosswinMode.bind(this));
   }
 
   render(): VNode {
@@ -1609,26 +1453,44 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
         <text
           ref={this.upperBoundRef}
           id="SelectedSpeedUpperText"
-          class="FontSmallest MiddleAlign Green"
+          class={{
+            FontSmallest: true,
+            MiddleAlign: true,
+            HiddenElement: this.speedTargetUpperVisible.map(SubscribableMapFunctions.not()),
+          }}
           x="94"
           y="578"
         >
-          {this.textSub}
+          {this.speedTargetText}
         </text>
         <text
           ref={this.lowerBoundRef}
           id="SelectedSpeedLowerText"
-          class="FontSmallest MiddleAlign InverseGreen"
+          class={{
+            FontSmallest: true,
+            MiddleAlign: true,
+            HiddenElement: this.speedTargetLowerVisible.map(SubscribableMapFunctions.not()),
+          }}
           x="94"
           y="166"
         >
-          {this.textSub}
+          {this.speedTargetText}
         </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdSelFlagVisible}>
+          <text id="SelectedSpeedFailText" class="FontSmall EndAlign Green" x="94" y="166">
+            SPD SEL
+          </text>
+        </FlashOneHertz>
         <path
           id="speedTarget"
           ref={this.speedTargetRef}
-          class="NormalStroke CornerRound Green"
-          style="transform: translate3d(0px, 0px, 0px)"
+          class={{
+            NormalStroke: true,
+            CornerRound: true,
+            Green: true,
+            HiddenElement: this.speedTargetBugVisible.map(SubscribableMapFunctions.not()),
+          }}
+          style={{ transform: this.speedTargetTransform }}
           d="m86.444 367.299 24.03 8.751v-27.123l-24.03 8.751z"
         />
         <SpeedMargins bus={this.props.bus} />
@@ -1811,20 +1673,28 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class VProtBug extends DisplayComponent<{ readonly bus: EventBus; readonly fcdcData: FcdcValueProvider }> {
-  private readonly sub = this.props.bus.getSubscriber<PrimFeBusBaseEvents>();
+class VProtBug extends DisplayComponent<{ readonly bus: EventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<PrimFeBusBaseEvents & FcdcBusEvents>();
 
   private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_max'));
 
   private vProtBug = FSComponent.createRef<SVGGElement>();
 
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
   private handleVProtBugDisplay() {
     const showVProt = this.vMax.get().value > 240 && this.vMax.get().isNormalOperation();
     const offset = (-(this.vMax.get().value + 10) * DistanceSpacing) / ValueSpacing;
 
-    const isNormalLawActive =
-      this.props.fcdcData.fcdcDiscreteWord1.get().bitValue(11) &&
-      !this.props.fcdcData.fcdcDiscreteWord1.get().isFailureWarning();
+    const isNormalLawActive = this.isNormalLawActive.get();
 
     if (showVProt && isNormalLawActive) {
       this.vProtBug.instance.style.display = 'block';
@@ -1840,7 +1710,7 @@ class VProtBug extends DisplayComponent<{ readonly bus: EventBus; readonly fcdcD
       this.handleVProtBugDisplay();
     }, true);
 
-    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.handleVProtBugDisplay());
+    this.isNormalLawActive.sub(() => this.handleVProtBugDisplay(), true);
   }
 
   render(): VNode {

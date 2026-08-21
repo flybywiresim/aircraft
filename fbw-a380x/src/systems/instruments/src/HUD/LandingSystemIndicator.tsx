@@ -3,23 +3,35 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
-  HEvent,
   MappedSubject,
   Subject,
+  Subscribable,
   VNode,
   ClockEvents,
   NodeReference,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from './HUD';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, LagFilter } from './HUDUtils';
 import { FIVE_DEG } from './HUDUtils';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
-export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & FcuEfisCpBusEvents & HudElems & HUDSimvars & ClockEvents
+  >();
   private lsButtonPressedVisibility = false;
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButtonPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
   private xtkValid = Subject.create(false);
 
@@ -35,30 +47,48 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
 
   private groupVis = false;
   private hudFlightPhaseMode = 0;
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
   private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
   private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
-  private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
-  private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
   private gsVis = '';
+
+  private handleGsReferenceLine() {
+    if (this.lsButtonPressedVisibility || this.altitude.get().isNormalOperation()) {
+      this.deviationGroup.instance.style.display = 'inline';
+    } else if (!this.lsButtonPressedVisibility) {
+      this.deviationGroup.instance.style.display = 'none';
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
-    this.sub
+
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
+
+    this.lsButtonPressed.sub((lsButton) => {
+      this.lsButtonPressedVisibility = lsButton;
+      this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility && this.groupVis ? 'inline' : 'none';
+      this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility && this.groupVis ? 'none' : 'inline';
+      this.handleGsReferenceLine();
+    }, true);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
+
+    this.altitude.sub(this.handleGsReferenceLine.bind(this), true);
+
+    sub
       .on('IlsGS')
       .whenChanged()
       .handle((value) => {
         this.gsVis = value;
         value === 'block' ? (this.groupVis = true) : (this.groupVis = false);
       });
-    this.sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
-      value && this.groupVis
-        ? (this.lsGroupRef.instance.style.display = 'inline')
-        : (this.lsGroupRef.instance.style.display = 'none');
-    });
 
-    this.sub
+    sub
       .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')
       .whenChanged()
       .handle((ldevRequest) => {
@@ -66,7 +96,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
         this.updateLdevVisibility();
       });
 
-    this.sub
+    sub
       .on('xtk')
       .whenChanged()
       .handle((xtk) => {
@@ -86,7 +116,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
     return (
       <>
         <g id="LSGroup" ref={this.lsGroupRef} transform=" translate(0 0)">
-          <LandingSystemInfo bus={this.props.bus} />
+          <LandingSystemInfo bus={this.props.bus} isVisible={this.lsButtonPressed} />
 
           <g id="LSGroup">
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -114,7 +144,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
   }
 }
 
-class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
+class LandingSystemInfo extends DisplayComponent<{ bus: EventBus; isVisible: Subscribable<boolean> }> {
   private hasDme = false;
 
   private identText = Subject.create('');
@@ -131,25 +161,12 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   private destRef = FSComponent.createRef<SVGTextElement>();
 
-  private lsInfoGroup = FSComponent.createRef<SVGGElement>();
   private elemVis = false;
   private hasLoc = false;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    sub
-      .on('hasLoc')
-      .whenChanged()
-      .handle((hasLoc) => {
-        if (hasLoc) {
-          this.lsInfoGroup.instance.style.display = 'inline';
-        } else {
-          this.lsInfoGroup.instance.style.display = 'none';
-        }
-      });
 
     sub
       .on('hasDme')
@@ -217,7 +234,11 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(115 320)">
+      <g
+        id="LSInfoGroup"
+        class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
+        transform=" translate(115 320)"
+      >
         <text id="ILSIdent" class="Green FontSmallest  AlignLeft" x="15" y="490">
           {this.identText}
         </text>
@@ -239,7 +260,10 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & HudElems & HUDSimvars & ClockEvents & FcuEfisCpBusEvents
+  >();
   private flightPhase = -1;
   private fmgcFlightPhase = -1;
   private declutterMode = 0;
@@ -252,6 +276,9 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   private locVisBool = false;
   private lsBtnState = false;
   private lagFilter = new LagFilter(1.5);
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly lsButtonPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
   private rightDiamond = FSComponent.createRef<SVGPathElement>();
 
@@ -285,35 +312,34 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isFo = getDisplayIndex() === 2;
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-    const navRadialSub = sub.on('navRadialError').handle(this.handleNavRadialError.bind(this), true);
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
+    const navRadialSub = this.sub.on('navRadialError').handle(this.handleNavRadialError.bind(this), true);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
-      this.lsBtnState = value;
-    });
-    sub
+    this.sub
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
         this.flightPhase = fp;
       });
-    sub
+    this.sub
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
         this.fmgcFlightPhase = fp;
       });
 
-    sub
+    this.sub
       .on('IlsLoc')
       .whenChanged()
       .handle((value) => {
         this.locVis = value;
         this.LSLocRef.instance.style.display = `${this.locVis}`;
       });
-    sub
+    this.sub
       .on('decMode')
       .whenChanged()
       .handle((value) => {
@@ -321,7 +347,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.setLocGroupPos();
       });
 
-    sub
+    this.sub
       .on('hasLoc')
       .whenChanged()
       .handle((hasLoc) => {
@@ -334,11 +360,13 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
           navRadialSub.pause();
         }
       });
-    sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').handle((value) => {
-      this.LsState = value;
+
+    this.lsButtonPressed.sub((lsButton) => {
+      this.LsState = lsButton;
       this.setLocGroupPos();
-    });
-    sub.on('pitchAr').handle((p) => {
+    }, true);
+
+    this.sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
     });
   }
@@ -375,34 +403,8 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     );
   }
 }
-interface LSPath {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
-}
+
 class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
-  private data: LSPath = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
-  };
-
-  private LSGsRef = new NodeReference<SVGGElement>();
-
-  private needsUpdate = false;
-
-  private crosswindMode = false;
-
-  private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
-
-  private deviationGroup = FSComponent.createRef<SVGGElement>();
-
-  private altitude = Arinc429Word.empty();
-
-  private lsButtonPressedVisibility = false;
-
   private lagFilter = new LagFilter(1.5);
 
   private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -414,7 +416,8 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   private diamondGroup = FSComponent.createRef<SVGGElement>();
 
   private hasGlideSlope = false;
-  private GsVis = '';
+
+  private LSGsRef = new NodeReference<SVGGElement>();
 
   private handleGlideSlopeError(glideSlopeError: number): void {
     const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
@@ -435,16 +438,19 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
       this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 90.6) / 2}px, 0px)`;
     }
   }
-  private handleGsReferenceLine() {
-    if (this.lsButtonPressedVisibility || this.altitude.isNormalOperation()) {
-      this.gsReferenceLine.instance.style.display = 'inline';
-    } else if (!this.lsButtonPressedVisibility) {
-      this.gsReferenceLine.instance.style.display = 'none';
-    }
-  }
+
+  private crosswindMode = false;
+  private pitch = 0;
+
+  private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
+
+  private deviationGroup = FSComponent.createRef<SVGGElement>();
+
+  private GsVis = '';
+
   private MoveGlideSlopeGroup() {
     if (this.crosswindMode == false) {
-      this.LSGsRef.instance.style.transform = `translate3d(665px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(665px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.pitch)}px, 0px)`;
     } else {
       this.LSGsRef.instance.style.transform = `translate3d(665px, 84px, 0px)`;
     }
@@ -452,73 +458,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
-
-    sub
-      .on('IlsGS')
-      .whenChanged()
-      .handle((value) => {
-        this.GsVis = value;
-        this.LSGsRef.instance.style.display = `${this.GsVis}`;
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
-    sub
-      .on('fpa')
-      .whenChanged()
-      .handle((fpa) => {
-        this.data.fpa = fpa;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('da')
-      .whenChanged()
-      .handle((da) => {
-        this.data.da = da;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('rollAr')
-      .whenChanged()
-      .handle((r) => {
-        this.data.roll = r;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((p) => {
-        this.data.pitch = p;
-        this.needsUpdate = true;
-      });
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (daAndFpaValid) {
-          // this.threeDegRef.instance.classList.remove('HiddenElement');
-          this.MoveGlideSlopeGroup();
-        } else {
-          // this.threeDegRef.instance.classList.add('HiddenElement');
-        }
-      }
-    });
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((lsButton) => {
-        this.lsButtonPressedVisibility = lsButton;
-        this.handleGsReferenceLine();
-      });
-
-    sub.on('altitudeAr').handle((altitude) => {
-      this.altitude = altitude;
-      this.handleGsReferenceLine();
-    });
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub
       .on('hasGlideslope')
@@ -538,6 +478,28 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
         this.handleGlideSlopeError(gs);
       }
     });
+
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((p) => {
+        this.pitch = p.value;
+      });
+
+    sub
+      .on('IlsGS')
+      .whenChanged()
+      .handle((value) => {
+        this.GsVis = value;
+        this.LSGsRef.instance.style.display = `${this.GsVis}`;
+      });
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+        this.MoveGlideSlopeGroup();
+      });
   }
 
   render(): VNode {
@@ -784,11 +746,15 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsTitle extends DisplayComponent<{ bus: EventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents & HUDSimvars>();
+
   private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
 
-  private readonly hasLoc = ConsumerSubject.create(null, false);
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
-  private readonly lsButton = ConsumerSubject.create(null, false);
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
+  private readonly hasLoc = ConsumerSubject.create(this.sub.on('hasLoc'), false);
 
   private readonly ilsTitleShown = MappedSubject.create(
     ([hasLoc, lsButton]) => hasLoc && lsButton,
@@ -799,10 +765,11 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const isFo = getDisplayIndex() === 2;
 
-    this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
-    this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
     this.ilsTitleShown.sub((it) => {
@@ -824,51 +791,51 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & HudElems & PrimFgBusBaseEvents & FcuEfisCpBusEvents
+  >();
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
-  private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  // TODO replace with proper FG signals once implemented
-  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false);
+  private primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
 
-  private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
+  private primFgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_4'));
 
-  private readonly lsButton = ConsumerSubject.create(null, false);
+  private readonly lsButton = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
+  private readonly approachModeSelected = MappedSubject.create(
+    ([primFgDiscreteWord1, primFgDiscreteWord2, primFgDiscreteWord4]) => {
+      return (
+        primFgDiscreteWord1.bitValueOr(23, false) || // LAND active
+        primFgDiscreteWord2.bitValueOr(28, false) || // LAND armed
+        primFgDiscreteWord2.bitValueOr(23, false) || // (F)LOC Armed
+        primFgDiscreteWord4.bitValueOr(13, false) || // (F)LOC* active
+        primFgDiscreteWord4.bitValueOr(14, false) // (F)LOC Active
+      ); // TODO Check if LOC or G/S scales are invalid (MMR words)
+    },
+    this.primFgDiscreteWord1,
+    this.primFgDiscreteWord2,
+    this.primFgDiscreteWord4,
+  );
 
   private readonly lsReminderVisible = MappedSubject.create(
-    ([locPushed, approachModePushed, lsPushed]) => {
-      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
+    ([approachModeSelected, lsPushed]) => {
+      return approachModeSelected && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
     },
-    this.locPushed,
-    this.approachModePushed,
+    this.approachModeSelected,
     this.lsButton,
   );
 
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    this.lsButton.setConsumer(this.sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button'));
-    this.lsReminderVisible.sub((v) => {
-      if (v) {
-        this.lsReminder.instance.style.display = 'inline';
-      } else {
-        this.lsReminder.instance.style.display = 'none';
-      }
-    }, true);
-  }
-
   render(): VNode {
     return (
-      <text
-        visibility={this.decMode.map((v) => (v == 2 ? 'hidden' : 'visible'))}
-        class="FontLargest Green Blink9Seconds"
-        x="905"
-        y="800"
-        ref={this.lsReminder}
-      >
-        LS
-      </text>
+      <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
+        <text class="FontLargest Green" x="905" y="800">
+          LS
+        </text>
+      </FlashOneHertz>
     );
   }
 }

@@ -13,26 +13,38 @@ import {
 import { FIVE_DEG, getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+
 const DisplayRange = 18;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
 export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
   private normalRef = FSComponent.createRef<SVGGElement>();
 
   private heading = Subject.create(0);
 
   private ILSCourse = Subject.create(0);
 
-  private lsPressed = Subject.create(false);
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HEvent>();
 
     sub.on('headingAr').handle((h) => {
@@ -50,13 +62,6 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
       .whenChanged()
       .handle((n) => {
         this.ILSCourse.set(n);
-      });
-
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((lsButton) => {
-        this.lsPressed.set(lsButton);
       });
   }
 
@@ -81,77 +86,57 @@ interface SelectedHeadingProps {
 }
 
 class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
-  private readonly sub = this.props.bus.getSubscriber<SimplaneValues & HUDSimvars & HudElems>();
-
-  private selectedHeading = NaN;
-
-  private showSelectedHeading = 0;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & PrimFgBusBaseEvents & ClockEvents>();
 
   private targetIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private text = Subject.create('');
+  private readonly targetIndicatorVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
 
-  private readonly spdChevronsVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
+  private fgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private selectedHdgTrk = Arinc429LocalVarConsumerSubject.create(null);
 
-    this.sub
-      .on('selectedHeading')
-      .whenChanged()
-      .handle((h) => {
-        if (this.showSelectedHeading === 1) {
-          this.selectedHeading = h;
-          this.handleDelta(this.props.heading.get(), this.selectedHeading);
-        } else {
-          this.selectedHeading = NaN;
-        }
-      });
+  private readonly trkFpaModeActive = this.fgDiscreteWord5.map((word) => word.bitValueOr(11, true));
 
-    this.sub
-      .on('showSelectedHeading')
-      .whenChanged()
-      .handle((sh) => {
-        this.showSelectedHeading = sh;
-        if (this.showSelectedHeading === 0) {
-          this.selectedHeading = NaN;
-        }
-        this.handleDelta(this.props.heading.get(), this.selectedHeading);
-      });
+  private headingDelta = MappedSubject.create(
+    ([heading, selectedHeading]) => {
+      return getSmallestAngle(selectedHeading.value, heading);
+    },
+    this.props.heading,
+    this.selectedHdgTrk,
+  );
 
-    this.props.heading.sub((h) => {
-      this.handleDelta(h, this.selectedHeading);
+  private readonly selectedHeadingValid = this.selectedHdgTrk.map(
+    (hdg) => hdg.isNormalOperation() || hdg.isFunctionalTest(),
+  );
+
+  private readonly headingBugTransform = this.headingDelta.map(
+    (headingDelta) => `translate3d(${(headingDelta * DistanceSpacing) / ValueSpacing}px, 0px, 0px)`,
+  );
+
+  private readonly headingBugHidden = MappedSubject.create(
+    ([selectedHeadingValid, headingDelta]) => {
+      return !(selectedHeadingValid && Math.abs(headingDelta) < DisplayRange);
+    },
+    this.selectedHeadingValid,
+    this.headingDelta,
+  );
+
+  onAfterRender(): void {
+    this.trkFpaModeActive.sub((trkFpaModeActive) => {
+      this.selectedHdgTrk.setConsumer(this.sub.on(trkFpaModeActive ? 'prim_selected_track' : 'prim_selected_heading'));
     }, true);
-  }
-
-  private handleDelta(heading: number, selectedHeading: number) {
-    const headingDelta = getSmallestAngle(selectedHeading, heading);
-
-    this.text.set(Math.round(selectedHeading).toString().padStart(3, '0'));
-
-    if (Number.isNaN(selectedHeading)) {
-      this.targetIndicator.instance.classList.add('HiddenElement');
-      return;
-    }
-
-    if (Math.abs(headingDelta) < DisplayRange) {
-      const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
-
-      this.targetIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-      this.targetIndicator.instance.classList.remove('HiddenElement');
-      return;
-    }
-    this.targetIndicator.instance.classList.add('HiddenElement');
   }
 
   render(): VNode {
     return (
       <>
+        {' '}
         <path
-          ref={this.targetIndicator}
-          display={this.spdChevronsVis}
+          display={this.targetIndicatorVis}
+          style={{ transform: this.headingBugTransform }}
           id="HeadingTargetIndicator"
-          class="NormalStroke Green CornerRound"
+          class={{ NormalStroke: true, Green: true, CornerRound: true, HiddenElement: this.headingBugHidden }}
           d="m641 512 10 -20 h -22 l 10 20"
         />
       </>

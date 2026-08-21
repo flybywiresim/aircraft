@@ -2,10 +2,15 @@ import { Instrument, ClockEvents, ConsumerSubject, MappedSubject } from '@micros
 import { getDisplayIndex } from '../HUD';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
-import { AutoThrustMode } from '../../../../shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Arinc429ConsumerSubject, ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429ConsumerSubject,
+  ArincEventBus,
+  Arinc429RegisterSubject,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './ArincValueProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
 export class HudValueProvider implements Instrument {
   private flightPhase = 0;
@@ -41,32 +46,27 @@ export class HudValueProvider implements Instrument {
   };
   private logCase = '';
 
-  private readonly sub = this.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents>();
+  private readonly sub = this.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents & PrimFgBusBaseEvents>();
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);
   private readonly groundSpeed = Arinc429RegisterSubject.createEmpty();
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
-  private readonly athrMode = ConsumerSubject.create(this.sub.on('AThrMode'), AutoThrustMode.NONE);
+
+  private readonly prim_fg_ats_fma_discrete_word = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_fg_ats_fma_discrete_word'),
+  );
+
+  private readonly isToga = this.prim_fg_ats_fma_discrete_word.map((word) => word.bitValueOr(11, false));
+  private readonly isFlex = this.prim_fg_ats_fma_discrete_word.map((word) => word.bitValueOr(13, false));
 
   private readonly hudMode = MappedSubject.create(
-    ([lmgc, rmgc, groundSpeed, ra, athrMode]) => {
-      if (
-        (lmgc || rmgc) &&
-        groundSpeed.value < 40 &&
-        !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
-      ) {
+    ([lmgc, rmgc, groundSpeed, ra, isFlex, isToga]) => {
+      if ((lmgc || rmgc) && groundSpeed.value < 40 && !(isFlex || isToga)) {
         return HudMode.TAXI;
-      } else if (
-        (lmgc || rmgc || ra.value < 50) &&
-        (athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
-      ) {
+      } else if ((lmgc || rmgc || ra.value < 50) && (isFlex || isToga)) {
         return HudMode.TAKEOFF;
-      } else if (
-        (lmgc || rmgc) &&
-        groundSpeed.value >= 40 &&
-        !(athrMode === AutoThrustMode.MAN_FLEX || athrMode === AutoThrustMode.MAN_TOGA)
-      ) {
+      } else if ((lmgc || rmgc) && groundSpeed.value >= 40 && !(isFlex || isToga)) {
         return HudMode.ROLLOUT_OR_RTO;
       } else {
         return HudMode.NORMAL;
@@ -76,7 +76,8 @@ export class HudValueProvider implements Instrument {
     this.rmgc,
     this.groundSpeed,
     this.ra,
-    this.athrMode,
+    this.isToga,
+    this.isFlex,
   );
 
   constructor(private readonly bus: ArincEventBus) {}

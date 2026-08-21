@@ -1,19 +1,19 @@
 // @ts-strict-ignore
 import {
   ClockEvents,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
+  NodeReference,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
-  ConsumerSubject,
-  HEvent,
-  NodeReference,
-  MappedSubject,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429WordData, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
   calculateHorizonOffsetFromPitch,
   calculateVerticalOffsetFromRoll,
@@ -25,7 +25,6 @@ import {
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
 import { ONE_DEG, FIVE_DEG, PitchscaleMode } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -33,89 +32,78 @@ import { HeadingOfftape } from './HeadingIndicator';
 import { SyntheticRunway } from './SyntheticRunway';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
-interface LSPath {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
-}
 class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolean; yOffset: Subscribable<number> }> {
-  private isActive = false;
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & ClockEvents & Arinc429Values>();
 
-  private selectedHeading = 0;
+  private fgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
 
-  private heading = new Arinc429Word(0);
+  private fgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
+  private selectedHdgTrk = Arinc429LocalVarConsumerSubject.create(null);
 
-  private yOffset = 0;
+  private heading = ConsumerSubject.create(this.sub.on('headingAr'), new Arinc429Word(0));
 
-  private calculateAndSetOffset() {
-    const headingDelta = getSmallestAngle(this.selectedHeading, this.heading.value);
+  private readonly trkFpaModeActive = this.fgDiscreteWord5.map((word) => word.bitValueOr(11, true));
 
-    const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
+  private anyFdEngaged = this.fgDiscreteWord1.map((word) => word.bitValueOr(13, false) || word.bitValueOr(14, false));
 
-    if (Math.abs(offset) <= DisplayRange + 10) {
-      this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-      this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${this.yOffset}px, 0px)`;
-    } else {
-      this.horizonHeadingBug.instance.classList.add('HiddenElement');
-    }
-  }
+  private headingDelta = MappedSubject.create(
+    ([heading, selectedHeading]) => {
+      return getSmallestAngle(selectedHeading.value, heading.value);
+    },
+    this.heading,
+    this.selectedHdgTrk,
+  );
+
+  private readonly transform = MappedSubject.create(
+    ([delta, yOffset]) => `translate3d(${(delta * DistanceSpacing) / ValueSpacing}px, ${yOffset}px, 0px)`,
+    this.headingDelta,
+    this.props.yOffset,
+  );
+
+  private readonly visible = MappedSubject.create(
+    ([delta, selectedHdgTrk, anyFdEngaged]) =>
+      !anyFdEngaged &&
+      (selectedHdgTrk.isNormalOperation() || selectedHdgTrk.isFunctionalTest()) &&
+      Math.abs(delta) <= DisplayRange + 10,
+    this.headingDelta,
+    this.selectedHdgTrk,
+    this.anyFdEngaged,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & SimplaneValues & Arinc429Values>();
+    this.trkFpaModeActive.sub((trkFpaModeActive) => {
+      this.selectedHdgTrk.setConsumer(this.sub.on(trkFpaModeActive ? 'prim_selected_track' : 'prim_selected_heading'));
+    }, true);
 
-    sub
-      .on('selectedHeading')
-      .whenChanged()
-      .handle((s) => {
-        this.selectedHeading = s;
-        if (this.isActive) {
-          this.calculateAndSetOffset();
-        }
-      });
-
-    sub.on('headingAr').handle((h) => {
-      this.heading = h;
-      if (this.isActive) {
-        this.calculateAndSetOffset();
+    this.visible.sub((visible) => {
+      if (visible) {
+        this.transform.resume();
+      } else {
+        this.transform.pause();
       }
-    });
-
-    sub
-      .on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.isActive = !fd;
-        if (this.isActive) {
-          this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-        } else {
-          this.horizonHeadingBug.instance.classList.add('HiddenElement');
-        }
-      });
-
-    this.props.yOffset.sub((yOffset) => {
-      this.yOffset = yOffset;
-      if (this.isActive) {
-        this.calculateAndSetOffset();
-      }
-    });
+    }, true);
   }
 
   render(): VNode {
     return (
-      <g ref={this.horizonHeadingBug} id="HorizonHeadingBug">
-        <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
-        <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+      <g
+        style={{ transform: this.transform }}
+        class={{ HiddenElement: this.visible.map(SubscribableMapFunctions.not()) }}
+        id="HorizonHeadingBug"
+      >
+        <path class="ThickOutline" d="m68.906 80.823v-7" />
+        <path class="ThickStroke Cyan" d="m68.906 80.823v-7" />
       </g>
     );
   }
@@ -126,11 +114,10 @@ interface HorizonProps {
   readonly instrument: BaseInstrument;
   readonly isAttExcessive: Subscribable<boolean>;
   readonly filteredRadioAlt: Subscribable<number>;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & FcdcBusEvents>();
 
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -140,8 +127,15 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private headingFailed = Subject.create(true);
 
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
 
   onAfterRender(node: VNode): void {
@@ -150,17 +144,24 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     this.sub.on('headingAr').handle((h) => {
       this.headingFailed.set(!h.isNormalOperation());
     });
+
     this.sub
       .on('pitchAr')
       .withArinc429Precision(3)
       .handle((pitch) => {
+        const multiplier = 1000;
+        const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
         if (pitch.isNormalOperation()) {
           this.pitchGroupRef.instance.style.display = 'block';
+
+          this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision) - FIVE_DEG}px, 0px)`;
         } else {
           this.pitchGroupRef.instance.style.display = 'none';
         }
-        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
-        const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG;
+        const yOffset = Math.max(
+          Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision) - FIVE_DEG, 31.563),
+          -31.563,
+        );
         this.yOffset.set(yOffset);
       });
 
@@ -168,9 +169,12 @@ export class Horizon extends DisplayComponent<HorizonProps> {
       .on('rollAr')
       .withArinc429Precision(2)
       .handle((roll) => {
+        const multiplier = 100;
+        const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
         if (roll.isNormalOperation()) {
           this.rollGroupRef.instance.style.display = 'block';
-          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+
+          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 640 329.143)`);
         } else {
           this.rollGroupRef.instance.style.display = 'none';
         }
@@ -496,31 +500,49 @@ class PitchScale extends DisplayComponent<{
   private sVisibilitySwitch = Subject.create<String>('block');
 
   private sub = this.props.bus.getArincSubscriber<
-    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HudElems & PrimFgBusBaseEvents & FcuEfisCpBusEvents
   >();
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
   private pitchScaleMode = PitchscaleMode.FULL;
   private activeVerticalModeSub = Subject.create(0);
-  private selectedFpa = Subject.create(0);
-  private gsArmed = false;
   private threeDegPath = FSComponent.createRef<SVGPathElement>();
   private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
   private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
-  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 0);
-  private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
-  private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
-  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
-  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
-  private readonly verticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode').whenChanged(), 0);
+
+  private roll = new Arinc429Word(0);
+  private pitch = new Arinc429Word(0);
+  private fpa = new Arinc429Word(0);
+  private da = new Arinc429Word(0);
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+  private readonly lsButtonPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
+  private readonly primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
+  private readonly landModeActive = this.primFgDiscreteWord1.map((word) => word.bitValueOr(13, true));
+
+  private readonly primFgDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_2'));
+  private readonly gsArmed = this.primFgDiscreteWord2.map((word) => word.bitValueOr(13, true));
+
+  private readonly primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+  private readonly gsCapt = this.primFgDiscreteWord3.map((word) => word.bitValueOr(21, true));
+  private readonly gsTrk = this.primFgDiscreteWord3.map((word) => word.bitValueOr(22, true));
+  private readonly isFlareMode = this.primFgDiscreteWord3.map((word) => word.bitValueOr(24, true));
+
+  private readonly selectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_flight_path_angle'));
+
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
 
   private readonly threeDegLineVis = MappedSubject.create(
-    ([ls1btn, ls2btn, decMode, flightPhase, verticalMode, hudMode]) => {
-      if (ls1btn || ls2btn) {
+    ([lsButtonPressed, decMode, flightPhase, isFlareMode, hudMode]) => {
+      console.log(lsButtonPressed + '   ' + hudMode + '   ' + flightPhase + '   ' + isFlareMode + '   ' + decMode);
+      if (lsButtonPressed) {
         if (hudMode === HudMode.NORMAL) {
           if (flightPhase === FmgcFlightPhase.Approach) {
-            return verticalMode === VerticalMode.FLARE ? 'none' : 'block';
+            return isFlareMode ? 'none' : 'block';
           } else {
             return decMode === 2 ? 'none' : 'block';
           }
@@ -531,19 +553,12 @@ class PitchScale extends DisplayComponent<{
         return 'none';
       }
     },
-    this.ls1btn,
-    this.ls2btn,
+    this.lsButtonPressed,
     this.decMode,
     this.flightPhase,
-    this.verticalMode,
+    this.isFlareMode,
     this.hudMode,
   );
-  private data: LSPath = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
-  };
 
   private setPitchScale() {
     if (this.pitchScaleMode === PitchscaleMode.OFF) {
@@ -560,13 +575,10 @@ class PitchScale extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fmv) => {
-        ((fmv >> 4) & 1) === 1 ? (this.gsArmed = true) : (this.gsArmed = false);
-      });
+    const isFo = getDisplayIndex() === 2;
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
     this.sub
       .on('pitchScaleMode')
       .whenChanged()
@@ -583,36 +595,26 @@ class PitchScale extends DisplayComponent<{
         this.setPitchScale();
       });
 
-    this.sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((activeVerticalMode) => {
-        this.activeVerticalModeSub.set(activeVerticalMode);
-      });
-    this.sub.on('selectedFpa').handle((fpa) => {
-      this.selectedFpa.set(fpa);
-      this.needsUpdate = true;
-    });
     this.sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
+      this.fpa = fpa;
       this.needsUpdate = true;
     });
     this.sub.on('da').handle((da) => {
-      this.data.da = da;
+      this.da = da;
       this.needsUpdate = true;
     });
     this.sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
+      this.roll = r;
       this.needsUpdate = true;
     });
     this.sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
+      this.pitch = p;
       this.needsUpdate = true;
     });
     this.sub.on('realTime').handle((_t) => {
       if (this.needsUpdate) {
         this.needsUpdate = false;
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+        const daAndFpaValid = this.fpa.isNormalOperation() && this.da.isNormalOperation();
         if (daAndFpaValid) {
           // this.threeDegRef.instance.classList.remove('HiddenElement');
           this.MoveThreeDegreeMark();
@@ -625,24 +627,19 @@ class PitchScale extends DisplayComponent<{
 
   private MoveThreeDegreeMark() {
     const lsSlope = parseFloat(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
-    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
+    const daLimConv = (this.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
+      calculateHorizonOffsetFromPitch(this.pitch.value) - calculateHorizonOffsetFromPitch(this.fpa.value);
+    const rollCos = Math.cos((this.roll.value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.roll.value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
 
-    const fpaTxt = this.selectedFpa.get() % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
+    const fpaTxt =
+      this.selectedFpa.get().value % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
 
-    if (
-      (this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK ||
-        this.activeVerticalModeSub.get() === VerticalMode.GS_CPT ||
-        this.activeVerticalModeSub.get() === VerticalMode.LAND ||
-        this.gsArmed === true) &&
-      lsSlope !== 0
-    ) {
+    if ((this.gsTrk.get() || this.gsCapt.get() || this.landModeActive.get() || this.gsArmed.get()) && lsSlope !== 0) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (lsSlope / 5) * FIVE_DEG} h -80  M 713,${512 + (lsSlope / 5) * FIVE_DEG} h 80  `,
@@ -661,19 +658,22 @@ class PitchScale extends DisplayComponent<{
     } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
       this.threeDegPath.instance.setAttribute(
         'd',
-        `M 565,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h 80  `,
+        `M 565,${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG} h 80  `,
       );
 
       this.threeDegTxtRef.instance.setAttribute(
         'y',
-        `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG + 6.5}`,
+        `${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG + 6.5}`,
       );
       this.threeDegTxtRef.instance.textContent = fpaTxt;
       this.threeDegTxtRef.instance.classList.remove('InverseGreen');
       this.threeDegTxtRef.instance.classList.add('Green');
       this.threeDegTxtBgRef.instance.style.display = `none`;
       this.threeDegTxtBgRef.instance.classList.remove('GreenFill3');
-      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute(
+        'y',
+        `${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG}`,
+      );
       this.threeDegTxtBgRef.instance.setAttribute('d', ``);
     } else {
       this.threeDegPath.instance.setAttribute(

@@ -1,187 +1,107 @@
 import {
-  ClockEvents,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subscribable,
   VNode,
-  Subject,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { getDisplayIndex } from './HUD';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { ONE_DEG, FIVE_DEG, circlePath } from './HUDUtils';
+import { SelectedFdEvents } from './shared/FdSelectionProvider';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
-interface FlightPathVectorData {
-  roll: Arinc429Word;
-  pitch: Arinc429Word;
-  fpa: Arinc429Word;
-  da: Arinc429Word;
-  activeVerticalMode: number;
-  activeLateralMode: number;
-  fdRoll: number;
-  fdPitch: number;
-  fdActive: boolean;
-}
-
 export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
-  private data: FlightPathVectorData = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
-    fdPitch: 0,
-    fdRoll: 0,
-    fdActive: true,
-    activeLateralMode: 0,
-    activeVerticalMode: 0,
-  };
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private fdCueOffRange = false;
-  private sVisibility = Subject.create<String>('');
+  private readonly sub = this.props.bus.getSubscriber<
+    Arinc429Values & SelectedFdEvents & PrimFgBusBaseEvents & HUDSimvars & HudElems
+  >();
+
+  private readonly fdRollCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_roll_fd_command'));
+
+  private readonly fdPitchCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pitch_fd_command'));
+
+  private readonly fdYawCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_yaw_fd_command'));
+
+  private readonly fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+
+  private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+
+  private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
+
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa'));
+  private readonly da = Arinc429ConsumerSubject.create(this.sub.on('da'));
+
+  private flightPhase = 0;
 
   private needsUpdate = false;
-
-  private isVisible = false;
 
   private birdPath = FSComponent.createRef<SVGGElement>();
 
   private birdPathCircle = FSComponent.createRef<SVGPathElement>();
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        if (fp < 4 || fp >= 10) {
-          this.sVisibility.set('none');
+  private readonly onGround = MappedSubject.create(
+    ([leftMainGearCompressed, rightMainGearCompressed]) => leftMainGearCompressed || rightMainGearCompressed,
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+  );
+
+  private readonly fdVisible = MappedSubject.create(
+    ([fdRollCommand, fdPitchCommand, fwcFlightPhase]) => {
+      if (fwcFlightPhase < 4 || fwcFlightPhase >= 10) {
+        return 'none';
+      } else {
+        if (
+          !(fdRollCommand.isNoComputedData() || fdRollCommand.isFailureWarning()) &&
+          !(fdPitchCommand.isNoComputedData() || fdPitchCommand.isFailureWarning())
+        ) {
+          return 'block';
+        } else {
+          return 'none';
         }
-        if (fp >= 4 && fp < 10) {
-          this.sVisibility.set('block');
-        }
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value;
-      });
-
-    sub
-      .on(isCaptainSide ? 'fd1Active' : 'fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.data.fdActive = fd;
-        this.needsUpdate = true;
-      });
-
-    sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
-      this.needsUpdate = true;
-    });
-
-    sub.on('da').handle((da) => {
-      this.data.da = da;
-      this.needsUpdate = true;
-    });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((vm) => {
-        this.data.activeLateralMode = vm;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.data.activeLateralMode = lm;
-        this.needsUpdate = true;
-      });
-
-    sub.on('fdPitch').handle((fdp) => {
-      this.data.fdPitch = fdp;
-      this.needsUpdate = true;
-    });
-
-    sub.on('fdBank').handle((fdr) => {
-      this.data.fdRoll = fdr;
-      this.needsUpdate = true;
-    });
-
-    sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
-      this.needsUpdate = true;
-    });
-
-    sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
-      this.needsUpdate = true;
-    });
-
-    sub.on('realTime').handle((_t) => {
-      this.handlePath();
-      if (this.needsUpdate && this.isVisible) {
-        this.moveBird();
       }
-    });
+    },
+    this.fdRollCommand,
+    this.fdPitchCommand,
+    this.fwcFlightPhase,
+  );
 
-    this.props.isAttExcessive.sub((_a) => {
-      this.needsUpdate = true;
-    }, true);
-  }
+  private readonly fdFlagVisible = MappedSubject.create(
+    ([fdActive, fdPitchCommand, fdRollCommand, fdYawCommand, onGround]) =>
+      fdActive &&
+      (fdRollCommand.isFailureWarning() ||
+        fdPitchCommand.isFailureWarning() ||
+        (fdYawCommand.isFailureWarning() && onGround)),
+    this.fdActive,
+    this.fdPitchCommand,
+    this.fdRollCommand,
+    this.fdYawCommand,
+    this.onGround,
+  );
 
-  private handlePath() {
-    const showLateralFD = this.data.activeLateralMode !== 0 && this.data.activeLateralMode !== 34;
-    const showVerticalFD = this.data.activeVerticalMode !== 0 && this.data.activeVerticalMode !== 34;
-    const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+  private readonly fdTransform = MappedSubject.create(
+    ([roll, pitch, fpa, da, fdRollCommand, fdPitchCommand, crosswindMode]) => {
+      let xOffsetLim;
 
-    if (
-      (!showVerticalFD && !showLateralFD) ||
-      !this.data.fdActive ||
-      !daAndFpaValid ||
-      this.props.isAttExcessive.get()
-    ) {
-      this.birdPath.instance.style.visibility = 'hidden';
-      this.isVisible = false;
-    } else {
-      this.birdPath.instance.style.visibility = 'visible';
-      this.isVisible = true;
-    }
-  }
+      const daLimConv = (da.value * DistanceSpacing) / ValueSpacing;
+      const pitchSubFpaConv = calculateHorizonOffsetFromPitch(pitch.value) - calculateHorizonOffsetFromPitch(fpa.value);
+      const rollCos = Math.cos((roll.value * Math.PI) / 180);
+      const rollSin = Math.sin((-roll.value * Math.PI) / 180);
 
-  private moveBird() {
-    let xOffsetLim;
-
-    if (this.isVisible) {
-      const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
-      const pitchSubFpaConv =
-        calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-      const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-      const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
-
-      const FDRollOrder = this.data.fdRoll;
+      const FDRollOrder = fdRollCommand.value;
       const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-      const FDPitchOrder = this.data.fdPitch; //in degrees on pitch scale
+      const FDPitchOrder = fdPitchCommand.value; //in degrees on pitch scale
       const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 45), -45);
 
       const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
@@ -191,60 +111,143 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
       const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
 
       //set lateral limit for fdCue
-      if (this.crosswindMode == false) {
-        if (xOffset < -378 || xOffset > 350) {
-          this.fdCueOffRange = true;
-        } else {
-          this.fdCueOffRange = false;
-        }
-
+      if (crosswindMode == false) {
         xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
       } else {
-        if (xOffset < -540 || xOffset > 540) {
-          this.fdCueOffRange = true;
-        } else {
-          this.fdCueOffRange = false;
-        }
         xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
       }
 
-      this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+      //this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+      return `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+    },
+    this.roll,
+    this.pitch,
+    this.fpa,
+    this.da,
+    this.fdRollCommand,
+    this.fdPitchCommand,
+    this.crosswindMode,
+  );
 
-      if (this.fdCueOffRange) {
-        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
+  private readonly fdCueOffRange = MappedSubject.create(
+    ([roll, pitch, fpa, da, fdRollCommand, crosswindMode]) => {
+      let fdCueOffRange;
+      const daLimConv = (da.value * DistanceSpacing) / ValueSpacing;
+      const pitchSubFpaConv = calculateHorizonOffsetFromPitch(pitch.value) - calculateHorizonOffsetFromPitch(fpa.value);
+
+      const FDRollOrder = fdRollCommand.value;
+      const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
+      const rollCos = Math.cos((roll.value * Math.PI) / 180);
+      const rollSin = Math.sin((-roll.value * Math.PI) / 180);
+      const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+
+      const xOffset = xOffsetFpv + FDRollOrderLim * 13;
+      //set lateral limit for fdCue
+      if (crosswindMode == false) {
+        if (xOffset < -378 || xOffset > 350) {
+          fdCueOffRange = true;
+        } else {
+          fdCueOffRange = false;
+        }
       } else {
-        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
+        if (xOffset < -540 || xOffset > 540) {
+          fdCueOffRange = true;
+        } else {
+          fdCueOffRange = false;
+        }
       }
+      return fdCueOffRange ? '3 6' : '';
+    },
+    this.roll,
+    this.pitch,
+    this.fpa,
+    this.da,
+    this.fdRollCommand,
+    this.crosswindMode,
+  );
 
-      // console.log(
-      //   'FDPitchOrderLim ' +
-      //     FDPitchOrderLim +
-      //     'FDRollOrderLim ' +
-      //     FDRollOrderLim +
-      //     'xOffsetLim ' +
-      //     xOffsetLim +
-      //     'yOffset ' +
-      //     yOffset,
-      //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
-      // );
-    }
-    this.needsUpdate = false;
-  }
+  // private moveBird() {
+  //   let xOffsetLim;
+
+  //   const daLimConv = (this.da.get().value * DistanceSpacing) / ValueSpacing;
+  //   const pitchSubFpaConv =
+  //     calculateHorizonOffsetFromPitch(this.pitch.get().value) - calculateHorizonOffsetFromPitch(this.fpa.get().value);
+  //   const rollCos = Math.cos((this.roll.get().value * Math.PI) / 180);
+  //   const rollSin = Math.sin((-this.roll.get().value * Math.PI) / 180);
+
+  //   const FDRollOrder = this.fdRollCommand.get().value;
+  //   const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
+  //   const FDPitchOrder = this.fdPitchCommand.get().value; //in degrees on pitch scale
+  //   const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 45), -45);
+
+  //   const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+  //   const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
+
+  //   const xOffset = xOffsetFpv + FDRollOrderLim * 13;
+  //   const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
+
+  //   //set lateral limit for fdCue
+  //   if (this.crosswindMode == false) {
+  //     if (xOffset < -378 || xOffset > 350) {
+  //       this.fdCueOffRange = true;
+  //     } else {
+  //       this.fdCueOffRange = false;
+  //     }
+
+  //     xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
+  //   } else {
+  //     if (xOffset < -540 || xOffset > 540) {
+  //       this.fdCueOffRange = true;
+  //     } else {
+  //       this.fdCueOffRange = false;
+  //     }
+  //     xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+  //   }
+
+  //   this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+
+  //   if (this.fdCueOffRange) {
+  //     this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
+  //   } else {
+  //     this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
+  //   }
+
+  //   // console.log(
+  //   //   'FDPitchOrderLim ' +
+  //   //     FDPitchOrderLim +
+  //   //     'FDRollOrderLim ' +
+  //   //     FDRollOrderLim +
+  //   //     'xOffsetLim ' +
+  //   //     xOffsetLim +
+  //   //     'yOffset ' +
+  //   //     yOffset,
+  //   //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
+  //   // );
+  // }
 
   render(): VNode {
     return (
-      <g ref={this.birdPath}>
-        <svg>
-          <g id="FlightPathDirector" display={this.sVisibility}>
-            <path
-              ref={this.birdPathCircle}
-              d={circlePath(8, 640, 512)}
-              class="NormalStroke Green"
-              stroke-dasharray="3 6"
-            />
-          </g>
-        </svg>
-      </g>
+      <>
+        <g ref={this.birdPath}>
+          <svg>
+            <g id="FlightPathDirector" display={this.fdVisible}>
+              <path
+                style={{ transform: this.fdTransform }}
+                ref={this.birdPathCircle}
+                d={circlePath(8, 640, 512)}
+                class="NormalStroke Green"
+                stroke-dasharray={this.fdCueOffRange}
+              />
+            </g>
+          </svg>
+        </g>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisible}>
+          <text id="FDFlag" x="265" y="280" class="FontLargest EndAlign Green">
+            FD
+          </text>
+        </FlashOneHertz>
+      </>
     );
   }
 }

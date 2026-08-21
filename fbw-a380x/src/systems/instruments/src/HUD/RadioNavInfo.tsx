@@ -12,7 +12,7 @@ import {
   MappedSubject,
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject, NavAidMode } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429RegisterSubject, NavAidMode } from '@flybywiresim/fbw-sdk';
 
 import { GenericVorEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericVorEvents';
 import { GenericFlightManagementBusEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFlightManagementBusEvents';
@@ -20,29 +20,32 @@ import { Layer } from '../../../../../../fbw-common/src/systems/instruments/src/
 import { GenericFcuEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFcuEvents';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { VerticalMode } from '@shared/autopilot';
 import { HudElems, HudMode } from './HUDUtils';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { getDisplayIndex } from './HUD';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2 }> {
-  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & HUDSimvars & HudElems & FcuEfisCpBusEvents>();
   private readonly isVor = Subject.create(true);
 
   private readonly isAdf = Subject.create(true);
-  private readonly activeVerticalModeSub = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+
+  private readonly fcu_efis_discrete_word_2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(getDisplayIndex() === 2 ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+  );
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
+
   private readonly isVisible = MappedSubject.create(
-    ([activeVerticalModeSub, fmgcFlightPhase, hudMode]) => {
+    ([fmgcFlightPhase, hudMode]) => {
+      const isEfisVorPressed = this.fcu_efis_discrete_word_2.get().bitValueOr(19, false);
+      const isEfisLsPressed = this.fcu_efis_discrete_word_2.get().bitValueOr(14, false);
       if (hudMode === HudMode.NORMAL) {
-        return fmgcFlightPhase === FmgcFlightPhase.Approach &&
-          (activeVerticalModeSub === VerticalMode.NONE || activeVerticalModeSub === VerticalMode.FPA)
-          ? 'block'
-          : 'none';
+        return fmgcFlightPhase === FmgcFlightPhase.Approach && isEfisVorPressed && isEfisLsPressed ? 'block' : 'none';
       } else {
         return 'none';
       }
     },
-    this.activeVerticalModeSub,
     this.fmgcFlightPhase,
     this.hudMode,
   );

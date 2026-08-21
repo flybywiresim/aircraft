@@ -61,8 +61,12 @@ export class AdirsValueProvider implements Instrument {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
-        this.hudSimvar.updateSimVarSource('baroCorrectedAltitude', {
+        this.hudSimvar.updateSimVarSource('baroCorrectedAltitude1', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_1`,
+          type: SimVarValueType.Number,
+        });
+        this.hudSimvar.updateSimVarSource('baroCorrectedAltitude2', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_2`,
           type: SimVarValueType.Number,
         });
         this.hudSimvar.updateSimVarSource('mach', {

@@ -35,28 +35,14 @@ export interface HUDSimvars {
   pitch: number;
   roll: number;
   heading: number;
-  baroCorrectedAltitude: number;
+  baroCorrectedAltitude1: number;
+  baroCorrectedAltitude2: number;
   pressureAltitude: number;
   speed: number;
   staticPressureRaw: number;
   noseGearCompressed: boolean;
   leftMainGearCompressed: boolean;
   rightMainGearCompressed: boolean;
-  activeLateralMode: number;
-  activeVerticalMode: number;
-  fmaModeReversion: boolean;
-  fmaSpeedProtection: boolean;
-  AThrMode: number;
-  selectedVs: number;
-  ap1Active: boolean;
-  ap2Active: boolean;
-  fmaVerticalArmed: number;
-  fmaLateralArmed: number;
-  fd1Active: boolean;
-  fd2Active: boolean;
-  athrStatus: number;
-  machPreselVal: number;
-  speedPreselVal: number;
   mda: number;
   dh: number;
   attHdgKnob: number;
@@ -65,9 +51,6 @@ export interface HUDSimvars {
   vsInert: number;
   sideStickX: number;
   sideStickY: number;
-  fdYawCommand: number;
-  fdBank: number;
-  fdPitch: number;
   v1: number;
   vr: number;
   fwcFlightPhase: number;
@@ -81,21 +64,13 @@ export interface HUDSimvars {
   hasGlideslope: boolean;
   glideSlopeError: number;
   markerBeacon: number;
-  isAltManaged: boolean;
-  targetSpeedManaged: number;
-  shortTermManagedSpeed: number;
   mach: number;
   flapHandleIndex: number;
   groundTrack: number;
-  showSelectedHeading: number;
-  altConstraint: number;
-  trkFpaActive: boolean;
   aoa: number;
   groundHeadingTrue: number;
   groundTrackTrue: number;
-  selectedFpa: number;
   ilsCourse: number;
-  metricAltToggle: boolean;
   tla1: number;
   tla2: number;
   tla3: number;
@@ -112,11 +87,8 @@ export interface HUDSimvars {
   engTwoRunning: boolean;
   engThreeRunning: boolean;
   engFourRunning: boolean;
-  expediteMode: boolean;
   setHoldSpeed: boolean;
   tdReached: boolean;
-  trkFpaDeselectedTCAS: boolean;
-  tcasRaInhibited: boolean;
   groundSpeed: number;
   radioAltitude1: number;
   radioAltitude2: number;
@@ -125,16 +97,12 @@ export interface HUDSimvars {
   betaTargetActive: number;
   betaTarget: number;
   latAcc: number;
-  crzAltMode: boolean;
-  tcasModeDisarmed: boolean;
   flexTemp: number;
   autoBrakeMode: number;
   autoBrakeActive: boolean;
   autoBrakeDecel: boolean;
   fpaRaw: number;
   daRaw: number;
-  ls1Button: boolean;
-  ls2Button: boolean;
   xtk: number;
   ldevRequestLeft: boolean;
   ldevRequestRight: boolean;
@@ -158,11 +126,7 @@ export interface HUDSimvars {
   cgPercent: number;
   spoilersCommanded: number;
   spoilersArmed: boolean;
-  fcuLeftVelocityVectorOn: boolean;
-  fcuRightVelocityVectorOn: boolean;
   btvExitMissed: boolean;
-  fcuApproachModeActive: boolean;
-  fcuLocModeActive: boolean;
   hydGreenSysPressurized: boolean;
   hydYellowSysPressurized: boolean;
 }
@@ -201,27 +165,13 @@ export enum HUDVars {
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   heading = 'L:A32NX_ADIRS_IR_1_HEADING',
   baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
+  baroCorrectedAltitude2 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_2',
   pressureAltitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
   speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
   staticPressureRaw = 'L:A32NX_ADIRS_ADR_1_CORRECTED_AVERAGE_STATIC_PRESSURE',
   noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
   leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
   rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
-  activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
-  activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
-  fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
-  fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
-  AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
-  selectedVs = 'L:A32NX_AUTOPILOT_VS_SELECTED',
-  ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
-  ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
-  fmaVerticalArmed = 'L:A32NX_FMA_VERTICAL_ARMED',
-  fmaLateralArmed = 'L:A32NX_FMA_LATERAL_ARMED',
-  fd1Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:1',
-  fd2Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:2',
-  athrStatus = 'L:A32NX_AUTOTHRUST_STATUS',
-  machPreselVal = 'L:A32NX_MachPreselVal',
-  speedPreselVal = 'L:A32NX_SpeedPreselVal',
   mda = 'L:AIRLINER_MINIMUM_DESCENT_ALTITUDE',
   dh = 'L:AIRLINER_DECISION_HEIGHT',
   attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
@@ -230,9 +180,6 @@ export enum HUDVars {
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
   sideStickX = 'L:A32NX_SIDESTICK_POSITION_X',
   sideStickY = 'L:A32NX_SIDESTICK_POSITION_Y',
-  fdYawCommand = 'L:A32NX_FLIGHT_DIRECTOR_YAW',
-  fdBank = 'L:A32NX_FLIGHT_DIRECTOR_BANK',
-  fdPitch = 'L:A32NX_FLIGHT_DIRECTOR_PITCH',
   v1 = 'L:AIRLINER_V1_SPEED',
   vr = 'L:AIRLINER_VR_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
@@ -246,21 +193,13 @@ export enum HUDVars {
   hasGlideslope = 'L:A32NX_RADIO_RECEIVER_GS_IS_VALID',
   glideSlopeError = 'L:A32NX_RADIO_RECEIVER_GS_DEVIATION',
   markerBeacon = 'MARKER BEACON STATE',
-  isAltManaged = 'L:A32NX_FCU_ALT_MANAGED',
-  targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
-  shortTermManagedSpeed = 'L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD',
   mach = 'L:A32NX_ADIRS_ADR_1_MACH',
   flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
   groundTrack = 'L:A32NX_ADIRS_IR_1_TRACK',
-  showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
-  altConstraint = 'L:A32NX_FG_ALTITUDE_CONSTRAINT',
-  trkFpaActive = 'L:A32NX_TRK_FPA_MODE_ACTIVE',
   aoa = 'INCIDENCE ALPHA',
   groundHeadingTrue = 'GPS GROUND TRUE HEADING',
   groundTrackTrue = 'GPS GROUND TRUE TRACK',
-  selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
-  metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
   tla3 = 'L:A32NX_AUTOTHRUST_TLA:3',
@@ -276,11 +215,8 @@ export enum HUDVars {
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
   engThreeRunning = 'GENERAL ENG COMBUSTION:3',
   engFourRunning = 'GENERAL ENG COMBUSTION:4',
-  expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
   tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
-  trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
-  tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
   groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
   radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
   radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
@@ -289,16 +225,12 @@ export enum HUDVars {
   betaTargetActive = 'L:A32NX_BETA_TARGET_ACTIVE',
   betaTarget = 'L:A32NX_BETA_TARGET',
   latAcc = 'ACCELERATION BODY X',
-  crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
-  tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
   autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-  ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
-  ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
   ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
   ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
@@ -322,11 +254,7 @@ export enum HUDVars {
   cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
-  fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
-  fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
   btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
-  fcuApproachModeActive = 'L:A32NX_FCU_APPR_MODE_ACTIVE',
-  fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
   hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
   hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
 }
@@ -365,28 +293,14 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['pitch', { name: HUDVars.pitch, type: SimVarValueType.Number }],
     ['roll', { name: HUDVars.roll, type: SimVarValueType.Number }],
     ['heading', { name: HUDVars.heading, type: SimVarValueType.Number }],
-    ['baroCorrectedAltitude', { name: HUDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
+    ['baroCorrectedAltitude1', { name: HUDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
+    ['baroCorrectedAltitude2', { name: HUDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
     ['pressureAltitude', { name: HUDVars.pressureAltitude, type: SimVarValueType.Number }],
     ['speed', { name: HUDVars.speed, type: SimVarValueType.Number }],
     ['staticPressureRaw', { name: HUDVars.staticPressureRaw, type: SimVarValueType.Number }],
     ['noseGearCompressed', { name: HUDVars.noseGearCompressed, type: SimVarValueType.Bool }],
     ['leftMainGearCompressed', { name: HUDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
     ['rightMainGearCompressed', { name: HUDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
-    ['activeLateralMode', { name: HUDVars.activeLateralMode, type: SimVarValueType.Number }],
-    ['activeVerticalMode', { name: HUDVars.activeVerticalMode, type: SimVarValueType.Number }],
-    ['fmaModeReversion', { name: HUDVars.fmaModeReversion, type: SimVarValueType.Bool }],
-    ['fmaSpeedProtection', { name: HUDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
-    ['AThrMode', { name: HUDVars.AThrMode, type: SimVarValueType.Number }],
-    ['selectedVs', { name: HUDVars.selectedVs, type: SimVarValueType.FPM }],
-    ['ap1Active', { name: HUDVars.ap1Active, type: SimVarValueType.Bool }],
-    ['ap2Active', { name: HUDVars.ap2Active, type: SimVarValueType.Bool }],
-    ['fmaVerticalArmed', { name: HUDVars.fmaVerticalArmed, type: SimVarValueType.Number }],
-    ['fmaLateralArmed', { name: HUDVars.fmaLateralArmed, type: SimVarValueType.Number }],
-    ['fd1Active', { name: HUDVars.fd1Active, type: SimVarValueType.Bool }],
-    ['fd2Active', { name: HUDVars.fd2Active, type: SimVarValueType.Bool }],
-    ['athrStatus', { name: HUDVars.athrStatus, type: SimVarValueType.Number }],
-    ['machPreselVal', { name: HUDVars.machPreselVal, type: SimVarValueType.Number }],
-    ['speedPreselVal', { name: HUDVars.speedPreselVal, type: SimVarValueType.Knots }],
     ['mda', { name: HUDVars.mda, type: SimVarValueType.Feet }],
     ['dh', { name: HUDVars.dh, type: SimVarValueType.Feet }],
     ['attHdgKnob', { name: HUDVars.attHdgKnob, type: SimVarValueType.Enum }],
@@ -395,9 +309,6 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['vsInert', { name: HUDVars.vsInert, type: SimVarValueType.Number }],
     ['sideStickX', { name: HUDVars.sideStickX, type: SimVarValueType.Number }],
     ['sideStickY', { name: HUDVars.sideStickY, type: SimVarValueType.Number }],
-    ['fdYawCommand', { name: HUDVars.fdYawCommand, type: SimVarValueType.Number }],
-    ['fdBank', { name: HUDVars.fdBank, type: SimVarValueType.Number }],
-    ['fdPitch', { name: HUDVars.fdPitch, type: SimVarValueType.Number }],
     ['v1', { name: HUDVars.v1, type: SimVarValueType.Knots }],
     ['vr', { name: HUDVars.vr, type: SimVarValueType.Knots }],
     ['fwcFlightPhase', { name: HUDVars.fwcFlightPhase, type: SimVarValueType.Number }],
@@ -411,21 +322,13 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['hasGlideslope', { name: HUDVars.hasGlideslope, type: SimVarValueType.Bool }],
     ['glideSlopeError', { name: HUDVars.glideSlopeError, type: SimVarValueType.Degree }],
     ['markerBeacon', { name: HUDVars.markerBeacon, type: SimVarValueType.Enum }],
-    ['isAltManaged', { name: HUDVars.isAltManaged, type: SimVarValueType.Bool }],
-    ['targetSpeedManaged', { name: HUDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
-    ['shortTermManagedSpeed', { name: HUDVars.shortTermManagedSpeed, type: SimVarValueType.Number }],
     ['mach', { name: HUDVars.mach, type: SimVarValueType.Number }],
     ['flapHandleIndex', { name: HUDVars.flapHandleIndex, type: SimVarValueType.Number }],
     ['groundTrack', { name: HUDVars.groundTrack, type: SimVarValueType.Number }],
-    ['showSelectedHeading', { name: HUDVars.showSelectedHeading, type: SimVarValueType.Number }],
-    ['altConstraint', { name: HUDVars.altConstraint, type: SimVarValueType.Feet }],
-    ['trkFpaActive', { name: HUDVars.trkFpaActive, type: SimVarValueType.Bool }],
     ['aoa', { name: HUDVars.aoa, type: SimVarValueType.Degree }],
     ['groundHeadingTrue', { name: HUDVars.groundHeadingTrue, type: SimVarValueType.Degree }],
     ['groundTrackTrue', { name: HUDVars.groundTrackTrue, type: SimVarValueType.Degree }],
-    ['selectedFpa', { name: HUDVars.selectedFpa, type: SimVarValueType.Degree }],
     ['ilsCourse', { name: HUDVars.ilsCourse, type: SimVarValueType.Number }],
-    ['metricAltToggle', { name: HUDVars.metricAltToggle, type: SimVarValueType.Bool }],
     ['tla1', { name: HUDVars.tla1, type: SimVarValueType.Number }],
     ['tla2', { name: HUDVars.tla2, type: SimVarValueType.Number }],
     ['tla3', { name: HUDVars.tla3, type: SimVarValueType.Number }],
@@ -441,11 +344,8 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['engTwoRunning', { name: HUDVars.engTwoRunning, type: SimVarValueType.Bool }],
     ['engThreeRunning', { name: HUDVars.engThreeRunning, type: SimVarValueType.Bool }],
     ['engFourRunning', { name: HUDVars.engFourRunning, type: SimVarValueType.Bool }],
-    ['expediteMode', { name: HUDVars.expediteMode, type: SimVarValueType.Bool }],
     ['setHoldSpeed', { name: HUDVars.setHoldSpeed, type: SimVarValueType.Bool }],
     ['tdReached', { name: HUDVars.tdReached, type: SimVarValueType.Bool }],
-    ['trkFpaDeselectedTCAS', { name: HUDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
-    ['tcasRaInhibited', { name: HUDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
     ['groundSpeed', { name: HUDVars.groundSpeed, type: SimVarValueType.Number }],
     ['radioAltitude1', { name: HUDVars.radioAltitude1, type: SimVarValueType.Number }],
     ['radioAltitude2', { name: HUDVars.radioAltitude2, type: SimVarValueType.Number }],
@@ -454,16 +354,12 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['betaTargetActive', { name: HUDVars.betaTargetActive, type: SimVarValueType.Number }],
     ['betaTarget', { name: HUDVars.betaTarget, type: SimVarValueType.Number }],
     ['latAcc', { name: HUDVars.latAcc, type: 'G Force' as SimVarValueType }],
-    ['crzAltMode', { name: HUDVars.crzAltMode, type: SimVarValueType.Bool }],
-    ['tcasModeDisarmed', { name: HUDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
     ['flexTemp', { name: HUDVars.flexTemp, type: SimVarValueType.Number }],
     ['autoBrakeMode', { name: HUDVars.autoBrakeMode, type: SimVarValueType.Number }],
     ['autoBrakeActive', { name: HUDVars.autoBrakeActive, type: SimVarValueType.Bool }],
     ['autoBrakeDecel', { name: HUDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
     ['fpaRaw', { name: HUDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: HUDVars.daRaw, type: SimVarValueType.Number }],
-    ['ls1Button', { name: HUDVars.ls1Button, type: SimVarValueType.Bool }],
-    ['ls2Button', { name: HUDVars.ls2Button, type: SimVarValueType.Bool }],
     ['xtk', { name: HUDVars.xtk, type: SimVarValueType.NM }],
     ['ldevRequestLeft', { name: HUDVars.ldevLeft, type: SimVarValueType.Bool }],
     ['ldevRequestRight', { name: HUDVars.ldevRight, type: SimVarValueType.Bool }],
@@ -487,11 +383,7 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['cgPercent', { name: HUDVars.cgPercent, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: HUDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: HUDVars.spoilersArmed, type: SimVarValueType.Bool }],
-    ['fcuLeftVelocityVectorOn', { name: HUDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
-    ['fcuRightVelocityVectorOn', { name: HUDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
     ['btvExitMissed', { name: HUDVars.btvExitMissed, type: SimVarValueType.Bool }],
-    ['fcuApproachModeActive', { name: HUDVars.fcuApproachModeActive, type: SimVarValueType.Bool }],
-    ['fcuLocModeActive', { name: HUDVars.fcuLocModeActive, type: SimVarValueType.Bool }],
     ['hydGreenSysPressurized', { name: HUDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
     ['hydYellowSysPressurized', { name: HUDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
   ]);

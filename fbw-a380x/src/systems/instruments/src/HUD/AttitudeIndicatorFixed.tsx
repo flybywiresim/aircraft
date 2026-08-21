@@ -10,23 +10,23 @@ import {
   MappedSubject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from '../HUD/HUD';
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FcdcValueProvider } from './shared/FcdcValueProvider';
-import { FIVE_DEG, HudElems, HudMode, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { FIVE_DEG, HudElems, HudMode, LagFilter } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { SelectedFdEvents } from './shared/FdSelectionProvider';
+import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
+
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
-  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElems & FcdcBusEvents>();
   private fullGroupVis = '';
   private fullGroupRef = FSComponent.createRef<SVGGElement>();
   private attitudeIndicatorRef = FSComponent.createRef<SVGGElement>();
@@ -38,8 +38,15 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
   private visibilitySub = Subject.create('hidden');
 
-  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
-    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+
+  private readonly isNormalLawActive = MappedSubject.create(
+    ([fcdc1DiscreteWord1, fcdc2DiscreteWord1]) =>
+      fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
   );
 
   onAfterRender(node: VNode): void {
@@ -48,17 +55,11 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
     this.sub
       .on('attitudeIndicator')
       .whenChanged()
-      .handle((value) => {
-        this.fullGroupVis = value;
-        this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
-      });
-
-    this.sub
-      .on('attitudeIndicator')
-      .whenChanged()
       .handle((v) => {
         this.attitudeIndicator = v;
+        this.fullGroupVis = v;
         this.attitudeIndicatorRef.instance.style.display = `${this.attitudeIndicator}`;
+        this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
       });
 
     this.sub
@@ -259,121 +260,52 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 }
 
 class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
-  private lateralMode = 0;
+  private readonly sub = this.props.bus.getSubscriber<SelectedFdEvents & Arinc429Values & HUDSimvars & HudElems>();
 
-  private fdYawCommand = 0;
-
-  private fdActive = false;
-  private pitch = 0;
+  private fdYawCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_yaw_fd_command'));
 
   private groundYawGroupRef = FSComponent.createRef<SVGGElement>();
-  private yawRef = FSComponent.createRef<SVGPathElement>();
   private GroundYawRef = FSComponent.createRef<SVGPathElement>();
   private onGround = true;
-  private hudMode = -1;
-  private isActive(): boolean {
-    if (
-      !this.fdActive ||
-      !this.onGround ||
-      !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private setOffset() {
-    const groupOffset = calculateHorizonOffsetFromPitch(this.pitch);
-    this.groundYawGroupRef.instance.style.transform = `translate3d(0px, ${groupOffset}px, 0px)`;
-    const offset = -Math.max(Math.min(this.fdYawCommand * 3, 120), -120);
-    if (this.isActive()) {
-      this.yawRef.instance.style.visibility = 'visible';
-      this.GroundYawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 395px, 0px)`;
-    }
-  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
-    sub.on('pitchAr').handle((p) => {
-      this.pitch = p.value;
-    });
-    sub
+    this.sub
       .on('hudFlightPhaseMode')
       .whenChanged()
       .handle((v) => {
-        this.hudMode = v;
         v === 0 ? (this.onGround = false) : (this.onGround = true);
         this.onGround
           ? (this.groundYawGroupRef.instance.style.display = 'block')
           : (this.groundYawGroupRef.instance.style.display = 'none');
       });
-    sub.on('fdYawCommand').handle((fy) => {
-      this.fdYawCommand = fy;
-
-      if (this.isActive()) {
-        this.setOffset();
-      } else {
-        this.yawRef.instance.style.visibility = 'hidden';
-        this.GroundYawRef.instance.style.visibility = 'hidden';
-      }
-    });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.lateralMode = lm;
-
-        if (this.isActive()) {
-          this.setOffset();
-        } else {
-          this.yawRef.instance.style.visibility = 'hidden';
-          this.GroundYawRef.instance.style.visibility = 'hidden';
-        }
-      });
-
-    // FIXME, differentiate properly (without duplication)
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
-
-          if (this.isActive()) {
-            this.setOffset();
-          } else {
-            this.yawRef.instance.style.visibility = 'hidden';
-            this.GroundYawRef.instance.style.visibility = 'hidden';
-          }
-        }
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-
-          if (this.isActive()) {
-            this.setOffset();
-          } else {
-            this.yawRef.instance.style.visibility = 'hidden';
-            this.GroundYawRef.instance.style.visibility = 'hidden';
-          }
-        }
-      });
   }
+
+  private fdActive = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+
+  private readonly transform = this.fdYawCommand.map((word) => {
+    const offset = -Math.max(Math.min(word.value, 45), -45) * 0.44;
+
+    return `translate3d(${offset}px, 0px, 0px)`;
+  });
+
+  private readonly visibility = MappedSubject.create(
+    ([fdActive, fdYawCommand]) => {
+      const visible = fdActive && !(fdYawCommand.isNoComputedData() || fdYawCommand.isFailureWarning());
+
+      return visible ? 'inherit' : 'hidden';
+    },
+    this.fdActive,
+    this.fdYawCommand,
+  );
 
   render(): VNode {
     return (
       <g id="GroundYawGroup" ref={this.groundYawGroupRef}>
         <path
-          ref={this.yawRef}
+          style={{ transform: this.transform }}
+          visibility={this.visibility}
           id="GroundYawSymbol"
           class="NormalStroke Green"
           d="m 640 0 v 40 h 8.059 v -40 l -4.03 -6.854 z"

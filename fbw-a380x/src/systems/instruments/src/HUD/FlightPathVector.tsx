@@ -1,22 +1,20 @@
 import {
   ConsumerSubject,
-  CssTransformBuilder,
   DisplayComponent,
+  EventBus,
   FSComponent,
   MappedSubject,
   Subject,
-  Subscribable,
   VNode,
   NodeReference,
   ClockEvents,
+  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import {
   Arinc429ConsumerSubject,
-  Arinc429WordData,
   Arinc429Register,
   Arinc429Word,
-  ArincEventBus,
   Arinc429RegisterSubject,
   NXDataStore,
   Arinc429LocalVarConsumerSubject,
@@ -26,69 +24,135 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
-import { SimplaneValues } from './shared/SimplaneValueProvide';
-import { VerticalMode } from '@shared/autopilot';
 import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { SelectedFdEvents } from './shared/FdSelectionProvider';
+import { ExtendedClockEvents } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
+
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
-interface FlightPathVectorData {
-  readonly roll: Subscribable<Arinc429WordData>;
-  readonly pitch: Subscribable<Arinc429WordData>;
-  readonly fpa: Subscribable<Arinc429WordData>;
-  readonly da: Subscribable<Arinc429WordData>;
-}
-
-// FIXME should get smaller when FD is on
 export class FlightPathVector extends DisplayComponent<{
-  bus: ArincEventBus;
+  bus: EventBus;
   instrument: BaseInstrument;
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
   private birdGroup = FSComponent.createRef<SVGGElement>();
   private birdPath = FSComponent.createRef<SVGPathElement>();
-  private birdFreePath = FSComponent.createRef<SVGGElement>();
+  private birdFreePath = FSComponent.createRef<SVGPathElement>();
   private birdLockedPath = FSComponent.createRef<SVGPathElement>();
   private crosswindMode = false;
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<
+    Arinc429Values & HUDSimvars & HudElems & PrimFgBusBaseEvents & FcuEfisCpBusEvents & SelectedFdEvents
+  >();
 
-  private readonly data: FlightPathVectorData = {
-    roll: Arinc429ConsumerSubject.create(this.sub.on('rollAr')),
-    pitch: Arinc429ConsumerSubject.create(this.sub.on('pitchAr')),
-    fpa: Arinc429ConsumerSubject.create(this.sub.on('fpa')),
-    da: Arinc429ConsumerSubject.create(this.sub.on('da')),
-  };
-
-  private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
-  private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
   private readonly fpv = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
 
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
+
+  private readonly fdEngaged = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
+
+  private readonly isTrkFpaActive = this.primFgDiscreteWord5.map((word) => word.bitValueOr(11, true));
+
+  private readonly isVelocityVectorActive = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(15, true));
+
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa'));
+  private readonly da = Arinc429ConsumerSubject.create(this.sub.on('da'));
+
+  private primFgDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_1'));
+
+  private readonly ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
+
+  private readonly ap2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(12, false));
+
+  // private readonly isRequested = MappedSubject.create(
+  //   SubscribableMapFunctions.or(),
+  //   this.isTrkFpaActive,
+  //   this.isVelocityVectorActive,
+  // );
+
+  private readonly isAnyApEngaged = MappedSubject.create(
+    ([ap1Engaged, ap2Engaged]) => {
+      return ap1Engaged || ap2Engaged;
+    },
+    this.ap1Engaged,
+    this.ap2Engaged,
+  );
+  private readonly isDaAndFpaValid = MappedSubject.create(
+    ([da, fpa]) => da.isNormalOperation() && fpa.isNormalOperation(),
+    this.da,
+    this.fpa,
+  );
   private readonly isRollAndPitchValid = MappedSubject.create(
     ([roll, pitch]) => roll.isNormalOperation() && pitch.isNormalOperation(),
-    this.data.roll,
-    this.data.pitch,
+    this.roll,
+    this.pitch,
   );
 
-  private readonly isFpvVisible = MappedSubject.create(
-    ([fpv, isRollAndPitchValid]) => fpv === 'block' && isRollAndPitchValid,
-    this.fpv,
+  // private readonly isBirdHidden = MappedSubject.create(
+  //   ([isReq, isValid]) => !isReq || !isValid,
+  //   this.isRequested,
+  //   this.isDaAndFpaValid,
+  // );
+
+  // private readonly isFailureFlagHidden = MappedSubject.create(
+  //   ([isRequested, isDaAndFpaValid, isRollAndPitchValid]) => !isRequested || isDaAndFpaValid || !isRollAndPitchValid,
+  //   this.isRequested,
+  //   this.isDaAndFpaValid,
+  //   this.isRollAndPitchValid,
+  // );
+
+  private readonly isBirdHidden = MappedSubject.create(
+    ([isValid]) => !isValid,
+
+    this.isDaAndFpaValid,
+  );
+
+  private readonly isFailureFlagHidden = MappedSubject.create(
+    ([isDaAndFpaValid, isRollAndPitchValid]) => isDaAndFpaValid || !isRollAndPitchValid,
+
+    this.isDaAndFpaValid,
     this.isRollAndPitchValid,
   );
 
-  private readonly birdTransformBuilder = CssTransformBuilder.translate3d('px');
-  private readonly birdTransform = Subject.create(this.birdTransformBuilder.resolve());
+  // private readonly birdCirclePath = this.fdEngaged.map((fdEngaged) =>
+  //   fdEngaged ? FlightPathVector.BIRD_CIRCLE_SMALL : FlightPathVector.BIRD_CIRCLE,
+  // );
+
+  // private readonly birdWingsPath = this.fdEngaged.map((fdEngaged) =>
+  //   fdEngaged ? FlightPathVector.BIRD_WINGS_SMALL : FlightPathVector.BIRD_WINGS,
+  // );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
-      this.moveBird.bind(this),
-      true,
-      false,
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
 
-    moveBirdSub.resume(true);
+    const moveBirdSub = MappedSubject.create(this.roll, this.pitch, this.fpa, this.da).sub(
+      () => {
+        this.moveBird.call(this);
+      },
+      true,
+      true,
+    );
+
+    this.isBirdHidden.sub((isHidden) => {
+      if (isHidden) {
+        moveBirdSub.pause();
+      } else {
+        moveBirdSub.resume(true);
+      }
+    }, true);
 
     // Use The raw position of the cockpit switch instead of the hudProvider to avoid  the forced reversion on approach if declutter 2 is selected.
     this.sub
@@ -99,22 +163,15 @@ export class FlightPathVector extends DisplayComponent<{
       });
   }
 
-  private moveBird() {
-    const hudXwindFpvType = parseInt(NXDataStore.getLegacy('HUD_FPV_TYPE', '0'));
-    if (this.isFpvVisible.get()) {
-      hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
-    }
-  }
   private useLockedFreeFpv() {
     let birdOffRange = false;
 
     let xOffsetLim;
-    const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
+    const daLimConv = (this.da.get().value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
-      calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
-    const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
+      calculateHorizonOffsetFromPitch(this.pitch.get().value) - calculateHorizonOffsetFromPitch(this.fpa.get().value);
+    const rollCos = Math.cos((this.roll.get().value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.roll.get().value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
@@ -152,7 +209,7 @@ export class FlightPathVector extends DisplayComponent<{
       this.birdFreePath.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     }
 
-    this.ap1Active.get() || this.ap2Active.get()
+    this.isAnyApEngaged.get()
       ? this.birdPath.instance.setAttribute(
           'd',
           'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 592 512 h 35 m 13 -13 v -12z m 13 13 h 35',
@@ -167,12 +224,11 @@ export class FlightPathVector extends DisplayComponent<{
     let birdOffRange = false;
 
     let xOffsetLim;
-    const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
+    const daLimConv = (this.da.get().value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
-      calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
-    const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
+      calculateHorizonOffsetFromPitch(this.pitch.get().value) - calculateHorizonOffsetFromPitch(this.fpa.get().value);
+    const rollCos = Math.cos((this.roll.get().value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.roll.get().value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
@@ -202,8 +258,7 @@ export class FlightPathVector extends DisplayComponent<{
     } else {
       this.birdPath.instance.setAttribute('stroke-dasharray', '');
     }
-
-    this.ap1Active.get() || this.ap2Active.get()
+    this.isAnyApEngaged.get()
       ? this.birdPath.instance.setAttribute(
           'd',
           'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
@@ -217,23 +272,41 @@ export class FlightPathVector extends DisplayComponent<{
     this.birdLockedPath.instance.style.display = 'none';
     this.birdPath.instance.style.display = 'block';
   }
+  private moveBird() {
+    const hudXwindFpvType = parseInt(NXDataStore.getLegacy('HUD_FPV_TYPE', '0'));
+    hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
+  }
 
   render(): VNode {
     return (
       <>
-        <g ref={this.birdFreePath}>
-          <path
-            id="BirdFreePath"
-            d="m 627 512 l 10.5 2.5 l 2.5 10.5 l 2.5 -10.5 l 10.5 -2.5 l -10.5 -2.5 l -2.5 -10.5 l -2.5 10.5 z"
-            class="NormalStroke Green"
-          />
-        </g>
+        <path
+          ref={this.birdFreePath}
+          id="BirdFreePath"
+          d="m 627 512 l 10.5 2.5 l 2.5 10.5 l 2.5 -10.5 l 10.5 -2.5 l -10.5 -2.5 l -2.5 -10.5 l -2.5 10.5 z"
+          class="NormalStroke Green"
+        />
+
         <g ref={this.birdGroup} id="bird">
           <g id="FlightPathVector">
             <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
 
             <path ref={this.birdLockedPath} class="NormalStroke Green" d="m 590 502 v 20  m 100 0 v -20" />
           </g>
+          <text
+            id="FPVFlag"
+            x="315"
+            y="450"
+            class={{
+              HiddenElement: this.isFailureFlagHidden,
+              Blink9Seconds: true,
+              FontLargest: true,
+              Red: true,
+              EndAlign: true,
+            }}
+          >
+            FPV
+          </text>
           <SpeedChevrons bus={this.props.bus} instrument={this.props.instrument} />
 
           <DeltaSpeed bus={this.props.bus} />
@@ -249,11 +322,15 @@ export class FlightPathVector extends DisplayComponent<{
     );
   }
 }
+interface SpeedChevronsProps {
+  bus: EventBus;
+  instrument: BaseInstrument;
+}
 
-export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getArincSubscriber<
-    PrimFeBusBaseEvents & Arinc429Values & HUDSimvars & ClockEvents & HudElems
+  private readonly sub = this.props.bus.getSubscriber<
+    PrimFeBusBaseEvents & Arinc429Values & HUDSimvars & ClockEvents & HudElems & ExtendedClockEvents
   >();
 
   private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_speed_trend').atFrequency(10));
@@ -351,42 +428,21 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
   }
 }
 
-interface SpeedStateInfo {
-  targetSpeed: number;
-  managedTargetSpeed: number;
-  isSpeedManaged: boolean;
-  speed: Arinc429WordData;
-}
-
-class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
+class DeltaSpeed extends DisplayComponent<{ bus: EventBus }> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getArincSubscriber<
-    HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & ClockEvents & Arinc429Values & HudElems & PrimFgBusBaseEvents
   >();
   private speedRefs: NodeReference<SVGPathElement>[] = [];
   private speedGroupRef = FSComponent.createRef<SVGGElement>();
   private needsUpdate = true;
-  private speedState: SpeedStateInfo = {
-    targetSpeed: 100,
-    managedTargetSpeed: 100,
-    isSpeedManaged: false,
-    speed: new Arinc429Word(0),
-  };
 
+  private isSpeedManaged = new Arinc429Word(0);
+  private readonly speed = Arinc429ConsumerSubject.create(this.props.bus.getSubscriber<Arinc429Values>().on('speedAr'));
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
-  private readonly isSelectedSpeed = ConsumerSubject.create(this.sub.on('isSelectedSpeed').whenChanged(), false);
-  private readonly targetSpeedManaged = ConsumerSubject.create(this.sub.on('targetSpeedManaged').whenChanged(), 0);
-  private readonly targetSpeedSelected = ConsumerSubject.create(this.sub.on('holdValue').whenChanged(), 0);
+  private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
-  private readonly chosenTargetSpeed = MappedSubject.create(
-    ([targetSpeedSelected, isSelectedSpeed, targetManagedSpeed]) => {
-      return isSelectedSpeed ? targetSpeedSelected : targetManagedSpeed;
-    },
-    this.targetSpeedSelected,
-    this.isSelectedSpeed,
-    this.targetSpeedManaged,
-  );
   private readonly isVisible = MappedSubject.create(([hudMode]) => {
     return hudMode === 0 ? true : false;
   }, this.hudMode);
@@ -394,17 +450,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
-    this.subscriptions.push(this.fmgcFlightPhase, this.isSelectedSpeed, this.targetSpeedManaged, this.hudMode);
-
-    this.subscriptions.push(
-      this.sub
-        .on('speedAr')
-        .withArinc429Precision(2)
-        .handle((s) => {
-          this.speedState.speed = s;
-          this.needsUpdate = true;
-        }),
-    );
+    this.subscriptions.push(this.fmgcFlightPhase, this.hudMode);
 
     this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
   }
@@ -412,7 +458,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private onFrameUpdate(_realTime: number): void {
     if (this.needsUpdate === true) {
       this.needsUpdate = false;
-      const deltaSpeed = this.speedState.speed.value - this.chosenTargetSpeed.get();
+      const deltaSpeed = this.speed.get().value - this.pfdTargetSpeed.get().value;
       const sign = Math.sign(deltaSpeed);
       const deltaSpeedDraw = Math.abs(deltaSpeed) >= 15 ? sign * 15 : deltaSpeed;
 
@@ -471,9 +517,9 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class RadioAltAndDH extends DisplayComponent<{
-  bus: ArincEventBus;
-  filteredRadioAltitude: Subscribable<number>;
-  attExcessive: Subscribable<boolean>;
+  readonly bus: EventBus;
+  readonly filteredRadioAltitude: Subscribable<number>;
+  readonly attExcessive: Subscribable<boolean>;
 }> {
   private sVisibility = Subject.create('none');
   private daRaGroup = FSComponent.createRef<SVGGElement>();
@@ -622,35 +668,26 @@ class RadioAltAndDH extends DisplayComponent<{
 }
 
 class FlareIndicator extends DisplayComponent<{
-  bus: ArincEventBus;
+  bus: EventBus;
 }> {
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & PrimFgBusBaseEvents>();
   private sVisibility = Subject.create('none');
+  private flareVis = Subject.create('');
   private flareGroup = FSComponent.createRef<SVGGElement>();
   private verticalMode = 0;
-  private setVisibility() {
-    if (this.verticalMode === VerticalMode.FLARE) {
-      this.sVisibility.set('block');
-    } else {
-      this.sVisibility.set('none');
-    }
-  }
+  private readonly primFgDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_3'));
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const flareModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(24, false));
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((word) => {
-        this.verticalMode = word;
-        this.setVisibility();
-      });
+    flareModeActive.sub((v) => {
+      v ? this.flareVis.set('block') : this.flareVis.set('none');
+    }, true);
   }
-
   render(): VNode {
     return (
-      <g ref={this.flareGroup} id="FlareArrows" display={this.sVisibility}>
+      <g ref={this.flareGroup} id="FlareArrows" display={this.flareVis}>
         <path class="NormalStroke Green" d="m 615,512 v -32" />
         <path class="NormalStroke Green" d="m 609,496 l 6 -16  l 6 16" />
         <path class="NormalStroke Green" d="m 665,512 v -32" />
@@ -660,8 +697,8 @@ class FlareIndicator extends DisplayComponent<{
   }
 }
 
-export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems>();
+export class SpoilersIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
   private refElement = FSComponent.createRef<SVGGElement>();
   private leftSpoilers = FSComponent.createRef<SVGGElement>();
   private rightSpoliers = FSComponent.createRef<SVGGElement>();
