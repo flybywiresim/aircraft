@@ -565,7 +565,7 @@ export interface FlightPlanPerformanceData {
   /**
    * The average wind vector for the alternate flight plan, or null if not set.
    */
-  readonly alternateWind: MutableSubscribable<WindVector | null>;
+  readonly alternateWind: MutableSubscribable<WindVector>;
 
   /** Estimated takeoff time timestamp, in unix epoch milliseconds */
   readonly estimatedTakeoffTime: MutableSubscribable<number | null>;
@@ -759,7 +759,7 @@ export interface SerializedFlightPlanPerformanceData {
 
   climbWindEntries: FlightPlanWindEntry[];
   descentWindEntries: FlightPlanWindEntry[];
-  alternateWind: WindVector | null;
+  alternateWind: WindVector;
 
   estimatedTakeoffTime: number | null;
   estimatedTakeoffTimeExpired: boolean | null;

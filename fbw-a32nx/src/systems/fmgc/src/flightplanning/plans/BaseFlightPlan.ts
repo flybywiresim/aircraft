@@ -83,10 +83,10 @@ import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlan
 import {
   cloneWindVector,
   debugFormatWindEntry,
-  FlightPlanWindEntry,
   PropagatedWindEntry,
   PropagationType,
   WindEntry,
+  WindVector,
 } from '../data/wind';
 import { FlightPlanIndex } from '../FlightPlanManager';
 
@@ -2968,7 +2968,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const hasDraft = this.draftCruiseWindEntries !== undefined;
 
-    if (!hasDraft && BaseFlightPlan.isInvalidWindEntryForNonDraft(entry)) {
+    if (!hasDraft && BaseFlightPlan.isPartlyFilledWindVector(entry.vector)) {
       return;
     }
 
@@ -3004,6 +3004,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       console.error('[FMS/FPM] Tried to delete a cruise wind entry to a non-XF leg');
       return;
     }
+
+    this.prepareCruiseWindDraftModification();
 
     const draftCruiseWindEntries = this.draftCruiseWindEntries?.get(atIndex);
     let entries = draftCruiseWindEntries ?? leg.cruiseWindEntries;
@@ -3047,7 +3049,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     this.prepareCruiseWindDraftModification();
-    if (!this.draftCruiseWindEntriesExist && BaseFlightPlan.isInvalidWindEntryForNonDraft(newEntry)) {
+    if (!this.draftCruiseWindEntriesExist && BaseFlightPlan.isPartlyFilledWindVector(newEntry.vector)) {
       return;
     }
 
@@ -3194,10 +3196,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     };
   }
 
-  protected static isInvalidWindEntryForNonDraft(entry: WindEntry | FlightPlanWindEntry) {
+  protected static isPartlyFilledWindVector(vector: WindVector) {
     return (
-      (entry.vector.direction !== undefined && entry.vector.magnitude === undefined) ||
-      (entry.vector.direction === undefined && entry.vector.magnitude !== undefined)
+      (vector.direction !== undefined && vector.magnitude === undefined) ||
+      (vector.direction === undefined && vector.magnitude !== undefined)
     );
   }
 }

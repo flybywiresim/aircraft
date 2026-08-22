@@ -5267,8 +5267,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         );
         const alternateWind = plan.performanceData.alternateWind.get();
 
-        const windComponent =
-          alternateWind !== null ? WindUtils.computeTailwindComponent(alternateWind, trueCourseToAlternate) : 0;
+        const windComponent = WindUtils.computeTailwindComponent(alternateWind, trueCourseToAlternate);
 
         const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), windComponent);
 

@@ -5,6 +5,8 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 export class WindUtils {
   private static readonly VectorCache = Vec2Math.create();
 
+  public static undefinedWindVector: WindVector = { direction: undefined, magnitude: undefined };
+
   private static readonly emptyWindVector: WindVector = { direction: 0, magnitude: 0 };
 
   /**

@@ -7,6 +7,7 @@ import {
   FlightPlanWindEntry,
   FlightPlanWindEntryFlags,
   formatWindVector,
+  isWindVectorComplete,
   PropagatedWindEntry,
   PropagationType,
   WindEntry,
@@ -623,10 +624,9 @@ export class CDUWindPage {
             : `{white}/-----{end}`;
 
         template[numWindRowsOnPage * 2 + 1][0] = ' ALTERNATE';
-        template[numWindRowsOnPage * 2 + 2][0] =
-          alternateWind !== null
-            ? `${formatWindVector(alternateWind)}${alternateCruiseLevelString}[color]${doesAltnWindUplinkExist ? 'green' : 'cyan'}`
-            : `[\xa0]°/[\xa0]${alternateCruiseLevelString}[color]cyan`;
+        template[numWindRowsOnPage * 2 + 2][0] = isWindVectorComplete(alternateWind)
+          ? `${formatWindVector(alternateWind)}${alternateCruiseLevelString}[color]${doesAltnWindUplinkExist ? 'green' : 'cyan'}`
+          : `[\xa0]°/[\xa0]${alternateCruiseLevelString}[color]cyan`;
 
         mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
           // I think you can modify the alternate wind in any phase, but not if an uplink exists
@@ -638,7 +638,7 @@ export class CDUWindPage {
 
           try {
             if (value === Keypad.clrValue) {
-              await mcdu.flightPlanService.setAlternateWind(null, forPlan);
+              await mcdu.flightPlanService.clearAlternateWind(forPlan);
             } else {
               const wind = CDUWindPage.parseWindVector(mcdu, value);
 

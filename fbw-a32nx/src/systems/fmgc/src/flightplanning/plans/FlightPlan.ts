@@ -24,6 +24,7 @@ import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlan
 import { FlightPlanFlags } from './FlightPlanFlags';
 import { cloneWindVector, debugFormatWindEntry, extractTheta, FlightPlanWindEntry, WindVector } from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
+import { WindUtils } from '../../guidance/vnav/wind/WindUtils';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -75,7 +76,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   /**
    * The draft cruise wind entry used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
    */
-  private alternateDraftWind: WindVector | undefined | null;
+  private readonly alternateDraftWind: WindVector | undefined;
   private draftClimbWindExists = false;
   private draftCruiseWindExists = false;
   private draftDescentWindExists = false;
@@ -96,7 +97,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink ? [] : undefined;
       this.draftDescentWindEntries =
         this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink ? [] : undefined;
-      this.alternateDraftWind = null;
+      this.alternateDraftWind = { direction: undefined, magnitude: undefined };
     }
   }
 
@@ -202,7 +203,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
     this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
     this.setPerformanceData('pilotAlternateFuel', null);
-    this.setPerformanceData('alternateWind', null);
+    this.setPerformanceData('alternateWind', WindUtils.undefinedWindVector);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -798,7 +799,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (
       entry !== null &&
       !hasDraft &&
-      (altitude === undefined || BaseFlightPlan.isInvalidWindEntryForNonDraft(entry))
+      (altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(entry.vector))
     ) {
       return;
     }
@@ -846,7 +847,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (
       entry !== null &&
       !hasDraft &&
-      (altitude === undefined || BaseFlightPlan.isInvalidWindEntryForNonDraft(entry))
+      (altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(entry.vector))
     ) {
       return;
     }
@@ -880,7 +881,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   ): void {
     if (
       entry !== null &&
-      !BaseFlightPlan.isInvalidWindEntryForNonDraft(entry) &&
+      !BaseFlightPlan.isPartlyFilledWindVector(entry.vector) &&
       entry.altitude! <= destinationElevation + 400
     ) {
       entry.altitude = destinationElevation;
@@ -982,19 +983,40 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
   }
 
-  async setAlternateWind(entry: WindVector | null): Promise<void> {
+  async setAlternateWind(entry: WindVector): Promise<void> {
     if (this.alternateDraftWind !== undefined) {
-      if (entry !== null) {
-        if (this.alternateDraftWind === null) {
-          this.alternateDraftWind = { direction: undefined, magnitude: undefined };
-        }
-      } else {
-        this.alternateDraftWind = null;
-      }
       this.alternateDraftWindExists = true;
+      const oldDir = this.alternateDraftWind.direction;
+      const oldMag = this.alternateDraftWind.magnitude;
+      if (
+        oldDir !== undefined &&
+        oldMag !== undefined &&
+        (entry.magnitude === undefined || entry.direction === undefined)
+      ) {
+        // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
+        entry.magnitude = undefined;
+        entry.direction = undefined;
+      }
+
+      this.alternateDraftWind.direction = entry.direction;
+      this.alternateDraftWind.magnitude = entry.magnitude;
       this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', entry);
+    }
+  }
+
+  async clearAlternateWind(): Promise<void> {
+    if (
+      this.alternateDraftWind !== undefined &&
+      (this.alternateDraftWind.direction !== undefined || this.alternateDraftWind.magnitude !== undefined)
+    ) {
+      this.alternateDraftWindExists = true;
+      this.alternateDraftWind.direction === undefined;
+      this.alternateDraftWind.magnitude === undefined;
+      this.incrementVersion();
+    } else {
+      this.setPerformanceData('alternateWind', WindUtils.undefinedWindVector);
     }
   }
 
@@ -1134,7 +1156,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (this.draftClimbWindExists) {
       this.setPerformanceData(
         'climbWindEntries',
-        this.draftClimbWindEntries!.filter((e) => !BaseFlightPlan.isInvalidWindEntryForNonDraft(e)).sort(
+        this.draftClimbWindEntries!.filter((e) => !BaseFlightPlan.isPartlyFilledWindVector(e.vector)).sort(
           (a, b) => b.altitude! - a.altitude!,
         ),
       );
@@ -1147,7 +1169,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
           const draftEntries = this.draftCruiseWindEntries!.get(i);
           if (draftEntries) {
             leg.cruiseWindEntries = draftEntries
-              .filter((e) => !BaseFlightPlan.isInvalidWindEntryForNonDraft(e))
+              .filter((e) => !BaseFlightPlan.isPartlyFilledWindVector(e.vector))
               .map((entry) => FlightPlan.cloneWindEntry(entry));
           }
           this.syncCruiseWindChange(i);
@@ -1165,14 +1187,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
       this.setPerformanceData(
         'descentWindEntries',
-        this.draftDescentWindEntries!.filter((e) => !BaseFlightPlan.isInvalidWindEntryForNonDraft(e)).sort(
+        this.draftDescentWindEntries!.filter((e) => !BaseFlightPlan.isPartlyFilledWindVector(e.vector)).sort(
           (a, b) => b.altitude! - a.altitude!,
         ),
       );
     }
 
     if (this.alternateDraftWindExists) {
-      this.setAlternateWind(this.alternateDraftWind!);
+      if (!BaseFlightPlan.isPartlyFilledWindVector(this.alternateDraftWind!)) {
+        this.setPerformanceData('alternateWind', this.alternateDraftWind);
+      }
     }
 
     this.deleteDraftWindEntries();
@@ -1250,7 +1274,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   private deleteAlternateDraftWindEntries(): boolean {
     if (this.alternateDraftWind !== undefined) {
-      this.alternateDraftWind = null;
+      this.alternateDraftWind.direction = undefined;
+      this.alternateDraftWind.magnitude = undefined;
       this.alternateDraftWindExists = false;
       return true;
     }

@@ -1059,9 +1059,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.deleteDescentWindEntries();
   }
 
-  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
+  setAlternateWind(entry: WindVector, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
     return plan.setAlternateWind(entry);
+  }
+
+  clearAlternateWind(planIndex: number) {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.clearAlternateWind();
   }
 
   insertWindUplink(planIndex: number): Promise<void> {

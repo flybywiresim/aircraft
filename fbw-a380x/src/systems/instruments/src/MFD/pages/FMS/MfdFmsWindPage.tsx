@@ -43,7 +43,6 @@ import {
   WindFlightLevelFormat,
   WindSpeedFormat,
 } from '../common/DataEntryFormats';
-import { MathUtils } from '../../../../../../../../fbw-common/src/systems/shared/src/MathUtils';
 import { CpnyWindRequestButton } from './CpnyWindButtonUtils';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -862,23 +861,15 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   }
 
   private onAlternateWindModified(value: number | null, dataType: WindEntryData) {
-    const currentDir = dataType === WindEntryData.Direction ? value : this.alternateWindDirection.get();
-    const currentSpeed = dataType === WindEntryData.Speed ? value : this.alternateWindSpeed.get();
-    if (dataType === WindEntryData.Direction) {
-      this.alternateWindDirection.set(value);
-    } else if (dataType === WindEntryData.Speed) {
-      this.alternateWindSpeed.set(value);
-    }
-    if (currentDir !== null && currentSpeed !== null) {
+    if (value === null) {
+      this.props.fmcService.master.flightPlanInterface.clearAlternateWind(this.loadedFlightPlanIndex.get());
+    } else {
+      const currentDir = dataType === WindEntryData.Direction ? value : this.alternateWindDirection.get();
+      const currentSpeed = dataType === WindEntryData.Speed ? value : this.alternateWindSpeed.get();
       this.props.fmcService.master.flightPlanInterface.setAlternateWind(
-        {
-          direction: currentDir * MathUtils.DEGREES_TO_RADIANS,
-          magnitude: currentSpeed,
-        },
+        createVectorFromMagnitudeAndDirection(currentDir ?? undefined, currentSpeed ?? undefined),
         this.loadedFlightPlanIndex.get(),
       );
-    } else {
-      this.props.fmcService.master.flightPlanInterface.setAlternateWind(null, this.loadedFlightPlanIndex.get());
     }
   }
 

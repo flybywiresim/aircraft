@@ -43,7 +43,7 @@ export const extractWindDirectionFromVector = (vector: WindVector, zeroIfUndefin
     : vector.direction ?? (zeroIfUndefined ? 0 : undefined);
 
 export const formatWindVector = (vector: WindVector) =>
-  `${vector.direction !== null ? formatWindTrueDegrees(vector) : '---'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
+  `${vector.direction !== undefined ? formatWindTrueDegrees(vector) : '---'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
 
 export const debugFormatWindEntry = (entry: WindEntry) =>
   `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
@@ -62,7 +62,7 @@ export const formatWindPredictionDirection = (prediction: WindVector | TailwindC
 export const formatWindMagnitude = (vector: WindVector) =>
   extractWindSpeedFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---';
 export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) => {
-  const predictionValue = typeof prediction === 'number' ? Math.abs(prediction) : getVectorMagnitude(prediction);
+  const predictionValue = typeof prediction === 'number' ? Math.abs(prediction) : getVectorMagnitude(prediction) ?? 0;
 
   return Math.round(predictionValue ?? 0)
     .toFixed(0)
@@ -123,4 +123,8 @@ export function createVectorFromMagnitudeAndDirection(
       magnitude: magnitude !== undefined ? magnitude * Math.sin(theta) : undefined,
     };
   }
+}
+
+export function isWindVectorComplete(vector: WindVector) {
+  return vector.magnitude !== undefined && vector.direction !== undefined;
 }
