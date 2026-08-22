@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 import { AtsuStatusCodes, WindUplinkMessage } from '@datalink/common';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { logTroubleshootingError } from '@shared/logging';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkRequest } from '@providers/FmsAtsuBusPublisher';
 import { AocFmsMessages, FmsAocMessages } from '../../../../../fbw-common/src/systems/datalink/aoc/src/databus/FmsBus';
+import { logTroubleshootingError } from '@flybywiresim/fbw-sdk';
 
 export class AtsuFmsClient {
   private readonly sub = this.bus.getSubscriber<FmsToAtsuEvents & AocFmsMessages>();
