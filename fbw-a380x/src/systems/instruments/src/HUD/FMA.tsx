@@ -476,9 +476,16 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
     this.props.A1A2CellMessage.sub((message) => {
       // ATHR mode overrides BRK LO and MED memo
       if (message > A1A2Messages.NONE && message <= A1A2Messages.MAN_THR) {
+        this.modeArmed.instance.setAttribute('visibility', 'hidden');
         this.autoBrkRef.instance.style.visibility = 'hidden';
       } else {
-        this.autoBrkRef.instance.style.visibility = 'visible';
+        if (this.decMode !== 2) {
+          this.modeArmed.instance.setAttribute('visibility', 'visible');
+          this.autoBrkRef.instance.style.visibility = 'visible';
+        } else {
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
+          this.autoBrkRef.instance.style.visibility = 'hidden';
+        }
       }
     }, true);
   }
@@ -1283,16 +1290,11 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
         this.decMode = mode;
         this.isShown = false;
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        // const isShown = this.text.get().length == 0 ? false : true;
-        // if (isShown) {
-        //   this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        // } else {
-        //   this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        // }
       });
 
     this.text.sub(() => {
       this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
     });
   }
 
