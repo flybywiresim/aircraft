@@ -1324,7 +1324,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private decelActive = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
-
+  private readonly fwcFlighPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
   private readonly pfdTargetSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_pfd_speed_target'));
   private readonly selectedSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_speed'));
   private readonly managedSpeed = Arinc429LocalVarConsumerSubject.create(
@@ -1426,7 +1426,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       inRange = true;
     }
 
-    if (inRange) {
+    if (inRange || this.fwcFlighPhase.get() == 7) {
       this.BoundBgRef.instance.style.visibility = 'hidden';
     } else {
       if (this.isSpeedManaged.get()) {
@@ -1452,8 +1452,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.speed.sub(this.handleLowerUpperBound.bind(this));
-    this.cWndMode.sub(this.handleCrosswinMode.bind(this));
+    this.speed.sub(this.handleLowerUpperBound.bind(this), true);
+    this.cWndMode.sub(this.handleCrosswinMode.bind(this), true);
   }
 
   render(): VNode {
