@@ -20,7 +20,6 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DmcLogicEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
-import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { NDControlEvents } from '../NDControlEvents';
 import { NDSimvars } from '../NDSimvarPublisher';
 import {
@@ -58,7 +57,6 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     GenericFcuEvents &
       NDSimvars &
       DmcLogicEvents &
-      SimplaneValues &
       NDControlEvents &
       GenericFmsEvents &
       FGVars &

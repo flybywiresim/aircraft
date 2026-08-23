@@ -21,6 +21,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
+  SubscribableMapFunctions,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -32,11 +33,11 @@ import { FmsSymbolsData } from '../FmsSymbolsPublisher';
 import { NDControlEvents } from '../NDControlEvents';
 import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from '../../MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { MfdSurvEvents } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -55,7 +56,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly sub = this.props.bus.getArincSubscriber<
     AesuBusEvents &
-      A380XFcuBusEvents &
+      FcuEfisCpBusEvents &
       ClockEvents &
       FcuSimVars &
       FGVars &
@@ -65,7 +66,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       MfdSurvEvents &
       NDControlEvents &
       NDSimvars &
-      SimplaneValues
+      SimplaneValues //TODO Replace with FG events
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -135,7 +136,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on(this.props.side === 'L' ? 'a380x_fcu_eis_discrete_word_2_left' : 'a380x_fcu_eis_discrete_word_2_right'),
+    this.sub.on(this.props.side === 'L' ? 'fcu_efis_l_discrete_word_2' : 'fcu_efis_r_discrete_word_2'),
   );
 
   private readonly baroCorrectedAltitude = Arinc429LocalVarConsumerSubject.create(
@@ -220,24 +221,24 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
-  private readonly isSelectedVerticalMode = MappedSubject.create(
+  private readonly isManagedVerticalMode = MappedSubject.create(
     ([mode, cstr]) =>
-      cstr === 0 &&
-      (mode === VerticalMode.OP_CLB ||
-        mode === VerticalMode.OP_DES ||
-        mode === VerticalMode.VS ||
-        mode === VerticalMode.FPA),
+      cstr !== 0 &&
+      (mode === VerticalMode.DES ||
+        mode === VerticalMode.CLB ||
+        mode === VerticalMode.ALT_CST ||
+        mode === VerticalMode.ALT_CST_CPT),
     this.activeVerticalMode,
     this.fgAltConstraint,
   );
   private readonly targetAltitude = MappedSubject.create(
-    ([selAlt, isSelected, altCstr]) => (isSelected || !altCstr ? selAlt : altCstr),
+    ([selAlt, isManaged, altCstr]) => (isManaged && altCstr ? altCstr : selAlt),
     this.selectedAltitude,
-    this.isSelectedVerticalMode,
+    this.isManagedVerticalMode,
     this.fgAltConstraint,
   );
   private readonly targetAltitudeFormatted = MappedSubject.create(
-    ([alt, fcuDw]) => (fcuDw.bitValueOr(28, false) ? `FL ${Math.floor(alt / 100).toFixed(0)}` : alt.toFixed(0)),
+    ([alt, fcuDw]) => (fcuDw.bitValueOr(11, true) ? `FL ${Math.floor(alt / 100).toFixed(0)}` : alt.toFixed(0)),
     this.targetAltitude,
     this.fcuEisDiscreteWord2,
   );
@@ -261,8 +262,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly altitudeTargetColor = MappedSubject.create(
-    ([mode, altCstr]) => {
-      if (mode === VerticalMode.ALT_CST || mode === VerticalMode.ALT_CST_CPT || altCstr) {
+    ([mode, altCstr, isManagedVerticalMode]) => {
+      if (isManagedVerticalMode && altCstr) {
         return '#ff94ff';
       } else if (
         mode === VerticalMode.FINAL ||
@@ -278,6 +279,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     },
     this.activeVerticalMode,
     this.fgAltConstraint,
+    this.isManagedVerticalMode,
   );
 
   private readonly altitudeTapeLineY = Array.from(Array(8), (_, index) =>
@@ -299,7 +301,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         const dashAlt = VerticalDisplay.altitudeTapeAlt(index, vdRange, verticalRange);
         const altitudePerDash = VerticalDisplay.altitudeTapeAlt(1, vdRange, [0, 0]);
         if (dashAlt % (altitudePerDash * 2) == 0) {
-          return fcuDw.bitValueOr(28, false) ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
+          return fcuDw.bitValueOr(11, true) ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
         } else {
           return '';
         }
@@ -310,7 +312,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     ),
   );
   private readonly altitudeFlTextVisible = MappedSubject.create(
-    ([fcuDw, vdAvailable]) => (fcuDw.bitValueOr(28, false) && vdAvailable ? 'visible' : 'hidden'),
+    ([fcuDw, vdAvailable]) => (fcuDw.bitValueOr(11, true) && vdAvailable ? 'visible' : 'hidden'),
     this.fcuEisDiscreteWord2,
     this.vdAvailable,
   );
@@ -455,7 +457,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.activeVerticalMode,
       this.fgAltConstraint,
       this.selectedAltitude,
-      this.isSelectedVerticalMode,
+      this.isManagedVerticalMode,
       this.targetAltitude,
       this.altitudeTargetTransform,
       this.targetAltitudeTextVisibility,
@@ -602,7 +604,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           fmsTargetVdProfile={this.fmsTargetVdProfile}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
-          isSelectedVerticalMode={this.isSelectedVerticalMode}
+          isSelectedVerticalMode={this.isManagedVerticalMode.map(SubscribableMapFunctions.not())}
           shouldShowTrackLine={this.shouldShowTrackLine}
           fpa={this.fpa}
           selectedAltitude={this.selectedAltitude}

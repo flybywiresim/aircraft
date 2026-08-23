@@ -3059,7 +3059,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The acceleration altitude
+    - The acceleration altitude during the preflight and takeoff phases. The missed approach acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3115,7 +3115,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_EO_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The engine out acceleration altitude
+    - The engine out acceleration altitude during preflight and takeoff phases. The missed engine out acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3138,27 +3138,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- `L:A32NX_FM{number}_MISSED_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_EO_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_THR_RED_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
 - `L:A32NX_FM{number}_NAV_DISCRETE`
     - Arinc429<Discrete>
     - {number}
@@ -3175,7 +3154,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_THR_RED_ALT`
     - ARINC429<number> (feet MSL)
-    - The thrust reduction altitude
+    - The thrust reduction altitude during the preflight and takeoff phases. The missed thrust reduction altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC

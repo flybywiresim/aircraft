@@ -5799,6 +5799,8 @@
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
 
+            <UseTemplate Name="FBW_A32NX_CB_49VU" />
+
             <Component ID="125VU">
                 <Component ID="125VU_DOOR">
                     <UseTemplate Name="FBW_Push_Toggle">
