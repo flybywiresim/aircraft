@@ -1187,19 +1187,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         FCU altitude or the exit fix. If FCU or constraint altitude is reached first, the rest of the
         pattern is assumed to be flown level at that altitude
         */
-  private getHoldingSpeed(speedConstraint = undefined, altitude = undefined) {
-    const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
-    if (fcuAltitude == null) {
-      return;
-    }
-    const alt = Math.max(fcuAltitude, altitude ? altitude : 0);
+  private getHoldingSpeed(speedConstraint: number | undefined, altitude: number | undefined) {
+    const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(0);
+    const alt = Math.max(fcuAltitude, altitude ?? 0);
 
     let kcas = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
     if (this.flightPhaseManager.phase === FmgcFlightPhase.Approach) {
       kcas = this.getAppManagedSpeed();
     }
 
-    if (speedConstraint > 100) {
+    if (speedConstraint !== undefined && speedConstraint > 100) {
       kcas = Math.min(kcas, speedConstraint);
     }
 
