@@ -16,8 +16,8 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
-import { EnginePublisher, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
+import { EnginePublisher, FmgcBusPublisher, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 export class McduFsInstrument implements FsInstrument {
   private static readonly INIT_DURATION = 1000;
@@ -57,6 +57,7 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
+    this.backplane.addPublisher('Fmgc', new FmgcBusPublisher(this.bus));
 
     this.doInit();
   }

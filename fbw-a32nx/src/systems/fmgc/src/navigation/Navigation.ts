@@ -13,6 +13,7 @@ import {
   NearbyFacilityMonitor,
   NearbyFacilityType,
   NearbyFacility,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
@@ -20,10 +21,12 @@ import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/Nav
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { EventBus, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
+import { FmgcEvents } from '../events/FmgcEvents';
+import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 
 export enum SelectedNavaidType {
   None,
@@ -56,6 +59,8 @@ export interface NavigationEvents {
   fms_nav_pressure_altitude: number | null;
   /** The selected baro corrected altitude in feet, or null if invalid/NCD. */
   fms_nav_baro_corrected_altitude: number | null;
+  /** The selected baro corrected altitude in feet, or null if invalid/NCD. */
+  fms_nav_indicated_altitude: number | null;
 
   /** The selected computed airspeed in knots, or null if invalid/NCD. */
   fms_nav_computed_airspeed: number | null;
@@ -70,6 +75,7 @@ export interface NavigationEvents {
 }
 
 export class Navigation implements NavigationProvider {
+  private readonly sub = this.bus.getSubscriber<FmgcEvents & A32NXFcuBusEvents>();
   private readonly publisher = this.bus.getPublisher<NavigationEvents>();
 
   private static readonly adiruOrder = [1, 3, 2];
@@ -96,9 +102,14 @@ export class Navigation implements NavigationProvider {
 
   private readonly baroAltitude = Subject.create<number | null>(null);
 
-  private static readonly baroAltitudeVars = Array.from(
+  private static readonly baroAltitude1Vars = Array.from(
     { length: 3 },
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_1`,
+  );
+
+  private static readonly baroAltitude2Vars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_2`,
   );
 
   private readonly pressureAltitude = Subject.create<number | null>(null);
@@ -107,6 +118,8 @@ export class Navigation implements NavigationProvider {
     { length: 3 },
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_ALTITUDE`,
   );
+
+  private readonly indicatedAltitude = Subject.create<number | null>(null);
 
   private readonly computedAirspeed = Subject.create<number | null>(null);
 
@@ -164,6 +177,12 @@ export class Navigation implements NavigationProvider {
 
   private nearbyAirportMonitor: NearbyFacilityMonitor;
 
+  private readonly isFmgc1Priority = ConsumerSubject.create(this.sub.on('fmgc_1_priority'), true);
+
+  private readonly register = Arinc429Register.empty();
+  private readonly eisDiscreteWord2Left = RegisteredSimVar.create('L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2', 'number');
+  private readonly eisDiscreteWord2Right = RegisteredSimVar.create('L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_2', 'number');
+
   constructor(
     private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
@@ -179,6 +198,7 @@ export class Navigation implements NavigationProvider {
 
     this.pressureAltitude.sub((v) => this.publisher.pub('fms_nav_pressure_altitude', v, false, true), true);
     this.baroAltitude.sub((v) => this.publisher.pub('fms_nav_baro_corrected_altitude', v, false, true), true);
+    this.indicatedAltitude.sub((v) => this.publisher.pub('fms_nav_indicated_altitude', v, false, true), true);
 
     this.computedAirspeed.sub((v) => this.publisher.pub('fms_nav_computed_airspeed', v, false, true), true);
 
@@ -262,8 +282,16 @@ export class Navigation implements NavigationProvider {
   }
 
   private updateAirData(): void {
-    this.baroAltitude.set(this.getAdiruValue(Navigation.baroAltitudeVars));
+    this.baroAltitude.set(
+      this.getAdiruValue(this.isFmgc1Priority.get() ? Navigation.baroAltitude1Vars : Navigation.baroAltitude2Vars),
+    );
     this.pressureAltitude.set(this.getAdiruValue(Navigation.pressureAltitudeVars));
+
+    const isOnStdSetting = this.register
+      .set(this.isFmgc1Priority.get() ? this.eisDiscreteWord2Left.get() : this.eisDiscreteWord2Right.get())
+      .bitValueOr(28, true);
+
+    this.indicatedAltitude.set(isOnStdSetting ? this.pressureAltitude.get() : this.baroAltitude.get());
 
     this.computedAirspeed.set(this.getAdiruValue(Navigation.computedAirspeedVars));
     this.trueAirspeed = this.getAdiruValue(Navigation.trueAirspeedVars);

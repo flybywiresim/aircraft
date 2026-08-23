@@ -320,6 +320,7 @@ export class GuidanceController {
     private readonly acConfig: AircraftConfig,
   ) {
     this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(
+      bus,
       fmgc,
       flightPlanService,
     );
