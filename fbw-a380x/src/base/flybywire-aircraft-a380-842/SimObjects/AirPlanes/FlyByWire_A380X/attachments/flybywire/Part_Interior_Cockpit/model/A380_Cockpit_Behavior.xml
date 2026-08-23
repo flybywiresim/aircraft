@@ -107,63 +107,6 @@
         <Component ID="VARIABLE_MAPPING">
             <Update Frequency="18">
                 (L:A32NX_OVHD_INTLT_ANN, number) (&gt;L:A380X_OVHD_INTLT_ANN, number)
-                (L:A32NX_EFIS_L_ND_RANGE) (&gt;L:A380X_EFIS_L_ND_RANGE)
-                (L:A32NX_EFIS_R_ND_RANGE) (&gt;L:A380X_EFIS_R_ND_RANGE)
-
-                (L:A32NX_EFIS_L_ND_MODE) (&gt;L:A380X_EFIS_L_ND_MODE)
-                (L:A32NX_EFIS_R_ND_MODE) (&gt;L:A380X_EFIS_R_ND_MODE)
-
-                0
-
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 1 == if{
-                    4 |
-                }
-
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 2 == if{
-                    2 |
-                }
-
-                (L:A380X_EFIS_L_ACTIVE_FILTER) 3 == if{
-                    8 |
-                }
-
-                (L:A380X_EFIS_L_ARPT_BUTTON_IS_ON) 1 == if{
-                    16 |
-                }
-
-                (L:A380X_EFIS_L_CSTR_BUTTON_IS_ON) 1 == if{
-                    1 |
-                }
-
-                (&gt;L:A32NX_EFIS_L_OPTION)
-
-                (L:A380X_EFIS_L_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)
-
-                0
-
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 1 == if{
-                    4 |
-                }
-
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 2 == if{
-                    2 |
-                }
-
-                (L:A380X_EFIS_R_ACTIVE_FILTER) 3 == if{
-                    8 |
-                }
-
-                (L:A380X_EFIS_R_ARPT_BUTTON_IS_ON) 1 == if{
-                    16 |
-                }
-
-                (L:A380X_EFIS_R_CSTR_BUTTON_IS_ON) 1 == if{
-                    1 |
-                }
-
-                (&gt;L:A32NX_EFIS_R_OPTION)
-
-                (L:A380X_EFIS_R_ACTIVE_OVERLAY) 2 == (&gt;L:A32NX_EFIS_TERR_R_ACTIVE)
 
                 (A:LIGHT POTENTIOMETER:7, Percent over 100) 0 &gt; if{
                     1 1 (&gt;K:2:CABIN_LIGHTS_SET)
