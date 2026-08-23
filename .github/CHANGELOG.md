@@ -1,14 +1,25 @@
 # Changelog
 
-<!-- The changelog is used to record user-visible changes since the previous stable release. -->
-<!-- For example a fix for a bug that was only in the dev version, and not the stable, would not be recorded here. -->
-<!-- Code refactoring and similar changes with no user-visible effects would also not be recorded here. -->
-<!-- The text should focus on changes the user would see, rather than code changes that are not visible. -->
-<!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
-<!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
-<!-- Use the following format below -->
-<!--  1. [Changed Area] Title of changes - @github username (Name)  -->
-<!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
+<!--
+This changelog tells users what they will notice when upgrading from the previous stable release.
+
+Add an entry only if both of these are true:
+- The change has a user-visible effect.
+- The effect is a difference from the previous stable release.
+
+Do not add entries for internal refactors, maintenance, or backend improvements with no user-visible effect.
+Do not add an entry for a fix to a bug introduced after the previous stable release; stable users never had that bug,
+so its fix is not part of their upgrade. Describe what users will experience, not the implementation details.
+
+Add every new entry to the end of the current release's list. The current release is the first release section below;
+append the entry immediately before the next release heading, without reordering existing entries.
+
+Use this format:
+1. [Changed Area] Title of changes - @github username (Name)
+
+Always start an item with "1."; GitHub will number the rendered list automatically. Prefix the changed area with
+"A32NX/" or "A380X/" when only one aircraft is affected.
+-->
 
 ## 2024.2.0
 
@@ -66,6 +77,19 @@
 1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord) & Saschl
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
+1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
+1. [A32NX] Added ECAM control panel circuit breaker - @tracernz (Mike)
+1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (matze2346)
+1. [A32NX/FMS] Fixed an issue where the hold page would sometimes bug when creating a hold - @tracernz (Mike)
+1. [A380X/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
+1. [A380X/FG] Add Flight Guidance part to the PRIMs - @lukecologne (luke)
+1. [A380X/FG] Add new A380 specific modes: OP CLB armed, RWY armed ALT CRZ armed - @lukecologne (luke)
+1. [A380X/FG] Add ALT Button (push to level off) functionality - @lukecologne (luke)
+1. [A380X/PFD] FPV/VV is now small while the FDs are active - @lukecologne (luke)
+1. [A380X/PFD] FDs in TRK/FPA mode are now also displayed in crossed bars style instead of FPD - @lukecologne (luke)
+1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
+1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
+1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
 1. [A32NX/FLIGHT MODEL] Reduce touchdown rate of descent for autoland - @donstim (donbikes)
 
 ## 2024.1.0

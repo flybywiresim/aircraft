@@ -6,18 +6,12 @@
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { WaypointArea } from '@flybywiresim/fbw-sdk';
+import { TurnDirection, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-
-const TurnDirection = Object.freeze({
-  Unknown: 'U',
-  Left: 'L',
-  Right: 'R',
-  Either: 'E',
-});
+import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
 const HoldType = Object.freeze({
   Computed: 0,
@@ -44,8 +38,8 @@ export class CDUHoldAtPage {
         ? waypoint.definition.altitude1
         : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
-      let defaultHold;
-      let modifiedHold;
+      let defaultHold: HoldData;
+      let modifiedHold: HoldData | undefined;
       if (editingHx) {
         defaultHold = waypoint.defaultHold;
         modifiedHold = waypoint.modifiedHold;
@@ -66,7 +60,6 @@ export class CDUHoldAtPage {
           time: alt <= 14000 ? 1 : 1.5,
           type: HoldType.Computed,
         };
-        modifiedHold = {};
 
         const fix = waypoint.terminationWaypoint();
         const promises = [];
@@ -175,9 +168,9 @@ export class CDUHoldAtPage {
   static addOrEditManualHold(
     mcdu: LegacyFmsPageInterface,
     atIndex,
-    desiredHold,
-    modifiedHold,
-    defaultHold,
+    desiredHold: HoldData,
+    modifiedHold: HoldData | undefined,
+    defaultHold: HoldData,
     planIndex,
     alternate,
   ) {
@@ -375,10 +368,6 @@ export class CDUHoldAtPage {
     forPlan,
     inAlternate,
   ) {
-    if (waypointData.modifiedHold === undefined) {
-      waypointData.modifiedHold = {};
-    }
-
     waypointData.modifiedHold.type = HoldType.Modified;
 
     if (param === 'time') {
