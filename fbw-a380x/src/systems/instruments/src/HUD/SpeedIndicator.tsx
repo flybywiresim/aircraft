@@ -1384,6 +1384,16 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     this.speed,
   );
 
+  private readonly isBoundBgVisible = MappedSubject.create(
+    ([speedTargetLowerVisible, speedTargetUpperVisible, isSpeedManaged]) => {
+      //return isSpeedManaged && (speedTargetLowerVisible || speedTargetUpperVisible) ? 'visible' : 'hidden';
+      return isSpeedManaged && (speedTargetLowerVisible || speedTargetUpperVisible);
+    },
+    this.speedTargetLowerVisible,
+    this.speedTargetUpperVisible,
+    this.isSpeedManaged,
+  );
+
   private setTargetSpeedBugBg() {
     if (this.isSpeedManaged.get()) {
       this.speedTargetRef.instance.classList.add('GreenFill2');
@@ -1426,17 +1436,16 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       inRange = true;
     }
 
-    if (inRange || this.fwcFlighPhase.get() == 7) {
-      this.BoundBgRef.instance.style.visibility = 'hidden';
+    if (inRange) {
+      this.BoundBgRef.instance.setAttribute('d', 'm70.5 348.5 h45v 0 h-45z');
     } else {
       if (this.isSpeedManaged.get()) {
-        this.BoundBgRef.instance.style.visibility = 'visible';
+        this.BoundBgRef.instance.setAttribute('d', 'm70.5 348.5 h45v 27 h-45z');
         this.upperBoundRef.instance.classList.add('InverseGreen');
         this.upperBoundRef.instance.classList.remove('Green');
         this.lowerBoundRef.instance.classList.add('InverseGreen');
         this.lowerBoundRef.instance.classList.remove('Green');
       } else {
-        this.BoundBgRef.instance.style.visibility = 'hidden';
         this.upperBoundRef.instance.classList.remove('InverseGreen');
         this.upperBoundRef.instance.classList.add('Green');
         this.lowerBoundRef.instance.classList.remove('InverseGreen');
@@ -1452,6 +1461,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    this.isBoundBgVisible.sub(this.handleLowerUpperBound.bind(this), true);
     this.speed.sub(this.handleLowerUpperBound.bind(this), true);
     this.cWndMode.sub(this.handleCrosswinMode.bind(this), true);
   }
@@ -1459,14 +1469,23 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   render(): VNode {
     return (
       <>
-        <path ref={this.BoundBgRef} id="SpeedTargetBackground" class="GreenFill" d="m70.5 348.5 h45v27h-45z"></path>
+        <path
+          ref={this.BoundBgRef}
+          id="SpeedTargetBackground"
+          d="m70.5 348.5 h45v27h-45z"
+          class={{
+            GreenFill: this.isBoundBgVisible,
+          }}
+          visible={this.isBoundBgVisible.map((v) => (v ? 'visible' : 'hidden'))}
+        />
         <text
           ref={this.upperBoundRef}
           id="SelectedSpeedUpperText"
           class={{
             FontSmallest: true,
             MiddleAlign: true,
-            Green: true,
+            Green: this.isSpeedManaged.map(SubscribableMapFunctions.not()),
+            InverseGreen: this.isSpeedManaged,
             HiddenElement: this.speedTargetUpperVisible.map(SubscribableMapFunctions.not()),
           }}
           x="94"
@@ -1480,7 +1499,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           class={{
             FontSmallest: true,
             MiddleAlign: true,
-            Green: true,
+            Green: this.isSpeedManaged.map(SubscribableMapFunctions.not()),
+            InverseGreen: this.isSpeedManaged,
             HiddenElement: this.speedTargetLowerVisible.map(SubscribableMapFunctions.not()),
           }}
           x="94"
