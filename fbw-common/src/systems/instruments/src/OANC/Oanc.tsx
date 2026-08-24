@@ -25,6 +25,7 @@ import {
   AmdbFeatureTypeStrings,
   AmdbProjection,
   AmdbProperties,
+  AmdbResponse,
   Arinc429LocalVarConsumerSubject,
   EfisNdMode,
   EfisSide,
@@ -215,6 +216,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   private readonly labelManager = new OancLabelManager<T>(this);
 
   private readonly positionComputer = new OancPositionComputer<T>(this);
+
+  private opId = 0;
 
   public dataLoading = false;
 
@@ -612,6 +615,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   public unloadAirportMap(performanceModeUnload: boolean = false) {
+    this.opId++;
+
     if (!performanceModeUnload) {
       this.btvUtils.clearSelection();
     }
@@ -637,6 +642,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.airportLoading.set(true);
 
     this.unloadAirportMap(performanceModeUnload);
+
+    const opId = this.opId;
 
     if (!icao) {
       this.dataLoading = false;
@@ -670,13 +677,29 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     includeLayers.push(FeatureTypeString.PaintedCenterline);
     includeLayers.push(FeatureTypeString.RunwayThreshold);
 
-    const data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
-    const wgs84ArpDat = await this.amdbClient.getAirportData(
-      icao,
-      [FeatureTypeString.AerodromeReferencePoint],
-      undefined,
-      AmdbProjection.Epsg4326,
-    );
+    let data!: AmdbResponse;
+    let wgs84ArpDat!: AmdbResponse;
+    try {
+      data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
+      wgs84ArpDat = await this.amdbClient.getAirportData(
+        icao,
+        [FeatureTypeString.AerodromeReferencePoint],
+        undefined,
+        AmdbProjection.Epsg4326,
+      );
+    } catch (e) {
+      console.error(`[OANC](loadAirportMap) Failed to fetch airport data for ${icao}: ${e}`);
+      if (opId === this.opId) {
+        this.dataLoading = false;
+        this.airportLoading.set(false);
+      }
+      return;
+    }
+
+    if (opId !== this.opId) {
+      // A newer load or unload superseded this one, discard the result
+      return;
+    }
 
     const features = Object.values(data).reduce((acc, it) => {
       const features = it.features.map((f) => {
@@ -707,6 +730,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     if (!wgs84ReferencePoint) {
       console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point not found');
+      this.dataLoading = false;
+      this.airportLoading.set(false);
       return;
     }
 
@@ -718,6 +743,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       console.error(
         '[OANC](loadAirportMap) Invalid airport data - aerodrome reference point does not contain lat/long/scale custom properties',
       );
+      this.dataLoading = false;
+      this.airportLoading.set(false);
       return;
     }
     this.arpCoordinates.set({ lat: refPointLat, long: refPointLong });
