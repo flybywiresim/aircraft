@@ -386,6 +386,10 @@ class Row2 extends DisplayComponent<{
 class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscribable<A1A2Messages> }> {
   private decMode = 0;
 
+  private autoBrakeActive = false;
+
+  private autoBrakeMode = 0;
+
   private text = Subject.create('');
 
   private className = Subject.create('FontMediumSmaller MiddleAlign Green');
@@ -393,6 +397,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
   private modeArmed = FSComponent.createRef<SVGPathElement>();
+
   private handleDecMode() {
     if (this.text.get() === '') {
       this.modeArmed.instance.setAttribute('visibility', 'hidden');
@@ -465,6 +470,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
       .on('autoBrakeActive')
       .whenChanged()
       .handle((am) => {
+        this.autoBrakeActive = am;
         if (am) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
           this.modeArmed.instance.setAttribute('visibility', 'hidden');
@@ -476,11 +482,18 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
     this.props.A1A2CellMessage.sub((message) => {
       // ATHR mode overrides BRK LO and MED memo
       if (message > A1A2Messages.NONE && message <= A1A2Messages.MAN_THR) {
-        this.modeArmed.instance.setAttribute('visibility', 'hidden');
         this.autoBrkRef.instance.style.visibility = 'hidden';
       } else {
         if (this.decMode !== 2) {
-          this.modeArmed.instance.setAttribute('visibility', 'visible');
+          if (this.autoBrakeActive) {
+            this.modeArmed.instance.setAttribute('visibility', 'hidden');
+          } else {
+            if (this.autoBrakeMode >= 1 && this.autoBrakeMode <= 5) {
+              this.modeArmed.instance.setAttribute('visibility', 'visible');
+            } else {
+              this.modeArmed.instance.setAttribute('visibility', 'hidden');
+            }
+          }
           this.autoBrkRef.instance.style.visibility = 'visible';
         } else {
           this.modeArmed.instance.setAttribute('visibility', 'hidden');
