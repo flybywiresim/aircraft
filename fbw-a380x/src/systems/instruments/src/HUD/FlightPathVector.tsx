@@ -447,41 +447,38 @@ class DeltaSpeed extends DisplayComponent<{ bus: EventBus }> {
     return hudMode === 0 ? true : false;
   }, this.hudMode);
 
+  private setDeltaSpeed() {
+    const deltaSpeed = this.speed.get().value - this.pfdTargetSpeed.get().value;
+    const sign = Math.sign(deltaSpeed);
+    const deltaSpeedDraw = Math.abs(deltaSpeed) >= 15 ? sign * 15 : deltaSpeed;
+
+    if (Math.abs(deltaSpeed) < 15) {
+      this.speedRefs[0].instance.setAttribute('d', `m 596,512 v ${-deltaSpeedDraw * 5} h 9 v ${deltaSpeedDraw * 5}`);
+
+      for (let i = 1; i < 8; i++) {
+        i * 2 < Math.abs(deltaSpeed)
+          ? (this.speedRefs[i].instance.style.display = 'block')
+          : (this.speedRefs[i].instance.style.display = 'none');
+
+        i === 5
+          ? this.speedRefs[i].instance.setAttribute('d', `m 596 ${512 - i * 10 * sign} h 9`)
+          : this.speedRefs[i].instance.setAttribute('d', `m 599.5 ${512 - i * 10 * sign} h 2`);
+      }
+    } else {
+      this.speedRefs[0].instance.setAttribute('d', ``);
+      for (let i = 1; i < 8; i++) {
+        this.speedRefs[i].instance.style.display = 'block';
+        this.speedRefs[i].instance.setAttribute('d', `m 596 ${512 - i * 10 * sign} h 9`);
+      }
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
     this.subscriptions.push(this.fmgcFlightPhase, this.hudMode);
 
-    this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
-  }
-
-  private onFrameUpdate(_realTime: number): void {
-    if (this.needsUpdate === true) {
-      this.needsUpdate = false;
-      const deltaSpeed = this.speed.get().value - this.pfdTargetSpeed.get().value;
-      const sign = Math.sign(deltaSpeed);
-      const deltaSpeedDraw = Math.abs(deltaSpeed) >= 15 ? sign * 15 : deltaSpeed;
-
-      if (Math.abs(deltaSpeed) < 15) {
-        this.speedRefs[0].instance.setAttribute('d', `m 596,512 v ${-deltaSpeedDraw * 5} h 9 v ${deltaSpeedDraw * 5}`);
-
-        for (let i = 1; i < 8; i++) {
-          i * 2 < Math.abs(deltaSpeed)
-            ? (this.speedRefs[i].instance.style.display = 'block')
-            : (this.speedRefs[i].instance.style.display = 'none');
-
-          i === 5
-            ? this.speedRefs[i].instance.setAttribute('d', `m 596 ${512 - i * 10 * sign} h 9`)
-            : this.speedRefs[i].instance.setAttribute('d', `m 599.5 ${512 - i * 10 * sign} h 2`);
-        }
-      } else {
-        this.speedRefs[0].instance.setAttribute('d', ``);
-        for (let i = 1; i < 8; i++) {
-          this.speedRefs[i].instance.style.display = 'block';
-          this.speedRefs[i].instance.setAttribute('d', `m 596 ${512 - i * 10 * sign} h 9`);
-        }
-      }
-    }
+    this.speed.sub(this.setDeltaSpeed.bind(this));
   }
 
   destroy(): void {
