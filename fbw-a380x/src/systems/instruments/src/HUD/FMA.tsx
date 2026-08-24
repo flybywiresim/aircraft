@@ -1726,16 +1726,12 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     this.D1D2Message.sub(() => {
       this.displayModeChangedPath();
       this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
-
-      if (this.prevDecMode !== this.decMode.get()) {
-        if (this.decMode.get() === 2) {
-          this.cellTextRef.instance.style.visibility = 'hidden';
-          this.cellTextRef2.instance.style.visibility = 'hidden';
-        } else {
-          this.cellTextRef.instance.style.visibility = 'visible';
-          this.cellTextRef2.instance.style.visibility = 'visible';
-        }
-        this.prevDecMode = this.decMode.get();
+    });
+    this.decMode.sub((v) => {
+      if (v != 2) {
+        this.handleDeclutterMode(false, v, this.cellTextRef, this.cellTextRef2);
+      } else {
+        this.handleDeclutterMode(true, v, this.cellTextRef, this.cellTextRef2);
       }
     });
   }
