@@ -356,7 +356,7 @@ export class CDUWindPage {
                 return;
               }
 
-              await mcdu.flightPlanService.editCruiseWindEntry(nextSuitableLegIndex, wind.altitude, entry, forPlan);
+              await mcdu.flightPlanService.editCruiseWindEntry(nextSuitableLegIndex, i, entry, forPlan);
             }
 
             CDUWindPage.ShowCRZPage(mcdu, forPlan, nextSuitableLegIndex);

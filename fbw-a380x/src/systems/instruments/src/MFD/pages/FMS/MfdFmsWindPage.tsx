@@ -76,6 +76,9 @@ interface WindDisplayEntry {
   speed: number | null;
   /** Only used for climb winds when inserted through history winds */
   enteredByPilot?: boolean;
+
+  /** Indicates whether the entry exists in the flight-plan */
+  entryInFp: boolean;
 }
 
 export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
@@ -174,7 +177,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   /** The entries used to feed the displayed data */
   private readonly climbWindDisplayEntries: WindDisplayEntry[] = Array.from(
     { length: FpmConfigs.A380.NUM_CLIMB_WIND_LEVELS },
-    () => ({ altitude: null, direction: null, speed: null, disabled: false, enteredByPilot: true }),
+    () => ({ altitude: null, direction: null, speed: null, disabled: false, enteredByPilot: true, entryInFp: false }),
   );
 
   private readonly transitionAltitude = Subject.create<number | null>(null);
@@ -254,6 +257,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       speed: null,
       speedOrDirectionIsPropagated: false,
       isPropagated: false,
+      entryInFp: false,
     }),
   );
 
@@ -323,7 +327,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   /** The entries used to feed the displayed data */
   private readonly descentWindDisplayEntries: WindDisplayEntry[] = Array.from(
     { length: FpmConfigs.A380.NUM_DESCENT_WIND_LEVELS },
-    () => ({ altitude: null, direction: null, speed: null, disabled: false }),
+    () => ({ altitude: null, direction: null, speed: null, disabled: false, entryInFp: false }),
   );
 
   private readonly transitionLevel = Subject.create<number | null>(null);
@@ -427,7 +431,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.updateWindDisplayedEntriesVisibility(
         this.climbWindAltitudesVisible,
         this.climbWindsSpeedDirectionVisible,
-        this.displayedClimbWindAltitudes,
+        this.climbWindDisplayEntries,
       );
     } else if (subPage === WindSubPageMenu.Cruise) {
       this.findSuitableCruiseLeg();
@@ -441,9 +445,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
           ? this.props.flightPlanInterface.propagateWindsAt(legIndex, this.WindCache, loadedFlightPlanIndex)
           : null;
       this.clearAllCruiseDisplayWindEntries();
-      if (winds !== null) {
-        for (let i = 0; i < winds.length; i++) {
-          const wind = winds[i];
+      for (let i = 0; i < this.cruiseWindDisplayEntries.length; i++) {
+        const wind = winds !== null ? winds[i] : null;
+        if (wind !== null) {
           this.cruiseWindDisplayEntries[i].altitude = wind.altitude !== undefined ? wind.altitude / 100 : null;
           this.cruiseWindDisplayEntries[i].direction =
             wind.type !== PropagationType.Backward && wind.vector.direction !== undefined
@@ -455,13 +459,16 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
               : null;
           this.cruiseWindDisplayEntries[i].speedOrDirectionIsPropagated = wind.type === PropagationType.Forward;
           this.cruiseWindDisplayEntries[i].isPropagated = wind.type !== PropagationType.Entry;
+          this.cruiseWindDisplayEntries[i].entryInFp = true;
+        } else {
+          this.cruiseWindDisplayEntries[i].entryInFp = false;
         }
       }
       this.updateCruiseWindDisplayRows();
       this.updateWindDisplayedEntriesVisibility(
         this.cruiseWindAltitudesVisible,
         this.cruiseWindSpeedDirectionVisible,
-        this.displayedCruiseWindFlightLevels,
+        this.cruiseWindDisplayEntries,
       );
     } else if (subPage === WindSubPageMenu.Descent) {
       this.transitionLevel.set(fp?.performanceData.transitionLevel.get() ?? null);
@@ -472,13 +479,11 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       );
       this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
       const hasAlternate = fp?.alternateDestinationAirport !== undefined;
-      const alternateWind = fp?.getAlternateWind();
+      const alternateWind = fp?.getAlternateWind() ?? null;
       this.alternateWindDirection.set(
-        alternateWind?.direction !== undefined ? extractWindDirectionFromVector(alternateWind) ?? null : null,
+        alternateWind !== null ? extractWindDirectionFromVector(alternateWind) ?? null : null,
       );
-      this.alternateWindSpeed.set(
-        alternateWind?.magnitude !== undefined ? extractWindSpeedFromVector(alternateWind) ?? null : null,
-      );
+      this.alternateWindSpeed.set(alternateWind !== null ? extractWindSpeedFromVector(alternateWind) ?? null : null);
       this.alternateWindDisabled.set(!hasAlternate || hasTmpy);
       this.alternateCruiseFlightLevel.set(fp?.getAlternateCruiseLevel() ?? null);
       if (fp) {
@@ -490,7 +495,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.updateWindDisplayedEntriesVisibility(
         this.descentWindAltitudesVisible,
         this.descentWindSpeedDirectionVisible,
-        this.displayedDescentWindAltitudes,
+        this.descentWindDisplayEntries,
       );
     }
     this.wasSecPreviouslyActive =
@@ -617,6 +622,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     row.altitude = null;
     row.direction = null;
     row.speed = null;
+    row.entryInFp = false;
   }
 
   // Used when there's no flightplan to insert the winds in.
@@ -633,6 +639,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     row.speed = null;
     row.isPropagated = false;
     row.speedOrDirectionIsPropagated = false;
+    row.entryInFp = false;
   }
 
   private clearAllCruiseDisplayWindEntries() {
@@ -675,9 +682,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     for (let i = 0; i < displayEntries.length; i++) {
       this.clearDisplayWindEntry(displayEntries, i);
       const windEntry = windEntries[i];
+      const row = displayEntries[i];
       if (windEntry) {
         // Copy the flightplan entry to the display entry.
-        const row = displayEntries[i];
         row.altitude = windEntry.altitude ?? null;
         row.direction =
           windEntry.vector.direction !== undefined
@@ -688,6 +695,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         row.enteredByPilot =
           (windEntry.flags & FlightPlanWindEntryFlags.InsertedFromHistory) !==
           FlightPlanWindEntryFlags.InsertedFromHistory;
+        row.entryInFp = true;
+      } else {
+        row.entryInFp = false;
       }
     }
   }
@@ -727,63 +737,46 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
 
   private onWindEntryModified(index: number, value: number | null, dataType: WindEntryData, isDescentWind = false) {
     const displayEntries = isDescentWind ? this.descentWindDisplayEntries : this.climbWindDisplayEntries;
-    const altitudesVisible = isDescentWind ? this.descentWindAltitudesVisible : this.climbWindAltitudesVisible;
-    const speedDirectionVisible = isDescentWind
-      ? this.descentWindSpeedDirectionVisible
-      : this.climbWindsSpeedDirectionVisible;
-    const displayedAltitudes = isDescentWind ? this.displayedDescentWindAltitudes : this.displayedClimbWindAltitudes;
     const displayEntry = displayEntries[index];
     const oldAltitude = displayEntry.altitude;
     const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
     const currentSpeed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
-    if (value === null && oldAltitude !== null && dataType === WindEntryData.Altitude) {
-      if (isDescentWind) {
+    const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
+    displayEntry.altitude = currentAlt;
+    displayEntry.direction = currentDir;
+    displayEntry.speed = currentSpeed;
+    if (dataType === WindEntryData.Altitude && currentAlt !== null && currentAlt !== oldAltitude) {
+      displayEntry.enteredByPilot = true;
+    }
+    const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
+    if (isDescentWind) {
+      if (displayEntry.entryInFp) {
+        this.props.fmcService.master.flightPlanInterface.editDescentWindEntry(
+          index,
+          entry,
+          this.loadedFlightPlanIndex.get(),
+        );
+      } else {
         this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
-          oldAltitude,
-          this.getWindEntryFromValues(null, currentDir, currentSpeed),
+          currentAlt ?? undefined,
+          entry,
           this.loadedFlightPlanIndex.get(),
           true,
         );
-      } else {
-        this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
-          oldAltitude,
-          this.getWindEntryFromValues(null, currentDir, currentSpeed),
+      }
+    } else {
+      if (displayEntry.entryInFp) {
+        this.props.fmcService.master.flightPlanInterface.editClimbWindEntry(
+          index,
+          entry,
           this.loadedFlightPlanIndex.get(),
         );
-      }
-      this.shiftUpDisplayedWindEntriesFromIndex(displayEntries, index);
-    } else {
-      const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
-      displayEntry.altitude = currentAlt;
-      displayEntry.direction = currentDir;
-      displayEntry.speed = currentSpeed;
-      if (dataType === WindEntryData.Altitude && currentAlt !== null && currentAlt !== oldAltitude) {
-        displayEntry.enteredByPilot = true;
-      }
-      if (currentAlt !== null) {
-        const entry = this.getWindEntryFromValues(currentAlt, currentDir, currentSpeed);
-        if (isDescentWind) {
-          this.props.fmcService.master.flightPlanInterface.setDescentWindEntry(
-            oldAltitude ?? currentAlt, // if old altitude is null, we know its a new user entry.
-            entry,
-            this.loadedFlightPlanIndex.get(),
-            true,
-          );
-        } else {
-          this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
-            oldAltitude ?? currentAlt, // if old altitude is null, we know its a new user entry.
-            entry,
-            this.loadedFlightPlanIndex.get(),
-          );
-        }
-        if (isDescentWind) {
-          this.updateDescentWindDisplayRows();
-        } else {
-          this.updateClimbWindDisplayRows();
-        }
-        if (oldAltitude === null) {
-          this.updateWindDisplayedEntriesVisibility(altitudesVisible, speedDirectionVisible, displayedAltitudes);
-        }
+      } else {
+        this.props.fmcService.master.flightPlanInterface.setClimbWindEntry(
+          currentAlt ?? undefined,
+          entry,
+          this.loadedFlightPlanIndex.get(),
+        );
       }
     }
   }
@@ -831,31 +824,25 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         displayEntry.speedOrDirectionIsPropagated = false;
       }
 
-      if (currentAlt !== null) {
-        // Cruise winds are always in FL.
-        const entry = this.getWindEntryFromValues(currentAlt * 100, currentDir, currentSpeed);
-        if (oldAltitude !== null) {
-          this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
-            selectedLegIndex,
-            oldAltitude * 100,
-            entry,
-            this.loadedFlightPlanIndex.get(),
-          );
-        } else {
-          this.props.fmcService.master.flightPlanInterface.addCruiseWindEntry(
-            selectedLegIndex,
-            entry,
-            this.loadedFlightPlanIndex.get(),
-          );
-        }
-        this.updateCruiseWindDisplayRows();
-        if (oldAltitude === null) {
-          this.updateWindDisplayedEntriesVisibility(
-            this.cruiseWindAltitudesVisible,
-            this.cruiseWindSpeedDirectionVisible,
-            this.displayedCruiseWindFlightLevels,
-          );
-        }
+      // Cruise winds are always in FL.
+      const entry = this.getWindEntryFromValues(
+        currentAlt !== null ? currentAlt * 100 : null,
+        currentDir,
+        currentSpeed,
+      );
+      if (oldAltitude !== null) {
+        this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
+          selectedLegIndex,
+          oldAltitude * 100,
+          entry,
+          this.loadedFlightPlanIndex.get(),
+        );
+      } else {
+        this.props.fmcService.master.flightPlanInterface.addCruiseWindEntry(
+          selectedLegIndex,
+          entry,
+          this.loadedFlightPlanIndex.get(),
+        );
       }
     }
   }
@@ -867,7 +854,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       const currentDir = dataType === WindEntryData.Direction ? value : this.alternateWindDirection.get();
       const currentSpeed = dataType === WindEntryData.Speed ? value : this.alternateWindSpeed.get();
       this.props.fmcService.master.flightPlanInterface.setAlternateWind(
-        createVectorFromMagnitudeAndDirection(currentDir ?? undefined, currentSpeed ?? undefined),
+        createVectorFromMagnitudeAndDirection(currentSpeed ?? undefined, currentDir ?? undefined),
         this.loadedFlightPlanIndex.get(),
       );
     }
@@ -880,11 +867,17 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
   private updateWindDisplayedEntriesVisibility(
     altitudeVisible: Subject<boolean>[],
     speedDirectionVisible: Subject<boolean>[],
-    altitudes: Subject<number | null>[],
+    entries: WindDisplayEntry[],
   ) {
     for (let i = 0; i < altitudeVisible.length; i++) {
-      altitudeVisible[i].set(i === 0 || altitudes[i - 1].get() !== null);
-      speedDirectionVisible[i].set(i === 0 || altitudes[i].get() !== null);
+      const previousEntry = entries[i - 1];
+      const currentEntry = entries[i];
+      altitudeVisible[i].set(
+        i === 0 || previousEntry.altitude !== null || (previousEntry.altitude !== null && previousEntry.entryInFp),
+      );
+      speedDirectionVisible[i].set(
+        i === 0 || currentEntry.altitude !== null || (currentEntry.altitude === null && currentEntry.entryInFp),
+      );
     }
   }
 

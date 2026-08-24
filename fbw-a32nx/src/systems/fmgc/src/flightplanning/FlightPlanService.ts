@@ -65,6 +65,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.syncClientID,
       master,
       config.DRAFT_ON_WIND_EDIT,
+      config.NUM_CLIMB_WIND_LEVELS,
+      config.NUM_CRUISE_WIND_LEVELS,
+      config.NUM_DESCENT_WIND_LEVELS,
     );
     this.bus
       .getSubscriber<FmsWindEvents>()
@@ -78,7 +81,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
           plan.setPerformanceData('approachWindDirection', null);
           plan.setPerformanceData('approachWindMagnitude', null);
           plan.setPerformanceData('isApproachWindPilotEntered', false);
-          plan.setDescentWindEntry(0, null, this.config.NUM_DESCENT_WIND_LEVELS, false);
+          plan.setDescentWindEntry(0, null, true, false);
         }
       });
 
@@ -106,7 +109,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
             flags: 0,
             altitude: 0,
           };
-          plan.setDescentWindEntry(0, windEntry, this.config.NUM_DESCENT_WIND_LEVELS, false);
+          plan.setDescentWindEntry(0, windEntry, true, false);
         }
       });
   }
@@ -388,7 +391,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       const active = this.flightPlanManager.has(FlightPlanIndex.Active)
         ? this.flightPlanManager.get(FlightPlanIndex.Active)
         : null;
-      if (active && active.hasDraftWindEntries()) {
+      if (this.config.DRAFT_ON_WIND_EDIT && active && active.hasDraftWindEntries()) {
         active.insertDraftWindEntries();
         this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
       }
@@ -1002,12 +1005,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex = FlightPlanIndex.Active) {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.propagateWindsAt(atIndex, result, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.propagateWindsAt(atIndex, result);
   }
 
   addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.addCruiseWindEntry(atIndex, entry, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.addCruiseWindEntry(atIndex, entry);
   }
 
   deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
@@ -1015,19 +1018,19 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.deleteCruiseWindEntry(atIndex, altitude);
   }
 
-  editCruiseWindEntry(
-    atIndex: number,
-    altitude: number | undefined,
-    newEntry: WindEntry,
-    planIndex: number,
-  ): Promise<void> {
+  editCruiseWindEntry(atIndex: number, entryIndex: number, newEntry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.editCruiseWindEntry(atIndex, entryIndex, newEntry);
   }
 
   setClimbWindEntry(altitude: number | undefined, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
+    return plan.setClimbWindEntry(altitude, entry);
+  }
+
+  editClimbWindEntry(index: number, entry: FlightPlanWindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.editClimbWindEntry(index, entry);
   }
 
   setDescentWindEntry(
@@ -1036,7 +1039,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex: number,
   ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS);
+    return plan.setDescentWindEntry(altitude, entry);
+  }
+
+  editDescentWindEntry(index: number, entry: FlightPlanWindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.editDescentWindEntry(index, entry);
   }
 
   async deleteAllClimbWindEntries() {
@@ -1072,11 +1080,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   insertWindUplink(planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
 
-    return plan.insertWindUplink(
-      this.config.NUM_CLIMB_WIND_LEVELS,
-      this.config.NUM_CRUISE_WIND_LEVELS,
-      this.config.NUM_DESCENT_WIND_LEVELS,
-    );
+    return plan.insertWindUplink();
   }
 
   getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Readonly<WindEntry>[] {

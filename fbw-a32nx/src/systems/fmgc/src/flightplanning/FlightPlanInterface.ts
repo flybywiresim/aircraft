@@ -461,15 +461,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void>;
 
   /**
-   * Edits an existing cruise wind entry at the specified leg. The entry to edit is determined by the altitude rounded to
-   * the nearest 100 feet.
+   * Edits an existing cruise wind entry at the specified leg.
    * Writes an error the console and does nothing if no entry with the specified altitude exists.
    * @param atIndex the index of the leg to edit the entry at
-   * @param altitude the altitude of the entry to edit
+   * @param entryIndex the index of the entry to edit
    * @param newEntry the new entry to set
    * @param planIndex which flight plan index to edit the entry in
    */
-  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void>;
+  editCruiseWindEntry(atIndex: number, entryIndex: number, newEntry: WindEntry, planIndex: number): Promise<void>;
 
   /**
    * Sets the climb wind entry at the specified altitude rounded to the nearest 100 feet.
@@ -478,7 +477,15 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
    */
-  setClimbWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void>;
+  setClimbWindEntry(altitude: number | undefined, entry: WindEntry | null, planIndex: number): Promise<void>;
+
+  /**
+   * Edits a climb wind entry at the specified index
+   * @param index the index of the entry to edit
+   * @param entry the values to set in the entry
+   * @param planIndex which flight plan index to edit the entry in
+   */
+  editClimbWindEntry(index: number, entry: WindEntry, planIndex: number): Promise<void>;
 
   /**
    * Sets the descent wind entry at the specified altitude rounded to the nearest 100 feet.
@@ -489,11 +496,19 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param shouldUpdateTwrWind whether to copy the wind to the perf approach page if the altitude is the destination altitude
    */
   setDescentWindEntry(
-    altitude: number,
+    altitude: number | undefined,
     entry: WindEntry | null,
     planIndex: number,
     shouldUpdateTwrWind: boolean,
   ): Promise<void>;
+
+  /**
+   * Edits a descent wind entry at the specified index
+   * @param index the index of the entry to edit
+   * @param entry the values to set in the entry
+   * @param planIndex which flight plan index to edit the entry in
+   */
+  editDescentWindEntry(index: number, entry: WindEntry, planIndex: number): Promise<void>;
 
   /**
    * Deletes all climb wind entries on the active flight plan and all secondary flight plans copied from the active plan
