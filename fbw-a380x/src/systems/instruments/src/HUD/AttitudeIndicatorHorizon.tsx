@@ -30,7 +30,6 @@ import { ONE_DEG, FIVE_DEG, PitchscaleMode } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HeadingOfftape } from './HeadingIndicator';
 import { SyntheticRunway } from './SyntheticRunway';
-import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
@@ -529,24 +528,83 @@ class PitchScale extends DisplayComponent<{
   private readonly gsCapt = this.primFgDiscreteWord3.map((word) => word.bitValueOr(21, true));
   private readonly gsTrk = this.primFgDiscreteWord3.map((word) => word.bitValueOr(22, true));
   private readonly isFlareMode = this.primFgDiscreteWord3.map((word) => word.bitValueOr(24, true));
+  private readonly isVsModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(17, true));
+  private readonly isFpaModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(18, true));
+  private readonly isAppDesModeActive = this.primFgDiscreteWord3.map((word) => word.bitValueOr(23, true));
 
+  private readonly selectedVs = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_vertical_speed'));
   private readonly selectedFpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_selected_flight_path_angle'));
 
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
   private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
 
-  private readonly threeDegLineVis = MappedSubject.create(
-    ([lsButtonPressed, decMode, flightPhase, isFlareMode, hudMode]) => {
+  private readonly isVsOrFpaActive = MappedSubject.create(
+    ([isVsModeActive, isFpaModeActive]) => {
+      return isVsModeActive || isFpaModeActive;
+    },
+    this.isVsModeActive,
+    this.isFpaModeActive,
+  );
+  private readonly activeVsFpaAngle = MappedSubject.create(
+    ([selectedFpa, isVsModeActive, isFpaModeActive]) => {
+      if (isVsModeActive) {
+        return -3;
+      } else if (isFpaModeActive) {
+        return selectedFpa.value;
+      } else {
+        return -3;
+      }
+    },
+    this.selectedFpa,
+    this.isVsModeActive,
+    this.isFpaModeActive,
+  );
+
+  private readonly isThreeDegLineDashed = MappedSubject.create(
+    ([isVsOrFpaActive, lsButtonPressed]) => {
       if (lsButtonPressed) {
-        if (hudMode === HudMode.NORMAL) {
-          if (flightPhase === FmgcFlightPhase.Approach) {
-            return isFlareMode ? 'none' : 'block';
+        if (isVsOrFpaActive) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    },
+    this.isVsOrFpaActive,
+    this.lsButtonPressed,
+  );
+
+  private readonly threeDegLineVis = MappedSubject.create(
+    ([
+      lsButtonPressed,
+      decMode,
+      flightPhase,
+      isFlareMode,
+      hudMode,
+      isVsModeActive,
+      isFpaModeActive,
+      isAppDesModeActive,
+    ]) => {
+      if (hudMode === HudMode.NORMAL) {
+        if (flightPhase === FmgcFlightPhase.Approach) {
+          if (lsButtonPressed) {
+            return isFlareMode || decMode === 2 ? 'none' : 'block';
           } else {
-            return decMode === 2 ? 'none' : 'block';
+            if (isVsModeActive || isFpaModeActive || isAppDesModeActive) {
+              return isFlareMode || decMode === 2 ? 'none' : 'block';
+            } else {
+              return 'none';
+            }
           }
         } else {
-          return 'none';
+          if (isVsModeActive || isFpaModeActive) {
+            return isFlareMode || decMode === 2 ? 'none' : 'block';
+          } else {
+            return 'none';
+          }
         }
       } else {
         return 'none';
@@ -557,6 +615,9 @@ class PitchScale extends DisplayComponent<{
     this.flightPhase,
     this.isFlareMode,
     this.hudMode,
+    this.isVsModeActive,
+    this.isFpaModeActive,
+    this.isAppDesModeActive,
   );
 
   private setPitchScale() {
@@ -635,10 +696,14 @@ class PitchScale extends DisplayComponent<{
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
 
-    const fpaTxt =
-      this.selectedFpa.get().value % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
+    const fpaTxt = `${this.selectedFpa.get().value.toFixed(1)}`;
 
-    if ((this.gsTrk.get() || this.gsCapt.get() || this.landModeActive.get() || this.gsArmed.get()) && lsSlope !== 0) {
+    if (
+      (this.gsTrk.get() || this.gsCapt.get() || this.landModeActive.get() || this.gsArmed.get()) &&
+      lsSlope !== 0 &&
+      this.lsButtonPressed.get() &&
+      !this.isFpaModeActive.get()
+    ) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (lsSlope / 5) * FIVE_DEG} h -80  M 713,${512 + (lsSlope / 5) * FIVE_DEG} h 80  `,
@@ -647,6 +712,9 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtRef.instance.textContent = `-${lsSlope.toFixed(1)}°`;
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
+      this.threeDegTxtRef.instance.classList.add('FontTinyer');
+      this.threeDegTxtRef.instance.classList.remove('FontTiny');
+      this.threeDegTxtRef.instance.classList.remove('Fill');
       this.threeDegTxtBgRef.instance.style.display = `block`;
       this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG}`);
@@ -654,34 +722,36 @@ class PitchScale extends DisplayComponent<{
         'd',
         `m 800 ${512 + (lsSlope / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `,
       );
-    } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
+    } else if (this.isVsOrFpaActive.get()) {
       this.threeDegPath.instance.setAttribute(
         'd',
-        `M 565,${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG} h 80  `,
+        `M 565,${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG} h -80  M 713,${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG} h 80  `,
       );
 
-      this.threeDegTxtRef.instance.setAttribute(
-        'y',
-        `${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG + 6.5}`,
-      );
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG + 6.5}`);
       this.threeDegTxtRef.instance.textContent = fpaTxt;
       this.threeDegTxtRef.instance.classList.remove('InverseGreen');
       this.threeDegTxtRef.instance.classList.add('Green');
+      this.threeDegTxtRef.instance.classList.add('Fill');
+      this.threeDegTxtRef.instance.classList.remove('FontTinyer');
+      this.threeDegTxtRef.instance.classList.add('FontTiny');
       this.threeDegTxtBgRef.instance.style.display = `none`;
       this.threeDegTxtBgRef.instance.classList.remove('GreenFill3');
-      this.threeDegTxtBgRef.instance.setAttribute(
-        'y',
-        `${512 + (Math.abs(this.selectedFpa.get().value) / 5) * FIVE_DEG}`,
-      );
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute('d', ``);
     } else {
       this.threeDegPath.instance.setAttribute(
         'd',
-        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+        `M 565,${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG} h -80  M 713,${512 - (this.activeVsFpaAngle.get() / 5) * FIVE_DEG} h 80  `,
       );
       this.threeDegTxtBgRef.instance.style.display = `none`;
     }
+
+    this.isThreeDegLineDashed.get()
+      ? this.threeDegPath.instance.setAttribute('stroke-dasharray', '10 7')
+      : this.threeDegPath.instance.setAttribute('stroke-dasharray', '');
   }
+
   render(): VNode {
     const result = [] as SVGTextElement[];
 
@@ -720,7 +790,7 @@ class PitchScale extends DisplayComponent<{
     // //3° line
     result.push(
       <g id="ThreeDegreeLine" ref={this.threeDegLine} display={this.threeDegLineVis}>
-        <path ref={this.threeDegPath} d="" />
+        <path ref={this.threeDegPath} d="" stroke-dasharray="" />
         <g id="SlopeTxt">
           <path ref={this.threeDegTxtBgRef} d="m835 348.5 h45v27h-45z"></path>
           <text x="822.5" ref={this.threeDegTxtRef} class="FontTinyer MiddleAlign InverseGreen"></text>
