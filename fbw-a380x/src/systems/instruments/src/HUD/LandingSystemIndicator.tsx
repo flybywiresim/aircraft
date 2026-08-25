@@ -405,6 +405,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents & HUDSimvars>();
   private lagFilter = new LagFilter(1.5);
 
   private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -418,6 +419,10 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   private hasGlideSlope = false;
 
   private LSGsRef = new NodeReference<SVGGElement>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsButtonPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
 
   private handleGlideSlopeError(glideSlopeError: number): void {
     const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
@@ -457,6 +462,13 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
+
+    this.lsButtonPressed.sub(this.MoveGlideSlopeGroup.bind(this), true);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
