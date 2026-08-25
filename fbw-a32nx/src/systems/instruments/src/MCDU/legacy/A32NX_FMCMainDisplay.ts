@@ -3313,7 +3313,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         const fcuFl = Math.floor(Math.max(0, this.fcuSelectedAltitude.get().valueOr(0)) / 100);
         if (fl < fcuFl) {
           flightLevelToInsert = fcuFl;
-          newCrzAltMessage = phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach;
+          newCrzAltMessage =
+            phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach;
         } else {
           flightLevelToInsert = fl;
         }
