@@ -386,28 +386,19 @@ class Row2 extends DisplayComponent<{
 class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscribable<A1A2Messages> }> {
   private decMode = 0;
 
-  private autoBrakeActive = false;
-
-  private autoBrakeMode = 0;
-
   private text = Subject.create('');
 
   private className = Subject.create('FontMediumSmaller MiddleAlign Green');
 
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
-  private modeArmed = FSComponent.createRef<SVGPathElement>();
-
   private handleDecMode() {
     if (this.text.get() === '') {
-      this.modeArmed.instance.setAttribute('visibility', 'hidden');
       this.autoBrkRef.instance.style.visibility = 'hidden';
     } else {
       if (this.decMode !== 2) {
-        this.modeArmed.instance.setAttribute('visibility', 'visible');
         this.autoBrkRef.instance.style.visibility = 'visible';
       } else {
-        this.modeArmed.instance.setAttribute('visibility', 'hidden');
         this.autoBrkRef.instance.style.visibility = 'hidden';
       }
     }
@@ -452,30 +443,21 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
             this.text.set('');
             break;
         }
-
-        if (this.text.get() === '') {
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
-        } else {
-          if (this.decMode !== 2) {
-            this.modeArmed.instance.setAttribute('visibility', 'visible');
-            this.autoBrkRef.instance.style.visibility = 'visible';
-          } else {
-            this.modeArmed.instance.setAttribute('visibility', 'hidden');
-            this.autoBrkRef.instance.style.visibility = 'hidden';
-          }
-        }
+        this.handleDecMode();
       });
 
     sub
       .on('autoBrakeActive')
       .whenChanged()
       .handle((am) => {
-        this.autoBrakeActive = am;
         if (am) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
         } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
+          if (this.decMode !== 2) {
+            this.autoBrkRef.instance.style.visibility = 'visible';
+          } else {
+            this.autoBrkRef.instance.style.visibility = 'hidden';
+          }
         }
       });
 
@@ -485,18 +467,8 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
         this.autoBrkRef.instance.style.visibility = 'hidden';
       } else {
         if (this.decMode !== 2) {
-          if (this.autoBrakeActive) {
-            this.modeArmed.instance.setAttribute('visibility', 'hidden');
-          } else {
-            if (this.autoBrakeMode >= 1 && this.autoBrakeMode <= 5) {
-              this.modeArmed.instance.setAttribute('visibility', 'visible');
-            } else {
-              this.modeArmed.instance.setAttribute('visibility', 'hidden');
-            }
-          }
           this.autoBrkRef.instance.style.visibility = 'visible';
         } else {
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
           this.autoBrkRef.instance.style.visibility = 'hidden';
         }
       }
@@ -506,13 +478,6 @@ class A2Cell extends DisplayComponent<{ bus: EventBus; A1A2CellMessage: Subscrib
   render(): VNode {
     return (
       <g id="A2">
-        <path
-          ref={this.modeArmed}
-          visibility="hidden"
-          class="NormalStroke Green"
-          d="m263.9 39.2 h 160"
-          stroke-dasharray="10 8"
-        />
         <text ref={this.autoBrkRef} class={this.className} x="341" y="71.6" style="white-space: pre">
           {this.text}
         </text>
@@ -572,15 +537,11 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
 
   private flexTemp = ConsumerSubject.create(this.sub.on('flexTemp'), 0);
 
-  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
+  private autoBrakeMode = 0;
 
-  private prevAutoBrkMode = 0;
+  private autoBrakeActive = false;
 
-  private readonly isAutoBrkChange = MappedSubject.create(([autoBrakeMode]) => {
-    const res = autoBrakeMode === this.prevAutoBrkMode ? true : false;
-    this.prevAutoBrkMode = autoBrakeMode;
-    return res;
-  }, this.autoBrakeMode);
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
 
   constructor(props: A1A2CellProps) {
     super(props, 10);
@@ -731,6 +692,26 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
     this.cellRef.instance.innerHTML = text;
   }
 
+  private HandleSeparator() {
+    if (this.autoBrakeMode === 0) {
+      this.modeArmed.instance.setAttribute('visibility', 'hidden');
+    } else {
+      if (this.decMode !== 2) {
+        if (this.autoBrakeActive) {
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
+        } else {
+          if (this.autoBrakeMode >= 1 && this.autoBrakeMode <= 5) {
+            this.modeArmed.instance.setAttribute('visibility', 'visible');
+          } else {
+            this.modeArmed.instance.setAttribute('visibility', 'hidden');
+          }
+        }
+      } else {
+        this.modeArmed.instance.setAttribute('visibility', 'hidden');
+      }
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -743,10 +724,43 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
         this.decMode = mode;
         this.isShown = false;
         this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        this.HandleSeparator();
+      });
+    sub
+      .on('autoBrakeMode')
+      .whenChanged()
+      .handle((am) => {
+        this.autoBrakeMode = am;
+        this.HandleSeparator();
       });
 
-    this.props.A1A2CellMessage.sub(() => {
+    sub
+      .on('autoBrakeActive')
+      .whenChanged()
+      .handle((am) => {
+        this.autoBrakeActive = am;
+        if (am) {
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
+        }
+      });
+    this.props.A1A2CellMessage.sub((message) => {
       this.setText();
+
+      if (message >= A1A2Messages.SPEED && message <= A1A2Messages.TOGA_LK) {
+        if (this.decMode !== 2) {
+          if (this.autoBrakeActive) {
+            this.modeArmed.instance.setAttribute('visibility', 'hidden');
+          } else {
+            if (this.autoBrakeMode >= 1 && this.autoBrakeMode <= 5) {
+              this.modeArmed.instance.setAttribute('visibility', 'visible');
+            } else {
+              this.modeArmed.instance.setAttribute('visibility', 'hidden');
+            }
+          }
+        } else {
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
+        }
+      }
     }, true);
 
     this.flexTemp.sub(() => {
@@ -756,6 +770,13 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
   render(): VNode {
     return (
       <>
+        <path
+          ref={this.modeArmed}
+          visibility="hidden"
+          class="NormalStroke Green"
+          d="m263.9 39.2 h 160"
+          stroke-dasharray="10 8"
+        />
         <path
           ref={this.modeChangedPathRef}
           visibility="hidden"
