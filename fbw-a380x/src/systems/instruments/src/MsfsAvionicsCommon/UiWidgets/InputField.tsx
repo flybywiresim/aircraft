@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   MutableSubscribable,
   Subject,
   Subscribable,
@@ -390,24 +391,25 @@ export class InputField<
     this.isValidating.set(true);
     let newValue = null;
     let updateWasSuccessful = true;
+    const oldValue = this.readValue.get();
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
-      if (newValue === null && !this.canBeCleared.get() && this.readValue.get() != null) {
+      if (newValue === null && !this.canBeCleared.get() && oldValue != null) {
         throw new FmsError(FmsErrorType.NotAllowed);
       }
     } catch (msg: unknown) {
       updateWasSuccessful = false;
       if (msg instanceof FmsError && this.props.errorHandler) {
         this.props.errorHandler(msg);
-        newValue = this.readValue.get();
+        newValue = oldValue;
       }
     }
 
-    if (updateWasSuccessful) {
+    if (updateWasSuccessful && oldValue !== newValue) {
       const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
       if (this.props.dataHandlerDuringValidation) {
         try {
-          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
+          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, oldValue);
           const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
           if (validation === false) {
@@ -420,26 +422,23 @@ export class InputField<
       } else {
         await artificialWaitingTime;
       }
-
-      if (updateWasSuccessful) {
-        if (this.props.onModified) {
-          try {
-            await this.props.onModified(newValue);
-          } catch (msg: unknown) {
-            if (msg instanceof FmsError && this.props.errorHandler) {
-              this.props.errorHandler(msg);
-            }
-            updateWasSuccessful = false;
+      if (this.props.onModified) {
+        try {
+          await this.props.onModified(newValue);
+        } catch (msg: unknown) {
+          if (msg instanceof FmsError && this.props.errorHandler) {
+            this.props.errorHandler(msg);
           }
-        } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
-          // If we have `value` in props, we know U extends T
-
-          this.props.value.set(newValue as T);
-        } else if (!this.props.dataHandlerDuringValidation) {
-          console.error(
-            'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
-          );
+          updateWasSuccessful = false;
         }
+      } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
+        // If we have `value` in props, we know U extends T
+
+        this.props.value.set(newValue as T);
+      } else if (!this.props.dataHandlerDuringValidation) {
+        console.error(
+          'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
+        );
       }
     }
 
@@ -562,13 +561,17 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.tmpyActive.sub((v) => {
-        if (v) {
-          this.textInputRef.instance.classList.add('tmpy');
-        } else {
-          this.textInputRef.instance.classList.remove('tmpy');
-        }
-      }, true),
+      MappedSubject.create(
+        ([tmpy, focused]) => {
+          if (tmpy && !focused) {
+            this.textInputRef.instance.classList.add('tmpy');
+          } else {
+            this.textInputRef.instance.classList.remove('tmpy');
+          }
+        },
+        this.props.tmpyActive,
+        this.isFocused,
+      ),
     );
 
     if (this.props.dataEntryFormat.reFormatTrigger) {

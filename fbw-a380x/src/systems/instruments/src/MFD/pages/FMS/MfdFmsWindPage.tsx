@@ -452,8 +452,8 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
           : null;
       this.clearAllCruiseDisplayWindEntries();
       for (let i = 0; i < this.cruiseWindDisplayEntries.length; i++) {
-        const wind = winds !== null ? winds[i] : null;
-        if (wind !== null) {
+        const wind = winds !== null ? winds[i] : undefined;
+        if (wind !== undefined) {
           this.cruiseWindDisplayEntries[i].altitude = wind.altitude !== undefined ? wind.altitude / 100 : null;
           this.cruiseWindDisplayEntries[i].direction =
             wind.type !== PropagationType.Backward && wind.vector.direction !== undefined
@@ -811,10 +811,10 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         currentDir,
         currentSpeed,
       );
-      if (oldAltitude !== null) {
+      if (displayEntry.entryInFp) {
         this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
           selectedLegIndex,
-          oldAltitude * 100,
+          index,
           entry,
           this.loadedFlightPlanIndex.get(),
         );

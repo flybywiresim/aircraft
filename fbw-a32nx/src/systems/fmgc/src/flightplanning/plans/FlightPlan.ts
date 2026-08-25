@@ -105,7 +105,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   private readonly alternateDraftWind: WindVector | undefined;
   private draftClimbWindExists = false;
-  private draftCruiseWindExists = false;
   private draftDescentWindExists = false;
   private alternateDraftWindExists = false;
 
@@ -120,14 +119,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     time?: number,
     draftOnWindsOnWindEdit = false,
   ) {
-    super(
-      context,
-      index,
-      bus,
-      maxCruiseWindLevels,
-      time,
-      draftOnWindsOnWindEdit ? new Map<number, FlightPlanWindEntry[]>() : undefined,
-    );
+    super(context, index, bus, maxCruiseWindLevels, time, draftOnWindsOnWindEdit);
     this.performanceData = performanceDataInit;
     if (draftOnWindsOnWindEdit) {
       this.draftClimbWindEntries =
@@ -1045,7 +1037,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
     }
     if (sortEntries) {
-      const sortedEntries = BaseFlightPlan.sortWindEntriesByAltitude(windEntries);
+      const sortedEntries = this.sortWindEntriesByAltitude(windEntries);
       windEntries.splice(0, windEntries.length, ...sortedEntries);
     }
   }
@@ -1372,10 +1364,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return false;
   }
 
-  protected static cloneFlightPlanWindEntry(entry: FlightPlanWindEntry): FlightPlanWindEntry {
+  private static cloneFlightPlanWindEntry(entry: FlightPlanWindEntry): FlightPlanWindEntry {
     return {
       ...entry,
       vector: cloneWindVector(entry.vector),
     };
+  }
+
+  private sortWindEntriesByAltitude(entries: WindEntry[]) {
+    const altitudeSorted = entries.filter((e) => e.altitude !== undefined).sort((a, b) => b.altitude! - a.altitude!);
+    let sortIndex = 0;
+    // Retain the order of undefined altitudes, others are sorted as is.
+    return entries.map((v) => (v.altitude === undefined ? v : altitudeSorted[sortIndex++]));
   }
 }

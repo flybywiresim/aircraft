@@ -28,12 +28,12 @@ export class HistoryWind {
     { altitude: 25_000, vector: { direction: undefined, magnitude: undefined } },
   ];
   private readonly recordedCruiseWind: WindEntry = {
-    altitude: NaN,
+    altitude: undefined,
     vector: { direction: undefined, magnitude: undefined },
   };
 
   private readonly interpolationCache: WindEntry = {
-    altitude: NaN,
+    altitude: undefined,
     vector: { direction: undefined, magnitude: undefined },
   };
 
@@ -112,15 +112,23 @@ export class HistoryWind {
 
   public getRecordedWinds(cruiseLevel: number | null, sortAscending = true): Readonly<WindEntry>[] {
     const historyWinds = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude! - b.altitude!);
-    const interpolationSourceWinds = historyWinds.filter((entry) => entry.vector !== undefined);
+    const interpolationSourceWinds = historyWinds.filter(
+      (entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined,
+    );
     const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
 
     const shouldAddInterpolatedWind =
       cruiseAltitude !== null &&
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
-      interpolationSourceWinds.length >= 0 && // If we are filtering the empty entries, we only want to interpolate if there are entries between the CRZ FL.
-      interpolationSourceWinds.some((wind) => wind.altitude! < cruiseAltitude && wind.vector !== undefined) &&
-      interpolationSourceWinds.some((wind) => wind.altitude! > cruiseAltitude && wind.vector !== undefined);
+      interpolationSourceWinds.length >= 0 && //we only want to interpolate if there are entries between the CRZ FL.
+      interpolationSourceWinds.some(
+        (wind) =>
+          wind.altitude! < cruiseAltitude && wind.vector.direction !== undefined && wind.vector.magnitude !== undefined,
+      ) &&
+      interpolationSourceWinds.some(
+        (wind) =>
+          wind.altitude! > cruiseAltitude && wind.vector.direction !== undefined && wind.vector.magnitude !== undefined,
+      );
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;
