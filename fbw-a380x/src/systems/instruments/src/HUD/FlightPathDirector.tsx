@@ -166,65 +166,6 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
     this.crosswindMode,
   );
 
-  // private moveBird() {
-  //   let xOffsetLim;
-
-  //   const daLimConv = (this.da.get().value * DistanceSpacing) / ValueSpacing;
-  //   const pitchSubFpaConv =
-  //     calculateHorizonOffsetFromPitch(this.pitch.get().value) - calculateHorizonOffsetFromPitch(this.fpa.get().value);
-  //   const rollCos = Math.cos((this.roll.get().value * Math.PI) / 180);
-  //   const rollSin = Math.sin((-this.roll.get().value * Math.PI) / 180);
-
-  //   const FDRollOrder = this.fdRollCommand.get().value;
-  //   const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-  //   const FDPitchOrder = this.fdPitchCommand.get().value; //in degrees on pitch scale
-  //   const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 45), -45);
-
-  //   const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-  //   const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
-
-  //   const xOffset = xOffsetFpv + FDRollOrderLim * 13;
-  //   const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
-
-  //   //set lateral limit for fdCue
-  //   if (this.crosswindMode == false) {
-  //     if (xOffset < -378 || xOffset > 350) {
-  //       this.fdCueOffRange = true;
-  //     } else {
-  //       this.fdCueOffRange = false;
-  //     }
-
-  //     xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
-  //   } else {
-  //     if (xOffset < -540 || xOffset > 540) {
-  //       this.fdCueOffRange = true;
-  //     } else {
-  //       this.fdCueOffRange = false;
-  //     }
-  //     xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
-  //   }
-
-  //   this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
-
-  //   if (this.fdCueOffRange) {
-  //     this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
-  //   } else {
-  //     this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
-  //   }
-
-  //   // console.log(
-  //   //   'FDPitchOrderLim ' +
-  //   //     FDPitchOrderLim +
-  //   //     'FDRollOrderLim ' +
-  //   //     FDRollOrderLim +
-  //   //     'xOffsetLim ' +
-  //   //     xOffsetLim +
-  //   //     'yOffset ' +
-  //   //     yOffset,
-  //   //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
-  //   // );
-  // }
-
   render(): VNode {
     return (
       <>
@@ -234,7 +175,7 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
               <path
                 style={{ transform: this.fdTransform }}
                 ref={this.birdPathCircle}
-                d={circlePath(8, 640, 512)}
+                d={circlePath(7, 640, 512)}
                 class="NormalStroke Green"
                 stroke-dasharray={this.fdCueOffRange}
               />
