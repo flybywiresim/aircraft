@@ -550,7 +550,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * Gets the history winds entries stored by the fms.
    * @param sortByAltitudeAscending whether to sort the wind entries by ascending order of altitude
    */
-  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Readonly<WindEntry>[];
+  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Promise<Readonly<WindEntry>[]>;
 
   /**
    * Tries to insert the history wind entries into the climb winds of the active flight-plan.
@@ -561,5 +561,5 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   /**
    * Returns whether history wind insertion is allowed.
    */
-  historyWindInsertionAllowed(): boolean;
+  historyWindInsertionAllowed(): Promise<boolean>;
 }

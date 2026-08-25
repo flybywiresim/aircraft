@@ -222,7 +222,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setEstimatedTakeoffTime(text: string, forPlan: FlightPlanIndex): void;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
-  getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
+  getHistoryWinds(cruiseLevel: number | null): Promise<Readonly<WindEntry>[]>;
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
 

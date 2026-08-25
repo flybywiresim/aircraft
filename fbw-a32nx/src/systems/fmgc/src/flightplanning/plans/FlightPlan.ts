@@ -27,6 +27,7 @@ import {
   debugFormatWindEntry,
   extractTheta,
   FlightPlanWindEntry,
+  isWindVectorComplete,
   WindEntry,
   WindVector,
 } from '../data/wind';
@@ -151,7 +152,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.bus,
       this.performanceData.clone(),
       this.maxClimbWindLevels,
-      this.maxCruiseWindLevels,
+      this.maxCruiseWindLevels!,
       this.maxDescentWindLevels,
       time,
       this.alternateDraftWind !== undefined,
@@ -1008,10 +1009,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // Edit
         const old = windEntries[existingEntryIndex];
         if (
-          old.vector.direction !== undefined &&
-          old.vector.magnitude !== undefined &&
-          old.altitude !== undefined &&
-          (entry.altitude === undefined || entry.vector.magnitude === undefined || entry.vector.direction === undefined)
+          (old.altitude !== undefined && entry.altitude === undefined) ||
+          (old.vector.direction !== undefined &&
+            old.vector.magnitude !== undefined &&
+            (entry.vector.magnitude === undefined || entry.vector.direction === undefined))
         ) {
           // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
           entry.vector.magnitude = undefined;
@@ -1044,7 +1045,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
     }
     if (sortEntries) {
-      windEntries = BaseFlightPlan.sortWindEntriesByAltitude(windEntries);
+      const sortedEntries = BaseFlightPlan.sortWindEntriesByAltitude(windEntries);
+      windEntries.splice(0, windEntries.length, ...sortedEntries);
     }
   }
 
@@ -1070,7 +1072,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
   }
 
-  async setAlternateWind(entry: WindVector): Promise<void> {
+  async setAlternateWind(vector: WindVector): Promise<void> {
     if (this.alternateDraftWind !== undefined) {
       this.alternateDraftWindExists = true;
       const oldDir = this.alternateDraftWind.direction;
@@ -1078,18 +1080,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       if (
         oldDir !== undefined &&
         oldMag !== undefined &&
-        (entry.magnitude === undefined || entry.direction === undefined)
+        (vector.magnitude === undefined || vector.direction === undefined)
       ) {
         // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
-        entry.magnitude = undefined;
-        entry.direction = undefined;
+        vector.magnitude = undefined;
+        vector.direction = undefined;
       }
 
-      this.alternateDraftWind.direction = entry.direction;
-      this.alternateDraftWind.magnitude = entry.magnitude;
+      this.alternateDraftWind.direction = vector.direction;
+      this.alternateDraftWind.magnitude = vector.magnitude;
       this.incrementVersion();
     } else {
-      this.setPerformanceData('alternateWind', entry);
+      this.setPerformanceData('alternateWind', vector);
     }
   }
 
@@ -1207,7 +1209,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @returns The draft alternate wind entry if it exists, otherwise the alternate wind entry from the performance data.
    */
   public getAlternateWind(): WindVector | null {
-    return this.alternateDraftWind !== undefined ? this.alternateDraftWind : this.performanceData.alternateWind.get();
+    return this.alternateDraftWindExists ? this.alternateDraftWind! : this.performanceData.alternateWind.get();
   }
 
   /**
@@ -1268,8 +1270,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (this.alternateDraftWindExists) {
-      if (!BaseFlightPlan.isPartlyFilledWindVector(this.alternateDraftWind!)) {
-        this.setPerformanceData('alternateWind', this.alternateDraftWind);
+      if (isWindVectorComplete(this.alternateDraftWind!)) {
+        this.setPerformanceData('alternateWind', this.alternateDraftWind!);
       }
     }
 

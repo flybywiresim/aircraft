@@ -5659,8 +5659,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     await this.flightPlanService.insertWindUplink(forPlan);
   }
 
-  public getHistoryWinds() {
-    return this.flightPlanService.getHistoryWindsEntries();
+  public async getHistoryWinds() {
+    return await this.flightPlanService.getHistoryWindsEntries();
   }
   // ---------------------------
   // CDUMainDisplay Types

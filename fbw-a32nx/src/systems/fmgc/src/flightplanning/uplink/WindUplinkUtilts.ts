@@ -1,4 +1,7 @@
-import { CruiseWindRequest, WindRequestMessage } from '@datalink/common';
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+import { AlternateWindRequest, CruiseWindRequest, WindRequestMessage } from '@datalink/common';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -60,7 +63,7 @@ export function formatWindRequest(
   let cruiseWinds: CruiseWindRequest | undefined = undefined;
   if (shouldRequestCruiseWinds && cruiseLegs.length > 0) {
     const propagatedWinds = flightPlanService.propagateWindsAt(0, [], planIndex);
-    const flightLevels = propagatedWinds.map((wind) => Math.round(wind.altitude / 100));
+    const flightLevels = propagatedWinds.map((wind) => Math.round(wind.altitude! / 100));
 
     if (flightLevels.length === 0) {
       if (cruiseLevel !== null) {
@@ -88,7 +91,7 @@ export function formatWindRequest(
     };
   }
 
-  let alternateWind = undefined;
+  let alternateWind: AlternateWindRequest | undefined = undefined;
   if (plan.destinationAirport !== undefined && plan.alternateDestinationAirport !== undefined) {
     alternateWind = {
       destinationIcao: plan.destinationAirport.ident,

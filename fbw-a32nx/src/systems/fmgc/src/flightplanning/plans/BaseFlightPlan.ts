@@ -115,7 +115,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     protected readonly context: FlightPlanContext,
     public readonly index: number,
     public readonly bus: EventBus,
-    protected readonly maxCruiseWindLevels: number,
+    protected readonly maxCruiseWindLevels?: number,
     public readonly timeCreated?: number,
     draftCruiseWindEntries?: Map<number, WindEntry[]>,
   ) {
@@ -3213,7 +3213,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   protected static sortWindEntriesByAltitude(entries: WindEntry[]) {
-    const altitudeSorted = entries.filter((e) => e.altitude !== undefined).sort((a, b) => a.altitude - b.altitude);
+    const altitudeSorted = entries.filter((e) => e.altitude !== undefined).sort((a, b) => b.altitude - a.altitude);
     let sortIndex = 0;
     // Retain the order of undefined altitudes, others are sorted as is.
     return entries.map((v) => (v.altitude === undefined ? v : altitudeSorted[sortIndex++]));

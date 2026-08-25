@@ -1083,15 +1083,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.insertWindUplink();
   }
 
-  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Readonly<WindEntry>[] {
-    return this.historyWinds.getRecordedWinds(
-      this.active.performanceData.cruiseFlightLevel.get(),
-      sortByAltitudeAscending,
+  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Promise<Readonly<WindEntry>[]> {
+    return Promise.resolve(
+      this.historyWinds.getRecordedWinds(this.active.performanceData.cruiseFlightLevel.get(), sortByAltitudeAscending),
     );
   }
 
   async insertHistoryWinds(): Promise<boolean> {
-    if (this.historyWindInsertionAllowed()) {
+    if (await this.historyWindInsertionAllowed()) {
       const fp = this.active;
       await this.deleteAllClimbWindEntries();
       if (!fp.hasDraftWindEntries()) {
@@ -1114,16 +1113,16 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return Promise.resolve(false);
   }
 
-  historyWindInsertionAllowed() {
-    const historyWindEntries = this.getHistoryWindsEntries();
-    return (
+  async historyWindInsertionAllowed(): Promise<boolean> {
+    const historyWindEntries = await this.getHistoryWindsEntries();
+    return Promise.resolve(
       !this.hasTemporary &&
-      this.hasActive &&
-      this.flightPhase.get() === FmgcFlightPhase.Preflight &&
-      historyWindEntries.some((wind) => wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) &&
-      !this.active.pendingWindUplink.isWindUplinkInProgress() &&
-      !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
-      !this.haveHistoryWindsBeenInserted(historyWindEntries)
+        this.hasActive &&
+        this.flightPhase.get() === FmgcFlightPhase.Preflight &&
+        historyWindEntries.some((wind) => wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) &&
+        !this.active.pendingWindUplink.isWindUplinkInProgress() &&
+        !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
+        !this.haveHistoryWindsBeenInserted(historyWindEntries),
     );
   }
 

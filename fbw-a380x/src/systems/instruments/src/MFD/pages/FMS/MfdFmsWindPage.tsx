@@ -389,32 +389,38 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const subPage = this.selectedSubPage.get();
     const hasTmpy = this.tmpyActive.get();
     if (subPage === WindSubPageMenu.History) {
-      const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
-      const historyWinds = this.props.flightPlanInterface.getHistoryWindsEntries();
-      let hasNonEmptyWind = false;
-      for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
-        const windEntry = historyWinds[i];
-        if (windEntry) {
-          const windVector = windEntry.vector;
-          hasNonEmptyWind =
-            hasNonEmptyWind || (windVector.direction !== undefined && windVector.magnitude !== undefined);
-          this.historyWindFlightLevels[i].set((windEntry.altitude! / 100).toFixed(0).padStart(3, '0'));
-          this.historyWindSpeeds[i].set(
-            windVector.magnitude === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`,
-          );
-          this.historyWindDirections[i].set(
-            windVector.direction === undefined ? '---' : formatWindTrueDegrees(windVector, false),
-          );
-          this.historyWindUnitsVisible[i].set(windVector.direction !== undefined && windVector.magnitude !== undefined);
-          this.historyWindValidEntry[i].set(true);
-          this.isHistoryWindCruiseFlightLevel[i].set(
-            cruiseFlightLevel !== null && windEntry.altitude == cruiseFlightLevel * 100,
-          );
-        } else {
-          this.historyWindValidEntry[i].set(false);
+      this.props.flightPlanInterface.getHistoryWindsEntries().then((historyWinds) => {
+        let hasNonEmptyWind = false;
+        const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
+        for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
+          const windEntry = historyWinds[i];
+          if (windEntry) {
+            const windVector = windEntry.vector;
+            hasNonEmptyWind =
+              hasNonEmptyWind || (windVector.direction !== undefined && windVector.magnitude !== undefined);
+            this.historyWindFlightLevels[i].set((windEntry.altitude! / 100).toFixed(0).padStart(3, '0'));
+            this.historyWindSpeeds[i].set(
+              windVector.magnitude === undefined ? '\xa0---' : `/${formatWindMagnitude(windVector)}`,
+            );
+            this.historyWindDirections[i].set(
+              windVector.direction === undefined ? '---' : formatWindTrueDegrees(windVector, false),
+            );
+            this.historyWindUnitsVisible[i].set(
+              windVector.direction !== undefined && windVector.magnitude !== undefined,
+            );
+            this.historyWindValidEntry[i].set(true);
+            this.isHistoryWindCruiseFlightLevel[i].set(
+              cruiseFlightLevel !== null && windEntry.altitude == cruiseFlightLevel * 100,
+            );
+          } else {
+            this.historyWindValidEntry[i].set(false);
+          }
         }
-      }
-      this.historyWindButtonVisible.set(this.props.flightPlanInterface.historyWindInsertionAllowed());
+      });
+
+      this.props.flightPlanInterface.historyWindInsertionAllowed().then((v) => {
+        this.historyWindButtonVisible.set(v);
+      });
     } else if (subPage === WindSubPageMenu.Climb) {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
@@ -477,7 +483,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.descentWindsInactive.set(
         isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Descent,
       );
-      this.alternateWindIsPrimaryFlightPlan.set(loadedFlightPlanIndex === FlightPlanIndex.Active);
+      this.alternateWindIsPrimaryFlightPlan.set(
+        loadedFlightPlanIndex === FlightPlanIndex.Active || loadedFlightPlanIndex === FlightPlanIndex.Temporary,
+      );
       const hasAlternate = fp?.alternateDestinationAirport !== undefined;
       const alternateWind = fp?.getAlternateWind() ?? null;
       this.alternateWindDirection.set(
@@ -646,33 +654,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     for (let i = 0; i < this.cruiseWindDisplayEntries.length; i++) {
       this.clearCruiseDisplayWindEntry(i);
     }
-  }
-
-  private shiftUpDisplayedWindEntriesFromIndex(entries: WindDisplayEntry[], index: number) {
-    for (let i = index; i < entries.length - 1; i++) {
-      const next = entries[i + 1];
-      const current = entries[i];
-      current.altitude = next.altitude;
-      current.direction = next.direction;
-      current.speed = next.speed;
-    }
-
-    // Clear the last entry as all has been shifted up.
-    this.clearDisplayWindEntry(entries, entries.length - 1);
-  }
-
-  private shiftUpDisplayedCruiseWindEntriesFromIndex(index: number) {
-    for (let i = index; i < this.cruiseWindDisplayEntries.length - 1; i++) {
-      const next = this.cruiseWindDisplayEntries[i + 1];
-      const current = this.cruiseWindDisplayEntries[i];
-      current.altitude = next.altitude;
-      current.direction = next.direction;
-      current.speed = next.speed;
-      current.isPropagated = next.isPropagated;
-      current.speedOrDirectionIsPropagated = next.speedOrDirectionIsPropagated;
-    }
-
-    this.clearCruiseDisplayWindEntry(this.cruiseWindDisplayEntries.length - 1);
   }
 
   /**
@@ -873,7 +854,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       const previousEntry = entries[i - 1];
       const currentEntry = entries[i];
       altitudeVisible[i].set(
-        i === 0 || previousEntry.altitude !== null || (previousEntry.altitude !== null && previousEntry.entryInFp),
+        i === 0 || previousEntry.altitude !== null || (previousEntry.altitude === null && previousEntry.entryInFp),
       );
       speedDirectionVisible[i].set(
         i === 0 || currentEntry.altitude !== null || (currentEntry.altitude === null && currentEntry.entryInFp),

@@ -731,7 +731,7 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+  static async ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.HistoryWind;
 
@@ -744,11 +744,11 @@ export class CDUWindPage {
     const plan = mcdu.getFlightPlan(forPlan);
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
-    const historyWinds: WindEntry[] = mcdu.getHistoryWinds(cruiseLevel) ?? [];
+    const historyWinds: WindEntry[] = (await mcdu.getHistoryWinds(cruiseLevel)) ?? [];
 
     historyWinds.sort((a, b) => a.altitude! - b.altitude!);
 
-    const shouldAllowInsertion = mcdu.flightPlanService.historyWindInsertionAllowed();
+    const shouldAllowInsertion = await mcdu.flightPlanService.historyWindInsertionAllowed();
 
     const template = [
       ['HISTORY WIND'],
