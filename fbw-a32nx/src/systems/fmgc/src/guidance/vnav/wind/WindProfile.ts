@@ -189,22 +189,22 @@ export class WindProfile implements WindInterface {
 
     // Blend the measurement at the current altitude with the forecast at the current altitude
     const predictionAtCurrentAlt = WindUtils.interpolateWindVector(
-      WindProfile.VectorCache[1],
       MathUtils.clamp(Math.abs(distanceFromAircraft), 0, WindConfig.MaxCruiseWindBlendDistance),
       0,
       WindConfig.MaxCruiseWindBlendDistance,
       measurement.vector,
       forecastAtCurrentAlt,
+      WindProfile.VectorCache[1],
     );
 
     // Blend the prediction at the current altitude with the forecast at the target altitude
     return WindUtils.interpolateWindVector(
-      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
       predictionAtCurrentAlt,
       forecast,
+      result,
     );
   }
 
@@ -251,12 +251,12 @@ export class WindProfile implements WindInterface {
       }
 
       return WindUtils.interpolateWindVector(
-        result,
         distanceFromStart,
         prevLeg.calculated.cumulativeDistanceWithTransitions,
         leg.calculated.cumulativeDistanceWithTransitions,
         prevLegWind,
         legWind,
+        result,
       );
     } else if (hasTripWindEntry) {
       return tripWind;
@@ -319,12 +319,12 @@ export class WindProfile implements WindInterface {
     }
 
     return WindUtils.interpolateWindVector(
-      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
       measurement.vector,
       forecast,
+      result,
     );
   }
 
@@ -476,12 +476,12 @@ export class ConstantWindProfile implements WindInterface {
     }
 
     return WindUtils.interpolateWindVector(
-      result,
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
-      measurement.vector!,
+      measurement.vector,
       forecast,
+      result,
     );
   }
 }

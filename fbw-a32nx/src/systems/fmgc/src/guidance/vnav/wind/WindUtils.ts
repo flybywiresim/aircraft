@@ -28,9 +28,9 @@ export class WindUtils {
     const lowest = isDescendingOrder ? entries[entries.length - 1] : entries[0];
     const highest = isDescendingOrder ? entries[0] : entries[entries.length - 1];
 
-    if (lowest.vector !== undefined && lowest.altitude !== undefined && altitude <= lowest.altitude) {
+    if (lowest.altitude !== undefined && altitude <= lowest.altitude) {
       return copyWindVector(lowest.vector, result);
-    } else if (highest.vector !== undefined && highest.altitude !== undefined && altitude >= highest.altitude) {
+    } else if (highest.altitude !== undefined && altitude >= highest.altitude) {
       return copyWindVector(highest.vector, result);
     } else {
       for (let i = 0; i < entries.length - 1; i++) {
@@ -44,12 +44,12 @@ export class WindUtils {
           altitude <= upper.altitude
         ) {
           return WindUtils.interpolateWindVector(
-            result,
             altitude,
             lower.altitude,
             upper.altitude,
             lower.vector,
             upper.vector,
+            result,
           );
         }
       }
@@ -71,25 +71,25 @@ export class WindUtils {
   }
 
   public static interpolateWindVector(
-    result: WindVector,
-    value: number,
-    lowerValue: number,
-    higherValue: number,
-    first: WindVector,
-    second: WindVector,
+    x: number,
+    x0: number,
+    x1: number,
+    v0: WindVector,
+    v1: WindVector,
+    out: WindVector,
   ): WindVector {
     return copyWindVector(
       {
         direction:
-          first.direction === undefined || second.direction === undefined
+          v0.direction === undefined || v1.direction === undefined
             ? undefined
-            : MathUtils.interpolate(value, lowerValue, higherValue, first.direction, first.direction),
+            : MathUtils.interpolate(x, x0, x1, v0.direction, v1.direction),
         magnitude:
-          first.magnitude === undefined || second.magnitude === undefined
+          v0.magnitude === undefined || v1.magnitude === undefined
             ? undefined
-            : MathUtils.interpolate(value, lowerValue, higherValue, first.magnitude, second.magnitude),
+            : MathUtils.interpolate(x, x0, x1, v0.magnitude, v1.magnitude),
       },
-      result,
+      out,
     );
   }
   /**
