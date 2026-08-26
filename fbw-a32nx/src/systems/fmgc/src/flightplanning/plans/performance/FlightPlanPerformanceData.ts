@@ -653,6 +653,12 @@ export interface FlightPlanPerformanceData {
    */
   readonly descentCabinRate?: MutableSubscribable<number | null>;
 
+  /**
+   * The takeoff weight latched at the moment the Takeoff phase begins, in kg. Null until then.
+   * A380 specific
+   */
+  readonly takeoffWeight?: MutableSubscribable<number | null>;
+
   clone(): this;
 
   destroy(): void;
@@ -777,6 +783,7 @@ export interface SerializedFlightPlanPerformanceData {
   costIndexMode?: CostIndexMode | null;
   climbDerated?: ClimbDerated | null;
   descentCabinRate?: number | null;
+  takeoffWeight?: number | null;
 }
 
 // FIXME move to AMI database

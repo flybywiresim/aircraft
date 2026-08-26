@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
-import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { BitFlags, DateTimeFormatter } from '@microsoft/msfs-sdk';
 import { FmcServiceInterface } from '../FMC/FmcServiceInterface';
 import { NXSystemMessages } from './NXSystemMessages';
 
@@ -80,4 +82,13 @@ export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
 /** Adds ENTRY NOT IN LIST scratchpad message. */
 export function onEntryNotInList(fmc: FmcServiceInterface): void {
   fmc.master.addMessageToQueue(NXSystemMessages.EntryNotInList, undefined, undefined);
+}
+
+export function isConstraintRevisionAllowed(leg: ReadonlyFlightPlanElement) {
+  return (
+    leg instanceof FlightPlanLeg &&
+    !leg.isRunway() &&
+    leg.isXF() &&
+    !BitFlags.isAny(leg.flags, FlightPlanLegFlags.DirectToTurningPoint)
+  );
 }

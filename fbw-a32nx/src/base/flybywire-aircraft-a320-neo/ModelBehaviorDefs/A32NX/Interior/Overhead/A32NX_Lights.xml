@@ -1,71 +1,107 @@
 <!-- Copyright (c) 2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
-
-<Template Name="FBW_A32NX_NAV_LOGO_LT_SW_Template">
-    <Parameters Type="Default">
-        <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
-        <STATE_VAR_NAME>A32NX_LIGHTS_NAV_LOGO</STATE_VAR_NAME>
-        <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-        <ANIM_LAG>1000</ANIM_LAG>
-        <ANIM_LENGTH>3</ANIM_LENGTH>
-        <WWISE_EVENT>lswitch</WWISE_EVENT>
-        <TOOLTIP_TITLE>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_TITLE</TOOLTIP_TITLE>
-        <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_ACTION</TT_DESCRIPTION_ID>
-    </Parameters>
-    <Parameters Type="Override">
-        <POS_OFF>0</POS_OFF>
-        <POS_SYS1>1</POS_SYS1>
-        <POS_SYS2>2</POS_SYS2>
-    </Parameters>
-    <Component ID="#NODE_ID#" Node="#NODE_ID#">
-        <UseTemplate Name="ASOBO_Interaction_Base_Template">
-            <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
+<ModelBehaviors>
+    <Template Name="FBW_A32NX_NAV_LOGO_LT_SW_Template">
+        <Parameters Type="Default">
+            <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
             <IE_NAME>NAV_LOGO_SW</IE_NAME>
-			<INTERACTION_TYPE>Switch</INTERACTION_TYPE>
-			<NUM_STATES>3</NUM_STATES>
-			<STR_STATE_0>OFF</STR_STATE_0>
-			<STR_STATE_1>SYS_1</STR_STATE_1>
-			<STR_STATE_2>SYS_2</STR_STATE_2>
-			<TT_VALUE_0>@TT_Package.GT_STATE_OFF</TT_VALUE_0>
-			<TT_VALUE_1>A32NX.TOOLTIPS.STATE_SYS_1</TT_VALUE_1>
-			<TT_VALUE_2>A32NX.TOOLTIPS.STATE_SYS_2</TT_VALUE_2>
-			<SET_STATE_0>#POS_OFF# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_0>
-			<SET_STATE_1>#POS_SYS1# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_1>
-			<SET_STATE_2>#POS_SYS2# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_2>
-			<LOCAL_VAR_TO_WATCH_0>#STATE_VAR_NAME#</LOCAL_VAR_TO_WATCH_0>
-            <SIMVAR_TO_WATCH_0>LIGHT NAV</SIMVAR_TO_WATCH_0>
-            <SIMVAR_TO_WATCH_1>LIGHT LOGO</SIMVAR_TO_WATCH_1>
-			<GET_STATE_EXTERNAL>(L:#STATE_VAR_NAME#) sp0</GET_STATE_EXTERNAL>
-			<ENUM_VAL_TO_POS_EXTERNAL>
-                l0 #POS_OFF# == if{
-                    0 (&gt;A:LIGHT NAV)
-                    0 (&gt;A:LIGHT LOGO)
-                    0 0 (&gt;K:2:NAV_LIGHTS_SET)
-                    0 0 (&gt;K:2:LOGO_LIGHTS_SET)
-                } els{
-                    1 (&gt;A:LIGHT NAV)
-                    1 (&gt;A:LIGHT LOGO)
-                    0 1 (&gt;K:2:LOGO_LIGHTS_SET)
-
-                    l0 #POS_SYS1# == if{
-                        4 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        5 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        6 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        1 1 (&gt;K:2:NAV_LIGHTS_SET)
-                        2 1 (&gt;K:2:NAV_LIGHTS_SET)
-                        3 1 (&gt;K:2:NAV_LIGHTS_SET)
+            <STATE_VAR_NAME>A32NX_LIGHTS_NAV_LOGO</STATE_VAR_NAME>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_LAG>1000</ANIM_LAG>
+            <ANIM_LENGTH>3</ANIM_LENGTH>
+            <WWISE_EVENT>lswitch</WWISE_EVENT>
+            <TOOLTIP_TITLE>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_TITLE</TOOLTIP_TITLE>
+            <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_ACTION</TT_DESCRIPTION_ID>
+        </Parameters>
+        <Parameters Type="Override">
+            <IE_TO_USE>#INPUT_EVENT_ID_SOURCE#_#IE_NAME#</IE_TO_USE>
+        </Parameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseInputEvent ID="A32NX_OVH_LIGHTS">
+                <EXTEND_TARGET>ASOBO_GIE_Base</EXTEND_TARGET>
+                <IE_NAME>NAV_LOGO_SW</IE_NAME>
+                <INC_ARG_COUNT>0</INC_ARG_COUNT>
+                <DEC_ARG_COUNT>0</DEC_ARG_COUNT>
+                <SET_ARG_COUNT>1</SET_ARG_COUNT>
+                <INC_CODE>(B:#IE_TO_USE#) 1 + (&gt;B:#IE_TO_USE#_Set)</INC_CODE>
+                <DEC_CODE>(B:#IE_TO_USE#) 1 - (&gt;B:#IE_TO_USE#_Set)</DEC_CODE>
+                <SET_CODE>
+                    p0 0 max 2 min (&gt;L:A32NX_LIGHTS_NAV_LOGO)
+                </SET_CODE>
+                <INIT_CODE>
+                    (L:A32NX_LIGHTS_NAV_LOGO) 0 == if{
+                        0 (&gt;A:LIGHT NAV)
+                        0 (&gt;A:LIGHT LOGO)
+                        0 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        0 0 (&gt;K:2:LOGO_LIGHTS_SET)
                     } els{
-                        1 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        2 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        3 0 (&gt;K:2:NAV_LIGHTS_SET)
-                        4 1 (&gt;K:2:NAV_LIGHTS_SET)
-                        5 1 (&gt;K:2:NAV_LIGHTS_SET)
-                        6 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        1 (&gt;A:LIGHT NAV)
+                        1 (&gt;A:LIGHT LOGO)
+                        0 1 (&gt;K:2:LOGO_LIGHTS_SET)
+
+                        l0 1 == if{
+                            4 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            5 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            6 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            1 1 (&gt;K:2:NAV_LIGHTS_SET)
+                            2 1 (&gt;K:2:NAV_LIGHTS_SET)
+                            3 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        } els{
+                            1 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            2 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            3 0 (&gt;K:2:NAV_LIGHTS_SET)
+                            4 1 (&gt;K:2:NAV_LIGHTS_SET)
+                            5 1 (&gt;K:2:NAV_LIGHTS_SET)
+                            6 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        }
                     }
-                }
-                l0
-            </ENUM_VAL_TO_POS_EXTERNAL>
-			<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
-        </UseTemplate>
-    </Component>
-</Template>
+                </INIT_CODE>
+                <SET_PARAM_0_IS_DYNAMIC>False</SET_PARAM_0_IS_DYNAMIC>
+                <TT_ICON>MOVE_AXIS_Y</TT_ICON>
+                <TT_INTERACTION>PRIMARY_DOWN+Y_AXIS</TT_INTERACTION>
+                <TT_INTERACTION_LOCKABLE>Y_AXIS</TT_INTERACTION_LOCKABLE>
+                <TT_DESCRIPTION>#TT_DESCRIPTION_ID#</TT_DESCRIPTION>
+                <TT_DESCRIPTION_IS_DYNAMIC>False</TT_DESCRIPTION_IS_DYNAMIC>
+                <TT_VALUE>
+                    (L:A32NX_LIGHTS_NAV_LOGO)
+                    s0 0 ==  if{ (R:1:@TT_Package.GT_STATE_OFF) quit }
+                    l0 1 ==  if{ (R:1:A32NX.TOOLTIPS.STATE_SYS_1) quit }
+                    l0 2 ==  if{ (R:1:A32NX.TOOLTIPS.STATE_SYS_2) quit }
+                </TT_VALUE>
+                <TT_VALUE_IS_DYNAMIC>True</TT_VALUE_IS_DYNAMIC>
+                <VALUE_UNITS/>
+                <VALUE_CODE>(L:A32NX_LIGHTS_NAV_LOGO)</VALUE_CODE>
+                <LOCAL_VAR_TO_WATCH_0>A32NX_LIGHTS_NAV_LOGO</LOCAL_VAR_TO_WATCH_0>
+                <SIMVAR_TO_WATCH_0>LIGHT NAV</SIMVAR_TO_WATCH_0>
+                <SIMVAR_TO_WATCH_1>LIGHT LOGO</SIMVAR_TO_WATCH_1>
+                <BINDING_SET_0>Off</BINDING_SET_0>
+                <BINDING_SET_0_EVENT_ID/>
+                <BINDING_SET_0_PARAM_0>0</BINDING_SET_0_PARAM_0>
+                <BINDING_SET_0_PARAM_0_IS_DYNAMIC>False</BINDING_SET_0_PARAM_0_IS_DYNAMIC>
+                <BINDING_SET_1>SYS1</BINDING_SET_1>
+                <BINDING_SET_1_EVENT_ID/>
+                <BINDING_SET_1_PARAM_0>1</BINDING_SET_1_PARAM_0>
+                <BINDING_SET_1_PARAM_0_IS_DYNAMIC>False</BINDING_SET_1_PARAM_0_IS_DYNAMIC>
+                <BINDING_SET_2>SYS2</BINDING_SET_2>
+                <BINDING_SET_2_EVENT_ID/>
+                <BINDING_SET_2_PARAM_0>2</BINDING_SET_2_PARAM_0>
+                <BINDING_SET_2_PARAM_0_IS_DYNAMIC>False</BINDING_SET_2_PARAM_0_IS_DYNAMIC>
+            </UseInputEvent>
+            <UseTemplate Name="ASOBO_GT_Part_ID"/>
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <TOOLTIP_ENTRY_0>#IE_TO_USE#</TOOLTIP_ENTRY_0>
+                <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+                <ANIM_LAG>#ANIM_LAG#</ANIM_LAG>
+                <ANIM_LENGTH>#ANIM_LENGTH#</ANIM_LENGTH>
+                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                <WWISE_EVENT>#WWISE_EVENT#</WWISE_EVENT>
+                <CODE_POS_0>2 (&gt;B:#IE_TO_USE#_Set)</CODE_POS_0>
+                <CODE_POS_1>1 (&gt;B:#IE_TO_USE#_Set)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;B:#IE_TO_USE#_Set)</CODE_POS_2>
+                <STATE0_TEST>(B:#IE_TO_USE#) 2 ==</STATE0_TEST>
+                <STATE1_TEST>(B:#IE_TO_USE#) 1 ==</STATE1_TEST>
+                <STATE2_TEST>(B:#IE_TO_USE#) 0 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

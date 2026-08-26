@@ -1023,7 +1023,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    */
   async setApproach(databaseId: string | undefined) {
     await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
-
     await this.flushOperationQueue();
     this.incrementVersion();
   }

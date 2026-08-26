@@ -231,6 +231,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
           this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(loadedfpIndex);
+          this.props.fmcService.master.calculateTakeoffWeight(loadedfpIndex);
           const fp = this.props.flightPlanInterface.get(loadedfpIndex);
           this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
           const pd = this.loadedFlightPlan!.performanceData;
@@ -366,7 +367,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
       this.blockFuel.set(null);
     }
     const pdTaxiFuel = pd?.taxiFuel.get();
-    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null) {
+    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null && !this.taxiAndRouteRsvDisabled.get()) {
       this.taxiFuel.set(pdTaxiFuel * 1000);
     } else {
       this.taxiFuel.set(null);

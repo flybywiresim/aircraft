@@ -238,35 +238,37 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
   }
 
   private loadFlightPlanPerformanceData(): void {
-    const fpIndex = this.loadedFlightPlanIndex.get();
-    const fp = this.props.flightPlanInterface.has(fpIndex) ? this.props.flightPlanInterface.get(fpIndex) : undefined;
-    const pd = fp?.performanceData;
-    this.fpIsActiveOrCopyOfActive.set(fp?.isActiveOrCopiedFromActive() ?? false);
-    this.tropopause.set(pd?.tropopause.get() ?? null);
-    this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
-    this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
-    this.flightNumber.set(
-      this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
-    );
-    const hasWind = this.props.flightPlanInterface.has(fpIndex)
-      ? this.props.flightPlanInterface.get(fpIndex).hasWindEntries()
-      : false;
-    this.fpHasWindEntries.set(hasWind);
-    if (this.tripWindDisabled.get() || !fp || !pd) {
-      this.tripWind.set(null);
-    } else {
-      this.tripWind.set(pd.pilotTripWind.get() ?? 0);
-    }
+    if (!this.creationInProgress) {
+      const fpIndex = this.loadedFlightPlanIndex.get();
+      const fp = this.props.flightPlanInterface.has(fpIndex) ? this.props.flightPlanInterface.get(fpIndex) : undefined;
+      const pd = fp?.performanceData;
+      this.fpIsActiveOrCopyOfActive.set(fp?.isActiveOrCopiedFromActive() ?? false);
+      this.tropopause.set(pd?.tropopause.get() ?? null);
+      this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
+      this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
+      this.flightNumber.set(
+        this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
+      );
+      const hasWind = this.props.flightPlanInterface.has(fpIndex)
+        ? this.props.flightPlanInterface.get(fpIndex).hasWindEntries()
+        : false;
+      this.fpHasWindEntries.set(hasWind);
+      if (this.tripWindDisabled.get() || !fp || !pd) {
+        this.tripWind.set(null);
+      } else {
+        this.tripWind.set(pd.pilotTripWind.get() ?? 0);
+      }
 
-    // Cruise temp is shown as -- once in the cruise phase.
-    const cruiseTemp =
-      !fp?.isActiveOrCopiedFromActive() || this.activeFlightPhase.get() < FmgcFlightPhase.Cruise
-        ? pd?.cruiseTemperature.get()
-        : null;
-    this.cruiseTemperature.set(cruiseTemp ?? null);
-    this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
-    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
-    this.costIndex.set(pd?.costIndex.get() ?? null);
+      // Cruise temp is shown as -- once in the cruise phase.
+      const cruiseTemp =
+        !fp?.isActiveOrCopiedFromActive() || this.activeFlightPhase.get() < FmgcFlightPhase.Cruise
+          ? pd?.cruiseTemperature.get()
+          : null;
+      this.cruiseTemperature.set(cruiseTemp ?? null);
+      this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
+      this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
+      this.costIndex.set(pd?.costIndex.get() ?? null);
+    }
   }
 
   protected onNewData() {
