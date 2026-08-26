@@ -25,7 +25,8 @@ import { FlightPlanFlags } from './FlightPlanFlags';
 import {
   cloneWindVector,
   debugFormatWindEntry,
-  extractTheta,
+  extractWindDirectionFromVector,
+  extractWindSpeedFromVector,
   FlightPlanWindEntry,
   isWindVectorComplete,
   WindEntry,
@@ -983,9 +984,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.setPerformanceData(
           'approachWindDirection',
-          MagVar.trueToMagnetic(extractTheta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+          MagVar.trueToMagnetic(extractWindDirectionFromVector(entry.vector)!, destinationMagVar),
         );
-        this.setPerformanceData('approachWindMagnitude', entry.vector.magnitude ?? null);
+        this.setPerformanceData('approachWindMagnitude', extractWindSpeedFromVector(entry.vector)!);
         this.setPerformanceData('isApproachWindPilotEntered', false);
       }
     }

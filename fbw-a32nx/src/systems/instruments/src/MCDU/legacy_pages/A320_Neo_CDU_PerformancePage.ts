@@ -1076,14 +1076,15 @@ export class CDUPerformancePage {
       }
     };
     const hasDestination = plan.destinationAirport !== undefined;
-    let magWindHeadingCell = `[${hasDestination}? '\xa0' : '---'}]`;
+    let magWindHeadingCell = `${hasDestination ? '[\xa0]' : '---'}`;
     const apprWindDirection = plan.performanceData.approachWindDirection.get();
     if (apprWindDirection !== null) {
       magWindHeadingCell = ('' + apprWindDirection.toFixed(0)).padStart(3, '0');
     }
-    let magWindSpeedCell = `[${hasDestination}? '\xa0' : '---'}]`;
+    let magWindSpeedCell = `${hasDestination ? '[\xa0]' : '---'}`;
     const apprWindMagnitude = plan.performanceData.approachWindMagnitude.get();
     if (apprWindMagnitude !== null) {
+      console.log('magnitude' + apprWindMagnitude);
       magWindSpeedCell = apprWindMagnitude.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {

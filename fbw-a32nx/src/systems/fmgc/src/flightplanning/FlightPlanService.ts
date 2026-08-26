@@ -110,7 +110,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
             flags: 0,
             altitude: 0,
           };
-          plan.setDescentWindEntry(0, windEntry, true, false);
+          plan.setDescentWindEntry(0, windEntry, false, false);
         }
       });
   }
