@@ -205,7 +205,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         <path
           id="AltReadoutOutline"
           class="NormalStroke Green"
-          d="m 522 340 h65.48v-13.355h44.323v71.565h-44.323v-13.355h-65.48"
+          d="m 528 340 h59.48v-13.355h44.323v71.565h-44.323v-13.355h-59.48"
         />
 
         <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>

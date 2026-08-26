@@ -10,9 +10,9 @@
 }
 
 @font-face {
-  font-family: "OpenBus";
+  font-family: "OpenBusHud";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/fbw-a380x/OpenBus.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/OpenBusHud.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -21,7 +21,7 @@
   width: 1280px;
   height: 1024px;
   background: rgba(0,0,0,0);
-  font-family: "OpenBus", monospace !important;
+  font-family: "OpenBusHud", monospace !important;
 }
 
 // .cwTest * {
@@ -128,10 +128,9 @@
 }
 
 .TextOutline {
-  paint-order: stroke fill markers;
-
-  stroke-width: 0.25mm;
-  stroke: rgba(0,0,0,0) !important;
+  paint-order: stroke fill;
+stroke-width: .5mm;
+paint-order: fill stroke !important;
 }
 
 .FontLargest {
@@ -298,7 +297,15 @@ tspan.Black {
 .InverseGreen{
   stroke: #000000;
   fill: #000000;
+  stroke-width: 2mm;
+  paint-order: fill stroke;
 }
+text.InverseGreen{
+  stroke: #000000;
+  fill: #000000;
+  stroke-width: 0mm;
+}
+
 .Green.Fill {
   fill: $display-green;
   stroke: none;
@@ -306,8 +313,9 @@ tspan.Black {
 
 text.Green {
   fill: $display-green;
-  // stroke: none;
   stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 tspan.Green {
   fill: $display-green;
@@ -434,7 +442,6 @@ tspan.Red {
 
 .Wind text{
   fill: $display-green;
-  stroke: none;
 }
 .blue{
   stroke: blue;

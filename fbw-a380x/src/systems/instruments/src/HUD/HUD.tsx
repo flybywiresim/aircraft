@@ -273,16 +273,16 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             />
           </g>
 
+          <ExtendedHorizon
+            bus={this.props.bus}
+            instrument={this.props.instrument}
+            filteredRadioAlt={this.filteredRadioAltitude}
+          />
           <AttitudeIndicatorFixedCenter
             bus={this.props.bus}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
             instrument={this.props.instrument}
-          />
-          <ExtendedHorizon
-            bus={this.props.bus}
-            instrument={this.props.instrument}
-            filteredRadioAlt={this.filteredRadioAltitude}
           />
 
           <AirspeedIndicatorOfftape bus={this.props.bus} />

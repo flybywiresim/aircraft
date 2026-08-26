@@ -23,7 +23,7 @@ import { calculateHorizonOffsetFromPitch, HudElems, HudMode, LagFilter, RateLimi
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
-import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
+import { FIVE_DEG, calculateVerticalOffsetFromRoll, OutlinedPath, setAttributes } from './HUDUtils';
 import { PrimFeBusBaseEvents } from '@shared/publishers/PrimFePublisher';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
@@ -40,9 +40,10 @@ export class FlightPathVector extends DisplayComponent<{
   filteredRadioAlt: Subscribable<number>;
 }> {
   private birdGroup = FSComponent.createRef<SVGGElement>();
-  private birdPath = FSComponent.createRef<SVGPathElement>();
+  private birdPathRef = FSComponent.createRef<SVGPathElement>();
+  private birdPathBgRef = FSComponent.createRef<SVGPathElement>();
   private birdFreePath = FSComponent.createRef<SVGPathElement>();
-  private birdLockedPath = FSComponent.createRef<SVGPathElement>();
+  private birdFreePathBg = FSComponent.createRef<SVGPathElement>();
   private crosswindMode = false;
   private readonly sub = this.props.bus.getSubscriber<
     Arinc429Values & HUDSimvars & HudElems & PrimFgBusBaseEvents & FcuEfisCpBusEvents & SelectedFdEvents
@@ -51,14 +52,6 @@ export class FlightPathVector extends DisplayComponent<{
   private readonly fpv = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
-
-  private primFgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
-
-  private readonly fdEngaged = ConsumerSubject.create(this.sub.on('fd_engaged'), false);
-
-  private readonly isTrkFpaActive = this.primFgDiscreteWord5.map((word) => word.bitValueOr(11, true));
-
-  private readonly isVelocityVectorActive = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(15, true));
 
   private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
   private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
@@ -70,12 +63,6 @@ export class FlightPathVector extends DisplayComponent<{
   private readonly ap1Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(11, false));
 
   private readonly ap2Engaged = this.primFgDiscreteWord1.map((word) => word.bitValueOr(12, false));
-
-  // private readonly isRequested = MappedSubject.create(
-  //   SubscribableMapFunctions.or(),
-  //   this.isTrkFpaActive,
-  //   this.isVelocityVectorActive,
-  // );
 
   private readonly isAnyApEngaged = MappedSubject.create(
     ([ap1Engaged, ap2Engaged]) => {
@@ -95,19 +82,6 @@ export class FlightPathVector extends DisplayComponent<{
     this.pitch,
   );
 
-  // private readonly isBirdHidden = MappedSubject.create(
-  //   ([isReq, isValid]) => !isReq || !isValid,
-  //   this.isRequested,
-  //   this.isDaAndFpaValid,
-  // );
-
-  // private readonly isFailureFlagHidden = MappedSubject.create(
-  //   ([isRequested, isDaAndFpaValid, isRollAndPitchValid]) => !isRequested || isDaAndFpaValid || !isRollAndPitchValid,
-  //   this.isRequested,
-  //   this.isDaAndFpaValid,
-  //   this.isRollAndPitchValid,
-  // );
-
   private readonly isBirdHidden = MappedSubject.create(
     ([isValid]) => !isValid,
 
@@ -120,14 +94,6 @@ export class FlightPathVector extends DisplayComponent<{
     this.isDaAndFpaValid,
     this.isRollAndPitchValid,
   );
-
-  // private readonly birdCirclePath = this.fdEngaged.map((fdEngaged) =>
-  //   fdEngaged ? FlightPathVector.BIRD_CIRCLE_SMALL : FlightPathVector.BIRD_CIRCLE,
-  // );
-
-  // private readonly birdWingsPath = this.fdEngaged.map((fdEngaged) =>
-  //   fdEngaged ? FlightPathVector.BIRD_WINGS_SMALL : FlightPathVector.BIRD_WINGS,
-  // );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -179,24 +145,24 @@ export class FlightPathVector extends DisplayComponent<{
     //set lateral limit for fdCue
     if (this.crosswindMode === false) {
       this.birdFreePath.instance.style.display = 'none';
-      this.birdLockedPath.instance.style.display = 'none';
+      this.birdFreePathBg.instance.style.display = 'none';
       if (xOffset < -378 || xOffset > 350) {
         birdOffRange = true;
       } else {
         birdOffRange = false;
       }
       if (birdOffRange) {
-        this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
+        this.birdPathRef.instance.setAttribute('stroke-dasharray', '3 6');
       } else {
-        this.birdPath.instance.setAttribute('stroke-dasharray', '');
+        this.birdPathRef.instance.setAttribute('stroke-dasharray', '');
       }
 
       xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
       this.birdGroup.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     } else {
       this.birdFreePath.instance.style.display = 'block';
-      this.birdPath.instance.setAttribute('stroke-dasharray', '');
-      this.birdLockedPath.instance.style.display = 'block';
+      this.birdFreePathBg.instance.style.display = 'block';
+      this.birdPathRef.instance.setAttribute('stroke-dasharray', '');
 
       if (xOffset < -540 || xOffset > 540) {
         birdOffRange = true;
@@ -207,17 +173,34 @@ export class FlightPathVector extends DisplayComponent<{
       this.birdGroup.instance.style.transform = `translate3d(0px, ${yOffset - FIVE_DEG}px, 0px)`;
 
       this.birdFreePath.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+      this.birdFreePathBg.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     }
 
-    this.isAnyApEngaged.get()
-      ? this.birdPath.instance.setAttribute(
-          'd',
-          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 592 512 h 35 m 13 -13 v -12z m 13 13 h 35',
-        )
-      : this.birdPath.instance.setAttribute(
-          'd',
-          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35',
-        );
+    if (this.crosswindMode) {
+      this.isAnyApEngaged.get()
+        ? setAttributes(
+            'd',
+            'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35 M 592 502 v20 M 688 502 v20',
+            [this.birdPathBgRef, this.birdPathRef],
+          )
+        : setAttributes(
+            'd',
+            'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z  M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35 M 592 502 v20 M 688 502 v20',
+            [this.birdPathBgRef, this.birdPathRef],
+          );
+    } else {
+      this.isAnyApEngaged.get()
+        ? setAttributes(
+            'd',
+            'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+            [this.birdPathBgRef, this.birdPathRef],
+          )
+        : setAttributes(
+            'd',
+            'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z  M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35',
+            [this.birdPathBgRef, this.birdPathRef],
+          );
+    }
   }
 
   private useSingleFpv() {
@@ -254,23 +237,24 @@ export class FlightPathVector extends DisplayComponent<{
     this.birdGroup.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
 
     if (birdOffRange) {
-      this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
+      this.birdPathRef.instance.setAttribute('stroke-dasharray', '3 6');
     } else {
-      this.birdPath.instance.setAttribute('stroke-dasharray', '');
+      this.birdPathRef.instance.setAttribute('stroke-dasharray', '');
     }
     this.isAnyApEngaged.get()
-      ? this.birdPath.instance.setAttribute(
+      ? setAttributes(
           'd',
-          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+          'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+          [this.birdPathBgRef, this.birdPathRef],
         )
-      : this.birdPath.instance.setAttribute(
+      : setAttributes(
           'd',
-          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z  M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35',
+          [this.birdPathBgRef, this.birdPathRef],
         );
 
     this.birdFreePath.instance.style.display = 'none';
-    this.birdLockedPath.instance.style.display = 'none';
-    this.birdPath.instance.style.display = 'block';
+    this.birdFreePathBg.instance.style.display = 'none';
   }
   private moveBird() {
     const hudXwindFpvType = parseInt(NXDataStore.getLegacy('HUD_FPV_TYPE', '0'));
@@ -280,18 +264,16 @@ export class FlightPathVector extends DisplayComponent<{
   render(): VNode {
     return (
       <>
-        <path
-          ref={this.birdFreePath}
-          id="BirdFreePath"
-          d="m 627 512 l 10.5 2.5 l 2.5 10.5 l 2.5 -10.5 l 10.5 -2.5 l -10.5 -2.5 l -2.5 -10.5 l -2.5 10.5 z"
-          class="NormalStroke Green"
-        />
-
+        {OutlinedPath(
+          'm 627 512 l 10.5 2.5 l 2.5 10.5 l 2.5 -10.5 l 10.5 -2.5 l -10.5 -2.5 l -2.5 -10.5 l -2.5 10.5 z',
+          'NormalStroke InverseGreen',
+          'NormalStroke Green',
+          this.birdFreePathBg,
+          this.birdFreePath,
+        )}
         <g ref={this.birdGroup} id="bird">
           <g id="FlightPathVector">
-            <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
-
-            <path ref={this.birdLockedPath} class="NormalStroke Green" d="m 590 502 v 20  m 100 0 v -20" />
+            {OutlinedPath('', 'NormalStroke InverseGreen', 'NormalStroke Green', this.birdPathBgRef, this.birdPathRef)}
           </g>
           <text
             id="FPVFlag"
@@ -335,8 +317,10 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
 
   private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_speed_trend').atFrequency(10));
   private refElement = FSComponent.createRef<SVGGElement>();
-  private leftChevron = FSComponent.createRef<SVGGElement>();
-  private rightChevron = FSComponent.createRef<SVGGElement>();
+  private leftChevron = FSComponent.createRef<SVGPathElement>();
+  private rightChevron = FSComponent.createRef<SVGPathElement>();
+  private leftChevronBg = FSComponent.createRef<SVGPathElement>();
+  private rightChevronBg = FSComponent.createRef<SVGPathElement>();
   private inRange = true;
   private merged = false;
 
@@ -421,8 +405,20 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
   render(): VNode | null {
     return (
       <g id="SpeedChevrons" ref={this.refElement} display={this.spdChevronsVis}>
-        <path ref={this.leftChevron} class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
-        <path ref={this.rightChevron} class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
+        {OutlinedPath(
+          'M 572 500 l 12 12 l -12 12 M 572 500 l 12 12 l-12 12',
+          'NormalStroke InverseGreen',
+          'NormalStroke Green',
+          this.leftChevronBg,
+          this.leftChevron,
+        )}
+        {OutlinedPath(
+          'M 708 500 l -12 12 l 12 12 M 708 500 l -12 12 l 12 12',
+          'NormalStroke InverseGreen',
+          'NormalStroke Green',
+          this.rightChevronBg,
+          this.rightChevron,
+        )}
       </g>
     );
   }
