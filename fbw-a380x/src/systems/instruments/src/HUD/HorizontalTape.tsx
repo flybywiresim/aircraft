@@ -119,9 +119,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
           if (scrollerValue !== null) {
             const hdg = (start + index * 10) % 360;
             if (hdg % 10 === 0) {
-              const content = hdg !== 0 ? (hdg / 10).toFixed(0) : '0';
-              if (scrollerValue.textContent !== content) {
-                scrollerValue.textContent = content;
+              const content = hdg !== 0 ? hdg / 10 : 0;
+              const text = content < 10 ? '0' + content.toFixed(0) : content.toFixed(0);
+              if (scrollerValue.textContent !== text) {
+                scrollerValue.textContent = text;
               }
             } else {
               scrollerValue.textContent = '';
