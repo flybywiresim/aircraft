@@ -447,7 +447,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field">FROM</div>
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
-                dataHandlerDuringValidation={async (v) => {
+                onModified={async (v) => {
                   if (v) {
                     const airport = await NavigationDatabaseService.activeDatabase.searchAirport(v);
                     if (!airport) {
