@@ -53,11 +53,6 @@ import {
   ResetPanelSimvars,
 } from '../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 // FIXME should not import from instruments
-import {
-  CpiomAvailableSimvarPublisher,
-  CpiomAvailableSimvars,
-} from '../instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
-// FIXME should not import from instruments
 import { EgpwcBusPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 // FIXME should not import from instruments
 import { FGDataPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
