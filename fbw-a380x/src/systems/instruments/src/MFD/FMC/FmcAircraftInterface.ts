@@ -48,7 +48,6 @@ import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { VnavEvents } from '@fmgc/events/VnavEvents';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
@@ -234,9 +233,6 @@ export class FmcAircraftInterface {
   private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
     this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
     null,
-  );
-  private readonly fcuLeftDiscreteWord1Left = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A380XFcuBusEvents>().on('a380x_fcu_eis_discrete_word_1_left'),
   );
   private readonly fcuEfisLeftDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_l_discrete_word_2'),
