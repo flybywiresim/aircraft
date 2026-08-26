@@ -1,9 +1,10 @@
-import { Vec2Math } from '@microsoft/msfs-sdk';
-import { copyWindVector, cloneWindVector, WindEntry, WindVector } from '../../../flightplanning/data/wind';
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+import { copyWindVector, WindEntry, WindVector } from '../../../flightplanning/data/wind';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class WindUtils {
-  private static readonly VectorCache = Vec2Math.create();
+  private static readonly VectorCache = { direction: 0, magnitude: 0 };
 
   public static undefinedWindVector: WindVector = { direction: undefined, magnitude: undefined };
 
@@ -20,7 +21,7 @@ export class WindUtils {
     if (entries.length === 0) {
       return this.copyEmptyWindVector(result);
     } else if (entries.length === 1) {
-      return cloneWindVector(entries[0].vector);
+      return copyWindVector(entries[0].vector, result);
     }
 
     const isDescendingOrder = (entries[1].altitude ?? 0) < (entries[0].altitude ?? 0);
@@ -62,12 +63,7 @@ export class WindUtils {
     // We need a minus here because the wind vector points in the direction that the wind is coming from,
     // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
     // the wind is actually a headwind.
-    return wind.direction !== undefined && wind.magnitude !== undefined
-      ? -Vec2Math.dot(
-          Vec2Math.setFromPolar(wind.magnitude, wind.direction, Vec2Math.create()),
-          Vec2Math.setFromPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache),
-        )
-      : 0;
+    return -WindUtils.dot(wind, this.setPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache));
   }
 
   public static interpolateWindVector(
@@ -93,11 +89,11 @@ export class WindUtils {
     );
   }
   /**
-   * Sets the polar components of a vector.
+   * Sets the polar components of a wind vector.
    * @param r - the new length (magnitude).
    * @param theta - the new polar angle theta, in radians.
-   * @param vector - the vector to change.
-   * @returns the vector after it has been changed.
+   * @param vector - the wind vector to change.
+   * @returns the wind vector after it has been changed.
    */
   public static setPolar(r: number, theta: number, vector: WindVector) {
     vector.direction = r * Math.cos(theta);
@@ -107,5 +103,15 @@ export class WindUtils {
 
   public static copyEmptyWindVector(result: WindVector) {
     return copyWindVector(WindUtils.emptyWindVector, result);
+  }
+
+  /**
+   * Gets the dot product of two wind vectors.
+   * @param v1 The first wind vector.
+   * @param v2 The second wind vector.
+   * @returns The dot product of the vectors.
+   */
+  public static dot(first: WindVector, second: WindVector): number {
+    return (first.direction ?? 0) * (second.direction ?? 0) + (first.magnitude ?? 0) * (second.magnitude ?? 0);
   }
 }
