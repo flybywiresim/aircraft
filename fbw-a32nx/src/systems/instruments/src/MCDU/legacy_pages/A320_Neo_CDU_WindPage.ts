@@ -4,6 +4,7 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
+  createVectorFromMagnitudeAndDirection,
   FlightPlanWindEntry,
   FlightPlanWindEntryFlags,
   formatWindVector,
@@ -745,9 +746,6 @@ export class CDUWindPage {
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
     const historyWinds: WindEntry[] = (await mcdu.getHistoryWinds(cruiseLevel)) ?? [];
-
-    historyWinds.sort((a, b) => a.altitude! - b.altitude!);
-
     const shouldAllowInsertion = await mcdu.flightPlanService.historyWindInsertionAllowed();
 
     const template = [
@@ -893,10 +891,7 @@ export class CDUWindPage {
       return null;
     }
 
-    return {
-      magnitude: magnitude,
-      direction: trueDegrees * MathUtils.DEGREES_TO_RADIANS,
-    };
+    return createVectorFromMagnitudeAndDirection(magnitude, trueDegrees);
   }
 
   private static parseWindEntryAltitude(

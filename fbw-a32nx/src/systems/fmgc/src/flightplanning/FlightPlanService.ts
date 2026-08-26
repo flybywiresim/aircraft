@@ -75,13 +75,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       .handle((fp) => {
         if (this.has(fp)) {
           const plan = this.get(fp);
-          if (!plan.destinationRunway) {
+          if (!plan.destinationAirport) {
             return;
           }
           plan.setPerformanceData('approachWindDirection', null);
           plan.setPerformanceData('approachWindMagnitude', null);
           plan.setPerformanceData('isApproachWindPilotEntered', false);
-          plan.setDescentWindEntry(0, null, true, false);
+          plan.setDescentWindEntry(plan.destinationAirport.location.alt, null, false, false);
         }
       });
 
@@ -91,7 +91,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       .handle((data) => {
         if (this.has(data.plan)) {
           const plan = this.get(data.plan);
-          if (!plan.destinationRunway) {
+          if (!plan.destinationAirport) {
             return;
           }
 
@@ -100,9 +100,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
           const mag = data.speed ?? plan.performanceData.approachWindMagnitude.get();
           plan.setPerformanceData('approachWindMagnitude', mag);
           plan.setPerformanceData('isApproachWindPilotEntered', true);
-          const destinationMagVar = plan.destinationAirport
-            ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
-            : 0;
+          const destinationMagVar = Facilities.getMagVar(
+            plan.destinationAirport.location.lat,
+            plan.destinationAirport.location.long,
+          );
           const trueDir = dir !== null ? MagVar.magneticToTrue(dir, destinationMagVar) : undefined;
           const windEntry: FlightPlanWindEntry = {
             vector: createVectorFromMagnitudeAndDirection(mag ?? undefined, trueDir),

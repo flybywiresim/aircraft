@@ -667,6 +667,8 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
 
   // APPR page subjects, refs and methods
 
+  private readonly doesNotHaveDestination = Subject.create(true);
+
   private readonly precisionApproachSelected = Subject.create<boolean>(false);
 
   private readonly apprIdent = Subject.create<string>('');
@@ -773,6 +775,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     }
 
     this.precisionApproachSelected.set(precisionApproach);
+    this.doesNotHaveDestination.set(this.loadedFlightPlan.destinationAirport === undefined);
     const vDev =
       fpIndex === FlightPlanIndex.Active
         ? this.props.fmcService.master.guidanceController.vnavDriver.getLinearDeviation()
@@ -3056,6 +3059,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
+                            disabled={this.doesNotHaveDestination}
                           />
                           <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
@@ -3063,6 +3067,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                               this.props.fmcService.master.setApproachWindSpeed(v, this.loadedFlightPlanIndex.get());
                             }}
                             readonlyValue={this.approachWindMagnitude}
+                            disabled={this.doesNotHaveDestination}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}

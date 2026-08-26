@@ -873,6 +873,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     checkDraft: boolean,
     entryIndex: number | undefined = undefined,
   ) {
+    if (altitude === undefined && entryIndex === undefined) {
+      console.warn('Attempted to modify climb wind entry with no altitude without specifying index');
+      return;
+    }
+
     const entries = checkDraft
       ? this.prepareClimbWindDraftModification() ?? this.performanceData.climbWindEntries.get()
       : this.performanceData.climbWindEntries.get();
@@ -889,12 +894,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const originElevation = this.originAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude !== undefined && altitude <= originElevation + 400 ? originElevation : altitude;
 
-    if (entry !== null && entry.altitude !== undefined && entry.altitude <= originElevation + 400) {
-      entry.altitude = originElevation;
+    if (entry !== null && entry.altitude !== undefined) {
+      entry.altitude = altitudeOrGround;
     }
 
     const existingEntryIndex =
-      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitude);
+      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
 
     this.setClbDesWindEntry(entries, altitudeOrGround, entry, existingEntryIndex ?? -1, true);
     if (!hasDraft) {
@@ -913,6 +918,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     checkDraft: boolean,
     entryIndex: number | undefined = undefined,
   ) {
+    if (altitude === undefined && entryIndex === undefined) {
+      console.warn('Attempted to modify descent wind entry with no altitude without specifying index');
+      return;
+    }
     const entries = checkDraft
       ? this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get()
       : this.performanceData.descentWindEntries.get();
@@ -937,7 +946,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
 
     const existingEntryIndex =
-      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitude);
+      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
 
     this.setClbDesWindEntry(entries, altitudeOrGround, entry, existingEntryIndex ?? -1, false);
     // Do this so the RPC event is sent
@@ -954,14 +963,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     shouldUpdateTwrWind: boolean,
     destinationElevation: number,
   ): void {
-    if (
-      entry !== null &&
-      entry.altitude !== undefined &&
-      !BaseFlightPlan.isPartlyFilledWindVector(entry.vector) &&
-      entry.altitude <= destinationElevation + 400
-    ) {
+    if (entry !== null && entry.altitude !== undefined && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
-      if (shouldUpdateTwrWind) {
+      if (shouldUpdateTwrWind && !BaseFlightPlan.isPartlyFilledWindVector(entry.vector)) {
         // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
         // TODO should we only do this if no pilot entry has been made?
         const destinationMagVar = this.destinationAirport

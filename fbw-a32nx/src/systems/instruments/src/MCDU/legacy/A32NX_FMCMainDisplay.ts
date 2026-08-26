@@ -3827,6 +3827,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean {
+    const hasDestination = this.flightPlanService.has(forPlan)
+      ? this.flightPlanService.get(forPlan).destinationAirport !== undefined
+      : false;
+
+    if (!hasDestination) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.bus.getPublisher<FmsWindEvents>().pub('delete_approach_wind', forPlan, false, false);
       return true;
@@ -5660,7 +5669,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public async getHistoryWinds() {
-    return await this.flightPlanService.getHistoryWindsEntries();
+    return await this.flightPlanService.getHistoryWindsEntries(true);
   }
   // ---------------------------
   // CDUMainDisplay Types
