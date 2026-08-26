@@ -1,11 +1,12 @@
+// Copyright (c) 2026 FlyByWire Simulations
 import { UplinkedWindEntry, UplinkedWindLevel, WindUplinkMessage } from '@datalink/common';
 import { FlightPlan } from './FlightPlan';
-import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { FlightPlanWindEntry } from '../data/wind';
+import { FlightPlanWindEntry, WindVector } from '../data/wind';
 import { PendingCruiseWind } from './PendingWindUplink';
 import { FmgcFlightPhase } from '../../../../shared/src/flightphase';
 import { FpmConfig } from '../FpmConfig';
+import { WindUtils } from '../../guidance/vnav/wind/WindUtils';
 
 export class PendingWindUplinkParser {
   private static readonly MAX_CERTIFIED_LEVEL = 398;
@@ -41,7 +42,7 @@ export class PendingWindUplinkParser {
       .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source, originElevationLevel))
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, config.NUM_CLIMB_WIND_LEVELS)
-      .sort((a, b) => a.altitude - b.altitude);
+      .sort((a, b) => a.altitude! - b.altitude!);
   }
 
   /**
@@ -125,7 +126,7 @@ export class PendingWindUplinkParser {
           return acc;
         }, []) ?? []
     ).map((fix) => {
-      fix.levels.sort((a, b) => b.altitude - a.altitude);
+      fix.levels.sort((a, b) => b.altitude! - a.altitude!);
       return fix;
     });
   }
@@ -138,7 +139,7 @@ export class PendingWindUplinkParser {
       .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source, destinationElevationLevel))
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, config.NUM_DESCENT_WIND_LEVELS)
-      .sort((a, b) => b.altitude - a.altitude);
+      .sort((a, b) => b.altitude! - a.altitude!);
   }
 
   private static setAlternateWinds(uplink: WindUplinkMessage, plan: FlightPlan) {
@@ -192,7 +193,8 @@ export class PendingWindUplinkParser {
     };
   }
 
-  private static createVecFromDeg({ magnitude, trueDegrees }: UplinkedWindEntry): Float64Array {
-    return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+  private static createVecFromDeg({ magnitude, trueDegrees }: UplinkedWindEntry): WindVector {
+    const vector: WindVector = { direction: undefined, magnitude: undefined };
+    return WindUtils.setPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, vector);
   }
 }

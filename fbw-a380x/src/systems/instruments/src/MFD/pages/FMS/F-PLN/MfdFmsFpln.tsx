@@ -1763,6 +1763,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   private formatWind(data: FplnLineWaypointDisplayData): VNode {
     let directionStr = '---';
     const previousRow = this.props.previousRow.get();
+    const forceFullWindInfo =
+      FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) ||
+      FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine);
     if (
       previousRow &&
       isWaypoint(previousRow) &&
@@ -1770,14 +1773,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       data.windPrediction !== null &&
       formatWindPredictionDirection(previousRow.windPrediction) ===
         formatWindPredictionDirection(data.windPrediction) &&
-      !(
-        FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) ||
-        FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)
-      )
+      !forceFullWindInfo
     ) {
-      directionStr = '"';
+      directionStr = ' " ';
     } else if (data.windPrediction !== null) {
-      directionStr = formatWindPredictionDirection(data.windPrediction);
+      directionStr = formatWindPredictionDirection(data.windPrediction, true);
     }
 
     let speedStr = '--';
@@ -1786,9 +1786,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       isWaypoint(previousRow) &&
       previousRow.windPrediction !== null &&
       data.windPrediction !== null &&
-      formatWindPredictionMagnitude(previousRow.windPrediction) === formatWindPredictionMagnitude(data.windPrediction)
+      formatWindPredictionMagnitude(previousRow.windPrediction) ===
+        formatWindPredictionMagnitude(data.windPrediction) &&
+      !forceFullWindInfo
     ) {
-      speedStr = '"';
+      speedStr = ' " ';
     } else if (data.windPrediction !== null) {
       speedStr = formatWindPredictionMagnitude(data.windPrediction);
     }

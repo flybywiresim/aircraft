@@ -1064,8 +1064,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
   }
 
-  async setAlternateWind(vector: WindVector): Promise<void> {
-    if (this.alternateDraftWind !== undefined) {
+  async setAlternateWind(vector: WindVector, forceNoDraft = false): Promise<void> {
+    if (!forceNoDraft && this.alternateDraftWind !== undefined) {
       this.alternateDraftWindExists = true;
       const oldDir = this.alternateDraftWind.direction;
       const oldMag = this.alternateDraftWind.magnitude;
@@ -1150,7 +1150,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (this.pendingWindUplink.alternateWind) {
-      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector!);
+      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector!, true);
     }
 
     this.pendingWindUplink.onUplinkInserted();
@@ -1263,7 +1263,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (this.alternateDraftWindExists) {
       if (isWindVectorComplete(this.alternateDraftWind!)) {
-        this.setPerformanceData('alternateWind', this.alternateDraftWind!);
+        this.setAlternateWind(cloneWindVector(this.alternateDraftWind!), true);
       }
     }
 
