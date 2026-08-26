@@ -496,6 +496,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
       .whenChanged()
       .handle((p) => {
         this.pitch = p.value;
+        this.MoveGlideSlopeGroup();
       });
 
     sub
