@@ -392,9 +392,11 @@ export class InputField<
     let newValue = null;
     let updateWasSuccessful = true;
     const oldValue = this.readValue.get();
+    let valueChanged: boolean;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
-      if (newValue === null && !this.canBeCleared.get() && oldValue != null) {
+      valueChanged = newValue !== oldValue;
+      if (valueChanged && newValue === null && !this.canBeCleared.get()) {
         throw new FmsError(FmsErrorType.NotAllowed);
       }
     } catch (msg: unknown) {
@@ -405,7 +407,7 @@ export class InputField<
       }
     }
 
-    if (updateWasSuccessful && oldValue !== newValue) {
+    if (updateWasSuccessful && valueChanged) {
       const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
       if (this.props.dataHandlerDuringValidation) {
         try {

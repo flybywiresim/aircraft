@@ -55,7 +55,7 @@ const formatWindAltitude = (entry: WindEntry) =>
     : '---';
 
 export const formatWindTrueDegrees = (vector: WindVector, appendUnit = true) =>
-  `${extractWindDirectionFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---'}${appendUnit ? '°' : ''}`;
+  `${(extractWindDirectionFromVector(vector) ?? 0).toFixed(0).padStart(3, '0')}${appendUnit ? '°' : ''}`;
 export const formatWindPredictionDirection = (prediction: WindVector | TailwindComponent) =>
   typeof prediction === 'number' ? (prediction > 0 ? 'TAIL' : 'HEAD') : formatWindTrueDegrees(prediction, true);
 

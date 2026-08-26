@@ -578,14 +578,24 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       const leg = this.props.fmcService.master.flightPlanInterface
         .get(this.loadedFlightPlanIndex.get())
         .maybeElementAt(wptIdx);
-      if (isLeg(leg)) {
-        switch (leg.segment.class) {
+      if (isLeg(leg) && leg.isXF()) {
+        const preds =
+          this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active
+            ? this.props.fmcService.master.fmgc.guidanceController?.vnavDriver.mcduProfile?.waypointPredictions.get(
+                wptIdx,
+              )
+            : undefined;
+        const segment = preds === undefined ? leg.segment.class : preds.profilePhase;
+        switch (segment) {
+          case ProfilePhase.Climb:
           case SegmentClass.Departure:
             page = WindSubPageMenu.Climb;
             break;
+          case ProfilePhase.Cruise:
           case SegmentClass.Enroute:
             page = WindSubPageMenu.Cruise;
             break;
+          case ProfilePhase.Descent:
           case SegmentClass.Arrival:
             page = WindSubPageMenu.Descent;
             break;
@@ -912,14 +922,13 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         if (isNavWaypointLegIndexValid) {
           this.selectedWaypointLegIndex.set(this.navigationWaypointLegIndex);
         }
-      } else {
-        const selectedWaypoint = this.selectedWaypointLegIndex.get();
-        // Select first if selection is not valid anymore or nothing was selected.
-        if (selectedWaypoint === null || !waypointsLegIndexes.includes(selectedWaypoint)) {
-          this.selectedWaypointLegIndex.set(waypointsLegIndexes.length > 0 ? waypointsLegIndexes[0] : null);
-        }
+        this.navigationWaypointLegIndex = null;
       }
-      this.navigationWaypointLegIndex = null;
+      const selectedWaypoint = this.selectedWaypointLegIndex.get();
+      // Select first if selection is not valid anymore or nothing was selected.
+      if (selectedWaypoint === null || !waypointsLegIndexes.includes(selectedWaypoint)) {
+        this.selectedWaypointLegIndex.set(waypointsLegIndexes.length > 0 ? waypointsLegIndexes[0] : null);
+      }
     }
   }
 
