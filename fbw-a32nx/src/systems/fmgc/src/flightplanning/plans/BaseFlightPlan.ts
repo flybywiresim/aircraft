@@ -2893,7 +2893,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       if (entries !== undefined) {
         for (const windEntry of entries) {
           let windPropagationType: PropagationType;
-          // Do not propagate entries will null FLs.
+          // Enforce entry type for entries without altitude.
           if (i === atIndex || windEntry.altitude === undefined) {
             windPropagationType = PropagationType.Entry;
           } else if (i < atIndex) {
@@ -3027,6 +3027,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
     if (this.draftCruiseWindEntries === undefined) {
       this.syncCruiseWindChange(atIndex);
+    } else {
+      this.incrementVersion();
     }
   }
 
@@ -3187,7 +3189,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   protected deleteCruiseDraftWindEntries(): boolean {
     if (this.draftCruiseWindEntries !== undefined) {
-      this.draftCruiseWindEntries.get()?.clear();
+      this.draftCruiseWindEntries.set(null);
       return true;
     }
     return false;
