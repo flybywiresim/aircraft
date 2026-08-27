@@ -562,4 +562,18 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * Returns whether history wind insertion is allowed.
    */
   historyWindInsertionAllowed(): Promise<boolean>;
+
+  /**
+   * Sets the approach wind on a specific flightplan.
+   * @param direction the direction to set, if null, direction in the performance data is used.
+   * @param magnitude the speed of the wind to set in knots, if null, the magnitude in the performance data is used.
+   * @param forPlan the plan to set the wind in
+   */
+  setApproachWind(direction: number | null, magnitude: number | null, forPlan: number): Promise<boolean>;
+
+  /**
+   * deletes the approach wind from a flightplan
+   * @param planIndex  the plan to delete the wind from
+   */
+  deleteApproachWind(planIndex: number): Promise<boolean>;
 }

@@ -132,3 +132,17 @@ export function createVectorFromMagnitudeAndDirection(
 export function isWindVectorComplete(vector: WindVector) {
   return vector.magnitude !== undefined && vector.direction !== undefined;
 }
+
+export function cloneWindEntry(entry: WindEntry): WindEntry {
+  return {
+    ...entry,
+    vector: cloneWindVector(entry.vector),
+  };
+}
+
+export function isPartlyFilledWindVector(vector: WindVector) {
+  return (
+    (vector.direction !== undefined && vector.magnitude === undefined) ||
+    (vector.direction === undefined && vector.magnitude !== undefined)
+  );
+}

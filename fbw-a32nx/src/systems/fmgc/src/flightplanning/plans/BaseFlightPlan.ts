@@ -81,13 +81,13 @@ import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAi
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import {
-  cloneWindVector,
+  cloneWindEntry,
   debugFormatWindEntry,
+  isPartlyFilledWindVector,
   isWindVectorComplete,
   PropagatedWindEntry,
   PropagationType,
   WindEntry,
-  WindVector,
 } from '../data/wind';
 import { FlightPlanIndex } from '../FlightPlanManager';
 
@@ -2969,7 +2969,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const hasDraft = this.draftCruiseWindEntries !== undefined;
 
-    if (!hasDraft && (entry.altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(entry.vector))) {
+    if (!hasDraft && (entry.altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
       return;
     }
 
@@ -3060,10 +3060,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (checkDraftConfig) {
       this.prepareCruiseWindDraftModification();
     }
-    if (
-      !this.draftCruiseWindExists &&
-      (newEntry.altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(newEntry.vector))
-    ) {
+    if (!this.draftCruiseWindExists && (newEntry.altitude === undefined || isPartlyFilledWindVector(newEntry.vector))) {
       return;
     }
 
@@ -3106,7 +3103,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           ? legWindEntries.find((e) => Math.round(e.altitude / 100) === Math.round(newEntry.altitude / 100))
           : legWindEntries[entryIndex];
 
-        if (isWindVectorComplete(oldEntry.vector) && BaseFlightPlan.isPartlyFilledWindVector(newEntry.vector)) {
+        if (isWindVectorComplete(oldEntry.vector) && isPartlyFilledWindVector(newEntry.vector)) {
           newEntry.vector.direction = undefined;
           newEntry.vector.magnitude = undefined;
         }
@@ -3200,27 +3197,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           const legWindEntries: WindEntry[] = [];
           for (let j = 0; j < cruiseWindEntries.length; j++) {
             const cruiseWindEntry = cruiseWindEntries[j];
-            legWindEntries.push(BaseFlightPlan.cloneWindEntry(cruiseWindEntry));
+            legWindEntries.push(cloneWindEntry(cruiseWindEntry));
           }
           this.draftCruiseWindEntries.set(i, legWindEntries);
         }
       }
       this.draftCruiseWindExists = true;
     }
-  }
-
-  protected static cloneWindEntry(entry: WindEntry): WindEntry {
-    return {
-      ...entry,
-      vector: entry.vector !== undefined ? cloneWindVector(entry.vector) : undefined,
-    };
-  }
-
-  protected static isPartlyFilledWindVector(vector: WindVector) {
-    return (
-      (vector.direction !== undefined && vector.magnitude === undefined) ||
-      (vector.direction === undefined && vector.magnitude !== undefined)
-    );
   }
 
   private static sortWindEntriesByAltitude(entries: PropagatedWindEntry[]) {

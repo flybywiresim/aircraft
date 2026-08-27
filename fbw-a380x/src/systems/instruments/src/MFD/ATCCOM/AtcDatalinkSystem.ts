@@ -2,14 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
-import {
-  AtisMessage,
-  AtisType,
-  AtsuStatusCodes,
-  DatalinkModeCode,
-  DatalinkStatusCode,
-  WindUplinkMessage,
-} from '@datalink/common';
+import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
 import { FmsData } from '@flybywiresim/fbw-sdk';
@@ -70,15 +63,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   private atisAutoUpdates: string[] = [];
 
-  /** Map containing the wind request ids associated with the flightplan index which they belong to */
-  private readonly uplinkWindRequestFlightPlanMap: Map<number, number> = new Map();
-
   private atisReportsPrintActive: boolean = false;
-
-  private windsResponseCallbacks: ((
-    response: [AtsuStatusCodes, WindUplinkMessage | null],
-    requestId: number,
-  ) => boolean)[] = [];
 
   #atcErrors = ArraySubject.create<AtcErrorMessage>();
 

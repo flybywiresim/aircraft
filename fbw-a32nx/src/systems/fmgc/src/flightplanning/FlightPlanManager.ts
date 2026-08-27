@@ -28,6 +28,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanUtils } from './FlightPlanUtils';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
+import { FpmConfig } from './FpmConfig';
 
 export enum FlightPlanIndex {
   Active,
@@ -69,10 +70,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     private readonly performanceDataInit: P,
     private readonly syncClientID: number,
     private readonly master: boolean,
-    private readonly flightplanDraftWindsEnabled = false,
-    private readonly maxClimbWindLevels = 0,
-    private readonly maxCruiseWindLevels = 0,
-    private readonly maxDescentWindLevels = 0,
+    private readonly config: FpmConfig,
   ) {
     const sub = bus.getSubscriber<FlightPlanEvents & ClockEvents>();
 
@@ -111,10 +109,10 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               this.bus,
               this.performanceDataInit.clone(),
               this.time.get(),
-              this.flightplanDraftWindsEnabled,
-              this.maxClimbWindLevels,
-              this.maxCruiseWindLevels,
-              this.maxDescentWindLevels,
+              this.config.DRAFT_ON_WIND_EDIT,
+              this.config.NUM_CLIMB_WIND_LEVELS,
+              this.config.NUM_CRUISE_WIND_LEVELS,
+              this.config.NUM_DESCENT_WIND_LEVELS,
             );
 
             this.set(intIndex, newPlan);
@@ -215,11 +213,11 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       index,
       this.bus,
       this.performanceDataInit.clone(),
-      this.maxClimbWindLevels,
-      this.maxCruiseWindLevels,
-      this.maxDescentWindLevels,
+      this.config.NUM_CLIMB_WIND_LEVELS,
+      this.config.NUM_CRUISE_WIND_LEVELS,
+      this.config.NUM_DESCENT_WIND_LEVELS,
       this.time.get(),
-      this.flightplanDraftWindsEnabled,
+      this.config.DRAFT_ON_WIND_EDIT,
     );
     if (flags !== undefined) {
       this.plans[index].flags |= flags;

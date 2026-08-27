@@ -1088,13 +1088,15 @@ export class CDUPerformancePage {
       magWindSpeedCell = apprWindMagnitude.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprWind(value, forPlan)) {
-        mcdu.updateTowerHeadwind();
-        mcdu.updatePerfSpeeds();
-        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
-      } else {
-        scratchpadCallback();
-      }
+      mcdu.setPerfApprWind(value, forPlan).then((v) => {
+        if (v) {
+          mcdu.updateTowerHeadwind();
+          mcdu.updatePerfSpeeds();
+          CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     let transAltCell = '\xa0'.repeat(5);

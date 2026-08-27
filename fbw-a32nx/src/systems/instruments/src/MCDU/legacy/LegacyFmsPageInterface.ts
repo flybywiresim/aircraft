@@ -188,7 +188,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDistanceToDestination(): number | undefined;
   setPerfApprQNH(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprTemp(s: string, forPlan: FlightPlanIndex): boolean;
-  setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean;
+  setPerfApprWind(s: string, forPlan: FlightPlanIndex): Promise<boolean>;
   updatePerfSpeeds(): void;
   setPerfApprTransAlt(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprVApp(s: string, forPlan: FlightPlanIndex): boolean;

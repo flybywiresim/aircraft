@@ -34,7 +34,6 @@ import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
 import { HistoryWind } from '../wind/HistoryWind';
 import { FlightPhaseManagerEvents } from '../flightphase';
 import { FmgcFlightPhase } from '../../../shared/src/flightphase';
-import { FmsWindEvents } from '../wind/FmsWindEvents';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -64,55 +63,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.performanceDataInit,
       this.syncClientID,
       master,
-      config.DRAFT_ON_WIND_EDIT,
-      config.NUM_CLIMB_WIND_LEVELS,
-      config.NUM_CRUISE_WIND_LEVELS,
-      config.NUM_DESCENT_WIND_LEVELS,
+      config,
     );
-    this.bus
-      .getSubscriber<FmsWindEvents>()
-      .on('delete_approach_wind')
-      .handle((fp) => {
-        if (this.has(fp)) {
-          const plan = this.get(fp);
-          if (!plan.destinationAirport) {
-            return;
-          }
-          plan.setPerformanceData('approachWindDirection', null);
-          plan.setPerformanceData('approachWindMagnitude', null);
-          plan.setPerformanceData('isApproachWindPilotEntered', false);
-          plan.setDescentWindEntry(plan.destinationAirport.location.alt, null, false, false);
-        }
-      });
-
-    this.bus
-      .getSubscriber<FmsWindEvents>()
-      .on('set_approach_wind')
-      .handle((data) => {
-        if (this.has(data.plan)) {
-          const plan = this.get(data.plan);
-          if (!plan.destinationAirport) {
-            return;
-          }
-
-          const dir = data.direction !== null ? data.direction % 360 : plan.performanceData.approachWindDirection.get();
-          plan.setPerformanceData('approachWindDirection', dir);
-          const mag = data.speed ?? plan.performanceData.approachWindMagnitude.get();
-          plan.setPerformanceData('approachWindMagnitude', mag);
-          plan.setPerformanceData('isApproachWindPilotEntered', true);
-          const destinationMagVar = Facilities.getMagVar(
-            plan.destinationAirport.location.lat,
-            plan.destinationAirport.location.long,
-          );
-          const trueDir = dir !== null ? MagVar.magneticToTrue(dir, destinationMagVar) : undefined;
-          const windEntry: FlightPlanWindEntry = {
-            vector: createVectorFromMagnitudeAndDirection(mag ?? undefined, trueDir),
-            flags: 0,
-            altitude: 0,
-          };
-          plan.setDescentWindEntry(0, windEntry, false, false);
-        }
-      });
   }
 
   createFlightPlans() {
@@ -1125,6 +1077,46 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
         !this.haveHistoryWindsBeenInserted(historyWindEntries),
     );
+  }
+
+  async setApproachWind(direction: number | null, magnitude: number | null, forPlan: number): Promise<boolean> {
+    if (this.has(forPlan)) {
+      const plan = this.get(forPlan);
+      if (plan.destinationAirport) {
+        const dir = direction !== null ? direction % 360 : plan.performanceData.approachWindDirection.get();
+        plan.setPerformanceData('approachWindDirection', dir);
+        const mag = magnitude ?? plan.performanceData.approachWindMagnitude.get();
+        plan.setPerformanceData('approachWindMagnitude', mag);
+        plan.setPerformanceData('isApproachWindPilotEntered', true);
+        const destinationMagVar = Facilities.getMagVar(
+          plan.destinationAirport.location.lat,
+          plan.destinationAirport.location.long,
+        );
+        const trueDir = dir !== null ? MagVar.magneticToTrue(dir, destinationMagVar) : undefined;
+        const windEntry: FlightPlanWindEntry = {
+          vector: createVectorFromMagnitudeAndDirection(mag ?? undefined, trueDir),
+          flags: 0,
+          altitude: 0,
+        };
+        plan.setDescentWindEntry(0, windEntry, false, false);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async deleteApproachWind(forPlan: number) {
+    if (this.has(forPlan)) {
+      const plan = this.get(forPlan);
+      if (plan.destinationAirport) {
+        plan.setPerformanceData('approachWindDirection', null);
+        plan.setPerformanceData('approachWindMagnitude', null);
+        plan.setPerformanceData('isApproachWindPilotEntered', false);
+        plan.setDescentWindEntry(plan.destinationAirport.location.alt, null, false, false);
+        return true;
+      }
+    }
+    return false;
   }
 
   private haveHistoryWindsBeenInserted(historyWinds: WindEntry[]) {

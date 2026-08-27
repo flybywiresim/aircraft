@@ -80,7 +80,6 @@ import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindU
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 import { FmsToDatalinkSubsystemEvents } from '../shared/FmsDatalinkEvents';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
-import { FmsWindEvents } from '@fmgc/wind/FmsWindEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -935,7 +934,6 @@ export class FlightManagementComputer implements FmcInterface {
         this.fmgc.data.flightPhase.get(),
         this.guidanceController,
         this.dataManager,
-        this.#flightPlanService,
       );
       this.atsuBusPublisher.pub(
         'wind_uplink_request',
@@ -1982,27 +1980,17 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   setApproachWindDirection(value: number | null, forPlan: number): void {
-    const pub = this.bus.getPublisher<FmsWindEvents>();
     if (value === null) {
-      pub.pub('delete_approach_wind', forPlan);
+      this.#flightPlanService.deleteApproachWind(forPlan);
     } else {
-      pub.pub('set_approach_wind', {
-        direction: value,
-        speed: null,
-        plan: forPlan,
-      });
+      this.#flightPlanService.setApproachWind(value, null, forPlan);
     }
   }
   setApproachWindSpeed(value: number | null, forPlan: number): void {
-    const pub = this.bus.getPublisher<FmsWindEvents>();
     if (value === null) {
-      pub.pub('delete_approach_wind', forPlan);
+      this.#flightPlanService.deleteApproachWind(forPlan);
     } else {
-      pub.pub('set_approach_wind', {
-        speed: value,
-        direction: null,
-        plan: forPlan,
-      });
+      this.#flightPlanService.setApproachWind(null, value, forPlan);
     }
   }
 

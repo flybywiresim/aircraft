@@ -86,7 +86,6 @@ import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindU
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
-import { FmsWindEvents } from '@fmgc/wind/FmsWindEvents';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -3826,7 +3825,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return true;
   }
 
-  public setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean {
+  public async setPerfApprWind(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const hasDestination = this.flightPlanService.has(forPlan)
       ? this.flightPlanService.get(forPlan).destinationAirport !== undefined
       : false;
@@ -3837,8 +3836,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (s === Keypad.clrValue) {
-      this.bus.getPublisher<FmsWindEvents>().pub('delete_approach_wind', forPlan, false, false);
-      return true;
+      return await this.flightPlanService.deleteApproachWind(forPlan);
     }
 
     // both must be entered
@@ -3852,18 +3850,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    this.bus.getPublisher<FmsWindEvents>().pub(
-      'set_approach_wind',
-      {
-        speed: mag,
-        direction: dir,
-        plan: forPlan,
-      },
-      false,
-      false,
-    );
-
-    return true;
+    return await this.flightPlanService.setApproachWind(dir, mag, forPlan);
   }
 
   public setPerfApprTransAlt(s: string, forPlan: FlightPlanIndex): boolean {
@@ -5606,7 +5593,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         this.flightPhaseManager.phase,
         this.guidanceController,
         this.dataManager,
-        this.flightPlanService,
       );
 
       try {

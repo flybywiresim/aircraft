@@ -7,7 +7,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanLeg, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
@@ -19,7 +18,6 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
  * @param phase the active fmgc flight phase.
  * @param guidanceController {@link GuidanceController} used to retrieve waypoint predictions for the active flight plan.
  * @param dataManager {@link DataManager} used to retrieve stored waypoints if necessary.
- * @param flightPlanService the flight plan service used to propagate winds if necessary.
  * @returns the formatted wind request.
  */
 export function formatWindRequest(
@@ -28,7 +26,6 @@ export function formatWindRequest(
   phase: FmgcFlightPhase,
   guidanceController: GuidanceController,
   dataManager: DataManager | null,
-  flightPlanService: FlightPlanService,
 ): WindRequestMessage {
   const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
@@ -62,7 +59,7 @@ export function formatWindRequest(
 
   let cruiseWinds: CruiseWindRequest | undefined = undefined;
   if (shouldRequestCruiseWinds && cruiseLegs.length > 0) {
-    const propagatedWinds = flightPlanService.propagateWindsAt(0, [], planIndex);
+    const propagatedWinds = plan.propagateWindsAt(0, []);
     const flightLevels = propagatedWinds.map((wind) => Math.round(wind.altitude! / 100));
 
     if (flightLevels.length === 0) {
