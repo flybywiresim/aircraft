@@ -12,7 +12,7 @@ import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flyby
 import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { ONE_DEG, FIVE_DEG, circlePath } from './HUDUtils';
+import { ONE_DEG, FIVE_DEG, OutlinedPath } from './HUDUtils';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
@@ -50,6 +50,7 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   private birdPath = FSComponent.createRef<SVGGElement>();
 
   private birdPathCircle = FSComponent.createRef<SVGPathElement>();
+  private birdPathCircleBg = FSComponent.createRef<SVGPathElement>();
 
   private readonly onGround = MappedSubject.create(
     ([leftMainGearCompressed, rightMainGearCompressed]) => leftMainGearCompressed || rightMainGearCompressed,
@@ -117,7 +118,6 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
         xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
       }
 
-      //this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
       return `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     },
     this.roll,
@@ -172,13 +172,16 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
         <g ref={this.birdPath}>
           <svg>
             <g id="FlightPathDirector" display={this.fdVisible}>
-              <path
-                style={{ transform: this.fdTransform }}
-                ref={this.birdPathCircle}
-                d={circlePath(7, 640, 512)}
-                class="NormalStroke Green"
-                stroke-dasharray={this.fdCueOffRange}
-              />
+              <g style={{ transform: this.fdTransform }}>
+                {OutlinedPath(
+                  'M 640 512 m 7 0 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0 Z M 640 512 m 7 0 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0 Z',
+                  'NormalStroke InverseGreen',
+                  'NormalStroke Green',
+                  this.birdPathCircleBg,
+                  this.birdPathCircle,
+                  this.fdCueOffRange.get(),
+                )}
+              </g>
             </g>
           </svg>
         </g>

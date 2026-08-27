@@ -280,11 +280,12 @@ export function OutlinedPath(
   foreClass: string,
   bckGndRef?: NodeReference<SVGPathElement>,
   foreRef?: NodeReference<SVGPathElement>,
+  dasharray?: string,
 ) {
   return (
     <>
       <path ref={bckGndRef} d={path} class={bckGndClass} />
-      <path ref={foreRef} d={path} class={foreClass} />
+      <path ref={foreRef} d={path} class={foreClass} stroke-dasharray={dasharray} />
     </>
   );
 }

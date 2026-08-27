@@ -180,7 +180,7 @@ export class FlightPathVector extends DisplayComponent<{
       this.isAnyApEngaged.get()
         ? setAttributes(
             'd',
-            'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35 M 592 502 v20 M 688 502 v20',
+            'M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 592 512 h 33 m 15 -15 v -17z m 15 15 h 33 M 592 502 v20 M 688 502 v20',
             [this.birdPathBgRef, this.birdPathRef],
           )
         : setAttributes(
@@ -192,7 +192,7 @@ export class FlightPathVector extends DisplayComponent<{
       this.isAnyApEngaged.get()
         ? setAttributes(
             'd',
-            'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+            'M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 592 512 h 33 m 15 -15 v -17z m 15 15 h 33',
             [this.birdPathBgRef, this.birdPathRef],
           )
         : setAttributes(
@@ -244,7 +244,7 @@ export class FlightPathVector extends DisplayComponent<{
     this.isAnyApEngaged.get()
       ? setAttributes(
           'd',
-          'M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 627 512 l 13 13 l 13 -13 l -13 -13  l -13 13 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+          'M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 625 512 l 15 15 l 15 -15 l -15 -15  l -15 15 Z M 592 512 h 33 m 15 -15 v -17z m 15 15 h 33',
           [this.birdPathBgRef, this.birdPathRef],
         )
       : setAttributes(

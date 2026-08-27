@@ -319,7 +319,9 @@ text.Green {
 }
 tspan.Green {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Amber {

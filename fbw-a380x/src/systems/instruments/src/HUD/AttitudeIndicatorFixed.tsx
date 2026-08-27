@@ -230,13 +230,13 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           ATT / HDG
         </text>
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
           <FlightPathVector
             bus={this.props.bus}
             instrument={this.props.instrument}
             isAttExcessive={this.props.isAttExcessive}
             filteredRadioAlt={this.props.filteredRadioAlt}
           />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
 
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} instrument={this.props.instrument} />
