@@ -70,7 +70,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     private readonly performanceDataInit: P,
     private readonly syncClientID: number,
     private readonly master: boolean,
-    private readonly config: FpmConfig,
+    private readonly config?: FpmConfig,
   ) {
     const sub = bus.getSubscriber<FlightPlanEvents & ClockEvents>();
 
@@ -109,10 +109,10 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               this.bus,
               this.performanceDataInit.clone(),
               this.time.get(),
-              this.config.DRAFT_ON_WIND_EDIT,
-              this.config.NUM_CLIMB_WIND_LEVELS,
-              this.config.NUM_CRUISE_WIND_LEVELS,
-              this.config.NUM_DESCENT_WIND_LEVELS,
+              this.config.DRAFT_ON_WIND_EDIT ?? false,
+              this.config.NUM_CLIMB_WIND_LEVELS ?? 0,
+              this.config.NUM_CRUISE_WIND_LEVELS ?? 0,
+              this.config.NUM_DESCENT_WIND_LEVELS ?? 0,
             );
 
             this.set(intIndex, newPlan);

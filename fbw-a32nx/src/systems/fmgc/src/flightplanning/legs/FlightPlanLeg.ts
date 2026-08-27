@@ -133,6 +133,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
   cruiseWindEntries: WindEntry[] = [];
 
+  draftWindEntries: WindEntry[] | undefined = undefined;
+
   serialize(): SerializedFlightPlanLeg {
     return {
       uuid: this.uuid,
@@ -393,7 +395,9 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   }
 
   hasCruiseWindEntryAt(altitude: number): boolean {
-    return this.cruiseWindEntries.some((entry) => Math.round(entry.altitude / 100) === Math.round(altitude / 100));
+    return (this.draftWindEntries ?? this.cruiseWindEntries).some(
+      (entry) => Math.round(entry.altitude / 100) === Math.round(altitude / 100),
+    );
   }
 
   /**

@@ -28,6 +28,7 @@ import {
   extractWindDirectionFromVector,
   extractWindSpeedFromVector,
   FlightPlanWindEntry,
+  isPartlyFilledWindVector,
   isWindVectorComplete,
   WindEntry,
   WindVector,
@@ -120,7 +121,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     time?: number,
     draftOnWindsOnWindEdit = false,
   ) {
-    super(context, index, bus, maxCruiseWindLevels, time, draftOnWindsOnWindEdit);
+    super(
+      context,
+      index,
+      bus,
+      maxCruiseWindLevels,
+      time,
+      draftOnWindsOnWindEdit && index !== FlightPlanIndex.Uplink && index !== FlightPlanIndex.Temporary,
+    );
     this.performanceData = performanceDataInit;
     if (draftOnWindsOnWindEdit) {
       this.draftClimbWindEntries =
@@ -897,7 +905,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (
       entry !== null &&
       !this.draftClimbWindExists &&
-      (altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(entry.vector))
+      (altitude === undefined || isPartlyFilledWindVector(entry.vector))
     ) {
       return;
     }
@@ -938,11 +946,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const hasDraft = this.draftDescentWindExists;
 
     // Partial entries not allowed on non draft winds
-    if (
-      entry !== null &&
-      !hasDraft &&
-      (altitude === undefined || BaseFlightPlan.isPartlyFilledWindVector(entry.vector))
-    ) {
+    if (entry !== null && !hasDraft && (altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
       return;
     }
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
@@ -975,7 +979,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   ): void {
     if (entry !== null && entry.altitude !== undefined && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
-      if (shouldUpdateTwrWind && !BaseFlightPlan.isPartlyFilledWindVector(entry.vector)) {
+      if (shouldUpdateTwrWind && !isPartlyFilledWindVector(entry.vector)) {
         // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
         // TODO should we only do this if no pilot entry has been made?
         const destinationMagVar = this.destinationAirport
@@ -1254,12 +1258,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (this.draftCruiseWindExists) {
       for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
         const leg = this.maybeElementAt(i);
-        if (isLeg(leg) && this.draftCruiseWindEntries!.has(i)) {
-          const draftEntries = this.draftCruiseWindEntries!.get(i);
-          if (draftEntries) {
-            leg.cruiseWindEntries = this.filterDraftWindsByValidEntries(draftEntries, leg.cruiseWindEntries);
-          }
+        if (isLeg(leg) && leg.draftWindEntries !== undefined) {
+          leg.cruiseWindEntries = this.filterDraftWindsByValidEntries(leg.draftWindEntries, leg.cruiseWindEntries);
           this.syncCruiseWindChange(i);
+          leg.draftWindEntries = undefined;
         }
       }
     }
@@ -1295,7 +1297,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   private filterDraftWindsByValidEntries(draftWinds: WindEntry[], nonDraftWinds: WindEntry[]) {
     return draftWinds
       .map((e) => {
-        return BaseFlightPlan.isPartlyFilledWindVector(e.vector)
+        return isPartlyFilledWindVector(e.vector)
           ? nonDraftWinds.find((it) => it.altitude === e.altitude) ?? FlightPlan.emptyWindEntry
           : e;
       })

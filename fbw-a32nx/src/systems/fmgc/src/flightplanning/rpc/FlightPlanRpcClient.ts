@@ -608,4 +608,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   historyWindInsertionAllowed(): Promise<boolean> {
     return this.callFunctionViaRpc('historyWindInsertionAllowed');
   }
+  setApproachWind(direction: number | null, magnitude: number | null, planIndex: number): Promise<boolean> {
+    return this.callFunctionViaRpc('setApproachWind', direction, magnitude, planIndex);
+  }
+  deleteApproachWind(planIndex: number): Promise<boolean> {
+    return this.callFunctionViaRpc('deleteApproachWind', planIndex);
+  }
 }

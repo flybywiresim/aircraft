@@ -567,9 +567,9 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * Sets the approach wind on a specific flightplan.
    * @param direction the direction to set, if null, direction in the performance data is used.
    * @param magnitude the speed of the wind to set in knots, if null, the magnitude in the performance data is used.
-   * @param forPlan the plan to set the wind in
+   * @param planIndex the plan to set the wind in
    */
-  setApproachWind(direction: number | null, magnitude: number | null, forPlan: number): Promise<boolean>;
+  setApproachWind(direction: number | null, magnitude: number | null, planIndex: number): Promise<boolean>;
 
   /**
    * deletes the approach wind from a flightplan

@@ -89,7 +89,6 @@ import {
   PropagationType,
   WindEntry,
 } from '../data/wind';
-import { FlightPlanIndex } from '../FlightPlanManager';
 
 export interface FlightPlanContext {
   get syncClientID(): number;
@@ -108,8 +107,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private static readonly WindCache: PropagatedWindEntry[] = [];
 
-  protected readonly draftCruiseWindEntries: Map<number, WindEntry[]> | undefined;
-
   protected draftCruiseWindExists = false;
 
   protected constructor(
@@ -118,13 +115,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     public readonly bus: EventBus,
     protected readonly maxCruiseWindLevels?: number,
     public readonly timeCreated?: number,
-    draftOnWindsOnWindEdit = false,
+    private readonly draftOnWindsOnWindEdit = false,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
-    this.draftCruiseWindEntries =
-      draftOnWindsOnWindEdit && index !== FlightPlanIndex.Temporary && index !== FlightPlanIndex.Uplink
-        ? new Map()
-        : undefined;
     this.wasModified = false;
   }
 
@@ -2891,7 +2884,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         continue;
       }
 
-      const entries = this.draftCruiseWindExists ? this.draftCruiseWindEntries!.get(i) : element.cruiseWindEntries;
+      const entries = element.draftWindEntries ?? element.cruiseWindEntries;
       if (entries !== undefined) {
         for (const windEntry of entries) {
           let windPropagationType: PropagationType;
@@ -2967,13 +2960,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.prepareCruiseWindDraftModification();
     }
 
-    const hasDraft = this.draftCruiseWindEntries !== undefined;
+    const hasDraft = leg.draftWindEntries !== undefined;
 
     if (!hasDraft && (entry.altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
       return;
     }
 
-    const windEntries = this.draftCruiseWindEntries?.get(atIndex) ?? leg.cruiseWindEntries;
+    const windEntries = leg.draftWindEntries ?? leg.cruiseWindEntries;
     const entryIdx =
       entry.altitude !== undefined
         ? windEntries.findIndex((e) => Math.round(e.altitude / 100) === Math.round(entry.altitude / 100))
@@ -3013,9 +3006,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (checkDraftConfig) {
       this.prepareCruiseWindDraftModification();
     }
-
-    const draftCruiseWindEntries = this.draftCruiseWindEntries?.get(atIndex);
-    let entries = draftCruiseWindEntries ?? leg.cruiseWindEntries;
+    let entries = leg.draftWindEntries ?? leg.cruiseWindEntries;
 
     if (!entries.some((e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(altitude / 100))) {
       console.error('[FMS/FPM] Tried to delete a cruise wind entry that does not exist');
@@ -3026,7 +3017,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     entries = entries.filter(
       (e) => e.altitude !== undefined && Math.round(e.altitude / 100) !== Math.round(altitude / 100),
     );
-    if (this.draftCruiseWindEntries === undefined) {
+    if (leg.draftWindEntries === undefined) {
       this.syncCruiseWindChange(atIndex);
     }
   }
@@ -3066,7 +3057,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const existingEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache);
 
-    const legWindEntries = this.draftCruiseWindEntries?.get(atIndex) ?? leg.cruiseWindEntries;
+    const legWindEntries = leg.draftWindEntries ?? leg.cruiseWindEntries;
 
     // Check if the entry we clicked on has one of the four available cruise levels
     const clickedEntry = existingEntries[entryIndex];
@@ -3110,7 +3101,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         oldEntry.vector = newEntry.vector;
 
-        if (this.draftCruiseWindEntries === undefined) {
+        if (leg.draftWindEntries === undefined) {
           this.syncCruiseWindChange(atIndex);
         } else {
           this.incrementVersion();
@@ -3137,7 +3128,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // Delete all entries with the same altitude (FCOM)
         await Promise.all(
           this.allLegs
-            .map((l, i) => [!isDiscontinuity(l) && this.hasCruiseWindEntryAt(l, newEntry.altitude, i), i] as const)
+            .map((l, i) => [!isDiscontinuity(l) && this.hasCruiseWindEntryAt(l, newEntry.altitude), i] as const)
             .filter(([shouldDeleteCruiseWind, _]) => shouldDeleteCruiseWind)
             .map(([_, i]) => this.deleteCruiseWindEntry(i, newEntry.altitude, checkDraftConfig)),
         );
@@ -3162,21 +3153,18 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return null;
   }
 
-  hasCruiseWindEntryAt(leg: FlightPlanLeg, altitude: number, legIndex: number): boolean {
-    if (this.draftCruiseWindEntries !== undefined) {
-      return (
-        this.draftCruiseWindEntries
-          .get(legIndex)
-          ?.some((e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(altitude / 100)) ??
-        false
-      );
-    }
+  hasCruiseWindEntryAt(leg: FlightPlanLeg, altitude: number): boolean {
     return leg.hasCruiseWindEntryAt(altitude);
   }
 
   protected deleteCruiseDraftWindEntries(): boolean {
-    if (this.draftCruiseWindEntries !== undefined) {
-      this.draftCruiseWindEntries.clear();
+    if (this.draftOnWindsOnWindEdit) {
+      for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
+        const leg = this.maybeElementAt(i);
+        if (isLeg(leg)) {
+          leg.draftWindEntries = undefined;
+        }
+      }
       this.draftCruiseWindExists = false;
       return true;
     }
@@ -3184,7 +3172,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private prepareCruiseWindDraftModification(): void {
-    if (!this.draftCruiseWindEntries) {
+    if (!this.draftOnWindsOnWindEdit) {
       return;
     }
 
@@ -3199,7 +3187,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const cruiseWindEntry = cruiseWindEntries[j];
             legWindEntries.push(cloneWindEntry(cruiseWindEntry));
           }
-          this.draftCruiseWindEntries.set(i, legWindEntries);
+          leg.draftWindEntries = legWindEntries;
         }
       }
       this.draftCruiseWindExists = true;

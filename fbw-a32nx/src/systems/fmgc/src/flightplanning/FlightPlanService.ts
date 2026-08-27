@@ -1079,9 +1079,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     );
   }
 
-  async setApproachWind(direction: number | null, magnitude: number | null, forPlan: number): Promise<boolean> {
-    if (this.has(forPlan)) {
-      const plan = this.get(forPlan);
+  async setApproachWind(direction: number | null, magnitude: number | null, planIndex: number): Promise<boolean> {
+    if (this.has(planIndex)) {
+      const plan = this.get(planIndex);
       if (plan.destinationAirport) {
         const dir = direction !== null ? direction % 360 : plan.performanceData.approachWindDirection.get();
         plan.setPerformanceData('approachWindDirection', dir);
@@ -1105,9 +1105,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return false;
   }
 
-  async deleteApproachWind(forPlan: number) {
-    if (this.has(forPlan)) {
-      const plan = this.get(forPlan);
+  async deleteApproachWind(planIndex: number) {
+    if (this.has(planIndex)) {
+      const plan = this.get(planIndex);
       if (plan.destinationAirport) {
         plan.setPerformanceData('approachWindDirection', null);
         plan.setPerformanceData('approachWindMagnitude', null);
