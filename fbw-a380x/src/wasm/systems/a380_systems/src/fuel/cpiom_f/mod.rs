@@ -20,7 +20,7 @@ use systems::{
         ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, Resolution,
     },
     simulation::{
-        InitContext, Read, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        InitContext, Read, Reader, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
@@ -162,14 +162,18 @@ impl SimulationElement for RefuelPanelInput {
         self.total_desired_fuel_input =
             Mass::new::<kilogram>(reader.read(&self.total_desired_fuel_id));
         self.refuel_status = reader.read(&self.refuel_status_id);
-        self.refuel_rate_setting = reader.read(&self.refuel_rate_setting_id);
+        self.refuel_rate_setting = reader.read_discrete_or_fallback(
+            &self.refuel_rate_setting_id,
+            "RefuelRate",
+            RefuelRate::Real,
+        );
 
         for (id, state) in self
             .engine_state_ids
             .iter()
             .zip(self.engine_states.iter_mut())
         {
-            *state = reader.read(id);
+            *state = reader.read_discrete_or_fallback(id, "EngineState", EngineState::Off);
         }
         self.target_zero_fuel_weight =
             Mass::new::<kilogram>(reader.read(&self.target_zero_fuel_weight_id));
