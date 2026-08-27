@@ -2904,9 +2904,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
           const existingEntryIndex = result.findIndex(
             (e, index) =>
-              e.altitude !== undefined &&
-              windEntry.altitude !== undefined &&
-              Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100) &&
+              ((windEntry.altitude === undefined && e.altitude === undefined) ||
+                Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100)) &&
+              e.sourceLegIndex === i &&
               index < numWindEntries,
           );
 
