@@ -169,4 +169,13 @@ export class HistoryWind {
       console.log(`[FMS/History Winds] Error deserializing history winds from local storage: ${e}`);
     }
   }
+
+  public areWindsValidForInsertion() {
+    return (
+      this.flightPhase === FmgcFlightPhase.Preflight &&
+      this.historyWinds.some(
+        (wind) => wind !== null && wind.vector.direction !== undefined && wind.vector.magnitude !== undefined,
+      )
+    );
+  }
 }

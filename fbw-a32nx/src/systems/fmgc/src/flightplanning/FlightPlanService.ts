@@ -1071,8 +1071,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return Promise.resolve(
       !this.hasTemporary &&
         this.hasActive &&
-        this.flightPhase.get() === FmgcFlightPhase.Preflight &&
-        historyWindEntries.some((wind) => wind.vector.direction !== undefined && wind.vector.magnitude !== undefined) &&
+        this.historyWinds.areWindsValidForInsertion() &&
         !this.active.pendingWindUplink.isWindUplinkInProgress() &&
         !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
         !this.haveHistoryWindsBeenInserted(historyWindEntries),

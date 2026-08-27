@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Value } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -97,18 +97,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   /**
    * The draft climb wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
    */
-  private readonly draftClimbWindEntries: FlightPlanWindEntry[] | undefined;
+  private readonly draftClimbWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
   /**
    * The draft descent wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
    */
-  private readonly draftDescentWindEntries: FlightPlanWindEntry[] | undefined;
+  private readonly draftDescentWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
   /**
    * The draft cruise wind entry used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
    */
-  private readonly alternateDraftWind: WindVector | undefined;
-  private draftClimbWindExists = false;
-  private draftDescentWindExists = false;
-  private alternateDraftWindExists = false;
+  private readonly alternateDraftWind: Value<WindVector | null> | undefined;
 
   constructor(
     context: FlightPlanContext,
@@ -132,10 +129,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.performanceData = performanceDataInit;
     if (draftOnWindsOnWindEdit) {
       this.draftClimbWindEntries =
-        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink ? [] : undefined;
+        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
+          ? Value.create(null)
+          : undefined;
       this.draftDescentWindEntries =
-        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink ? [] : undefined;
-      this.alternateDraftWind = { direction: undefined, magnitude: undefined };
+        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
+          ? Value.create(null)
+          : undefined;
+      this.alternateDraftWind =
+        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
+          ? Value.create(null)
+          : undefined;
     }
   }
 
@@ -899,14 +903,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const entries = checkDraft
       ? this.prepareClimbWindDraftModification() ?? this.performanceData.climbWindEntries.get()
       : this.performanceData.climbWindEntries.get();
-    const hasDraft = this.draftClimbWindExists;
+    const hasDraft = this.draftClimbWindEntries?.get() ?? null !== null;
 
     // Partial entries not allowed on non draft winds
-    if (
-      entry !== null &&
-      !this.draftClimbWindExists &&
-      (altitude === undefined || isPartlyFilledWindVector(entry.vector))
-    ) {
+    if (entry !== null && !hasDraft && (altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
       return;
     }
     const originElevation = this.originAirport?.location.alt ?? 0;
@@ -943,7 +943,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const entries = checkDraft
       ? this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get()
       : this.performanceData.descentWindEntries.get();
-    const hasDraft = this.draftDescentWindExists;
+    const hasDraft = this.draftDescentWindEntries?.get() ?? null !== null;
 
     // Partial entries not allowed on non draft winds
     if (entry !== null && !hasDraft && (altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
@@ -953,11 +953,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const altitudeOrGround =
       altitude !== undefined && altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
-    this.parseGroundWindEntryAndSetTwrWind(
-      entry,
-      shouldUpdateTwrWind && !this.draftDescentWindExists,
-      destinationElevation,
-    );
+    this.parseGroundWindEntryAndSetTwrWind(entry, shouldUpdateTwrWind && !hasDraft, destinationElevation);
 
     const existingEntryIndex =
       entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
@@ -1084,9 +1080,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   async setAlternateWind(vector: WindVector, forceNoDraft = false): Promise<void> {
     if (!forceNoDraft && this.alternateDraftWind !== undefined) {
-      this.alternateDraftWindExists = true;
-      const oldDir = this.alternateDraftWind.direction;
-      const oldMag = this.alternateDraftWind.magnitude;
+      let existingAlternateDraft = this.alternateDraftWind.get();
+      if (existingAlternateDraft === null) {
+        existingAlternateDraft = { direction: undefined, magnitude: undefined };
+      }
+      const oldDir = existingAlternateDraft.direction;
+      const oldMag = existingAlternateDraft.magnitude;
       if (
         oldDir !== undefined &&
         oldMag !== undefined &&
@@ -1097,8 +1096,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         vector.direction = undefined;
       }
 
-      this.alternateDraftWind.direction = vector.direction;
-      this.alternateDraftWind.magnitude = vector.magnitude;
+      existingAlternateDraft.direction = vector.direction;
+      existingAlternateDraft.magnitude = vector.magnitude;
       this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', vector);
@@ -1106,13 +1105,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   async clearAlternateWind(): Promise<void> {
-    if (
-      this.alternateDraftWind !== undefined &&
-      (this.alternateDraftWind.direction !== undefined || this.alternateDraftWind.magnitude !== undefined)
-    ) {
-      this.alternateDraftWindExists = true;
-      this.alternateDraftWind.direction === undefined;
-      this.alternateDraftWind.magnitude === undefined;
+    if (this.alternateDraftWind !== undefined && this.alternateDraftWind.get() !== null) {
+      this.alternateDraftWind.set(null);
       this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', WindUtils.undefinedWindVector);
@@ -1203,7 +1197,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @returns  The draft climb winds entries if they exist, otherwise the climb wind entries from the performance data
    */
   public getClimbWindEntries(): FlightPlanWindEntry[] {
-    return this.draftClimbWindExists ? this.draftClimbWindEntries! : this.performanceData.climbWindEntries.get();
+    return this.draftClimbWindEntries?.get() ?? this.performanceData.climbWindEntries.get();
   }
 
   /**
@@ -1211,7 +1205,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @returns The draft descent winds entries if they exist, otherwise the descent wind entries from the performance data
    */
   public getDescentWindEntries(): FlightPlanWindEntry[] {
-    return this.draftDescentWindExists ? this.draftDescentWindEntries! : this.performanceData.descentWindEntries.get();
+    return this.draftDescentWindEntries?.get() ?? this.performanceData.descentWindEntries.get();
   }
 
   /**
@@ -1219,7 +1213,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @returns The draft alternate wind entry if it exists, otherwise the alternate wind entry from the performance data.
    */
   public getAlternateWind(): WindVector | null {
-    return this.alternateDraftWindExists ? this.alternateDraftWind! : this.performanceData.alternateWind.get();
+    return this.alternateDraftWind?.get() ?? this.performanceData.alternateWind.get();
   }
 
   /**
@@ -1227,48 +1221,58 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @returns whether the flightplan has draft wind entries
    */
   public hasDraftWindEntries(): boolean {
-    return (
-      this.draftClimbWindExists ||
-      this.draftCruiseWindExists ||
-      this.draftDescentWindExists ||
-      this.alternateDraftWindExists
-    );
+    const draftClimbWind = this.draftClimbWindEntries?.get() ?? null;
+    const draftCruiseWind = this.draftCruiseWindEntries?.get() ?? null;
+    const draftDescentWind = this.draftDescentWindEntries?.get() ?? null;
+    const draftAlternateWind = this.alternateDraftWind?.get() ?? null;
+
+    const hasDraftClimb = draftClimbWind !== null;
+    const hasDraftCruise = draftCruiseWind !== null;
+    const hasDraftDescent = draftDescentWind !== null;
+    const hasDraftAlternate = draftAlternateWind !== null;
+
+    return hasDraftClimb || hasDraftCruise || hasDraftDescent || hasDraftAlternate;
   }
 
   /**
    * Inserts the draft wind entries into the flight plan if they exist.
    */
   public insertDraftWindEntries() {
-    if (
-      !this.draftClimbWindExists &&
-      !this.draftCruiseWindExists &&
-      !this.draftDescentWindExists &&
-      !this.alternateDraftWindExists
-    ) {
+    const draftClimbWind = this.draftClimbWindEntries?.get() ?? null;
+    const draftCruiseWind = this.draftCruiseWindEntries?.get() ?? null;
+    const draftDescentWind = this.draftDescentWindEntries?.get() ?? null;
+    const draftAlternateWind = this.alternateDraftWind?.get() ?? null;
+
+    const hasDraftClimb = draftClimbWind !== null;
+    const hasDraftCruise = draftCruiseWind !== null;
+    const hasDraftDescent = draftDescentWind !== null;
+    const hasDraftAlternate = draftAlternateWind !== null;
+    if (hasDraftClimb && hasDraftCruise && hasDraftDescent && hasDraftAlternate) {
       return;
     }
 
-    if (this.draftClimbWindExists) {
+    if (hasDraftClimb) {
       this.setPerformanceData(
         'climbWindEntries',
-        this.filterDraftWindsByValidEntries(this.draftClimbWindEntries!, this.performanceData.climbWindEntries.get()),
+        this.filterDraftWindsByValidEntries(draftClimbWind, this.performanceData.climbWindEntries.get()),
       );
     }
 
-    if (this.draftCruiseWindExists) {
+    if (hasDraftCruise) {
       for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
         const leg = this.maybeElementAt(i);
-        if (isLeg(leg) && leg.draftWindEntries !== undefined) {
-          leg.cruiseWindEntries = this.filterDraftWindsByValidEntries(leg.draftWindEntries, leg.cruiseWindEntries);
-          this.syncCruiseWindChange(i);
-          leg.draftWindEntries = undefined;
+        if (isLeg(leg) && draftCruiseWind.has(i)) {
+          const draftEntries = draftCruiseWind.get(i);
+          if (draftEntries) {
+            leg.cruiseWindEntries = this.filterDraftWindsByValidEntries(draftEntries, leg.cruiseWindEntries);
+          }
         }
       }
     }
 
-    if (this.draftDescentWindExists) {
+    if (hasDraftDescent) {
       const validEntries = this.filterDraftWindsByValidEntries(
-        this.draftDescentWindEntries!,
+        draftDescentWind,
         this.performanceData.descentWindEntries.get(),
       );
       for (let i = 0; i < validEntries.length; i++) {
@@ -1277,9 +1281,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.setPerformanceData('descentWindEntries', validEntries);
     }
 
-    if (this.alternateDraftWindExists) {
-      if (isWindVectorComplete(this.alternateDraftWind!)) {
-        this.setAlternateWind(cloneWindVector(this.alternateDraftWind!), true);
+    if (hasDraftAlternate) {
+      if (isWindVectorComplete(draftAlternateWind)) {
+        this.setAlternateWind(cloneWindVector(draftAlternateWind), true);
       }
     }
 
@@ -1322,23 +1326,25 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       return undefined;
     }
 
-    if (!this.draftClimbWindExists) {
-      this.draftClimbWindEntries.length = 0;
+    const existingDraft = this.draftClimbWindEntries.get();
+
+    if (existingDraft === null) {
+      const newDraftEntries = [];
       const performanceDataClimbWindEntries = this.performanceData.climbWindEntries.get();
       for (let i = 0; i < performanceDataClimbWindEntries.length; i++) {
         const sourceEntry = performanceDataClimbWindEntries[i];
-        this.draftClimbWindEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
+        newDraftEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
       }
-      this.draftClimbWindExists = true;
+      this.draftClimbWindEntries.set(newDraftEntries);
+      return newDraftEntries;
     }
 
-    return this.draftClimbWindEntries;
+    return existingDraft;
   }
 
   private deleteDraftClimbWindEntries(): boolean {
     if (this.draftClimbWindEntries !== undefined) {
-      this.draftClimbWindEntries.length = 0;
-      this.draftClimbWindExists = false;
+      this.draftClimbWindEntries.set(null);
       return true;
     }
     return false;
@@ -1348,23 +1354,25 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (!this.draftDescentWindEntries) {
       return undefined;
     }
-    if (!this.draftDescentWindExists) {
-      this.draftDescentWindEntries.length = 0;
+
+    const existingDraft = this.draftDescentWindEntries.get();
+
+    if (existingDraft === null) {
+      const newDraftEntries = [];
       const performanceDataDescentWindEntries = this.performanceData.descentWindEntries.get();
       for (let i = 0; i < performanceDataDescentWindEntries.length; i++) {
         const sourceEntry = performanceDataDescentWindEntries[i];
-        this.draftDescentWindEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
+        newDraftEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
       }
-      this.draftDescentWindExists = true;
+      return newDraftEntries;
     }
 
-    return this.draftDescentWindEntries;
+    return existingDraft;
   }
 
   private deleteDraftDescentWindEntries(): boolean {
     if (this.draftDescentWindEntries !== undefined) {
-      this.draftDescentWindEntries.length = 0;
-      this.draftDescentWindExists = false;
+      this.draftDescentWindEntries.set(null);
       return true;
     }
     return false;
@@ -1372,9 +1380,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   private deleteAlternateDraftWindEntries(): boolean {
     if (this.alternateDraftWind !== undefined) {
-      this.alternateDraftWind.direction = undefined;
-      this.alternateDraftWind.magnitude = undefined;
-      this.alternateDraftWindExists = false;
+      this.alternateDraftWind.set(null);
       return true;
     }
     return false;

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -109,10 +109,10 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               this.bus,
               this.performanceDataInit.clone(),
               this.time.get(),
-              this.config.DRAFT_ON_WIND_EDIT ?? false,
-              this.config.NUM_CLIMB_WIND_LEVELS ?? 0,
-              this.config.NUM_CRUISE_WIND_LEVELS ?? 0,
-              this.config.NUM_DESCENT_WIND_LEVELS ?? 0,
+              this.config?.DRAFT_ON_WIND_EDIT ?? false,
+              this.config?.NUM_CLIMB_WIND_LEVELS ?? 0,
+              this.config?.NUM_CRUISE_WIND_LEVELS ?? 0,
+              this.config?.NUM_DESCENT_WIND_LEVELS ?? 0,
             );
 
             this.set(intIndex, newPlan);
@@ -213,11 +213,11 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       index,
       this.bus,
       this.performanceDataInit.clone(),
-      this.config.NUM_CLIMB_WIND_LEVELS,
-      this.config.NUM_CRUISE_WIND_LEVELS,
-      this.config.NUM_DESCENT_WIND_LEVELS,
+      this.config?.NUM_CLIMB_WIND_LEVELS ?? 0,
+      this.config?.NUM_CRUISE_WIND_LEVELS ?? 0,
+      this.config?.NUM_DESCENT_WIND_LEVELS ?? 0,
       this.time.get(),
-      this.config.DRAFT_ON_WIND_EDIT,
+      this.config?.DRAFT_ON_WIND_EDIT ?? false,
     );
     if (flags !== undefined) {
       this.plans[index].flags |= flags;
