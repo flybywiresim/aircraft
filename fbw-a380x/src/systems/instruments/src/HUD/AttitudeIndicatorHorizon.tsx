@@ -34,6 +34,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { asin } from 'msfs-geo';
 
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
@@ -538,6 +539,7 @@ class PitchScale extends DisplayComponent<{
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
   private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+  private readonly gndSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
   private readonly isVsOrFpaActive = MappedSubject.create(
     ([isVsModeActive, isFpaModeActive]) => {
@@ -547,15 +549,17 @@ class PitchScale extends DisplayComponent<{
     this.isFpaModeActive,
   );
   private readonly activeVsFpaAngle = MappedSubject.create(
-    ([selectedFpa, isVsModeActive, isFpaModeActive]) => {
+    ([gndSpeed, selectedVs, selectedFpa, isVsModeActive, isFpaModeActive]) => {
       if (isVsModeActive) {
-        return -3;
+        return asin(selectedVs.value / (gndSpeed.value * 101.269));
       } else if (isFpaModeActive) {
         return selectedFpa.value;
       } else {
         return -3;
       }
     },
+    this.gndSpeed,
+    this.selectedVs,
     this.selectedFpa,
     this.isVsModeActive,
     this.isFpaModeActive,
@@ -639,6 +643,7 @@ class PitchScale extends DisplayComponent<{
     this.fcuEisDiscreteWord2.setConsumer(
       this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
     );
+
     this.sub
       .on('pitchScaleMode')
       .whenChanged()
@@ -696,8 +701,11 @@ class PitchScale extends DisplayComponent<{
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
 
-    const fpaTxt = `${this.selectedFpa.get().value.toFixed(1)}`;
+    const fpaTxt = this.isFpaModeActive.get()
+      ? `${this.selectedFpa.get().value.toFixed(1)}`
+      : `${this.selectedVs.get().value.toFixed(0)}`;
 
+    //atan2(selectedVs.value * 0.51444, gndSpeed * 0.00508)
     if (
       (this.gsTrk.get() || this.gsCapt.get() || this.landModeActive.get() || this.gsArmed.get()) &&
       lsSlope !== 0 &&
