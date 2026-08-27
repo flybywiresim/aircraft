@@ -14,7 +14,9 @@ export interface FlightPlanWindEntry extends WindEntry {
 }
 
 export type WindVector = {
+  /** The magnitude of the wind in knots */
   magnitude: number | undefined;
+  /** The direction of the wind in radians */
   direction: number | undefined;
 };
 
@@ -36,10 +38,10 @@ export enum FlightPlanWindEntryFlags {
 }
 
 export const extractWindSpeedFromVector = (vector: WindVector, zeroIfUndefined = false) =>
-  getVectorMagnitude(vector) ?? (zeroIfUndefined ? 0 : undefined);
+  vector.magnitude ?? (zeroIfUndefined ? 0 : undefined);
 export const extractWindDirectionFromVector = (vector: WindVector, zeroIfUndefined = false) =>
-  vector.direction !== undefined && vector.magnitude !== undefined
-    ? MathUtils.normalise360(extractTheta(vector) * MathUtils.RADIANS_TO_DEGREES)
+  vector.direction !== undefined
+    ? MathUtils.normalise360(vector.direction * MathUtils.RADIANS_TO_DEGREES)
     : vector.direction ?? (zeroIfUndefined ? 0 : undefined);
 
 export const formatWindVector = (vector: WindVector) =>
@@ -66,7 +68,7 @@ export const formatWindPredictionDirection = (prediction: WindVector | TailwindC
 export const formatWindMagnitude = (vector: WindVector) =>
   extractWindSpeedFromVector(vector)?.toFixed(0).padStart(3, '0') ?? '---';
 export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) => {
-  const predictionValue = typeof prediction === 'number' ? Math.abs(prediction) : getVectorMagnitude(prediction) ?? 0;
+  const predictionValue = typeof prediction === 'number' ? Math.abs(prediction) : prediction.magnitude ?? 0;
 
   return Math.round(predictionValue ?? 0)
     .toFixed(0)
@@ -100,33 +102,14 @@ export function scaleWindVector(vector: WindVector, scale: number, result: WindV
   return result;
 }
 
-export function extractTheta(vector: WindVector) {
-  return Math.atan2(vector.magnitude!, vector.direction!);
-}
-
-export function getVectorMagnitude(vector: WindVector) {
-  return vector.direction !== undefined && vector.magnitude !== undefined
-    ? Math.hypot(vector.direction, vector.magnitude)
-    : vector.magnitude;
-}
-
 export function createVectorFromMagnitudeAndDirection(
   magnitude: number | undefined,
   direction: number | undefined,
 ): WindVector {
-  const theta = direction !== undefined ? direction * MathUtils.DEGREES_TO_RADIANS : undefined;
-  //
-  if (theta === undefined) {
-    return {
-      direction: undefined,
-      magnitude: magnitude,
-    };
-  } else {
-    return {
-      direction: magnitude !== undefined ? magnitude * Math.cos(theta) : direction,
-      magnitude: magnitude !== undefined ? magnitude * Math.sin(theta) : undefined,
-    };
-  }
+  return {
+    direction: direction !== undefined ? direction * MathUtils.DEGREES_TO_RADIANS : undefined,
+    magnitude: magnitude,
+  };
 }
 
 export function isWindVectorComplete(vector: WindVector) {

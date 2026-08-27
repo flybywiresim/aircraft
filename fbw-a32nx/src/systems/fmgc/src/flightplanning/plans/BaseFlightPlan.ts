@@ -119,10 +119,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     draftOnWindsOnWindEdit = false,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
-    this.draftCruiseWindEntries =
-      draftOnWindsOnWindEdit && index !== FlightPlanIndex.Temporary && index !== FlightPlanIndex.Uplink
-        ? Value.create(null)
-        : undefined;
+
+    if (draftOnWindsOnWindEdit && index !== FlightPlanIndex.Temporary && index !== FlightPlanIndex.Uplink) {
+      this.draftCruiseWindEntries = Value.create(null);
+    }
     this.wasModified = false;
   }
 
@@ -3213,6 +3213,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           map.set(i, legWindEntries);
         }
       }
+      this.draftCruiseWindEntries.set(map);
     }
   }
 

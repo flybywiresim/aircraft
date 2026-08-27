@@ -63,7 +63,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.performanceDataInit,
       this.syncClientID,
       master,
-      config,
+      this.config,
     );
   }
 

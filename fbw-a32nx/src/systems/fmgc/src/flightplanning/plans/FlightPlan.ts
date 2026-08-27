@@ -116,7 +116,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     maxCruiseWindLevels: number,
     private readonly maxDescentWindLevels: number,
     time?: number,
-    draftOnWindsOnWindEdit = false,
+    private readonly draftOnWindsOnWindEdit = false,
   ) {
     super(
       context,
@@ -127,19 +127,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       draftOnWindsOnWindEdit && index !== FlightPlanIndex.Uplink && index !== FlightPlanIndex.Temporary,
     );
     this.performanceData = performanceDataInit;
-    if (draftOnWindsOnWindEdit) {
-      this.draftClimbWindEntries =
-        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
-          ? Value.create(null)
-          : undefined;
-      this.draftDescentWindEntries =
-        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
-          ? Value.create(null)
-          : undefined;
-      this.alternateDraftWind =
-        this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink
-          ? Value.create(null)
-          : undefined;
+    const draft =
+      draftOnWindsOnWindEdit && this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink;
+    if (draft) {
+      this.draftClimbWindEntries = Value.create(null);
+      this.draftDescentWindEntries = Value.create(null);
+      this.alternateDraftWind = Value.create(null);
     }
   }
 
@@ -160,7 +153,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.maxCruiseWindLevels!,
       this.maxDescentWindLevels,
       time,
-      this.alternateDraftWind !== undefined,
+      this.draftOnWindsOnWindEdit,
     );
 
     newPlan.version = this.version;

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { copyWindVector, WindEntry, WindVector } from '../../../flightplanning/data/wind';
+import { copyWindVector, isWindVectorComplete, WindEntry, WindVector } from '../../../flightplanning/data/wind';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class WindUtils {
@@ -63,7 +63,7 @@ export class WindUtils {
     // We need a minus here because the wind vector points in the direction that the wind is coming from,
     // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
     // the wind is actually a headwind.
-    return -WindUtils.dot(wind, this.setPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache));
+    return -WindUtils.dot(wind, this.setValues(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache));
   }
 
   public static interpolateWindVector(
@@ -88,18 +88,6 @@ export class WindUtils {
       out,
     );
   }
-  /**
-   * Sets the polar components of a wind vector.
-   * @param r - the new length (magnitude).
-   * @param theta - the new polar angle theta, in radians.
-   * @param vector - the wind vector to change.
-   * @returns the wind vector after it has been changed.
-   */
-  public static setPolar(r: number, theta: number, vector: WindVector) {
-    vector.direction = r * Math.cos(theta);
-    vector.magnitude = r * Math.sin(theta);
-    return vector;
-  }
 
   public static copyEmptyWindVector(result: WindVector) {
     return copyWindVector(WindUtils.emptyWindVector, result);
@@ -112,6 +100,21 @@ export class WindUtils {
    * @returns The dot product of the vectors.
    */
   public static dot(first: WindVector, second: WindVector): number {
-    return (first.direction ?? 0) * (second.direction ?? 0) + (first.magnitude ?? 0) * (second.magnitude ?? 0);
+    return isWindVectorComplete(first) && isWindVectorComplete(second)
+      ? first.magnitude! * second.magnitude! * Math.cos(first.direction! - second.direction!)
+      : 0;
+  }
+
+  /**
+   * Sets the direction and magnitude on an existing wind vector.
+   * @param magnitude  the magnitude in knots
+   * @param direction the direction in radians
+   * @param result the vector to set the values in.
+   * @returns the modified wind vector
+   */
+  public static setValues(magnitude: number | undefined, direction: number | undefined, result: WindVector) {
+    result.magnitude = magnitude;
+    result.direction = direction;
+    return result;
   }
 }

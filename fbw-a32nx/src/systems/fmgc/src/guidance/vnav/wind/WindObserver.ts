@@ -27,8 +27,7 @@ export class WindObserver {
     }
 
     result.altitude = altitude;
-    WindUtils.setPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
-
+    WindUtils.setValues(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
     return result;
   }
 }

@@ -195,6 +195,6 @@ export class PendingWindUplinkParser {
 
   private static createVecFromDeg({ magnitude, trueDegrees }: UplinkedWindEntry): WindVector {
     const vector: WindVector = { direction: undefined, magnitude: undefined };
-    return WindUtils.setPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, vector);
+    return WindUtils.setValues(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, vector);
   }
 }

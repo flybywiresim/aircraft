@@ -347,7 +347,11 @@ export class WindProfile implements WindInterface {
 
     // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
     // true track points in the direction that the aircraft is going.
-    return WindUtils.setPolar(-tailwind, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+
+    result.magnitude = -tailwind;
+    result.direction = leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS;
+
+    return result;
   }
 }
 
@@ -510,7 +514,7 @@ class LegWinds {
 
       // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
       // true track points in the direction that the aircraft is going.
-      return WindUtils.setPolar(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+      return WindUtils.setValues(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
     }
 
     return result;
