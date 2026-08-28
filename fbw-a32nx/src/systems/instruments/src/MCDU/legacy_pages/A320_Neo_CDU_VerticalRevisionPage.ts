@@ -95,19 +95,20 @@ export class CDUVerticalRevisionPage {
 
     let speedLimitTitle = '';
     let speedLimitCell = '';
+    const transitionAltitude = performanceData.transitionAltitude.get();
     const transitionLevel = performanceData.transitionLevel.get();
     const transitionLevelAsAltitude = transitionLevel !== null ? transitionLevel * 100 : null;
     if (showDesSpeedLim) {
       speedLimitTitle = '\xa0DES SPD LIM';
       if (descentSpeedLimitSpeed !== null) {
-        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude!, transitionLevelAsAltitude)}{end}{end}`;
+        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude!, transitionLevelAsAltitude, true)}{end}{end}`;
       } else {
         speedLimitCell = '{cyan}*[ ]/[   ]{end}';
       }
     } else if (showSpeedLim) {
       speedLimitTitle = '\xa0CLB SPD LIM';
       if (climbSpeedLimitSpeed !== null) {
-        speedLimitCell = `{magenta}{${isClimbSpeedLimitPilotEntered ? 'big' : 'small'}}${climbSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(climbSpeedLimitAltitude!, transitionLevelAsAltitude)}{end}{end}`;
+        speedLimitCell = `{magenta}{${isClimbSpeedLimitPilotEntered ? 'big' : 'small'}}${climbSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(climbSpeedLimitAltitude!, transitionAltitude, false)}{end}{end}`;
       } else {
         speedLimitCell = '{cyan}*[ ]/[   ]{end}';
       }
@@ -116,10 +117,12 @@ export class CDUVerticalRevisionPage {
     const speedConstraint =
       waypoint.speedConstraint?.speed !== undefined ? Math.round(waypoint.speedConstraint.speed).toFixed(0) : undefined;
     const transAltLevel =
-      constraintType === WaypointConstraintType.DES
-        ? transitionLevelAsAltitude
-        : performanceData.transitionAltitude.get();
-    const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
+      constraintType === WaypointConstraintType.DES ? transitionLevelAsAltitude : transitionAltitude;
+    const altitudeConstraint = this.formatAltConstraint(
+      waypoint.altitudeConstraint,
+      transAltLevel,
+      transitionLevelAsAltitude !== null,
+    );
     const canHaveAltConstraint = !isDestination && !waypoint.isXA();
 
     let r3Title = canHaveAltConstraint ? 'ALT CSTR\xa0' : '';
@@ -656,14 +659,21 @@ export class CDUVerticalRevisionPage {
     }
   }
 
-  static formatFl(constraint: number, transAlt: number | null) {
-    if (transAlt !== null && transAlt >= 100 && constraint > transAlt) {
+  static formatFl(constraint: number, transAlt: number | null, transitionFlightLevel: boolean) {
+    if (
+      transAlt !== null &&
+      ((transitionFlightLevel && constraint >= transAlt) || (!transitionFlightLevel && constraint > transAlt))
+    ) {
       return 'FL' + Math.round(constraint / 100);
     }
     return constraint;
   }
 
-  static formatAltConstraint(constraint: AltitudeConstraint | undefined, transAltLvl: number | null) {
+  static formatAltConstraint(
+    constraint: AltitudeConstraint | undefined,
+    transAltLvl: number | null,
+    transitionIsFlightLevel: boolean,
+  ) {
     if (!constraint) {
       return '';
     }
@@ -672,32 +682,32 @@ export class CDUVerticalRevisionPage {
       case '@': // AtAlt1
       case 'I': // AtAlt1GsIntcptAlt2
       case 'X': // AtAlt1AngleAlt2
-        return this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
+        return this.formatFl(Math.round(constraint.altitude1!), transAltLvl, transitionIsFlightLevel);
       case '+': // AtOrAboveAlt1
       case 'J': // AtOrAboveAlt1GsIntcptAlt2
       case 'V': // AtOrAboveAlt1AngleAlt2
-        return '+' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
+        return '+' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl, transitionIsFlightLevel);
       case '-': // AtOrBelowAlt1
       case 'Y': // AtOrBelowAlt1AngleAlt2
-        return '-' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl);
+        return '-' + this.formatFl(Math.round(constraint.altitude1!), transAltLvl, transitionIsFlightLevel);
       case 'B': // range
         if (constraint.altitude1! < constraint.altitude2!) {
           return (
             '+' +
-            this.formatFl(Math.round(constraint.altitude1!), transAltLvl) +
+            this.formatFl(Math.round(constraint.altitude1!), transAltLvl, transitionIsFlightLevel) +
             '/-' +
-            this.formatFl(Math.round(constraint.altitude2!), transAltLvl)
+            this.formatFl(Math.round(constraint.altitude2!), transAltLvl, transitionIsFlightLevel)
           );
         } else {
           return (
             '+' +
-            this.formatFl(Math.round(constraint.altitude2!), transAltLvl) +
+            this.formatFl(Math.round(constraint.altitude2!), transAltLvl, transitionIsFlightLevel) +
             '/-' +
-            this.formatFl(Math.round(constraint.altitude1!), transAltLvl)
+            this.formatFl(Math.round(constraint.altitude1!), transAltLvl, transitionIsFlightLevel)
           );
         }
       case 'C': // AtOrAboveAlt2:
-        return '+' + this.formatFl(Math.round(constraint.altitude2!), transAltLvl);
+        return '+' + this.formatFl(Math.round(constraint.altitude2!), transAltLvl, transitionIsFlightLevel);
       default:
         return '';
     }
