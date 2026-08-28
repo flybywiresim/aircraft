@@ -371,6 +371,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     await this.deleteAlternateFlightPlan();
   }
 
+  override async setApproach(databaseId: string | undefined) {
+    const currentApproachDatabaseId = this.approachSegment.procedure?.databaseId;
+    await super.setApproach(databaseId);
+    if (currentApproachDatabaseId !== databaseId) {
+      this.setPerformanceData('approachBaroMinimum', null);
+      this.setPerformanceData('approachRadioMinimum', null);
+    }
+  }
+
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
     const planFixInfo = this.fixInfos as (FixInfoEntry | undefined)[];
 
