@@ -21,6 +21,13 @@
 1. [A380X/MFD] Fix LS field remaining blank on F-PLN arrival page when no landing system is available or selected - @matze-tech (matze2346)
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
+1. [EFB] Added a cold temperature correction calculator - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
+1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord) & Saschl
+1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
+1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
+1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 
 ## 2020.15.0
