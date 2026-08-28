@@ -2,10 +2,10 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Ratio, ratio::percent};
 
 use crate::{
-    shared::random_from_range,
+    shared::{random_from_range, DelayedTrueLogicGate},
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, VariableIdentifier, Write, Writer,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 use nalgebra::Vector3;
@@ -647,14 +647,16 @@ pub enum BoardingRate {
     Fast,
     Real,
 }
-read_write_enum!(BoardingRate);
-impl From<f64> for BoardingRate {
-    fn from(value: f64) -> Self {
+try_read_write_enum!(BoardingRate);
+impl TryFrom<f64> for BoardingRate {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            2 => BoardingRate::Real,
-            1 => BoardingRate::Fast,
-            0 => BoardingRate::Instant,
-            _ => panic!("{} cannot be converted into BoardingRate", value),
+            0 => Ok(BoardingRate::Instant),
+            1 => Ok(BoardingRate::Fast),
+            2 => Ok(BoardingRate::Real),
+            i => Err(i),
         }
     }
 }
@@ -664,23 +666,35 @@ pub struct BoardingSounds {
     pax_deboard_id: VariableIdentifier,
     pax_complete_id: VariableIdentifier,
     pax_ambience_id: VariableIdentifier,
+    pax_welcome_id: VariableIdentifier,
 
     pax_boarding: bool,
     pax_deboarding: bool,
     pax_complete: bool,
     pax_ambience: bool,
+    pax_welcome: bool,
+
+    welcome_pending: bool,
+    welcome_delay: DelayedTrueLogicGate,
 }
 impl BoardingSounds {
+    // Set a timer for 10 seconds between "Boarding Completed" and "Welcome Onboard"
+    const BOARDING_COMPLETE_WELCOME_DELAY: Duration = Duration::from_secs(10);
+
     pub fn new(context: &mut InitContext) -> Self {
         BoardingSounds {
             pax_board_id: context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
             pax_deboard_id: context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
             pax_complete_id: context.get_identifier("SOUND_BOARDING_COMPLETE".to_owned()),
             pax_ambience_id: context.get_identifier("SOUND_PAX_AMBIENCE".to_owned()),
+            pax_welcome_id: context.get_identifier("SOUND_WELCOME_ONBOARD".to_owned()),
             pax_boarding: false,
             pax_deboarding: false,
             pax_complete: false,
             pax_ambience: false,
+            pax_welcome: false,
+            welcome_pending: false,
+            welcome_delay: DelayedTrueLogicGate::new(Self::BOARDING_COMPLETE_WELCOME_DELAY),
         }
     }
 
@@ -709,11 +723,23 @@ impl BoardingSounds {
     }
 
     pub fn play_sound_pax_complete(&mut self, playing: bool) {
+        if playing && !self.pax_complete {
+            self.welcome_pending = true;
+            self.pax_welcome = false;
+        }
         self.pax_complete = playing;
     }
 
     pub fn play_sound_pax_ambience(&mut self, playing: bool) {
         self.pax_ambience = playing;
+    }
+
+    pub fn update_welcome(&mut self, context: &UpdateContext) {
+        self.welcome_delay.update(context, self.welcome_pending);
+        if self.welcome_delay.output() {
+            self.pax_welcome = true;
+            self.welcome_pending = false;
+        }
     }
 
     pub fn stop_boarding_sounds(&mut self) {
@@ -728,6 +754,7 @@ impl SimulationElement for BoardingSounds {
         writer.write(&self.pax_deboard_id, self.pax_deboarding);
         writer.write(&self.pax_complete_id, self.pax_complete);
         writer.write(&self.pax_ambience_id, self.pax_ambience);
+        writer.write(&self.pax_welcome_id, self.pax_welcome);
     }
 }
 
@@ -955,32 +982,32 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
     }
 
     // ======================================
-    pub fn update(&mut self, delta_time: Duration) {
+    pub fn update(&mut self, context: &UpdateContext) {
         self.update_pax_ambience();
 
         if !self.gsx_driver.is_enabled() {
             if !self.is_boarding_allowed() {
                 self.reset_time();
                 self.stop_boarding_sounds();
-                return;
-            }
-            let ms_delay = if self.board_rate() == BoardingRate::Instant {
-                0
-            } else if self.board_rate() == BoardingRate::Fast {
-                self.fast_rate.into()
             } else {
-                self.real_rate.into()
-            };
-            self.update_time(delta_time);
+                let ms_delay = if self.board_rate() == BoardingRate::Instant {
+                    0
+                } else if self.board_rate() == BoardingRate::Fast {
+                    self.fast_rate.into()
+                } else {
+                    self.real_rate.into()
+                };
+                self.update_time(context.delta());
 
-            if self.time().as_millis() > ms_delay {
-                self.reset_time();
-                self.update_pax_tick();
-                self.update_cargo_tick();
-            }
-            self.update_boarding_sounds();
-            if self.is_fully_loaded() {
-                self.emit_stop_boarding();
+                if self.time().as_millis() > ms_delay {
+                    self.reset_time();
+                    self.update_pax_tick();
+                    self.update_cargo_tick();
+                }
+                self.update_boarding_sounds();
+                if self.is_fully_loaded() {
+                    self.emit_stop_boarding();
+                }
             }
         } else {
             self.emit_stop_boarding();
@@ -989,8 +1016,10 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 &mut self.passenger_deck,
                 &mut self.cargo_deck,
                 &mut self.boarding_sounds,
-            )
+            );
         }
+
+        self.boarding_sounds.update_welcome(context);
     }
 }
 impl<const P: usize, const G: usize, const C: usize> SimulationElement for PayloadManager<P, G, C> {
@@ -1060,7 +1089,11 @@ impl SimulationElement for BoardingInputs {
         self.developer_state
             .set(reader.read(&self.developer_state_id));
         self.is_boarding = reader.read(&self.is_boarding_id);
-        self.board_rate = reader.read(&self.board_rate_id);
+        self.board_rate = reader.read_discrete_or_fallback(
+            &self.board_rate_id,
+            "boarding_rate",
+            BoardingRate::Instant,
+        );
         self.per_pax_weight
             .set(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
@@ -1088,22 +1121,26 @@ pub enum GsxState {
     Performing,
     Completed,
 }
-impl From<f64> for GsxState {
-    fn from(value: f64) -> Self {
+
+impl TryFrom<f64> for GsxState {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => GsxState::None,
-            1 => GsxState::Available,
-            2 => GsxState::NotAvailable,
-            3 => GsxState::Bypassed,
-            4 => GsxState::Requested,
-            5 => GsxState::Performing,
-            6 => GsxState::Completed,
-            i => panic!("Cannot convert from {} to GsxState.", i),
+            0 => Ok(GsxState::None),
+            1 => Ok(GsxState::Available),
+            2 => Ok(GsxState::NotAvailable),
+            3 => Ok(GsxState::Bypassed),
+            4 => Ok(GsxState::Requested),
+            5 => Ok(GsxState::Performing),
+            6 => Ok(GsxState::Completed),
+            7 => Ok(GsxState::Completed),
+            unexpected => Err(unexpected),
         }
     }
 }
 
-read_write_enum!(GsxState);
+try_read_write_enum!(GsxState);
 
 pub struct GsxInput {
     is_enabled_id: VariableIdentifier,
@@ -1173,8 +1210,16 @@ impl SimulationElement for GsxInput {
         self.pax_deboarding = reader.read(&self.pax_deboarding_id);
         self.cargo_boarding_percent = reader.read(&self.cargo_boarding_percent_id);
         self.cargo_deboarding_percent = reader.read(&self.cargo_deboarding_percent_id);
-        self.boarding_state = reader.read(&self.boarding_state_id);
-        self.deboarding_state = reader.read(&self.deboarding_state_id);
+        self.boarding_state = reader.read_discrete_or_fallback(
+            &self.boarding_state_id,
+            "boarding_state",
+            GsxState::Completed,
+        );
+        self.deboarding_state = reader.read_discrete_or_fallback(
+            &self.deboarding_state_id,
+            "deboarding_state",
+            GsxState::Completed,
+        );
     }
 }
 

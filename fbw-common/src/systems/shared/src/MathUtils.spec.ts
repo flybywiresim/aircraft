@@ -27,6 +27,44 @@ describe('MathUtils.round', () => {
   });
 });
 
+describe('MathUtils.ceil', () => {
+  it('correctly rounds up', () => {
+    expect(MathUtils.ceil(1.005, 2)).toBeCloseTo(2);
+    expect(MathUtils.ceil(1.005, 3)).toBeCloseTo(3);
+    expect(MathUtils.ceil(1.004, 0.005)).toBeCloseTo(1.005, 3);
+    expect(MathUtils.ceil(1.5, 0)).toBe(NaN);
+    expect(MathUtils.ceil(1.05, 1)).toBeCloseTo(2);
+    expect(MathUtils.ceil(1.33, 0.25)).toBeCloseTo(1.5);
+    expect(MathUtils.ceil(1.38, 0.25)).toBeCloseTo(1.5);
+  });
+});
+
+describe('MathUtils.floor', () => {
+  it('correctly rounds down', () => {
+    expect(MathUtils.floor(1.005, 2)).toBeCloseTo(0);
+    expect(MathUtils.floor(1.005, 3)).toBeCloseTo(0);
+    expect(MathUtils.floor(1.004, 0.005)).toBeCloseTo(1.0, 3);
+    expect(MathUtils.floor(1.5, 0)).toBe(NaN);
+    expect(MathUtils.floor(1.05, 1)).toBeCloseTo(1);
+    expect(MathUtils.floor(1.33, 0.25)).toBeCloseTo(1.25);
+    expect(MathUtils.floor(1.38, 0.25)).toBeCloseTo(1.25);
+  });
+});
+
+describe('MathUtils.trunc', () => {
+  it('correctly truncates toward zero', () => {
+    expect(MathUtils.trunc(1.005, 2)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-1.005, 1)).toBeCloseTo(-1);
+    expect(MathUtils.trunc(1.005, 1)).toBeCloseTo(1);
+    expect(MathUtils.trunc(-1.005, 2)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-39.8, 40)).toBeCloseTo(0);
+    expect(MathUtils.trunc(39.8, 40)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-40.1, 40)).toBeCloseTo(-40);
+    expect(MathUtils.trunc(40.1, 40)).toBeCloseTo(40);
+    expect(MathUtils.floor(1.5, 0)).toBe(NaN);
+  });
+});
+
 describe('MathUtils.angleAdd', () => {
   it('correctly adds two angles', () => {
     expect(MathUtils.angleAdd(270, 90)).toBeCloseTo(360, 4);
