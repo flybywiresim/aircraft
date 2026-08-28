@@ -975,7 +975,7 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           //end debug
 
           const sinRadRoll =
-            Math.sin(radRoll) < -0.001 || Math.sin(radRoll) > 0.001 ? Math.sin(radRoll) : Math.sign(radRoll) * 0.001;
+            Math.sin(radRoll) < -0.0001 || Math.sin(radRoll) > 0.0001 ? Math.sin(radRoll) : Math.sign(radRoll) * 0.0001;
 
           this.extendedUpperNum = Math.max(
             Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, 1280),
@@ -993,11 +993,11 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.extendedLower.set((this.extendedLowerNum + cwBotDiff / sinRadRoll).toString());
 
           roll.value > 0
-            ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 10000 `)
-            : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -10000 `);
+            ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 1000000 `)
+            : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -1000000 `);
           roll.value < 0
-            ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 10000 `)
-            : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -10000 `);
+            ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 1000000 `)
+            : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -1000000 `);
 
           ////debug TextBox
 
