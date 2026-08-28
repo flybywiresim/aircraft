@@ -19,7 +19,6 @@ import { GenericFlightManagementBusEvents } from '../../../../../../fbw-common/s
 import { Layer } from '../../../../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/Layer';
 import { GenericFcuEvents } from '../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFcuEvents';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { HudElems, HudMode } from './HUDUtils';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { getDisplayIndex } from './HUD';
@@ -30,25 +29,6 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2
 
   private readonly isAdf = Subject.create(true);
 
-  private readonly fcu_efis_discrete_word_2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on(getDisplayIndex() === 2 ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
-  );
-  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
-  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
-
-  private readonly isVisible = MappedSubject.create(
-    ([fmgcFlightPhase, hudMode]) => {
-      const isEfisVorPressed = this.fcu_efis_discrete_word_2.get().bitValueOr(19, false);
-      const isEfisLsPressed = this.fcu_efis_discrete_word_2.get().bitValueOr(14, false);
-      if (hudMode === HudMode.NORMAL) {
-        return fmgcFlightPhase === FmgcFlightPhase.Approach && isEfisVorPressed && isEfisLsPressed ? 'block' : 'none';
-      } else {
-        return 'none';
-      }
-    },
-    this.fmgcFlightPhase,
-    this.hudMode,
-  );
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -72,8 +52,8 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2
   render(): VNode | null {
     return (
       <>
-        <g display={this.isVisible}>
-          <VorDmeInfo bus={this.props.bus} index={1} visible={this.isVor} />
+        <g id="VorDmeInfo">
+          <VorDmeInfo bus={this.props.bus} index={this.props.index} />
           {/* no ADF inplemented yet */}
           {/* <AdfInfo bus={this.props.bus} index={1} visible={this.isAdf} /> */}
         </g>
@@ -85,10 +65,12 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2
 export interface VorInfoIndicatorProps extends ComponentProps {
   bus: EventBus;
   index: 1 | 2;
-  visible: Subject<boolean>;
+  //visible: Subject<boolean>;
 }
 
 export class VorDmeInfo extends DisplayComponent<VorInfoIndicatorProps> {
+  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & HUDSimvars & HudElems & FcuEfisCpBusEvents>();
+
   private readonly adf = Subject.create(false);
 
   private readonly vorIdent = Subject.create('');
@@ -104,7 +86,28 @@ export class VorDmeInfo extends DisplayComponent<VorInfoIndicatorProps> {
   private readonly fm1NavTuningWord = Arinc429RegisterSubject.createEmpty();
 
   private readonly fm2NavTuningWord = Arinc429RegisterSubject.createEmpty();
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(getDisplayIndex() === 2 ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+  );
+  private readonly isEfisVor1Pressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(28, true));
+  private readonly isEfisVor2Pressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(29, true));
+  private readonly isEfisLsPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
 
+  private readonly isVorVisible = MappedSubject.create(
+    ([hudmode, Vor1Pressed, Vor2Pressed, LsPressed]) => {
+      const side = this.props.index === 1 ? Vor1Pressed : Vor2Pressed;
+      if (hudmode === HudMode.NORMAL) {
+        return side && !LsPressed ? 'block' : 'none';
+      } else {
+        return 'none';
+      }
+    },
+    this.hudMode,
+    this.isEfisVor1Pressed,
+    this.isEfisVor2Pressed,
+    this.isEfisLsPressed,
+  );
   private showDecimal = Subject.create(true);
   private readonly intPartText = Subject.create('');
   private readonly roundedThreshold = 20;
@@ -131,7 +134,10 @@ export class VorDmeInfo extends DisplayComponent<VorInfoIndicatorProps> {
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
+    const isFo = getDisplayIndex() === 2;
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
     const subs = this.props.bus.getSubscriber<GenericVorEvents & GenericFlightManagementBusEvents & GenericFcuEvents>();
 
     subs
@@ -214,7 +220,7 @@ export class VorDmeInfo extends DisplayComponent<VorInfoIndicatorProps> {
 
   render(): VNode | null {
     return (
-      <g>
+      <g display={this.isVorVisible}>
         <Layer x={this.xPos} y={820}>
           <text x={0} y={0} class="FontSmallest Green" text-anchor="start">
             VOR
