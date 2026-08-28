@@ -12,6 +12,7 @@ members = [
 ]
 
 [workspace.dependencies]
+more-asserts = "0.3.1"
 nalgebra = "0.34"
 ntest = "0.9"
 uom = "0.37.0"

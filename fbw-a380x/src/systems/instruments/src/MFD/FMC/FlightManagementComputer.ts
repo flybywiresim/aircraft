@@ -70,6 +70,7 @@ import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanCh
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { A380X_EfisApproachMessageModule } from './modules/A380xEfisApproachMessageModule';
+import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -263,6 +264,11 @@ export class FlightManagementComputer implements FmcInterface {
   private readonly approachTemperature = Subject.create<number | null>(null);
   private readonly approachWindDirection = Subject.create<number | null>(null);
   private readonly approachWindMagnitude = Subject.create<number | null>(null);
+  /** For the active flight plan */
+  private readonly destinationRunwayBearing = Subject.create<number | null>(null);
+
+  /** For the active flight plan */
+  private readonly approachHeadWindComponent = Subject.create<number | null>(null);
 
   private readonly destDataEntered = MappedSubject.create(
     ([qnh, temperature, windDirection, windMagnitude]) =>
@@ -417,6 +423,24 @@ export class FlightManagementComputer implements FmcInterface {
           this.exitEngineOut();
         }
       }),
+      this.approachWindDirection.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.approachWindMagnitude.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.destinationRunwayBearing.sub((v) => {
+        this.approachHeadWindComponent.set(
+          v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
+        );
+      }),
+      this.approachHeadWindComponent.sub((v) => {
+        this.acInterface.updateApproachHeadWindComponent(v);
+      }),
     );
 
     let lastUpdateTime = Date.now();
@@ -442,6 +466,32 @@ export class FlightManagementComputer implements FmcInterface {
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
     this.addModule(new A380X_EfisApproachMessageModule(this.bus));
+  }
+  getApproachCrossWindComponent(forPlan = FlightPlanIndex.Active): number | null {
+    return this.calculateApproachWindComponent(forPlan, false);
+  }
+
+  getApproachHeadWindComponent(forPlan = FlightPlanIndex.Active): number | null {
+    return forPlan === FlightPlanIndex.Active
+      ? this.approachHeadWindComponent.get()
+      : this.calculateApproachWindComponent(forPlan, true);
+  }
+
+  private calculateApproachWindComponent(forPlan = FlightPlanIndex.Active, headWind: boolean): number | null {
+    const plan = this.#flightPlanService.has(forPlan) ? this.#flightPlanService.get(forPlan) : undefined;
+    if (!plan || !plan.destinationRunway) {
+      return null;
+    }
+    const approachWindDirection = plan.performanceData.approachWindDirection.get();
+    const approachWindSpeed = plan.performanceData.approachWindMagnitude.get();
+    if (approachWindDirection === null || approachWindSpeed === null) {
+      return null;
+    }
+    return A380SpeedsUtils.getHeadwind(
+      approachWindSpeed,
+      approachWindDirection,
+      plan.destinationRunway.magneticBearing + (headWind ? 0 : 90),
+    );
   }
 
   destroy() {
@@ -733,8 +783,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private initSimVars() {
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
@@ -743,7 +792,6 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
 
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', 0);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
 
@@ -754,15 +802,10 @@ export class FlightManagementComputer implements FmcInterface {
     SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', NaN);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', NaN);
-
-    const gpsDriven = SimVar.GetSimVarValue('GPS DRIVES NAV1', 'Bool');
-    if (!gpsDriven) {
-      SimVar.SetSimVarValue('K:TOGGLE_GPS_DRIVES_NAV1', 'Bool', 0);
-    }
-    SimVar.SetSimVarValue('K:VS_SLOT_INDEX_SET', 'number', 1);
+    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', -1);
+    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', 0); // Simulink model uses 0 as non valid.
+    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', -1);
+    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'knots', -1);
   }
 
   public clearLatestFmsErrorMessage() {
@@ -828,7 +871,7 @@ export class FlightManagementComputer implements FmcInterface {
     if (intoPlan === FlightPlanIndex.Active) {
       this.acInterface.updateFmsData();
       if (this.simBriefOfp?.cruiseAltitude) {
-        this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
+        this.trySetCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
       }
     }
 
@@ -872,7 +915,7 @@ export class FlightManagementComputer implements FmcInterface {
     const secToLeg = secPlan.activeLeg;
 
     return (
-      this.acInterface.isHdgOrTrackModeEngaged() ||
+      this.acInterface.isHdgOrTrackModeEngaged().get() ||
       (activeToLeg === undefined && secToLeg === undefined) ||
       (activeToLeg !== undefined &&
         secToLeg !== undefined &&
@@ -1186,14 +1229,10 @@ export class FlightManagementComputer implements FmcInterface {
 
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
-   * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
    * @param prevPhase Previous FmgcFlightPhase
    * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
-    this.acInterface.updateConstraints();
-    this.acInterface.updateManagedSpeed();
-
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     this.isReset.set(false);
 
@@ -1203,6 +1242,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         const plan = this.flightPlanInterface.active;
         const pd = this.fmgc.data;
+        let thrustOrAccelerationChanged = false;
 
         if (!plan.performanceData.accelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -1211,7 +1251,7 @@ export class FlightManagementComputer implements FmcInterface {
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
               parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
-          this.acInterface.updateThrustReductionAcceleration();
+          thrustOrAccelerationChanged = true;
         }
         if (!plan.performanceData.engineOutAccelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -1220,7 +1260,7 @@ export class FlightManagementComputer implements FmcInterface {
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
               parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
-          this.acInterface.updateThrustReductionAcceleration();
+          thrustOrAccelerationChanged = true;
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
@@ -1238,6 +1278,9 @@ export class FlightManagementComputer implements FmcInterface {
         const climbPreSel = plan.performanceData.preselectedClimbSpeed.get();
         if (climbPreSel) {
           this.acInterface.updatePreSelSpeedMach(climbPreSel);
+        }
+        if (thrustOrAccelerationChanged) {
+          this.acInterface.updateThrustReductionAcceleration();
         }
 
         break;
@@ -1259,16 +1302,11 @@ export class FlightManagementComputer implements FmcInterface {
         const preselectedSpeed = plan.performanceData.preselectedCruiseSpeed.get();
         this.acInterface.updatePreSelSpeedMach(preselectedSpeed);
 
-        if (!plan.performanceData.cruiseFlightLevel.get()) {
-          this.flightPlanInterface.active.setPerformanceData(
-            'cruiseFlightLevel',
-            (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100,
-          );
-          SimVar.SetSimVarValue(
-            'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
-            'number',
-            Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0,
-          );
+        const fcuAltitude = this.acInterface.getFcuSelectedAltitude();
+
+        if (fcuAltitude !== null && !plan.performanceData.cruiseFlightLevel.get()) {
+          this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', fcuAltitude / 100);
+          SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
         }
 
         break;
@@ -1276,7 +1314,6 @@ export class FlightManagementComputer implements FmcInterface {
 
       case FmgcFlightPhase.Cruise: {
         this.destDataCheckedInCruise = false;
-        SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
         const preselectedCruiseSpeed = this.flightPlanInterface.active.performanceData.preselectedCruiseSpeed.get();
 
         /** Activate pre selected speed/mach */
@@ -1287,6 +1324,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Descent: {
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
         this.checkDestData();
 
         this.triggerCheckSpeedModeMessage(null);
@@ -1299,8 +1337,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Approach: {
-        SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
         this.checkDestData();
 
         break;
@@ -1361,8 +1398,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   triggerCheckSpeedModeMessage(preselectedSpeed: number | null) {
-    const isSpeedSelected = !Simplane.getAutoPilotAirspeedManaged();
-    const hasPreselectedSpeed = !!preselectedSpeed;
+    const isSpeedSelected = this.acInterface.isAirspeedSelected() === true;
+    const hasPreselectedSpeed = preselectedSpeed !== null;
 
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
@@ -1381,7 +1418,7 @@ export class FlightManagementComputer implements FmcInterface {
   clearCheckSpeedModeMessage() {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
-    if (checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+    if (checkSpeedModeMessageActive && (this.acInterface.isAirspeedManaged() ?? true)) {
       this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
@@ -1458,7 +1495,6 @@ export class FlightManagementComputer implements FmcInterface {
         );
 
         this.acInterface.sfccAquisition();
-        this.acInterface.fgAquisition();
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -1482,6 +1518,10 @@ export class FlightManagementComputer implements FmcInterface {
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
         this.acInterface.updateDestinationPredictions(destPred);
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+        this.acInterface.updatePerfSpeeds();
+        this.acInterface.checkCruiseLevelChangeDueToFcu(throttledDt);
+        this.acInterface.updateManagedSpeed();
+        this.acInterface.updateConstraints();
       } else {
         this.acInterface.resetDestinationPredictions();
       }
@@ -1513,9 +1553,6 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.lastFlightPlanVersion = this.flightPlanInterface.activeOrTemporary.version;
     }
-
-    this.acInterface.updateAutopilot(dt);
-
     this.guidanceController.update(dt);
 
     this.efisSymbolsLeft.update();
@@ -1539,16 +1576,16 @@ export class FlightManagementComputer implements FmcInterface {
     );
   }
 
-  handleFcuAltKnobPushPull(distanceToDestination: number): void {
-    this.flightPhaseManager.handleFcuAltKnobPushPull(distanceToDestination);
+  handleFcuAltKnobPushPull(): void {
+    this.flightPhaseManager.handleFcuAltKnobPushPull(this.fmgc.getDistanceToDestination() ?? -1);
   }
 
-  handleFcuAltKnobTurn(distanceToDestination: number): void {
-    this.flightPhaseManager.handleFcuAltKnobTurn(distanceToDestination);
+  handleFcuAltKnobTurn(): void {
+    this.flightPhaseManager.handleFcuAltKnobTurn(this.fmgc.getDistanceToDestination() ?? -1);
   }
 
-  handleFcuVSKnob(distanceToDestination: number, onStepClimbDescent: () => void): void {
-    this.flightPhaseManager.handleFcuVSKnob(distanceToDestination, onStepClimbDescent);
+  handleFcuVSKnob(onStepClimbDescent: () => void): void {
+    this.flightPhaseManager.handleFcuVSKnob(this.fmgc.getDistanceToDestination() ?? -1, onStepClimbDescent);
   }
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
@@ -1763,7 +1800,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private loadActiveFlightPlanFuelAndApproachData(): void {
-    const pd = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active?.performanceData : null;
+    const flightplan = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active : null;
+    const pd = flightplan?.performanceData;
     this.approachFlapsThreeSelected.set(pd?.approachFlapsThreeSelected.get() ?? false);
     this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
     this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
@@ -1774,5 +1812,39 @@ export class FlightManagementComputer implements FmcInterface {
     this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
     this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
     this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
+    this.destinationRunwayBearing.set(flightplan?.destinationRunway?.magneticBearing ?? null);
+  }
+
+  public trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active): boolean {
+    if (!this.flightPlanInterface.has(intoPlan)) {
+      return false;
+    }
+    const plan = this.#flightPlanService.get(intoPlan);
+    if (!Number.isFinite(fl)) {
+      this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
+      return false;
+    }
+    const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
+    if (flBelowMinOrMax) {
+      this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
+      return false;
+    }
+    let flightLevelToInsert = fl;
+    if (plan.isActiveOrCopiedFromActive()) {
+      const phase = this.flightPhase.get();
+      if (phase >= FmgcFlightPhase.Climb && phase < FmgcFlightPhase.Done) {
+        const fcuAltitude = this.acInterface.getFcuSelectedAltitude();
+        // Select the maximum of CRZ FL and FCU altitude, i.e. if crew entry < FCU, we set FCU
+        flightLevelToInsert = Math.max(fl, Math.floor(Math.max(0, fcuAltitude ?? 0) / 100));
+      }
+    }
+    plan.setPerformanceData('cruiseFlightLevel', flightLevelToInsert);
+    if (flightLevelToInsert > (this.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
+      this.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+    }
+    if (intoPlan === FlightPlanIndex.Active) {
+      this.acInterface.onUpdateCruiseLevel(flightLevelToInsert);
+    }
+    return true;
   }
 }

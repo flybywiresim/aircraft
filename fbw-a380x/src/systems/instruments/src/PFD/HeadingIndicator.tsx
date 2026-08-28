@@ -1,11 +1,23 @@
-import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  HEvent,
+  MappedSubject,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -48,6 +60,12 @@ export class HeadingTape extends DisplayComponent<HeadingTapeProps> {
 }
 
 export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FcuEfisCpBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly lsPressed = this.fcuEisDiscreteWord2.map((word) => word.bitValueOr(14, true));
+
   private normalRef = FSComponent.createRef<SVGGElement>();
 
   private abnormalRef = FSComponent.createRef<SVGGElement>();
@@ -56,10 +74,14 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
 
   private ILSCourse = Subject.create(0);
 
-  private lsPressed = Subject.create(false);
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'fcu_efis_r_discrete_word_2' : 'fcu_efis_l_discrete_word_2'),
+    );
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & HEvent>();
 
@@ -80,13 +102,6 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
       .whenChanged()
       .handle((n) => {
         this.ILSCourse.set(n);
-      });
-
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((lsButton) => {
-        this.lsPressed.set(lsButton);
       });
   }
 
@@ -119,107 +134,84 @@ interface SelectedHeadingProps {
 }
 
 class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
-  private selectedHeading = NaN;
+  private sub = this.props.bus.getSubscriber<PrimFgBusBaseEvents & ClockEvents>();
 
-  private showSelectedHeading = 0;
+  private fgDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_fg_discrete_word_5'));
 
-  private targetIndicator = FSComponent.createRef<SVGPathElement>();
+  private selectedHdgTrk = Arinc429LocalVarConsumerSubject.create(null);
 
-  private headingTextRight = FSComponent.createRef<SVGPathElement>();
+  private readonly trkFpaModeActive = this.fgDiscreteWord5.map((word) => word.bitValueOr(11, true));
 
-  private headingTextLeft = FSComponent.createRef<SVGPathElement>();
+  private headingDelta = MappedSubject.create(
+    ([heading, selectedHeading]) => {
+      return getSmallestAngle(selectedHeading.value, heading);
+    },
+    this.props.heading,
+    this.selectedHdgTrk,
+  );
 
-  private text = Subject.create('');
+  private readonly selectedHeadingValid = this.selectedHdgTrk.map(
+    (hdg) => hdg.isNormalOperation() || hdg.isFunctionalTest(),
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private readonly text = this.selectedHdgTrk.map((selectedHeading) =>
+    Math.round(selectedHeading.value).toString().padStart(3, '0'),
+  );
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+  private readonly headingBugTransform = this.headingDelta.map(
+    (headingDelta) => `translate3d(${(headingDelta * DistanceSpacing) / ValueSpacing}px, 0px, 0px)`,
+  );
 
-    const spsub = this.props.bus.getSubscriber<SimplaneValues>();
+  private readonly headingBugHidden = MappedSubject.create(
+    ([selectedHeadingValid, headingDelta]) => {
+      return !(selectedHeadingValid && Math.abs(headingDelta) < DisplayRange);
+    },
+    this.selectedHeadingValid,
+    this.headingDelta,
+  );
 
-    spsub
-      .on('selectedHeading')
-      .whenChanged()
-      .handle((h) => {
-        if (this.showSelectedHeading === 1) {
-          this.selectedHeading = h;
-          this.handleDelta(this.props.heading.get(), this.selectedHeading);
-        } else {
-          this.selectedHeading = NaN;
-        }
-      });
+  private readonly leftTextHidden = MappedSubject.create(
+    ([selectedHeadingValid, headingDelta]) => {
+      return !(selectedHeadingValid && Math.abs(headingDelta) > DisplayRange && headingDelta < 0);
+    },
+    this.selectedHeadingValid,
+    this.headingDelta,
+  );
 
-    sub
-      .on('showSelectedHeading')
-      .whenChanged()
-      .handle((sh) => {
-        this.showSelectedHeading = sh;
-        if (this.showSelectedHeading === 0) {
-          this.selectedHeading = NaN;
-        }
-        this.handleDelta(this.props.heading.get(), this.selectedHeading);
-      });
+  private readonly rightTextHidden = MappedSubject.create(
+    ([selectedHeadingValid, headingDelta]) => {
+      return !(selectedHeadingValid && Math.abs(headingDelta) > DisplayRange && headingDelta > 0);
+    },
+    this.selectedHeadingValid,
+    this.headingDelta,
+  );
 
-    this.props.heading.sub((h) => {
-      this.handleDelta(h, this.selectedHeading);
+  onAfterRender(): void {
+    this.trkFpaModeActive.sub((trkFpaModeActive) => {
+      this.selectedHdgTrk.setConsumer(this.sub.on(trkFpaModeActive ? 'prim_selected_track' : 'prim_selected_heading'));
     }, true);
-  }
-
-  private handleDelta(heading: number, selectedHeading: number) {
-    const headingDelta = getSmallestAngle(selectedHeading, heading);
-
-    this.text.set(Math.round(selectedHeading).toString().padStart(3, '0'));
-
-    if (Number.isNaN(selectedHeading)) {
-      this.headingTextLeft.instance.classList.add('HiddenElement');
-      this.targetIndicator.instance.classList.add('HiddenElement');
-      this.headingTextRight.instance.classList.add('HiddenElement');
-      return;
-    }
-
-    if (Math.abs(headingDelta) < DisplayRange) {
-      const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
-
-      this.targetIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-      this.targetIndicator.instance.classList.remove('HiddenElement');
-      this.headingTextRight.instance.classList.add('HiddenElement');
-      this.headingTextLeft.instance.classList.add('HiddenElement');
-      return;
-    }
-    this.targetIndicator.instance.classList.add('HiddenElement');
-
-    if (headingDelta > 0) {
-      this.headingTextRight.instance.classList.remove('HiddenElement');
-      this.headingTextLeft.instance.classList.add('HiddenElement');
-    } else {
-      this.headingTextRight.instance.classList.add('HiddenElement');
-      this.headingTextLeft.instance.classList.remove('HiddenElement');
-    }
   }
 
   render(): VNode {
     return (
       <>
         <path
-          ref={this.targetIndicator}
+          style={{ transform: this.headingBugTransform }}
           id="HeadingTargetIndicator"
-          class="NormalStroke Cyan CornerRound"
+          class={{ NormalStroke: true, Cyan: true, CornerRound: true, HiddenElement: this.headingBugHidden }}
           d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609"
         />
         <text
-          ref={this.headingTextRight}
           id="SelectedHeadingTextRight"
-          class="FontSmallest MiddleAlign Cyan"
+          class={{ FontSmallest: true, Cyan: true, MiddleAlign: true, HiddenElement: this.rightTextHidden }}
           x="101.70432"
           y="144.34792"
         >
           {this.text}
         </text>
         <text
-          ref={this.headingTextLeft}
           id="SelectedHeadingTextLeft"
-          class="FontSmallest MiddleAlign Cyan"
+          class={{ FontSmallest: true, Cyan: true, MiddleAlign: true, HiddenElement: this.leftTextHidden }}
           x="36.418198"
           y="144.32108"
         >

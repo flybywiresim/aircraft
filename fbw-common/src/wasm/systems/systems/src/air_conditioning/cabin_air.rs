@@ -709,6 +709,8 @@ impl ZoneAir {
 
 #[cfg(test)]
 mod cabin_air_tests {
+    use more_asserts::*;
+
     use super::*;
     use crate::{
         air_conditioning::PackFlow,
@@ -993,7 +995,10 @@ mod cabin_air_tests {
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(10.))
             .iterate(1);
 
-        assert!((test_bed.cabin_temperature().get::<degree_celsius>() - 10.) < 1.);
+        assert_lt!(
+            (test_bed.cabin_temperature().get::<degree_celsius>() - 10.),
+            1.
+        );
     }
 
     #[test]
@@ -1025,7 +1030,7 @@ mod cabin_air_tests {
             .memorize_cabin_temperature()
             .iterate(20);
 
-        assert!(test_bed.initial_temperature() < test_bed.cabin_temperature());
+        assert_lt!(test_bed.initial_temperature(), test_bed.cabin_temperature());
     }
 
     #[test]
@@ -1038,7 +1043,7 @@ mod cabin_air_tests {
             .air_in_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(4.))
             .iterate(80);
 
-        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
+        assert_gt!(test_bed.initial_temperature(), test_bed.cabin_temperature());
     }
 
     #[test]
@@ -1064,7 +1069,7 @@ mod cabin_air_tests {
         let final_temp_diff = test_bed.cabin_temperature().get::<degree_celsius>()
             - test_bed.initial_temperature().get::<degree_celsius>();
 
-        assert!(initial_temp_diff > final_temp_diff);
+        assert_gt!(initial_temp_diff, final_temp_diff);
     }
 
     #[test]
@@ -1081,7 +1086,7 @@ mod cabin_air_tests {
             .passengers(10)
             .iterate(100);
 
-        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
+        assert_gt!(test_bed.initial_temperature(), test_bed.cabin_temperature());
     }
 
     #[test]
@@ -1109,7 +1114,7 @@ mod cabin_air_tests {
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
             .iterate_with_delta(100, Duration::from_secs(10));
 
-        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
+        assert_gt!(test_bed.initial_temperature(), test_bed.cabin_temperature());
     }
 
     #[test]
@@ -1121,7 +1126,7 @@ mod cabin_air_tests {
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(45.))
             .iterate_with_delta(100, Duration::from_secs(10));
 
-        assert!(test_bed.initial_temperature() < test_bed.cabin_temperature());
+        assert_lt!(test_bed.initial_temperature(), test_bed.cabin_temperature());
     }
 
     #[test]
@@ -1151,6 +1156,9 @@ mod cabin_air_tests {
             test_bed.initial_temperature().get::<degree_celsius>()
                 - test_bed.cabin_temperature().get::<degree_celsius>();
 
-        assert!(first_temperature_differential < second_temperature_differential);
+        assert_lt!(
+            first_temperature_differential,
+            second_temperature_differential
+        );
     }
 }
