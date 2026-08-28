@@ -23,6 +23,7 @@ import {
   NXLogicConfirmNode,
   NXUnits,
   Units,
+  Arinc429LocalVarConsumerSubject,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -31,6 +32,7 @@ import {
   MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { A32NXFcuBusEvents } from '../../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
@@ -105,7 +107,7 @@ import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
-  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
@@ -276,9 +278,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincThrustReductionAltitude = new FmArinc429OutputWord('THR_RED_ALT');
   private readonly arincAccelerationAltitude = new FmArinc429OutputWord('ACC_ALT');
   private readonly arincEoAccelerationAltitude = new FmArinc429OutputWord('EO_ACC_ALT');
-  private readonly arincMissedThrustReductionAltitude = new FmArinc429OutputWord('MISSED_THR_RED_ALT');
-  private readonly arincMissedAccelerationAltitude = new FmArinc429OutputWord('MISSED_ACC_ALT');
-  private readonly arincMissedEoAccelerationAltitude = new FmArinc429OutputWord('MISSED_EO_ACC_ALT');
   private readonly arincTransitionAltitude = new FmArinc429OutputWord('TRANS_ALT');
   private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
@@ -301,9 +300,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincThrustReductionAltitude,
     this.arincAccelerationAltitude,
     this.arincEoAccelerationAltitude,
-    this.arincMissedThrustReductionAltitude,
-    this.arincMissedAccelerationAltitude,
-    this.arincMissedEoAccelerationAltitude,
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincEisWord2,
@@ -342,6 +338,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly fmgc2DiscreteWord4 = RegisteredSimVar.create<number>(
     'L:A32NX_FMGC_2_DISCRETE_WORD_4',
     SimVarValueType.Enum,
+  );
+
+  private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
+  );
+  private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
   );
 
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
@@ -603,14 +606,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.atsu?.onFmsReset();
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0); // Simulink model uses 0 as non valid
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
 
@@ -655,6 +657,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUpdate(deltaTime: number) {
     this._deltaTime = deltaTime;
+
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -3276,67 +3279,43 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateThrustReductionAcceleration() {
-    const activePerformanceData = this.flightPlanService.active.performanceData;
+    const activePerformanceData = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData
+      : null;
 
+    const flightPhase = this.flightPhaseManager.phase;
+    // Set the thrust reduction altitude and acceleration altitude in a single output based on the flight phase.
+    let thrustReductionAlt: number | null = null;
+    let accelerationAlt: number | null = null;
+    let engineOutAccelerationAlt: number | null = null;
+    if (flightPhase <= FmgcFlightPhase.Takeoff) {
+      thrustReductionAlt = activePerformanceData?.thrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.accelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.engineOutAccelerationAltitude.get() ?? null;
+    } else if (flightPhase === FmgcFlightPhase.GoAround) {
+      thrustReductionAlt = activePerformanceData?.missedThrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.missedAccelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.missedEngineOutAccelerationAltitude.get() ?? null;
+    }
     this.arincThrustReductionAltitude.setBnrValue(
-      activePerformanceData.thrustReductionAltitude.get() !== null
-        ? activePerformanceData.thrustReductionAltitude.get()
-        : 0,
-      activePerformanceData.thrustReductionAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincAccelerationAltitude.setBnrValue(
-      activePerformanceData.accelerationAltitude.get() !== null ? activePerformanceData.accelerationAltitude.get() : 0,
-      activePerformanceData.accelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincEoAccelerationAltitude.setBnrValue(
-      activePerformanceData.engineOutAccelerationAltitude.get() !== null
-        ? activePerformanceData.engineOutAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.engineOutAccelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
+      thrustReductionAlt ?? 0,
+      thrustReductionAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
 
-    this.arincMissedThrustReductionAltitude.setBnrValue(
-      activePerformanceData.missedThrustReductionAltitude.get() !== null
-        ? activePerformanceData.missedThrustReductionAltitude.get()
-        : 0,
-      activePerformanceData.missedThrustReductionAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
+    this.arincAccelerationAltitude.setBnrValue(
+      accelerationAlt ?? 0,
+      accelerationAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
-    this.arincMissedAccelerationAltitude.setBnrValue(
-      activePerformanceData.missedAccelerationAltitude.get() !== null
-        ? activePerformanceData.missedAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.missedAccelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincMissedEoAccelerationAltitude.setBnrValue(
-      activePerformanceData.missedEngineOutAccelerationAltitude.get() !== null
-        ? activePerformanceData.missedEngineOutAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.missedEngineOutAccelerationAltitude.get() !== null
+
+    this.arincEoAccelerationAltitude.setBnrValue(
+      engineOutAccelerationAlt ?? 0,
+      engineOutAccelerationAlt !== null
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,
@@ -5614,13 +5593,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const activePlan = this.flightPlanService.active;
 
     this.subscriptions.push(
-      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? 0), true),
+      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? 0), true),
+      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true),
+      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true), // Simulink model uses 0 as invalid.
     );
     // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
     this.subscriptions.push(
@@ -5665,7 +5644,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           SimVar.SetSimVarValue(
             'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
             'number',
-            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : 0,
+            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : -1,
           ),
         true,
       ),
@@ -5916,6 +5895,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
+  }
+
+  public isInhgSelected(): boolean {
+    const leftWord = this.fcuEisLeftDiscreteWord1.get();
+    if (!leftWord.isInvalid()) {
+      return leftWord.bitValueOr(11, false);
+    }
+    return this.fcuEisRightDiscreteWord1.get().bitValueOr(11, false);
   }
 
   getPerformanceFactorPercent(): number | null {

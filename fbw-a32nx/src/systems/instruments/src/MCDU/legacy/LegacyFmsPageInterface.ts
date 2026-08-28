@@ -120,6 +120,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     bypassTmpy?: boolean,
   ): void;
   isNavModeEngaged(): boolean;
+  isInhgSelected(): boolean;
   isFlying(): boolean;
   trySetZeroFuelWeightZFWCG(s: string, forPlan: FlightPlanIndex): boolean;
   /** @deprecated use getGrossWeight */

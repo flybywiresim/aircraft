@@ -1026,16 +1026,18 @@ export class CDUPerformancePage {
     const distanceToDest = mcdu.getDistanceToDestination();
     const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
 
-    let qnhCell = '[\xa0\xa0][color]cyan';
+    const isBaroInInhg = mcdu.isInhgSelected();
+
+    let qnhCell = isBaroInInhg ? '[\xa0.\xa0][color]cyan' : '[\xa0\xa0][color]cyan';
     const qnh = plan.performanceData.approachQnh.get();
-    if (qnh !== null && Number.isFinite(qnh)) {
+    if (qnh !== null) {
       if (qnh < 500) {
         qnhCell = qnh.toFixed(2) + '[color]cyan';
       } else {
         qnhCell = qnh.toFixed(0) + '[color]cyan';
       }
     } else if (closeToDest && isActivePlan) {
-      qnhCell = '____[color]amber';
+      qnhCell = isBaroInInhg ? '__.__[color]amber' : '____[color]amber';
     }
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
       if (mcdu.setPerfApprQNH(value, forPlan)) {

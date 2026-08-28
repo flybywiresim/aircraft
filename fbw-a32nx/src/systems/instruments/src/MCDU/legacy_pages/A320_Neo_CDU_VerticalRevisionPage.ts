@@ -148,17 +148,18 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
+      const isBaroInInhg = mcdu.isInhgSelected();
       const qnh = mainTargetPlan.performanceData.approachQnh.get();
-      if (qnh !== null && Number.isFinite(qnh)) {
+      if (qnh !== null) {
         if (qnh < 500) {
           l4Cell = `{cyan}${qnh.toFixed(2)}{end}`;
         } else {
           l4Cell = `{cyan}${qnh.toFixed(0)}{end}`;
         }
       } else if (closeToDest) {
-        l4Cell = '{amber}____{end}';
+        l4Cell = isBaroInInhg ? '{amber}__.__{end}' : '{amber}____{end}';
       } else {
-        l4Cell = '{cyan}[\xa0\xa0]{end}';
+        l4Cell = isBaroInInhg ? '{cyan}[\xa0.\xa0]{end}' : '{cyan}[\xa0\xa0]{end}';
       }
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
         if (mcdu.setPerfApprQNH(value, forPlan)) {
