@@ -317,21 +317,68 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
 
   private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_speed_trend').atFrequency(10));
   private refElement = FSComponent.createRef<SVGGElement>();
-  private leftChevron = FSComponent.createRef<SVGPathElement>();
-  private rightChevron = FSComponent.createRef<SVGPathElement>();
-  private leftChevronBg = FSComponent.createRef<SVGPathElement>();
-  private rightChevronBg = FSComponent.createRef<SVGPathElement>();
+  private Chevrons = FSComponent.createRef<SVGPathElement>();
+  private ChevronsBg = FSComponent.createRef<SVGPathElement>();
   private inRange = true;
   private merged = false;
 
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
   private readonly spdChevronsVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
+  private readonly crosswindMode = ConsumerSubject.create(
+    this.sub.on(getDisplayIndex() === 1 ? 'crosswindModeL' : 'crosswindModeR'),
+    false,
+  );
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa'));
+  private readonly da = Arinc429ConsumerSubject.create(this.sub.on('da'));
 
   private previousAirspeed = 0;
   private thresholdSpeed = 35;
   private lagFilter = new LagFilter(1.6);
   private airspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
+
+  private readonly isOffrange = MappedSubject.create(
+    ([crosswindMode, roll, pitch, fpa, da]) => {
+      const daLimConv = (da.value * DistanceSpacing) / ValueSpacing;
+      const pitchSubFpaConv = calculateHorizonOffsetFromPitch(pitch.value) - calculateHorizonOffsetFromPitch(fpa.value);
+      const rollCos = Math.cos((roll.value * Math.PI) / 180);
+      const rollSin = Math.sin((-roll.value * Math.PI) / 180);
+      const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+      let offRange = false;
+      if (crosswindMode == false) {
+        if (xOffset < -378 || xOffset > 350) {
+          offRange = true;
+        } else {
+          offRange = false;
+        }
+      } else {
+        if (xOffset < -540 || xOffset > 540) {
+          offRange = true;
+        } else {
+          offRange = false;
+        }
+      }
+
+      const isSingleFpv = parseInt(NXDataStore.getLegacy('HUD_FPV_TYPE', '0'));
+
+      if (!isSingleFpv) {
+        if (crosswindMode) {
+          false;
+        } else {
+          return offRange ? true : false;
+        }
+      } else {
+        return offRange ? true : false;
+      }
+    },
+    this.crosswindMode,
+    this.roll,
+    this.pitch,
+    this.fpa,
+    this.da,
+  );
 
   private setOffset() {
     const sign =
@@ -350,16 +397,13 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
         this.merged = false;
       }
       if (this.merged == false) {
-        if (this.inRange) {
-          this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-          this.rightChevron.instance.setAttribute('stroke-dasharray', '');
-        } else {
-          this.leftChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-          this.rightChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-        }
+        this.inRange
+          ? this.Chevrons.instance.setAttribute('stroke-dasharray', '')
+          : this.Chevrons.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
       } else {
-        this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-        this.rightChevron.instance.setAttribute('stroke-dasharray', '');
+        this.isOffrange.get()
+          ? this.Chevrons.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3')
+          : this.Chevrons.instance.setAttribute('stroke-dasharray', '');
       }
 
       this.refElement.instance.style.transform = `translate3d(0px, ${UsedOffset}px, 0px)`;
@@ -406,18 +450,11 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
     return (
       <g id="SpeedChevrons" ref={this.refElement} display={this.spdChevronsVis}>
         {OutlinedPath(
-          'M 572 500 l 12 12 l -12 12 M 572 500 l 12 12 l-12 12',
+          'M 572 500 l 12 12 l -12 12 M 572 500 l 12 12 l-12 12 M 708 500 l -12 12 l 12 12 M 708 500 l -12 12 l 12 12',
           'NormalStroke InverseGreen',
           'NormalStroke Green',
-          this.leftChevronBg,
-          this.leftChevron,
-        )}
-        {OutlinedPath(
-          'M 708 500 l -12 12 l 12 12 M 708 500 l -12 12 l 12 12',
-          'NormalStroke InverseGreen',
-          'NormalStroke Green',
-          this.rightChevronBg,
-          this.rightChevron,
+          this.ChevronsBg,
+          this.Chevrons,
         )}
       </g>
     );
