@@ -131,7 +131,7 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
 
   private readonly fdCueOffRange = MappedSubject.create(
     ([roll, pitch, fpa, da, fdRollCommand, crosswindMode]) => {
-      let fdCueOffRange;
+      let fdCueOffRange = false;
       const daLimConv = (da.value * DistanceSpacing) / ValueSpacing;
       const pitchSubFpaConv = calculateHorizonOffsetFromPitch(pitch.value) - calculateHorizonOffsetFromPitch(fpa.value);
 
@@ -172,14 +172,13 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
         <g ref={this.birdPath}>
           <svg>
             <g id="FlightPathDirector" display={this.fdVisible}>
-              <g style={{ transform: this.fdTransform }}>
+              <g style={{ transform: this.fdTransform }} stroke-dasharray={this.fdCueOffRange}>
                 {OutlinedPath(
                   'M 640 512 m 7 0 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0 Z M 640 512 m 7 0 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0 Z',
                   'NormalStroke InverseGreen',
                   'NormalStroke Green',
                   this.birdPathCircleBg,
                   this.birdPathCircle,
-                  this.fdCueOffRange.get(),
                 )}
               </g>
             </g>
