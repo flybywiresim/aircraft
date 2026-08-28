@@ -27,6 +27,7 @@
 1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 
 ## 2020.15.0
 
