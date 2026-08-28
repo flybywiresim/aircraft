@@ -271,7 +271,7 @@ export class FmcAircraftInterface {
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
 
-  private readonly navEngaged = this.masterPrimFgWord5.map((v) => v.bitValueOr(12, false));
+  private readonly navEngaged = this.masterPrimFgWord4.map((v) => v.bitValueOr(12, false));
 
   private autoStepClimbEnabled = false;
 
