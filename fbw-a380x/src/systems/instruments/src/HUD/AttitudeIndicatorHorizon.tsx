@@ -857,8 +857,8 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   private path = FSComponent.createRef<SVGPathElement>();
   private path2 = FSComponent.createRef<SVGPathElement>();
   private path3 = FSComponent.createRef<SVGPathElement>();
-  private extendedAlt = FSComponent.createRef<SVGPathElement>();
-  private extendedSpd = FSComponent.createRef<SVGPathElement>();
+  private extendedUpperRef = FSComponent.createRef<SVGPathElement>();
+  private extendedLowerRef = FSComponent.createRef<SVGPathElement>();
 
   private pitch = 0;
   private yOffset = Subject.create(0);
@@ -868,6 +868,11 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
   private xSpdTop = Subject.create<String>('');
   private ySpdTop = Subject.create<String>('');
+
+  private extendedUpper = Subject.create<String>('');
+  private extendedLower = Subject.create<String>('');
+  private extendedUpperNum = 0;
+  private extendedLowerNum = 0;
 
   private spdRollDev = 0;
   private altRollDev = 0;
@@ -899,6 +904,7 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
         let rSign = 1;
 
         const xPos = -D * Math.sin(radRoll);
+        const yPos = -D * Math.cos(radRoll);
 
         // y position from frame2 to eval if extention should be drawn y = 0 is vert pos of acft in air ref
         if (this.crosswindMode == false) {
@@ -956,16 +962,6 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
           const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
 
-          //vertial offset of eval point from horizon
-          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
-          if (Number(ey) < 512) {
-            F1AltSideVertDev *= -1;
-          }
-          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
-          if (Number(eys) < 512) {
-            F1SpdSideVertDev *= -1;
-          }
-
           // debug eval point pos circles
           this.xAltTop.set(xPosF.toString());
           this.yAltTop.set((512).toString());
@@ -978,39 +974,40 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
           //end debug
 
-          const F1HorizonPitchOffset = D * Math.cos(radRoll);
+          const sinRadRoll =
+            Math.sin(radRoll) < -0.001 || Math.sin(radRoll) > 0.001 ? Math.sin(radRoll) : Math.sign(radRoll) * 0.001;
 
-          if (
-            F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
-            F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
-          ) {
-            this.extendedAlt.instance.setAttribute('class', 'NormalStroke Green');
-            this.extendedAlt.instance.setAttribute('d', ``);
-          } else {
-            this.extendedAlt.instance.setAttribute('class', 'NormalStroke Green');
-            this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
-          }
+          this.extendedUpperNum = Math.max(
+            Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, 1280),
+            0,
+          );
+          this.extendedLowerNum = Math.max(
+            Math.min(xPosFspd - (yPos + this.upperBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, 1280),
+            0,
+          );
 
-          if (
-            F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
-            F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
-          ) {
-            this.extendedSpd.instance.setAttribute('class', 'NormalStroke Green');
-            this.extendedSpd.instance.setAttribute('d', ``);
-          } else {
-            this.extendedSpd.instance.setAttribute('class', 'NormalStroke Green');
-            this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
-          }
+          const cwTopDiff = this.extendedUpperNum > 640 && this.crosswindMode ? 16 : 0;
+          const cwBotDiff = this.extendedLowerNum > 640 && this.crosswindMode ? 16 : 0;
+
+          this.extendedUpper.set((this.extendedUpperNum - cwTopDiff / sinRadRoll).toString());
+          this.extendedLower.set((this.extendedLowerNum + cwBotDiff / sinRadRoll).toString());
+
+          roll.value > 0
+            ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 10000 `)
+            : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -10000 `);
+          roll.value < 0
+            ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 10000 `)
+            : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -10000 `);
 
           ////debug TextBox
 
           this.debugVal.instance.setAttribute('transform', `translate(640 512) rotate(${roll.value})`);
 
-          this.valuesToLog.set('F1HorizonPitchOffset - F1AltSideVertDev', F1HorizonPitchOffset - F1AltSideVertDev);
           this.valuesToLog.set('xPosF', xPosF);
           this.valuesToLog.set('xPosFspd', xPosFspd);
           this.valuesToLog.set('roll', roll.value);
-
+          this.valuesToLog.set('D', D);
+          this.valuesToLog.set('tmp', this.extendedUpperNum);
           let i = 0;
           this.valuesToLog.forEach((value, key) => {
             this.spanRefs[i].instance.textContent = `${key}: ${value}`;
@@ -1033,12 +1030,11 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   }
 
   private buildLog(): NodeReference<SVGGElement>[] {
-    this.valuesToLog.set('F1HorizonPitchOffset - F1AltSideVertDev', 0);
     this.valuesToLog.set('xPosF', 0);
     this.valuesToLog.set('xPosFspd', 0);
     this.valuesToLog.set('roll', 0);
-    this.valuesToLog.set('L1', 0);
-    this.valuesToLog.set('x2', 0);
+    this.valuesToLog.set('D', 0);
+    this.valuesToLog.set('tmp', 0);
 
     const spans = [];
     this.valuesToLog.forEach((value, key) => {
@@ -1067,12 +1063,14 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
             <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
 
-            <path ref={this.extendedAlt} id="extendedAlt" d="" class="NormalStroke Green" />
-            <path ref={this.extendedSpd} id="extendedSpd" d="" class="NormalStroke Green" />
+            <path ref={this.extendedUpperRef} id="extendedUpper" d="" class="NormalStroke Green" />
+            <path ref={this.extendedLowerRef} id="extendedLower" d="" class="NormalStroke Green" />
 
             {/* debug  */}
             <circle cx={this.xAltTop} cy={this.yAltTop} r="5" class="blue DEBUG" display="block" />
             <circle cx={this.xSpdTop} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
+            <circle cx={this.extendedUpper} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
+            <circle cx={this.extendedLower} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
             <circle cx="640" cy="512" r="5" class="blue DEBUG" display="block" />
             <path id="path1" ref={this.path} d="" class="yellow  DEBUG" />
             <path id="path2" ref={this.path2} d="" class="yellow DEBUG" />
