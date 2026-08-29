@@ -973,8 +973,8 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       <>
         <g id="BaroModeGroup" ref={this.QFERef}>
           <g ref={this.stdGroup} id="STDAltimeterModeGroup">
-            <path class="NormalStroke Green" d="m525 590.854h58.736v31.644h-58.736z" />
-            <text class="FontMedium Green AlignLeft" x="530" y="616.0596">
+            <path class="NormalStroke Green" d="m525 590 h 63 v 31 h -63 z" />
+            <text class="FontMedium Green AlignLeft" x="530" y="616">
               STD
             </text>
           </g>

@@ -210,7 +210,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               display={this.altTape}
               id="AltTapeMask"
               class="LargeStroke BlackFill"
-              d="M 1039 323 v 430 h 120 v -430 z"
+              d="M 1029 323 v 430 h 120 v -430 z"
             ></path>
             <path
               display={this.spdTape}
@@ -235,9 +235,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             ></path>
           </g>
 
-          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator}>
-            <WindIndicator bus={this.props.bus} />
-          </g>
           <AltitudeIndicator bus={this.props.bus} />
           <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
           <g id="TapesMasks2">
@@ -245,34 +242,32 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask2Cw"
               class="LargeStroke BackgroundFill "
               display={this.xWindSpdTape}
-              // d="M 95 0 H 207 V 1024 H 95 Z  M 96 119 v 182 h 110 v -182 z" //full xwind offset
-              d="M 95 0 H 240 V 1024 H 95 Z  M 96 238 v 182 h 143 v -182 z"
+              //d="M 95 0 H 240 V 1024 H 95 Z  M 96 238 v 182 h 143 v -182 z"
+              d="M 95 0 H 235 V 238 H 95 Z M 95 420 H 235 V 1024 H 95 Z"
             />
             <path
               id="Mask2"
               class="LargeStroke BackgroundFill"
               display={this.spdTape}
-              // eslint-disable-next-line max-len
-              //d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
-              d="M 95 0 H 237 V 1024 H 95 Z  M 96 329 v 383 h 140 v -383 z"
+              //d="M 95 0 H 237 V 1024 H 95 Z  M 96 329 v 383 h 140 v -383 z"
+              d="M 95 0 H 235 V 329 H 95 Z M 95 712 H 235 V 1024 H 95 Z"
             />
 
             <path
               id="Mask3"
               class="LargeStroke BackgroundFill"
               display={this.altTape}
-              d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 329 v 383 h 113 v -383 z"
-              // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
+              //d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 329 v 383 h 113 v -383 z"
+              d="M 1028 0 h 115 V 329 H 1028 Z M 1028 712 h 115 V 1024 H 1028 Z"
             />
             <path
               id="Mask4"
               class="LargeStroke BackgroundFill"
               display={this.xWindAltTape}
-              // d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 135 v 152 h 113 v -152 z"
-              d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 254 v 152 h 113 v -152 z"
+              //d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 254 v 152 h 113 v -152 z"
+              d="M 1028 0 h 115 V 254 H 1028 Z M 1028 406 h 115 V 1024 H 1028 Z"
             />
           </g>
-
           <ExtendedHorizon
             bus={this.props.bus}
             instrument={this.props.instrument}
@@ -284,6 +279,9 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             filteredRadioAlt={this.filteredRadioAltitude}
             instrument={this.props.instrument}
           />
+          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator}>
+            <WindIndicator bus={this.props.bus} />
+          </g>
 
           <AirspeedIndicatorOfftape bus={this.props.bus} />
 
