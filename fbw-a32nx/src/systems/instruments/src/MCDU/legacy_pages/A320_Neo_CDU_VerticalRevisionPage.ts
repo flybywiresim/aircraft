@@ -151,7 +151,6 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      const isBaroInInhg = mcdu.isInhgSelected();
       const qnh = mainTargetPlan.performanceData.approachQnh.get();
       if (qnh !== null) {
         if (qnh < 500) {
