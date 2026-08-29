@@ -71,7 +71,7 @@ it's coded as if it a VCockpitPanel can have many children
 ## TemplateElement
 
 - connectedCallback
-    - Instanciate
+    - Instantiate
         - `InstanciateTemplate2(this.templateID, this)`
         - `this.templateID` is a getter defined in the lowest sublcass, like `A320_Neo_PFD`
             - InstanciateTemplate2 (global)
@@ -80,7 +80,7 @@ it's coded as if it a VCockpitPanel can have many children
                     - when the global `registerInstrument` is called?
                 - grabs the contents of the `<script type="text/html" id="A320_Neo_PFD">` element in that panel's HTML
                 - and places it into a div element which gets cloned and appended to a document fragment (offscreen DOM tree)
-                - returns the fragment to Instanciate
+                - returns the fragment to Instantiate
         - appends the new fragment to itself
         - copies attributes from the script template element thing onto itself
 
