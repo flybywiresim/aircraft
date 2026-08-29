@@ -2904,9 +2904,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
           const existingEntryIndex = result.findIndex(
             (e, index) =>
-              ((windEntry.altitude === undefined && e.altitude === undefined) ||
+              ((windEntry.altitude === undefined && e.altitude === undefined && e.sourceLegIndex === i) ||
                 Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100)) &&
-              e.sourceLegIndex === i &&
               index < numWindEntries,
           );
 
@@ -2973,14 +2972,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const windEntries = draftEntries ?? leg.cruiseWindEntries;
-    const entryIdx =
-      entry.altitude !== undefined
-        ? windEntries.findIndex(
-            (e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(entry.altitude! / 100),
-          )
-        : undefined;
-
-    if (entryIdx !== undefined && entryIdx !== -1) {
+    // Only allow one entry with undefined altitude.
+    const entryIdx = windEntries.findIndex(
+      (e) =>
+        (entry.altitude === undefined && e.altitude === undefined) ||
+        (e.altitude !== undefined &&
+          entry.altitude !== undefined &&
+          Math.round(e.altitude / 100) === Math.round(entry.altitude / 100)),
+    );
+    if (entryIdx !== -1) {
       // Tried to add a cruise wind entry with the same altitude as an existing one. Editing the existing one instead
       this.editCruiseWindEntry(atIndex, entryIdx, entry, checkDraftConfig);
     } else {
@@ -3067,12 +3067,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
-    const existingEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache);
+    const propagatedEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache);
 
     const legWindEntries = draftEntries ?? leg.cruiseWindEntries;
 
     // Check if the entry we clicked on has one of the four available cruise levels
-    const clickedEntry = existingEntries[entryIndex];
+    const clickedEntry = propagatedEntries[entryIndex];
     if (!clickedEntry) {
       console.error(
         "[FMS/FPM] Tried to edit a cruise wind entry that does not exist. If you're trying to edit a propagated wind entry, call this function with the source leg index instead",
@@ -3087,13 +3087,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     // Check if the new altitude we entered already exists as a cruise wind entry level
-    const hasAltitude = newEntry.altitude !== undefined;
-    const propagatedEntry = hasAltitude
-      ? existingEntries.find(
-          (e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(newEntry.altitude! / 100),
-        )
-      : clickedEntry;
-
+    const propagatedEntry = propagatedEntries.find(
+      (e) =>
+        (newEntry.altitude === undefined && e.altitude === undefined && e.sourceLegIndex === atIndex) ||
+        (e.altitude !== undefined &&
+          newEntry.altitude !== undefined &&
+          Math.round(e.altitude / 100) === Math.round(newEntry.altitude / 100)),
+    );
     if (propagatedEntry !== undefined) {
       LnavConfig.VERBOSE_FPM_LOG &&
         console.log(`[FMS/FPM] 3) Entry found at new altitude ${debugFormatWindEntry(propagatedEntry)}`);
@@ -3104,11 +3104,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             `[FMS/FPM] 4) Propagated wind entry exists on this leg. Editing ${debugFormatWindEntry(propagatedEntry)}`,
           );
 
-        const oldEntry = hasAltitude
-          ? legWindEntries.find(
-              (e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(newEntry.altitude! / 100),
-            )
-          : legWindEntries[entryIndex];
+        const oldEntry = legWindEntries[entryIndex];
 
         if (oldEntry !== undefined) {
           if (isWindVectorComplete(oldEntry.vector) && isPartlyFilledWindVector(newEntry.vector)) {
