@@ -570,13 +570,15 @@ impl ArrowBetweenBatteryAndBatBus {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     #[cfg(test)]
     mod battery_charge_limiter_tests {
         use std::time::Duration;
 
-        use uom::si::{length::foot, power::watt, velocity::knot};
+        use uom::si::{power::watt, velocity::knot};
 
         use crate::{
             electrical::{
@@ -608,7 +610,7 @@ mod tests {
 
             fn on_the_ground(mut self) -> Self {
                 self.set_on_ground(true);
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::default());
                 self.gear_down()
             }
 
@@ -1416,7 +1418,7 @@ mod tests {
                 .on_the_ground()
                 .wait_for_closed_contactor(true);
 
-            assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
+            assert_ge!(test_bed.current(), ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed =
                 test_bed
@@ -1438,7 +1440,7 @@ mod tests {
                 .on_the_ground()
                 .wait_for_closed_contactor(true);
 
-            assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
+            assert_ge!(test_bed.current(), ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed = test_bed.then_continue_with().full_battery_charge().run(
                 Duration::from_secs(Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS)
@@ -1456,7 +1458,7 @@ mod tests {
                 .on_the_ground()
                 .wait_for_closed_contactor(true);
 
-            assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
+            assert_ge!(test_bed.current(), ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed = test_bed
                 .then_continue_with()
@@ -1472,7 +1474,7 @@ mod tests {
         fn when_above_100_knots_the_charging_cycle_ends_after_30_minutes_below_4_ampere() {
             let mut test_bed = test_bed().wait_for_closed_contactor(true);
 
-            assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
+            assert_ge!(test_bed.current(), ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed =
                 test_bed
@@ -1490,7 +1492,7 @@ mod tests {
         ) {
             let mut test_bed = test_bed().wait_for_closed_contactor(true);
 
-            assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
+            assert_ge!(test_bed.current(), ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed = test_bed.then_continue_with().full_battery_charge().run(
                 Duration::from_secs(

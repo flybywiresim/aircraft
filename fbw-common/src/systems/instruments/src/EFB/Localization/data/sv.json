@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importera SimBrief Data",
       "TT": {
         "IncreaseFontSize": "Öka teckenstorlek",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Minska teckenstorlek"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Du har ännu inte importerat SimBrief-data."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Flygplats ICAO",
       "ApproachSpeed": "Approach-hastighet",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Rensa",
       "DropDownNo": "Nej",
       "DropDownYes": "Ja",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Fyll i data från",
       "FlapsConfiguration": "Konfigurering av klaffar",
+      "LandingWeight": "Landing Weight",
       "Low": "Låg",
       "MaximumManual": "Maximal Manuell",
       "Medium": "Medium",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Överviktsprocedur",
       "Qnh": "QNH",
       "ReverseThrust": "Omvänd dragkraft",
+      "Runway": "Runway",
       "RunwayAltitude": "Höjd på landningsbanan",
       "RunwayAltitudeUnit": "Fot över havsnivå",
       "RunwayCondition": "Banans skick",
@@ -316,6 +322,8 @@
         "MediumPoor": "Medium-Dålig (2)",
         "Poor": "Dålig (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Kurs för landningsbana",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Landningsbana LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Vikt",
+      "Wind": "Wind",
       "WindDirection": "Vindriktning",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Vindstyrka",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Justera ADIRS direkt",
       "AutoBrightness": "Slå på/av automatisk ljusstyrka",
       "Brightness": "Ställ in flyPad-ljusstyrka",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Avsluta ombordstigningen omedelbart",
       "OnScreenKeyboard": "Slå på/av skärmtangentbordet",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Snabbinställningar"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Om"
@@ -651,11 +662,10 @@
       "Active": "Aktiv",
       "Auto": "Auto",
       "Both": "Synkroniserad",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrera",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit stol som används för att styra",
       "ConesEnabled": "Säkerhetskoner",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standardbarometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
       "EnableSimBridge": "Aktivera SimBridge-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
@@ -667,6 +677,7 @@
       "Left": "Left",
       "LoadOnly": "Ladda en gång",
       "None": "Ingen",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Av",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +708,7 @@
         "SettingTitle": "Länk till Navigraph-konto",
         "SubscriptionStatus": {
           "None": "Ingen",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Åsidosätta SimBrief användar-ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Kontrollera att du har angett ditt SimBrief-användarnamn eller pilot-ID korrekt.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternativt SimBrief-användar-ID att använda istället för det länkade Navigraph-kontot"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA på axeln"
     },
     "Title": "Inställningar",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Orealistiskt",
     "flyPad": {
       "AutoBrightness": "Automatisk ljusstyrka",
@@ -743,7 +759,6 @@
       "Blue": "Blå",
       "Brightness": "Ljusstyrka",
       "Dark": "Mörk",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Språk",
       "Light": "Ljus",
       "Local": "Lokal",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC och lokal"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,11 +12,13 @@ import {
   VnavDescentMode,
 } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfigs } from './FpmConfig';
 
 const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
   TURN_RADIUS_FACTOR: 1.0,
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
+  EMIT_END_OF_VD_MARKER: false,
 };
 
 const vnavConfig: VnavConfig = {
@@ -25,6 +27,7 @@ const vnavConfig: VnavConfig = {
   VNAV_USE_LATCHED_DESCENT_MODE: false,
   IDLE_N1_MARGIN: 2,
   MAXIMUM_FUEL_ESTIMATE: 40000,
+  LOWEST_FUEL_ESTIMATE: -77161.8, // -35 tons
   LIM_PSEUDO_WPT_LABEL: '(LIM)',
   VMO: 350,
   MMO: 0.82,
@@ -44,7 +47,7 @@ const flightModelParams: FlightModelParameters = {
   speedBrakeDrag: 0.01008,
   gearDrag: 0.0372,
   dragPolarCoefficients: {
-    [FlapConf.CLEAN]: [0.0215, -0.015, 0.0412, 0.0211],
+    [FlapConf.CLEAN]: [0.0220497, -0.01736981, 0.04375064, 0.01937368],
     [FlapConf.CONF_1]: [0.0398, -0.0538, 0.1166, -0.064, 0.0303],
     [FlapConf.CONF_2]: [0.0729, -0.0037, -0.0018, 0.0168],
     [FlapConf.CONF_3]: [0.0902, 0.0005, -0.0056, 0.013],
@@ -140,6 +143,7 @@ const engineModelParams: EngineModelParameters = {
 
 const fmsSymbolConfig: FMSymbolsConfig = {
   publishDepartureIdent: false,
+  showRnpArLabel: false,
 };
 
 export const A320AircraftConfig: AircraftConfig = {
@@ -148,4 +152,5 @@ export const A320AircraftConfig: AircraftConfig = {
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
   fmSymbolConfig: fmsSymbolConfig,
+  fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
 };

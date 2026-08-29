@@ -31,6 +31,10 @@ impl A380Airframe {
         }
     }
 
+    pub(crate) fn get_loadsheet() -> &'static LoadsheetInfo {
+        &Self::LOADSHEET
+    }
+
     #[cfg(test)]
     fn zero_fuel_weight_center_of_gravity(&self) -> f64 {
         self.center_of_gravity.zero_fuel_weight_center_of_gravity()

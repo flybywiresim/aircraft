@@ -22,7 +22,7 @@ class Sec {
   A380SecComputer::ExternalInputs_A380SecComputer_T modelInputs = {};
 
  private:
-  void initSelfTests();
+  void initSelfTests(bool viaPushButton);
 
   void clearMemory();
 
@@ -38,6 +38,8 @@ class Sec {
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;
+
+  bool selfTestFaultLightVisible;
 
   bool cpuStopped;
 
@@ -61,5 +63,6 @@ class Sec {
   const bool isUnit3;
 
   const double minimumPowerOutageTimeForFailure = 0.02;
-  const double selfTestDuration = 4;
+  const double shortSelfTestDuration = 1;
+  const double longSelfTestDuration = 22;
 };

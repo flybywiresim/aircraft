@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDUIdentPage } from './A320_Neo_CDU_IdentPage';
 import { CDU_AIDS_MainMenu } from './aids/A320_Neo_CDU_AIDS_Menu';

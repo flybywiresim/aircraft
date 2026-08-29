@@ -1,10 +1,11 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import Card from '../../UtilComponents/Card/Card';

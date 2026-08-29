@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, AirframeType } from '@flybywiresim/fbw-sdk-react';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
@@ -39,12 +40,23 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 };
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => {
-  // 19 seems to be an arbitrary number to make the arc look good - initial developer did not document this
-  const magicNumber = 45 + 45 * (19 / turningRadius);
+  const targetLength = 200;
+
+  if (!turningRadius || turningRadius === 0) {
+    return (
+      <svg width={targetLength * 2} height="2" viewBox={`-${targetLength} -1 ${targetLength * 2} 2`}>
+        <line x1="0" y1="0" x2={targetLength} y2="0" stroke="white" strokeWidth="2" />
+      </svg>
+    );
+  }
+
+  const sweepAngle = (targetLength / turningRadius) * (180 / Math.PI);
+  const endAngle = Math.min(sweepAngle, 180); // Cap the angle at 180 degrees for extremely tight turns
+
   return (
     <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
       <path
-        d={describeArc(turningRadius, turningRadius, turningRadius, 0, magicNumber)}
+        d={describeArc(turningRadius, turningRadius, turningRadius, 0, endAngle)}
         fill="none"
         stroke="white"
         strokeWidth="2"
@@ -61,8 +73,8 @@ export const PushbackMap = () => {
   const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
   const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
 
-  const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'bool', 50);
-  const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'bool', 50);
+  const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'number', 50);
+  const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'number', 50);
 
   // Tuning-factor for the turning radius indicator - as there is not relly an easy way to calculate the curvature
   // of the turning indicator, this factor is used to "tune" the indicator to match the actual turning radius
@@ -120,12 +132,18 @@ export const PushbackMap = () => {
 
   // Calculates turning radius for the Turning prediction arc
   const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
+    if (turnAngle === 0) return 0;
+
     const tanDeg = Math.tan((turnAngle * Math.PI) / 180);
     return wheelBase / tanDeg;
   };
   const mapRangeCompensationScalar = mapRange / someConstant;
   const radius = calculateTurningRadius(aircraftWheelBase, Math.abs(tugCmdHdgFactor * 90));
-  const turningRadius = (radius / mapRangeCompensationScalar) * turnIndicatorTuningFactor;
+  let turningRadius = (radius / mapRangeCompensationScalar) * turnIndicatorTuningFactor;
+
+  if (turningRadius > 4000) {
+    turningRadius = 0;
+  }
 
   // Computes the offset from geo coordinates (Lat, Lon) and a delta of screen coordinates into
   // a destination set of geo coordinates.

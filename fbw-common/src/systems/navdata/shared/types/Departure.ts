@@ -2,6 +2,10 @@ import { DatabaseItem, ProcedureTransition } from './Common';
 import { ProcedureLeg } from './ProcedureLeg';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
 
+export interface DepartureRunwayTransition extends ProcedureTransition {
+  engineOutDeparture?: Departure;
+}
+
 export interface Departure extends DatabaseItem<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.SIDs;
 
@@ -10,11 +14,9 @@ export interface Departure extends DatabaseItem<SectionCode.Airport> {
    */
   authorisationRequired: boolean;
 
-  runwayTransitions: ProcedureTransition[];
+  runwayTransitions: DepartureRunwayTransition[];
 
   commonLegs: ProcedureLeg[];
 
   enrouteTransitions: ProcedureTransition[];
-
-  engineOutLegs: ProcedureLeg[];
 }

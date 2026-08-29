@@ -1,5 +1,4 @@
 use crate::{
-    accept_iterable,
     enhanced_gpwc::navigation_display::NavigationDisplay,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -207,7 +206,7 @@ mod tests {
         electric_potential::volt,
         f64::*,
         length::{foot, nautical_mile},
-        velocity::foot_per_minute,
+        velocity::{foot_per_minute, knot},
     };
 
     struct TestAdirs {
@@ -218,6 +217,7 @@ mod tests {
         vertical_speed: Arinc429Word<Velocity>,
         altitude: Arinc429Word<Length>,
         angle_of_attack: Arinc429Word<Angle>,
+        computed_airspeed: Arinc429Word<Velocity>,
     }
     impl TestAdirs {
         fn new() -> Self {
@@ -229,6 +229,10 @@ mod tests {
                 vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
                 altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
                 angle_of_attack: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+                computed_airspeed: Arinc429Word::new(
+                    Velocity::default(),
+                    SignStatus::FailureWarning,
+                ),
             }
         }
 
@@ -248,6 +252,8 @@ mod tests {
                 Arinc429Word::new(Length::new::<foot>(15000.0), SignStatus::NormalOperation);
             self.angle_of_attack =
                 Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::NormalOperation);
+            self.computed_airspeed =
+                Arinc429Word::new(Velocity::new::<knot>(280.0), SignStatus::NormalOperation);
         }
     }
     impl AdirsMeasurementOutputs for TestAdirs {
@@ -281,6 +287,10 @@ mod tests {
 
         fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
             self.angle_of_attack
+        }
+
+        fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.computed_airspeed
         }
     }
 
@@ -320,6 +330,10 @@ mod tests {
 
         fn nose_up_and_locked(&self) -> bool {
             !self.gear_down
+        }
+
+        fn left_down_and_locked(&self) -> bool {
+            self.gear_down
         }
     }
 
@@ -436,7 +450,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(!gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -490,7 +504,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(!gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -551,7 +565,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);
@@ -614,7 +628,7 @@ mod tests {
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
-        assert!(rendering_mode == 0);
+        assert_eq!(rendering_mode, 0);
 
         let nd_range_capt: f64 = test_bed.read_by_name("EGPWC_ND_L_RANGE");
         assert_eq!(nd_range_capt, 20.0);

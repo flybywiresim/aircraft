@@ -1025,9 +1025,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             context,
             pneumatic
                 .pack_flow_valve_inlet_pressure(self.id + 1)
-                .map_or(false, |p| {
-                    p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG
-                }),
+                .is_some_and(|p| p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG),
         );
     }
 
@@ -1419,6 +1417,8 @@ impl<const ZONES: usize> ControllerSignal<CabinFansSignal> for CabinFanControlle
 
 #[cfg(test)]
 mod acs_controller_tests {
+    use more_asserts::*;
+
     use super::*;
     use crate::{
         air_conditioning::{
@@ -1441,7 +1441,7 @@ mod acs_controller_tests {
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-            Aircraft, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+            Aircraft, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
             UpdateContext,
         },
     };
@@ -1751,9 +1751,21 @@ mod acs_controller_tests {
     }
     impl SimulationElement for TestFadec {
         fn read(&mut self, reader: &mut SimulatorReader) {
-            self.engine_1_state = reader.read(&self.engine_1_state_id);
-            self.engine_2_state = reader.read(&self.engine_2_state_id);
-            self.engine_mode_selector_position = reader.read(&self.engine_mode_selector_id);
+            self.engine_1_state = reader.read_discrete_or_fallback(
+                &self.engine_1_state_id,
+                "EngineState",
+                EngineState::Off,
+            );
+            self.engine_2_state = reader.read_discrete_or_fallback(
+                &self.engine_2_state_id,
+                "EngineState",
+                EngineState::Off,
+            );
+            self.engine_mode_selector_position = reader.read_discrete_or_fallback(
+                &self.engine_mode_selector_id,
+                "EngineModeSelector",
+                EngineModeSelector::Norm,
+            );
         }
     }
 
@@ -2564,7 +2576,7 @@ mod acs_controller_tests {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             test_bed.command_ground_speed(Velocity::new::<knot>(0.));
-            test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+            test_bed.set_pressure_altitude(Length::default());
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_pax_quantity(0);
             test_bed.command_pack_flow_selector_position(1.);
@@ -3184,7 +3196,10 @@ mod acs_controller_tests {
                 ])
                 .iterate(1000);
 
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3201,7 +3216,7 @@ mod acs_controller_tests {
                 .cab_fans_pb_on(false)
                 .iterate(2);
 
-            assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() < 80.);
+            assert_lt!(test_bed.duct_temperature()[1].get::<degree_celsius>(), 80.);
         }
 
         #[test]
@@ -3219,7 +3234,10 @@ mod acs_controller_tests {
                 .unpowered_ac_1_bus()
                 .iterate(1000);
 
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3238,7 +3256,10 @@ mod acs_controller_tests {
             test_bed.fail(FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)));
             test_bed = test_bed.iterate(1000);
 
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3259,7 +3280,10 @@ mod acs_controller_tests {
 
             assert_eq!(test_bed.trim_air_valves_open_amount()[1], Ratio::default());
             assert!(!test_bed.trim_air_system_controller_is_enabled());
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() > 1.);
+            assert_gt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3281,7 +3305,10 @@ mod acs_controller_tests {
 
             assert_eq!(test_bed.trim_air_valves_open_amount()[1], Ratio::default());
             assert!(!test_bed.trim_air_system_controller_is_enabled());
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() > 1.);
+            assert_gt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3302,7 +3329,10 @@ mod acs_controller_tests {
                 .iterate(1000);
 
             assert_ne!(test_bed.pack_flow(), MassRate::default());
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3323,7 +3353,10 @@ mod acs_controller_tests {
             test_bed = test_bed.iterate(1000);
 
             assert_ne!(test_bed.pack_flow(), MassRate::default());
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs(),
+                1.
+            );
         }
     }
 
@@ -3392,7 +3425,10 @@ mod acs_controller_tests {
                 )
                 .iterate(1000);
 
-            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_lt!(
+                (test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3431,7 +3467,7 @@ mod acs_controller_tests {
             let initial_temperature = test_bed.duct_demand_temperature()[1];
             test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
 
-            assert!(test_bed.duct_demand_temperature()[1] > initial_temperature);
+            assert_gt!(test_bed.duct_demand_temperature()[1], initial_temperature);
         }
 
         #[test]
@@ -3482,7 +3518,7 @@ mod acs_controller_tests {
             let final_temp_diff = test_bed.duct_demand_temperature()[1].get::<degree_celsius>()
                 - previous_temp.get::<degree_celsius>();
 
-            assert!(initial_temp_diff > final_temp_diff);
+            assert_gt!(initial_temp_diff, final_temp_diff);
         }
 
         #[test]
@@ -3503,7 +3539,7 @@ mod acs_controller_tests {
             test_bed.command_cabin_altitude(Length::new::<foot>(30000.));
             test_bed = test_bed.iterate(1000);
 
-            assert!(test_bed.duct_temperature()[1] > initial_temperature);
+            assert_gt!(test_bed.duct_temperature()[1], initial_temperature);
         }
 
         #[test]
@@ -3557,7 +3593,10 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(1000);
 
-            assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_lt!(
+                (test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs(),
+                1.
+            );
         }
 
         #[test]
@@ -3601,11 +3640,14 @@ mod acs_controller_tests {
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
             test_bed = test_bed.iterate(1000);
-            assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_lt!(
+                (test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs(),
+                1.
+            );
 
             test_bed = test_bed.powered_dc_2_bus().powered_ac_1_bus();
             test_bed = test_bed.iterate(1000);
-            assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() > 24.);
+            assert_gt!(test_bed.duct_temperature()[1].get::<degree_celsius>(), 24.);
         }
     }
 
@@ -3628,7 +3670,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .iterate(2);
 
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -3645,7 +3687,7 @@ mod acs_controller_tests {
             test_bed.command_pack_flow_selector_position(2.);
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() > initial_flow);
+            assert_gt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3662,7 +3704,7 @@ mod acs_controller_tests {
             test_bed.command_pack_flow_selector_position(0.);
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() < initial_flow);
+            assert_lt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3678,7 +3720,7 @@ mod acs_controller_tests {
 
             test_bed.command_crossbleed_on();
             test_bed = test_bed.iterate(4);
-            assert!(test_bed.pack_flow() > initial_flow);
+            assert_gt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3694,7 +3736,7 @@ mod acs_controller_tests {
             test_bed.command_apu_bleed_on();
             test_bed.run();
 
-            assert!(test_bed.pack_flow() > initial_flow);
+            assert_gt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3708,7 +3750,7 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(3);
 
-            assert!(test_bed.pack_flow() < initial_flow);
+            assert_lt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3725,7 +3767,7 @@ mod acs_controller_tests {
             test_bed.command_pack_2_pb_position(false);
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() < initial_flow);
+            assert_lt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3751,7 +3793,7 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() < initial_flow);
+            assert_lt!(test_bed.pack_flow(), initial_flow);
         }
 
         #[test]
@@ -3762,7 +3804,7 @@ mod acs_controller_tests {
             test_bed.command_apu_bleed_on();
             test_bed = test_bed.iterate(20);
 
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
             test_bed = test_bed.iterate(2);
@@ -3779,12 +3821,12 @@ mod acs_controller_tests {
 
             let initial_pack_flow = test_bed.pack_flow();
 
-            assert!(initial_pack_flow > MassRate::default());
+            assert_gt!(initial_pack_flow, MassRate::default());
 
             test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() < initial_pack_flow);
+            assert_lt!(test_bed.pack_flow(), initial_pack_flow);
         }
 
         #[test]
@@ -3905,7 +3947,7 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
@@ -3926,7 +3968,7 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             let initial_flow = test_bed.pack_flow();
 
@@ -3934,8 +3976,8 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() < initial_flow);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_lt!(test_bed.pack_flow(), initial_flow);
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
@@ -3943,8 +3985,8 @@ mod acs_controller_tests {
                 .powered_dc_2_bus()
                 .powered_ac_1_bus();
             test_bed = test_bed.iterate(2);
-            assert!(test_bed.pack_flow() < initial_flow);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_lt!(test_bed.pack_flow(), initial_flow);
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             test_bed = test_bed
                 .unpowered_ac_1_bus()
@@ -3961,7 +4003,7 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
@@ -3978,7 +4020,7 @@ mod acs_controller_tests {
                 .powered_dc_2_bus()
                 .powered_ac_2_bus()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::default());
+            assert_gt!(test_bed.pack_flow(), MassRate::default());
         }
     }
 
@@ -4127,7 +4169,7 @@ mod acs_controller_tests {
             test_bed.command_pack_flow_selector_position(2.);
             test_bed = test_bed.iterate(50);
 
-            assert!(test_bed.mixer_unit_outlet_air().flow_rate() > initial_flow);
+            assert_gt!(test_bed.mixer_unit_outlet_air().flow_rate(), initial_flow);
         }
 
         #[test]
@@ -4307,7 +4349,10 @@ mod acs_controller_tests {
 
             // If both zones get the temperature raised at the same time the packs deliver hotter air and the
             // effect of hot air valves is negligible
-            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert_gt!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate()),
+                MassRate::default()
+            );
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).temperature())
                     > ThermodynamicTemperature::new::<degree_celsius>(25.)
@@ -4329,7 +4374,10 @@ mod acs_controller_tests {
             test_bed.fail(FailureType::HotAir(1));
             test_bed = test_bed.hot_air_pb_on(false).iterate(100);
 
-            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert_gt!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate()),
+                MassRate::default()
+            );
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).temperature())
                     > ThermodynamicTemperature::new::<degree_celsius>(25.)
@@ -4375,7 +4423,10 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(100);
 
-            assert!((test_bed.trim_air_valves_open_amount()[1]) > Ratio::default());
+            assert_gt!(
+                (test_bed.trim_air_valves_open_amount()[1]),
+                Ratio::default()
+            );
 
             let initial_open = test_bed.trim_air_valves_open_amount()[1];
 
@@ -4391,7 +4442,10 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(100);
 
-            assert!((test_bed.trim_air_valves_open_amount()[1]) > Ratio::default());
+            assert_gt!(
+                (test_bed.trim_air_valves_open_amount()[1]),
+                Ratio::default()
+            );
             assert_eq!(test_bed.trim_air_valves_open_amount()[1], initial_open);
         }
 
@@ -4407,7 +4461,10 @@ mod acs_controller_tests {
                 ))
                 .iterate(500);
 
-            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert_gt!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate()),
+                MassRate::default()
+            );
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).temperature())
                     > ThermodynamicTemperature::new::<degree_celsius>(25.)
@@ -4438,7 +4495,10 @@ mod acs_controller_tests {
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(15.); 2],
             );
-            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert_gt!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate()),
+                MassRate::default()
+            );
             test_bed.fail(FailureType::TrimAirOverheat(ZoneType::Cabin(1)));
 
             test_bed = test_bed.iterate(500);
@@ -4467,7 +4527,10 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(500);
 
-            assert!((test_bed.duct_temperature()[1] > test_bed.duct_temperature()[0]));
+            assert_gt!(
+                test_bed.duct_temperature()[1],
+                test_bed.duct_temperature()[0]
+            );
             test_bed.fail(FailureType::TrimAirFault(ZoneType::Cabin(1)));
 
             test_bed = test_bed.iterate(100);
@@ -4500,13 +4563,19 @@ mod acs_controller_tests {
                 (test_bed.trim_air_system_outlet_air(1).flow_rate())
                     > MassRate::new::<kilogram_per_second>(0.01)
             );
-            assert!((test_bed.trim_air_system_outlet_pressure()) < Pressure::new::<psi>(20.));
+            assert_lt!(
+                (test_bed.trim_air_system_outlet_pressure()),
+                Pressure::new::<psi>(20.)
+            );
 
             test_bed.fail(FailureType::TrimAirHighPressure);
 
             test_bed = test_bed.iterate(50);
 
-            assert!((test_bed.trim_air_system_outlet_pressure()) > Pressure::new::<psi>(20.));
+            assert_gt!(
+                (test_bed.trim_air_system_outlet_pressure()),
+                Pressure::new::<psi>(20.)
+            );
             assert!(test_bed.trim_air_high_pressure());
         }
 
@@ -4529,7 +4598,7 @@ mod acs_controller_tests {
 
             test_bed.command_pack_1_pb_position(false);
             test_bed = test_bed.iterate(50);
-            assert!(test_bed.trim_air_valves_open_amount()[1] > initial_open[1]);
+            assert_gt!(test_bed.trim_air_valves_open_amount()[1], initial_open[1]);
         }
 
         #[test]

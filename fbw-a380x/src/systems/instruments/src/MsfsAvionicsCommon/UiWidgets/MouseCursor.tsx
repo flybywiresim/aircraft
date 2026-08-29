@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2024-2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -36,7 +37,7 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
 
   private readonly fillColor = this.color.map((c) => (c === MouseCursorColor.Magenta ? '#ff94ff' : '#ffff00'));
 
-  private readonly rotation = this.props.side.map((side) => `rotate(${side === 'FO' ? 90 : 0} 40 40)`);
+  private readonly rotation = this.props.side.map((side) => `rotate(${side === 'FO' ? 90 : 0},40,40)`);
 
   private hideTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
@@ -76,12 +77,6 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
     }
 
     this.subs.push(this.fillColor, this.rotation);
-  }
-
-  destroy(): void {
-    for (const s of this.subs) {
-      s.destroy();
-    }
   }
 
   render(): VNode {

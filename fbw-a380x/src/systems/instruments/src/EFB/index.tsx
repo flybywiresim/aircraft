@@ -6,7 +6,7 @@ import { render } from '@instruments/common/index';
 import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage } from '@flybywiresim/flypad';
 import { A380FailureDefinitions } from '../../../failures';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
-import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
+import { a380xSyncedSettings } from './settingsSync';
 
 import './Efb.scss';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -74,6 +74,8 @@ render(
         },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
+      hashFile: '/Data/a380x_hashes.json',
+      hashSeed: 380,
     }}
   >
     <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />

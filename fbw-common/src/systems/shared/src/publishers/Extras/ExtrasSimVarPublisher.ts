@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,7 +14,7 @@ import {
 /* eslint-disable camelcase */
 
 export interface BaseExtrasSimVarEvents {
-  /** ECP TO CONF pushbutton state */
+  /** ECP TO CONF pushbutton state, A380X only! */
   ecp_to_config_pushbutton: boolean;
   /** FWC flight phase from 1 - 10 */
   fwc_flight_phase: number;
@@ -26,6 +27,7 @@ type ExtrasIndexedSimVarEvents = {
 };
 export interface ExtrasSimVarEvents extends BaseExtrasSimVarEvents, ExtrasIndexedSimVarEvents {}
 
+// FIXME remove this publisher and use the publishers oriented around the system providing the data to avoid duplication.
 export class ExtrasSimVarPublisher extends SimVarPublisher<ExtrasSimVarEvents> {
   constructor(bus: EventBus, pacer?: PublishPacer<ExtrasSimVarEvents>) {
     const simVars: [keyof ExtrasSimVarEvents, SimVarPublisherEntry<any>][] = [

@@ -8,6 +8,7 @@ import {
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
+  HEvent,
   HEventPublisher,
   InstrumentBackplane,
   MappedSubject,
@@ -26,12 +27,15 @@ import {
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
+  LgciuBusPublisher,
+  OansControlEvents,
+  RaBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OansControlEvents } from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc } from '@flybywiresim/oanc';
 
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
-import { MouseCursor, MouseCursorColor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { ContextMenu, ContextMenuElement } from '../MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { MouseCursor, MouseCursorColor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 import { EraseSymbolsDialog, OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -47,11 +51,15 @@ import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
-import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
 import './oans-style.scss';
-import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
+import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
+import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -93,6 +101,10 @@ class NDInstrument implements FsInstrument {
 
   private readonly egpwcBusPublisher: EgpwcBusPublisher;
 
+  private readonly raBusPublisher: RaBusPublisher;
+
+  private readonly lgciuBusPublisher: LgciuBusPublisher;
+
   private readonly hEventPublisher: HEventPublisher;
 
   private readonly resetPanelPublisher: ResetPanelSimvarPublisher;
@@ -100,6 +112,10 @@ class NDInstrument implements FsInstrument {
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
   private readonly simplaneValueProvider: SimplaneValueProvider;
+
+  private readonly aesuPublisher: AesuBusPublisher;
+
+  private readonly fcuEfisCpBusPublisher: FcuEfisCpBusPublisher;
 
   private readonly clock: Clock;
 
@@ -165,8 +181,12 @@ class NDInstrument implements FsInstrument {
     this.tcasBusPublisher = new TcasBusPublisher(this.bus);
     this.dmcPublisher = new DmcPublisher(this.bus);
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
+    this.raBusPublisher = new RaBusPublisher(this.bus);
+    this.lgciuBusPublisher = new LgciuBusPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+    this.aesuPublisher = new AesuBusPublisher(this.bus);
+    this.fcuEfisCpBusPublisher = new FcuEfisCpBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -186,8 +206,12 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
+    this.backplane.addPublisher('ra', this.raBusPublisher);
+    this.backplane.addPublisher('lgciu', this.lgciuBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('aesu', this.aesuPublisher);
+    this.backplane.addPublisher('fcuEfisCp', this.fcuEfisCpBusPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
@@ -247,7 +271,8 @@ class NDInstrument implements FsInstrument {
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
-            mapOptions={{ waypointBoxing: true }}
+            mapOptions={{ waypointBoxing: true, secondaryFlightPlanWaypointsInWhite: true }}
+            fmMessages={Object.values(NDFMMessageTypes)}
           />
           <ContextMenu
             ref={this.contextMenuRef}
@@ -300,7 +325,7 @@ class NDInstrument implements FsInstrument {
             visible={this.cursorVisible}
             color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
-          <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),
@@ -332,7 +357,7 @@ class NDInstrument implements FsInstrument {
       });
     }
 
-    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars>();
+    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars & HEvent>();
 
     this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 
@@ -357,6 +382,14 @@ class NDInstrument implements FsInstrument {
         this.eraseCrossIndex.set(symbols.cross);
         this.eraseFlagIndex.set(symbols.flag);
         this.oansContextMenuItems.set(this.getOansContextMenu(symbols.cross !== null, symbols.flag !== null));
+      }
+    });
+
+    sub.on('hEvent').handle((eventName) => {
+      if (eventName.startsWith(this.efisSide === 'L' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
+        const key = eventName.substring(13);
+
+        this.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', [this.efisSide, key]);
       }
     });
   }

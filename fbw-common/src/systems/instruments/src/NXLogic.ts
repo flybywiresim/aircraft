@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /*
  * This file contains various nodes that can be used for logical processing. Systems like the FWC may use them to
  * accurately implement their functionality.
@@ -7,7 +8,7 @@
  * The following class represents a monostable circuit. It is inspired by the MTRIG nodes as described in the ESLD and
  * used by the FWC.
  * When it detects either a rising or a falling edge (depending on it's type) it will emit a signal for a certain time t
- * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
+ * after the detection. If it is retriggerable, a rising/falling edge within t will reset the timer, otherwise not.
  */
 export class NXLogicTriggeredMonostableNode {
   private timer = 0;
@@ -20,10 +21,12 @@ export class NXLogicTriggeredMonostableNode {
    * Constructors a new Monostable Trigger Node
    * @param t The time constant in seconds
    * @param risingEdge Whether to detect a rising edge, or falling edge
+   * @param retriggerable Whether the node is retriggerable.
    */
   constructor(
     private readonly t: number,
     private readonly risingEdge = true,
+    private readonly retriggerable = false,
   ) {}
 
   private setOutput(output: boolean): boolean {
@@ -35,31 +38,18 @@ export class NXLogicTriggeredMonostableNode {
     if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousValue = value;
     }
-    if (this.risingEdge) {
-      if (this.timer > 0) {
-        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-      if (!this.previousValue && value) {
-        this.timer = this.t;
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-    } else {
-      if (this.timer > 0) {
-        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-      if (this.previousValue && !value) {
-        this.timer = this.t;
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
+    if (this.timer > 0) {
+      this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
     }
+    if (
+      (this.retriggerable || this.timer == 0) &&
+      ((this.risingEdge && value && !this.previousValue) || (!this.risingEdge && !value && this.previousValue))
+    ) {
+      this.timer = this.t;
+    }
+
     this.previousValue = value;
-    return this.setOutput(false);
+    return this.setOutput(this.timer > 0);
   }
 
   read(): boolean {
@@ -81,11 +71,11 @@ export class NXLogicConfirmNode {
 
   timer: number;
 
-  previousInput: any;
+  previousInput: boolean | null;
 
-  previousOutput: any;
+  previousOutput: boolean | null;
 
-  constructor(t, risingEdge = true) {
+  constructor(t: number, risingEdge = true) {
     this.t = t;
     this.risingEdge = risingEdge;
     this.timer = 0;
@@ -93,7 +83,7 @@ export class NXLogicConfirmNode {
     this.previousOutput = null;
   }
 
-  write(value, deltaTime) {
+  write(value: boolean, deltaTime: number) {
     if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousInput = value;
       this.previousOutput = value;
@@ -131,7 +121,7 @@ export class NXLogicConfirmNode {
   }
 
   read() {
-    return this.previousOutput;
+    return this.previousOutput ?? false;
   }
 }
 
@@ -163,7 +153,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
-  write(set, reset) {
+  write(set: boolean, reset: boolean) {
     if (set && reset) {
       this.value = this.setStar;
     } else if (set && !this.value) {
@@ -242,27 +232,45 @@ export class NXLogicPulseNode {
 
   private lastInput = false;
 
-  private remainingTime = 0;
+  constructor(private risingEdge = true) {}
 
-  constructor(
-    private risingEdge = true,
-    private time = 0.1,
-  ) {}
-
-  write(input: boolean, deltaTime: number): boolean {
+  write(input: boolean): boolean {
     if (this.output) {
-      this.remainingTime -= deltaTime / 1000;
-      if (this.remainingTime <= 0) {
-        this.output = false;
-      }
+      this.output = false;
     }
 
     if ((this.risingEdge && input && !this.lastInput) || (!this.risingEdge && !input && this.lastInput)) {
-      this.remainingTime = this.time;
       this.output = true;
     }
 
     this.lastInput = input;
+    return this.output;
+  }
+
+  read(): boolean {
+    return this.output;
+  }
+}
+
+/**
+ * The following class represents a hysterisis node.
+ * Outputs true when the input value is equal to or above the upper threshold, and false when it is equal to or below the lower threshold.
+ * If the input value is between the two thresholds, it outputs the same as the previous output.
+ */
+export class NxHysterisNode {
+  private output: boolean;
+
+  constructor(
+    private upperTreshold: number,
+    private lowerThreshold: number,
+  ) {}
+
+  write(value: number): boolean {
+    if (!this.output && value >= this.upperTreshold) {
+      this.output = true;
+    } else if (this.output && value <= this.lowerThreshold) {
+      this.output = false;
+    }
     return this.output;
   }
 

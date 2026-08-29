@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { Position } from '@turf/turf';
-import { Coordinates, bearingTo, clampAngle, distanceTo } from 'msfs-geo';
+import { Position } from 'geojson';
+import { clampAngle } from 'msfs-geo';
 
 export function fractionalPointAlongLine(
   x1: number,
@@ -17,10 +17,6 @@ export function fractionalPointAlongLine(
 
 export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
   return fractionalPointAlongLine(x1, y1, x2, y2, 0.5);
-}
-
-export function pointDistance(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
 export function pointAngle(x1: number, y1: number, x2: number, y2: number): number {
@@ -104,25 +100,4 @@ export function pointToLineDistance(point: Position, lineStart: Position, lineEn
     ) /
     ((lineEnd[1] - lineStart[1]) ** 2 + (lineEnd[0] - lineStart[0]) ** 2) ** 0.5
   );
-}
-
-/**
- *
- * @param airportPos airport coordinates, (0, 0) of local coordinate system
- * @param coordinates coordinates to be transformed
- * @param out Output argument: Write airport coordinates here
- */
-export function globalToAirportCoordinates(airportPos: Coordinates, coordinates: Coordinates, out: Position): Position {
-  const bearing = bearingTo(airportPos, coordinates);
-  const distance = distanceTo(airportPos, coordinates);
-
-  const xNm = distance * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS);
-  const yNm = distance * Math.sin(bearing * MathUtils.DEGREES_TO_RADIANS);
-
-  const nmToMeters = 1_000 / 0.539957;
-
-  out[0] = yNm * nmToMeters;
-  out[1] = xNm * nmToMeters;
-
-  return out;
 }

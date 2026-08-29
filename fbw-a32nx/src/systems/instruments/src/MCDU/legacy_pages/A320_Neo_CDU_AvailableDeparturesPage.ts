@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -45,7 +46,8 @@ export class CDUAvailableDeparturesPage {
     const selectedSid = targetPlan.originDeparture;
     const selectedTransition = targetPlan.departureEnrouteTransition;
 
-    const showEosid = selectedRunway && sidSelection;
+    const eoSidIdent =
+      selectedRunway && sidSelection ? targetPlan.engineOutDepartureSegment?.procedureIdent ?? 'NONE' : undefined;
 
     const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
@@ -296,35 +298,40 @@ export class CDUAvailableDeparturesPage {
     if (editingTmpy) {
       mcdu.onLeftInput[5] = () => {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
       mcdu.onRightInput[5] = () => {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateConstraints();
           mcdu.onToRwyChanged();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 
-    if (showEosid) {
+    if (eoSidIdent) {
       rows[7][2] = 'EOSID';
     }
 
+    const titleCell =
+      forPlan >= FlightPlanIndex.FirstSecondary
+        ? `{sp}SEC DEPART {small}FROM{end} ${airport.ident}{sp}{sp}{sp}`
+        : `{sp}DEPARTURES {small}FROM{end} {green}${airport.ident}{end}{sp}{sp}{sp}`;
+
     mcdu.setTemplate([
-      ['{sp}DEPARTURES {small}FROM{end} {green}' + airport.ident + '{sp}{sp}{sp}'],
-      ['{sp}RWY', 'TRANS{sp}', 'SID'],
+      [titleCell],
+      ['{sp}RWY', 'TRANS{sp}', 'SID{sp}'],
       [
         selectedRunwayCell + '[color]' + selectedRunwayCellColor,
         selectedTransCell + '[color]' + selectedTransCellColor,
-        selectedSidCell + '{sp}[color]' + selectedSidCellColor,
+        selectedSidCell.padStart(6, '\xa0') + '{sp}{sp}[color]' + selectedSidCellColor,
       ],
-      sidSelection ? ['SIDS', 'TRANS', 'AVAILABLE'] : ['', '', 'AVAILABLE RUNWAYS\xa0'],
+      sidSelection ? ['SIDS', 'TRANS', 'AVAILABLE\xa0'] : ['', '', 'AVAILABLE RUNWAYS\xa0'],
       rows[0],
       rows[1],
       rows[2],
@@ -336,7 +343,7 @@ export class CDUAvailableDeparturesPage {
       [
         editingTmpy ? '{ERASE[color]amber' : '{RETURN',
         editingTmpy ? 'INSERT*[color]amber' : '',
-        showEosid ? `{${selectedColour}}{sp}NONE{end}` : '',
+        eoSidIdent ? `{${selectedColour}}{sp}${eoSidIdent}{end}` : '',
       ],
     ]);
     mcdu.onPrevPage = () => {

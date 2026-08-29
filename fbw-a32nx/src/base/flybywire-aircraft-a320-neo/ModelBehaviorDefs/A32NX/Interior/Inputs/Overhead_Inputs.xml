@@ -1,0 +1,27 @@
+<!-- Copyright (c) 2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Include ModelBehaviorFile="ASOBO\Inputs\Helpers.xml"/>
+
+    <InputEvent ID="A32NX_OVH_LIGHTS">
+        <Presets>
+            <Condition NotEmpty="EXTEND_TARGET">
+                <True>
+                    <Extend Target="#EXTEND_TARGET#">
+                        <Parameters Type="Default">
+                            <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
+                        </Parameters>
+                    </Extend>
+                </True>
+                <False>
+                    <Extend Target="ASOBO_GIE_Anim_Handling">
+                        <Parameters Type="Default">
+                            <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
+                        </Parameters>
+                    </Extend>
+                </False>
+            </Condition>
+        </Presets>
+    </InputEvent>
+</ModelBehaviors>

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { Children, FC } from 'react';
 import { TrashbinButton } from './TrashbinButton';
 import { Layer } from '../../Components/Layer';

@@ -37,9 +37,11 @@ pub mod brake;
 pub mod brake_circuit;
 pub mod bypass_pin;
 pub mod cargo_doors;
+pub mod command_sensor_unit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
+pub mod hydraulic_motor;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
@@ -1017,6 +1019,7 @@ impl HydraulicCircuit {
         system_accumulator_precharge: Pressure,
         system_accumulator_volume: Volume,
     ) -> Self {
+        // FIXME no runtime panics please!
         assert!(number_of_pump_sections > 0);
 
         let mut pump_sections: Vec<Section> = Vec::new();
@@ -1163,7 +1166,7 @@ impl HydraulicCircuit {
             }
         }
 
-        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
+        let ptu_overheats_fluid = ptu.is_some_and(|p| p.is_overheating() && p.is_rotating());
 
         self.fluid
             .update(context, ptu_overheats_fluid || any_pump_is_overheating);
@@ -1219,12 +1222,12 @@ impl HydraulicCircuit {
             if self.auxiliary_section.is_some()
                 && self.pump_section_routed_to_auxiliary_section[pump_index]
             {
-                self.auxiliary_section
-                    .as_mut()
-                    .unwrap()
-                    .update_upstream_delta_vol(std::slice::from_ref(
-                        &self.pump_sections_check_valves[pump_index],
-                    ));
+                match &mut self.auxiliary_section {
+                    Some(auxiliary_section) => auxiliary_section.update_upstream_delta_vol(
+                        std::slice::from_ref(&self.pump_sections_check_valves[pump_index]),
+                    ),
+                    None => unreachable!(),
+                };
             } else {
                 self.system_section
                     .update_upstream_delta_vol(std::slice::from_ref(
@@ -1278,7 +1281,10 @@ impl HydraulicCircuit {
                 if self.auxiliary_section.is_some()
                     && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
                 {
-                    self.auxiliary_section.as_mut().unwrap()
+                    match &mut self.auxiliary_section {
+                        Some(auxiliary_section) => auxiliary_section,
+                        None => unreachable!(),
+                    }
                 } else {
                     &self.system_section
                 },
@@ -1450,8 +1456,8 @@ impl HydraulicCircuit {
     }
 
     pub fn auxiliary_section(&self) -> &impl SectionPressure {
-        if self.auxiliary_section.is_some() {
-            self.auxiliary_section.as_ref().unwrap()
+        if let Some(auxiliary_section) = &self.auxiliary_section {
+            auxiliary_section
         } else {
             &self.system_section
         }
@@ -1905,10 +1911,9 @@ impl SimulationElement for FireValve {
 /// Handles the flow that goes between two sections
 /// Flow is handled in two ways:
 /// - An optional flow that can only pass through if downstream needs flow
-/// and if upstream has enough capacity to provide flow while maintaining its target pressure
+///   and if upstream has enough capacity to provide flow while maintaining its target pressure
 /// - A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
-/// upstream and downstream.
-
+///   upstream and downstream.
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
@@ -3228,11 +3233,13 @@ impl SimulationElement for HydraulicValve {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use crate::simulation::test::{
         ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
     };
     use crate::simulation::InitContext;
-    use ntest::assert_about_eq;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
@@ -3338,7 +3345,10 @@ mod tests {
         let volume_taken =
             test_bed.command_element(|e| e.try_take_volume(Volume::new::<gallon>(10.)));
 
-        assert!(volume_taken.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME_GAL);
+        assert_eq!(
+            volume_taken.get::<gallon>(),
+            5. - Reservoir::MIN_USABLE_VOLUME_GAL
+        );
     }
 
     #[test]
@@ -3347,8 +3357,14 @@ mod tests {
             LeakMeasurementValve::new(ElectricalBusType::DirectCurrentEssential)
         }));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure == Pressure::new::<psi>(0.)));
-        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.downstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.upstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
@@ -3357,8 +3373,14 @@ mod tests {
             PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() == Pressure::new::<psi>(0.)));
-        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+        assert_eq!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(0.)
+        );
+        assert_eq!(
+            test_bed.query_element(|e| e.upstream_pressure),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
@@ -3373,7 +3395,10 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(2800.)));
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(2800.)
+        );
     }
 
     #[test]
@@ -3388,8 +3413,14 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(1500.)));
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(500.)));
+        assert_le!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(1500.)
+        );
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(500.)
+        );
     }
 
     #[test]
@@ -3404,8 +3435,14 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
 
-        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(50.)));
-        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(0.)));
+        assert_le!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(50.)
+        );
+        assert_ge!(
+            test_bed.query_element(|e| e.downstream_pressure()),
+            Pressure::new::<psi>(0.)
+        );
     }
 
     #[test]
@@ -3447,7 +3484,7 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
-        assert!(volume_after_leak_gallon < 4.5);
+        assert_lt!(volume_after_leak_gallon, 4.5);
     }
 
     #[test]
@@ -3470,7 +3507,7 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
-        assert!(volume_after_leak_gallon == 0.);
+        assert_eq!(volume_after_leak_gallon, 0.);
     }
 
     #[test]

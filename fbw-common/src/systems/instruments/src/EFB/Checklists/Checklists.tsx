@@ -1,8 +1,9 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect } from 'react';
-import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk-react';
 import { Link45deg } from 'react-bootstrap-icons';
 import { PromptModal, ScrollableContainer, t, useModals } from '@flybywiresim/flypad';
 import { ChecklistJsonDefinition } from '@flybywiresim/checklists';

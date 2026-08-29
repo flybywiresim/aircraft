@@ -12,10 +12,10 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
-use super::{Read, SimulatorReader};
+use super::{Read, Reader, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, VariableIdentifier, Write, Writer},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -56,7 +56,7 @@ impl Attitude {
 pub enum SurfaceTypeMsfs {
     Concrete = 0,
     Grass = 1,
-    Water = 2,
+    WaterFsx = 2,
     GrassBumpy = 3,
     Asphalt = 4,
     ShortGrass = 5,
@@ -78,38 +78,60 @@ pub enum SurfaceTypeMsfs {
     Sand = 21,
     Shale = 22,
     Tarmac = 23,
+    WrightFlyerTrack = 24,
+    Ocean = 26,
+    Water = 27,
+    Pond = 28,
+    Lake = 29,
+    River = 30,
+    WasteWater = 31,
+    Paint = 32,
+    Unknown = 255,
 }
-impl From<f64> for SurfaceTypeMsfs {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for SurfaceTypeMsfs {
+    type Error = u32;
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value.floor() as u32 {
-            0 => SurfaceTypeMsfs::Concrete,
-            1 => SurfaceTypeMsfs::Grass,
-            2 => SurfaceTypeMsfs::Water,
-            3 => SurfaceTypeMsfs::GrassBumpy,
-            4 => SurfaceTypeMsfs::Asphalt,
-            5 => SurfaceTypeMsfs::ShortGrass,
-            6 => SurfaceTypeMsfs::LongGrass,
-            7 => SurfaceTypeMsfs::HardTurf,
-            8 => SurfaceTypeMsfs::Snow,
-            9 => SurfaceTypeMsfs::Ice,
-            10 => SurfaceTypeMsfs::Urban,
-            11 => SurfaceTypeMsfs::Forest,
-            12 => SurfaceTypeMsfs::Dirt,
-            13 => SurfaceTypeMsfs::Coral,
-            14 => SurfaceTypeMsfs::Gravel,
-            15 => SurfaceTypeMsfs::OilTreated,
-            16 => SurfaceTypeMsfs::SteelMats,
-            17 => SurfaceTypeMsfs::Bituminus,
-            18 => SurfaceTypeMsfs::Brick,
-            19 => SurfaceTypeMsfs::Macadam,
-            20 => SurfaceTypeMsfs::Planks,
-            21 => SurfaceTypeMsfs::Sand,
-            22 => SurfaceTypeMsfs::Shale,
-            23 => SurfaceTypeMsfs::Tarmac,
-            _ => SurfaceTypeMsfs::Macadam,
+            0 => Ok(SurfaceTypeMsfs::Concrete),
+            1 => Ok(SurfaceTypeMsfs::Grass),
+            2 => Ok(SurfaceTypeMsfs::WaterFsx),
+            3 => Ok(SurfaceTypeMsfs::GrassBumpy),
+            4 => Ok(SurfaceTypeMsfs::Asphalt),
+            5 => Ok(SurfaceTypeMsfs::ShortGrass),
+            6 => Ok(SurfaceTypeMsfs::LongGrass),
+            7 => Ok(SurfaceTypeMsfs::HardTurf),
+            8 => Ok(SurfaceTypeMsfs::Snow),
+            9 => Ok(SurfaceTypeMsfs::Ice),
+            10 => Ok(SurfaceTypeMsfs::Urban),
+            11 => Ok(SurfaceTypeMsfs::Forest),
+            12 => Ok(SurfaceTypeMsfs::Dirt),
+            13 => Ok(SurfaceTypeMsfs::Coral),
+            14 => Ok(SurfaceTypeMsfs::Gravel),
+            15 => Ok(SurfaceTypeMsfs::OilTreated),
+            16 => Ok(SurfaceTypeMsfs::SteelMats),
+            17 => Ok(SurfaceTypeMsfs::Bituminus),
+            18 => Ok(SurfaceTypeMsfs::Brick),
+            19 => Ok(SurfaceTypeMsfs::Macadam),
+            20 => Ok(SurfaceTypeMsfs::Planks),
+            21 => Ok(SurfaceTypeMsfs::Sand),
+            22 => Ok(SurfaceTypeMsfs::Shale),
+            23 => Ok(SurfaceTypeMsfs::Tarmac),
+            24 => Ok(SurfaceTypeMsfs::WrightFlyerTrack),
+            26 => Ok(SurfaceTypeMsfs::Ocean),
+            27 => Ok(SurfaceTypeMsfs::Water),
+            28 => Ok(SurfaceTypeMsfs::Pond),
+            29 => Ok(SurfaceTypeMsfs::Lake),
+            30 => Ok(SurfaceTypeMsfs::River),
+            31 => Ok(SurfaceTypeMsfs::WasteWater),
+            32 => Ok(SurfaceTypeMsfs::Paint),
+            // Undocumented, but MSFS reports this occasionally
+            255 => Ok(SurfaceTypeMsfs::Unknown),
+            unexpected => Err(unexpected),
         }
     }
 }
+
+try_read_write_enum!(SurfaceTypeMsfs);
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct LocalAcceleration {
@@ -174,15 +196,15 @@ impl Velocity3D {
         }
     }
 
-    fn long_velocity(&self) -> Velocity {
+    pub fn long_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_Z_AXIS]
     }
 
-    fn lat_velocity(&self) -> Velocity {
+    pub fn lat_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_X_AXIS]
     }
 
-    fn vert_velocity(&self) -> Velocity {
+    pub fn vert_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_Y_AXIS]
     }
 
@@ -204,7 +226,6 @@ pub struct UpdateContext {
     indicated_airspeed_id: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
     ground_speed_id: VariableIdentifier,
-    indicated_altitude_id: VariableIdentifier,
     pressure_altitude_id: VariableIdentifier,
     is_on_ground_id: VariableIdentifier,
     ambient_pressure_id: VariableIdentifier,
@@ -245,7 +266,6 @@ pub struct UpdateContext {
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
     ground_speed: Velocity,
-    indicated_altitude: Length,
     pressure_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
     ambient_pressure: Pressure,
@@ -294,7 +314,6 @@ impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
-    pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const PRESSURE_ALTITUDE_KEY: &'static str = "PRESSURE ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
     pub(crate) const AMBIENT_PRESSURE_KEY: &'static str = "AMBIENT PRESSURE";
@@ -346,8 +365,8 @@ impl UpdateContext {
         indicated_airspeed: Velocity,
         true_airspeed: Velocity,
         ground_speed: Velocity,
-        indicated_altitude: Length,
         pressure_altitude: Length,
+        ambient_pressure: Pressure,
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
         longitudinal_acceleration: Acceleration,
@@ -365,7 +384,6 @@ impl UpdateContext {
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED_KEY.to_owned()),
             ground_speed_id: context.get_identifier(Self::GROUND_SPEED_KEY.to_owned()),
-            indicated_altitude_id: context.get_identifier(Self::INDICATED_ALTITUDE_KEY.to_owned()),
             pressure_altitude_id: context.get_identifier(Self::PRESSURE_ALTITUDE_KEY.to_owned()),
             is_on_ground_id: context.get_identifier(Self::IS_ON_GROUND_KEY.to_owned()),
             ambient_pressure_id: context.get_identifier(Self::AMBIENT_PRESSURE_KEY.to_owned()),
@@ -413,10 +431,9 @@ impl UpdateContext {
             indicated_airspeed,
             true_airspeed,
             ground_speed,
-            indicated_altitude,
             pressure_altitude,
+            ambient_pressure,
             ambient_temperature,
-            ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
             is_on_ground,
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
             local_acceleration: LocalAcceleration::new(
@@ -474,7 +491,6 @@ impl UpdateContext {
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
             true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            indicated_altitude_id: context.get_identifier("INDICATED ALTITUDE".to_owned()),
             pressure_altitude_id: context.get_identifier("PRESSURE ALTITUDE".to_owned()),
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             ambient_pressure_id: context.get_identifier("AMBIENT PRESSURE".to_owned()),
@@ -519,7 +535,6 @@ impl UpdateContext {
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
             ground_speed: Default::default(),
-            indicated_altitude: Default::default(),
             pressure_altitude: Default::default(),
             ambient_temperature: Default::default(),
             ambient_pressure: Default::default(),
@@ -580,7 +595,6 @@ impl UpdateContext {
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
         self.ground_speed = reader.read(&self.ground_speed_id);
-        self.indicated_altitude = reader.read(&self.indicated_altitude_id);
         self.pressure_altitude = reader.read(&self.pressure_altitude_id);
         self.is_on_ground = reader.read(&self.is_on_ground_id);
         self.ambient_pressure =
@@ -635,8 +649,11 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
-        let surface_read: f64 = reader.read(&self.surface_id);
-        self.surface = surface_read.into();
+        self.surface = reader.read_discrete_or_fallback(
+            &self.surface_id,
+            "SurfaceTypeMsfs",
+            SurfaceTypeMsfs::Macadam,
+        );
 
         self.rotation_accel = Vector3::new(
             AngularAcceleration::new::<radian_per_second_squared>(
@@ -757,10 +774,7 @@ impl UpdateContext {
         self.ground_speed
     }
 
-    pub fn indicated_altitude(&self) -> Length {
-        self.indicated_altitude
-    }
-
+    #[deprecated = "Use ADR pressure altitude!"]
     pub fn pressure_altitude(&self) -> Length {
         self.pressure_altitude
     }
@@ -777,6 +791,7 @@ impl UpdateContext {
         self.air_density
     }
 
+    #[deprecated = "Use ADR vertical speed!"]
     pub fn vertical_speed(&self) -> Velocity {
         self.vertical_speed
     }
@@ -942,9 +957,11 @@ impl From<Delta> for Time {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::SimulationElement;
-    use ntest::assert_about_eq;
 
     use uom::si::{f64::*, velocity::foot_per_second};
 
@@ -1198,8 +1215,14 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()) > 0.);
-        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) > 0.);
+        assert_gt!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_gt!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
         assert_about_eq!(
             test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
             0.
@@ -1233,7 +1256,13 @@ mod tests {
             test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
             0.
         );
-        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) < 0.);
-        assert!(test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()) < 0.);
+        assert_lt!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_lt!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            0.
+        );
     }
 }

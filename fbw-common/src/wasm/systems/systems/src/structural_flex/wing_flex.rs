@@ -63,15 +63,15 @@ impl LandingGearWeightOnWheelsEstimator {
 
     const NOSE_SPRING_RATIO: f64 = 0.477;
     const NOSE_SPRING_CONSTANT: f64 = 80538.6;
-    const NOSE_MAX_COMPRESSION_FT: f64 = 1.560;
+    const NOSE_MAX_COMPRESSION_FT: f64 = 2.4;
 
     const WING_SPRING_RATIO: f64 = 0.575;
     const WING_SPRING_CONSTANT: f64 = 175675.7;
-    const WING_MAX_COMPRESSION_FT: f64 = 1.643;
+    const WING_MAX_COMPRESSION_FT: f64 = 2.4;
 
     const BODY_SPRING_RATIO: f64 = 0.412;
     const BODY_SPRING_CONSTANT: f64 = 196507.5;
-    const BODY_MAX_COMPRESSION_FT: f64 = 1.724;
+    const BODY_MAX_COMPRESSION_FT: f64 = 2.4;
 
     // Method 2 guesstimate fit curve
     // Weight estimation is in the form of weight = X * compression_percent^(Y)
@@ -417,11 +417,7 @@ impl FlexibleConstraint {
         Self {
             springiness,
             damping,
-            negative_springiness_coeff: if let Some(coeff) = negative_springiness_coeff {
-                coeff
-            } else {
-                1.
-            },
+            negative_springiness_coeff: negative_springiness_coeff.unwrap_or(1.),
             is_linear,
             previous_length: Length::default(),
             damping_force: LowPassFilter::new(Self::DAMPING_FILTERING_TIME_CONSTANT),
@@ -737,6 +733,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
     }
 
     pub fn acceleration_at_node_idx(&self, node_idx: usize) -> Acceleration {
+        // FIXME no runtime panics please! Use the type system or compile time checks
         assert!(node_idx < NODE_NUMBER);
 
         self.nodes[node_idx].acceleration()

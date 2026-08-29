@@ -5,17 +5,22 @@ use systems::{electrical::Electricity, fuel::RefuelRate, simulation::test::ReadB
 use uom::si::mass::kilogram;
 
 use super::*;
-use crate::systems::simulation::{
-    test::{SimulationTestBed, TestBed, WriteByName},
-    Aircraft, SimulationElement, SimulationElementVisitor,
+use crate::{
+    airframe::A380Airframe,
+    systems::simulation::{
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, SimulationElement, SimulationElementVisitor,
+    },
 };
 struct FuelTestAircraft {
+    acdn: A380AvionicsDataCommunicationNetwork,
     fuel: A380Fuel,
 }
 
 impl FuelTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
+            acdn: A380AvionicsDataCommunicationNetwork::new(context),
             fuel: A380Fuel::new(context),
         }
     }
@@ -35,11 +40,14 @@ impl Aircraft for FuelTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.fuel.update(context);
+        self.acdn.update();
+        self.fuel
+            .update(context, &self.acdn, A380Airframe::get_loadsheet());
     }
 }
 impl SimulationElement for FuelTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.acdn.accept(visitor);
         self.fuel.accept(visitor);
 
         visitor.visit(self);
@@ -48,7 +56,6 @@ impl SimulationElement for FuelTestAircraft {
 
 const MINUTES_TO_SECONDS: u64 = 60;
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -91,7 +98,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 300. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3300. / LBS_TO_KG);
 
         self
     }
@@ -108,7 +114,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 1500. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 33500. / LBS_TO_KG);
 
         self
     }
@@ -157,13 +162,13 @@ impl FuelTestBed {
 
     #[allow(dead_code)]
     fn desired_fuel_h(mut self) -> Self {
-        self.write_by_name("FUEL_DESIRED", 223028.);
+        self.write_by_name("FUEL_DESIRED", 223088.);
         self
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn desired_fuel_max(mut self) -> Self {
-        self.write_by_name("FUEL_DESIRED", 260059.);
+        self.write_by_name("FUEL_DESIRED", 259755.);
         self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
         self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
@@ -196,6 +201,14 @@ impl FuelTestBed {
     #[allow(dead_code)]
     fn desired_fuel_200000(mut self) -> Self {
         self.write_by_name("FUEL_DESIRED", 200000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
+        self
+    }
+
+    #[cfg(test)]
+    fn desired_fuel_250000(mut self) -> Self {
+        self.write_by_name("FUEL_DESIRED", 250000.);
         self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
         self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
         self
@@ -332,6 +345,40 @@ fn assert_fuel_quantity_200000(test_bed: &FuelTestBed) {
     assert_fuel_quantity(test_bed, expected_quantities);
 }
 
+fn assert_fuel_quantity_250000(test_bed: &FuelTestBed) {
+    let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(14500.));
+    expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(8121.0));
+    expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(8121.0));
+    expected_quantities.insert(A380FuelTankType::LeftMid, Mass::new::<kilogram>(28636.3));
+    expected_quantities.insert(A380FuelTankType::RightMid, Mass::new::<kilogram>(28636.3));
+    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(36240.0));
+    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(36240.0));
+    expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(21701.8));
+    expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(23050.9));
+    expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(23050.9));
+    expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(21701.8));
+
+    assert_fuel_quantity(test_bed, expected_quantities);
+}
+
+fn assert_fuel_quantity_max(test_bed: &FuelTestBed) {
+    let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(19000.));
+    expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(8302.2));
+    expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(8302.2));
+    expected_quantities.insert(A380FuelTankType::LeftMid, Mass::new::<kilogram>(29275.3));
+    expected_quantities.insert(A380FuelTankType::RightMid, Mass::new::<kilogram>(29275.3));
+    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(37048.7));
+    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(37048.7));
+    expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(22186.1));
+    expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(23565.2));
+    expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(23565.2));
+    expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(22186.1));
+
+    assert_fuel_quantity(test_bed, expected_quantities);
+}
+
 #[test]
 fn init() {
     let test_bed = test_bed_with().fuel_low();
@@ -347,7 +394,6 @@ fn init() {
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_9"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_10"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_11"));
-    assert!(test_bed.contains_variable_with_name("FUEL TOTAL QUANTITY WEIGHT"));
 }
 
 #[test]
@@ -427,6 +473,28 @@ fn spawn_no_fuel_load_desired_instant_200000() {
         .and_stabilize();
 
     assert_fuel_quantity_200000(&test_bed);
+}
+
+#[test]
+fn spawn_no_fuel_load_desired_instant_250000() {
+    let test_bed: FuelTestBed = test_bed_with()
+        .desired_fuel_250000()
+        .trigger_instant_refuel()
+        .and_run()
+        .and_stabilize();
+
+    assert_fuel_quantity_250000(&test_bed);
+}
+
+#[test]
+fn spawn_no_fuel_load_desired_instant_max() {
+    let test_bed: FuelTestBed = test_bed_with()
+        .desired_fuel_max()
+        .trigger_instant_refuel()
+        .and_run()
+        .and_stabilize();
+
+    assert_fuel_quantity_max(&test_bed);
 }
 
 #[test]
@@ -527,6 +595,36 @@ fn spawn_no_fuel_load_desired_real_200000_done() {
 }
 
 #[test]
+fn spawn_no_fuel_load_desired_real_250000_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .desired_fuel_250000()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(95));
+
+    assert_fuel_quantity_250000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_no_fuel_load_desired_real_max_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .desired_fuel_max()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(100));
+
+    assert_fuel_quantity_max(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
 fn defuel_high_fuel_load_desired_real_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
@@ -559,5 +657,37 @@ fn spawn_high_fuel_load_desired_real_200000_done() {
         .run_multiple_frames(Duration::from_secs(seventy_minutes));
 
     assert_fuel_quantity_200000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_high_fuel_load_desired_real_250000_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .fuel_high()
+        .desired_fuel_250000()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(95));
+
+    assert_fuel_quantity_250000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_high_fuel_load_desired_real_max_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .fuel_high()
+        .desired_fuel_max()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(100));
+
+    assert_fuel_quantity_max(&test_bed);
     assert_false!(test_bed.refuel_status());
 }

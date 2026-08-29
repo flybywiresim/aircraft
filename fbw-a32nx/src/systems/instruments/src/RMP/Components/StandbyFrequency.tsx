@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -8,7 +9,7 @@ import {
   RateMultiplierKnob,
   UpdateValueCallback,
   useInteractionEvent,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
 declare const Utils; // this can also be replaced once /typings are available

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { TextBox } from '../../../Components/Textbox';
 import { MessageElement } from '../../Elements/MessageElement';

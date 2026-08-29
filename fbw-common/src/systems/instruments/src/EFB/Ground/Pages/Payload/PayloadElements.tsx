@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,7 +13,7 @@ import {
   Shuffle,
   StopCircleFill,
 } from 'react-bootstrap-icons';
-import { AirframeInfo, Units } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, Units } from '@flybywiresim/fbw-sdk-react';
 import { ProgressBar, t, TooltipWrapper, SimpleInput } from '@flybywiresim/flypad';
 
 export type AirframeSpec = {

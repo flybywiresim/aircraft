@@ -1,5 +1,7 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
+
+import './mcdu.scss';
 
 import {
   Clock,
@@ -10,11 +12,12 @@ import {
   HEventPublisher,
   InstrumentBackplane,
   MappedSubject,
+  SimVarValueType,
   Subject,
 } from '@microsoft/msfs-sdk';
 import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
-
-import './mcdu.scss';
+import { EnginePublisher, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 
 export class McduFsInstrument implements FsInstrument {
   private static readonly INIT_DURATION = 1000;
@@ -26,6 +29,7 @@ export class McduFsInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
 
   //private readonly isFailedKey = A320Failure.Mcdu1;
   private readonly isFailed = Subject.create(false);
@@ -35,7 +39,8 @@ export class McduFsInstrument implements FsInstrument {
 
   private readonly legacyFms = new A320_Neo_CDU_MainDisplay(this.bus);
 
-  private lastTime = Date.now();
+  private readonly monotonicSimTimeVar = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private lastTime = 0;
 
   /**
    * Creates a new instance of FsInstrument.
@@ -50,6 +55,8 @@ export class McduFsInstrument implements FsInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
+    this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
+    this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
 
     this.doInit();
   }
@@ -72,9 +79,9 @@ export class McduFsInstrument implements FsInstrument {
   public Update(): void {
     this.backplane.onUpdate();
 
-    // TODO deltaTime
-    const deltaTime = Date.now() - this.lastTime;
-    this.lastTime = Date.now();
+    const monotonicTime = this.monotonicSimTimeVar.get() * 1000;
+    const deltaTime = monotonicTime - this.lastTime;
+    this.lastTime = monotonicTime;
     this.legacyFms.onUpdate(deltaTime);
   }
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { User } from 'navigraph/auth';
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
@@ -28,7 +29,7 @@ function useProvideAuth() {
 
       if (u) {
         // Compat for some old legacy JS
-        NXDataStore.set('NAVIGRAPH_USERNAME', u.preferred_username);
+        NXDataStore.setLegacy('NAVIGRAPH_USERNAME', u.preferred_username);
       }
 
       setUser(u);

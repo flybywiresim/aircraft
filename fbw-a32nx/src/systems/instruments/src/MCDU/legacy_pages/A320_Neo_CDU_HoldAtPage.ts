@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -5,17 +6,12 @@
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { WaypointArea } from '@flybywiresim/fbw-sdk';
+import { TurnDirection, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-
-const TurnDirection = Object.freeze({
-  Unknown: 'U',
-  Left: 'L',
-  Right: 'R',
-  Either: 'E',
-});
+import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
 const HoldType = Object.freeze({
   Computed: 0,
@@ -42,8 +38,8 @@ export class CDUHoldAtPage {
         ? waypoint.definition.altitude1
         : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
-      let defaultHold;
-      let modifiedHold;
+      let defaultHold: HoldData;
+      let modifiedHold: HoldData | undefined;
       if (editingHx) {
         defaultHold = waypoint.defaultHold;
         modifiedHold = waypoint.modifiedHold;
@@ -64,7 +60,6 @@ export class CDUHoldAtPage {
           time: alt <= 14000 ? 1 : 1.5,
           type: HoldType.Computed,
         };
-        modifiedHold = {};
 
         const fix = waypoint.terminationWaypoint();
         const promises = [];
@@ -173,9 +168,9 @@ export class CDUHoldAtPage {
   static addOrEditManualHold(
     mcdu: LegacyFmsPageInterface,
     atIndex,
-    desiredHold,
-    modifiedHold,
-    defaultHold,
+    desiredHold: HoldData,
+    modifiedHold: HoldData | undefined,
+    defaultHold: HoldData,
     planIndex,
     alternate,
   ) {
@@ -232,7 +227,7 @@ export class CDUHoldAtPage {
     rows.push(['', '', '----\xa0\xa0----']);
     rows.push(['']);
     rows.push(['']);
-    rows.push([tmpy ? '{amber}{ERASE{end}' : '', tmpy ? '{amber}INSERT*{end}' : '', '']);
+    rows.push([tmpy ? '{amber}{ERASE{end}' : '{RETURN', tmpy ? '{amber}INSERT*{end}' : '', '']);
 
     mcdu.setTemplate([...rows]);
 
@@ -314,18 +309,21 @@ export class CDUHoldAtPage {
       };
     }
 
-    // erase
+    // erase/return
     mcdu.onLeftInput[5] = () => {
+      const element = targetPlan.maybeElementAt(originalFpIndex);
+      if (isDiscontinuity(element)) {
+        // Failsafe
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
+        return;
+      }
+
       if (tmpy) {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDULateralRevisionPage.ShowPage(
-            mcdu,
-            targetPlan.maybeElementAt(originalFpIndex),
-            originalFpIndex,
-            forPlan,
-            inAlternate,
-          );
+          CDULateralRevisionPage.ShowPage(mcdu, element, originalFpIndex, forPlan, inAlternate);
         });
+      } else {
+        CDULateralRevisionPage.ShowPage(mcdu, element, originalFpIndex, forPlan, inAlternate);
       }
     };
 
@@ -333,7 +331,7 @@ export class CDUHoldAtPage {
     mcdu.onRightInput[5] = () => {
       if (tmpy) {
         mcdu.insertTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, waypointIndexFP, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, waypointIndexFP, false, forPlan);
         });
       }
     };
@@ -370,10 +368,6 @@ export class CDUHoldAtPage {
     forPlan,
     inAlternate,
   ) {
-    if (waypointData.modifiedHold === undefined) {
-      waypointData.modifiedHold = {};
-    }
-
     waypointData.modifiedHold.type = HoldType.Modified;
 
     if (param === 'time') {

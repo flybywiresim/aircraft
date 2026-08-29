@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -30,6 +31,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
   ) {
     this.options = {
       waypointBoxing: !!options?.waypointBoxing,
+      secondaryFlightPlanWaypointsInWhite: !!options?.secondaryFlightPlanWaypointsInWhite,
     };
   }
 
@@ -187,7 +189,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     mapParameters: MapParameters,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+    const mainColor =
+      symbol.type & NdSymbolTypeFlags.ActiveLegTermination ||
+      (symbol.type & NdSymbolTypeFlags.SecondaryFlightPlan && this.options.secondaryFlightPlanWaypointsInWhite)
+        ? '#fff'
+        : '#0f0';
 
     this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 

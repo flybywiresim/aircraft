@@ -16,16 +16,12 @@ using namespace mINI;
 void FlightDataRecorder::initialize() {
   // create local variables
   idIsEnabled = std::make_unique<LocalVariable>("A32NX_FDR_ENABLED");
-  idMaximumFileCount = std::make_unique<LocalVariable>("A32NX_FDR_MAXIMUM_NUMBER_OF_FILES");
-  idMaximumSampleCounter = std::make_unique<LocalVariable>("A32NX_FDR_MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE");
 
   // load configuration
   loadConfiguration();
 
   // print configuration
   std::cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << idIsEnabled->get() << std::endl;
-  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles           = " << idMaximumFileCount->get() << std::endl;
-  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfEntriesPerFile  = " << idMaximumSampleCounter->get() << std::endl;
   std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
@@ -33,10 +29,6 @@ void FlightDataRecorder::update(const BaseData& baseData,
                                 const AircraftSpecificData& aircraftSpecificData,
                                 Prim (&prims)[3],
                                 Sec (&secs)[3],
-                                Fac (&facs)[2],
-                                const AutopilotStateMachine& autopilotStateMachine,
-                                const AutopilotLawsModelClass& autopilotLaws,
-                                const Autothrust& autoThrust,
                                 const FuelSystemData& fuelSystemData) {
   // check if enabled
   if (!idIsEnabled->get()) {
@@ -54,42 +46,50 @@ void FlightDataRecorder::update(const BaseData& baseData,
 
   // write PRIM data
   for (int i = 0; i < NUMBER_OF_PRIM_TO_WRITE; ++i) {
-    writePrim(prims[i]);
+    writePrimOutputs(prims[i]);
   }
+
+  int masterPrim = 0;
+  if (prims[0].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 0;
+  } else if (prims[1].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 1;
+  } else if (prims[2].getDebugOutputs().fctl_logic.is_master_prim) {
+    masterPrim = 2;
+  } else {
+    masterPrim = 0;
+  }
+
+  writeMasterPrim(masterPrim, prims[masterPrim]);
 
   // write SEC data
   for (int i = 0; i < NUMBER_OF_SEC_TO_WRITE; ++i) {
     writeSec(secs[i]);
   }
 
-  // write Pseudo FACs data
-  for (int i = 0; i < NUMBER_OF_FAC_TO_WRITE; ++i) {
-    writeFac(facs[i]);
-  }
-
-  // write AP state machine data
-  auto autopilotStateMachineOut = autopilotStateMachine.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotStateMachineOut), sizeof(autopilotStateMachineOut));
-
-  // write AP laws data
-  auto autopilotLawsOut = autopilotLaws.getExternalOutputs().out;
-  fileStream->write((char*)(&autopilotLawsOut), sizeof(autopilotLawsOut));
-
-  // write ATHR data
-  auto autoThrustOut = autoThrust.getExternalOutputs().out;
-  fileStream->write((char*)(&autoThrustOut), sizeof(autoThrustOut));
-
   // write fuel system data
   fileStream->write((char*)(&fuelSystemData), sizeof(fuelSystemData));
 }
 
-void FlightDataRecorder::writePrim(Prim& prim) {
+void FlightDataRecorder::writePrimOutputs(Prim& prim) {
   auto bus_outputs = prim.getBusOutputs();
   fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
   auto discrete_outputs = prim.getDiscreteOutputs();
   fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
   auto analog_outputs = prim.getAnalogOutputs();
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
+}
+
+void FlightDataRecorder::writeMasterPrim(int masterPrim, Prim& prim) {
+  auto primDebugOutputs = prim.getDebugOutputs();
+  fileStream->write((char*)(&masterPrim), sizeof(masterPrim));
+  fileStream->write((char*)(&primDebugOutputs.general_logic), sizeof(primDebugOutputs.general_logic));
+  fileStream->write((char*)(&primDebugOutputs.flight_envelope), sizeof(primDebugOutputs.flight_envelope));
+  fileStream->write((char*)(&primDebugOutputs.fg_logic), sizeof(primDebugOutputs.fg_logic));
+  fileStream->write((char*)(&primDebugOutputs.fg_mode_logic), sizeof(primDebugOutputs.fg_mode_logic));
+  fileStream->write((char*)(&primDebugOutputs.fg_laws), sizeof(primDebugOutputs.fg_laws));
+  fileStream->write((char*)(&primDebugOutputs.fctl_logic), sizeof(primDebugOutputs.fctl_logic));
+  fileStream->write((char*)(&primDebugOutputs.laws), sizeof(primDebugOutputs.laws));
 }
 
 void FlightDataRecorder::writeSec(Sec& sec) {
@@ -101,21 +101,11 @@ void FlightDataRecorder::writeSec(Sec& sec) {
   fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
 }
 
-void FlightDataRecorder::writeFac(Fac& fac) {
-  auto bus_outputs = fac.getBusOutputs();
-  fileStream->write((char*)(&bus_outputs), sizeof(bus_outputs));
-  auto discrete_outputs = fac.getDiscreteOutputs();
-  fileStream->write((char*)(&discrete_outputs), sizeof(discrete_outputs));
-  auto analog_outputs = fac.getAnalogOutputs();
-  fileStream->write((char*)(&analog_outputs), sizeof(analog_outputs));
-}
-
 void FlightDataRecorder::terminate() {
   if (fileStream) {
     fileStream->close();
     fileStream.reset();
   }
-  writeConfiguration();
 }
 
 void FlightDataRecorder::loadConfiguration() {
@@ -124,32 +114,21 @@ void FlightDataRecorder::loadConfiguration() {
   INIFile iniFile(CONFIGURATION_FILEPATH);
   if (!iniFile.read(iniStructure)) {
     // file does not exist yet -> store the default configuration in a file
-    iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = "true";
     iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = "15";
     iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] = "864000";
     iniFile.write(iniStructure, true);
   }
 
   // read basic configuration
-  idIsEnabled->set(INITypeConversion::getBoolean(iniStructure, "FLIGHT_DATA_RECORDER", "ENABLED", true));
-  idMaximumFileCount->set(INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_FILES", 15));
-  idMaximumSampleCounter->set(
-      INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000));
-}
+  maximumSampleCounter = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000);
+  maximumFileCount = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_FILES", 15);
 
-void FlightDataRecorder::writeConfiguration() {
-  // create ini file
-  INIFile iniFile(CONFIGURATION_FILEPATH);
-
-  // create structure
-  INIStructure iniStructure;
-  iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = idIsEnabled->get() == 1 ? "true" : "false";
-  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = std::to_string(static_cast<int>(idMaximumFileCount->get()));
-  iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] =
-      std::to_string(static_cast<int>(idMaximumSampleCounter->get()));
-
-  // write file
-  iniFile.write(iniStructure, true);
+  if (maximumSampleCounter <= 0) {
+    maximumSampleCounter = 864000;
+  }
+  if (maximumFileCount <= 0) {
+    maximumFileCount = 15;
+  }
 }
 
 void FlightDataRecorder::manageFlightDataRecorderFiles() {
@@ -157,7 +136,7 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
   sampleCounter++;
 
   // check if file is considered full
-  if (sampleCounter >= idMaximumSampleCounter->get()) {
+  if (sampleCounter >= maximumSampleCounter) {
     // close file and delete
     if (fileStream) {
       fileStream->close();
@@ -201,6 +180,10 @@ void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
 
   // open directory
   DIR* directory = opendir("\\work");
+  if (!directory) {
+    fprintf(stderr, "[FlightDataRecorder::getFlightDataRecorderFilename] Failed to open work dir!");
+    return;
+  }
 
   // read directory until end
   while ((directoryEntry = readdir(directory)) != NULL) {
@@ -220,7 +203,7 @@ void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
   std::sort(files.begin(), files.end(), std::greater<>());
 
   // remove older files
-  while (files.size() > idMaximumFileCount->get()) {
+  while (files.size() > maximumFileCount) {
     bool result = remove(("\\work\\" + files.back()).c_str());
     files.pop_back();
   }

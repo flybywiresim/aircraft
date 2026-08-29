@@ -39,7 +39,7 @@ pub use engine_generator::{
     INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
 };
 pub use external_power_source::ExternalPowerSource;
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};
@@ -395,6 +395,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -426,6 +430,10 @@ impl Electricity {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
@@ -452,6 +460,10 @@ impl Electricity {
     /// # struct SomeVariableRegistry {}
     /// # impl VariableRegistry for SomeVariableRegistry {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
     /// #         VariableIdentifier::default()
     /// #     }
     /// # }
@@ -493,13 +505,13 @@ impl Electricity {
         }
     }
 
-    pub fn output_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    pub fn output_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.potential
             .get(element.output_identifier())
             .unwrap_or_else(|| self.none_potential.borrow())
     }
 
-    pub fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    pub fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.potential
             .get(element.input_identifier())
             .unwrap_or_else(|| self.none_potential.borrow())
@@ -551,7 +563,7 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 impl ElectricalBuses for Electricity {
-    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential> {
+    fn potential_of(&'_ self, bus_type: ElectricalBusType) -> Ref<'_, Potential> {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential
                 .get(*identifier)
@@ -572,7 +584,7 @@ impl ElectricalBuses for Electricity {
     }
 }
 impl ConsumePower for Electricity {
-    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
+    fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential> {
         self.input_of(element)
     }
 
@@ -610,7 +622,7 @@ impl<'a> ReceivePowerVisitor<'a> {
         ReceivePowerVisitor { electricity }
     }
 }
-impl<'a> SimulationElementVisitor for ReceivePowerVisitor<'a> {
+impl SimulationElementVisitor for ReceivePowerVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.receive_power(self.electricity);
     }
@@ -628,7 +640,7 @@ impl<'a> ConsumePowerVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ConsumePowerVisitor<'a> {
+impl SimulationElementVisitor for ConsumePowerVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.consume_power(self.context, self.electricity);
     }
@@ -645,7 +657,7 @@ impl<'a> ConsumePowerInConvertersVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ConsumePowerInConvertersVisitor<'a> {
+impl SimulationElementVisitor for ConsumePowerInConvertersVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.consume_power_in_converters(self.context, self.electricity);
     }
@@ -663,7 +675,7 @@ impl<'a> ProcessPowerConsumptionReportVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
+impl SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.process_power_consumption_report(self.context, self.electricity);
     }
@@ -890,7 +902,7 @@ impl PotentialCollection {
         }
     }
 
-    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<Ref<Potential>> {
+    fn get(&'_ self, identifier: ElectricalElementIdentifier) -> Option<Ref<'_, Potential>> {
         self.items
             .get(&identifier)
             .map(|potential| potential.as_ref().borrow())
@@ -916,6 +928,8 @@ impl PotentialCollection {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
     use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
 
@@ -1721,7 +1735,7 @@ mod tests {
             let mut identifier = electricity.next_electrical_identifier();
             for _ in 1..=10 {
                 let next_identifier = electricity.next_electrical_identifier();
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }
@@ -1733,7 +1747,7 @@ mod tests {
             for _ in 1..=10 {
                 let next_identifier = electricity
                     .next_electrical_identifier_for_bus(ElectricalBusType::DirectCurrentBattery);
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }
@@ -1749,7 +1763,7 @@ mod tests {
                     electricity
                         .next_electrical_identifier_for_bus(ElectricalBusType::DirectCurrentBattery)
                 };
-                assert!(identifier.0 < next_identifier.0);
+                assert_lt!(identifier.0, next_identifier.0);
                 identifier = next_identifier;
             }
         }

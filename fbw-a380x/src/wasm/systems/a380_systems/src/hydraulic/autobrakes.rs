@@ -167,6 +167,7 @@ pub struct A380AutobrakeController {
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     rto_mode_armed_id: VariableIdentifier,
+    btv_appr_different_runway_id: VariableIdentifier,
 
     external_deactivation_event_id: VariableIdentifier,
 
@@ -192,6 +193,8 @@ pub struct A380AutobrakeController {
     selection_knob_should_return_disarm: DelayedTrueLogicGate,
 
     external_deactivation_event: bool,
+
+    btv_appr_different_runway: bool,
 
     placeholder_ground_spoilers_out: bool,
 
@@ -228,6 +231,8 @@ impl A380AutobrakeController {
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
+            btv_appr_different_runway_id: context
+                .get_identifier("BTV_APPR_DIFFERENT_RUNWAY".to_owned()),
 
             external_deactivation_event_id: context
                 .get_identifier("AUTOBRAKE_INSTINCTIVE_DISCONNECT".to_owned()),
@@ -264,6 +269,8 @@ impl A380AutobrakeController {
             ),
 
             external_deactivation_event: false,
+
+            btv_appr_different_runway: false,
 
             placeholder_ground_spoilers_out: false,
 
@@ -423,6 +430,11 @@ impl A380AutobrakeController {
             || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
     }
 
+    fn btv_should_revert_to_brk_hi(&self) -> bool {
+        self.mode == A380AutobrakeMode::BTV
+            && (self.btv_scheduler.btv_lost || self.btv_appr_different_runway)
+    }
+
     fn disarm_actions(&mut self) {
         self.btv_scheduler.disarm();
         self.nose_gear_was_compressed_once = false;
@@ -527,6 +539,10 @@ impl A380AutobrakeController {
 
         self.mode = self.determine_mode(autobrake_panel);
 
+        if self.btv_should_revert_to_brk_hi() {
+            self.mode = A380AutobrakeMode::HIGH;
+        }
+
         if rto_disable || self.should_disarm(context) {
             self.disarm_actions();
         }
@@ -592,6 +608,7 @@ impl SimulationElement for A380AutobrakeController {
         self.ground_spoilers_are_deployed = self.placeholder_ground_spoilers_out;
 
         self.external_deactivation_event = reader.read(&self.external_deactivation_event_id);
+        self.btv_appr_different_runway = reader.read(&self.btv_appr_different_runway_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readed_mode = reader.read_f64(&self.armed_mode_id);
@@ -604,6 +621,7 @@ impl SimulationElement for A380AutobrakeController {
 struct AutobrakeRunwayOverrunProtection {
     distance_to_runway_end_id: VariableIdentifier,
     autobrake_row_rop_word_id: VariableIdentifier,
+    row_rop_lost_id: VariableIdentifier,
 
     thrust_en1_id: VariableIdentifier,
     thrust_en2_id: VariableIdentifier,
@@ -617,17 +635,21 @@ struct AutobrakeRunwayOverrunProtection {
     is_actively_braking: bool,
 
     is_any_autobrake_active: bool,
-
+    is_full_rev_selected: bool,
     status_word: Arinc429Word<u32>,
+
+    row_rop_lost: bool,
 }
 impl AutobrakeRunwayOverrunProtection {
     const MIN_ARMING_SPEED_MS2: f64 = 10.28;
+    const MAX_REVERSE_REQUEST_SPEED_KTS: f64 = 80.0;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
             distance_to_runway_end_id: context
                 .get_identifier("OANS_BTV_REMAINING_DIST_TO_RWY_END".to_owned()),
             autobrake_row_rop_word_id: context.get_identifier("ROW_ROP_WORD_1".to_owned()),
+            row_rop_lost_id: context.get_identifier("ROW_ROP_LOST".to_owned()),
 
             thrust_en1_id: context.get_identifier("AUTOTHRUST_TLA:1".to_owned()),
             thrust_en2_id: context.get_identifier("AUTOTHRUST_TLA:2".to_owned()),
@@ -644,13 +666,17 @@ impl AutobrakeRunwayOverrunProtection {
             is_actively_braking: false,
 
             is_any_autobrake_active: false,
+            is_full_rev_selected: false,
 
             status_word: Arinc429Word::new(0, SignStatus::NormalOperation),
+
+            row_rop_lost: false,
         }
     }
 
     fn is_row_rop_operative(&self, context: &UpdateContext) -> bool {
-        self.distance_to_runway_end.is_normal_operation()
+        !self.row_rop_lost
+            && self.distance_to_runway_end.is_normal_operation()
             && context.ground_speed().get::<meter_per_second>() > Self::MIN_ARMING_SPEED_MS2
     }
 
@@ -670,73 +696,87 @@ impl AutobrakeRunwayOverrunProtection {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        self.is_any_autobrake_active = is_any_autobrake_active;
+        if self.is_row_rop_operative(context) {
+            self.status_word.set_ssm(SignStatus::NormalOperation);
 
-        let is_on_ground = lgciu1.left_and_right_gear_compressed(false)
-            || lgciu2.left_and_right_gear_compressed(false);
+            self.is_any_autobrake_active = is_any_autobrake_active;
+            self.is_full_rev_selected =
+                self.throttle_percents[1] <= -20.0 && self.throttle_percents[2] <= -20.0;
 
-        let max_braking_prediction = braking_distances.max_braking();
+            let is_on_ground = lgciu1.left_and_right_gear_compressed(false)
+                || lgciu2.left_and_right_gear_compressed(false);
 
-        // Can engage only above min speed
-        if self.is_row_rop_operative(context) && self.is_any_autobrake_active {
-            if max_braking_prediction >= self.distance_to_runway_end.value() {
-                self.is_actively_braking = true;
+            let max_braking_prediction = braking_distances.max_braking();
+
+            // Can engage only above min speed
+            if self.is_row_rop_operative(context) && self.is_any_autobrake_active {
+                if max_braking_prediction >= self.distance_to_runway_end.value() {
+                    self.is_actively_braking = true;
+                }
+            } else {
+                // Can only disengage if autobrake or distance lost (not from speed)
+                // TODO ROP can revert if braking force is sufficient
+                if !self.distance_to_runway_end.is_normal_operation()
+                    || !self.is_any_autobrake_active
+                {
+                    self.is_actively_braking = false;
+                }
             }
+
+            let overrun_detected =
+                is_on_ground && max_braking_prediction >= self.distance_to_runway_end.value();
+
+            let ground_speed_kts = context.ground_speed().get::<knot>();
+
+            // BRAKE MAX BRAKING Requested
+            self.status_word.set_bit(
+                11,
+                self.should_show_manual_braking_warning(overrun_detected),
+            );
+
+            // SET MAX REVERSE Requested
+            self.status_word.set_bit(
+                12,
+                !self.is_full_rev_selected
+                    && overrun_detected
+                    && ground_speed_kts >= Self::MAX_REVERSE_REQUEST_SPEED_KTS,
+            );
+
+            // KEEP MAX REVERSE Requested
+            self.status_word.set_bit(
+                13,
+                overrun_detected
+                    && self.is_full_rev_selected
+                    && ground_speed_kts <= Self::MAX_REVERSE_REQUEST_SPEED_KTS,
+            );
+
+            // Too short if wet
+            self.status_word.set_bit(
+                14,
+                !is_on_ground
+                    && braking_distances.wet_landing() >= self.distance_to_runway_end.value(),
+            );
+
+            // Too short for dry
+            self.status_word.set_bit(
+                15,
+                !is_on_ground
+                    && braking_distances.dry_landing() >= self.distance_to_runway_end.value(),
+            );
         } else {
-            // Can only disengage if autobrake or distance lost (not from speed)
-            // TODO ROP can revert if braking force is sufficient
-            if !self.distance_to_runway_end.is_normal_operation() || !self.is_any_autobrake_active {
-                self.is_actively_braking = false;
-            }
+            self.status_word.set_ssm(SignStatus::FailureWarning);
         }
-
-        // IS operative
-        self.status_word
-            .set_bit(11, self.is_row_rop_operative(context));
-
-        // Is active under autobrake
-        self.status_word.set_bit(12, self.is_actively_braking);
-
-        // Is active under manual braking
-        self.status_word.set_bit(
-            13,
-            self.should_show_manual_braking_warning(context, max_braking_prediction, is_on_ground),
-        );
-
-        let should_show_in_flight_row = !is_on_ground && self.is_row_rop_operative(context);
-        // Too short if wet
-        self.status_word.set_bit(
-            14,
-            should_show_in_flight_row
-                && braking_distances.wet_landing() >= self.distance_to_runway_end.value(),
-        );
-
-        // Too short for dry
-        self.status_word.set_bit(
-            15,
-            should_show_in_flight_row
-                && braking_distances.dry_landing() >= self.distance_to_runway_end.value(),
-        );
     }
 
     fn rop_max_braking_requested(&self) -> bool {
         self.is_actively_braking
     }
 
-    fn should_show_manual_braking_warning(
-        &self,
-        context: &UpdateContext,
-        dry_stopping_prediction: Length,
-        is_on_ground: bool,
-    ) -> bool {
+    fn should_show_manual_braking_warning(&self, overrun_detected: bool) -> bool {
         let any_engine_not_idle_or_reverse = self.throttle_percents.iter().any(|&x| x > 2.);
 
-        if is_on_ground
-            && !any_engine_not_idle_or_reverse
-            && !self.is_any_autobrake_active
-            && self.is_row_rop_operative(context)
-        {
-            dry_stopping_prediction >= self.distance_to_runway_end.value()
+        if !any_engine_not_idle_or_reverse && !self.is_any_autobrake_active {
+            overrun_detected
         } else {
             false
         }
@@ -761,6 +801,7 @@ impl SimulationElement for AutobrakeRunwayOverrunProtection {
         let tla3: f64 = reader.read(&self.thrust_en3_id);
         let tla4: f64 = reader.read(&self.thrust_en4_id);
         self.throttle_percents = [tla1, tla2, tla3, tla4];
+        self.row_rop_lost = reader.read(&self.row_rop_lost_id);
     }
 }
 
@@ -961,6 +1002,8 @@ struct BtvDecelScheduler {
     turnaround_idle_reverse_estimation_id: VariableIdentifier,
     turnaround_max_reverse_estimation_id: VariableIdentifier,
     exit_missed_id: VariableIdentifier,
+    state_id: VariableIdentifier,
+    btv_lost_id: VariableIdentifier,
 
     runway_length: Arinc429Word<Length>,
 
@@ -971,6 +1014,8 @@ struct BtvDecelScheduler {
     spoilers_active: bool,
 
     state: BTVState,
+
+    btv_lost: bool,
 
     deceleration_request: Acceleration,
     end_of_decel_acceleration: Acceleration,
@@ -1029,6 +1074,8 @@ impl BtvDecelScheduler {
             turnaround_max_reverse_estimation_id: context
                 .get_identifier("BTV_TURNAROUND_MAX_REVERSE".to_owned()),
             exit_missed_id: context.get_identifier("BTV_EXIT_MISSED".to_owned()),
+            state_id: context.get_identifier("BTV_STATE".to_owned()),
+            btv_lost_id: context.get_identifier("BTV_LOST".to_owned()),
 
             runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
             rolling_distance: Length::default(),
@@ -1041,6 +1088,8 @@ impl BtvDecelScheduler {
             spoilers_active: false,
 
             state: BTVState::Disabled,
+
+            btv_lost: false,
 
             deceleration_request: Acceleration::default(),
             end_of_decel_acceleration: Acceleration::default(),
@@ -1179,7 +1228,8 @@ impl BtvDecelScheduler {
     }
 
     fn arming_authorized(&self) -> bool {
-        self.runway_length.is_normal_operation()
+        !self.btv_lost
+            && self.runway_length.is_normal_operation()
             && self.runway_length.value().get::<meter>() >= Self::MIN_RUNWAY_LENGTH_M
             && self.in_flight_btv_stopping_distance.is_normal_operation()
             && self.runway_length.value().get::<meter>() > self.dry_prediction.get::<meter>()
@@ -1370,6 +1420,7 @@ impl SimulationElement for BtvDecelScheduler {
         );
 
         writer.write(&self.exit_missed_id, self.exit_missed_confirmation.output());
+        writer.write(&self.state_id, self.state as u8 as f64);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -1396,6 +1447,8 @@ impl SimulationElement for BtvDecelScheduler {
             Length::new::<meter>(raw_feet_exit_length_arinc.value()),
             raw_feet_exit_length_arinc.ssm(),
         );
+
+        self.btv_lost = reader.read(&self.btv_lost_id);
     }
 }
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,9 +16,11 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
-import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
+import { EngineOutTargetPage } from '@fmgc/events/EngineOutEvents';
+import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
+import { CDUPerformancePage } from '../legacy_pages/A320_Neo_CDU_PerformancePage';
 
 export class A320_Neo_CDU_MainDisplay
   extends FMCMainDisplay
@@ -127,7 +130,6 @@ export class A320_Neo_CDU_MainDisplay
     IRSInit: 18,
     IRSMonitor: 19,
     IRSStatus: 20,
-    IRSStatusFrozen: 21,
     LateralRevisionPage: 22,
     MenuPage: 23,
     NavaidPage: 24,
@@ -185,6 +187,14 @@ export class A320_Neo_CDU_MainDisplay
     AOCFreeText: 76,
     StepAltsPage: 77,
     ATCDepartReq: 78,
+    ATCCommMenu: 79,
+    ATCText: 80,
+    ATCProcedureRequest: 81,
+    ATCVertRequest: 82,
+    ATCLatRequest: 83,
+    ATCMessageModifyUM131: 84,
+    ATCContactRequest: 85,
+    RTAPage: 86,
   };
 
   private mcduServerClient?: McduServerClient;
@@ -223,7 +233,6 @@ export class A320_Neo_CDU_MainDisplay
     integralBrightness: 0,
   };
 
-  private _titleLeftElement?: HTMLElement;
   private _titleElement?: HTMLElement;
   private _pageCurrentElement?: HTMLElement;
   private _pageCountElement?: HTMLElement;
@@ -383,7 +392,6 @@ export class A320_Neo_CDU_MainDisplay
     }
 
     this.initKeyboardScratchpad();
-    this._titleLeftElement = this.getChildById('title-left');
     this._titleElement = this.getChildById('title');
     this._pageCurrentElement = this.getChildById('page-current');
     this._pageCountElement = this.getChildById('page-count');
@@ -406,7 +414,7 @@ export class A320_Neo_CDU_MainDisplay
 
     SimVar.SetSimVarValue('L:A32NX_GPS_PRIMARY_LOST_MSG', 'Bool', 0).then();
 
-    NXDataStore.subscribe('*', () => {
+    NXDataStore.subscribeLegacy('*', () => {
       this.requestUpdate();
     });
 
@@ -414,6 +422,19 @@ export class A320_Neo_CDU_MainDisplay
 
     // sync annunciator simvar state
     this.updateAnnunciators(true);
+
+    this.sub.on('fms_engine_out_page_request').handle((target) => {
+      if (this.activeSystem === 'FMGC') {
+        switch (target) {
+          case EngineOutTargetPage.FlightPlan:
+            CDUFlightPlanPage.ShowPage(this);
+            break;
+          case EngineOutTargetPage.Perf:
+            CDUPerformancePage.ShowPage(this);
+            break;
+        }
+      }
+    });
   }
 
   public requestUpdate() {
@@ -657,8 +678,6 @@ export class A320_Neo_CDU_MainDisplay
       .replace(/{yellow}/g, "<span class='yellow'>")
       .replace(/{inop}/g, "<span class='inop'>")
       .replace(/{sp}/g, '&nbsp;')
-      .replace(/{left}/g, "<span class='left'>")
-      .replace(/{right}/g, "<span class='right'>")
       .replace(/{end}/g, '</span>');
   }
 
@@ -670,21 +689,6 @@ export class A320_Neo_CDU_MainDisplay
     this._title = content.split('[color]')[0];
     this._title = `{${color}}${this._title}{end}`;
     this._titleElement.textContent = this._title;
-  }
-
-  private setTitleLeft(content: string) {
-    if (!content) {
-      this._titleLeft = '';
-      this._titleLeftElement.textContent = '';
-      return;
-    }
-    let color = content.split('[color]')[1];
-    if (!color) {
-      color = 'white';
-    }
-    this._titleLeft = content.split('[color]')[0];
-    this._titleLeft = `{${color}}${this._titleLeft}{end}`;
-    this._titleLeftElement.textContent = this._titleLeft;
   }
 
   private setPageCurrent(value: string | number) {
@@ -807,7 +811,6 @@ export class A320_Neo_CDU_MainDisplay
       this.setTitle(template[0][0]);
       this.setPageCurrent(template[0][1]);
       this.setPageCount(template[0][2]);
-      this.setTitleLeft(template[0][3]);
     }
     for (let i = 0; i < 6; i++) {
       let tIndex = 2 * i + 1;
@@ -851,9 +854,6 @@ export class A320_Neo_CDU_MainDisplay
     // Apply formatting helper to title page, lines and labels
     if (this._titleElement !== null) {
       this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
-    }
-    if (this._titleLeftElement !== null) {
-      this._titleLeftElement.innerHTML = this._formatCell(this._titleLeftElement.innerHTML);
     }
     this._lineElements.forEach((row) => {
       row.forEach((column) => {
@@ -903,7 +903,6 @@ export class A320_Neo_CDU_MainDisplay
     this.onUnload();
     this.onUnload = () => {};
     this.setTitle('');
-    this.setTitleLeft('');
     this.setPageCurrent(0);
     this.setPageCount(0);
     for (let i = 0; i < 6; i++) {
@@ -1038,11 +1037,6 @@ export class A320_Neo_CDU_MainDisplay
     const header = document.createElement('div');
     header.id = 'header';
 
-    const titleLeft = document.createElement('div');
-    titleLeft.classList.add('s-text');
-    titleLeft.id = 'title-left';
-    parent.appendChild(titleLeft);
-
     const title = document.createElement('span');
     title.id = 'title';
     header.appendChild(title);
@@ -1143,8 +1137,8 @@ export class A320_Neo_CDU_MainDisplay
 
   private initKeyboardScratchpad() {
     window.document.addEventListener('click', () => {
-      const mcduInput = NXDataStore.get('MCDU_KB_INPUT', 'DISABLED');
-      const mcduTimeout = parseInt(NXDataStore.get('CONFIG_MCDU_KB_TIMEOUT', '60'));
+      const mcduInput = NXDataStore.getLegacy('MCDU_KB_INPUT', 'DISABLED');
+      const mcduTimeout = parseInt(NXDataStore.getLegacy('CONFIG_MCDU_KB_TIMEOUT', '60'));
       const isPoweredL = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Number');
       const isPoweredR = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Number');
 
@@ -1332,8 +1326,8 @@ export class A320_Neo_CDU_MainDisplay
       case AtsuStatusCodes.CallsignInUse:
         this.atsuScratchpad.setMessage(NXFictionalMessages.fltNbrInUse);
         break;
-      case AtsuStatusCodes.NoHoppieConnection:
-        this.atsuScratchpad.setMessage(NXFictionalMessages.noHoppieConnection);
+      case AtsuStatusCodes.NoAcarsConnection:
+        this.atsuScratchpad.setMessage(NXFictionalMessages.noAcarsConnection);
         break;
       case AtsuStatusCodes.ComFailed:
         this.atsuScratchpad.setMessage(NXSystemMessages.comUnavailable);
@@ -1567,7 +1561,7 @@ export class A320_Neo_CDU_MainDisplay
     if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
       try {
         this.mcduServerClient.send(message);
-      } catch (e) {
+      } catch (_e) {
         /** ignore **/
       }
     }
@@ -1607,7 +1601,7 @@ export class A320_Neo_CDU_MainDisplay
         ],
         scratchpad: `{${this.scratchpadDisplay.getColor()}}${this.scratchpadDisplay.getText()}{end}`,
         title: this._title,
-        titleLeft: `{small}${this._titleLeft}{end}`,
+        titleLeft: '', // deprecated and unused
         page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
         arrows: this._arrows,
         integralBrightness: integralLightsPowered
@@ -1647,14 +1641,6 @@ export class A320_Neo_CDU_MainDisplay
   }
 
   /* END OF WEBSOCKET */
-
-  public goToFuelPredPage() {
-    if (this.isAnEngineOn()) {
-      CDUFuelPredPage.ShowPage(this);
-    } else {
-      CDUInitPage.ShowPage2(this);
-    }
-  }
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);

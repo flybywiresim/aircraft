@@ -1,26 +1,26 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { LegType, ProcedureTransition } from '@flybywiresim/fbw-sdk';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { DepartureRunwayTransition, LegType, ProcedureTransition, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class DepartureRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
   class = SegmentClass.Departure;
 
   allLegs: FlightPlanElement[] = [];
 
-  get procedure(): ProcedureTransition | undefined {
+  get procedure(): DepartureRunwayTransition | undefined {
     return this.departureRunwayTransition;
   }
 
-  private departureRunwayTransition: ProcedureTransition | undefined = undefined;
+  private departureRunwayTransition: DepartureRunwayTransition | undefined = undefined;
 
   async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
     const existingDeparture = this.flightPlan.originDeparture;
@@ -36,6 +36,11 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
       this.departureRunwayTransition = undefined;
     }
 
+    this.flightPlan.engineOutDepartureSegment.setProcedure(
+      this.departureRunwayTransition?.engineOutDeparture,
+      runwayIdent,
+    );
+
     if (!skipUpdateLegs) {
       const legs =
         this.departureRunwayTransition?.legs.map((it) =>
@@ -45,7 +50,11 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
       const firstDepartureRunwayTransitionLeg = legs[0];
 
       // Add an IF at the start if first leg of the transition is an FX
-      if (firstDepartureRunwayTransitionLeg?.isFX() && !firstDepartureRunwayTransitionLeg.isRunway()) {
+      if (
+        firstDepartureRunwayTransitionLeg?.isFX() &&
+        !firstDepartureRunwayTransitionLeg.isRunway() &&
+        firstDepartureRunwayTransitionLeg.definition.waypoint
+      ) {
         const newLeg = FlightPlanLeg.fromEnrouteFix(
           this,
           firstDepartureRunwayTransitionLeg.definition.waypoint,
@@ -67,11 +76,13 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
     }
   }
 
-  clone(forPlan: BaseFlightPlan): DepartureRunwayTransitionSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): DepartureRunwayTransitionSegment {
     const newSegment = new DepartureRunwayTransitionSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.departureRunwayTransition = this.departureRunwayTransition;
 
     return newSegment;

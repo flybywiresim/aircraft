@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
       "TT": {
         "IncreaseFontSize": "Font boyutunu büyüt",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Font boyutunu küçült"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Veri",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Havaalanı ICAO",
       "ApproachSpeed": "Yaklaşma Hızı",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Temizle",
       "DropDownNo": "Hayır",
       "DropDownYes": "Evet",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Verileri doldurun",
       "FlapsConfiguration": "Flap Konfigürasyonu",
+      "LandingWeight": "Landing Weight",
       "Low": "Alçak",
       "MaximumManual": "Maksimum Manuel",
       "Medium": "Orta",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Overweight Prosedürleri",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
+      "Runway": "Runway",
       "RunwayAltitude": "Pist İrtifası",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Pist Durumu",
@@ -316,6 +322,8 @@
         "MediumPoor": "Orta-Kötü (2)",
         "Poor": "Kötü (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Pist Başı",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Pist LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Ağırlık",
+      "Wind": "Wind",
       "WindDirection": "Rüzgar yönü",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Rüzgar Hızı",
@@ -364,14 +373,14 @@
         "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
         "InvalidData": "Geçersiz Veriler",
         "MaximumPressureAlt": "Maksimum Basınç İrtifasının Üstünde ({max_zp} ft)",
-        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
-        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumRunwaySlope": "Pist Eğim Sınırlarının Dışında (±%2)",
+        "MaximumTailwind": "Maksimum Kuyruk Rüzgarının Üstünde ({max_tailwind} knot)",
         "MaximumTemperature": "Dışarı Hava Sucaklığının Üstünde ({tmax}° C)",
         "MaximumTireSpeed": "Maksimum Lastik Hızı Tatmin Edilmedi",
         "OperatingEmptyWeight": "İşletimsel Boş Ağırlığının (OEW) Altında ({oew}{weight_unit})",
         "StructuralMtow": "Azami Kalkış Ağırlığının (MTOW) Üstünde ({structural_mtow}\n{weight_unit})\n",
         "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
-        "TooLight": "Below Minimum Takeoff Weight",
+        "TooLight": "Minimum Kalkış Ağırlığının Altında",
         "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
       },
       "Packs": "Packs",
@@ -391,11 +400,13 @@
         "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
         "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
         "ContaminatedCompactedSnow": "Compacted Snow",
-        "Dry": "Dry",
+        "Dry": "Kuru",
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "ADIRS'i anında hizalayın",
       "AutoBrightness": "Otomatik Parlaklığı Açma/Kapatma",
       "Brightness": "flyPad parlaklığını ayarla",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Uçağa binmeyi anında bitir",
       "OnScreenKeyboard": "Ekran Klavyesini Açma/Kapatma",
       "PauseAtTod": "Top of Descent Noktasını Hazırla",
@@ -567,8 +580,6 @@
     },
     "Title": "Hızlı Kontroller"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Hakkında"
@@ -631,7 +642,7 @@
     "Real": "Gerçek",
     "Realism": {
       "AdirsAlignTime": "ADIRS Hizalama Süresi",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "Otomatik Step Climb",
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
@@ -651,11 +662,10 @@
       "Active": "Etkin",
       "Auto": "Otomatik",
       "Both": "Senkronize edilmiş",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrasyon",
-      "Captain": "Kaptan",
-      "CockpitSeatUsedToControl": "Kontrol için kullanılacak kokpit koltuğu",
       "ConesEnabled": "Emniyet Konileri",
-      "Copilot": "Yardımcı Pilot",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
       "EnableSimBridge": "SimBridge Bağlantısını Etkinleştir (Başarılı bir bağlantı yoksa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
@@ -664,9 +674,10 @@
       "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "Etkin değil",
-      "Left": "Left",
+      "Left": "Sol",
       "LoadOnly": "Yalnızca Yükle",
       "None": "Hiçbiri",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Kapalı",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraph Hesap Bağlantısı",
         "SubscriptionStatus": {
           "None": "Yok",
+          "Standard": "Navigraph Standard",
           "Unknown": "Bilinmeyen",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBrief Kullanıcı Kimliğini geçersiz kıl",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Lütfen SimBrief kullanıcı adınızı veya pilot ID'nizi doğru girdiğinizden emin olun.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Bağlı Navigraph Hesabı yerine kullanılacak alternatif SimBrief kullanıcı kimliği"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA Eksende"
     },
     "Title": "Ayarlar",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Gerçekçi Değil",
     "flyPad": {
       "AutoBrightness": "Otomatik Parlaklık",
@@ -743,7 +759,6 @@
       "Blue": "Mavi",
       "Brightness": "Parlaklık",
       "Dark": "Koyu",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Dil",
       "Light": "Açık",
       "Local": "Yerel",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Nis",
     "Aug": "Ağu",

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventBus, Instrument, Publisher } from '@microsoft/msfs-sdk';
 
 export interface SimplaneValues {

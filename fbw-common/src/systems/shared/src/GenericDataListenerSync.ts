@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 interface GenericDataListener extends ViewListener.ViewListener {
   onDataReceived(key: string, callback: (data: any) => void): void;
   send(key: string, data: any): void;

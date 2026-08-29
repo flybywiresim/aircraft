@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { t } from '@flybywiresim/flypad';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';

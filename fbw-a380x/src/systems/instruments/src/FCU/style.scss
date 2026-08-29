@@ -31,6 +31,7 @@
 #Electricity {
   width: 100%;
   height: 100%;
+  /* FIXME this transform messes up the positioning of everything */
   transform: scale(0.5) translate(-50%, -50%);
 }
 
@@ -49,12 +50,12 @@
 
 text.Label {
   font-family: "Poppins-SemiBold";
-  font-size: 230px;
+  font-size: 115px;
   fill: $display-colour-inactive;
 }
 
 .Baro text.Label {
-  font-size: 210px;
+  font-size: 105px;
 }
 
 text.Label.Visible {
@@ -64,40 +65,40 @@ text.Label.Visible {
 // deprecated
 :root text.Active {
   font-family: "Poppins-SemiBold";
-  font-size: 230px;
+  font-size: 115px;
   fill: $display-colour;
 }
 :root text.Active.BaroValue {
-  font-size: 210px;
+  font-size: 105px;
 }
 
 // deprecated
 :root text.Inactive {
   font-family: "Poppins-SemiBold";
-  font-size: 230px;
+  font-size: 115px;
   fill: $display-colour-inactive;
 }
 :root text.Inactive.BaroValue {
-  font-size: 210px;
+  font-size: 105px;
 }
 
 :root text.Value {
   font-family: Digital;
-  font-size:550px;
+  font-size:275px;
   text-anchor: start;
   fill: $display-colour;
   letter-spacing: 0px;
 }
 
 :root .Baro text.Value {
-  font-size: 512px;
+  font-size: 256px;
 }
 
 :root #PreSelBaroValue {
   font-family: Digital;
   text-anchor: end;
   letter-spacing: 0px;
-  font-size: 275px;
+  font-size: 137.5px;
 }
 
 :root line {
@@ -127,10 +128,11 @@ text.Label.Visible {
 
 #FCU_CONTENT #Mainframe #LargeScreen {
   width: 100%;
-  height: 16%;
+  height: 32%;
   display: block;
   position: absolute;
   background-color: $display-colour-background;
+  top:8%;
 }
 
 #FCU_CONTENT #Mainframe #LargeScreen #Speed {
@@ -176,20 +178,28 @@ text.Label.Visible {
   position: absolute;
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen {
+.baro-screen {
   width: 27%;
-  height: 17%;
+  height: 34%;
   display: block;
   position: absolute;
-  top: 16%;
+  top: 72%;
   background-color: $display-colour-background;
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen #Selected,
-#FCU_CONTENT #Mainframe #SmallScreen #Standard {
+.baro-screen #Selected,
+.baro-screen #Standard {
   width: 100%;
   height: 100%;
   top: 0;
+}
+
+#baro-screen-1 {
+  left: 120%;
+}
+
+#baro-screen-2 {
+  left: 160%;
 }
 
 .NdData {
@@ -197,13 +207,13 @@ text.Label.Visible {
 }
 
 .NdData.LeftSide {
-  top: 1750px;
-  left: 240px;
+  top: 875px;
+  left: 120px;
 }
 
 .NdData.RightSide {
-  top: 2900px;
-  left: 300px;
+  top: 1450px;
+  left: 150px;
 }
 
 .NdData .TopRow {
@@ -214,6 +224,6 @@ text.Label.Visible {
 
 .NdData .BottomRow {
   position: absolute;
-  top: 550px;
+  top: 275px;
   left: 0;
 }

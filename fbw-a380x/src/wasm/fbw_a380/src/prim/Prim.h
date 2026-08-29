@@ -1,6 +1,10 @@
 #pragma once
 
-#include "../model/A380PrimComputer.h"
+#include "../interface/SimConnectInterface.h"
+#include "../model/A380PrimComputerFctl.h"
+#include "../model/A380PrimComputerFe.h"
+#include "../model/A380PrimComputerFg.h"
+#include "../model/A380PrimComputerGeneralLogic.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/HysteresisNode.h"
 #include "../utils/PulseNode.h"
@@ -12,7 +16,15 @@ class Prim {
 
   Prim(const Prim&);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
+  void update(double deltaTime,
+              double simulationTime,
+              bool faultActive,
+              bool isPowered,
+              SimConnectInterface& simConnectInterface,
+              bool generalLogicDisabled,
+              bool fctlDisabled,
+              bool feDisabled,
+              bool fgDisabled);
 
   base_prim_out_bus getBusOutputs();
 
@@ -20,7 +32,9 @@ class Prim {
 
   base_prim_analog_outputs getAnalogOutputs();
 
-  A380PrimComputer::ExternalInputs_A380PrimComputer_T modelInputs = {};
+  A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& externalInputs();
+
+  const prim_outputs& getDebugOutputs();
 
  private:
   void initSelfTests(bool viaPushButton);
@@ -36,11 +50,15 @@ class Prim {
   void updateSelfTest(double deltaTime);
 
   // Model
-  A380PrimComputer primComputer;
-  prim_outputs modelOutputs;
+  A380PrimComputerGeneralLogic primGeneralLogic;
+  A380PrimComputerFctl primFctl;
+  A380PrimComputerFe primFe;
+  A380PrimComputerFg primFg;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;
+
+  bool selfTestFaultLightVisible;
 
   bool prevEngageButtonWasPressed;
 
@@ -61,5 +79,5 @@ class Prim {
 
   const double minimumPowerOutageTimeForFailure = 0.02;
   const double shortSelfTestDuration = 1;
-  const double longSelfTestDuration = 3;
+  const double longSelfTestDuration = 36;
 };

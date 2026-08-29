@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBriefデータのインポート",
       "TT": {
         "IncreaseFontSize": "文字サイズを大きくする",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "文字サイズを小さくする"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "SimBriefのデータはまだインポートされていません。"
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "データ",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "空港のICAOコード",
       "ApproachSpeed": "進入速度",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "消去",
       "DropDownNo": "いいえ",
       "DropDownYes": "はい",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "データの読み込み元",
       "FlapsConfiguration": "フラップ設定",
+      "LandingWeight": "Landing Weight",
       "Low": "低",
       "MaximumManual": "最大手動",
       "Medium": "中",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "過積載の手順",
       "Qnh": "QNH",
       "ReverseThrust": "逆噴射の使用",
+      "Runway": "Runway",
       "RunwayAltitude": "滑走路の標高",
       "RunwayAltitudeUnit": "ft(海抜高度)",
       "RunwayCondition": "滑走路の状態",
@@ -316,6 +322,8 @@
         "MediumPoor": "やや悪い(2)",
         "Poor": "悪い(1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "滑走路の方位",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "滑走路のLDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "重量",
+      "Wind": "Wind",
       "WindDirection": "風向",
       "WindDirectionUnit": "°",
       "WindMagnitude": "風速",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "滑走路の標高",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "滑走路の勾配",
@@ -556,6 +567,8 @@
       "AlignAdirs": "直ちにADIRSの調整を完了する",
       "AutoBrightness": "明るさ自動調節 オン/オフ",
       "Brightness": "flyPadの明るさを設定",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "直ちに搭乗を完了する",
       "OnScreenKeyboard": "オンスクリーンキーボード オン/オフ",
       "PauseAtTod": "降下開始地点で一時停止を有効・無効",
@@ -567,8 +580,6 @@
     },
     "Title": "クイックコントロール"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "flyPadについて"
@@ -631,7 +642,7 @@
     "Real": "現実的",
     "Realism": {
       "AdirsAlignTime": "ADIRSの調整時間",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "自動ステップクライム",
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
@@ -651,11 +662,10 @@
       "Active": "有効",
       "Auto": "自動",
       "Both": "両方",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "調整",
-      "Captain": "機長",
-      "CockpitSeatUsedToControl": "操縦に使用するコックピットシート",
       "ConesEnabled": "セーフティコーン",
-      "Copilot": "副操縦士",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
       "EnableSimBridge": "SimBridge接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
@@ -667,6 +677,7 @@
       "Left": "左側",
       "LoadOnly": "読み込みのみ",
       "None": "なし",
+      "OansPerformanceMode": "OANSパフォーマンスモード(使用しない場合、1分後に空港マップをVRAMから削除)",
       "Off": "オフ",
       "PilotSeat": "どちら側の操縦席で操縦するか",
       "Right": "右側",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraphアカウント連携",
         "SubscriptionStatus": {
           "None": "サブスクリプション無し",
+          "Standard": "Navigraph Standard",
           "Unknown": "不明",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBriefユーザーIDの上書き",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBriefのユーザー名、またはパイロットIDが正しく入力されているか確認してください。",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "連携されたNavigraphアカウントの代わりに使用するSimBriefユーザー ID"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGAを軸に設定"
     },
     "Title": "設定",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "非現実的",
     "flyPad": {
       "AutoBrightness": "明るさ自動調節",
@@ -743,7 +759,6 @@
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "言語",
       "Light": "ライト",
       "Local": "ローカル",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",

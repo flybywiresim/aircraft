@@ -63,3 +63,19 @@
 .mfd-vert-rev-clbdes {
   margin-top: 20px;
 }
+
+.mfd-vert-rev-spd-lim-header {
+  width: 100%;
+  margin-top: 20px;
+  padding-left: 10px;
+}
+
+.mfd-vert-rev-spd-lim {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding-left: 10px;
+}

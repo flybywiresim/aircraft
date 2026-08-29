@@ -1,4 +1,9 @@
 {
   "index": "./instrument.tsx",
-  "isInteractive": false
+  "isInteractive": false,
+  "extraDeps": [
+    "/fbw-a32nx/src/systems/shared/src/publishers",
+    "/fbw-a32nx/src/systems/shared/src/EwdMessages.ts",
+    "../MsfsAvionicsCommon"
+  ]
 }

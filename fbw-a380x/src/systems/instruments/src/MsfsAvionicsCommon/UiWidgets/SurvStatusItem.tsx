@@ -5,22 +5,23 @@ import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscripti
 
 export interface SurvStatusItemProps extends ComponentProps {
   label: string;
-  active: boolean;
+  active: Subscribable<boolean>;
   failed: Subscribable<boolean>;
   sys: string;
   style?: string;
   onChanged?(val: boolean): void;
 }
 
-/*
- * Button for MFD pages. If menuItems is set, a dropdown menu will be displayed when button is clicked
- */
 export class SurvStatusItem extends DisplayComponent<SurvStatusItemProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
+  private readonly label = this.props.active.map((active) => `${this.props.label} ${active ? this.props.sys : 'OFF'}`);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subs.push(this.label);
   }
 
   public destroy(): void {
@@ -40,7 +41,7 @@ export class SurvStatusItem extends DisplayComponent<SurvStatusItemProps> {
           failed: this.props.failed,
         }}
       >
-        {this.props.label} {this.props.active ? this.props.sys : 'OFF'}
+        {this.label}
       </div>
     );
   }

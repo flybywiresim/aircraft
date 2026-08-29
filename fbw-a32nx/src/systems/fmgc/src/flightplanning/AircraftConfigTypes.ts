@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfig } from './FpmConfig';
 
 export enum VnavDescentMode {
   NORMAL,
@@ -16,6 +17,7 @@ export interface AircraftConfig {
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
   fmSymbolConfig: FMSymbolsConfig;
+  fpmConfig: FpmConfig;
 }
 
 export interface VnavConfig {
@@ -42,6 +44,11 @@ export interface VnavConfig {
    * This value is in lbs.
    */
   MAXIMUM_FUEL_ESTIMATE: number;
+
+  /**
+   * Lowest fuel estimate which can be calculated by VNAV
+   */
+  LOWEST_FUEL_ESTIMATE: number;
 
   /**
    * Label used for pseudo-waypoints that mark where the aircraft crosses
@@ -79,6 +86,11 @@ export interface LnavConfig {
    * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
    */
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: number;
+
+  /**
+   * Whether to emit the "end of VD marker" (A380X only) as a PWP
+   */
+  EMIT_END_OF_VD_MARKER: boolean;
 }
 
 export interface EngineModelParameters {
@@ -182,4 +194,7 @@ export interface FlightModelParameters {
 
 export interface FMSymbolsConfig {
   publishDepartureIdent: boolean;
+
+  /** whether to show RNP label on ND for RNP AR approaches */
+  showRnpArLabel: boolean;
 }

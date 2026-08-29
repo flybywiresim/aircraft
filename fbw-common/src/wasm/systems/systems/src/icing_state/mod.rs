@@ -98,8 +98,7 @@ impl IcingState {
 
     fn icing_rate_normalized(context: &UpdateContext) -> Ratio {
         let raw_icing_ratio = if Self::is_in_icing_conditions(context) {
-            (-1. * ((context.ambient_temperature().get::<degree_celsius>()
-                - Self::MAX_ICING_TEMP_C)
+            (-((context.ambient_temperature().get::<degree_celsius>() - Self::MAX_ICING_TEMP_C)
                 .powi(2))
                 / (2. * Self::MAX_ICING_TEMP_STANDARD_DEVIATION_C.powi(2)))
             .exp()
@@ -132,6 +131,8 @@ impl SimulationElement for IcingState {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use crate::simulation::{
@@ -211,7 +212,7 @@ mod tests {
         test_bed.run();
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state == 0.);
+        assert_eq!(icing_state, 0.);
     }
 
     #[test]
@@ -224,7 +225,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state == 0.);
+        assert_eq!(icing_state, 0.);
     }
 
     #[test]
@@ -238,7 +239,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state == 0.);
+        assert_eq!(icing_state, 0.);
     }
 
     #[test]
@@ -266,7 +267,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
     }
 
     #[test]
@@ -280,7 +281,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
     }
 
     #[test]
@@ -294,7 +295,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
 
         test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
         test_bed.write_by_name("AMBIENT PRECIP RATE", 0.);
@@ -303,7 +304,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_PASSIVE_DEICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state < 0.05);
+        assert_lt!(icing_state, 0.05);
     }
 
     #[test]
@@ -318,7 +319,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
 
         test_bed.write_by_name("AMBIENT TEMPERATURE", -12.);
         test_bed.write_by_name("AMBIENT PRECIP RATE", 0.);
@@ -327,7 +328,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_PASSIVE_DEICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
     }
 
     #[test]
@@ -341,7 +342,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
 
         test_bed.write_by_name("AMBIENT TEMPERATURE", -12.);
         test_bed.write_by_name("AMBIENT PRECIP RATE", 0.);
@@ -352,7 +353,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1) + TestAircraft::TIME_FOR_ACTIVE_DEICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state < 0.05);
+        assert_lt!(icing_state, 0.05);
     }
 
     #[test]
@@ -366,13 +367,13 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(5) + TestAircraft::TIME_FOR_ICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state > 0.95);
+        assert_gt!(icing_state, 0.95);
 
         test_bed.command(|a| a.activate_deicing());
 
         test_bed.run_with_delta(Duration::from_secs(1) + TestAircraft::TIME_FOR_ACTIVE_DEICING);
 
         let icing_state: f64 = test_bed.read_by_name("ICING_STATE_ICING_ELEMENT");
-        assert!(icing_state < 0.05);
+        assert_lt!(icing_state, 0.05);
     }
 }

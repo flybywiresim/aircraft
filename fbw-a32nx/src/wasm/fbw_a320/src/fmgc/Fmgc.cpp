@@ -9,17 +9,16 @@ Fmgc::Fmgc(const Fmgc& obj) : isUnit1(obj.isUnit1) {
   fmgcComputer.initialize();
 }
 
-// If the power supply is valid, perform the self-test-sequence.
-// If at least one hydraulic source is pressurised, perform a short test.
-// If no hydraulic supply is pressurised, and the outage was more than 3 seconds (or the switch was turned off),
-// perform a long selft-test.
-// Else, perform a short self-test.
+// If the power supply is valid and we are on the ground, perform the self-test-sequence.
+// Else, skip the self-test.
 void Fmgc::initSelfTests() {
   if (powerSupplyFault)
     return;
 
   clearMemory();
-  selfTestTimer = selfTestDuration;
+  if (modelInputs.in.discrete_inputs.nose_gear_pressed_opp && modelInputs.in.discrete_inputs.nose_gear_pressed_own) {
+    selfTestTimer = selfTestDuration;
+  }
 }
 
 // After the self-test is complete, erase all data in RAM.
@@ -72,8 +71,41 @@ void Fmgc::updateSelfTest(double deltaTime) {
   }
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
+    selfTestApEngagedDiscreteOn = false;
   } else {
     selfTestComplete = false;
+
+    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
+    selfTestApEngagedDiscreteOn = false;
+    // FIXME no references available, best guess
+    double constexpr testApDiscreteOnTimes[][2] = {{24.7, 25.18}, {25.23, 25.35}, {25.46, 25.55}, {25.62, 25.75}, {25.8, 25.95}};
+    for (auto& timeRange : testApDiscreteOnTimes) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestApEngagedDiscreteOn = true;
+        break;
+      }
+    }
+    selfTestAthrEngagedDiscreteOn = false;
+    // FIXME no references available, best guess
+    double constexpr testAthrDiscreteOnTimes[][2] = {{26.16, 26.6}, {26.7, 26.85}, {26.96, 27.05}, {27.11, 27.22}, {27.32, 27.72}};
+    for (auto& timeRange : testAthrDiscreteOnTimes) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestAthrEngagedDiscreteOn = true;
+        break;
+      }
+    }
+    selfTestDigitalOutValid = false;
+    // FIXME no references available, best guess
+    double constexpr testDigitalOutValidTimes[][2] = {{25.23, 28.2}, {29.35, 29.75}};
+    for (auto& timeRange : testDigitalOutValidTimes) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestDigitalOutValid = true;
+        break;
+      }
+    }
   }
 }
 
@@ -81,13 +113,15 @@ void Fmgc::updateSelfTest(double deltaTime) {
 base_fmgc_discrete_outputs Fmgc::getDiscreteOutputs() {
   base_fmgc_discrete_outputs output = {};
 
-  output.fmgc_healthy = !monitoringHealthy;
+  output.fmgc_healthy = monitoringHealthy;
+
   if (!monitoringHealthy) {
-    output.athr_own_engaged = false;
+    output.athr_own_engaged = !selfTestComplete && selfTestAthrEngagedDiscreteOn;
     output.fd_own_engaged = false;
-    output.ap_own_engaged = false;
+    output.ap_own_engaged = !selfTestComplete && selfTestApEngagedDiscreteOn;
     output.fcu_own_fail = false;
     output.ils_test_inhibit = false;
+    output.stick_rudder_lock = false;
   } else {
     output = modelOutputs.discrete_outputs;
   }
@@ -99,6 +133,7 @@ base_fmgc_bus_outputs Fmgc::getBusOutputs() {
   base_fmgc_bus_outputs output = {};
 
   if (!monitoringHealthy) {
+    output.fmgc_a_bus.discrete_word_5.SSM = selfTestDigitalOutValid ? Arinc429SignStatus::FunctionalTest : FailureWarning;
     return output;
   }
 

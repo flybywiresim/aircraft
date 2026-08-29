@@ -180,6 +180,10 @@ tspan.Cyan {
   fill: $display-cyan;
   stroke: none;
 }
+.DimmedCyan.Fill {
+  fill: scale-color($display-cyan, $lightness: -30%);
+  stroke: none;
+}
 
 .None {
   fill: none;
@@ -251,6 +255,12 @@ tspan.Green {
   stroke: $display-amber;
   fill: none;
 }
+
+.Amber.Fill {
+  fill: $display-amber;
+  stroke: none;
+}
+
 text.Amber {
   fill: $display-amber;
   stroke: none;
@@ -300,10 +310,10 @@ tspan.Red {
 }
 
 .EarthFill {
-  fill: #5D2518;
+  fill: #65290a;
 }
 .SkyFill {
-  fill: #0073DE;
+  fill: #005bc4;
 }
 .BlackFill {
   fill: $display-background;

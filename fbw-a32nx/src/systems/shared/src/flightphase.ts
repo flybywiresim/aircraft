@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -31,7 +32,7 @@ export function isOnGround(): boolean {
 }
 
 function isEngineOn(index: number): boolean {
-  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+  return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 55;
 }
 
 function isEngineOnTakeOffThrust(index: number): boolean {
@@ -40,10 +41,6 @@ function isEngineOnTakeOffThrust(index: number): boolean {
 
 export function isAnEngineOn(): boolean {
   return isEngineOn(1) || isEngineOn(2);
-}
-
-export function isAllEngineOn(): boolean {
-  return isEngineOn(1) && isEngineOn(2);
 }
 
 export function getAutopilotVerticalMode(): VerticalMode {

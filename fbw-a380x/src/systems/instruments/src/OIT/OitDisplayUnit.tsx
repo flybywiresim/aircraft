@@ -1,5 +1,4 @@
 // Copyright (c) 2025 FlyByWire Simulations
-//
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -22,7 +21,7 @@ import { AcElectricalBus, DcElectricalBus } from '@shared/electrical';
 import './oit-display-unit.scss';
 import { OitSimvars } from './OitSimvarPublisher';
 import { A380Failure } from '@failures';
-import { OisOperationMode } from './OIT';
+import { OisDomain } from './OIT';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -42,17 +41,11 @@ const DisplayUnitToDCBus: { [k in OitDisplayUnitID]: (DcElectricalBus | AcElectr
   [OitDisplayUnitID.FoOit]: [AcElectricalBus.AcEss, DcElectricalBus.DcEssInFlight, DcElectricalBus.Dc1],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DisplayUnitToPotentiometer: { [k in OitDisplayUnitID]: number } = {
-  [OitDisplayUnitID.CaptOit]: 78,
-  [OitDisplayUnitID.FoOit]: 79,
-};
-
 interface DisplayUnitProps {
   readonly bus: EventBus;
   readonly displayUnitId: OitDisplayUnitID;
   readonly failuresConsumer: FailuresConsumer;
-  readonly nssOrFltOps: Subscribable<OisOperationMode>;
+  readonly avncsOrFltOps: Subscribable<OisDomain>;
   readonly test?: Subscribable<number>;
 }
 
@@ -84,16 +77,6 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   private oitRef = FSComponent.createRef<HTMLDivElement>();
 
   public readonly powered = Subject.create(false);
-
-  /** in seconds */
-  private readonly remainingStartupTime = Subject.create(24);
-  private readonly totalStartupTime = Subject.create(24);
-
-  private readonly progressBarFillWidth = MappedSubject.create(
-    ([remaining, total]) => (1 - remaining / total) * 40,
-    this.remainingStartupTime,
-    this.totalStartupTime,
-  ).map((t) => `${t}%`);
 
   private readonly brightness = ConsumerSubject.create(
     this.sub.on(this.props.displayUnitId === OitDisplayUnitID.CaptOit ? 'potentiometerCaptain' : 'potentiometerFo'),
@@ -131,8 +114,8 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   public readonly failed = MappedSubject.create(
     ([opMode, state, nssFail, fltOpsFail]) =>
-      state === DisplayUnitState.On && ((opMode === 'nss' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
-    this.props.nssOrFltOps,
+      state === DisplayUnitState.On && ((opMode === 'nss-avncs' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
+    this.props.avncsOrFltOps,
     this.state,
     this.allNssAnsuFailed,
     this.fltOpsFailed,
@@ -153,16 +136,11 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
     this.subs.push(
       this.sub
         .on('realTime')
-        .atFrequency(4)
+        .atFrequency(1)
         .handle(() => {
           // override MSFS menu animations setting for this instrument
           if (!document.documentElement.classList.contains('animationsEnabled')) {
             document.documentElement.classList.add('animationsEnabled');
-          }
-
-          // Update loading progress bar
-          if (this.powered.get()) {
-            this.remainingStartupTime.set(Math.max(0, this.remainingStartupTime.get() - 0.25));
           }
         }),
     );
@@ -179,7 +157,6 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
     );
 
     this.subs.push(
-      this.progressBarFillWidth,
       this.brightness,
       this.nssAnsu1Failed,
       this.nssAnsu2Failed,
@@ -207,13 +184,13 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   public update() {
     const poweredByBus1 = DisplayUnitToDCBus[this.props.displayUnitId][0]
       ? SimVar.GetSimVarValue(this.bus1Simvar, 'Bool')
-      : true;
+      : false;
     const poweredByBus2 = DisplayUnitToDCBus[this.props.displayUnitId][1]
       ? SimVar.GetSimVarValue(this.bus2Simvar, 'Bool')
-      : true;
+      : false;
     const poweredByBus3 = DisplayUnitToDCBus[this.props.displayUnitId][2]
       ? SimVar.GetSimVarValue(this.bus3Simvar, 'Bool')
-      : true;
+      : false;
     this.powered.set(
       (poweredByBus1 || poweredByBus2 || poweredByBus3) && !this.props.failuresConsumer.isActive(this.failureKey),
     );
@@ -231,9 +208,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
       this.setTimer(0.25 + Math.random() * 0.2);
     } else if (this.state.get() === DisplayUnitState.Bootup && this.brightness.get() !== 0 && this.powered.get()) {
       this.state.set(DisplayUnitState.Selftest);
-      this.totalStartupTime.set(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 2);
-      this.remainingStartupTime.set(this.totalStartupTime.get());
-      this.setTimer(this.remainingStartupTime.get());
+      this.setTimer(parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15')));
     } else if (
       (this.state.get() === DisplayUnitState.Selftest || this.state.get() === DisplayUnitState.Bootup) &&
       (this.brightness.get() === 0 || !this.powered.get())
@@ -271,16 +246,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   render(): VNode {
     return (
       <>
-        <div class="SelfTest" ref={this.selfTestRef}>
-          <div class="FbwTail" />
-          <div class="LoadingProgressBarBackground" />
-          <div
-            class="LoadingProgressBarFill"
-            style={{
-              width: this.progressBarFillWidth,
-            }}
-          />
-        </div>
+        <div class="SelfTest" ref={this.selfTestRef}></div>
 
         <div style="display:none" ref={this.oitRef}>
           {this.props.children}

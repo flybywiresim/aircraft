@@ -36,8 +36,9 @@ use systems::air_conditioning::{Channel, FdacId, OcsmId, VcmId};
 use systems::failures::FailureType;
 use systems::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use systems::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
-    FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+    report_diagnostic, AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType,
+    FireDetectionLoopID, FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId,
+    ProximityDetectorId,
 };
 
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -45,6 +46,13 @@ use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
+    // The default panic output is lost when the WASM instance aborts, so print the
+    // panic message and location to the MSFS console before the trap happens.
+    std::panic::set_hook(Box::new(|panic_info| {
+        println!("A380X_SYSTEMS PANIC: {panic_info}");
+        report_diagnostic(&format!("A380X_SYSTEMS PANIC: {panic_info}"));
+    }));
+
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let key_prefix = "A32NX_";
@@ -71,9 +79,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
+    .with_fuel_pumps(1..=21)?
     .with_failures([
         (21_000, FailureType::RapidDecompression),
         (21_001, FailureType::CabinFan(1)),
@@ -444,7 +453,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 2)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 3)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 4)?
-    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?
@@ -457,7 +465,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
-    .provides_aircraft_variable_range("FUELSYSTEM PUMP ACTIVE", "Bool", 1..21)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -578,11 +585,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         }
 
         for i in 1..=4 {
-            builder.copy(
-                Variable::aircraft("BLEED AIR ENGINE", "Bool", i),
-                Variable::aspect(&format!("OVHD_PNEU_ENG_{i}_BLEED_PB_IS_AUTO")),
-            );
-
             builder.copy(
                 Variable::named(&format!("EXT_PWR_AVAIL:{i}")),
                 Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),

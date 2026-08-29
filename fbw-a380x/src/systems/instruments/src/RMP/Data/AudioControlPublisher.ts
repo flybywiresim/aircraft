@@ -117,7 +117,7 @@ export class AudioControlLocalVarPublisher extends SimVarPublisher<AudioControlL
         'tel_volume_knob',
         { name: `L:A380X_RMP_${rmpIndex}_TEL_VOL_#index#`, type: SimVarValueType.Number, indexed: true },
       ],
-      ['int_receive', { name: `L:A380X_RMP_${rmpIndex}_INT_VOL_VOL_RX_SWITCH`, type: SimVarValueType.Number }],
+      ['int_receive', { name: `L:A380X_RMP_${rmpIndex}_INT_VOL_RX_SWITCH`, type: SimVarValueType.Number }],
       ['int_transmit', { name: `L:A380X_RMP_${rmpIndex}_INT_TX`, type: SimVarValueType.Number }],
       ['int_volume_knob', { name: `L:A380X_RMP_${rmpIndex}_INT_VOL`, type: SimVarValueType.Number }],
       ['cab_receive', { name: `L:A380X_RMP_${rmpIndex}_CAB_VOL_RX_SWITCH`, type: SimVarValueType.Number }],

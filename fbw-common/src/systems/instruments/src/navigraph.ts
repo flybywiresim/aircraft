@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,8 +15,8 @@ initializeApp({
 
 export const navigraphAuth = getAuth({
   storage: {
-    getItem: (key) => NXDataStore.get(key),
-    setItem: (key, value) => NXDataStore.set(key, value),
+    getItem: (key) => NXDataStore.getLegacy(key),
+    setItem: (key, value) => NXDataStore.setLegacy(key, value),
   },
   keys: {
     accessToken: 'NAVIGRAPH_ACCESS_TOKEN',

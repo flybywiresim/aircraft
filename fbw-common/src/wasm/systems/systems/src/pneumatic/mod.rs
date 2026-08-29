@@ -436,7 +436,11 @@ impl SimulationElement for WingAntiIcePushButton {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.mode = reader.read(&self.mode_id)
+        self.mode = reader.read_discrete_or_fallback(
+            &self.mode_id,
+            "WingAntiIcePushButtonMode",
+            WingAntiIcePushButtonMode::On,
+        )
     }
 }
 
@@ -446,13 +450,16 @@ pub enum WingAntiIcePushButtonMode {
     On = 1,
 }
 
-read_write_enum!(WingAntiIcePushButtonMode);
+try_read_write_enum!(WingAntiIcePushButtonMode);
 
-impl From<f64> for WingAntiIcePushButtonMode {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for WingAntiIcePushButtonMode {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => WingAntiIcePushButtonMode::Off,
-            _ => WingAntiIcePushButtonMode::On,
+            0 => Ok(WingAntiIcePushButtonMode::Off),
+            1 => Ok(WingAntiIcePushButtonMode::On),
+            i => Err(i),
         }
     }
 }
@@ -479,7 +486,11 @@ impl SimulationElement for CrossBleedValveSelectorKnob {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.mode = reader.read(&self.mode_id)
+        self.mode = reader.read_discrete_or_fallback(
+            &self.mode_id,
+            "CrossBleedValveSelectorMode",
+            CrossBleedValveSelectorMode::Auto,
+        )
     }
 }
 
@@ -490,15 +501,17 @@ pub enum CrossBleedValveSelectorMode {
     Open = 2,
 }
 
-read_write_enum!(CrossBleedValveSelectorMode);
+try_read_write_enum!(CrossBleedValveSelectorMode);
 
-impl From<f64> for CrossBleedValveSelectorMode {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for CrossBleedValveSelectorMode {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => CrossBleedValveSelectorMode::Shut,
-            1 => CrossBleedValveSelectorMode::Auto,
-            2 => CrossBleedValveSelectorMode::Open,
-            _ => panic!("CrossBleedValveSelectorMode value does not correspond to any enum member"),
+            0 => Ok(CrossBleedValveSelectorMode::Shut),
+            1 => Ok(CrossBleedValveSelectorMode::Auto),
+            2 => Ok(CrossBleedValveSelectorMode::Open),
+            i => Err(i),
         }
     }
 }
@@ -512,17 +525,19 @@ pub enum EngineState {
     Shutting = 4,
 }
 
-read_write_enum!(EngineState);
+try_read_write_enum!(EngineState);
 
-impl From<f64> for EngineState {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for EngineState {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 | 10 => EngineState::Off,
-            1 | 11 => EngineState::On,
-            2 | 12 => EngineState::Starting,
-            3 | 13 => EngineState::Restarting,
-            4 | 14 => EngineState::Shutting,
-            _ => panic!("EngineState value does not correspond to any enum member"),
+            0 | 10 => Ok(EngineState::Off),
+            1 | 11 => Ok(EngineState::On),
+            2 | 12 => Ok(EngineState::Starting),
+            3 | 13 => Ok(EngineState::Restarting),
+            4 | 14 => Ok(EngineState::Shutting),
+            i => Err(i),
         }
     }
 }
@@ -768,15 +783,17 @@ pub enum EngineModeSelector {
     Ignition = 2,
 }
 
-read_write_enum!(EngineModeSelector);
+try_read_write_enum!(EngineModeSelector);
 
-impl From<f64> for EngineModeSelector {
-    fn from(value: f64) -> Self {
+impl TryFrom<f64> for EngineModeSelector {
+    type Error = u8;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
         match value as u8 {
-            0 => EngineModeSelector::Crank,
-            1 => EngineModeSelector::Norm,
-            2 => EngineModeSelector::Ignition,
-            _ => panic!("Engine mode selector position not recognized."),
+            0 => Ok(EngineModeSelector::Crank),
+            1 => Ok(EngineModeSelector::Norm),
+            2 => Ok(EngineModeSelector::Ignition),
+            i => Err(i),
         }
     }
 }
@@ -948,6 +965,9 @@ pub trait WingAntiIceSelected {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::{
         electrical::Electricity,
@@ -955,7 +975,6 @@ mod tests {
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
         simulation::{test::TestVariableRegistry, UpdateContext},
     };
-    use ntest::assert_about_eq;
     use std::time::Duration;
 
     use uom::si::{
@@ -966,19 +985,6 @@ mod tests {
         velocity::knot,
         volume::{cubic_meter, gallon},
     };
-
-    struct TestPneumaticValveSignal {
-        target_open_amount: Ratio,
-    }
-    impl PneumaticValveSignal for TestPneumaticValveSignal {
-        fn new(target_open_amount: Ratio) -> Self {
-            Self { target_open_amount }
-        }
-
-        fn target_open_amount(&self) -> Ratio {
-            self.target_open_amount
-        }
-    }
 
     pub struct ConstantPressureController {
         target_pressure: Pressure,
@@ -1043,7 +1049,7 @@ mod tests {
             Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
             altitude,
-            altitude,
+            InternationalStandardAtmosphere::pressure_at_altitude(altitude),
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
@@ -1238,7 +1244,10 @@ mod tests {
         precooler.update(&context, &mut from, &mut supply, &mut to);
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
-        assert!(supply.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+        assert_gt!(
+            supply.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
     }
 
     #[test]
@@ -1257,7 +1266,7 @@ mod tests {
             pipe.temperature(),
             ThermodynamicTemperature::new::<degree_celsius>(30.)
         );
-        assert!(pipe.pressure() > Pressure::new::<psi>(29.4));
+        assert_gt!(pipe.pressure(), Pressure::new::<psi>(29.4));
     }
 
     #[test]
@@ -1328,7 +1337,7 @@ mod tests {
             pressure_tolerance().get::<psi>()
         );
 
-        assert!(supply.pressure() < Pressure::new::<psi>(20.));
+        assert_lt!(supply.pressure(), Pressure::new::<psi>(20.));
     }
 
     #[test]
@@ -1350,8 +1359,11 @@ mod tests {
         container.change_spatial_volume(Volume::new::<gallon>(8.));
 
         assert_eq!(container.volume(), Volume::new::<gallon>(8.));
-        assert!(container.pressure() > Pressure::new::<psi>(14.7));
-        assert!(container.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+        assert_gt!(container.pressure(), Pressure::new::<psi>(14.7));
+        assert_gt!(
+            container.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
         assert_about_eq!(
             container.mass().get::<kilogram>(),
             container_mass.get::<kilogram>()
@@ -1378,11 +1390,14 @@ mod tests {
 
         container_with_valve.update_flow_through_valve(&context, &mut source);
 
-        assert!(source.pressure().get::<psi>() < 20.);
-        assert!(source.temperature().get::<degree_celsius>() < 15.);
+        assert_lt!(source.pressure().get::<psi>(), 20.);
+        assert_lt!(source.temperature().get::<degree_celsius>(), 15.);
 
-        assert!(container_with_valve.pressure().get::<psi>() > 10.);
-        assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
+        assert_gt!(container_with_valve.pressure().get::<psi>(), 10.);
+        assert_gt!(
+            container_with_valve.temperature().get::<degree_celsius>(),
+            15.
+        );
     }
 
     #[test]
@@ -1395,11 +1410,14 @@ mod tests {
 
         container_with_valve.update_flow_through_valve(&context, &mut source);
 
-        assert!(source.pressure().get::<psi>() < 20.);
-        assert!(source.temperature().get::<degree_celsius>() < 15.);
+        assert_lt!(source.pressure().get::<psi>(), 20.);
+        assert_lt!(source.temperature().get::<degree_celsius>(), 15.);
 
-        assert!(container_with_valve.pressure().get::<psi>() > 10.);
-        assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
+        assert_gt!(container_with_valve.pressure().get::<psi>(), 10.);
+        assert_gt!(
+            container_with_valve.temperature().get::<degree_celsius>(),
+            15.
+        );
     }
 
     #[test]
@@ -1433,7 +1451,7 @@ mod tests {
 
         let mass_flow = pipe1.get_mass_flow_for_equilibrium(&pipe2);
 
-        assert!(mass_flow.get::<kilogram>() < 0.);
+        assert_lt!(mass_flow.get::<kilogram>(), 0.);
         assert!(
             mass_flow
                 > pipe1.get_mass_flow_for_target_pressure(pipe2.pressure(), pipe2.temperature())

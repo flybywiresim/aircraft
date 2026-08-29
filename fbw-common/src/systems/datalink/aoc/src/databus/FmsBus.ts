@@ -1,7 +1,14 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes, AtisType, AtsuMessage, FreetextMessage, WeatherMessage } from '../../../common/src';
+import {
+  AtsuStatusCodes,
+  AtisType,
+  FreetextMessage,
+  WeatherMessage,
+  WindUplinkMessage,
+  WindRequestMessage,
+} from '../../../common/src';
 
 export interface AocFmsMessages {
   aocResetData: boolean;
@@ -14,8 +21,11 @@ export interface AocFmsMessages {
 
   aocResynchronizeWeatherMessage: WeatherMessage;
   aocResynchronizeFreetextMessage: FreetextMessage;
-  aocPrintMessage: AtsuMessage;
+  // FIXME when sending the object via the event bus, the prototype is lost, so AtsuMessage methods are not available anymores
+  aocPrintMessage: string;
   aocDeleteMessage: number;
+
+  aocWindsResponse: { requestId: number; data: [AtsuStatusCodes, WindUplinkMessage | null] };
 }
 
 export interface FmsAocMessages {
@@ -26,4 +36,5 @@ export interface FmsAocMessages {
   aocRegisterFreetextMessages: FreetextMessage[];
   aocMessageRead: number;
   aocRemoveMessage: number;
+  aocRequestWinds: WindRequestMessage & { requestId: number };
 }

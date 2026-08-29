@@ -1,4 +1,5 @@
-import { EventBus, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+// @ts-strict-ignore
+import { EventBus, ReadonlyLifecycle, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { BaseFlightPlan } from './BaseFlightPlan';
 import { FlightPlanInterface } from '../FlightPlanInterface';
@@ -132,5 +133,11 @@ export class ObservableFlightPlan implements Subscription {
     };
 
     return Subject.create<FixInfoData | null>(null, equalityFunc);
+  }
+
+  /** @inheritdoc */
+  public withLifecycle(lifecycle: ReadonlyLifecycle): this {
+    lifecycle.register(this);
+    return this;
   }
 }

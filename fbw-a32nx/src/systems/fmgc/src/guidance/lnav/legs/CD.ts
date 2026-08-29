@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -6,7 +7,7 @@
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -22,10 +23,12 @@ export class CDLeg extends Leg {
 
   pbdPoint: Coordinates;
 
+  private readonly dmeLocation = this.origin.dmeLocation ?? this.origin.location;
+
   constructor(
     private readonly course: DegreesTrue,
     private readonly dmeDistance: NauticalMiles,
-    private readonly origin: Fix,
+    private readonly origin: VhfNavaid,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
@@ -46,7 +49,7 @@ export class CDLeg extends Leg {
       return this.inboundGuidable.getPathEndPoint();
     }
 
-    return this.origin.location;
+    return this.dmeLocation;
   }
 
   getPathEndPoint(): Coordinates | undefined {
@@ -57,7 +60,7 @@ export class CDLeg extends Leg {
     this.predictedPath.length = 0;
 
     const intersect = firstSmallCircleIntersection(
-      this.origin.location,
+      this.dmeLocation,
       this.dmeDistance,
       this.getPathStartPoint(),
       this.course,

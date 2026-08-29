@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { VerticalMode } from '@shared/autopilot';
 
 export enum FmgcFlightPhase {

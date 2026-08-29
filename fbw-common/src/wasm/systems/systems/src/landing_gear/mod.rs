@@ -561,6 +561,9 @@ impl LgciuGearExtension for LgciuSensorInputs {
     fn nose_up_and_locked(&self) -> bool {
         self.is_powered && self.nose_gear_up_and_locked
     }
+    fn left_down_and_locked(&self) -> bool {
+        self.is_powered && self.left_gear_down_and_locked
+    }
 }
 impl LgciuDoorPosition for LgciuSensorInputs {
     fn all_fully_opened(&self) -> bool {
@@ -874,11 +877,11 @@ pub struct LandingGearControlInterfaceUnit {
     nose_gear_unlock_id: VariableIdentifier,
     right_gear_downlock_id: VariableIdentifier,
     right_gear_unlock_id: VariableIdentifier,
-    fault_ecam_id: VariableIdentifier,
 
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
     discrete_word_3_id: VariableIdentifier,
+    discrete_word_4_id: VariableIdentifier,
 
     is_powered: bool,
     is_powered_previous_state: bool,
@@ -935,8 +938,6 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_RIGHT_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
-            fault_ecam_id: context
-                .get_identifier(format!("LGCIU_{}_FAULT", lgciu_number(lgciu_id))),
 
             discrete_word_1_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_1", lgciu_number(lgciu_id))),
@@ -944,6 +945,8 @@ impl LandingGearControlInterfaceUnit {
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_2", lgciu_number(lgciu_id))),
             discrete_word_3_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
+            discrete_word_4_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_4", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -1198,6 +1201,8 @@ impl LandingGearControlInterfaceUnit {
                 self.sensor_inputs.left_gear_down_and_locked
                     && self.sensor_inputs.right_gear_down_and_locked,
             );
+            // Control fault (before version 4D, control fault + proximity sensor disagree)
+            word.set_bit(29, false);
 
             word
         }
@@ -1217,6 +1222,35 @@ impl LandingGearControlInterfaceUnit {
             word.set_bit(27, self.sensor_inputs.nose_door_fully_opened);
             // Nose gear door should be seperated into left/right doors. For now, just copy the data.
             word.set_bit(28, self.sensor_inputs.nose_door_fully_opened);
+
+            word
+        }
+    }
+
+    pub fn discrete_word_4(&self) -> Arinc429Word<u32> {
+        if !self.is_powered {
+            Arinc429Word::new(0, SignStatus::FailureWarning)
+        } else {
+            // Label 23
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            // If the differential movement between the inboard and outboard flap is more than 15mm, sensors send failure signal.
+            // Failures not implemented.
+
+            // LH Flap attachment failure
+            word.set_bit(21, false);
+
+            // LH flat attachment sensor valid
+            word.set_bit(22, true);
+
+            // RH Flap attachment failure
+            word.set_bit(25, false);
+
+            // RH flat attachment sensor valid
+            word.set_bit(26, true);
+
+            // SYS fault (for version 4D and later)
+            word.set_bit(29, self.status() != LgciuStatus::Ok);
 
             word
         }
@@ -1273,11 +1307,10 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
 
-        writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
-
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
         writer.write(&self.discrete_word_3_id, self.discrete_word_3());
+        writer.write(&self.discrete_word_4_id, self.discrete_word_4());
     }
 }
 
@@ -1335,6 +1368,9 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
     }
     fn nose_up_and_locked(&self) -> bool {
         self.sensor_inputs.nose_up_and_locked()
+    }
+    fn left_down_and_locked(&self) -> bool {
+        self.sensor_inputs.left_down_and_locked()
     }
 }
 impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
@@ -1506,6 +1542,8 @@ impl GearSystemStateMachine {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use crate::simulation::test::{
@@ -1745,6 +1783,43 @@ mod tests {
     }
 
     #[test]
+    fn landing_gear_simvars() {
+        let test_bed = test_bed_on_ground_with().on_the_ground();
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_COMPRESSED"));
+
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_POSITION"));
+        assert!(test_bed.contains_variable_with_name("GEAR_LEVER_POSITION_REQUEST"));
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_HITS_LOCK_SOUND"));
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_4"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_4"));
+    }
+
+    #[test]
     fn all_weight_on_wheels_when_all_compressed() {
         let test_bed = run_test_bed_on_with_compression(
             Ratio::new::<ratio>(0.9),
@@ -1845,7 +1920,10 @@ mod tests {
     fn gear_state_downlock_on_init() {
         let test_bed = SimulationTestBed::new(TestGearAircraft::new);
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
     }
 
     #[test]
@@ -1859,7 +1937,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
 
         println!("GEAR UP!!");
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
@@ -1868,7 +1949,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllUpLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllUpLocked
+        );
 
         // Gear DOWN
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
@@ -1877,7 +1961,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
     }
 
     #[test]
@@ -1887,19 +1974,31 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
     }
 
     #[test]
@@ -1909,22 +2008,37 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         // Two ticks needed after failure to have consistent state of lgciu vs coordinator
         test_bed = test_bed.run_one_tick().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
     }
 
     #[test]
@@ -1934,24 +2048,39 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         // Two ticks needed after failure to have consistent state of lgciu vs coordinator
         test_bed = test_bed.run_one_tick().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed.unfail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
     }
 
     #[test]
@@ -1966,11 +2095,20 @@ mod tests {
         test_bed.fail_hyd_pressure();
 
         test_bed.run_with_delta(Duration::from_secs(28));
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::Ok);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu().status),
+            LgciuStatus::Ok
+        );
 
         test_bed.run_with_delta(Duration::from_secs(3));
-        assert!(test_bed.query(|a| a.lgcius.lgciu2().status) == LgciuStatus::FailedNoChangeOver);
-        assert!(test_bed.query(|a| a.lgcius.lgciu1().status) == LgciuStatus::Ok);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.lgciu2().status),
+            LgciuStatus::FailedNoChangeOver
+        );
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.lgciu1().status),
+            LgciuStatus::Ok
+        );
     }
 
     #[test]
@@ -1986,7 +2124,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() <= 0.1);
+        assert_le!(tilt_position.get::<ratio>(), 0.1);
     }
 
     #[test]
@@ -2002,7 +2140,8 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.2 && tilt_position.get::<ratio>() <= 0.8);
+        assert_ge!(tilt_position.get::<ratio>(), 0.2);
+        assert_le!(tilt_position.get::<ratio>(), 0.8);
     }
 
     #[test]
@@ -2018,7 +2157,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2035,7 +2174,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(2));
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2051,7 +2190,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2067,7 +2206,8 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() < 1. && tilt_position.get::<ratio>() > 0.);
+        assert_lt!(tilt_position.get::<ratio>(), 1.);
+        assert_gt!(tilt_position.get::<ratio>(), 0.);
     }
 
     #[test]
@@ -2087,8 +2227,8 @@ mod tests {
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
         //10 knots around 70rpm for A380 wheel radius of 0.7m
-        assert!(wheel_speed.get::<revolution_per_minute>() > 60.);
-        assert!(wheel_speed.get::<revolution_per_minute>() < 100.);
+        assert_gt!(wheel_speed.get::<revolution_per_minute>(), 60.);
+        assert_lt!(wheel_speed.get::<revolution_per_minute>(), 100.);
     }
 
     #[test]
@@ -2107,7 +2247,7 @@ mod tests {
         let mut wheel_speed =
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
-        assert!(wheel_speed.get::<revolution_per_minute>() > 200.);
+        assert_gt!(wheel_speed.get::<revolution_per_minute>(), 200.);
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1000.));
@@ -2118,8 +2258,8 @@ mod tests {
         wheel_speed =
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
-        assert!(wheel_speed.get::<revolution_per_minute>() >= 0.);
-        assert!(wheel_speed.get::<revolution_per_minute>() < 50.);
+        assert_ge!(wheel_speed.get::<revolution_per_minute>(), 0.);
+        assert_lt!(wheel_speed.get::<revolution_per_minute>(), 50.);
     }
 
     fn test_tilting_gear_left(context: &mut InitContext) -> TiltingGear {

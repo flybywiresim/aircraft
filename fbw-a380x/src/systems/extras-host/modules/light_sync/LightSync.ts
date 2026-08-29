@@ -1,8 +1,17 @@
+// @ts-strict-ignore
 /* eslint-disable no-case-declarations */
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, GameStateProvider, Instrument, KeyEventManager, Wait } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  KeyEventManager,
+  SimVarValueType,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 enum TimeOfDayState {
@@ -54,9 +63,9 @@ export class LightSync implements Instrument {
   public initLighting(): void {
     console.log('[LightSync] initializing lighting to defaults');
 
-    const msfsCabinCircuitVar = SimVar.GetSimVarValue('A:CIRCUIT SWITCH ON:146', 'bool');
+    const msfsCabinCircuitVar = SimVar.GetSimVarValue('A:CIRCUIT SWITCH ON:151', 'bool');
     if (!msfsCabinCircuitVar) {
-      SimVar.SetSimVarValue('K:ELECTRICAL_CIRCUIT_TOGGLE', 'number', 146);
+      SimVar.SetSimVarValue('K:ELECTRICAL_CIRCUIT_TOGGLE', 'number', 151);
     }
 
     const autoBrightness = this.getAutoBrightness();
@@ -76,7 +85,6 @@ export class LightSync implements Instrument {
     this.setPotentiometer(89, autoBrightness); // ND
     this.setPotentiometer(94, autoBrightness / 2); // wxRadar
     this.setPotentiometer(98, autoBrightness); // MFD
-    this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
     this.setPotentiometer(78, autoBrightness); // OIT
 
     // Instruments F/O
@@ -84,19 +92,21 @@ export class LightSync implements Instrument {
     this.setPotentiometer(91, autoBrightness); // ND
     this.setPotentiometer(95, autoBrightness / 2); // wxRadar
     this.setPotentiometer(99, autoBrightness); // MFD
-    this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
     this.setPotentiometer(79, autoBrightness); // OIT
 
     // Pedestal
-    this.setPotentiometer(80, autoBrightness); // rmpCptLightLevel
-    this.setPotentiometer(81, autoBrightness); // rmpFoLightLevel
-    this.setPotentiometer(82, autoBrightness); // rmpOvhdLightLevel
+
+    this.setRmpBrightness(1, autoBrightness * 100); // rmpCptLightLevel
+    this.setRmpBrightness(2, autoBrightness * 100); // rmpFoLightLevel
+    this.setRmpBrightness(3, autoBrightness * 100); // rmpOvhdLightLevel
     this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
     this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
     this.setPotentiometer(76, autoBrightness); // pedFloodLightLevel
-    this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
+    // this.setPotentiometer(83, autoBrightness); // mainPnlFloodLightLevel
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_MIP_FLOOD_LT_KNOB', SimVarValueType.Number, autoBrightness / 100);
     this.setPotentiometer(85, autoBrightness); // integralLightLevel
-    this.setPotentiometer(7, autoBrightness); // ambianceLightLevel
+    // this.setPotentiometer(7, autoBrightness); // ambianceLightLevel
+    SimVar.SetSimVarValue('L:A380X_PED_LIGHTING_AMBIENT_LT_KNOB', SimVarValueType.Number, autoBrightness / 100);
   }
 
   public onUpdate(): void {}
@@ -165,6 +175,20 @@ export class LightSync implements Instrument {
     }
   }
 
+  /**
+   * Sets the RMP brightness knobs.
+   * @param rmp The RMP to set.
+   * @param brightness The brighness value in percent [0, 100].
+   */
+  private setRmpBrightness(rmp: 1 | 2 | 3, brightness: number): void {
+    // FIXME should use the B events, but not supported in FS2020.
+    SimVar.SetSimVarValue(`L:A380X_RMP_#RMP_ID#_BRIGHTNESS_KNOB`, SimVarValueType.Number, brightness);
+  }
+
+  /**
+   * Gets the automatic brightness level from the sim.
+   * @returns Brightness in the range [0, 1].
+   */
   private getAutoBrightness(): number {
     /** automatic brightness based on ambient light, [0, 1] scale */
     return Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));

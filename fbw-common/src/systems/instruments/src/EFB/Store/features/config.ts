@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 /* eslint-disable max-len */
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AirframeInfo, CabinInfo, FlypadInfo } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, CabinInfo, FlypadInfo } from '@flybywiresim/fbw-sdk-react';
 import { store, RootState } from '../store';
 
 interface AircraftState {

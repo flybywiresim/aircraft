@@ -21,6 +21,18 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         Variable::named("PARK_BRAKE_LEVER_POS"),
         |options| options.mask(),
     )?;
+    builder.event_to_variable(
+        "PARKING_BRAKES_ON",
+        EventToVariableMapping::Value(1.),
+        Variable::named("PARK_BRAKE_LEVER_POS"),
+        |options| options.mask(),
+    )?;
+    builder.event_to_variable(
+        "PARKING_BRAKES_OFF",
+        EventToVariableMapping::Value(0.),
+        Variable::named("PARK_BRAKE_LEVER_POS"),
+        |options| options.mask(),
+    )?;
 
     // Controller inputs for the left and right brakes are captured and translated
     // to a variable so that it can be used by the simulation.

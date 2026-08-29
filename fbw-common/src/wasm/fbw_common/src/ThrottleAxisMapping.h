@@ -35,6 +35,7 @@ class ThrottleAxisMapping {
 
   void setInFlight();
   void setOnGround();
+  void setHasReverser(bool value);
 
   double getValue();
   double getTLA();
@@ -104,6 +105,7 @@ class ThrottleAxisMapping {
 
   bool useReverseOnAxis = false;
   bool useTogaOnAxis = false;
+  bool hasReverser = true;
   double incrementNormal = 0.0;
   double incrementSmall = 0.0;
 

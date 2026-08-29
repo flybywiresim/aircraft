@@ -1,9 +1,11 @@
+// @ts-strict-ignore
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
 import React, { useContext, useEffect, useState } from 'react';
-import { TroubleshootingEvents } from '../../../shared/src/Troubleshooting';
+import { logTroubleshootingError, TroubleshootingEvents } from '../../../shared/src/Troubleshooting';
+import { useViewListenerEvent } from './Utils/listener';
 
 const TroubleshootingContext = React.createContext<string[]>(undefined as any);
 
@@ -27,6 +29,10 @@ export const TroubleshootingContextProvider: React.FC<TroubleshootingContextProp
       sub.destroy();
     };
   }, []);
+
+  useViewListenerEvent('JS_LISTENER_COMM_BUS', 'FBW_SYSTEMS_TROUBLESHOOTING_LOG', (message: string) =>
+    logTroubleshootingError(eventBus, message),
+  );
 
   return <TroubleshootingContext.Provider value={errorLog}>{children}</TroubleshootingContext.Provider>;
 };

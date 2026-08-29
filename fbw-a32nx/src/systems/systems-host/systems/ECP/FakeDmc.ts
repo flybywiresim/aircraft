@@ -1,0 +1,62 @@
+// Copyright (c) 2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { Arinc429OutputWord, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
+import { EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
+import { SdPages } from '@shared/SdPages';
+
+export interface FakeDmcEvents {
+  fake_dmc_light_status_275: number;
+}
+
+export enum DmcEcpLightStatus {
+  MonoDisplay = 0b00,
+  EngineWarning = 0b01,
+  ManualStatusSystemsAdvisory = 0b10,
+  AutomaticStatusSystems = 0b11,
+}
+
+/**
+ * A fake DMC to supply the ARINC words required by the ECP.
+ * To be replaced by a proper DMC simulation later.
+ */
+export class FakeDmc implements Instrument {
+  private readonly publisher = this.bus.getPublisher<FakeDmcEvents>();
+
+  private readonly outputWord = new Arinc429OutputWord();
+
+  private sdPage = SdPages.NONE;
+
+  constructor(private readonly bus: EventBus) {}
+
+  public init(): void {}
+
+  private readonly publishToBus = () =>
+    this.publisher.pub('fake_dmc_light_status_275', this.outputWord.getRawBusValue());
+
+  public onUpdate(): void {
+    this.sdPage = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum);
+    const ecamSFail = SimVar.GetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
+    const leftFailureDisplayed = SimVar.GetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', SimVarValueType.Bool);
+
+    this.outputWord.setBitValue(12, this.sdPage === SdPages.ENG);
+    this.outputWord.setBitValue(13, this.sdPage === SdPages.BLEED);
+    this.outputWord.setBitValue(14, this.sdPage === SdPages.PRESS);
+    this.outputWord.setBitValue(15, this.sdPage === SdPages.HYD);
+    this.outputWord.setBitValue(16, this.sdPage === SdPages.ELEC);
+    this.outputWord.setBitValue(17, this.sdPage === SdPages.FUEL);
+    this.outputWord.setBitValue(18, this.sdPage === SdPages.APU);
+    this.outputWord.setBitValue(19, this.sdPage === SdPages.COND);
+    this.outputWord.setBitValue(20, this.sdPage === SdPages.DOOR);
+    this.outputWord.setBitValue(21, this.sdPage === SdPages.FCTL);
+    this.outputWord.setBitValue(22, this.sdPage === SdPages.WHEEL);
+    this.outputWord.setBitValue(26, this.sdPage === SdPages.STS);
+    this.outputWord.setBitValue(27, ecamSFail >= 0 || leftFailureDisplayed); // CLR
+    this.outputWord.setBitValue(28, this.sdPage === SdPages.NONE); // DmcEcpLightStatus.AutomaticStatusSystems
+    this.outputWord.setBitValue(29, true); // DmcEcpLightStatus.ManualStatusSystemsAdvisory || DmcEcpLightStatus.AutomaticStatusSystems
+
+    this.outputWord.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+
+    this.outputWord.performActionIfDirty(this.publishToBus);
+  }
+}

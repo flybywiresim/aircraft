@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { AirframeType, Units, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AirframeType, Units, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { isSimbriefDataLoaded } from '@flybywiresim/flypad';
 import { A320Fuel } from './A320_251N/A320Fuel';
 import { A380Fuel } from './A380_842/A380Fuel';
@@ -27,6 +28,7 @@ export const Fuel = () => {
           simbriefUnits={simbriefUnits}
           simbriefPlanRamp={simbriefPlanRamp}
           massUnitForDisplay={massUnitForDisplay}
+          convertUnit={convertUnit}
           isOnGround={isOnGround}
         />
       );

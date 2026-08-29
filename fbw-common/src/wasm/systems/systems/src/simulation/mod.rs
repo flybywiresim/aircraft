@@ -2,7 +2,7 @@ use std::time::Duration;
 
 mod update_context;
 use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
-use crate::shared::{from_bool, ElectricalBusType};
+use crate::shared::{fallback_on_unexpected_discrete, from_bool, ElectricalBusType};
 use crate::{
     electrical::Electricity,
     failures::FailureType,
@@ -10,7 +10,7 @@ use crate::{
     shared::arinc825::{from_arinc825, to_arinc825, Arinc825Word},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
@@ -36,6 +36,7 @@ pub trait SimulatorReaderWriter {
 
 pub trait VariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier;
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier;
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
@@ -61,13 +62,14 @@ impl VariableIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
 pub enum StartState {
     Hangar,
     Apron,
     Taxi,
     Runway,
     Climb,
+    #[default]
     Cruise,
     Approach,
     Final,
@@ -105,12 +107,6 @@ impl From<StartState> for f64 {
     }
 }
 
-impl Default for StartState {
-    fn default() -> Self {
-        Self::Cruise
-    }
-}
-
 pub struct InitContext<'a> {
     start_state: StartState,
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
@@ -132,6 +128,10 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn get_unprefixed_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get_unprefixed(name)
     }
 
     pub fn start_state(&self) -> StartState {
@@ -166,7 +166,7 @@ impl<'a> InitContext<'a> {
     }
 }
 
-impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
+impl ElectricalElementIdentifierProvider for InitContext<'_> {
     fn next_electrical_identifier(&mut self) -> ElectricalElementIdentifier {
         self.electrical_identifier_provider
             .next_electrical_identifier()
@@ -420,6 +420,10 @@ impl<T: Aircraft> Simulation<T> {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         Default::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();
     /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
@@ -526,7 +530,7 @@ impl<'a> SimulationToSimulatorVisitor<'a> {
         SimulationToSimulatorVisitor { writer }
     }
 }
-impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
+impl SimulationElementVisitor for SimulationToSimulatorVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.write(self.writer);
     }
@@ -534,6 +538,23 @@ impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
 
 pub trait Reader {
     fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64;
+
+    fn read_discrete_or_fallback<T>(
+        &mut self,
+        identifier: &VariableIdentifier,
+        context: &'static str,
+        fallback: T,
+    ) -> T
+    where
+        Self: Sized + Read<Result<T, <T as TryFrom<f64>>::Error>>,
+        T: Copy + std::fmt::Debug + TryFrom<f64>,
+        <T as TryFrom<f64>>::Error: Copy + Into<u64>,
+    {
+        let value: Result<T, _> = self.read(identifier);
+        value.unwrap_or_else(|unexpected| {
+            fallback_on_unexpected_discrete(context, unexpected.into(), fallback)
+        })
+    }
 }
 
 /// Reads data from the simulator into the aircraft system simulation.
@@ -547,7 +568,7 @@ impl<'a> SimulatorReader<'a> {
         }
     }
 }
-impl<'a> Reader for SimulatorReader<'a> {
+impl Reader for SimulatorReader<'_> {
     fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
         self.simulator_read_writer.read(identifier)
     }
@@ -568,7 +589,7 @@ impl<'a> SimulatorWriter<'a> {
         }
     }
 }
-impl<'a> Writer for SimulatorWriter<'a> {
+impl Writer for SimulatorWriter<'_> {
     fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
         self.simulator_read_writer.write(identifier, value);
     }
@@ -845,13 +866,15 @@ impl<T: Writer> Write<Duration> for T {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use more_asserts::*;
     use rstest::rstest;
+
+    use super::*;
 
     mod start_state {
         use super::*;
-        use fxhash::FxHashMap;
         use ntest::assert_about_eq;
+        use rustc_hash::FxHashMap;
 
         #[rstest]
         #[case(1., StartState::Hangar)]
@@ -885,7 +908,7 @@ mod tests {
 
         #[test]
         fn includes_partial_ord_operators() {
-            assert!(StartState::Climb < StartState::Cruise);
+            assert_lt!(StartState::Climb, StartState::Cruise);
         }
 
         #[test]

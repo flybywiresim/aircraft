@@ -1,4 +1,4 @@
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::de::{Deserializer, SeqAccess, Visitor};
 use systems::failures::FailureType;
 
@@ -30,7 +30,7 @@ impl Failures {
 }
 
 struct FailureIdVisitor<'a>(&'a FxHashMap<u64, FailureType>);
-impl<'a, 'de> Visitor<'de> for FailureIdVisitor<'a> {
+impl<'de> Visitor<'de> for FailureIdVisitor<'_> {
     type Value = FxHashSet<FailureType>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

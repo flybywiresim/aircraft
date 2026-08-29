@@ -13,12 +13,12 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { VhfComIndices } from '@flybywiresim/fbw-sdk';
+import { FrequencyMode, VhfComIndices } from '@flybywiresim/fbw-sdk';
 
 import { ReceptionMode, VhfComController } from './VhfComController';
 import { RmpPage, RmpPageProps } from '../../Components/RmpPage';
 import { PageKeys } from '../../Systems/KeypadController';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { RmpMessageControlEvents } from '../../Systems/RmpMessageManager';
 
 import './VhfComPage.scss';
 
@@ -269,9 +269,10 @@ class VhfComRow extends DisplayComponent<VhfComRowProps> {
               'stby-frequency': true,
               'font-13': true,
               'font-16': this.controller.standbyEntryInProgress,
+              hidden:
+                this.props.vhfIndex === 3 ? this.controller.standbyMode.map((v) => v === FrequencyMode.Data) : false,
             }}
           >
-            {/* FIXME arrows for VHF3 standby mode, and DATA/EMER mode support */}
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 class={{
@@ -292,6 +293,17 @@ class VhfComRow extends DisplayComponent<VhfComRowProps> {
               </div>
             ))}
           </div>
+          {this.props.vhfIndex === 3 && (
+            <div
+              class={{
+                'stby-frequency': true,
+                'font-19': true, // not the right size, but the only font that has the chars
+                hidden: this.controller.standbyMode.map((v) => v !== FrequencyMode.Data),
+              }}
+            >
+              <div>DATA</div>
+            </div>
+          )}
         </div>
       </>
     );

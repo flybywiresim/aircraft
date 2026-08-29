@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,7 +8,7 @@ import {
   usePersistentNumberProperty,
   usePersistentProperty,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { t } from '../../Localization/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';

@@ -1,3 +1,3 @@
 export * from './BtvPublisher';
-export * from './FmsPublisher';
 export * from './FmsOansPublisher';
+export * from './OansControlEventPublisher';

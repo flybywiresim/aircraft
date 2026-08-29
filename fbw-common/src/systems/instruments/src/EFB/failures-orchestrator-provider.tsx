@@ -1,8 +1,9 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { PropsWithChildren, useState } from 'react';
-import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@flybywiresim/fbw-sdk';
+import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@flybywiresim/fbw-sdk-react';
 
 interface FailuresOrchestratorContext {
   allFailures: Readonly<Readonly<Failure>[]>;

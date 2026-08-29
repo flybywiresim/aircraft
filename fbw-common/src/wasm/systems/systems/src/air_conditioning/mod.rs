@@ -411,7 +411,7 @@ impl OperatingChannel {
         let failure_is_active = self
             .failure
             .as_ref()
-            .map_or(false, |failure| failure.is_active());
+            .is_some_and(|failure| failure.is_active());
 
         self.fault = if !self.is_powered || failure_is_active {
             OperatingChannelFault::Fault

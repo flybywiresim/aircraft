@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -9,8 +9,9 @@ import {
   PilotSeatConfig,
   usePersistentNumberProperty,
   usePersistentProperty,
+  usePersistentSetting,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
@@ -29,7 +30,9 @@ export const SimOptionsPage = () => {
 
   const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
-  const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
+
+  const [autoRouteLoad, setAutoRouteLoad] = usePersistentSetting('CONFIG_AUTO_SIM_ROUTE_LOAD');
+
   const [simbridgeRemote, setSimbridgeRemoteStatus] = usePersistentProperty('CONFIG_SIMBRIDGE_REMOTE', 'local');
   const [simbridgeIp, setSimbridgeIp] = usePersistentProperty('CONFIG_SIMBRIDGE_IP', 'localhost');
   const [simbridgePort, setSimbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
@@ -58,12 +61,6 @@ export const SimOptionsPage = () => {
     { name: t('Settings.SimOptions.Hpa'), setting: 'HPA' },
   ];
 
-  const fpSyncButtons: ButtonType[] = [
-    { name: t('Settings.SimOptions.None'), setting: 'NONE' },
-    { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
-    { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
-  ];
-
   const pilotSeatButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: PilotSeatConfig.Auto },
     { name: t('Settings.SimOptions.Left'), setting: PilotSeatConfig.Left },
@@ -90,21 +87,9 @@ export const SimOptionsPage = () => {
             </SelectGroup>
           </SettingItem>
 
-          {aircraftContext.settingsPages.sim.msfsFplnSync && (
-            <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
-              <SelectGroup>
-                {fpSyncButtons.map((button) => (
-                  <SelectItem
-                    key={button.setting}
-                    onSelect={() => setFpSync(button.setting)}
-                    selected={fpSync === button.setting}
-                  >
-                    {button.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SettingItem>
-          )}
+          <SettingItem name={t('Settings.SimOptions.AutoLoadMsfsRoute')}>
+            <Toggle value={!!autoRouteLoad} onToggle={(value) => setAutoRouteLoad(value)} />
+          </SettingItem>
 
           <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
             <SelectGroup>

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -16,7 +17,7 @@ import {
   isChartPinned,
   removedPinnedChart,
   addPinnedChart,
-  ChartTabTypeToIndex,
+  NavigraphChartTabTypeToIndex,
 } from '../../../Store/features/navigationPage';
 import { navigationTabs } from '../../Navigation';
 
@@ -162,7 +163,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                               chartName: { light: chart.image_day_url, dark: chart.image_night_url },
                               title: searchQuery,
                               subTitle: chart.procedures[0],
-                              tabIndex: ChartTabTypeToIndex[selectedTabType],
+                              tabIndex: NavigraphChartTabTypeToIndex[selectedTabType],
                               timeAccessed: 0,
                               tag: selectedTab.name,
                               provider: ChartProvider.NAVIGRAPH,
@@ -223,7 +224,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                           chartName: { light: chart.image_day_url, dark: chart.image_night_url },
                           title: searchQuery,
                           subTitle: chart.procedures[0],
-                          tabIndex: ChartTabTypeToIndex[selectedTabType],
+                          tabIndex: NavigraphChartTabTypeToIndex[selectedTabType],
                           timeAccessed: 0,
                           tag: selectedTab.name,
                           provider: ChartProvider.NAVIGRAPH,

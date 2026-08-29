@@ -29,8 +29,8 @@ use systems::air_conditioning::{
 };
 use systems::failures::FailureType;
 use systems::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
-    HydraulicColor, LgciuId, ProximityDetectorId,
+    report_diagnostic, AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType,
+    GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -38,6 +38,13 @@ use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
+    // The default panic output is lost when the WASM instance aborts, so print the
+    // panic message and location to the MSFS console before the trap happens.
+    std::panic::set_hook(Box::new(|panic_info| {
+        println!("A32NX_SYSTEMS PANIC: {panic_info}");
+        report_diagnostic(&format!("A32NX_SYSTEMS PANIC: {panic_info}"));
+    }));
+
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let key_prefix = "A32NX_";
@@ -289,6 +296,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (34_011, FailureType::RadioAntennaInterrupted(2)),
         (34_020, FailureType::RadioAntennaDirectCoupling(1)),
         (34_021, FailureType::RadioAntennaDirectCoupling(2)),
+        (
+            34_030,
+            FailureType::EnhancedGroundProximityWarningSystemComputer,
+        ),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -315,7 +326,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUEL TANK LEFT AUX QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
-    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 18)?
     .provides_aircraft_variable_range("FUELSYSTEM PUMP ACTIVE", "Bool", 1..=7)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
@@ -380,6 +390,14 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_aircraft_variable("IS SLEW ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("NAV HAS NAV", "Bool", 3)?
+    .provides_aircraft_variable("NAV HAS LOC", "Bool", 3)?
+    .provides_aircraft_variable("NAV HAS GLIDE SLOPE", "Bool", 3)?
+    .provides_aircraft_variable("NAV MAGVAR", "degree", 3)?
+    .provides_aircraft_variable("NAV RADIAL ERROR", "degree", 3)?
+    .provides_aircraft_variable("NAV GLIDE SLOPE ERROR", "degree", 3)?
+    .provides_aircraft_variable("NAV FREQUENCY", "Hz", 3)?
     .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?

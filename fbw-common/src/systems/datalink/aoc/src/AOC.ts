@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -9,6 +10,8 @@ import {
   WeatherMessage,
   AtisType,
   AtsuTimestamp,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '../../common/src';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
@@ -57,6 +60,9 @@ export class Aoc {
         this.blacklistedMessageIds.push(uid);
       }
     });
+    this.digitalInputs.addDataCallback('requestWinds', (request, sentCallback) =>
+      this.requestWinds(request, sentCallback),
+    );
   }
 
   public powerUp(): void {
@@ -165,5 +171,13 @@ export class Aoc {
 
       this.digitalOutputs.resynchronizeAocMessage(message);
     });
+  }
+
+  private async requestWinds(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
+    return this.digitalOutputs.requestWinds(request, sentCallback);
   }
 }

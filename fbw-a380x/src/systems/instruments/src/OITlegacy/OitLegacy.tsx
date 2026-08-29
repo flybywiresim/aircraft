@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -17,7 +18,6 @@ import {
   setCabinInfo,
   setFlypadInfo,
   store,
-  TroubleshootingContextProvider,
   useAppDispatch,
   useEventBus,
   useNavigraphAuthInfo,
@@ -34,10 +34,10 @@ import {
   UniversalConfigProvider,
   usePersistentProperty,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { ToastContainer } from 'react-toastify';
 import { OisInternalData } from '../OIT/OisInternalPublisher';
-import { simbriefDataFromFms } from 'instruments/src/OITlegacy/utils';
+import { simbriefDataFromFms } from './utils';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -136,24 +136,22 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
       }}
     >
       <Provider store={store}>
-        <TroubleshootingContextProvider eventBus={eventBus}>
-          <FailuresOrchestratorProvider failures={[]}>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-              <Router>
-                <ModalProvider>
-                  <EventBusContextProvider eventBus={eventBus}>
-                    <NavigraphAuthProvider>
-                      <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        <ToastContainer position="top-center" draggableDirection="y" limit={2} />
-                        <OitEfbPageWrapper eventBus={eventBus} />
-                      </PowerContext.Provider>
-                    </NavigraphAuthProvider>
-                  </EventBusContextProvider>
-                </ModalProvider>
-              </Router>
-            </ErrorBoundary>
-          </FailuresOrchestratorProvider>
-        </TroubleshootingContextProvider>
+        <FailuresOrchestratorProvider failures={[]}>
+          <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+            <Router>
+              <ModalProvider>
+                <EventBusContextProvider eventBus={eventBus}>
+                  <NavigraphAuthProvider>
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                      <ToastContainer position="top-center" draggableDirection="y" limit={2} />
+                      <OitEfbPageWrapper eventBus={eventBus} />
+                    </PowerContext.Provider>
+                  </NavigraphAuthProvider>
+                </EventBusContextProvider>
+              </ModalProvider>
+            </Router>
+          </ErrorBoundary>
+        </FailuresOrchestratorProvider>
       </Provider>
     </AircraftContext.Provider>
   );
@@ -176,14 +174,14 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   const navigraphAuthInfo = useNavigraphAuthInfo();
   const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
 
-  const [navigraphToken, setNavigraphToken] = useState<string>(NXDataStore.get('NAVIGRAPH_ACCESS_TOKEN'));
+  const [navigraphToken, setNavigraphToken] = useState<string>(NXDataStore.getLegacy('NAVIGRAPH_ACCESS_TOKEN'));
   const [reloadAircraft, setReloadAircraft] = useState<boolean>(false);
 
   const showEfbOverlay = (showCharts === 1 && !reloadAircraft) || showOfp === 1;
   document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
 
   useEffect(() => {
-    const cancelSub = NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', (_, token) => {
+    const cancelSub = NXDataStore.getAndSubscribeLegacy('NAVIGRAPH_ACCESS_TOKEN', (_, token) => {
       if (!navigraphToken && token) {
         setReloadAircraft(true);
       }

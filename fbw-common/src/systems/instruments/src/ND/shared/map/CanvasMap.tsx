@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -21,6 +22,7 @@ import {
   NdTraffic,
   MathUtils,
   PathVector,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates, distanceTo } from 'msfs-geo';
@@ -36,6 +38,7 @@ import { NDControlEvents } from '../../NDControlEvents';
 import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { MapOptions } from '../../types/MapOptions';
+import { GenericTawsEvents } from '../../types/GenericTawsEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
 enum TaRaIntrusion {
@@ -131,7 +134,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<NDControlEvents & GenericFcuEvents>();
+    const sub = this.props.bus.getSubscriber<NDControlEvents & GenericFcuEvents & GenericTawsEvents>();
 
     sub.on('set_show_map').handle((show) => this.mapVisible.set(show));
     sub.on('set_map_recomputing').handle((show) => this.mapRecomputing.set(show));
@@ -141,7 +144,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     sub.on('set_map_up_course').handle((v) => this.mapRotation.set(v));
     sub.on('set_map_pixel_radius').handle((v) => this.mapPixelRadius.set(v));
     sub.on('set_map_range_radius').handle((v) => this.mapRangeRadius.set(v));
-    // sub.on('set_map_efis_mode').handle((v) => this.mapMode.set(v));
 
     sub
       .on('ndMode')
@@ -197,6 +199,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
       this.vectors[EfisVectorsGroup.ACTIVE].length = 0;
       if (data) {
         this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
+      }
+    });
+
+    sub.on('vectorsActiveEosid').handle((data: PathVector[]) => {
+      this.vectors[EfisVectorsGroup.ACTIVE_EOSID].length = 0;
+      if (data) {
+        this.vectors[EfisVectorsGroup.ACTIVE_EOSID].push(...data);
       }
     });
 
@@ -305,19 +314,20 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     const pseudoWaypoints = this.symbols.filter(
       (it) =>
-        it.type &
-        (NdSymbolTypeFlags.PwpStartOfClimb |
-          NdSymbolTypeFlags.PwpClimbLevelOff |
-          NdSymbolTypeFlags.PwpTopOfDescent |
-          NdSymbolTypeFlags.PwpDescentLevelOff |
-          NdSymbolTypeFlags.PwpInterceptProfile |
-          NdSymbolTypeFlags.PwpCdaFlap1 |
-          NdSymbolTypeFlags.PwpCdaFlap2 |
-          NdSymbolTypeFlags.PwpDecel |
-          NdSymbolTypeFlags.PwpTimeMarker |
-          NdSymbolTypeFlags.PwpSpeedChange |
-          NdSymbolTypeFlags.CourseReversalLeft |
-          NdSymbolTypeFlags.CourseReversalRight),
+        it.type & (NdSymbolTypeFlags.CourseReversalLeft | NdSymbolTypeFlags.CourseReversalRight) ||
+        (it.typePwp !== undefined &&
+          it.typePwp &
+            (NdPwpSymbolTypeFlags.PwpEndOfVdMarker |
+              NdPwpSymbolTypeFlags.PwpStartOfClimb |
+              NdPwpSymbolTypeFlags.PwpClimbLevelOff |
+              NdPwpSymbolTypeFlags.PwpTopOfDescent |
+              NdPwpSymbolTypeFlags.PwpDescentLevelOff |
+              NdPwpSymbolTypeFlags.PwpInterceptProfile |
+              NdPwpSymbolTypeFlags.PwpCdaFlap1 |
+              NdPwpSymbolTypeFlags.PwpCdaFlap2 |
+              NdPwpSymbolTypeFlags.PwpDecel |
+              NdPwpSymbolTypeFlags.PwpTimeMarker |
+              NdPwpSymbolTypeFlags.PwpSpeedChange)),
     );
 
     this.pwpLayer.data = pseudoWaypoints;
@@ -462,6 +472,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     switch (group) {
       case EfisVectorsGroup.ACTIVE:
         context.strokeStyle = '#0f0';
+        context.setLineDash(NO_DASHES);
+        break;
+      case EfisVectorsGroup.ACTIVE_EOSID:
+        context.strokeStyle = '#ffff00';
         context.setLineDash(NO_DASHES);
         break;
       case EfisVectorsGroup.DASHED:

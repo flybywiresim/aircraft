@@ -1,15 +1,16 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arrival, LegType } from '@flybywiresim/fbw-sdk';
+import { Arrival, LegType, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class ArrivalSegment extends ProcedureSegment<Arrival> {
   class = SegmentClass.Arrival;
@@ -61,13 +62,14 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
       throw new Error(`[FMS/FPM] Can't find arrival procedure '${databaseId}' for ${destinationAirport.ident}`);
     }
 
+    this.arrival = matchingArrival;
+
     if (skipUpdateLegs) {
       return;
     }
 
     const legs = [...matchingArrival.commonLegs];
 
-    this.arrival = matchingArrival;
     this.allLegs.length = 0;
     this.strung = false;
 
@@ -98,11 +100,13 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
   }
 
-  clone(forPlan: BaseFlightPlan): ArrivalSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ArrivalSegment {
     const newSegment = new ArrivalSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.arrival = this.arrival;
 
     return newSegment;

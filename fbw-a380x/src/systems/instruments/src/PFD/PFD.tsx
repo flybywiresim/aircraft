@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   ClockEvents,
   ComponentProps,
@@ -10,12 +11,12 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { LowerArea } from 'instruments/src/PFD/LowerArea';
+import { LowerArea } from './LowerArea';
 import { Arinc429LocalVarConsumerSubject, Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
 import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
-import { AttitudeIndicatorWarningsA380 } from 'instruments/src/PFD/AttitudeIndicatorWarningsA380';
-import { LinearDeviationIndicator } from 'instruments/src/PFD/LinearDeviationIndicator';
+import { AttitudeIndicatorWarningsA380 } from './AttitudeIndicatorWarningsA380';
+import { LinearDeviationIndicator } from './LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -29,8 +30,8 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 import './style.scss';
-import { PitchTrimDisplay } from 'instruments/src/PFD/PitchTrimDisplay';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { PitchTrimDisplay } from './PitchTrimDisplay';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))

@@ -4,6 +4,7 @@
 
 import { AtaChapterNumber } from '../ata';
 import { GenericDataListenerSync } from '../GenericDataListenerSync';
+import { ViewListenerUtils } from '../ViewListenerUtils';
 
 export interface Failure {
   ata: AtaChapterNumber;
@@ -41,15 +42,11 @@ export class FailuresOrchestrator {
       });
     });
 
-    RegisterViewListener(
-      'JS_LISTENER_COMM_BUS',
-      (listener) => {
-        listener.on('FBW_FAILURE_REQUEST', () => (this.needSendFailures = true));
-        // better send in case we missed a request from a wasm consumer
-        this.needSendFailures = true;
-      },
-      true,
-    );
+    ViewListenerUtils.getListener('JS_LISTENER_COMM_BUS').then((commBusListener) => {
+      commBusListener.on('FBW_FAILURE_REQUEST', () => (this.needSendFailures = true));
+      // better send in case we missed a request from a wasm consumer
+      this.needSendFailures = true;
+    });
   }
 
   private sendFailuresToWasm(activeFailures: number[]): void {

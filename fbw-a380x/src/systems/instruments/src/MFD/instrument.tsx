@@ -11,15 +11,22 @@ import {
   ClockPublisher,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcService } from './FMC/FmcService';
+import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { EnginePublisher, FailuresConsumer, RaBusPublisher } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
-import { FmsMfdPublisher } from '../MsfsAvionicsCommon/providers/FmsMfdPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { FmsMessagePublisher } from '../MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
+import { dataStatusUri } from './shared/utils';
+import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
+import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
+import { PrimFgBusPublisher } from '@shared/publishers/PrimFgPublisher';
+import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -30,7 +37,7 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
 
-  private readonly fmsDataPublisher = new FmsMfdPublisher(this.bus);
+  private readonly fmsMessagePublisher = new FmsMessagePublisher(this.bus);
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
@@ -38,11 +45,19 @@ class MfdInstrument implements FsInstrument {
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
+  private readonly radioAltimeterPublisher = new RaBusPublisher(this.bus);
+
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
+  private readonly fcuEfisBusPublisher = new FcuEfisCpBusPublisher(this.bus);
+
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
   private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
 
   private readonly fmcService: FmcServiceInterface;
+
+  private readonly atcService = new AtcDatalinkSystem(this.bus);
 
   private readonly fmcAFailed = Subject.create(false);
   private readonly fmcBFailed = Subject.create(false);
@@ -50,13 +65,25 @@ class MfdInstrument implements FsInstrument {
 
   private readonly failuresConsumer = new FailuresConsumer();
 
+  private readonly primFctlPublisher = new PrimFctlBusPublisher(this.bus);
+
+  private readonly primFgPublisher = new PrimFgBusPublisher(this.bus);
+
+  private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
+
   constructor(public readonly instrument: BaseInstrument) {
     this.backplane.addPublisher('mfd', this.simVarPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('fg', this.fgDataPublisher);
-    this.backplane.addPublisher('fms', this.fmsDataPublisher);
+    this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
+    this.backplane.addPublisher('fqms', this.fqmsPublisher);
+    this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
+    this.backplane.addPublisher('fcu', this.fcuEfisBusPublisher);
+    this.backplane.addPublisher('primFg', this.primFgPublisher);
+    this.backplane.addPublisher('primFctl', this.primFctlPublisher);
 
     this.fmcService = new FmcService(
       this.bus,
@@ -88,11 +115,23 @@ class MfdInstrument implements FsInstrument {
       document.getElementById('MFD_CONTENT'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="CAPT" ref={this.mfdCaptRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="CAPT"
+        ref={this.mfdCaptRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_LEFT_PARENT_DIV'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="FO" ref={this.mfdFoRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="FO"
+        ref={this.mfdFoRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_RIGHT_PARENT_DIV'),
     );
 
@@ -102,8 +141,8 @@ class MfdInstrument implements FsInstrument {
     }
 
     // Navigate to initial page
-    this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
-    this.mfdFoRef.instance.uiService.navigateTo('fms/data/status');
+    this.mfdCaptRef.instance.uiService.navigateTo(dataStatusUri);
+    this.mfdFoRef.instance.uiService.navigateTo(dataStatusUri);
 
     // Remove "instrument didn't load" text
     mfd?.querySelector(':scope > h1')?.remove();
@@ -111,6 +150,7 @@ class MfdInstrument implements FsInstrument {
     this.failuresConsumer.register(A380Failure.FmcA);
     this.failuresConsumer.register(A380Failure.FmcB);
     this.failuresConsumer.register(A380Failure.FmcC);
+    this.primChoiceProvider.init();
   }
 
   /**

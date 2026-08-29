@@ -159,8 +159,8 @@ impl Starting {
     }
 
     fn calculate_n(&self) -> Ratio {
-        /// N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
-        /// to capture the changes in N1 at the "top of the range" for little N2 change.
+        // N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
+        // to capture the changes in N1 at the "top of the range" for little N2 change.
 
         // N2 to N1 constants
         const APU_N_N2_CONST: f64 = -1.980342480028972;
@@ -564,7 +564,7 @@ impl Turbine for Running {
 
     fn bleed_air_pressure(&self) -> Pressure {
         // Value from refs, we add standard pressure at sea level as state of unpressurized system
-        Pressure::new::<psi>(22.)
+        Pressure::new::<psi>(40.)
             + InternationalStandardAtmosphere::pressure_at_altitude(Length::ZERO)
     }
 }
@@ -1023,6 +1023,7 @@ impl SimulationElement for Pw980StartMotor {
 
 #[cfg(test)]
 mod apu_generator_tests {
+    use more_asserts::*;
     use ntest::assert_about_eq;
     use uom::si::frequency::hertz;
 
@@ -1074,7 +1075,7 @@ mod apu_generator_tests {
 
             let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
-                assert!(test_bed.potential().get::<volt>() > 0.);
+                assert_gt!(test_bed.potential().get::<volt>(), 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -1092,7 +1093,7 @@ mod apu_generator_tests {
 
             let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
-                assert!(test_bed.frequency().get::<hertz>() > 0.);
+                assert_gt!(test_bed.frequency().get::<hertz>(), 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -1181,7 +1182,7 @@ mod apu_generator_tests {
             .power_demand(Power::new::<watt>(50000.))
             .run(Duration::from_secs(1_000));
 
-        assert!(test_bed.load() > Ratio::default());
+        assert_gt!(test_bed.load(), Ratio::default());
     }
 
     #[test]

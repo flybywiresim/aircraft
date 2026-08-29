@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import * as math from 'mathjs';
 
 export enum FuelPlanningPhases {
