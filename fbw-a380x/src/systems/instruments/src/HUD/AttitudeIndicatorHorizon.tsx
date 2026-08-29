@@ -707,17 +707,17 @@ class PitchScale extends DisplayComponent<{
 
     //atan2(selectedVs.value * 0.51444, gndSpeed * 0.00508)
     if (
-      (this.gsTrk.get() || this.gsCapt.get() || this.landModeActive.get() || this.gsArmed.get()) &&
-      lsSlope !== 0 &&
+      this.flightPhase.get() === FmgcFlightPhase.Approach &&
       this.lsButtonPressed.get() &&
-      !this.isFpaModeActive.get()
+      !this.isVsOrFpaActive.get()
     ) {
+      const slope = lsSlope == 0 ? 3 : lsSlope;
       this.threeDegPath.instance.setAttribute(
         'd',
-        `M 565,${512 + (lsSlope / 5) * FIVE_DEG} h -80  M 713,${512 + (lsSlope / 5) * FIVE_DEG} h 80  `,
+        `M 565,${512 + (slope / 5) * FIVE_DEG} h -80  M 713,${512 + (slope / 5) * FIVE_DEG} h 80  `,
       );
-      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG + 6.5}`);
-      this.threeDegTxtRef.instance.textContent = `-${lsSlope.toFixed(1)}°`;
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (slope / 5) * FIVE_DEG + 6.5}`);
+      this.threeDegTxtRef.instance.textContent = `-${slope.toFixed(1)}°`;
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
       this.threeDegTxtRef.instance.classList.add('FontTinyer');
@@ -725,10 +725,10 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtRef.instance.classList.remove('Fill');
       this.threeDegTxtBgRef.instance.style.display = `block`;
       this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
-      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (slope / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute(
         'd',
-        `m 800 ${512 + (lsSlope / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `,
+        `m 800 ${512 + (slope / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `,
       );
     } else if (this.isVsOrFpaActive.get()) {
       this.threeDegPath.instance.setAttribute(
