@@ -94,6 +94,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
 
 ## 2024.1.0
 
