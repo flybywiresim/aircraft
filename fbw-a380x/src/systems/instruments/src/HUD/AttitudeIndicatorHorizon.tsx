@@ -874,8 +874,6 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   private extendedUpperNum = 0;
   private extendedLowerNum = 0;
 
-  private spdRollDev = 0;
-  private altRollDev = 0;
   private crosswindMode = false;
   private upperBound = 0;
   private lowerBound = 0;
@@ -915,31 +913,21 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.upperBound = 91; //= -27.143;
         }
 
-        let Lalt = 0; //right and left edges  of the alt tape
-        let Lspd = 0; //right and left edges  of the spd tape
-        if (roll.value < 0) {
-          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-            Lspd = 431; // 472;
-            Lalt = 400; // 400;
-          } else {
-            Lalt = 497; // 494;
-            Lspd = 530; // 570;
-          }
-        } else {
-          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-            Lalt = 400; // 400;
-            Lspd = 431; // 472;
-          } else {
-            Lalt = 497; // 494;
-            Lspd = 530; // 570;
-          }
-        }
+        const Lalt = 497; //right and left edges  of the alt tape
+        const Lspd = 530; //right and left edges  of the spd tape
+
+        //   if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+        //     Lalt = 400; // 400;
+        //     Lspd = 431; // 472;
+        //   } else {
+        //     Lalt = 497; // 494;
+        //     Lspd = 530; // 570;
+        //   }
+
         const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
         const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
 
         if (roll.isNormalOperation()) {
-          this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
-          this.altRollDev = Lalt * Math.tan(radRoll);
           this.rollGroupRef.instance.style.display = 'block';
           this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
 
@@ -974,16 +962,19 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
           //end debug
 
+          const evalMin = 0;
+          const evalMax = 2000;
+
           const sinRadRoll =
             Math.sin(radRoll) < -0.0001 || Math.sin(radRoll) > 0.0001 ? Math.sin(radRoll) : Math.sign(radRoll) * 0.0001;
 
           this.extendedUpperNum = Math.max(
-            Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, 1280),
-            0,
+            Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, evalMax),
+            evalMin,
           );
           this.extendedLowerNum = Math.max(
-            Math.min(xPosFspd - (yPos + this.upperBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, 1280),
-            0,
+            Math.min(xPosFspd - (yPos + this.upperBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, evalMax),
+            evalMin,
           );
 
           const cwTopDiff = this.extendedUpperNum > 640 && this.crosswindMode ? 16 : 0;
@@ -992,22 +983,42 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.extendedUpper.set((this.extendedUpperNum - cwTopDiff / sinRadRoll).toString());
           this.extendedLower.set((this.extendedLowerNum + cwBotDiff / sinRadRoll).toString());
 
-          roll.value > 0
-            ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 1000000 `)
-            : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -1000000 `);
-          roll.value < 0
-            ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 1000000 `)
-            : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -1000000 `);
+          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
+          if (Number(ey) < 512) {
+            F1AltSideVertDev *= -1;
+          }
+          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
+          if (Number(eys) < 512) {
+            F1SpdSideVertDev *= -1;
+          }
+
+          if (
+            -yPos - F1SpdSideVertDev > this.lowerBound &&
+            -yPos - F1AltSideVertDev - cwTopDiff > this.lowerBound &&
+            -yPos - F1SpdSideVertDev < this.upperBound &&
+            -yPos - F1AltSideVertDev - cwBotDiff < this.upperBound
+          ) {
+            this.extendedUpperRef.instance.setAttribute('d', ``);
+            this.extendedLowerRef.instance.setAttribute('d', ``);
+          } else {
+            roll.value > 0
+              ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 1000000 `)
+              : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -1000000 `);
+            roll.value < 0
+              ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 1000000 `)
+              : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -1000000 `);
+          }
 
           ////debug TextBox
 
           this.debugVal.instance.setAttribute('transform', `translate(640 512) rotate(${roll.value})`);
 
-          this.valuesToLog.set('xPosF', xPosF);
-          this.valuesToLog.set('xPosFspd', xPosFspd);
-          this.valuesToLog.set('roll', roll.value);
-          this.valuesToLog.set('D', D);
-          this.valuesToLog.set('tmp', this.extendedUpperNum);
+          this.valuesToLog.set('yPos - F1SpdSideVertDev', yPos - F1SpdSideVertDev);
+          this.valuesToLog.set('yPos - F1AltSideVertDev', yPos - F1AltSideVertDev);
+          this.valuesToLog.set('this.lowerBound', this.lowerBound);
+          this.valuesToLog.set('this.upperBound', this.upperBound);
+          this.valuesToLog.set('yPos', yPos);
+          this.valuesToLog.set('extendedLower', F1SpdSideVertDev);
           let i = 0;
           this.valuesToLog.forEach((value, key) => {
             this.spanRefs[i].instance.textContent = `${key}: ${value}`;
@@ -1030,11 +1041,12 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   }
 
   private buildLog(): NodeReference<SVGGElement>[] {
-    this.valuesToLog.set('xPosF', 0);
-    this.valuesToLog.set('xPosFspd', 0);
-    this.valuesToLog.set('roll', 0);
-    this.valuesToLog.set('D', 0);
-    this.valuesToLog.set('tmp', 0);
+    this.valuesToLog.set('yPos - F1SpdSideVertDev', 0);
+    this.valuesToLog.set('yPos - F1AltSideVertDev', 0);
+    this.valuesToLog.set('this.lowerBound', 0);
+    this.valuesToLog.set('this.upperBound', 0);
+    this.valuesToLog.set('yPos', 0);
+    this.valuesToLog.set('extendedLower', 0);
 
     const spans = [];
     this.valuesToLog.forEach((value, key) => {
