@@ -28,6 +28,10 @@
 1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
+1. [A32NX/FMS] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
 
 ## 2020.15.0
 
