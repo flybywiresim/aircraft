@@ -478,7 +478,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private calculateApproachWindComponent(forPlan = FlightPlanIndex.Active, headWind: boolean): number | null {
-    const plan = this.#flightPlanService.has(forPlan) ? this.#flightPlanService.get(forPlan) : undefined;
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : undefined;
     if (!plan || !plan.destinationRunway) {
       return null;
     }
@@ -1819,7 +1819,7 @@ export class FlightManagementComputer implements FmcInterface {
     if (!this.flightPlanInterface.has(intoPlan)) {
       return false;
     }
-    const plan = this.#flightPlanService.get(intoPlan);
+    const plan = this.flightPlanService.get(intoPlan);
     if (!Number.isFinite(fl)) {
       this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
       return false;
