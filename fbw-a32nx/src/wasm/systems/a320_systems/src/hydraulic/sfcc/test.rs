@@ -5,7 +5,8 @@ use ntest::assert_about_eq;
 use std::{panic::Location, time::Duration};
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-    hydraulic::flap_slat::{ChannelCommand, SolenoidStatus},
+    failures::FailureType,
+    hydraulic::flap_slat::SolenoidStatus,
     shared::PotentialOrigin,
     simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -14,6 +15,13 @@ use systems::{
 };
 
 use uom::si::{angular_velocity::degree_per_second, pressure::psi, velocity::knot};
+
+// TODO: Remove when valve block simulation is fully integrated
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommand {
+    Extend,
+    Retract,
+}
 
 struct SlatFlapGear {
     current_angle: Angle,
@@ -25,7 +33,7 @@ struct SlatFlapGear {
     right_position_angle_id: VariableIdentifier,
 }
 impl PositionPickoffUnit for SlatFlapGear {
-    fn angle(&self) -> Angle {
+    fn fppu_angle(&self) -> Angle {
         self.current_angle
     }
 }
@@ -66,9 +74,9 @@ impl SlatFlapGear {
             || hydraulic_pressure_right_side.get::<psi>() > 1500.
         {
             if let Some(demanded_angle) = demanded_angle {
-                let actual_minus_target_ffpu = demanded_angle - self.angle();
+                let actual_minus_target_ffpu = demanded_angle - self.fppu_angle();
 
-                let fppu_angle = self.angle();
+                let fppu_angle = self.fppu_angle();
 
                 if actual_minus_target_ffpu.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                     self.current_angle += Angle::new::<degree>(
@@ -78,7 +86,7 @@ impl SlatFlapGear {
                     );
                     self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
 
-                    let new_ffpu_angle = self.angle();
+                    let new_ffpu_angle = self.fppu_angle();
                     // If demand was crossed between two frames: fixing to demand
                     if new_ffpu_angle > demanded_angle && fppu_angle < demanded_angle
                         || new_ffpu_angle < demanded_angle && fppu_angle > demanded_angle
@@ -233,9 +241,13 @@ struct A320FlapsTestAircraft {
     slat_flap_complex: SlatFlapComplex,
 
     powered_source: TestElectricitySource,
+    dc_hot_1_bus: ElectricalBus,
+    dc_hot_2_bus: ElectricalBus,
     dc_2_bus: ElectricalBus,
     dc_ess_bus: ElectricalBus,
 
+    is_dc_hot_1_powered: bool,
+    is_dc_hot_2_powered: bool,
     is_dc_2_powered: bool,
     is_dc_ess_powered: bool,
 
@@ -272,9 +284,13 @@ impl A320FlapsTestAircraft {
             slat_flap_complex: SlatFlapComplex::new(context),
 
             powered_source: TestElectricitySource::powered(context, PotentialOrigin::Battery(2)),
+            dc_hot_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(1)),
+            dc_hot_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(2)),
             dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
             dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
 
+            is_dc_hot_1_powered: true,
+            is_dc_hot_2_powered: true,
             is_dc_2_powered: true,
             is_dc_ess_powered: true,
 
@@ -300,6 +316,14 @@ impl A320FlapsTestAircraft {
         }
     }
 
+    fn set_dc_hot_1_bus_power(&mut self, is_powered: bool) {
+        self.is_dc_hot_1_powered = is_powered;
+    }
+
+    fn set_dc_hot_2_bus_power(&mut self, is_powered: bool) {
+        self.is_dc_hot_2_powered = is_powered;
+    }
+
     fn set_dc_2_bus_power(&mut self, is_powered: bool) {
         self.is_dc_2_powered = is_powered;
     }
@@ -323,6 +347,14 @@ impl Aircraft for A320FlapsTestAircraft {
 
         if self.is_dc_ess_powered {
             electricity.flow(&self.powered_source, &self.dc_ess_bus);
+        }
+
+        if self.is_dc_hot_1_powered {
+            electricity.flow(&self.powered_source, &self.dc_hot_1_bus);
+        }
+
+        if self.is_dc_hot_2_powered {
+            electricity.flow(&self.powered_source, &self.dc_hot_2_bus);
         }
     }
 
@@ -408,6 +440,18 @@ impl A320FlapsTestBed {
         self
     }
 
+    fn set_dc_hot_1_bus_power(mut self, is_powered: bool) -> Self {
+        self.command(|a| a.set_dc_hot_1_bus_power(is_powered));
+
+        self
+    }
+
+    fn set_dc_hot_2_bus_power(mut self, is_powered: bool) -> Self {
+        self.command(|a| a.set_dc_hot_2_bus_power(is_powered));
+
+        self
+    }
+
     fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
         self.command(|a| a.set_dc_2_bus_power(is_powered));
 
@@ -466,6 +510,10 @@ impl A320FlapsTestBed {
 
     fn read_slat_actual_position_word(&mut self, num: u8) -> Arinc429Word<f64> {
         self.read_by_name(&format!("SFCC_{num}_SLAT_ACTUAL_POSITION_WORD"))
+    }
+
+    fn read_slat_flap_component_status_word(&mut self, num: u8) -> Arinc429Word<u32> {
+        self.read_by_name(&format!("SFCC_{num}_SLAT_FLAP_COMPONENT_STATUS_WORD"))
     }
 
     fn read_slat_flap_system_status_word(&mut self, num: u8) -> Arinc429Word<u32> {
@@ -582,11 +630,11 @@ impl A320FlapsTestBed {
     }
 
     fn get_flaps_fppu_feedback(&self) -> f64 {
-        self.query(|a| a.flap_gear.angle().get::<degree>())
+        self.query(|a| a.flap_gear.fppu_angle().get::<degree>())
     }
 
     fn get_slats_fppu_feedback(&self) -> f64 {
-        self.query(|a| a.slat_gear.angle().get::<degree>())
+        self.query(|a| a.slat_gear.fppu_angle().get::<degree>())
     }
 
     fn get_flap_pob(&self, idx: usize) -> SolenoidStatus {
@@ -598,11 +646,29 @@ impl A320FlapsTestBed {
     }
 
     fn get_flap_command(&self, idx: usize) -> Option<ChannelCommand> {
-        self.query(|a| a.slat_flap_complex.flap_pcu(idx).get_command_status())
+        self.query(|a| {
+            let sfcc = a.slat_flap_complex.flap_pcu(idx);
+            if sfcc.get_extend_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Extend)
+            } else if sfcc.get_retract_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Retract)
+            } else {
+                None
+            }
+        })
     }
 
     fn get_slat_command(&self, idx: usize) -> Option<ChannelCommand> {
-        self.query(|a| a.slat_flap_complex.slat_pcu(idx).get_command_status())
+        self.query(|a| {
+            let sfcc = a.slat_flap_complex.slat_pcu(idx);
+            if sfcc.get_extend_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Extend)
+            } else if sfcc.get_retract_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Retract)
+            } else {
+                None
+            }
+        })
     }
 
     fn get_slat_alpha_lock_baulk_function_active(&self, idx: usize) -> bool {
@@ -683,6 +749,24 @@ impl A320FlapsTestBed {
 
     fn get_sap_7(&self, idx: usize) -> bool {
         self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(6))
+    }
+
+    fn get_slat_wtb_armed(&self, idx: usize) -> bool {
+        self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.is_wtb_armed())
+    }
+
+    fn get_flap_wtb_armed(&self, idx: usize) -> bool {
+        self.query(|a| a.slat_flap_complex.sfcc[idx].flaps_channel.is_wtb_armed())
+    }
+
+    fn fail_flap_wtb(mut self) -> Self {
+        self.fail(FailureType::FlapWtb);
+        self
+    }
+
+    fn fail_slat_wtb(mut self) -> Self {
+        self.fail(FailureType::SlatWtb);
+        self
     }
 
     fn get_is_approaching_position(&self, demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -852,6 +936,9 @@ fn flaps_simvars() {
 
     assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD"));
     assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD"));
+
+    assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD"));
+    assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD"));
 }
 
 #[test]
@@ -1619,6 +1706,7 @@ fn flaps_test_correct_bus_output_clean_config() {
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1626,6 +1714,7 @@ fn flaps_test_correct_bus_output_clean_config() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
@@ -1668,6 +1757,7 @@ fn flaps_test_correct_bus_output_config_1() {
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1675,6 +1765,7 @@ fn flaps_test_correct_bus_output_config_1() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
@@ -1717,6 +1808,7 @@ fn flaps_test_correct_bus_output_config_1_plus_f() {
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1724,6 +1816,7 @@ fn flaps_test_correct_bus_output_config_1_plus_f() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
@@ -1764,6 +1857,7 @@ fn flaps_test_correct_bus_output_config_2() {
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1771,6 +1865,7 @@ fn flaps_test_correct_bus_output_config_2() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
@@ -1811,6 +1906,7 @@ fn flaps_test_correct_bus_output_config_3() {
     assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1818,6 +1914,7 @@ fn flaps_test_correct_bus_output_config_3() {
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
@@ -1858,6 +1955,7 @@ fn flaps_test_correct_bus_output_config_full() {
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
     assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
 
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(17));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(18));
@@ -1865,6 +1963,7 @@ fn flaps_test_correct_bus_output_config_full() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(20));
     assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(21));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
 
     test_bed = test_bed.run_waiting_for(Duration::from_secs(45));
 
@@ -3624,4 +3723,268 @@ fn flaps_autocommand_different_adiru_speeds() {
 
     test_bed = test_bed.set_adiru_airspeed(2, Some(220.)).run_one_tick();
     assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+}
+
+#[test]
+fn wtb_arm_test() {
+    // Only SFCC1 powered
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_2_bus_power(false)
+        .run_for_some_time();
+    assert!(test_bed.get_flap_wtb_armed(1));
+    assert!(test_bed.get_slat_wtb_armed(1));
+
+    test_bed = test_bed.set_dc_2_bus_power(true).run_for_some_time();
+    assert!(!test_bed.get_flap_wtb_armed(1));
+    assert!(!test_bed.get_slat_wtb_armed(1));
+
+    // Only SFCC2 powered
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(false)
+        .run_for_some_time();
+    assert!(test_bed.get_flap_wtb_armed(0));
+    assert!(test_bed.get_slat_wtb_armed(0));
+
+    test_bed = test_bed.set_dc_ess_bus_power(true).run_for_some_time();
+    assert!(!test_bed.get_flap_wtb_armed(0));
+    assert!(!test_bed.get_slat_wtb_armed(0));
+}
+
+#[test]
+fn component_status_word_adiru_test() {
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(false)
+        .set_dc_2_bus_power(false)
+        .set_indicated_airspeed(0.)
+        .run_for_some_time();
+
+    assert_eq!(test_bed.read_slat_flap_component_status_word(1).value(), 0);
+    assert_eq!(test_bed.read_slat_flap_component_status_word(2).value(), 0);
+
+    test_bed = test_bed.set_dc_ess_bus_power(true).run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(11));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(14));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(16));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(17));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(19));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(20));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(22));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(23));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(28));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
+    assert_eq!(test_bed.read_slat_flap_component_status_word(2).value(), 0);
+
+    test_bed = test_bed.set_dc_2_bus_power(true).run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(11));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(14));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(16));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(17));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(19));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(20));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(22));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(23));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(28));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(29));
+
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(11));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(14));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(16));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(17));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(19));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(20));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(22));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(23));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(25));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(26));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(28));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(29));
+
+    test_bed = test_bed
+        .set_adiru_airspeed(3, Some(156.0))
+        .set_adiru_angle_of_attack(3, Some(1.2))
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+
+    test_bed = test_bed
+        .set_adiru_airspeed(1, Some(156.0))
+        .set_adiru_airspeed(2, None)
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+
+    test_bed = test_bed
+        .set_adiru_airspeed(1, None)
+        .set_adiru_airspeed(2, Some(156.0))
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+
+    test_bed = test_bed
+        .set_adiru_airspeed(1, None)
+        .set_adiru_airspeed(2, None)
+        .set_adiru_angle_of_attack(1, Some(1.2))
+        .set_adiru_angle_of_attack(2, None)
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+
+    test_bed = test_bed
+        .set_adiru_angle_of_attack(1, None)
+        .set_adiru_angle_of_attack(2, Some(1.2))
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+
+    test_bed = test_bed
+        .set_adiru_airspeed(1, None)
+        .set_adiru_angle_of_attack(1, None)
+        .set_adiru_airspeed(2, Some(156.0))
+        .set_adiru_angle_of_attack(2, Some(1.2))
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(15));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(15));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(24));
+}
+
+#[test]
+fn component_status_word_wtb_power_test() {
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(true)
+        .set_dc_2_bus_power(true)
+        .set_dc_hot_1_bus_power(false)
+        .set_dc_hot_2_bus_power(false)
+        .set_indicated_airspeed(0.)
+        .set_adiru_airspeed(1, None)
+        .set_adiru_angle_of_attack(1, None)
+        .set_adiru_airspeed(2, Some(156.0))
+        .set_adiru_angle_of_attack(2, Some(1.2))
+        .run_for_some_time();
+
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    test_bed = test_bed_with()
+        .set_dc_hot_1_bus_power(true)
+        .set_dc_hot_2_bus_power(false)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    test_bed = test_bed_with()
+        .set_dc_hot_1_bus_power(false)
+        .set_dc_hot_2_bus_power(true)
+        .run_for_some_time();
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    test_bed = test_bed_with()
+        .set_dc_hot_1_bus_power(true)
+        .set_dc_hot_2_bus_power(true)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+}
+
+#[test]
+fn wtb_failure_test() {
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_dc_ess_bus_power(true)
+        .set_dc_2_bus_power(true)
+        .set_dc_hot_1_bus_power(true)
+        .set_dc_hot_2_bus_power(true)
+        .set_indicated_airspeed(0.)
+        .set_adiru_airspeed(1, None)
+        .set_adiru_angle_of_attack(1, None)
+        .set_adiru_airspeed(2, Some(156.0))
+        .set_adiru_angle_of_attack(2, Some(1.2))
+        .run_for_some_time();
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(21));
+
+    test_bed = test_bed.fail_flap_wtb().run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(21));
+
+    test_bed = test_bed.fail_slat_wtb().run_for_some_time();
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(1).get_bit(27));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(18));
+    assert!(!test_bed.read_slat_flap_component_status_word(2).get_bit(27));
+
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(1).get_bit(21));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(12));
+    assert!(test_bed.read_slat_flap_component_status_word(2).get_bit(21));
 }

@@ -42,6 +42,7 @@ import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/pr
 import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPublisher';
 import { A32NXDisplayManagementEvents } from '../../../shared/src/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
+import { A32NXSfccBusEvents } from '../../../shared/src/publishers/A32NXSfccBusPublisher';
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { FwsSoundManager } from './FwsSoundManager';
 // FIXME should not import from instruments
@@ -144,6 +145,7 @@ export class PseudoFWC {
       A32NXDisplayManagementEvents &
       A32NXEcpBusEvents &
       A32NXElectricalSystemEvents &
+      A32NXSfccBusEvents &
       A32NXFcuBusEvents &
       A32NXFacBusEvents &
       KeyEvents &
@@ -309,6 +311,12 @@ export class PseudoFWC {
   private readonly sdac05010Word = Arinc429Register.empty();
 
   private readonly sdac05201Word = Arinc429Register.empty();
+
+  private readonly sdac04501Word = Arinc429Register.empty();
+  private readonly sdac04510Word = Arinc429Register.empty();
+
+  private readonly sdac04601Word = Arinc429Register.empty();
+  private readonly sdac04610Word = Arinc429Register.empty();
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -830,6 +838,10 @@ export class PseudoFWC {
 
   private readonly elac2HydConfirmNodeOutput = Subject.create(false);
 
+  private readonly flapTipBrkFaultCondition = Subject.create(false);
+
+  private readonly slatTipBrkFaultCondition = Subject.create(false);
+
   private readonly fcdc1FaultCondition = Subject.create(false);
 
   private readonly fcdc12FaultCondition = Subject.create(false);
@@ -979,6 +991,22 @@ export class PseudoFWC {
   private readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
 
   private readonly groundSpoilerNotArmedWarning = Subject.create(false);
+
+  private readonly sfcc1ComponentStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_1_slats_flaps_component'),
+  );
+
+  private readonly sfcc1SystemStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_1_slats_flaps_status'),
+  );
+
+  private readonly sfcc2ComponentStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_2_slats_flaps_component'),
+  );
+
+  private readonly sfcc2SystemStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_sfcc_2_slats_flaps_status'),
+  );
 
   /* FUEL */
 
@@ -2235,6 +2263,12 @@ export class PseudoFWC {
     this.sdac05201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
     this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
+
+    this.sdac04501Word.set(this.sfcc1ComponentStatusWord.get().rawWord);
+    this.sdac04510Word.set(this.sfcc2ComponentStatusWord.get().rawWord);
+
+    this.sdac04601Word.set(this.sfcc1SystemStatusWord.get().rawWord);
+    this.sdac04610Word.set(this.sfcc2SystemStatusWord.get().rawWord);
   }
 
   /**
@@ -3419,6 +3453,34 @@ export class PseudoFWC {
     this.sec3FaultLine123Display.set(
       !(fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false)),
     );
+
+    // SFCC - Wing Tip Brakes
+
+    // SLAT TIP BRAKE FAULT
+
+    // TODO: Check ELEC DC faults
+    const sfcc1SlatWtbFault =
+      this.sdac04601Word.bitValueOr(28, false) &&
+      (this.sdac04501Word.bitValueOr(12, false) || this.sdac04501Word.bitValueOr(18, false)) &&
+      !this.elecEmergency.get();
+    const sfcc2SlatWtbFault =
+      this.sdac04610Word.bitValueOr(28, false) &&
+      (this.sdac04510Word.bitValueOr(12, false) || this.sdac04510Word.bitValueOr(18, false)) &&
+      !this.elecEmergency.get();
+    this.slatTipBrkFaultCondition.set(sfcc1SlatWtbFault || sfcc2SlatWtbFault);
+
+    // FLAP TIP BRAKE FAULT
+
+    // TODO: Check ELEC DC faults
+    const sfcc1FlapWtbFault =
+      this.sdac04601Word.bitValueOr(29, false) &&
+      (this.sdac04501Word.bitValueOr(21, false) || this.sdac04501Word.bitValueOr(27, false)) &&
+      !this.elecEmergency.get();
+    const sfcc2FlapWtbFault =
+      this.sdac04610Word.bitValueOr(29, false) &&
+      (this.sdac04510Word.bitValueOr(21, false) || this.sdac04510Word.bitValueOr(27, false)) &&
+      !this.elecEmergency.get();
+    this.flapTipBrkFaultCondition.set(sfcc1FlapWtbFault || sfcc2FlapWtbFault);
 
     // FCDC 1+2 FAULT computation
     const SFCDC1FT =
@@ -5953,6 +6015,28 @@ export class PseudoFWC {
       codesToReturn: ['270050201'],
       memoInhibit: () => false,
       failure: 2,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2700550: {
+      // SLAT TIP BRK FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.slatTipBrkFaultCondition,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['270055001'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: EcamSysPage.NONE,
+      side: 'LEFT',
+    },
+    2700560: {
+      // FLAP TIP BRK FAULT
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.flapTipBrkFaultCondition,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['270056001'],
+      memoInhibit: () => false,
+      failure: 1,
       sysPage: EcamSysPage.NONE,
       side: 'LEFT',
     },
