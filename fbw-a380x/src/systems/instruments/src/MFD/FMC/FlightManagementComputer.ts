@@ -78,7 +78,7 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { AtsuToFmsEvents, FmsToAtsuEvents, WindUplinkResponse } from '@providers/FmsAtsuBusPublisher';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
-import { FmsToDatalinkSubsystemEvents } from '../shared/FmsDatalinkEvents';
+import { FmsToDatalinkSubsystemEvents } from '../../../../shared/src/publishers/A380XFmsAtcBusPublisher';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
 
 export interface FmsErrorMessage {

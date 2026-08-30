@@ -37,7 +37,7 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FmsMessageVars } from '../../MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FmsMessageVars } from '../../../../shared/src/publishers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from '../pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';

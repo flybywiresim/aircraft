@@ -15,7 +15,7 @@ import {
   NXFictionalMessages,
   NXSystemMessages,
 } from '../shared/NXSystemMessages';
-import { FmsToDatalinkSubsystemEvents } from '../shared/FmsDatalinkEvents';
+import { FmsToDatalinkSubsystemEvents } from '../../../../shared/src/publishers/A380XFmsAtcBusPublisher';
 
 export type AirportAtis = {
   icao: string;

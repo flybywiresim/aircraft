@@ -64,7 +64,7 @@ import { EfisTawsBridge } from './Misc/EfisTawsBridge';
 // FIXME should not import from ND!!
 import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
 // FIXME should not import from instruments
-import { FmsMessagePublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FmsMessagePublisher } from '../shared/src/publishers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { CpiomData, CpiomDataPublisher } from '@providers/CpiomPublisher';
 import { AtcDatalink } from './CpiomD/AtcDatalink';
