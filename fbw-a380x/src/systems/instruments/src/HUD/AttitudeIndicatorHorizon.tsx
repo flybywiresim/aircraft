@@ -966,7 +966,9 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           const evalMax = 2000;
 
           const sinRadRoll =
-            Math.sin(radRoll) < -0.0001 || Math.sin(radRoll) > 0.0001 ? Math.sin(radRoll) : Math.sign(radRoll) * 0.0001;
+            Math.sin(radRoll) < -0.00001 || Math.sin(radRoll) > 0.00001
+              ? Math.sin(radRoll)
+              : Math.sign(radRoll) * 0.00001;
 
           this.extendedUpperNum = Math.max(
             Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, evalMax),
@@ -977,11 +979,24 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
             evalMin,
           );
 
-          const cwTopDiff = this.extendedUpperNum > 640 && this.crosswindMode ? 16 : 0;
-          const cwBotDiff = this.extendedLowerNum > 640 && this.crosswindMode ? 16 : 0;
+          const cwHeightDiff = 16;
+          const cwTopDiff = this.extendedUpperNum > 640 && this.crosswindMode ? cwHeightDiff : 0;
+          const cwBotDiff = this.extendedLowerNum > 640 && this.crosswindMode ? cwHeightDiff : 0;
 
           this.extendedUpper.set((this.extendedUpperNum - cwTopDiff / sinRadRoll).toString());
           this.extendedLower.set((this.extendedLowerNum + cwBotDiff / sinRadRoll).toString());
+
+          //edge case where ypos is in the spd/alt height diff band
+          if (
+            (cwTopDiff != 0 && -yPos < this.upperBound && -yPos > this.lowerBound) ||
+            (cwBotDiff != 0 && -yPos < this.upperBound && -yPos > this.lowerBound)
+          ) {
+            if (roll.value < 0) {
+              this.extendedLower.set(Math.max(640, parseFloat(this.extendedLower.get().valueOf())).toString());
+            } else {
+              this.extendedUpper.set(Math.max(640, parseFloat(this.extendedUpper.get().valueOf())).toString());
+            }
+          }
 
           let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
           if (Number(ey) < 512) {
@@ -996,10 +1011,19 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
             -yPos - F1SpdSideVertDev > this.lowerBound &&
             -yPos - F1AltSideVertDev - cwTopDiff > this.lowerBound &&
             -yPos - F1SpdSideVertDev < this.upperBound &&
-            -yPos - F1AltSideVertDev - cwBotDiff < this.upperBound
+            -yPos - F1AltSideVertDev + cwBotDiff < this.upperBound
           ) {
-            this.extendedUpperRef.instance.setAttribute('d', ``);
-            this.extendedLowerRef.instance.setAttribute('d', ``);
+            if (
+              Math.abs(roll.value) < 0.5 &&
+              ((-yPos < this.upperBound && -yPos > this.upperBound - cwHeightDiff) ||
+                (-yPos > this.lowerBound && -yPos < this.lowerBound + cwHeightDiff))
+            ) {
+              this.extendedLowerRef.instance.setAttribute('d', `m 640 512 L 2000 512 `);
+              this.extendedUpperRef.instance.setAttribute('d', `m 640 512 L 2000 512 `);
+            } else {
+              this.extendedUpperRef.instance.setAttribute('d', ``);
+              this.extendedLowerRef.instance.setAttribute('d', ``);
+            }
           } else {
             roll.value > 0
               ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 1000000 `)
@@ -1017,8 +1041,9 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.valuesToLog.set('yPos - F1AltSideVertDev', yPos - F1AltSideVertDev);
           this.valuesToLog.set('this.lowerBound', this.lowerBound);
           this.valuesToLog.set('this.upperBound', this.upperBound);
-          this.valuesToLog.set('yPos', yPos);
-          this.valuesToLog.set('extendedLower', F1SpdSideVertDev);
+          this.valuesToLog.set('cwBotDiff', cwBotDiff);
+          this.valuesToLog.set('cwTopDiff', cwTopDiff);
+          this.valuesToLog.set('roll', roll.value);
           let i = 0;
           this.valuesToLog.forEach((value, key) => {
             this.spanRefs[i].instance.textContent = `${key}: ${value}`;
@@ -1045,8 +1070,9 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
     this.valuesToLog.set('yPos - F1AltSideVertDev', 0);
     this.valuesToLog.set('this.lowerBound', 0);
     this.valuesToLog.set('this.upperBound', 0);
-    this.valuesToLog.set('yPos', 0);
-    this.valuesToLog.set('extendedLower', 0);
+    this.valuesToLog.set('cwBotDiff', 0);
+    this.valuesToLog.set('cwTopDiff', 0);
+    this.valuesToLog.set('roll', 0);
 
     const spans = [];
     this.valuesToLog.forEach((value, key) => {
