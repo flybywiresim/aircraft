@@ -25,10 +25,10 @@ import {
 import { hhmmFormatter } from '../../../shared/utils';
 import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
 import { FlightPlanFooter } from '../../common/FlightPlanFooter';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { Footer } from '../../common/Footer';
 
-export class MfdFmsFplnFixInfo extends FmsPage {
+export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
     this.props.bus,
     this.props.fmcService.master!.flightPlanInterface,

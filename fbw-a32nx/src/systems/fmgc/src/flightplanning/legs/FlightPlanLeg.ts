@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -33,8 +33,7 @@ import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { v4 } from 'uuid';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
-import { WindEntry } from '../data/wind';
-import { Vec2Math } from '@microsoft/msfs-sdk';
+import { cloneWindVector, WindEntry } from '../data/wind';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -155,7 +154,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         : undefined,
       calculated: this.calculated ? JSON.parse(JSON.stringify(this.calculated)) : undefined,
       cruiseWindEntries: this.cruiseWindEntries.map((entry) => ({
-        vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+        vector: cloneWindVector(entry.vector),
         altitude: entry.altitude,
       })),
     };
@@ -190,7 +189,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
     leg.calculated = serialized.calculated;
     leg.cruiseWindEntries = serialized.cruiseWindEntries.map((entry) => ({
-      vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+      vector: entry.vector !== undefined ? cloneWindVector(entry.vector) : undefined,
       altitude: entry.altitude,
     }));
 

@@ -19,7 +19,7 @@ import { FailuresConsumer, RaBusPublisher } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
-import { FmsMessagePublisher } from '../MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FmsMessagePublisher } from '../../../shared/src/publishers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { dataStatusUri } from './shared/utils';

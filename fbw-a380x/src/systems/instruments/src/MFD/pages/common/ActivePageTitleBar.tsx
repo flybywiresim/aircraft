@@ -24,6 +24,7 @@ interface ActivePageTitleBarProps extends ComponentProps {
  * Displays the title bar, with optional markers for lateral offsets, engine out and temporary flight plan
  */
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {
+  //FIXME: We should have a generic title bar component without subsystem specific code here.
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 

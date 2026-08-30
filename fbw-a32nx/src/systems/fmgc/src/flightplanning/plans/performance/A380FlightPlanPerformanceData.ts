@@ -17,7 +17,8 @@ import {
   TakeoffPacks,
   TakeoffPowerSetting,
 } from './FlightPlanPerformanceData';
-import { FlightPlanWindEntry, WindVector } from '../../data/wind';
+import { cloneWindVector, FlightPlanWindEntry, WindVector } from '../../data/wind';
+import { WindUtils } from '../../../guidance/vnav/wind/WindUtils';
 
 // TODO this should go to fbw-a380x/ once FMS is moved to fbw-common
 export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData {
@@ -136,6 +137,19 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.costIndexMode?.set(this.costIndexMode.get());
     cloned.climbDerated?.set(this.climbDerated.get());
     cloned.descentCabinRate?.set(this.descentCabinRate.get());
+    cloned.climbWindEntries.set(
+      this.climbWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: cloneWindVector(vector),
+        ...rest,
+      })),
+    );
+    cloned.descentWindEntries.set(
+      this.descentWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: cloneWindVector(vector),
+        ...rest,
+      })),
+    );
+    cloned.alternateWind.set(cloneWindVector(this.alternateWind.get()));
 
     return cloned;
   }
@@ -895,9 +909,9 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly descentWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
 
   /**
-   * The average wind vector for the alternate flight plan, or null if not set.
+   * The average wind vector for the alternate flight plan
    */
-  readonly alternateWind = Subject.create<WindVector | null>(null);
+  readonly alternateWind = Subject.create<WindVector>(WindUtils.undefinedWindVector);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -9,7 +8,7 @@ import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Airway, AltitudeConstraint, Fix, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { BitFlags, ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -21,12 +20,32 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
-import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
+import {
+  WindEntry,
+  PropagatedWindEntry,
+  WindVector,
+  FlightPlanWindEntry,
+  cloneWindVector,
+  FlightPlanWindEntryFlags,
+  areWindEntriesTheSame,
+  createVectorFromMagnitudeAndDirection,
+} from './data/wind';
+import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
+import { HistoryWind } from '../wind/HistoryWind';
+import { FlightPhaseManagerEvents } from '../flightphase';
+import { FmgcFlightPhase } from '../../../shared/src/flightphase';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
+
+  private readonly historyWinds = new HistoryWind(this.bus);
+
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   public syncClientID = MathUtils.randomInt32();
 
@@ -35,7 +54,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
-    private config = FpmConfigs.A320_HONEYWELL_H3,
+    private readonly config = FpmConfigs.A320_HONEYWELL_H4,
     master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
@@ -44,6 +63,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.performanceDataInit,
       this.syncClientID,
       master,
+      this.config,
     );
   }
 
@@ -321,6 +341,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   private prepareDestructiveModification(planIndex: FlightPlanIndex) {
     let finalIndex = planIndex;
     if (planIndex === FlightPlanIndex.Active) {
+      const active = this.flightPlanManager.has(FlightPlanIndex.Active)
+        ? this.flightPlanManager.get(FlightPlanIndex.Active)
+        : null;
+      if (this.config.DRAFT_ON_WIND_EDIT && active && active.hasDraftWindEntries()) {
+        active.insertDraftWindEntries();
+        this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
+      }
       this.ensureTemporaryExists();
 
       finalIndex = FlightPlanIndex.Temporary;
@@ -626,7 +653,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     constraint?: AltitudeConstraint,
-    planIndex?: FlightPlanIndex,
+    planIndex = FlightPlanIndex.Active,
     alternate?: boolean,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
@@ -642,8 +669,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     atIndex: number,
     isDescentConstraint: boolean,
     speed?: number,
-    planIndex?: FlightPlanIndex,
-    alternate?: boolean,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
   ): Promise<void> {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
@@ -931,51 +958,52 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex = FlightPlanIndex.Active) {
     const plan = this.flightPlanManager.get(planIndex);
-
-    return plan.propagateWindsAt(atIndex, result, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.propagateWindsAt(atIndex, result);
   }
 
   addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
-    return plan.addCruiseWindEntry(atIndex, entry, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.addCruiseWindEntry(atIndex, entry);
   }
 
   deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteCruiseWindEntry(atIndex, altitude);
   }
 
-  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
+  editCruiseWindEntry(atIndex: number, entryIndex: number, newEntry: WindEntry, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
-    return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.editCruiseWindEntry(atIndex, entryIndex, newEntry);
   }
 
-  setClimbWindEntry(altitude: number, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
+  setClimbWindEntry(altitude: number | undefined, entry: FlightPlanWindEntry | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
+    return plan.setClimbWindEntry(altitude, entry);
+  }
 
-    return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
+  editClimbWindEntry(index: number, entry: FlightPlanWindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.editClimbWindEntry(index, entry);
   }
 
   setDescentWindEntry(
-    altitude: number,
+    altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
     planIndex: number,
-    shouldUpdateTwrWind: boolean = true,
   ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
+    return plan.setDescentWindEntry(altitude, entry);
+  }
 
-    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS, shouldUpdateTwrWind);
+  editDescentWindEntry(index: number, entry: FlightPlanWindEntry, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.editDescentWindEntry(index, entry);
   }
 
   async deleteAllClimbWindEntries() {
     this.deleteClimbWindEntries(FlightPlanIndex.Active);
-
     for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const sec = this.secondary(i);
-
       if (sec.isActiveOrCopiedFromActive()) {
         this.deleteClimbWindEntries(sec.index);
       }
@@ -984,29 +1012,118 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   deleteClimbWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteClimbWindEntries();
   }
 
   deleteDescentWindEntries(planIndex: number) {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.deleteDescentWindEntries();
   }
 
-  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
+  setAlternateWind(entry: WindVector, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
-
     return plan.setAlternateWind(entry);
+  }
+
+  clearAlternateWind(planIndex: number) {
+    const plan = this.flightPlanManager.get(planIndex);
+    return plan.clearAlternateWind();
   }
 
   insertWindUplink(planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
 
-    return plan.insertWindUplink(
-      this.config.NUM_CLIMB_WIND_LEVELS,
-      this.config.NUM_CRUISE_WIND_LEVELS,
-      this.config.NUM_DESCENT_WIND_LEVELS,
+    return plan.insertWindUplink();
+  }
+
+  getHistoryWindsEntries(sortByAltitudeAscending?: boolean): Promise<Readonly<WindEntry>[]> {
+    return Promise.resolve(
+      this.historyWinds.getRecordedWinds(this.active.performanceData.cruiseFlightLevel.get(), sortByAltitudeAscending),
     );
+  }
+
+  async insertHistoryWinds(): Promise<boolean> {
+    if (await this.historyWindInsertionAllowed()) {
+      const fp = this.active;
+      await this.deleteAllClimbWindEntries();
+      if (!fp.hasDraftWindEntries()) {
+        const historyWinds = this.historyWinds
+          .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false)
+          .filter((entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined);
+        if (historyWinds.length > 0) {
+          const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
+            return {
+              altitude: entry.altitude,
+              vector: cloneWindVector(entry.vector),
+              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+            };
+          });
+          fp.setPerformanceData('climbWindEntries', entries);
+          return Promise.resolve(true);
+        }
+      }
+    }
+    return Promise.resolve(false);
+  }
+
+  async historyWindInsertionAllowed(): Promise<boolean> {
+    const historyWindEntries = await this.getHistoryWindsEntries();
+    return Promise.resolve(
+      !this.hasTemporary &&
+        this.hasActive &&
+        this.historyWinds.areWindsValidForInsertion() &&
+        !this.active.pendingWindUplink.isWindUplinkInProgress() &&
+        !this.active.pendingWindUplink.isWindUplinkReadyToInsert() &&
+        !this.haveHistoryWindsBeenInserted(historyWindEntries),
+    );
+  }
+
+  async setApproachWind(direction: number | null, magnitude: number | null, planIndex: number): Promise<boolean> {
+    if (this.has(planIndex)) {
+      const plan = this.get(planIndex);
+      if (plan.destinationAirport) {
+        const dir = direction !== null ? direction % 360 : plan.performanceData.approachWindDirection.get();
+        plan.setPerformanceData('approachWindDirection', dir);
+        const mag = magnitude ?? plan.performanceData.approachWindMagnitude.get();
+        plan.setPerformanceData('approachWindMagnitude', mag);
+        plan.setPerformanceData('isApproachWindPilotEntered', true);
+        const destinationMagVar = Facilities.getMagVar(
+          plan.destinationAirport.location.lat,
+          plan.destinationAirport.location.long,
+        );
+        const trueDir = dir !== null ? MagVar.magneticToTrue(dir, destinationMagVar) : undefined;
+        const windEntry: FlightPlanWindEntry = {
+          vector: createVectorFromMagnitudeAndDirection(mag ?? undefined, trueDir),
+          flags: 0,
+          altitude: 0,
+        };
+        plan.setDescentWindEntry(0, windEntry, false, false);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async deleteApproachWind(planIndex: number) {
+    if (this.has(planIndex)) {
+      const plan = this.get(planIndex);
+      if (plan.destinationAirport) {
+        plan.setPerformanceData('approachWindDirection', null);
+        plan.setPerformanceData('approachWindMagnitude', null);
+        plan.setPerformanceData('isApproachWindPilotEntered', false);
+        plan.setDescentWindEntry(plan.destinationAirport.location.alt, null, false, false);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private haveHistoryWindsBeenInserted(historyWinds: WindEntry[]) {
+    const climbWinds = this.active.performanceData.climbWindEntries.get();
+    if (climbWinds === null || climbWinds.length !== historyWinds.length) {
+      return false;
+    }
+
+    return climbWinds.every((wind, i) => areWindEntriesTheSame(wind, historyWinds[i]));
   }
 }

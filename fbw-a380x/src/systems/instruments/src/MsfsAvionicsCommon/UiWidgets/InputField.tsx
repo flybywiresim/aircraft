@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   MutableSubscribable,
   Subject,
   Subscribable,
@@ -16,7 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from '../../MFD/pages/common/DataEntryFormats';
 import { A380FmsError } from '../../MFD/shared/A380FmsError';
-import { FmsError } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 export enum InteractionMode {
@@ -27,13 +28,13 @@ export enum InteractionMode {
 export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
-  mandatory?: Subscribable<boolean>;
+  mandatory?: Subscribable<boolean> | boolean;
   /** If inactive, will be rendered as static value (green text) */
-  inactive?: Subscribable<boolean>;
+  inactive?: Subscribable<boolean> | boolean;
   /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
-  disabled?: Subscribable<boolean>;
+  disabled?: Subscribable<boolean> | boolean;
   /** Whether field can be cleared by user */
-  canBeCleared?: Subscribable<boolean>;
+  canBeCleared?: Subscribable<boolean> | boolean;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
   freeText?: boolean;
@@ -68,6 +69,9 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
 
   /* Whether to display the unit in a larger font size */
   bigUnit?: boolean;
+
+  /** Indicates whether the input field is part of a fixed values dropdown. If so, all keyboard inputs are ignored.*/
+  fixedValuesDropDown?: boolean;
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -128,6 +132,14 @@ export class InputField<
 
   private isOverFlow = false;
 
+  private readonly mandatory = SubscribableUtils.toSubscribable(this.props.mandatory ?? false, true);
+
+  private readonly inactive = SubscribableUtils.toSubscribable(this.props.inactive ?? false, true);
+
+  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? false, true);
+
+  private readonly canBeCleared = SubscribableUtils.toSubscribable(this.props.canBeCleared ?? true, true);
+
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -144,11 +156,11 @@ export class InputField<
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
-      if (this.props.mandatory?.get()) {
+      if (this.mandatory.get()) {
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
     } else {
-      if (this.props.mandatory?.get()) {
+      if (this.mandatory.get()) {
         this.textInputRef.getOrDefault()?.classList.add('mandatory');
       }
     }
@@ -223,7 +235,7 @@ export class InputField<
   }
 
   private onKeyDown(ev: KeyboardEvent) {
-    if (!this.isFocused.get()) {
+    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -232,10 +244,10 @@ export class InputField<
     }
   }
 
-  private onKeyDownHandler = this.onKeyDown.bind(this);
+  private readonly onKeyDownHandler = this.onKeyDown.bind(this);
 
   private handleBackspace() {
-    if (this.modifiedFieldValue.get() === null && this.props.canBeCleared?.get()) {
+    if (this.modifiedFieldValue.get() === null) {
       this.modifiedFieldValue.set('');
     } else if (this.modifiedFieldValue.get()?.length === 0) {
       // Do nothing
@@ -247,7 +259,7 @@ export class InputField<
   }
 
   private onKeyPress = (ev: KeyboardEvent) => {
-    if (!this.isFocused.get()) {
+    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -270,7 +282,7 @@ export class InputField<
     }
   };
 
-  private onKeyPressHandler = this.onKeyPress.bind(this);
+  private readonly onKeyPressHandler = this.onKeyPress.bind(this);
 
   private handleKeyInput = (key: string) => {
     if (this.modifiedFieldValue.get() === null) {
@@ -303,12 +315,7 @@ export class InputField<
   }
 
   public onFocus() {
-    if (
-      !this.isFocused.get() &&
-      !this.isValidating.get() &&
-      !this.props.disabled?.get() &&
-      !this.props.inactive?.get()
-    ) {
+    if (!this.isFocused.get() && !this.isValidating.get() && !this.disabled.get() && !this.inactive.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.readValue.get(), false);
       }
@@ -322,7 +329,7 @@ export class InputField<
       }, 20_000);
       this.textInputRef.instance.classList.add('valueSelected');
       this.textInputRef.instance.classList.add('editing');
-      if (this.props.mandatory?.get()) {
+      if (this.mandatory.get()) {
         this.textInputRef.instance.classList.remove('mandatory');
       }
       this.modifiedFieldValue.set(null);
@@ -334,7 +341,7 @@ export class InputField<
   private onFocusHandler = this.onFocus.bind(this);
 
   public async onBlur(validateAndUpdate: boolean = true) {
-    if (!this.props.disabled?.get() && !this.props.inactive?.get() && this.isFocused.get()) {
+    if (!this.disabled.get() && !this.inactive.get() && this.isFocused.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
       }
@@ -358,7 +365,7 @@ export class InputField<
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (this.readValue.get() === null && this.props.mandatory?.get()) {
+      if (this.readValue.get() === null && this.mandatory.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -372,7 +379,7 @@ export class InputField<
     this.leadingUnit.set(unitLeading ?? '');
     this.trailingUnit.set(unitTrailing ?? '');
 
-    if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
+    if (this.mandatory.get() && !this.inactive.get() && !this.disabled.get()) {
       this.textInputRef.instance.innerHTML =
         formatted?.replace(/-/gi, this.props.overrideEmptyMandatoryPlaceholder ?? '\u25AF') ?? '';
     } else {
@@ -382,24 +389,29 @@ export class InputField<
 
   private async validateAndUpdate(input: string) {
     this.isValidating.set(true);
-
     let newValue = null;
     let updateWasSuccessful = true;
+    const oldValue = this.readValue.get();
+    let valueChanged: boolean;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
+      valueChanged = newValue !== oldValue;
+      if (valueChanged && newValue === null && !this.canBeCleared.get()) {
+        throw new FmsError(FmsErrorType.NotAllowed);
+      }
     } catch (msg: unknown) {
       updateWasSuccessful = false;
       if (msg instanceof FmsError && this.props.errorHandler) {
         this.props.errorHandler(msg);
-        newValue = this.readValue.get();
+        newValue = oldValue;
       }
     }
 
-    if (updateWasSuccessful) {
+    if (updateWasSuccessful && valueChanged) {
       const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
       if (this.props.dataHandlerDuringValidation) {
         try {
-          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
+          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, oldValue);
           const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
           if (validation === false) {
@@ -412,26 +424,23 @@ export class InputField<
       } else {
         await artificialWaitingTime;
       }
-
-      if (updateWasSuccessful) {
-        if (this.props.onModified) {
-          try {
-            await this.props.onModified(newValue);
-          } catch (msg: unknown) {
-            if (msg instanceof FmsError && this.props.errorHandler) {
-              this.props.errorHandler(msg);
-            }
-            updateWasSuccessful = false;
+      if (this.props.onModified) {
+        try {
+          await this.props.onModified(newValue);
+        } catch (msg: unknown) {
+          if (msg instanceof FmsError && this.props.errorHandler) {
+            this.props.errorHandler(msg);
           }
-        } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
-          // If we have `value` in props, we know U extends T
-
-          this.props.value.set(newValue as T);
-        } else if (!this.props.dataHandlerDuringValidation) {
-          console.error(
-            'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
-          );
+          updateWasSuccessful = false;
         }
+      } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
+        // If we have `value` in props, we know U extends T
+
+        this.props.value.set(newValue as T);
+      } else if (!this.props.dataHandlerDuringValidation) {
+        console.error(
+          'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
+        );
       }
     }
 
@@ -450,18 +459,6 @@ export class InputField<
     super.onAfterRender(node);
 
     // Optional props
-    if (this.props.mandatory === undefined) {
-      this.props.mandatory = Subject.create(false);
-    }
-    if (this.props.inactive === undefined) {
-      this.props.inactive = Subject.create(false);
-    }
-    if (this.props.disabled === undefined) {
-      this.props.disabled = Subject.create(false);
-    }
-    if (this.props.canBeCleared === undefined) {
-      this.props.canBeCleared = Subject.create(true);
-    }
     if (this.props.enteredByPilot === undefined) {
       this.props.enteredByPilot = Subject.create(true);
     }
@@ -501,7 +498,7 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.mandatory.sub((val) => {
+      this.mandatory.sub((val) => {
         if (val && this.readValue.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
@@ -512,7 +509,7 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.inactive.sub((val) => {
+      this.inactive.sub((val) => {
         if (val) {
           this.containerRef.instance.classList.add('inactive');
           this.textInputRef.instance.classList.add('inactive');
@@ -522,7 +519,7 @@ export class InputField<
           this.containerRef.instance.classList.remove('inactive');
           this.textInputRef.instance.classList.remove('inactive');
 
-          if (!this.props.disabled?.get()) {
+          if (!this.disabled.get()) {
             this.textInputRef.instance.tabIndex = -1;
           }
         }
@@ -531,14 +528,14 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.disabled.sub((val) => {
-        if (!this.props.inactive?.get()) {
+      this.disabled.sub((val) => {
+        if (!this.inactive.get()) {
           if (val) {
             this.textInputRef.instance.tabIndex = 0;
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
-            if (this.props.mandatory?.get() && this.readValue.get() === null) {
+            if (this.mandatory.get() && this.readValue.get() === null) {
               this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
@@ -546,7 +543,7 @@ export class InputField<
             this.containerRef.instance.classList.remove('disabled');
             this.textInputRef.instance.classList.remove('disabled');
 
-            if (this.props.mandatory?.get() && this.readValue.get() === null) {
+            if (this.mandatory.get() && this.readValue.get() === null) {
               this.textInputRef.instance.classList.add('mandatory');
             }
           }
@@ -566,13 +563,17 @@ export class InputField<
     );
 
     this.subs.push(
-      this.props.tmpyActive.sub((v) => {
-        if (v) {
-          this.textInputRef.instance.classList.add('tmpy');
-        } else {
-          this.textInputRef.instance.classList.remove('tmpy');
-        }
-      }, true),
+      MappedSubject.create(
+        ([tmpy, focused]) => {
+          if (tmpy && !focused) {
+            this.textInputRef.instance.classList.add('tmpy');
+          } else {
+            this.textInputRef.instance.classList.remove('tmpy');
+          }
+        },
+        this.props.tmpyActive,
+        this.isFocused,
+      ),
     );
 
     if (this.props.dataEntryFormat.reFormatTrigger) {
@@ -591,7 +592,7 @@ export class InputField<
     }
 
     this.props.hEventConsumer.handle((key) => {
-      if (!this.isFocused.get()) {
+      if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
         return;
       }
 

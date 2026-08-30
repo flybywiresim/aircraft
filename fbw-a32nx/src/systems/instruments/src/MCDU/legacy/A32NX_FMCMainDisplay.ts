@@ -54,27 +54,18 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CompanyRoute } from '@simbridge/index';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
-import { AtsuStatusCodes, CruiseWindRequest, WindRequestMessage } from '@datalink/common';
+import { AtsuStatusCodes } from '@datalink/common';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import {
-  BitFlags,
-  EventBus,
-  Subscription,
-  SimVarValueType,
-  ClockEvents,
-  ConsumerSubject,
-  Vec2Math,
-} from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Subscription, SimVarValueType, ClockEvents, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { HistoryWind } from '@fmgc/wind/HistoryWind';
 import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
@@ -92,11 +83,9 @@ import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
-import { isLeg, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
+import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -109,7 +98,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly currFlightPlanService = new FlightPlanService(
     this.bus,
     new A320FlightPlanPerformanceData(),
-    FpmConfigs.A320_HONEYWELL_H3,
+    FpmConfigs.A320_HONEYWELL_H4,
     true,
   );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
@@ -305,7 +294,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public efisInterfaces?: Record<EfisSide, EfisInterface>;
   public guidanceController?: GuidanceController;
   public navigation?: Navigation;
-  private historyWinds?: HistoryWind;
 
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
@@ -406,7 +394,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
-    this.historyWinds = new HistoryWind(this.bus);
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
@@ -2497,6 +2484,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       case FmsErrorType.AwyWptMismatch:
         this.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
         break;
+      case FmsErrorType.NotAllowed:
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        break;
     }
   }
 
@@ -3835,15 +3825,18 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return true;
   }
 
-  public setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean {
+  public async setPerfApprWind(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
+    const hasDestination = this.flightPlanService.has(forPlan)
+      ? this.flightPlanService.get(forPlan).destinationAirport !== undefined
+      : false;
+
+    if (!hasDestination) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
-      this.flightPlanService.setPerformanceData('approachWindDirection', null, forPlan);
-      this.flightPlanService.setPerformanceData('approachWindMagnitude', null, forPlan);
-      this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', false, forPlan);
-
-      this.flightPlanService.setDescentWindEntry(0, null, forPlan);
-
-      return true;
+      return await this.flightPlanService.deleteApproachWind(forPlan);
     }
 
     // both must be entered
@@ -3856,22 +3849,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.flightPlanService.setPerformanceData('approachWindDirection', dir % 360, forPlan); // 360 is displayed as 0
-    this.flightPlanService.setPerformanceData('approachWindMagnitude', mag, forPlan);
-    this.flightPlanService.setPerformanceData('isApproachWindPilotEntered', true, forPlan);
 
-    const plan = this.getFlightPlan(forPlan);
-
-    const destinationMagVar = plan.destinationAirport
-      ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
-      : 0;
-
-    const theta = MagVar.magneticToTrue(dir, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS;
-
-    const groundWind = { altitude: 0, vector: Vec2Math.setFromPolar(mag, theta, Vec2Math.create()), flags: 0 };
-    this.flightPlanService.setDescentWindEntry(0, groundWind, forPlan, false);
-
-    return true;
+    return await this.flightPlanService.setApproachWind(dir, mag, forPlan);
   }
 
   public setPerfApprTransAlt(s: string, forPlan: FlightPlanIndex): boolean {
@@ -5284,8 +5263,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         );
         const alternateWind = plan.performanceData.alternateWind.get();
 
-        const windComponent =
-          alternateWind !== null ? WindUtils.computeTailwindComponent(alternateWind, trueCourseToAlternate) : 0;
+        const windComponent = WindUtils.computeTailwindComponent(alternateWind, trueCourseToAlternate);
 
         const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), windComponent);
 
@@ -5573,27 +5551,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
     const plan = this.getFlightPlan(forPlan);
-    if (!plan) {
-      return undefined;
-    }
-
-    if (!plan.destinationAirport || !plan.alternateDestinationAirport) {
-      return undefined;
-    }
-
-    // TODO use actual flight plan distance rather than great circle distance
-    const distance = Avionics.Utils.computeGreatCircleDistance(
-      plan.destinationAirport.location,
-      plan.alternateDestinationAirport.location,
-    );
-
-    if (distance > 200) {
-      return 310;
-    } else if (distance > 100) {
-      return 220;
-    }
-
-    return 100;
+    return plan?.getAlternateCruiseLevel();
   }
 
   public goToFuelPredPage(forPlan: FlightPlanIndex) {
@@ -5629,7 +5587,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (!plan.pendingWindUplink.isWindUplinkReadyToInsert() && !plan.pendingWindUplink.isWindUplinkInProgress()) {
       plan.pendingWindUplink.onUplinkRequested();
 
-      const request = this.formatWindRequest(forPlan);
+      const request = formatWindRequest(
+        forPlan,
+        plan,
+        this.flightPhaseManager.phase,
+        this.guidanceController,
+        this.dataManager,
+      );
 
       try {
         const [status, uplink] = await this.atsu.receiveWindUplink(request, sentCallback);
@@ -5650,7 +5614,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           uplink,
           plan,
           this.flightPhaseManager.phase,
-          FpmConfigs.A320_HONEYWELL_H3,
+          FpmConfigs.A320_HONEYWELL_H4,
         );
 
         this.addMessageToQueue(
@@ -5690,94 +5654,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     await this.flightPlanService.insertWindUplink(forPlan);
   }
 
-  private formatWindRequest(forPlan: FlightPlanIndex): WindRequestMessage {
-    const plan = this.getFlightPlan(forPlan);
-    if (!plan) {
-      return {};
-    }
-
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-    const phase = this.flightPhaseManager.phase;
-
-    const shouldRequestClimbWinds =
-      !plan.isActiveOrCopiedFromActive() ||
-      (phase >= FmgcFlightPhase.Preflight && phase <= FmgcFlightPhase.Takeoff) ||
-      phase === FmgcFlightPhase.Done;
-    const shouldRequestCruiseWinds =
-      !plan.isActiveOrCopiedFromActive() ||
-      (phase >= FmgcFlightPhase.Preflight && phase <= FmgcFlightPhase.Cruise) ||
-      phase === FmgcFlightPhase.Done;
-    const shouldRequestDescentWinds = plan.destinationAirport !== undefined;
-
-    const finalCruiseLevel = plan.allLegs.reduce(
-      (acc, leg) => (isLeg(leg) && leg.cruiseStep !== undefined ? Math.round(leg.cruiseStep.toAltitude / 100) : acc),
-      cruiseLevel,
-    );
-
-    const legPredictions =
-      forPlan === FlightPlanIndex.Active
-        ? this.guidanceController?.vnavDriver.mcduProfile?.waypointPredictions
-        : undefined;
-    const cruiseLegs = plan.allLegs.filter((leg, i) => {
-      if (!isLeg(leg) || !leg.isXF()) {
-        return false;
-      }
-
-      const legPrediction = legPredictions?.get(i);
-      return legPrediction !== undefined
-        ? legPrediction.profilePhase === ProfilePhase.Cruise
-        : leg.segment.class === SegmentClass.Enroute;
-    }) as FlightPlanLeg[];
-
-    let cruiseWinds: CruiseWindRequest | undefined = undefined;
-    if (shouldRequestCruiseWinds && cruiseLegs.length > 0) {
-      const propagatedWinds = this.flightPlanService.propagateWindsAt(0, [], forPlan);
-      const flightLevels = propagatedWinds.map((wind) => Math.round(wind.altitude / 100));
-
-      if (flightLevels.length === 0) {
-        if (cruiseLevel !== null) {
-          flightLevels.push(cruiseLevel);
-        }
-
-        plan.allLegs.forEach((leg) => {
-          if (isLeg(leg) && leg.cruiseStep !== undefined) {
-            const cruiseStep = Math.round(leg.cruiseStep.toAltitude / 100);
-
-            if (flightLevels.length < 4 && cruiseStep !== cruiseLevel && !flightLevels.includes(cruiseStep)) {
-              flightLevels.push(cruiseStep);
-            }
-          }
-        });
-      }
-
-      cruiseWinds = {
-        flightLevels,
-        waypoints: cruiseLegs.map((leg) => {
-          const isStoredWaypoint = this.dataManager.getStoredWaypointsByIdent(leg.ident).length > 0;
-
-          return isStoredWaypoint ? leg.definition.waypoint.location : leg.ident;
-        }),
-      };
-    }
-
-    let alternateWind = undefined;
-    if (plan.destinationAirport !== undefined && plan.alternateDestinationAirport !== undefined) {
-      alternateWind = {
-        destinationIcao: plan.destinationAirport.ident,
-        alternateIcao: plan.alternateDestinationAirport.ident,
-      };
-    }
-
-    return {
-      climbWindLevel: shouldRequestClimbWinds ? cruiseLevel : undefined,
-      cruiseWinds,
-      descentWindLevel: shouldRequestDescentWinds ? finalCruiseLevel ?? null : undefined,
-      alternateWind,
-    };
-  }
-
-  public getHistoryWinds(cruiseLevel: number | null) {
-    return this.historyWinds?.getRecordedWinds(cruiseLevel);
+  public async getHistoryWinds() {
+    return await this.flightPlanService.getHistoryWindsEntries(true);
   }
   // ---------------------------
   // CDUMainDisplay Types

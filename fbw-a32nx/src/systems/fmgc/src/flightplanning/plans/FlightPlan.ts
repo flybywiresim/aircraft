@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Vec2Math } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Value } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -22,18 +22,49 @@ import { BaseFlightPlan, FlightPlanContext, SerializedFlightPlan } from './BaseF
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
-import { debugFormatWindEntry, FlightPlanWindEntry, WindVector } from '../data/wind';
+import {
+  cloneWindVector,
+  debugFormatWindEntry,
+  extractWindDirectionFromVector,
+  extractWindSpeedFromVector,
+  FlightPlanWindEntry,
+  isPartlyFilledWindVector,
+  isWindVectorComplete,
+  WindEntry,
+  WindVector,
+} from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
+import { WindUtils } from '../../guidance/vnav/wind/WindUtils';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+  private static readonly emptyWindEntry: FlightPlanWindEntry = {
+    altitude: undefined,
+    vector: { direction: undefined, magnitude: undefined },
+    flags: 0,
+  };
+
   static empty<P extends FlightPlanPerformanceData>(
     context: FlightPlanContext,
     index: number,
     bus: EventBus,
     performanceDataInit: P,
+    maxClimbWindLevels: number,
+    maxCruiseWindLevels: number,
+    maxDescentWindLevels: number,
     time?: number,
+    draftOnWindsOnWindEdit = false,
   ): FlightPlan<P> {
-    return new FlightPlan<P>(context, index, bus, performanceDataInit, time);
+    return new FlightPlan<P>(
+      context,
+      index,
+      bus,
+      performanceDataInit,
+      maxClimbWindLevels,
+      maxCruiseWindLevels,
+      maxDescentWindLevels,
+      time,
+      draftOnWindsOnWindEdit,
+    );
   }
 
   /**
@@ -63,9 +94,46 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   public readonly pendingWindUplink: PendingWindUplink = new PendingWindUplink();
 
-  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P, time?: number) {
-    super(context, index, bus, time);
+  /**
+   * The draft climb wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   */
+  private readonly draftClimbWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
+  /**
+   * The draft descent wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   */
+  private readonly draftDescentWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
+  /**
+   * The draft cruise wind entry used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   */
+  private readonly alternateDraftWind: Value<WindVector | null> | undefined;
+
+  constructor(
+    context: FlightPlanContext,
+    index: number,
+    bus: EventBus,
+    performanceDataInit: P,
+    private readonly maxClimbWindLevels: number,
+    maxCruiseWindLevels: number,
+    private readonly maxDescentWindLevels: number,
+    time?: number,
+    private readonly draftOnWindsOnWindEdit = false,
+  ) {
+    super(
+      context,
+      index,
+      bus,
+      maxCruiseWindLevels,
+      time,
+      draftOnWindsOnWindEdit && index !== FlightPlanIndex.Uplink && index !== FlightPlanIndex.Temporary,
+    );
     this.performanceData = performanceDataInit;
+    const draft =
+      draftOnWindsOnWindEdit && this.index !== FlightPlanIndex.Temporary && this.index !== FlightPlanIndex.Uplink;
+    if (draft) {
+      this.draftClimbWindEntries = Value.create(null);
+      this.draftDescentWindEntries = Value.create(null);
+      this.alternateDraftWind = Value.create(null);
+    }
   }
 
   destroy() {
@@ -76,7 +144,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default, time?: number): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone(), time);
+    const newPlan = FlightPlan.empty(
+      this.context,
+      newIndex,
+      this.bus,
+      this.performanceData.clone(),
+      this.maxClimbWindLevels,
+      this.maxCruiseWindLevels!,
+      this.maxDescentWindLevels,
+      time,
+      this.draftOnWindsOnWindEdit,
+    );
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
@@ -163,7 +241,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
     this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
     this.setPerformanceData('pilotAlternateFuel', null);
-    this.setPerformanceData('alternateWind', null);
+    this.setPerformanceData('alternateWind', WindUtils.undefinedWindVector);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -506,6 +584,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         flightNumber,
       });
     }
+
+    this.incrementVersion();
   }
 
   /**
@@ -598,9 +678,23 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
-    time?: number,
+    time: number,
+    draftOnWindsOnWindEdit: boolean,
+    maxClimbWindLevels: number,
+    maxCruiseWindLevels: number,
+    maxDescentWindLevels: number,
   ): Promise<FlightPlan<P>> {
-    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit, time);
+    const newPlan = FlightPlan.empty<P>(
+      context,
+      index,
+      bus,
+      performanceDataInit,
+      maxClimbWindLevels,
+      maxCruiseWindLevels,
+      maxDescentWindLevels,
+      time,
+      draftOnWindsOnWindEdit,
+    );
 
     // TODO init performance data
 
@@ -751,26 +845,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * If the provided entry is null, the entry is deleted.
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
-   * @param planIndex which flight plan index to set the entry in
+   * @param checkDraftConfig whether to enable draft winds if enabled by config
    */
   async setClimbWindEntry(
-    altitude: number,
+    altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
-    maxNumberEntries: number,
+    checkDraftConfig = true,
   ): Promise<void> {
-    const originElevation = this.originAirport?.location.alt ?? 0;
-    const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
+    this.modifyClimbWindEntry(altitude, entry, checkDraftConfig);
+  }
 
-    if (entry !== null && entry.altitude <= originElevation + 400) {
-      entry.altitude = originElevation;
-    }
-
-    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'climbWindEntries',
-      this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
-    );
+  async editClimbWindEntry(index: number, entry: FlightPlanWindEntry) {
+    this.modifyClimbWindEntry(entry.altitude, entry, true, index);
   }
 
   /**
@@ -780,21 +866,109 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
    * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
-   * the destination altitude
+   * the destination altitude.
+   * @param checkDraftConfig whether to prepare draft winds if enabled by config
    */
   async setDescentWindEntry(
-    altitude: number,
+    altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
-    maxNumberEntries: number,
     shouldUpdateTwrWind: boolean = true,
+    checkDraftConfig = true,
   ): Promise<void> {
+    this.modifyDescentWindEntry(altitude, entry, shouldUpdateTwrWind, checkDraftConfig);
+  }
+
+  async editDescentWindEntry(index: number, entry: FlightPlanWindEntry) {
+    this.modifyDescentWindEntry(entry.altitude, entry, true, true, index);
+  }
+
+  private modifyClimbWindEntry(
+    altitude: number | undefined,
+    entry: FlightPlanWindEntry | null,
+    checkDraft: boolean,
+    entryIndex: number | undefined = undefined,
+  ) {
+    if (altitude === undefined && entryIndex === undefined) {
+      console.warn('Attempted to modify climb wind entry with no altitude without specifying index');
+      return;
+    }
+
+    const entries = checkDraft
+      ? this.prepareClimbWindDraftModification() ?? this.performanceData.climbWindEntries.get()
+      : this.performanceData.climbWindEntries.get();
+    const hasDraft = this.draftClimbWindEntries?.get() ?? null !== null;
+
+    // Partial entries not allowed on non draft winds
+    if (entry !== null && !hasDraft && (altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
+      return;
+    }
+    const originElevation = this.originAirport?.location.alt ?? 0;
+    const altitudeOrGround = altitude !== undefined && altitude <= originElevation + 400 ? originElevation : altitude;
+
+    if (entry !== null && entry.altitude !== undefined) {
+      entry.altitude = altitudeOrGround;
+    }
+
+    const existingEntryIndex =
+      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
+
+    this.setClbDesWindEntry(entries, altitudeOrGround, entry, existingEntryIndex ?? -1, true);
+    if (!hasDraft) {
+      // Only send the event if we are not modifying the draft winds.
+      // Do this so the RPC event is sent
+      this.setPerformanceData('climbWindEntries', entries);
+    } else {
+      this.incrementVersion();
+    }
+  }
+
+  private modifyDescentWindEntry(
+    altitude: number | undefined,
+    entry: FlightPlanWindEntry | null,
+    shouldUpdateTwrWind: boolean = true,
+    checkDraft: boolean,
+    entryIndex: number | undefined = undefined,
+  ) {
+    if (altitude === undefined && entryIndex === undefined) {
+      console.warn('Attempted to modify descent wind entry with no altitude without specifying index');
+      return;
+    }
+    const entries = checkDraft
+      ? this.prepareDescentWindDraftModification() ?? this.performanceData.descentWindEntries.get()
+      : this.performanceData.descentWindEntries.get();
+    const hasDraft = this.draftDescentWindEntries?.get() ?? null !== null;
+
+    // Partial entries not allowed on non draft winds
+    if (entry !== null && !hasDraft && (altitude === undefined || isPartlyFilledWindVector(entry.vector))) {
+      return;
+    }
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
-    const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
+    const altitudeOrGround =
+      altitude !== undefined && altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
-    if (entry !== null && entry.altitude <= destinationElevation + 400) {
+    this.parseGroundWindEntryAndSetTwrWind(entry, shouldUpdateTwrWind && !hasDraft, destinationElevation);
+
+    const existingEntryIndex =
+      entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
+
+    this.setClbDesWindEntry(entries, altitudeOrGround, entry, existingEntryIndex ?? -1, false);
+    // Do this so the RPC event is sent
+    if (!hasDraft) {
+      // Only send the event if we are not modifying the draft winds.
+      this.setPerformanceData('descentWindEntries', entries);
+    } else {
+      this.incrementVersion();
+    }
+  }
+
+  private parseGroundWindEntryAndSetTwrWind(
+    entry: WindEntry | null,
+    shouldUpdateTwrWind: boolean,
+    destinationElevation: number,
+  ): void {
+    if (entry !== null && entry.altitude !== undefined && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
-
-      if (shouldUpdateTwrWind) {
+      if (shouldUpdateTwrWind && !isPartlyFilledWindVector(entry.vector)) {
         // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
         // TODO should we only do this if no pilot entry has been made?
         const destinationMagVar = this.destinationAirport
@@ -803,28 +977,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.setPerformanceData(
           'approachWindDirection',
-          MagVar.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+          MagVar.trueToMagnetic(extractWindDirectionFromVector(entry.vector)!, destinationMagVar),
         );
-        this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
+        this.setPerformanceData('approachWindMagnitude', extractWindSpeedFromVector(entry.vector)!);
         this.setPerformanceData('isApproachWindPilotEntered', false);
       }
     }
-
-    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
-    // Do this so the RPC event is sent
-    this.setPerformanceData(
-      'descentWindEntries',
-      this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
-    );
   }
 
   private setClbDesWindEntry(
-    windEntries: FlightPlanWindEntry[],
-    altitude: number,
+    windEntries: WindEntry[],
+    altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
-    maxNumberEntries: number,
+    existingEntryIndex: number,
+    climb: boolean,
   ) {
-    const existingEntryIndex = windEntries.findIndex((it) => it.altitude === altitude);
+    let sortEntries = false;
 
     if (entry === null) {
       // Delete
@@ -833,47 +1001,66 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         return;
       } else {
         windEntries.splice(existingEntryIndex, 1);
+        sortEntries = true;
       }
     } else {
       if (existingEntryIndex !== -1) {
         // Edit
+        const old = windEntries[existingEntryIndex];
+        if (
+          (old.altitude !== undefined && entry.altitude === undefined) ||
+          (old.vector.direction !== undefined &&
+            old.vector.magnitude !== undefined &&
+            (entry.vector.magnitude === undefined || entry.vector.direction === undefined))
+        ) {
+          // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
+          entry.vector.magnitude = undefined;
+          entry.vector.direction = undefined;
+          entry.altitude = undefined;
+        }
         windEntries[existingEntryIndex] = entry;
       } else {
         // Add
-        if (windEntries.length >= maxNumberEntries) {
+        if (windEntries.length >= (climb ? this.maxClimbWindLevels : this.maxDescentWindLevels)) {
           // Special case is adding a PERF APPR wind when the maximum number of entries exists. In that case, we replace the lowest level
-          if (altitude <= windEntries[windEntries.length - 1].altitude) {
+          if (altitude ?? 0 <= (windEntries[windEntries.length - 1].altitude ?? 0)) {
             console.info(
               `[FPM] Replacing ${debugFormatWindEntry(windEntries[windEntries.length - 1])} by ${debugFormatWindEntry(entry)}`,
             );
             windEntries[windEntries.length - 1] = entry;
+            sortEntries = true;
           } else {
             console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
           }
-
-          return;
+        } else {
+          if (entry.altitude !== undefined && altitude !== undefined && altitude !== entry.altitude) {
+            console.warn(
+              `[FPM] Ambiguous wind entry altitudes. Adding wind entry at altitude ${entry.altitude.toFixed(0)} ft because no entry was found at ${altitude.toFixed(0)} ft`,
+            );
+          }
+          sortEntries = true;
+          windEntries.push(entry);
         }
-
-        if (altitude !== entry.altitude) {
-          console.warn(
-            `[FPM] Ambiguous wind entry altitudes. Adding wind entry at altitude ${entry.altitude.toFixed(0)} ft because no entry was found at ${altitude.toFixed(0)} ft`,
-          );
-        }
-
-        windEntries.push(entry);
       }
+    }
+    if (sortEntries) {
+      const sortedEntries = this.sortWindEntriesByAltitude(windEntries);
+      windEntries.splice(0, windEntries.length, ...sortedEntries);
     }
   }
 
   async deleteClimbWindEntries(): Promise<void> {
+    this.deleteDraftClimbWindEntries();
     this.setPerformanceData('climbWindEntries', []);
   }
 
   async deleteDescentWindEntries(): Promise<void> {
+    this.deleteDraftDescentWindEntries();
     this.setPerformanceData('descentWindEntries', []);
   }
 
   private deleteAllCruiseWindEntries(): void {
+    this.deleteCruiseDraftWindEntries();
     for (let i = 0; i < this.allLegs.length; i++) {
       if (this.hasLegAt(i)) {
         const leg = this.legElementAt(i);
@@ -884,8 +1071,39 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
   }
 
-  async setAlternateWind(entry: WindVector | null): Promise<void> {
-    this.setPerformanceData('alternateWind', entry);
+  async setAlternateWind(vector: WindVector, forceNoDraft = false): Promise<void> {
+    if (!forceNoDraft && this.alternateDraftWind !== undefined) {
+      let existingAlternateDraft = this.alternateDraftWind.get();
+      if (existingAlternateDraft === null) {
+        existingAlternateDraft = { direction: undefined, magnitude: undefined };
+      }
+      const oldDir = existingAlternateDraft.direction;
+      const oldMag = existingAlternateDraft.magnitude;
+      if (
+        oldDir !== undefined &&
+        oldMag !== undefined &&
+        (vector.magnitude === undefined || vector.direction === undefined)
+      ) {
+        // Invalidate both magnitude and direction if we are replacing an old entry which had the two defined.
+        vector.magnitude = undefined;
+        vector.direction = undefined;
+      }
+
+      existingAlternateDraft.direction = vector.direction;
+      existingAlternateDraft.magnitude = vector.magnitude;
+      this.incrementVersion();
+    } else {
+      this.setPerformanceData('alternateWind', vector);
+    }
+  }
+
+  async clearAlternateWind(): Promise<void> {
+    if (this.alternateDraftWind !== undefined && this.alternateDraftWind.get() !== null) {
+      this.alternateDraftWind.set(null);
+      this.incrementVersion();
+    } else {
+      this.setPerformanceData('alternateWind', WindUtils.undefinedWindVector);
+    }
   }
 
   hasWindEntries() {
@@ -896,11 +1114,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
   }
 
-  async insertWindUplink(
-    maxNumClimbWindEntries: number,
-    maxNumCruiseWindEntries: number,
-    maxNumDescentWindEntries: number,
-  ): Promise<void> {
+  async insertWindUplink(): Promise<void> {
     if (!this.pendingWindUplink.isWindUplinkReadyToInsert()) {
       throw new Error('[FPM] Cannot insert wind uplink when it is not ready to insert');
     }
@@ -909,7 +1123,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       await this.deleteClimbWindEntries();
 
       for (const wind of this.pendingWindUplink.climbWinds) {
-        await this.setClimbWindEntry(wind.altitude, wind, maxNumClimbWindEntries);
+        await this.setClimbWindEntry(wind.altitude!, wind, false);
       }
     }
 
@@ -927,7 +1141,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         for (const wind of fix.levels) {
-          await this.addCruiseWindEntry(legIndex, wind, maxNumCruiseWindEntries);
+          await this.addCruiseWindEntry(legIndex, wind, false);
         }
       }
     }
@@ -936,14 +1150,246 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       await this.deleteDescentWindEntries();
 
       for (const wind of this.pendingWindUplink.descentWinds) {
-        await this.setDescentWindEntry(wind.altitude, wind, maxNumDescentWindEntries);
+        await this.setDescentWindEntry(wind.altitude!, wind, true, false);
       }
     }
 
     if (this.pendingWindUplink.alternateWind) {
-      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector);
+      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector!, true);
     }
 
     this.pendingWindUplink.onUplinkInserted();
+  }
+
+  /**
+   * Get the computed cruise level for the alternate.
+   * @returns the cruise level in hundreds of feet, or undefined, if no alternate or destination exist.
+   */
+  public getAlternateCruiseLevel(): number | undefined {
+    if (!this.destinationAirport || !this.alternateDestinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      this.destinationAirport.location,
+      this.alternateDestinationAirport.location,
+    );
+
+    if (distance > 200) {
+      return 310;
+    } else if (distance > 100) {
+      return 220;
+    }
+
+    return 100;
+  }
+
+  /**
+   * Gets the climb wind entries from the flightplan.
+   * @returns  The draft climb winds entries if they exist, otherwise the climb wind entries from the performance data
+   */
+  public getClimbWindEntries(): FlightPlanWindEntry[] {
+    return this.draftClimbWindEntries?.get() ?? this.performanceData.climbWindEntries.get();
+  }
+
+  /**
+   * Gets the descent wind entries from the flightplan.
+   * @returns The draft descent winds entries if they exist, otherwise the descent wind entries from the performance data
+   */
+  public getDescentWindEntries(): FlightPlanWindEntry[] {
+    return this.draftDescentWindEntries?.get() ?? this.performanceData.descentWindEntries.get();
+  }
+
+  /**
+   * Gets the alternate wind entry from the flightplan.
+   * @returns The draft alternate wind entry if it exists, otherwise the alternate wind entry from the performance data.
+   */
+  public getAlternateWind(): WindVector | null {
+    return this.alternateDraftWind?.get() ?? this.performanceData.alternateWind.get();
+  }
+
+  /**
+   * Gets whether the flightplan has draft wind entries which are not yet inserted or deleted by the pilot.
+   * @returns whether the flightplan has draft wind entries
+   */
+  public hasDraftWindEntries(): boolean {
+    const draftClimbWind = this.draftClimbWindEntries?.get() ?? null;
+    const draftCruiseWind = this.draftCruiseWindEntries?.get() ?? null;
+    const draftDescentWind = this.draftDescentWindEntries?.get() ?? null;
+    const draftAlternateWind = this.alternateDraftWind?.get() ?? null;
+
+    const hasDraftClimb = draftClimbWind !== null;
+    const hasDraftCruise = draftCruiseWind !== null;
+    const hasDraftDescent = draftDescentWind !== null;
+    const hasDraftAlternate = draftAlternateWind !== null;
+
+    return hasDraftClimb || hasDraftCruise || hasDraftDescent || hasDraftAlternate;
+  }
+
+  /**
+   * Inserts the draft wind entries into the flight plan if they exist.
+   */
+  public insertDraftWindEntries() {
+    const draftClimbWind = this.draftClimbWindEntries?.get() ?? null;
+    const draftCruiseWind = this.draftCruiseWindEntries?.get() ?? null;
+    const draftDescentWind = this.draftDescentWindEntries?.get() ?? null;
+    const draftAlternateWind = this.alternateDraftWind?.get() ?? null;
+
+    const hasDraftClimb = draftClimbWind !== null;
+    const hasDraftCruise = draftCruiseWind !== null;
+    const hasDraftDescent = draftDescentWind !== null;
+    const hasDraftAlternate = draftAlternateWind !== null;
+    if (hasDraftClimb && hasDraftCruise && hasDraftDescent && hasDraftAlternate) {
+      return;
+    }
+
+    if (hasDraftClimb) {
+      this.setPerformanceData(
+        'climbWindEntries',
+        this.filterDraftWindsByValidEntries(draftClimbWind, this.performanceData.climbWindEntries.get()),
+      );
+    }
+
+    if (hasDraftCruise) {
+      for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
+        const leg = this.maybeElementAt(i);
+        if (isLeg(leg) && draftCruiseWind.has(i)) {
+          const draftEntries = draftCruiseWind.get(i);
+          if (draftEntries) {
+            leg.cruiseWindEntries = this.filterDraftWindsByValidEntries(draftEntries, leg.cruiseWindEntries);
+          }
+        }
+      }
+    }
+
+    if (hasDraftDescent) {
+      const validEntries = this.filterDraftWindsByValidEntries(
+        draftDescentWind,
+        this.performanceData.descentWindEntries.get(),
+      );
+      for (let i = 0; i < validEntries.length; i++) {
+        this.parseGroundWindEntryAndSetTwrWind(validEntries[i], true, this.destinationAirport?.location.alt ?? 0);
+      }
+      this.setPerformanceData('descentWindEntries', validEntries);
+    }
+
+    if (hasDraftAlternate) {
+      if (isWindVectorComplete(draftAlternateWind)) {
+        this.setAlternateWind(cloneWindVector(draftAlternateWind), true);
+      }
+    }
+
+    this.deleteDraftWindEntries();
+  }
+
+  /**
+   * Filters the draft winds by only valid entries to be persisted to the flightplan.
+    Entries with altitude not defined are not persisted, (considered a deletion)
+    Partial entries with an altitude assigned, are reverted to the old value, deleted otherwise
+   * @param draftWinds the flightplan draft winds
+   * @param nonDraftWinds the flightplan loaded winds
+   * @returns the winds which can be inserted into the flightplan
+   */
+  private filterDraftWindsByValidEntries(draftWinds: WindEntry[], nonDraftWinds: WindEntry[]) {
+    return draftWinds
+      .map((e) => {
+        return isPartlyFilledWindVector(e.vector)
+          ? nonDraftWinds.find((it) => it.altitude === e.altitude) ?? FlightPlan.emptyWindEntry
+          : e;
+      })
+      .filter((v) => v.altitude !== undefined);
+  }
+
+  /**
+   * Deletes the draft wind entries from the flight plan without inserting them, if they exist.
+   */
+  public deleteDraftWindEntries() {
+    const climbDeleted = this.deleteDraftClimbWindEntries();
+    const cruiseDeleted = this.deleteCruiseDraftWindEntries();
+    const descentDeleted = this.deleteDraftDescentWindEntries();
+    const alternateDeleted = this.deleteAlternateDraftWindEntries();
+    if (climbDeleted || cruiseDeleted || descentDeleted || alternateDeleted) {
+      this.incrementVersion();
+    }
+  }
+
+  private prepareClimbWindDraftModification(): FlightPlanWindEntry[] | undefined {
+    if (!this.draftClimbWindEntries) {
+      return undefined;
+    }
+
+    const existingDraft = this.draftClimbWindEntries.get();
+
+    if (existingDraft === null) {
+      const newDraftEntries = [];
+      const performanceDataClimbWindEntries = this.performanceData.climbWindEntries.get();
+      for (let i = 0; i < performanceDataClimbWindEntries.length; i++) {
+        const sourceEntry = performanceDataClimbWindEntries[i];
+        newDraftEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
+      }
+      this.draftClimbWindEntries.set(newDraftEntries);
+      return newDraftEntries;
+    }
+
+    return existingDraft;
+  }
+
+  private deleteDraftClimbWindEntries(): boolean {
+    if (this.draftClimbWindEntries !== undefined) {
+      this.draftClimbWindEntries.set(null);
+      return true;
+    }
+    return false;
+  }
+
+  private prepareDescentWindDraftModification(): FlightPlanWindEntry[] | undefined {
+    if (!this.draftDescentWindEntries) {
+      return undefined;
+    }
+
+    const existingDraft = this.draftDescentWindEntries.get();
+
+    if (existingDraft === null) {
+      const newDraftEntries = [];
+      const performanceDataDescentWindEntries = this.performanceData.descentWindEntries.get();
+      for (let i = 0; i < performanceDataDescentWindEntries.length; i++) {
+        const sourceEntry = performanceDataDescentWindEntries[i];
+        newDraftEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
+      }
+      return newDraftEntries;
+    }
+
+    return existingDraft;
+  }
+
+  private deleteDraftDescentWindEntries(): boolean {
+    if (this.draftDescentWindEntries !== undefined) {
+      this.draftDescentWindEntries.set(null);
+      return true;
+    }
+    return false;
+  }
+
+  private deleteAlternateDraftWindEntries(): boolean {
+    if (this.alternateDraftWind !== undefined) {
+      this.alternateDraftWind.set(null);
+      return true;
+    }
+    return false;
+  }
+
+  private static cloneFlightPlanWindEntry(entry: FlightPlanWindEntry): FlightPlanWindEntry {
+    return {
+      ...entry,
+      vector: cloneWindVector(entry.vector),
+    };
+  }
+
+  private sortWindEntriesByAltitude(entries: WindEntry[]) {
+    const altitudeSorted = entries.filter((e) => e.altitude !== undefined).sort((a, b) => b.altitude! - a.altitude!);
+    let sortIndex = 0;
+    // Retain the order of undefined altitudes, others are sorted as is.
+    return entries.map((v) => (v.altitude === undefined ? v : altitudeSorted[sortIndex++]));
   }
 }

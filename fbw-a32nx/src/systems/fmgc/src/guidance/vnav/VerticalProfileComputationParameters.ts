@@ -99,7 +99,7 @@ export class VerticalProfileComputationParametersObserver {
       zeroFuelWeight: this.getZeroFuelWeight(),
       fuelOnBoard: this.getFuelOnBoard(),
       v2Speed: this.getV2Speed(),
-      tropoPause: this.fmgc.getTropoPause(),
+      tropoPause: this.fmgc.getTropoPause() ?? 36000,
       perfFactor: this.fmgc.getPerformanceFactorPercent() ?? 0,
       departureElevation: this.fmgc.getDepartureElevation() ?? DefaultVerticalProfileParameters.departureElevation,
       /**
@@ -187,6 +187,7 @@ export class VerticalProfileComputationParametersObserver {
       this.parameters.flapRetractionSpeed > 100 &&
       this.parameters.approachSpeed > 100;
 
+    const hasFuelOnBoard = Number.isFinite(this.parameters.fuelOnBoard);
     const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
     const hasGrossWeight = Number.isFinite(this.fmgc.getGrossWeight());
     const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
@@ -198,7 +199,8 @@ export class VerticalProfileComputationParametersObserver {
       areApproachSpeedsValid &&
       hasZeroFuelWeight &&
       hasGrossWeight &&
-      hasCruiseAltitude
+      hasCruiseAltitude &&
+      hasFuelOnBoard
     );
   }
 

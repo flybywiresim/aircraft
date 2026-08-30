@@ -188,7 +188,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDistanceToDestination(): number | undefined;
   setPerfApprQNH(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprTemp(s: string, forPlan: FlightPlanIndex): boolean;
-  setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean;
+  setPerfApprWind(s: string, forPlan: FlightPlanIndex): Promise<boolean>;
   updatePerfSpeeds(): void;
   setPerfApprTransAlt(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprVApp(s: string, forPlan: FlightPlanIndex): boolean;
@@ -222,7 +222,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setEstimatedTakeoffTime(text: string, forPlan: FlightPlanIndex): void;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
-  getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
+  getHistoryWinds(cruiseLevel: number | null): Promise<Readonly<WindEntry>[]>;
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
 

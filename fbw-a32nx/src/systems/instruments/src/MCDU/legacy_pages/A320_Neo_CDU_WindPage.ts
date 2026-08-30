@@ -1,19 +1,20 @@
+// Copyright (c) 2026 FlyByWire Simulations
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
-  areWindEntriesTheSame,
+  createVectorFromMagnitudeAndDirection,
   FlightPlanWindEntry,
   FlightPlanWindEntryFlags,
   formatWindVector,
+  isWindVectorComplete,
   PropagatedWindEntry,
   PropagationType,
   WindEntry,
   WindVector,
 } from '@fmgc/flightplanning/data/wind';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
@@ -103,7 +104,7 @@ export class CDUWindPage {
     ];
 
     if (isWindUplinkInProgress) {
-      for (let i = 0; i < FpmConfigs.A320_HONEYWELL_H3.NUM_CLIMB_WIND_LEVELS; i++) {
+      for (let i = 0; i < FpmConfigs.A320_HONEYWELL_H4.NUM_CLIMB_WIND_LEVELS; i++) {
         template[i * 2 + 2][0] = `---°/---/-----`;
       }
     } else {
@@ -114,13 +115,13 @@ export class CDUWindPage {
           : plan.performanceData.climbWindEntries.get();
 
       let numEntries = 0;
-      for (let i = 0; i < Math.min(climbWindEntries.length, FpmConfigs.A320_HONEYWELL_H3.NUM_CLIMB_WIND_LEVELS); i++) {
+      for (let i = 0; i < Math.min(climbWindEntries.length, FpmConfigs.A320_HONEYWELL_H4.NUM_CLIMB_WIND_LEVELS); i++) {
         const wind = climbWindEntries[i];
 
         template[i * 2 + 2][0] =
           wind.flags & FlightPlanWindEntryFlags.InsertedFromHistory
-            ? `{small}${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude)}{end}[color]${canModifyWinds ? 'cyan' : 'green'}`
-            : `${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
+            ? `{small}${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude!)}{end}[color]${canModifyWinds ? 'cyan' : 'green'}`
+            : `${formatWindVector(wind.vector)}/${this.formatClimbWindAltitude(plan, wind.altitude!)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
         numEntries = i + 1;
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
@@ -279,7 +280,7 @@ export class CDUWindPage {
     ];
 
     if (isWindUplinkInProgress) {
-      for (let i = 0; i < FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS; i++) {
+      for (let i = 0; i < FpmConfigs.A320_HONEYWELL_H4.NUM_CRUISE_WIND_LEVELS; i++) {
         template[i * 2 + 4][0] = `---°/---/-----`;
       }
     } else if (
@@ -291,7 +292,7 @@ export class CDUWindPage {
       const uplinkedAltitudes = plan.pendingWindUplink
         .getAllCruiseWindAltitudes()
         .sort((a, b) => b - a)
-        .slice(0, FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS);
+        .slice(0, FpmConfigs.A320_HONEYWELL_H4.NUM_CRUISE_WIND_LEVELS);
 
       const windsAtRevisedLeg =
         plan.pendingWindUplink.cruiseWinds.find(
@@ -325,14 +326,14 @@ export class CDUWindPage {
         switch (wind.type) {
           case PropagationType.Forward:
             template[i * 2 + 4][0] =
-              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
           case PropagationType.Entry:
             template[i * 2 + 4][0] =
-              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
           case PropagationType.Backward:
-            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude!)}[color]cyan`;
             break;
         }
 
@@ -347,7 +348,7 @@ export class CDUWindPage {
                 return;
               }
 
-              await mcdu.flightPlanService.deleteCruiseWindEntry(nextSuitableLegIndex, wind.altitude, forPlan);
+              await mcdu.flightPlanService.deleteCruiseWindEntry(nextSuitableLegIndex, wind.altitude!, forPlan);
             } else {
               const entry = this.parseWindEntryEdit(mcdu, value, wind, NaN);
 
@@ -356,7 +357,7 @@ export class CDUWindPage {
                 return;
               }
 
-              await mcdu.flightPlanService.editCruiseWindEntry(nextSuitableLegIndex, wind.altitude, entry, forPlan);
+              await mcdu.flightPlanService.editCruiseWindEntry(nextSuitableLegIndex, i, entry, forPlan);
             }
 
             CDUWindPage.ShowCRZPage(mcdu, forPlan, nextSuitableLegIndex);
@@ -368,7 +369,7 @@ export class CDUWindPage {
         };
       }
 
-      if (numEntries < FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS) {
+      if (numEntries < FpmConfigs.A320_HONEYWELL_H4.NUM_CRUISE_WIND_LEVELS) {
         template[numEntries * 2 + 4][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
         mcdu.onLeftInput[numEntries + 1] = async (value, scratchpadCallback) => {
@@ -544,7 +545,7 @@ export class CDUWindPage {
         const wind = descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
         template[i * 2 + 2][0] =
-          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude)}[color]${canModifyDesWinds ? 'cyan' : 'green'}`;
+          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude!)}[color]${canModifyDesWinds ? 'cyan' : 'green'}`;
 
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
           if (!canModifyDesWinds) {
@@ -581,7 +582,7 @@ export class CDUWindPage {
         canModifyDesWinds &&
         descentWindEntries.length >= page * numDescentWindEntriesPerPage &&
         descentWindEntries.length < (page + 1) * numDescentWindEntriesPerPage &&
-        descentWindEntries.length < FpmConfigs.A320_HONEYWELL_H3.NUM_DESCENT_WIND_LEVELS;
+        descentWindEntries.length < FpmConfigs.A320_HONEYWELL_H4.NUM_DESCENT_WIND_LEVELS;
 
       if (canAddEntryOnPage) {
         template[numWindEntriesOnPage * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
@@ -624,10 +625,9 @@ export class CDUWindPage {
             : `{white}/-----{end}`;
 
         template[numWindRowsOnPage * 2 + 1][0] = ' ALTERNATE';
-        template[numWindRowsOnPage * 2 + 2][0] =
-          alternateWind !== null
-            ? `${formatWindVector(alternateWind)}${alternateCruiseLevelString}[color]${doesAltnWindUplinkExist ? 'green' : 'cyan'}`
-            : `[\xa0]°/[\xa0]${alternateCruiseLevelString}[color]cyan`;
+        template[numWindRowsOnPage * 2 + 2][0] = isWindVectorComplete(alternateWind)
+          ? `${formatWindVector(alternateWind)}${alternateCruiseLevelString}[color]${doesAltnWindUplinkExist ? 'green' : 'cyan'}`
+          : `[\xa0]°/[\xa0]${alternateCruiseLevelString}[color]cyan`;
 
         mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
           // I think you can modify the alternate wind in any phase, but not if an uplink exists
@@ -639,7 +639,7 @@ export class CDUWindPage {
 
           try {
             if (value === Keypad.clrValue) {
-              await mcdu.flightPlanService.setAlternateWind(null, forPlan);
+              await mcdu.flightPlanService.clearAlternateWind(forPlan);
             } else {
               const wind = CDUWindPage.parseWindVector(mcdu, value);
 
@@ -663,7 +663,7 @@ export class CDUWindPage {
 
     const totalNumRows =
       descentWindEntries.length + // e.g "120°/20/FL220"
-      (descentWindEntries.length < FpmConfigs.A320_HONEYWELL_H3.NUM_DESCENT_WIND_LEVELS ? 1 : 0) + // e.g "[ ]°/[ ]/[   ]"
+      (descentWindEntries.length < FpmConfigs.A320_HONEYWELL_H4.NUM_DESCENT_WIND_LEVELS ? 1 : 0) + // e.g "[ ]°/[ ]/[   ]"
       (alternateAirport !== undefined ? 1 : 0); // Alternate wind entry
 
     const numPages = Math.ceil(totalNumRows / numDescentWindEntriesPerPage);
@@ -732,7 +732,7 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+  static async ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.HistoryWind;
 
@@ -745,15 +745,8 @@ export class CDUWindPage {
     const plan = mcdu.getFlightPlan(forPlan);
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
-    const historyWinds: WindEntry[] = mcdu.getHistoryWinds(cruiseLevel) ?? [];
-
-    historyWinds.sort((a, b) => a.altitude - b.altitude);
-
-    const shouldAllowInsertion =
-      historyWinds.length > 0 &&
-      !plan.pendingWindUplink.isWindUplinkInProgress() &&
-      !plan.pendingWindUplink.isWindUplinkReadyToInsert() &&
-      !this.haveHistoryWindsBeenInserted(plan, historyWinds);
+    const historyWinds: WindEntry[] = (await mcdu.getHistoryWinds(cruiseLevel)) ?? [];
+    const shouldAllowInsertion = await mcdu.flightPlanService.historyWindInsertionAllowed();
 
     const template = [
       ['HISTORY WIND'],
@@ -779,7 +772,7 @@ export class CDUWindPage {
       }
 
       template[i * 2 + 2][0] =
-        `{small}${formatWindVector(wind.vector)}\xa0\xa0${this.formatCruiseWindAltitude(wind.altitude)}{end}[color]green`;
+        `{small}${formatWindVector(wind.vector)}\xa0\xa0${this.formatCruiseWindAltitude(wind.altitude!)}{end}[color]green`;
     }
 
     // RETURN
@@ -791,20 +784,12 @@ export class CDUWindPage {
     if (shouldAllowInsertion) {
       template[12][1] = 'INSERT*[color]amber';
 
-      mcdu.onRightInput[5] = async () => {
-        await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
-
-        for (const wind of historyWinds) {
-          const windEntryToInsert: FlightPlanWindEntry = {
-            flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-            altitude: wind.altitude,
-            vector: Vec2Math.copy(wind.vector, Vec2Math.create()),
-          };
-
-          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
-        }
-
-        this.ShowCLBPage(mcdu, forPlan);
+      mcdu.onRightInput[5] = () => {
+        mcdu.flightPlanService.insertHistoryWinds().then((v) => {
+          if (v) {
+            this.ShowCLBPage(mcdu, forPlan);
+          }
+        });
       };
     }
 
@@ -906,7 +891,7 @@ export class CDUWindPage {
       return null;
     }
 
-    return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+    return createVectorFromMagnitudeAndDirection(magnitude, trueDegrees);
   }
 
   private static parseWindEntryAltitude(
@@ -1048,15 +1033,6 @@ export class CDUWindPage {
   private static formatCruiseWindAltitude(alt: number): string {
     // The cruise page always shows flight levels
     return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
-  }
-
-  private static haveHistoryWindsBeenInserted(plan: FlightPlan, historyWinds: WindEntry[]) {
-    const climbWinds = plan.performanceData.climbWindEntries.get();
-    if (climbWinds === null || climbWinds.length !== historyWinds.length) {
-      return false;
-    }
-
-    return climbWinds.every((wind, i) => areWindEntriesTheSame(wind, historyWinds[i]));
   }
 
   private static allowClimbWindPageAccess(plan: FlightPlan, phase: FmgcFlightPhase) {
