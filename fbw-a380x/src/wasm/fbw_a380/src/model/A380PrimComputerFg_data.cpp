@@ -3641,6 +3641,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       false,
       false,
       false,
+      0.0,
       false,
       false,
       false,
