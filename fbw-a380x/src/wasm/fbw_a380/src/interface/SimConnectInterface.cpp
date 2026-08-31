@@ -723,7 +723,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_ARPT_PUSH, "A32NX.FCU_EFIS_L_ARPT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_1_PUSH, "A32NX.FCU_EFIS_L_NAVAID_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_1_SET, "A32NX.FCU_EFIS_L_NAVAID_1_SET", false);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_1_PUSH, "A32NX.FCU_EFIS_L_NAVAID_1_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_2_PUSH, "A32NX.FCU_EFIS_L_NAVAID_2_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_2_SET, "A32NX.FCU_EFIS_L_NAVAID_2_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_WX_PUSH, "A32NX.FCU_EFIS_L_WX_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_TERR_PUSH, "A32NX.FCU_EFIS_L_TERR_PUSH", false);
