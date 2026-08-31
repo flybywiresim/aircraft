@@ -236,7 +236,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
       this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
       this.flightNumber.set(
-        this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
+        this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).flightNumber.get() : null,
       );
       this.tripWind.set(pd?.pilotTripWind.get() ?? null);
       this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
@@ -388,7 +388,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataEntryFormat={new LongAlphanumericFormat()}
                 disabled={this.noFlightPlan}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).getFlightNumber().set(v);
+                  await this.props.flightPlanInterface.setFlightNumber(v ?? '', this.loadedFlightPlanIndex.get());
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 readonlyValue={this.flightNumber}
