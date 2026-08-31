@@ -6,7 +6,6 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
-  NodeReference,
   Subject,
   Subscribable,
   SubscribableMapFunctions,
@@ -117,15 +116,23 @@ interface HorizonProps {
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & FcdcBusEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & FcdcBusEvents & HudElems>();
 
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
 
+  private GroupRef = FSComponent.createRef<SVGGElement>();
+
   private yOffset = Subject.create(0);
 
+  private pitch = ConsumerSubject.create(this.sub.on('pitchAr'), null);
+
+  private roll = ConsumerSubject.create(this.sub.on('rollAr'), null);
+
   private headingFailed = Subject.create(true);
+
+  private crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
 
   private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
 
@@ -136,6 +143,19 @@ export class Horizon extends DisplayComponent<HorizonProps> {
       fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false),
     this.fcdc1DiscreteWord1,
     this.fcdc2DiscreteWord1,
+  );
+
+  private readonly maskTransform = MappedSubject.create(
+    ([pitch, roll]) => {
+      const multiplier = 1000;
+      const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
+      const rollValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
+      if (pitch.isNormalOperation()) {
+        return `rotate(${-rollValueAtPrecision} 640 329.143) translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision) - FIVE_DEG}px, 0px) `;
+      }
+    },
+    this.pitch,
+    this.roll,
   );
 
   onAfterRender(node: VNode): void {
@@ -163,6 +183,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           -31.563,
         );
         this.yOffset.set(yOffset);
+        this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
+          ? 'url(#cwPitchScaleMask)'
+          : 'url(#PitchScaleMask)';
       });
 
     this.sub
@@ -178,39 +201,67 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         } else {
           this.rollGroupRef.instance.style.display = 'none';
         }
+        this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
+          ? 'url(#cwPitchScaleMask)'
+          : 'url(#PitchScaleMask)';
       });
   }
 
   render(): VNode {
     return (
-      <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
-        <g id="PitchGroup" ref={this.pitchGroupRef}>
-          <PitchScale
-            bus={this.props.bus}
-            filteredRadioAlt={this.props.filteredRadioAlt}
-            isAttExcessive={this.props.isAttExcessive}
-          />
+      <g id="HorizonGroup">
+        <defs>
+          <clipPath id="PitchScaleMask" transform={this.maskTransform}>
+            <path
+              d=" m 0 125 L 1280 125
+                    L 1280 712 L 1140 712 L 1140 329 L 1029 329 L 1029 712 L 1280 712
+                    L 1280 800   L 900 800  L 900 925  L 330 925 L 330 800 L 0 800 L 0 420
+                    L 0 712 L 219 712 L 219 329 L 95 329 L 95 712 L 0 712 Z"
+            />
+          </clipPath>
+          <clipPath id="cwPitchScaleMask" transform={this.maskTransform}>
+            <path
+              d=" m 0 125 L 1280 125
+                L 1280 255 L 1040 255 L 1040 405 L 1139 405L 1139 255 L 1280 255 L 1280 712
+                L 1280 800   L 900 800  L 900 925  L 330 925 L 330 800 L 0 800 L 0 420
+                L 209 420 L 209 238 L 111 238 L 111 420 L 0 420 z "
+            />
+          </clipPath>
+        </defs>
 
-          {/* horizon */}
-          <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
+        <g ref={this.GroupRef}>
+          <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
+            <g id="PitchGroup" ref={this.pitchGroupRef}>
+              <PitchScale
+                bus={this.props.bus}
+                filteredRadioAlt={this.props.filteredRadioAlt}
+                isAttExcessive={this.props.isAttExcessive}
+              />
 
-          <HorizontalTape
-            type="headingTape"
-            bus={this.props.bus}
-            displayRange={DisplayRange}
-            valueSpacing={ValueSpacing}
-            distanceSpacing={DistanceSpacing}
-            yOffset={Subject.create(0)}
-          />
+              {/* horizon */}
+              <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
 
-          <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
+              <HorizontalTape
+                type="headingTape"
+                bus={this.props.bus}
+                displayRange={DisplayRange}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+                yOffset={Subject.create(0)}
+              />
 
-          <TailstrikeIndicator bus={this.props.bus} />
+              <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
+
+              <TailstrikeIndicator bus={this.props.bus} />
+
+              <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
+            </g>
+
+            <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
+
+            <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
+          </g>
         </g>
-
-        <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
-
-        <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
       </g>
     );
   }
@@ -838,288 +889,6 @@ class PitchScale extends DisplayComponent<{
     return (
       <g id="pitchScale" class="NormalStroke Green">
         {result}
-      </g>
-    );
-  }
-}
-
-interface ExtendedHorizonProps {
-  bus: ArincEventBus;
-  instrument: BaseInstrument;
-  filteredRadioAlt: Subscribable<number>;
-}
-
-export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
-  private debugVal = FSComponent.createRef<SVGGElement>();
-  private spanRefs: NodeReference<SVGTSpanElement>[] = [];
-  private pitchGroupRef = FSComponent.createRef<SVGGElement>();
-  private rollGroupRef = FSComponent.createRef<SVGGElement>();
-  private path = FSComponent.createRef<SVGPathElement>();
-  private path2 = FSComponent.createRef<SVGPathElement>();
-  private path3 = FSComponent.createRef<SVGPathElement>();
-  private extendedUpperRef = FSComponent.createRef<SVGPathElement>();
-  private extendedLowerRef = FSComponent.createRef<SVGPathElement>();
-
-  private pitch = 0;
-  private yOffset = Subject.create(0);
-
-  private xAltTop = Subject.create<String>('');
-  private yAltTop = Subject.create<String>('');
-
-  private xSpdTop = Subject.create<String>('');
-  private ySpdTop = Subject.create<String>('');
-
-  private extendedUpper = Subject.create<String>('');
-  private extendedLower = Subject.create<String>('');
-  private extendedUpperNum = 0;
-  private extendedLowerNum = 0;
-
-  private crosswindMode = false;
-  private upperBound = 0;
-  private lowerBound = 0;
-  private valuesToLog = new Map<string, number>();
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
-
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
-
-    sub
-      .on('rollAr')
-      .whenChanged()
-      .handle((roll) => {
-        const radRoll = (roll.value / 180) * Math.PI;
-
-        //frame of reference 1  air pitch   :F1
-        //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
-        const D = calculateHorizonOffsetFromPitch(this.pitch);
-
-        let rSign = 1;
-
-        const xPos = -D * Math.sin(radRoll);
-        const yPos = -D * Math.cos(radRoll);
-
-        // y position from frame2 to eval if extention should be drawn y = 0 is vert pos of acft in air ref
-        if (this.crosswindMode == false) {
-          this.lowerBound = 0; //= -6.143;
-          this.upperBound = 383; //= 355;
-        } else {
-          this.lowerBound = -91; //= -199.143;
-          this.upperBound = 91; //= -27.143;
-        }
-
-        const Lalt = 497; //right and left edges  of the alt tape
-        const Lspd = 530; //right and left edges  of the spd tape
-
-        //   if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-        //     Lalt = 400; // 400;
-        //     Lspd = 431; // 472;
-        //   } else {
-        //     Lalt = 497; // 494;
-        //     Lspd = 530; // 570;
-        //   }
-
-        const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
-        const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
-
-        if (roll.isNormalOperation()) {
-          this.rollGroupRef.instance.style.display = 'block';
-          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
-
-          if (roll.value < 0) {
-            rSign = -1;
-          } else {
-            rSign = 1;
-          }
-
-          const ax = '640 ';
-          const ay = '512 ';
-          const bx = '0 ';
-          const by = (-D).toString();
-          const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
-          const cy = (512 + xPos * Math.sin(radRoll)).toString();
-
-          const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //actual eval point
-          const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //actual eval point
-
-          const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
-          const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
-
-          // debug eval point pos circles
-          this.xAltTop.set(xPosF.toString());
-          this.yAltTop.set((512).toString());
-          this.xSpdTop.set(xPosFspd.toString());
-          this.ySpdTop.set((512).toString());
-          // end debug
-          //debug draws : toggle .DEBUG to block in styles.scss to show
-          this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
-          this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
-          this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
-          //end debug
-
-          const evalMin = 0;
-          const evalMax = 2000;
-
-          const sinRadRoll =
-            Math.sin(radRoll) < -0.00001 || Math.sin(radRoll) > 0.00001
-              ? Math.sin(radRoll)
-              : Math.sign(radRoll) * 0.00001;
-
-          this.extendedUpperNum = Math.max(
-            Math.min(xPosFspd - (yPos + this.lowerBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, evalMax),
-            evalMin,
-          );
-          this.extendedLowerNum = Math.max(
-            Math.min(xPosFspd - (yPos + this.upperBound - (640 - xPosFspd) * Math.sin(radRoll)) / sinRadRoll, evalMax),
-            evalMin,
-          );
-
-          const cwHeightDiff = 16;
-          const cwTopDiff = this.extendedUpperNum > 640 && this.crosswindMode ? cwHeightDiff : 0;
-          const cwBotDiff = this.extendedLowerNum > 640 && this.crosswindMode ? cwHeightDiff : 0;
-
-          this.extendedUpper.set((this.extendedUpperNum - cwTopDiff / sinRadRoll).toString());
-          this.extendedLower.set((this.extendedLowerNum + cwBotDiff / sinRadRoll).toString());
-
-          //edge case where ypos is in the spd/alt height diff band
-          if (
-            (cwTopDiff != 0 && -yPos < this.upperBound && -yPos > this.lowerBound) ||
-            (cwBotDiff != 0 && -yPos < this.upperBound && -yPos > this.lowerBound)
-          ) {
-            if (roll.value < 0) {
-              this.extendedLower.set(Math.max(640, parseFloat(this.extendedLower.get().valueOf())).toString());
-            } else {
-              this.extendedUpper.set(Math.max(640, parseFloat(this.extendedUpper.get().valueOf())).toString());
-            }
-          }
-
-          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
-          if (Number(ey) < 512) {
-            F1AltSideVertDev *= -1;
-          }
-          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
-          if (Number(eys) < 512) {
-            F1SpdSideVertDev *= -1;
-          }
-
-          if (
-            -yPos - F1SpdSideVertDev > this.lowerBound &&
-            -yPos - F1AltSideVertDev - cwTopDiff > this.lowerBound &&
-            -yPos - F1SpdSideVertDev < this.upperBound &&
-            -yPos - F1AltSideVertDev + cwBotDiff < this.upperBound
-          ) {
-            if (
-              Math.abs(roll.value) < 0.5 &&
-              ((-yPos < this.upperBound && -yPos > this.upperBound - cwHeightDiff) ||
-                (-yPos > this.lowerBound && -yPos < this.lowerBound + cwHeightDiff))
-            ) {
-              this.extendedLowerRef.instance.setAttribute('d', `m 640 512 L 2000 512 `);
-              this.extendedUpperRef.instance.setAttribute('d', `m 640 512 L 2000 512 `);
-            } else {
-              this.extendedUpperRef.instance.setAttribute('d', ``);
-              this.extendedLowerRef.instance.setAttribute('d', ``);
-            }
-          } else {
-            roll.value > 0
-              ? this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h 1000000 `)
-              : this.extendedUpperRef.instance.setAttribute('d', `m ${this.extendedUpper.get()} 512 h -1000000 `);
-            roll.value < 0
-              ? this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h 1000000 `)
-              : this.extendedLowerRef.instance.setAttribute('d', `m ${this.extendedLower.get()} 512 h -1000000 `);
-          }
-
-          ////debug TextBox
-
-          this.debugVal.instance.setAttribute('transform', `translate(640 512) rotate(${roll.value})`);
-
-          this.valuesToLog.set('yPos - F1SpdSideVertDev', yPos - F1SpdSideVertDev);
-          this.valuesToLog.set('yPos - F1AltSideVertDev', yPos - F1AltSideVertDev);
-          this.valuesToLog.set('this.lowerBound', this.lowerBound);
-          this.valuesToLog.set('this.upperBound', this.upperBound);
-          this.valuesToLog.set('cwBotDiff', cwBotDiff);
-          this.valuesToLog.set('cwTopDiff', cwTopDiff);
-          this.valuesToLog.set('roll', roll.value);
-          let i = 0;
-          this.valuesToLog.forEach((value, key) => {
-            this.spanRefs[i].instance.textContent = `${key}: ${value}`;
-            i++;
-          });
-        } else {
-          this.rollGroupRef.instance.style.display = 'none';
-        }
-      });
-
-    sub.on('pitchAr').handle((pitch) => {
-      this.pitch = pitch.value;
-      if (pitch.isNormalOperation()) {
-        this.pitchGroupRef.instance.style.display = 'block';
-        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
-        const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG;
-        this.yOffset.set(yOffset);
-      }
-    });
-  }
-
-  private buildLog(): NodeReference<SVGGElement>[] {
-    this.valuesToLog.set('yPos - F1SpdSideVertDev', 0);
-    this.valuesToLog.set('yPos - F1AltSideVertDev', 0);
-    this.valuesToLog.set('this.lowerBound', 0);
-    this.valuesToLog.set('this.upperBound', 0);
-    this.valuesToLog.set('cwBotDiff', 0);
-    this.valuesToLog.set('cwTopDiff', 0);
-    this.valuesToLog.set('roll', 0);
-
-    const spans = [];
-    this.valuesToLog.forEach((value, key) => {
-      const spanRef = FSComponent.createRef<SVGTSpanElement>();
-      spans.push(
-        <tspan ref={spanRef} x="0" dy="1.2em" class="White FontSmallest">
-          {`${key}: ${value}`}
-        </tspan>,
-      );
-      this.spanRefs.push(spanRef);
-    });
-    return spans;
-  }
-
-  render(): VNode {
-    return (
-      <g id="ExtendedHorizon">
-        {/* y = 329 is vert pos of the inAir acft ref */}
-        <path d="m 0 329 h 1280" class="red DEBUG" />
-        <path d="m 0 712 h 1280" class="red DEBUG" />
-        <path d="m 0 329 h 1280" class="blue DEBUG" stroke-dasharray="5 5" />
-        <path d="m 0 238 h 1280" class="blue DEBUG" />
-        <path d="m 0 420 h 1280" class="blue DEBUG" />
-
-        <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
-          <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
-            <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
-
-            <path ref={this.extendedUpperRef} id="extendedUpper" d="" class="NormalStroke Green" />
-            <path ref={this.extendedLowerRef} id="extendedLower" d="" class="NormalStroke Green" />
-
-            {/* debug  */}
-            <circle cx={this.xAltTop} cy={this.yAltTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx={this.xSpdTop} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx={this.extendedUpper} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx={this.extendedLower} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx="640" cy="512" r="5" class="blue DEBUG" display="block" />
-            <path id="path1" ref={this.path} d="" class="yellow  DEBUG" />
-            <path id="path2" ref={this.path2} d="" class="yellow DEBUG" />
-            <path id="path3" ref={this.path3} d="" class="yellow DEBUG" />
-
-            <g id="debugVal" ref={this.debugVal}>
-              <text class=" DEBUG White NormalStroke FontSmallest">{this.buildLog()}</text>
-            </g>
-            {/* debug  */}
-          </g>
-        </g>
       </g>
     );
   }

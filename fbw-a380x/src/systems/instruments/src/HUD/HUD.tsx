@@ -31,7 +31,6 @@ import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import './style.scss';
 import { HUDSimvars } from '../HUD/shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
-import { ExtendedHorizon } from './AttitudeIndicatorHorizon';
 import { DecelIndicator } from './DecelSpeedIndicator';
 import { DeclutterIndicator } from './AttitudeIndicatorFixed';
 import { HudWarnings } from './HudWarnings';
@@ -193,47 +192,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           xmlnsXlink="http://www.w3.org/1999/xlink"
         >
           <Grid bus={this.props.bus} />
-          <Horizon
-            bus={this.props.bus}
-            instrument={this.props.instrument}
-            isAttExcessive={this.isAttExcessive}
-            filteredRadioAlt={this.filteredRadioAltitude}
-          />
-          <path
-            id="PitchScaleMask"
-            class="BackgroundFill"
-            d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278v 800 h -1278 Z"
-          />
-
-          <g id="TapesMasks">
-            <path
-              display={this.altTape}
-              id="AltTapeMask"
-              class="LargeStroke BlackFill"
-              d="M 1029 323 v 430 h 120 v -430 z"
-            ></path>
-            <path
-              display={this.spdTape}
-              id="SpdTapeMask"
-              class="LargeStroke BlackFill"
-              d="M 95 329 v 383 h 123 v -383  z"
-            ></path>
-
-            <path
-              display={this.xWindSpdTape}
-              id="CrosswindSpdTapeMask"
-              class="LargeStroke  BlackFill"
-              //d="M 111 119 v 182 h 98 v -182 z"
-              d="M 111 238 v 182 h 98 v -182 z"
-            />
-            <path
-              display={this.xWindAltTape}
-              id="CrosswindAltTapeMask"
-              class="LargeStroke BlackFill"
-              // d="M 1039 135 v 152 h 120 v -152 z"
-              d="M 1039 255 v 150 h 100 v -150 z"
-            ></path>
-          </g>
 
           <AltitudeIndicator bus={this.props.bus} />
           <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -268,9 +226,10 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               d="M 1028 0 h 115 V 254 H 1028 Z M 1028 406 h 115 V 1024 H 1028 Z"
             />
           </g>
-          <ExtendedHorizon
+          <Horizon
             bus={this.props.bus}
             instrument={this.props.instrument}
+            isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
           />
           <AttitudeIndicatorFixedCenter
