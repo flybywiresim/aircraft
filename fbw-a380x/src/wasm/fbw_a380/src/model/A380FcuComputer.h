@@ -63,8 +63,8 @@ class A380FcuComputer final
     rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_o3n;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_onf;
     rtDW_MATLABFunction_A380FcuComputer_p_T sf_MATLABFunction_btn;
-    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_bv;
-    rtDW_NavaidLogic_A380FcuComputer_T sf_NavaidLogic_l;
+    rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_fw;
+    rtDW_NavaidLogic_A380FcuComputer_T sf_NavaidLogic_k;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_mq;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_mb;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_bp;
@@ -239,7 +239,7 @@ class A380FcuComputer final
     boolean_T PulseNode_isRisingEdge_m;
     boolean_T PulseNode_isRisingEdge_b;
     boolean_T PulseNode2_isRisingEdge_n;
-    boolean_T PulseNode2_isRisingEdge_d;
+    boolean_T PulseNode2_isRisingEdge_a;
     boolean_T PulseNode_isRisingEdge_j;
     boolean_T PulseNode_isRisingEdge_c;
     boolean_T PulseNode_isRisingEdge_f;
@@ -301,8 +301,8 @@ class A380FcuComputer final
   static void A380FcuComputer_MATLABFunction_n(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_A380FcuComputer_jh_T *localDW);
   static void A380FcuComputer_NavaidLogic_Reset(rtDW_NavaidLogic_A380FcuComputer_T *localDW);
-  static void A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, a380_efis_navaid_selection rtu_sim_sync,
-    a380_efis_navaid_selection *rty_navaidStatus, rtDW_NavaidLogic_A380FcuComputer_T *localDW);
+  static void A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, real_T rtu_sim_sync, a380_efis_navaid_selection
+    *rty_navaidStatus, rtDW_NavaidLogic_A380FcuComputer_T *localDW);
   static void A380FcuComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
   static void A380FcuComputer_MATLABFunction_b(boolean_T rtu_u, boolean_T *rty_y, boolean_T rtp_init,
     rtDW_MATLABFunction_A380FcuComputer_p_T *localDW);
