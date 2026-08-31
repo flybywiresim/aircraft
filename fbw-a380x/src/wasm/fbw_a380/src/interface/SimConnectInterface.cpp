@@ -2689,7 +2689,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_L_NAVAID_1_SET: {
-      simInputAutopilot.efis_navaid_mode_1_left_set = true;
+      simInputAutopilot.efis_navaid_mode_1_left_set = data0;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NAVAID_1_SET" << std::endl;
       break;
     }
@@ -2701,7 +2701,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_L_NAVAID_2_SET: {
-      simInputAutopilot.efis_navaid_mode_2_left_set = true;
+      simInputAutopilot.efis_navaid_mode_2_left_set = data0;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NAVAID_2_SET" << std::endl;
       break;
     }
@@ -2853,7 +2853,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_R_NAVAID_1_SET: {
-      simInputAutopilot.efis_navaid_mode_1_right_set = true;
+      simInputAutopilot.efis_navaid_mode_1_right_set = data0;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NAVAID_1_SET" << std::endl;
       break;
     }
@@ -2865,7 +2865,7 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
     }
 
     case Events::A32NX_FCU_EFIS_R_NAVAID_2_SET: {
-      simInputAutopilot.efis_navaid_mode_2_right_set = true;
+      simInputAutopilot.efis_navaid_mode_2_right_set = data0;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NAVAID_2_SET" << std::endl;
       break;
     }
