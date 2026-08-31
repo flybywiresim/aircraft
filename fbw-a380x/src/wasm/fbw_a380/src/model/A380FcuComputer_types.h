@@ -425,18 +425,6 @@ struct base_fcu_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-
-struct base_fcu_sim_input
-{
-  real32_T baro_setting_hpa;
-  int8_T efis_mode;
-  int8_T efis_range;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
 
@@ -446,6 +434,20 @@ struct base_fcu_discrete_outputs
   base_fcu_afs_panel_outputs afs_outputs;
   boolean_T true_selected;
   boolean_T fcu_healthy;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+
+struct base_fcu_sim_input
+{
+  real32_T baro_setting_hpa;
+  int8_T efis_mode;
+  int8_T efis_range;
+  int8_T navaid_1_mode;
+  int8_T navaid_2_mode;
 };
 
 #endif
