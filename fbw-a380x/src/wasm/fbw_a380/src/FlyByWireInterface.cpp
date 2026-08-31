@@ -2338,6 +2338,10 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
       fcuIndex == 0 ? simInputAutopilot.efis_mode_left_set : simInputAutopilot.efis_mode_right_set;
   fcus[fcuIndex].modelInputs.in.sim_input.efis_range =
       fcuIndex == 0 ? simInputAutopilot.efis_range_left_set : simInputAutopilot.efis_range_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.navaid_1_mode =
+      fcuIndex == 0 ? simInputAutopilot.efis_navaid_mode_1_left_set : simInputAutopilot.efis_navaid_mode_1_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.navaid_2_mode =
+      fcuIndex == 0 ? simInputAutopilot.efis_navaid_mode_2_left_set : simInputAutopilot.efis_navaid_mode_2_right_set;
 
   fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = idFcuSwitchedOff->get();
   fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = idFcuEisCpBackupActive[fcuIndex]->get();
