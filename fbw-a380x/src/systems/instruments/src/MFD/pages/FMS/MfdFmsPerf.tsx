@@ -50,12 +50,8 @@ import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { qnhToMillibar } from '../../shared/QnhUtils';
-import {
-  getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
-  getApproachName,
-  showReturnButtonUriExtra,
-} from '../../shared/utils';
-import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, showReturnButtonUriExtra } from '../../shared/utils';
+import { ApproachType, ApproachUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from './F-PLN/MfdFmsFplnVertRev';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
@@ -783,7 +779,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
-      this.apprIdent.set(getApproachName(this.loadedFlightPlan.approach, false));
+      this.apprIdent.set(ApproachUtils.shortApproachName(this.loadedFlightPlan.approach, true));
       precisionApproach =
         this.loadedFlightPlan.approach.type === ApproachType.Ils ||
         this.loadedFlightPlan.approach.type === ApproachType.Gls;

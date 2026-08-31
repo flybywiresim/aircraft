@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -15,9 +15,14 @@ import {
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
+import { Value } from '@microsoft/msfs-sdk';
 
 describe('FlightPlanManager', () => {
-  const ctx = { syncClientID: Math.round(Math.random() * 10_000_000), batchStack: [] };
+  const ctx = {
+    syncClientID: Math.round(Math.random() * 10_000_000),
+    batchStack: [],
+    useApproachRnpArNaming: Value.create(false),
+  };
   const fpm = new FlightPlanManager(ctx, testEventBus, new A320FlightPlanPerformanceData(), ctx.syncClientID, true);
 
   beforeEach(() => {

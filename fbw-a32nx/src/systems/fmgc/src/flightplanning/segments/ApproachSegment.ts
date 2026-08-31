@@ -30,7 +30,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
   private approach: Approach | undefined;
 
-  async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+  async setProcedure(databaseId: string | undefined, skipUpdateLegs?: boolean, useRnpArNaming = false): Promise<void> {
     const oldApproachName = this.flightPlan.approach?.ident;
 
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
@@ -45,7 +45,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         await this.flightPlan.arrivalSegment.setProcedure(undefined);
 
         this.flightPlan.missedApproachSegment.setMissedApproachLegs([]);
-        this.allLegs = this.createLegSet(undefined, []);
+        this.allLegs = this.createLegSet(undefined, [], useRnpArNaming ?? false);
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -74,13 +74,14 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
       return;
     }
 
-    const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure);
+    const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure, useRnpArNaming);
 
     this.allLegs = this.createLegSet(
       matchingProcedure,
       matchingProcedure.legs.map((leg) =>
         FlightPlanLeg.fromProcedureLeg(this, leg, shortApproachName, WaypointConstraintType.DES),
       ),
+      useRnpArNaming ?? false,
     );
     this.strung = false;
 
@@ -116,13 +117,17 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
   }
 
-  private createLegSet(procedure: Approach | undefined, approachLegs: FlightPlanElement[]): FlightPlanElement[] {
+  private createLegSet(
+    procedure: Approach | undefined,
+    approachLegs: FlightPlanElement[],
+    useRnpArNaming: boolean,
+  ): FlightPlanElement[] {
     const legs = [];
 
     const airport = this.flightPlan.destinationAirport;
     const runway = this.flightPlan.destinationRunway;
 
-    const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
+    const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure, useRnpArNaming) : '';
 
     if (airport && runway && approachLegs.length === 0) {
       const cf = FlightPlanLeg.destinationExtendedCenterline(this, runway);

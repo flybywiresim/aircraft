@@ -6,13 +6,12 @@ import {
   AircraftConfig,
   EngineModelParameters,
   FlightModelParameters,
-  FMSymbolsConfig,
   LnavConfig,
   VnavConfig,
   VnavDescentMode,
 } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { FpmConfigs } from './FpmConfig';
+import { FpmConfigs } from '../../../../../../../fbw-a32nx/src/systems/fmgc/src/flightplanning/FpmConfig';
 
 const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
@@ -168,16 +167,13 @@ const engineModelParams: EngineModelParameters = {
   ],
 };
 
-const fmsSymbolConfig: FMSymbolsConfig = {
-  publishDepartureIdent: true,
-  showRnpArLabel: true,
-};
-
 export const A380AircraftConfig: AircraftConfig = {
   lnavConfig,
   vnavConfig,
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
-  fmSymbolConfig: fmsSymbolConfig,
   fpmConfig: FpmConfigs.A380,
+  fmSymbolConfig: {
+    rnpArNaming: true,
+  },
 };
