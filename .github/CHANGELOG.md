@@ -90,6 +90,11 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
 1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
 1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
+1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
+1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
 1. [A32NX/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
 1. [A32NX/FG] Fixed uncommanded OP CLB activation during approach - @lukecologne (luke)
 1. [A32NX/FG] Fixed ground speed mini not working below 700 feet - @lukecologne (luke)

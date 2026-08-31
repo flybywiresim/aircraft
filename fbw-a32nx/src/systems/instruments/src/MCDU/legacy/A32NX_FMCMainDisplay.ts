@@ -104,6 +104,7 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
 
@@ -658,7 +659,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   protected initVariables(resetTakeoffData = true) {
-    this.costIndex = undefined;
     this.resetCoroute();
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
@@ -1781,17 +1781,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private getClbManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 330 * dCI;
   }
 
   private getCrzManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 310 * dCI;
   }
 
   private getDesManagedSpeedFromCostIndex() {
-    const dCI = (this.costIndex ? this.costIndex : 0) / 999;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = (ci ? ci : 0) / 999;
     return 288 * (1 - dCI) + 300 * dCI;
   }
 
@@ -1827,6 +1836,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (
       targetFlightLevel !== null &&
+      targetFlightLevel <= this.maximumAllowedCruiseFlightLevel &&
       ((isclimb && (cruiseLevel === null || targetFlightLevel > cruiseLevel)) ||
         (isCruise && (cruiseLevel === null || targetFlightLevel !== cruiseLevel)))
     ) {
@@ -1911,65 +1921,89 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /* MCDU GET/SET METHODS */
 
   public setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean {
-    if (input === Keypad.clrValue) {
-      this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
-      return true;
-    }
-    const flString = input.split('/')[0].replace('FL', '');
-    const tempString = input.split('/')[1];
-    const onlyTemp = flString.length === 0;
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
 
-    if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
-      if (!tempString) {
-        return true;
-      }
-    }
+    if (plan && plan.destinationAirport !== undefined) {
+      const flString = input.split('/')[0].replace('FL', '');
+      const tempString = input.split('/')[1];
+      const onlyTemp = flString.length === 0;
 
-    if (tempString) {
-      let temp = parseInt(tempString);
-
-      if (isFinite(temp) && this.getFlightPlan(forPlan).performanceData.cruiseFlightLevel.get()) {
-        if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
-          temp = -temp;
-        }
-        if (temp > -270 && temp < 100) {
-          this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
-          return true;
-        } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      // Temperature modification not allowed once at or after the cruise phase.
+      const crzTempModificationAllowed =
+        !plan.isActiveOrCopiedFromActive() || this.flightPhaseManager.phase < FmgcFlightPhase.Cruise;
+      if (!crzTempModificationAllowed) {
+        if (onlyTemp || input === Keypad.clrValue) {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        } else if (flString && tempString) {
+          this.setScratchpadMessage(NXSystemMessages.formatError);
           return false;
         }
-      } else {
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
       }
-    }
+      if (input === Keypad.clrValue) {
+        this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
+        return true;
+      }
 
-    this.setScratchpadMessage(NXSystemMessages.formatError);
+      if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
+        if (!tempString) {
+          return true;
+        }
+      }
+
+      if (tempString) {
+        let temp = parseInt(tempString);
+
+        if (isFinite(temp) && plan.performanceData.cruiseFlightLevel.get()) {
+          if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
+            temp = -temp;
+          }
+          if (temp > -270 && temp < 100) {
+            this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+          }
+        } else {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        }
+      }
+
+      this.setScratchpadMessage(NXSystemMessages.formatError);
+    }
     return false;
   }
 
-  public tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean {
-    const value = parseInt(costIndex);
-    if (isFinite(value)) {
-      if (value >= 0) {
-        if (value < 1000) {
-          this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
-          this.updateManagedSpeeds();
-          return true;
+  public async tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): Promise<boolean> {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+
+    if (plan && plan.destinationAirport !== undefined) {
+      if (this.isCostIndexModificationDisabled(plan)) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      } else {
+        const value = parseInt(costIndex);
+        if (isFinite(value)) {
+          if (value >= 0 && value < 1000) {
+            this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
+            this.updateManagedSpeeds();
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          }
         } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-          return false;
+          this.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
     }
-    this.setScratchpadMessage(NXSystemMessages.notAllowed);
+
     return false;
   }
 
   /**
-   * Any tropopause altitude up to 60,000 ft is able to be entered
-   * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+   * Any tropopause altitude from 10,000 ft up to 60,000 ft is able to be entered
+   * @param {string} tropo Format: FLNNN or NNNNN.  Entry is rounded to the nearest 10 ft. NNN is assumed as flight level.
    * @param {number} forPlan the flight plan index to set tropopause for
    * @return {boolean} Whether tropopause could be set or not
    */
@@ -1985,14 +2019,27 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-      this.setScratchpadMessage(NXSystemMessages.formatError);
-      return false;
+    let value: number;
+    // Accept up to NNNNN
+    const feetMatch = tropo.match(/(^\d{1,5}$)/g);
+    if (!feetMatch) {
+      // Accept FLNN or FLNNN
+      const flMatch = tropo.match(/^FL(\d{2,3})$/g);
+      if (!flMatch) {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+      } else {
+        value = parseInt(flMatch[0].substring(2));
+      }
+    } else {
+      value = parseInt(tropo);
     }
 
-    const value = parseInt(tropo);
+    if (value >= 100 && value < 1000) {
+      value *= 100;
+    }
 
-    if (isFinite(value) && value >= 0 && value <= 60000) {
+    if (value >= 10000 && value <= 60000) {
       this.currFlightPlanService.setPerformanceData('pilotTropopause', Math.round(value / 10) * 10, forPlan);
       return true;
     }
@@ -2008,7 +2055,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /** MCDU Init page method for FROM/TO, NOT for programmatic use */
   public tryUpdateFromTo(fromTo: string, forPlan: number, callback = EmptyCallback.Boolean) {
-    if (fromTo === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (
+      !plan ||
+      (plan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        plan.destinationAirport !== undefined) ||
+      fromTo === Keypad.clrValue
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return callback(false);
     }
@@ -2172,6 +2226,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
+    if (flightNo === Keypad.clrValue) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return callback(false);
+    }
     if (flightNo.length > 7) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return callback(false);
@@ -2490,10 +2548,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
       this.flightPlanService.temporaryDelete();
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
@@ -2504,31 +2558,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
-      const oldCostIndex = this.costIndex;
+      const oldCostIndex = this.currFlightPlanService.active.performanceData.costIndex.get();
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
 
       await this.flightPlanService.temporaryInsert();
 
-      this.checkCostIndex(oldCostIndex);
-      // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+      this.checkCostIndex(oldCostIndex); //FIXME: Should trigger message by FMS event.
+
       if (oldDestination !== undefined) {
         this.checkDestination(oldDestination);
       }
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
     }
   }
 
-  private checkCostIndex(oldCostIndex) {
-    if (this.costIndex !== oldCostIndex) {
-      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(this.costIndex.toFixed(0)));
+  private checkCostIndex(oldCostIndex: number) {
+    const ci = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData.costIndex.get() : null;
+    if (ci !== null && ci !== oldCostIndex) {
+      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(ci.toFixed(0)));
     }
   }
 
@@ -2670,7 +2721,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public trySetV1Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.v1.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2689,12 +2741,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV1Speed = undefined;
     }
 
-    this.setV1Speed(v, forPlan);
+    plan.setPerformanceData('v1', v);
     return true;
   }
 
   public trySetVRSpeed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.vr.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2713,12 +2766,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedVRSpeed = undefined;
     }
 
-    this.setVrSpeed(v, forPlan);
+    plan.setPerformanceData('vr', v);
     return true;
   }
 
   public trySetV2Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    const hasV2 = plan?.performanceData.v2.get() !== null;
+    if (this.isVspeedUpdateNotAllowed(plan, hasV2 ? plan.performanceData.v2.get() : null, s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2737,7 +2792,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV2Speed = undefined;
     }
 
-    this.setV2Speed(v, forPlan);
+    plan.setPerformanceData('v2', v);
     return true;
   }
 
@@ -3074,6 +3129,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public setPerfTOFlexTemp(s: string, forPlan: FlightPlanIndex): boolean {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.flexTakeoffTemperature.get())) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('flexTakeoffTemperature', null, forPlan);
       return true;
@@ -3941,9 +4002,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public trySetFlapsTHS(s: string, forPlan: FlightPlanIndex): boolean {
     const plan = this.getFlightPlan(forPlan);
 
+    const thsExists = plan.performanceData.trimmableHorizontalStabilizer.get() !== null;
+    const flapsExists = plan.performanceData.takeoffFlaps.get() !== null;
+
+    // THS/FLAPS cannot be modified starting in takeoff phase if both have been set.
+    if (
+      thsExists &&
+      flapsExists &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.flightPhaseManager.phase > FmgcFlightPhase.Preflight
+    ) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.setTakeoffFlaps(null, forPlan);
       this.setTakeoffTrim(null, forPlan);
+
       this.tryCheckToData();
       return true;
     }
@@ -4002,13 +4078,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (newFlaps !== null) {
-      if (plan.performanceData.takeoffFlaps.get() !== null) {
+      if (flapsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffFlaps(newFlaps, forPlan);
     }
     if (newThs !== null) {
-      if (plan.performanceData.trimmableHorizontalStabilizer.get() !== null) {
+      if (thsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffTrim(newThs, forPlan);
@@ -4255,22 +4331,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       );
   }
 
-  public trySetGroundTemp(scratchpadValue: string, forPlan: number) {
+  public async trySetGroundTemp(scratchpadValue: string, forPlan: number): Promise<boolean> {
     // TODO check if this condition is still applicable in SEC
-    if (forPlan === FlightPlanIndex.Active && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
-      throw NXSystemMessages.notAllowed;
-    }
 
-    if (scratchpadValue === Keypad.clrValue) {
-      this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
-      return;
-    }
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (plan && plan.destinationAirport !== undefined) {
+      if (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        return false;
+      }
 
-    if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
-      throw NXSystemMessages.formatError;
-    }
+      if (scratchpadValue === Keypad.clrValue) {
+        this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
+        return true;
+      }
 
-    this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+      if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+      }
+
+      this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+    }
+    return true;
   }
 
   public isNavModeEngaged() {
@@ -4558,25 +4641,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     return undefined;
-  }
-
-  public get costIndex() {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      return plan.performanceData.costIndex.get();
-    }
-
-    return undefined;
-  }
-
-  /** @deprecated */
-  public set costIndex(ci) {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      this.currFlightPlanService.setPerformanceData('costIndex', ci);
-    }
   }
 
   public get tropo() {
@@ -5750,6 +5814,67 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.bus.getPublisher<EngineOutControlEvents>().pub('fms_engine_out_clear', undefined, false, false);
   }
 
+  /**
+   * Checks if cost index modification is disabled based on flight phase and if the plan is active or copied from active
+   * @param plan the flight plan to check cost index modification for
+   * @returns true if is disabled, false otherwise.
+   */
+  isCostIndexModificationDisabled(plan: FlightPlan): boolean {
+    return (
+      plan.performanceData.costIndex.get() !== null &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.getFlightPhase() >= FmgcFlightPhase.Descent
+    );
+  }
+
+  confirmTakeoffData(): void {
+    const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
+    if (!plan) {
+      return;
+    }
+    this.setV1Speed(
+      this.unconfirmedV1Speed !== undefined ? this.unconfirmedV1Speed : plan.performanceData.v1.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setVrSpeed(
+      this.unconfirmedVRSpeed !== undefined ? this.unconfirmedVRSpeed : plan.performanceData.vr.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setV2Speed(
+      this.unconfirmedV2Speed !== undefined ? this.unconfirmedV2Speed : plan.performanceData.v2.get(),
+      FlightPlanIndex.Active,
+    );
+    this.unconfirmedV1Speed = undefined;
+    this.unconfirmedVRSpeed = undefined;
+    this.unconfirmedV2Speed = undefined;
+    this._toFlexChecked = true;
+  }
+
+  shouldShowConfirmTakeoffData(forPlan: FlightPlanIndex): boolean {
+    if (forPlan !== FlightPlanIndex.Active || !this.flightPlanService.hasActive) {
+      return false;
+    }
+    return (
+      forPlan === FlightPlanIndex.Active &&
+      (this.unconfirmedV1Speed || this.unconfirmedVRSpeed || this.unconfirmedV2Speed || !this._toFlexChecked) &&
+      this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff
+    );
+  }
+
+  private isVspeedUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null, input: string) {
+    return input === Keypad.clrValue || this.isTakeoffFieldUpdateNotAllowed(flightplan, currentValue);
+  }
+
+  private isTakeoffFieldUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null) {
+    // Don't allow if beyond takeoff phase and the value already exists.
+    return (
+      !flightplan ||
+      (flightplan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        currentValue !== null)
+    );
+  }
+
   private handleFcuVSKnob(onStepClimbDescent: () => void): void {
     this.flightPhaseManager.handleFcuVSKnob(this.getDistanceToDestination() ?? -1, onStepClimbDescent);
   }
@@ -5772,6 +5897,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
       if (
         fcuFlightLevel !== null &&
+        fcuFlightLevel <= this.maximumAllowedCruiseFlightLevel &&
         ((isClimb && fcuFlightLevel > (cruiseLevel ?? 0)) || (isCruise && fcuFlightLevel !== cruiseLevel))
       ) {
         const fmgcDiscreteWord1 = this.fmgcDiscreteWord1.get();

@@ -494,20 +494,6 @@ enum class fmgc_des_submode
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -516,39 +502,6 @@ struct base_time
   real_T dt;
   real_T simulation_time;
   real_T monotonic_time;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
-
-struct base_prim_lateral_surface_positions
-{
-  real_T left_inboard_aileron_deg;
-  real_T right_inboard_aileron_deg;
-  real_T left_midboard_aileron_deg;
-  real_T right_midboard_aileron_deg;
-  real_T left_outboard_aileron_deg;
-  real_T right_outboard_aileron_deg;
-  real_T left_spoiler_1_deg;
-  real_T right_spoiler_1_deg;
-  real_T left_spoiler_2_deg;
-  real_T right_spoiler_2_deg;
-  real_T left_spoiler_3_deg;
-  real_T right_spoiler_3_deg;
-  real_T left_spoiler_4_deg;
-  real_T right_spoiler_4_deg;
-  real_T left_spoiler_5_deg;
-  real_T right_spoiler_5_deg;
-  real_T left_spoiler_6_deg;
-  real_T right_spoiler_6_deg;
-  real_T left_spoiler_7_deg;
-  real_T right_spoiler_7_deg;
-  real_T left_spoiler_8_deg;
-  real_T right_spoiler_8_deg;
-  real_T upper_rudder_deg;
-  real_T lower_rudder_deg;
 };
 
 #endif
@@ -1064,6 +1017,53 @@ struct base_prim_flight_envelope_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+
+struct base_prim_lateral_surface_positions
+{
+  real_T left_inboard_aileron_deg;
+  real_T right_inboard_aileron_deg;
+  real_T left_midboard_aileron_deg;
+  real_T right_midboard_aileron_deg;
+  real_T left_outboard_aileron_deg;
+  real_T right_outboard_aileron_deg;
+  real_T left_spoiler_1_deg;
+  real_T right_spoiler_1_deg;
+  real_T left_spoiler_2_deg;
+  real_T right_spoiler_2_deg;
+  real_T left_spoiler_3_deg;
+  real_T right_spoiler_3_deg;
+  real_T left_spoiler_4_deg;
+  real_T right_spoiler_4_deg;
+  real_T left_spoiler_5_deg;
+  real_T right_spoiler_5_deg;
+  real_T left_spoiler_6_deg;
+  real_T right_spoiler_6_deg;
+  real_T left_spoiler_7_deg;
+  real_T right_spoiler_7_deg;
+  real_T left_spoiler_8_deg;
+  real_T right_spoiler_8_deg;
+  real_T upper_rudder_deg;
+  real_T lower_rudder_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_laws_outputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_laws_outputs_
 
@@ -1167,6 +1167,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T ground_spoilers_armed;
   boolean_T ground_spoilers_out;
   boolean_T phased_lift_dumping_active;
+  real_T ground_spoiler_command_deg;
   boolean_T spoiler_lift_active;
   boolean_T ap_authorised;
   boolean_T protection_ap_disconnect;
