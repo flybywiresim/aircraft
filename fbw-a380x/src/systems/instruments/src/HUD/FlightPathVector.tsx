@@ -365,7 +365,7 @@ export class SpeedChevrons extends DisplayComponent<SpeedChevronsProps> {
 
       if (!isSingleFpv) {
         if (crosswindMode) {
-          false;
+          return false;
         } else {
           return offRange ? true : false;
         }
