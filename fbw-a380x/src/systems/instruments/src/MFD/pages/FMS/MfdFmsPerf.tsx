@@ -48,7 +48,6 @@ import { FmgcData } from '../../FMC/fmgc';
 import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { qnhToMillibar } from '../../shared/QnhUtils';
 import {
@@ -579,7 +578,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private crzTablePredLine3 = Subject.create<string | null>(null);
 
-  private readonly destAirportIdent = Subject.create<string>('');
+  private readonly destAirportIdent = Subject.create<string>('----');
 
   private readonly destEta = Subject.create<string>('--:--');
 
@@ -677,15 +676,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly precisionApproachSelected = Subject.create<boolean>(false);
 
-  private readonly apprIdent = Subject.create<string>('');
+  private readonly apprIdent = Subject.create<string>('-------');
 
-  private readonly towerHeadwind = Subject.create<number | null>(null);
+  private readonly approachCrossWindComponent = Subject.create<number | null>(null);
 
-  private readonly apprCrosswind = Subject.create<string>('');
+  private readonly approachHeadWindComponent = Subject.create<number | null>(null);
 
-  private readonly windDirectionLabel = this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+  private readonly apprCrosswind = this.approachCrossWindComponent.map((v) =>
+    v !== null ? Math.abs(v).toFixed(0).padStart(3, '0') : '---',
+  );
 
-  private readonly windSpeedDisplay = this.towerHeadwind.map((v) =>
+  private readonly windDirectionLabel = this.approachHeadWindComponent.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+
+  private readonly windSpeedDisplay = this.approachHeadWindComponent.map((v) =>
     v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
   );
 
@@ -742,7 +745,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     v ? UnitType.METER : UnitType.FOOT,
   );
 
-  private readonly approachQnhFormatIsHpa = Subject.create<boolean>(true);
+  private readonly isDestAirportMissing = Subject.create(true);
+  private readonly approachQnhFormatIsHpa = Subject.create(true);
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -774,7 +778,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     // V-speeds to be confirmed due to rwy change?
     this.shouldShowConfirmVSpeeds();
 
-    this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport?.ident ?? '');
+    this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport?.ident ?? '----');
+    this.isDestAirportMissing.set(this.loadedFlightPlan.destinationAirport === undefined);
 
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
@@ -782,6 +787,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       precisionApproach =
         this.loadedFlightPlan.approach.type === ApproachType.Ils ||
         this.loadedFlightPlan.approach.type === ApproachType.Gls;
+    } else {
+      this.apprIdent.set('-------');
     }
 
     this.precisionApproachSelected.set(precisionApproach);
@@ -1335,33 +1342,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       // Update APPR page // FIXME: Logic should be in FMS code
       const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination(fpIndex);
       this.approachParametersMandatory.set(isActiveOrTmpy && (distanceToDest ?? 0) <= 180);
-
       this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
       this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? NaN);
       this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
-
       this.approachVls.set(this.props.fmcService.master.getApproachVls(fpIndex) ?? null);
       this.approachVref.set(this.props.fmcService.master.getApproachVref(fpIndex) ?? null);
-      const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
-      const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
-      if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
-        const towerHeadwind = A380SpeedsUtils.getHeadwind(
-          apprWindMagnitude,
-          apprWindDirection,
-          this.loadedFlightPlan.destinationRunway.magneticBearing,
-        );
-        this.towerHeadwind.set(towerHeadwind);
-
-        const towerCrosswind = A380SpeedsUtils.getHeadwind(
-          apprWindMagnitude,
-          apprWindDirection,
-          this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
-        );
-        this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
-      } else {
-        this.towerHeadwind.set(null);
-        this.apprCrosswind.set('---');
-      }
+      this.approachCrossWindComponent.set(this.props.fmcService.master.getApproachCrossWindComponent(fpIndex) ?? null);
+      this.approachHeadWindComponent.set(this.props.fmcService.master.getApproachHeadWindComponent(fpIndex) ?? null);
     } else {
       this.approachParametersMandatory.set(false);
     }
@@ -1381,9 +1368,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}
                   dataHandlerDuringValidation={async (v) =>
-                    v
-                      ? this.props.fmcService.master.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get())
-                      : false
+                    v ? this.props.fmcService.master.trySetCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                   }
                   mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}
@@ -3076,6 +3061,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
+                            disabled={this.isDestAirportMissing}
                           />
                           <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
@@ -3092,6 +3078,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
+                            disabled={this.isDestAirportMissing}
                           />
                         </div>
                       </div>
@@ -3125,6 +3112,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
+                          disabled={this.isDestAirportMissing}
                         />
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
@@ -3150,6 +3138,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
+                          disabled={this.isDestAirportMissing}
                         />
                       </div>
                     </div>

@@ -40,7 +40,7 @@ export class FGDataPublisher extends SimVarPublisher<FGVars> {
         ['fg.fma.verticalMode', { name: 'L:A32NX_FMA_VERTICAL_MODE', type: SimVarValueType.Number }],
         ['fg.fma.verticalArmedBitmask', { name: 'L:A32NX_FMA_VERTICAL_ARMED', type: SimVarValueType.Number }],
         ['fg.speeds.managed', { name: 'L:A32NX_SPEEDS_MANAGED_PFD', type: SimVarValueType.Knots }],
-        ['fg.altitudeConstraint', { name: 'L:A32NX_FG_ALTITUDE_CONSTRAINT', type: SimVarValueType.Number }],
+        ['fg.altitudeConstraint', { name: 'L:A32NX_FG_ALTITUDE_CONSTRAINT', type: SimVarValueType.Feet }],
         ['fg.athr.message', { name: 'L:A32NX_AUTOTHRUST_MODE_MESSAGE', type: SimVarValueType.Enum }],
         ['fg.athr.mode', { name: 'L:A32NX_AUTOTHRUST_MODE', type: SimVarValueType.Enum }],
       ]),

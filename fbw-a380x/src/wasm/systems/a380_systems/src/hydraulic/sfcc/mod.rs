@@ -471,6 +471,7 @@ mod tests {
         Aircraft, Read, SimulatorReader,
     };
 
+    use more_asserts::*;
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
 
     struct SlatFlapGear {
@@ -872,10 +873,22 @@ mod tests {
             angle_delta: f64,
         ) {
             assert_eq!(self.read_flaps_handle_position(), handle_pos);
-            assert!((self.get_flaps_demanded_angle(0) - flaps_demanded_angle).abs() < angle_delta);
-            assert!((self.get_flaps_demanded_angle(1) - flaps_demanded_angle).abs() < angle_delta);
-            assert!((self.get_slats_demanded_angle(0) - slats_demanded_angle).abs() < angle_delta);
-            assert!((self.get_slats_demanded_angle(1) - slats_demanded_angle).abs() < angle_delta);
+            assert_lt!(
+                (self.get_flaps_demanded_angle(0) - flaps_demanded_angle).abs(),
+                angle_delta
+            );
+            assert_lt!(
+                (self.get_flaps_demanded_angle(1) - flaps_demanded_angle).abs(),
+                angle_delta
+            );
+            assert_lt!(
+                (self.get_slats_demanded_angle(0) - slats_demanded_angle).abs(),
+                angle_delta
+            );
+            assert_lt!(
+                (self.get_slats_demanded_angle(1) - slats_demanded_angle).abs(),
+                angle_delta
+            );
             assert_eq!(self.get_flaps_conf(0), conf);
             assert_eq!(self.get_flaps_conf(1), conf);
         }

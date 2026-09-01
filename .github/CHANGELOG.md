@@ -1,20 +1,31 @@
 # Changelog
 
-<!-- The changelog is used to record user-visible changes since the previous stable release. -->
-<!-- For example a fix for a bug that was only in the dev version, and not the stable, would not be recorded here. -->
-<!-- Code refactoring and similar changes with no user-visible effects would also not be recorded here. -->
-<!-- The text should focus on changes the user would see, rather than code changes that are not visible. -->
-<!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
-<!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
-<!-- Use the following format below -->
-<!--  1. [Changed Area] Title of changes - @github username (Name)  -->
-<!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
+<!--
+This changelog tells users what they will notice when upgrading from the previous stable release.
+
+Add an entry only if both of these are true:
+- The change has a user-visible effect.
+- The effect is a difference from the previous stable release.
+
+Do not add entries for internal refactors, maintenance, or backend improvements with no user-visible effect.
+Do not add an entry for a fix to a bug introduced after the previous stable release; stable users never had that bug,
+so its fix is not part of their upgrade. Describe what users will experience, not the implementation details.
+
+Add every new entry to the end of the current release's list. The current release is the first release section below;
+append the entry immediately before the next release heading, without reordering existing entries.
+
+Use this format:
+1. [Changed Area] Title of changes - @github username (Name)
+
+Always start an item with "1."; GitHub will number the rendered list automatically. Prefix the changed area with
+"A32NX/" or "A380X/" when only one aircraft is affected.
+-->
 
 ## 2024.2.0
 
 1. [ATSU] Add support for BeyondATC and SayIntentions AI as METAR/ATIS sources - @saschl
 1. [A32NX/TCAS] Improve PFD Resolution Advisory graphics, introduce TCAS bus - @lukecologne (luke)
-1. [A380X/MFD] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
+1. [A380X/FMS] Fix TOW on FUEL&LOAD page showing gross weight instead of takeoff weight in flight - @HendersonTyler
 1. [PFD] Reduced size of white FMA messages on PFD - @BravoMike99 (bruno_pt99)
 1. [A380X] Update aircraft to MSFS2024 native modular aircraft - @heclak (Heclak)
 1. [A380X/MODEL] Performance optimization of 3D model with reduced draw calls - @heclak (Heclak)
@@ -40,7 +51,7 @@
 1. [A32NX/FMS] Added full support for EOSIDs (engine out SID) - @tracernz (Mike)
 1. [A32NX/FMS] Improved engine out detection logic and added MCDU page EO CLR - @tracernz (Mike)
 1. [FMS] Automatically delete minimums when the approach is changed - @BravoMike99 (bruno_pt99)
-1. [A380X/MFD] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
+1. [A380X/FMS] Dash TAXI fuel entry on FUEL&LOAD page after takeoff - @HendersonTyler
 1. [A380X/MFD] Fixed TMPY being generated upon accessing  vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Alternate flightplan or go around legs can be loaded on the vertical revision pages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
@@ -55,6 +66,35 @@
 1. [A380X] Add pilot avatar to cockpit in external views - @heclak (Heclak)
 1. [A380X/FLIGHT MODEL] Fix for tires sinking into runway - @donstim (donbikes)
 1. [A380X/MFD] Accept inches in QNH as 4 digits and change placeholder based on FCU setting - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
+1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
+1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
+1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
+1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
+1. [MISC] Refactor handling of unknown enum values to fix issues with GSX "complete now" feature and potential other wasm crashes - @Saschl
+1. [FMS] Fix a bug where the flight number was not retained when entering a new FROM/TO - @tracernz (Mike)
+1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord) & Saschl
+1. [EFB] Fix rendering issues in pushback page causing display to turn black - @heclak (Heclak)
+1. [EFB] Improve pushback line to be drawn as a constant length - @heclak (Heclak)
+1. [ATSU] Fix lowercase weather source names and MSFS METAR reports - @tracernz (Mike)
+1. [A32NX] Added ECAM control panel circuit breaker - @tracernz (Mike)
+1. [A32NX/MCDU] Fix QNH empty placeholder not reacting to selected barometric setting unit on FCU - @matze-tech (matze2346)
+1. [A32NX/FMS] Fixed an issue where the hold page would sometimes bug when creating a hold - @tracernz (Mike)
+1. [A380X/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
+1. [A380X/FG] Add Flight Guidance part to the PRIMs - @lukecologne (luke)
+1. [A380X/FG] Add new A380 specific modes: OP CLB armed, RWY armed ALT CRZ armed - @lukecologne (luke)
+1. [A380X/FG] Add ALT Button (push to level off) functionality - @lukecologne (luke)
+1. [A380X/PFD] FPV/VV is now small while the FDs are active - @lukecologne (luke)
+1. [A380X/PFD] FDs in TRK/FPA mode are now also displayed in crossed bars style instead of FPD - @lukecologne (luke)
+1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
+1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
+1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
+1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
+1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
 
 ## 2024.1.0
 
@@ -194,6 +234,7 @@
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
 1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
 1. [A32NX/FLIGHT MODEL] Updated A32NX flight model for MSFS 2024 - @donstim (donbikes)
+1. [A32NX/FWS] Add `BARO VALUE DISAGREE` master caution, rename `ALTI DISCREPANCY` master caution to `ALT DISCREPANCY` - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add intermediate callouts to FWC - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0

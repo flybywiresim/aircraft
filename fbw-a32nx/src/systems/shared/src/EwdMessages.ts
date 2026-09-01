@@ -1,8 +1,9 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2022-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable prettier/prettier */
 // ^ Because the groups look awful otherwise, don't break any other styling!
+// prettier-ignore
 const EwdGroups: Record<string, string> = {
   'AUTO FLT$1': '\x1b<2m\x1b4mAUTO FLT\x1bm',
   'F/CTL$1': '\x1b<2m\x1b4mF/CTL\x1bm',
@@ -37,6 +38,7 @@ const EwdGroups: Record<string, string> = {
   'NAV$9': '\x1b<4m\x1b4mNAV\x1bm',
   'F/CTL$4': '\x1b<4m\x1b4mF/CTL\x1bm',
   'F/CTL$5': '\x1b<4m\x1b4mF/CTL\x1bm',
+  'C/B$1': '\x1b<4m\x1b4mC/B\x1bm',
   'AUTO FLT$2': '\x1b<4m\x1b4mAUTO FLT\x1bm',
   'AUTO FLT$3': '\x1b<4m\x1b4mAUTO FLT\x1bm',
   'T.O$2': '\x1b<4m\x1b4mT.O\x1bm',
@@ -227,11 +229,13 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['240000404', { text: '\x1b<5m -APU GEN............OFF' }],
   ['240006001', { group: 'ELEC$3', text: ' GEN 1 OFF' }],
   ['240007001', { group: 'ELEC$3', text: ' GEN 2 OFF' }],
-  ['340010501', { group: 'NAV$9', text: ' ALTI DISCREPANCY' }],
+  ['340010501', { group: 'NAV$9', text: ' ALT DISCREPANCY' }],
   ['340010502', { text: '\x1b<5m -ALT............X CHECK' }],
   ['340010503', { text: '\x1b<5m -AIR DATA SWTG..AS REQD' }],
   ['340010001', { group: 'NAV$9', text: ' BARO REF DISCREPANCY' }],
   ['340010002', { text: '\x1b<5m -BARO REF.......X CHECK' }],
+  ['340010101', { group: 'NAV$9', text: ' BARO VALUE DISAGREE' }],
+  ['340010102', { text: '\x1b<5m -BARO REF VALUE.X CHECK' }],
   ['340004801', { group: 'NAV$9', text: ' IR NOT ALIGNED' }],
   ['340004802', { text: '\x1b<4m POSITION DISAGREE' }],
   ['340004803', { text: '\x1b<4m POSITION MISSING' }],
@@ -306,6 +310,13 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['270037505', { text: '\x1b<5m MANEUVER WITH CARE' }],
   ['270037506', { text: '\x1b<5m MAX FL..............350' }],
   ['270037507', { text: '\x1b<5m SPD BRK......DO NOT USE' }],
+  ['310011001', { group: 'C/B$1', text: ' TRIPPED REAR PNL J-M' }],
+  ['310012001', { group: 'C/B$1', text: ' TRIPPED REAR PNL N-R' }],
+  ['310013001', { group: 'C/B$1', text: ' TRIPPED REAR PNL S-V' }],
+  ['310014001', { group: 'C/B$1', text: ' TRIPPED REAR PNL W-Z' }],
+  ['310015001', { group: 'C/B$1', text: ' TRIPPED ON OVHD PNL' }],
+  ['310016001', { group: 'C/B$1', text: ' TRIPPED L ELEC BAY' }],
+  ['310022001', { group: 'C/B$1', text: ' TRIPPED R ELEC BAY' }],
   ['220002201', { group: 'AUTO FLT$2', text: ' A/THR OFF' }],
   ['220002202', { text: '\x1b<5m -THR LEVERS........MOVE' }],
   ['220002401', { group: 'AUTO FLT$2', text: ' A/THR LIMITED' }],
