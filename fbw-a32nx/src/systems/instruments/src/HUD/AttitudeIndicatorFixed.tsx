@@ -250,12 +250,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           </g>
 
           <AircraftReference bus={this.props.bus} instrument={this.props.instrument} />
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
           <FlightPathVector
             bus={this.props.bus}
             isAttExcessive={this.props.isAttExcessive}
             filteredRadioAlt={this.props.filteredRadioAlt}
           />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         </g>
       </>
     );

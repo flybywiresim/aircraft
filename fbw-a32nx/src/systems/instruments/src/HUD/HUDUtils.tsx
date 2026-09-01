@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, NodeReference, VNode } from '@microsoft/msfs-sdk';
 // import { LowerArea } from 'instruments/src/HUD/LowerArea';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import './style.scss';
@@ -245,6 +245,7 @@ export interface HudElems {
   cWndMode: boolean;
   decMode: number;
   gndSpeed: boolean;
+  spdChevrons: string;
 }
 
 export enum MdaMode {
@@ -252,4 +253,25 @@ export enum MdaMode {
   NoDh = 'NO DH',
   Radio = 'RADIO',
   Baro = 'BARO',
+}
+export function OutlinedPath(
+  path: string,
+  bckGndClass: string,
+  foreClass: string,
+  bckGndRef?: NodeReference<SVGPathElement>,
+  foreRef?: NodeReference<SVGPathElement>,
+  dasharray?: string,
+) {
+  return (
+    <>
+      <path ref={bckGndRef} d={path} class={bckGndClass} />
+      <path ref={foreRef} d={path} class={foreClass} stroke-dasharray={dasharray} />
+    </>
+  );
+}
+
+export function setAttributes(attribute: string, path: string, refs: NodeReference<SVGPathElement>[]) {
+  refs.forEach((ref) => {
+    ref.instance.setAttribute(attribute, path);
+  });
 }

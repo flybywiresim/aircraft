@@ -20,6 +20,7 @@ import {
   Arinc429Register,
   Arinc429RegisterSubject,
   Arinc429WordData,
+  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -28,7 +29,8 @@ import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudEl
 
 import { FcuBus } from '../PFD/shared/FcuBusProvider';
 import { FgBus } from './shared/FgBusProvider';
-import { HudMode } from './HUDUtils';
+import { HudMode, OutlinedPath, setAttributes } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
 const DistanceSpacing = (1024 / 28) * 5;
 const ValueSpacing = 5;
 
@@ -46,6 +48,7 @@ export class FlightPathVector extends DisplayComponent<{
 }> {
   private readonly subscriptions: Subscription[] = [];
   private bird = FSComponent.createRef<SVGGElement>();
+  private birdPathBg = FSComponent.createRef<SVGPathElement>();
   private birdPath = FSComponent.createRef<SVGPathElement>();
   private birdOffRange = false;
   private readonly fpvFlagVisible = Subject.create(false);
@@ -172,13 +175,15 @@ export class FlightPathVector extends DisplayComponent<{
     }
 
     this.ap1Active.get() || this.ap2Active.get()
-      ? this.birdPath.instance.setAttribute(
+      ? setAttributes(
           'd',
-          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+          'M 624 512 l 16 16 l 16 -16 l -16 -16  l -16 16 Z M 624 512 l 16 16 l 16 -16 l -16 -16  l -16 16 Z M 592 512 h 32 m 16 -16 v -16z m 16 16 h 32',
+          [this.birdPathBg, this.birdPath],
         )
-      : this.birdPath.instance.setAttribute(
+      : setAttributes(
           'd',
-          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -19z m 13 13 h 35',
+          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z  M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 592 512 h 35 m 13 -13 v -13z m 13 13 h 35',
+          [this.birdPathBg, this.birdPath],
         );
   }
 
@@ -195,7 +200,7 @@ export class FlightPathVector extends DisplayComponent<{
       <>
         <g ref={this.bird} id="bird">
           <g id="FlightPathVector">
-            <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
+            {OutlinedPath('', 'NormalStroke InverseGreen', 'NormalStroke Green', this.birdPathBg, this.birdPath)}
           </g>
           <TotalFlightPathAngle bus={this.props.bus} />
 
@@ -217,8 +222,8 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
   private refElement = FSComponent.createRef<SVGGElement>();
-  private leftChevron = FSComponent.createRef<SVGGElement>();
-  private rightChevron = FSComponent.createRef<SVGGElement>();
+  private ChevronsBg = FSComponent.createRef<SVGPathElement>();
+  private Chevrons = FSComponent.createRef<SVGPathElement>();
   private inRange = true;
   private onGround = true;
   private merged = false;
@@ -226,7 +231,51 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly flightPathVector = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
   private readonly totalFpa = ConsumerSubject.create(this.sub.on('fac1GammaT'), new Arinc429Word(0));
-  private readonly fpa = ConsumerSubject.create(this.sub.on('fpa'), new Arinc429Word(0));
+
+  private readonly spdChevronsVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
+  private readonly crosswindMode = ConsumerSubject.create(
+    this.sub.on(getDisplayIndex() === 1 ? 'crosswindModeL' : 'crosswindModeR'),
+    false,
+  );
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa'));
+  private readonly da = Arinc429ConsumerSubject.create(this.sub.on('da'));
+
+  private readonly isOffrange = MappedSubject.create(
+    ([crosswindMode, roll, pitch, fpa, da]) => {
+      const daLimConv = (da.value * DistanceSpacing) / ValueSpacing;
+      const pitchSubFpaConv = calculateHorizonOffsetFromPitch(pitch.value) - calculateHorizonOffsetFromPitch(fpa.value);
+      const rollCos = Math.cos((roll.value * Math.PI) / 180);
+      const rollSin = Math.sin((-roll.value * Math.PI) / 180);
+      const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+      let offRange = false;
+      if (crosswindMode == false) {
+        if (xOffset < -378 || xOffset > 350) {
+          offRange = true;
+        } else {
+          offRange = false;
+        }
+      } else {
+        if (xOffset < -540 || xOffset > 540) {
+          offRange = true;
+        } else {
+          offRange = false;
+        }
+      }
+
+      if (crosswindMode) {
+        return false;
+      } else {
+        return offRange ? true : false;
+      }
+    },
+    this.crosswindMode,
+    this.roll,
+    this.pitch,
+    this.fpa,
+    this.da,
+  );
 
   private setPos() {
     if (this.totalFpa.get().isNormalOperation()) {
@@ -250,16 +299,13 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
       }
 
       if (this.merged == false) {
-        if (this.inRange) {
-          this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-          this.rightChevron.instance.setAttribute('stroke-dasharray', '');
-        } else {
-          this.leftChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-          this.rightChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-        }
+        this.inRange
+          ? this.Chevrons.instance.setAttribute('stroke-dasharray', '')
+          : this.Chevrons.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
       } else {
-        this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-        this.rightChevron.instance.setAttribute('stroke-dasharray', '');
+        this.isOffrange.get()
+          ? this.Chevrons.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3')
+          : this.Chevrons.instance.setAttribute('stroke-dasharray', '');
       }
 
       this.refElement.instance.style.transform = `translate3d(0px, ${UsedOffset}px, 0px)`;
@@ -290,8 +336,13 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
   render(): VNode | null {
     return (
       <g id="TotalFlightPathAngle" ref={this.refElement}>
-        <path ref={this.leftChevron} class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
-        <path ref={this.rightChevron} class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
+        {OutlinedPath(
+          'M 572 500 l 12 12 l -12 12 M 572 500 l 12 12 l-12 12 M 708 500 l -12 12 l 12 12 M 708 500 l -12 12 l 12 12',
+          'NormalStroke InverseGreen',
+          'NormalStroke Green',
+          this.ChevronsBg,
+          this.Chevrons,
+        )}
       </g>
     );
   }

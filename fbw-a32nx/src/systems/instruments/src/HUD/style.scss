@@ -2,9 +2,9 @@
 @import "animations";
 
 @font-face {
-  font-family: "Ecam";
+  font-family: "FBW-Display-HUD-A320";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/FBW-Display-HUD-A320.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -22,7 +22,7 @@
   width: 1280px;
   height: 1024px;
   background: $display-background;
-  font-family: "Ecam", monospace !important;
+  font-family: "FBW-Display-HUD-A320", monospace !important;
 }
 
 .PulseCyanFill {
@@ -124,11 +124,18 @@
   stroke-linejoin: round;
 }
 
-.TextOutline {
-  paint-order: stroke fill markers;
+// .TextOutline {
+//   paint-order: stroke fill markers;
 
-  stroke-width: 0.05mm;
-  stroke: $display-background !important;
+//   stroke-width: 0.05mm;
+//   stroke: $display-background !important;
+// }
+
+
+
+.TextOutline {
+stroke-width: .5mm;
+paint-order: fill stroke !important;
 }
 
 .FontLargest {
@@ -186,7 +193,9 @@
 }
 text.Magenta {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Cyan {
@@ -195,17 +204,17 @@ text.Magenta {
 }
 text.Cyan {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 tspan.Cyan {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
-tspan.Green {
-  fill: $display-green;
-  stroke: none;
-}
 .None {
   fill: none;
   stroke: none;
@@ -221,7 +230,9 @@ tspan.Green {
 }
 text.White {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Green {
@@ -236,7 +247,15 @@ text.White {
 
 text.Green {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
+}
+tspan.Green {
+  fill: $display-green;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Amber {
@@ -249,7 +268,9 @@ text.Green {
 }
 text.Amber {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Yellow {
@@ -262,7 +283,9 @@ text.Amber {
 }
 text.Yellow {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Red {
@@ -275,7 +298,9 @@ text.Yellow {
 }
 text.Red {
   fill: $display-green;
-  stroke: none;
+  stroke: #000000;
+  stroke-width: 2px;
+  paint-order: fill stroke;
 }
 
 .Grey {
@@ -323,6 +348,14 @@ text.Red {
 }
 .InverseGreen{
   stroke: #000000;
+  fill: #000000;
+  stroke-width: 2mm;
+  paint-order: fill stroke;
+}
+text.InverseGreen{
+  stroke: #000000;
+  fill: #000000;
+  stroke-width: 0mm;
 }
 .Test{
   fill: #ff000080;
