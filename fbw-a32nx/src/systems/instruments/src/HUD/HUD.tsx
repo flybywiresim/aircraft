@@ -44,7 +44,6 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { HudElems, LagFilter, Grid } from './HUDUtils';
 import { HudWarnings } from './HudWarnings';
-import { SyntheticRunway } from './SyntheticRunway';
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
   return url ? parseInt(url.substring(url.length - 1), 10) : 0;
@@ -215,48 +214,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         normDmc={getDisplayIndex()}
       >
         <svg class="hud-svg" version="1.1" viewBox="0 0 1280 1024" xmlns="http://www.w3.org/2000/svg">
-          <Horizon
-            bus={this.props.bus}
-            instrument={this.props.instrument}
-            isAttExcessive={this.isAttExcessive}
-            filteredRadioAlt={this.filteredRadioAltitude}
-          />
-          <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.filteredRadioAltitude} />
-          <path
-            id="PitchScaleMask"
-            class="BackgroundFill"
-            d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"
-          />
-
-          <g id="TapesMasks">
-            <path
-              display={this.altTape}
-              id="AltitudeTapeMask"
-              class="BlackFill"
-              d="M 1039 320 v 380 h 113 v -380 z"
-            ></path>
-
-            <path
-              id="CwAltTapeMask"
-              display={this.xWindAltTape}
-              class="NormalStroke  BackgroundFill"
-              d="m1045 284 h 106 v 100 h -106 z"
-            />
-
-            <path display={this.spdTape} id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
-
-            <path
-              display={this.xWindSpdTape}
-              id="cwSpdTapeBg"
-              class="NormalStroke  BackgroundFill"
-              d="m71 242 h 94 v 172 h -94z"
-            />
-          </g>
-
-          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator}>
-            <WindIndicator bus={this.props.bus} />
-          </g>
-
           <AltitudeIndicator bus={this.props.bus} />
 
           <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -290,12 +247,22 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             />
           </g>
 
+          <Horizon
+            bus={this.props.bus}
+            instrument={this.props.instrument}
+            isAttExcessive={this.isAttExcessive}
+            filteredRadioAlt={this.filteredRadioAltitude}
+          />
           <AttitudeIndicatorFixedCenter
             bus={this.props.bus}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
             instrument={this.props.instrument}
           />
+
+          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator}>
+            <WindIndicator bus={this.props.bus} />
+          </g>
 
           <AirspeedIndicatorOfftape bus={this.props.bus} />
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />

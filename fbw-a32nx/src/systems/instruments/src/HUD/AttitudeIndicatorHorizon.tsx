@@ -26,6 +26,7 @@ import { getDisplayIndex } from './HUD';
 import { HeadingOfftape } from './HeadingIndicator';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalMode } from '@shared/autopilot';
+import { SyntheticRunway } from './SyntheticRunway';
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -60,11 +61,19 @@ interface HorizonProps {
 export class Horizon extends DisplayComponent<HorizonProps> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<
-    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
   >();
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
+
+  private GroupRef = FSComponent.createRef<SVGGElement>();
+
+  private crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
+
+  private pitch = ConsumerSubject.create(this.sub.on('pitchAr'), null);
+
+  private roll = ConsumerSubject.create(this.sub.on('rollAr'), null);
 
   private pitchProtActiveVisibility = Subject.create('visible');
 
@@ -73,6 +82,21 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   private yOffset = Subject.create(0);
 
   private headingFailed = Subject.create(true);
+
+  private readonly maskTransform = MappedSubject.create(
+    ([pitch, roll]) => {
+      if (pitch != null && roll != null) {
+        const multiplier = 1000;
+        const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
+        const rollValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
+        if (pitch.isNormalOperation()) {
+          return `rotate(${-rollValueAtPrecision} 640 329.143) translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision) - FIVE_DEG}px, 0px) `;
+        }
+      }
+    },
+    this.pitch,
+    this.roll,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -97,6 +121,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           }
           const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
           this.yOffset.set(yOffset);
+          this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
+            ? 'url(#cwPitchScaleMask)'
+            : 'url(#PitchScaleMask)';
         }),
     );
 
@@ -112,6 +139,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           } else {
             this.rollGroupRef.instance.style.display = 'none';
           }
+          this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
+            ? 'url(#cwPitchScaleMask)'
+            : 'url(#PitchScaleMask)';
         }),
     );
 
@@ -135,37 +165,61 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   render(): VNode {
     return (
-      <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
-        <g id="PitchGroup" ref={this.pitchGroupRef} class="NormalStroke Green">
-          <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
-          <PitchScale
-            bus={this.props.bus}
-            filteredRadioAlt={this.props.filteredRadioAlt}
-            isAttExcessive={this.props.isAttExcessive}
-          />
+      <g id="HorizonGroup">
+        <defs>
+          <clipPath id="PitchScaleMask" transform={this.maskTransform}>
+            <path
+              d=" m 0 125 L 1280 125
+                    L 1280 692 L 1152 692 L 1152 329 L 1058 329 L 1058 692 L 1280 692
+                    L 1280 800   L 900 800  L 900 925  L 330 925 L 330 800 L 0 800 L 0 420
+                    L 0 692 L 168 692 L 168 329 L 70 329 L 70 692 L 0 692 Z"
+            />
+          </clipPath>
+          <clipPath id="cwPitchScaleMask" transform={this.maskTransform}>
+            <path
+              d=" m 0 125 L 1280 125
+                L 1280 284 L 1058 284 L 1058 373 L 1151 373 L 1151 284 L 1280 284 L 1280 712
+                L 1280 800   L 900 800  L 900 925  L 330 925 L 330 800 L 0 800 L 0 417
+                L 163 417 L 163 241 L 70 241 L 70 417 L 0 417 z"
+            />
+          </clipPath>
+        </defs>
+        <g ref={this.GroupRef}>
+          <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
+            <g id="PitchGroup" ref={this.pitchGroupRef} class="NormalStroke Green">
+              <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
+              <PitchScale
+                bus={this.props.bus}
+                filteredRadioAlt={this.props.filteredRadioAlt}
+                isAttExcessive={this.props.isAttExcessive}
+              />
 
-          {/* horizon */}
-          <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
+              {/* horizon */}
+              <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
 
-          <HorizontalTape
-            type="headingTape"
-            bus={this.props.bus}
-            displayRange={DisplayRange}
-            valueSpacing={ValueSpacing}
-            distanceSpacing={DistanceSpacing}
-            yOffset={Subject.create(0)}
-          />
-          <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
-          <TailstrikeIndicator bus={this.props.bus} />
-        </g>
+              <HorizontalTape
+                type="headingTape"
+                bus={this.props.bus}
+                displayRange={DisplayRange}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+                yOffset={Subject.create(0)}
+              />
+              <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
+              <TailstrikeIndicator bus={this.props.bus} />
 
-        <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
+              <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
+            </g>
 
-        {/* <RadioAltAndDH
+            <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
+
+            {/* <RadioAltAndDH
           bus={this.props.bus}
           filteredRadioAltitude={this.props.filteredRadioAlt}
           attExcessive={this.props.isAttExcessive}
         /> */}
+          </g>
+        </g>
       </g>
     );
   }

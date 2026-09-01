@@ -20,11 +20,9 @@ import {
   HUDSyntheticRunway,
   Arinc429ConsumerSubject,
   Arinc429RegisterSubject,
-  Arinc429Register,
-  Arinc429WordData,
 } from '@flybywiresim/fbw-sdk';
 
-import { getSmallestAngle, HudElems, MdaMode, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { getSmallestAngle, HudElems, MdaMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
 
@@ -47,10 +45,6 @@ export class SyntheticRunway extends DisplayComponent<{
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
-  private pitchGroupRef = FSComponent.createRef<SVGGElement>();
-  private rollGroupRef = FSComponent.createRef<SVGGElement>();
-  private pitch: Arinc429WordData = Arinc429Register.empty();
-  private roll = 0;
   private yOffset = Subject.create(0);
   /** bit 29 is NO DH selection */
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
@@ -209,26 +203,6 @@ export class SyntheticRunway extends DisplayComponent<{
         }
       }),
     );
-
-    this.pitchAr.sub((pitch) => {
-      this.pitch = pitch;
-      if (this.pitchAr.get().isNormalOperation()) {
-        this.pitchGroupRef.instance.style.display = 'block';
-        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857}px, 0px)`;
-        const yOffset = calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857;
-        this.yOffset.set(yOffset);
-      }
-    });
-
-    this.rollAr.sub(() => {
-      this.roll = this.rollAr.get().value;
-      if (this.rollAr.get().isNormalOperation()) {
-        this.rollGroupRef.instance.style.display = 'block';
-        this.rollGroupRef.instance.setAttribute('transform', `rotate(${-this.roll} 640 329.143)`);
-      } else {
-        this.rollGroupRef.instance.style.display = 'none';
-      }
-    });
   }
 
   // 	Phiφ is latitude, Lambdaλ is longitude, θ is the bearing (clockwise from north), δ is the angular distance d/R; d being the distance travelled, R the earth’s radius
@@ -442,12 +416,8 @@ export class SyntheticRunway extends DisplayComponent<{
     }
 
     return (
-      <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
-        <g id="APitchGroup" ref={this.pitchGroupRef} class="NormalStroke">
-          <g id="SyntheticRunway" display={this.visToggle}>
-            {res}
-          </g>
-        </g>
+      <g id="SyntheticRunway" display={this.visToggle}>
+        {res}
       </g>
     );
   }
