@@ -296,6 +296,16 @@ export class FmcAircraftInterface {
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
 
+  private readonly navEngaged = this.masterPrimFgWord4.map((v) => v.bitValueOr(12, false));
+
+  private autoStepClimbEnabled = false;
+
+  private readonly autoStepClimb = NXDataStore.getAndSubscribeLegacy(
+    'AUTO_STEP_CLIMB',
+    (_, v) => (this.autoStepClimbEnabled = v === 'ENABLED'),
+    'DISABLED',
+  );
+
   constructor(
     private bus: EventBus,
     private fmc: FlightManagementComputer,
@@ -1614,7 +1624,7 @@ export class FmcAircraftInterface {
   private isLateralModeManaged() {
     const primFgDiscreteWord4 = this.masterPrimFgWord4.get();
     return (
-      primFgDiscreteWord4.bitValueOr(12, false) || // NAV
+      this.navEngaged.get() || // NAV
       primFgDiscreteWord4.bitValue(13) || // LOC CPT
       primFgDiscreteWord4.bitValue(14) || /// LOC TRACK
       primFgDiscreteWord4.bitValue(25) || /// LAND
@@ -1789,7 +1799,7 @@ export class FmcAircraftInterface {
 
   private stepAheadTriggeredForAltitude: number | null = null;
 
-  public checkForStepClimb() {
+  public checkForCruiseStep() {
     const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(this.flightPlanService.active);
 
     if (approachingCruiseStep && !approachingCruiseStep.isIgnored && cruiseStepLegIndex) {
@@ -1805,12 +1815,19 @@ export class FmcAircraftInterface {
       ) {
         this.fmc.addMessageToQueue(NXSystemMessages.stepAhead, undefined, undefined);
 
-        const autoStepClimb = NXDataStore.getLegacy('AUTO_STEP_CLIMB', 'DISABLED') === 'ENABLED';
-        if (autoStepClimb && !this.fmc.guidanceController.vnavDriver.isSelectedVerticalModeActive()) {
-          SimVar.SetSimVarValue('K:A32NX.FCU_ALT_SET', SimVarValueType.Number, approachingCruiseStep.toAltitude).catch(
-            console.error,
-          );
-          SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PULL', SimVarValueType.Bool, true);
+        if (
+          this.autoStepClimbEnabled &&
+          !this.fmc.guidanceController.vnavDriver.isSelectedVerticalModeActive() &&
+          this.navEngaged.get()
+        ) {
+          SimVar.SetSimVarValue('K:A32NX.FCU_ALT_SET', SimVarValueType.Number, approachingCruiseStep.toAltitude)
+            .then(() => {
+              // Specify a timeout to ensure the FCU_ALT_SET event is fired before the push.
+              setTimeout(() => {
+                SimVar.SetSimVarValue('K:A32NX.FCU_ALT_PUSH', SimVarValueType.Bool, true);
+              }, 500);
+            })
+            .catch(console.error);
         }
         this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
       }
