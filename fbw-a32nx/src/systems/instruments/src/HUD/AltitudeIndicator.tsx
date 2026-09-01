@@ -719,7 +719,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             id="SelectedAltLowerText"
             ref={this.selectedAltLowerText}
             class="FontMedium EndAlign Green"
-            x="577"
+            x="593"
             y="547"
             style="white-space: pre"
           >
@@ -740,7 +740,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             id="SelectedAltUpperText"
             ref={this.selectedAltUpperText}
             class="FontMedium EndAlign Green"
-            x="579"
+            x="595"
             y="158.3"
             style="white-space: pre"
           >
