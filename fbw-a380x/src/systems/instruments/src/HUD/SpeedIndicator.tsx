@@ -48,16 +48,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
 
   private readonly vFeNextValue = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_fe_next'));
 
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private bitMask = 0;
-  private athMode = 0;
-  private sDecelVis = Subject.create<String>('none');
-  private sCrosswindModeOn = Subject.create<String>('');
-  private sCrosswindModeOff = Subject.create<String>('');
   private groundSpeedRef = FSComponent.createRef<SVGGElement>();
-  private lgRightCompressed = true;
 
   private spdTape = '';
   private xWindSpdTape = '';
@@ -131,27 +122,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
         this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
       });
 
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        this.setOutline();
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        this.cwOffsetRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      });
-
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((value) => {
-        value ? this.sDecelVis.set('block') : this.sDecelVis.set('none');
-      });
     sub;
     this.vFeNextValue.sub((vfe) => {
       if (vfe.isNormalOperation()) {
@@ -204,13 +174,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
       }
       this.setOutline();
     });
-
-    sub
-      .on('realTime')
-      .atFrequency(2)
-      .handle(() => {
-        //this.crosswindMode ? (DisplayRange = 20) : (DisplayRange = 42);
-      });
   }
 
   render(): VNode {
@@ -231,8 +194,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
               {/* <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
               <path id="SpeedTapeBelowForty" class="NormalStroke Green" d="m19.031 81 v43" /> */}
 
-              {/* <g id="CrosswindVerticalTape" transform="translate(0 -311)" */}
-              <g id="CrosswindVerticalTape" ref={this.cwOffsetRef}>
+              <g id="CrosswindVerticalTape" ref={this.cwOffsetRef} transform="translate(0 -192)">
                 <VerticalTape
                   tapeValue={this.speedSub}
                   lowerLimit={30}
@@ -639,97 +601,36 @@ const getSpeedTapeOffsetAlwaysVisible = (currentSpeed: number, bugSpeed: number)
 };
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<PrimFeBusBaseEvents>();
-
-  private spdTape = '';
-  private xWindSpdTape = '';
-  private xWindSpdTapeRef = FSComponent.createRef<SVGGElement>();
-  private spdTapeRef = FSComponent.createRef<SVGGElement>();
-
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private bitMask = 0;
-  private athMode = 0;
-  private onPower = false;
-  private finalGnd = false;
-  private sCrosswindModeOn = Subject.create<String>('');
-  private sCrosswindModeOff = Subject.create<String>('');
-  private decelRef = FSComponent.createRef<SVGTextElement>();
-  private decelXwndRef = FSComponent.createRef<SVGTextElement>();
-  private spdLimFlagRef = FSComponent.createRef<SVGTextElement>();
-  private spdLimFlagXwndRef = FSComponent.createRef<SVGTextElement>();
-  private lowerRef = FSComponent.createRef<SVGGElement>();
-
-  private offTapeRef = FSComponent.createRef<SVGGElement>();
-  private offTapeRefCw = FSComponent.createRef<SVGGElement>();
-
-  private offTapeFailedRef = FSComponent.createRef<SVGGElement>();
-
-  private onGround = true;
-
-  private leftMainGearCompressed = true;
-
-  private rightMainGearCompressed = true;
-
-  private cwSpdLinesRef = FSComponent.createRef<SVGGElement>();
+  private readonly sub = this.props.bus.getSubscriber<PrimFeBusBaseEvents & HudElems & HUDSimvars & Arinc429Values>();
 
   private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_max'));
+  private readonly spdTape = ConsumerSubject.create(this.sub.on('spdTape'), '');
+  private readonly xWindSpdTape = ConsumerSubject.create(this.sub.on('xWindSpdTape'), '');
+  private readonly autoBrakeDecel = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
+  private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+  private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), false);
+  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
 
   private readonly spdLimFlagVisibility = this.vMax.map((vMax) => (vMax.isFailureWarning() ? 'block' : 'none'));
+  private readonly spdTapeVis = this.spdTape.map((s) => (s == 'block' ? 'block' : 'none'));
+  private readonly xWindSpdTapeVis = this.xWindSpdTape.map((s) => (s == 'block' ? 'block' : 'none'));
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private readonly onGround = MappedSubject.create(
+    ([lmgc, rmgc]) => {
+      return lmgc || rmgc;
+    },
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+  );
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
+  private readonly decelVis = MappedSubject.create(([autoBrakeDecel]) => {
+    return autoBrakeDecel ? 'block' : 'none';
+  }, this.autoBrakeDecel);
 
-    sub
-      .on('spdTape')
-      .whenChanged()
-      .handle((v) => {
-        this.spdTape = v;
-        this.spdTapeRef.instance.style.display = `${this.spdTape}`;
-      });
-    sub
-      .on('xWindSpdTape')
-      .whenChanged()
-      .handle((v) => {
-        this.xWindSpdTape = v;
-        this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        this.cwSpdLinesRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      });
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.onGround = this.rightMainGearCompressed || g;
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.onGround = this.leftMainGearCompressed || g;
-      });
-
-    sub.on('speedAr').handle((speed) => {
+  private readonly isFailed = MappedSubject.create(
+    ([onGround, speed]) => {
       let airspeedValue: number;
-      if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
+      if (speed.isFailureWarning() || (speed.isNoComputedData() && !onGround)) {
         airspeedValue = NaN;
       } else if (speed.isNoComputedData()) {
         airspeedValue = 30;
@@ -737,48 +638,37 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
         airspeedValue = speed.value;
       }
       if (Number.isNaN(airspeedValue)) {
-        this.offTapeRefCw.instance.classList.add('HiddenElement');
-        this.offTapeRef.instance.classList.add('HiddenElement');
-        this.offTapeFailedRef.instance.classList.remove('HiddenElement');
+        return true;
       } else {
-        this.offTapeRefCw.instance.classList.remove('HiddenElement');
-        this.offTapeRef.instance.classList.remove('HiddenElement');
-        this.offTapeFailedRef.instance.classList.add('HiddenElement');
-
-        const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
-        const showLower = clampedSpeed > 72;
-
-        if (showLower) {
-          this.lowerRef.instance.setAttribute('visibility', 'visible');
-        } else {
-          this.lowerRef.instance.setAttribute('visibility', 'hidden');
-        }
+        return false;
       }
-    });
+    },
+    this.onGround,
+    this.speed,
+  );
 
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((a) => {
-        if (a) {
-          this.decelRef.instance.style.visibility = 'visible';
-        } else {
-          this.decelRef.instance.style.visibility = 'hidden';
-        }
-      });
-  }
+  private readonly showLower = MappedSubject.create(([speed]) => {
+    const clampedSpeed = Math.max(Math.min(speed.value, 660), 30);
+    return clampedSpeed > 72 ? 'block' : 'none';
+  }, this.speed);
 
   render(): VNode {
     return (
       <>
         <g id="offTapeSpeedGroup">
-          <g id="crosswind" class="cwTest" ref={this.xWindSpdTapeRef}>
-            <g id="SpeedOfftapeGroup" transform=" translate(95 159)" ref={this.offTapeRefCw}>
-              <g ref={this.cwSpdLinesRef}>
-                <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 -40 v 182"></path>
-                <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m16 -40 h 98"></path>
-                <path id="SpeedTapeOutlineLower" class="NormalStroke Green" d="m16 142 h 98"></path>
-                <path class="Fill Green SmallOutline" d="m 62 49 v 4 h 28 l 15.614 5.745 v -15.119 l -15.614 5.745z" />
+          <g id="crosswind" class="cwTest" display={this.xWindSpdTapeVis}>
+            <g
+              id="SpeedOfftapeGroup"
+              transform=" translate(95 159)"
+              display={this.isFailed.map((v) => {
+                !v ? 'block' : 'none';
+              })}
+            >
+              <g id="cwOfftapeFailedGroup">
+                <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 79 v 182"></path>
+                <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m16 79 h 98"></path>
+                <path id="SpeedTapeOutlineLower" class="NormalStroke Green" d="m16 261 h 98"></path>
+                <path class="Fill Green SmallOutline" d="m 62 168 v 4 h 28 l 15.614 5.745 v -15.119 l -15.614 5.745z" />
               </g>
 
               <SpeedTarget bus={this.props.bus} mode={WindMode.CrossWind} />
@@ -786,9 +676,20 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
               <CrosswindDigitalSpeedReadout bus={this.props.bus} />
             </g>
           </g>
-          <g id="normal" ref={this.spdTapeRef}>
-            <g id="SpeedOfftapeGroup" transform=" translate(95 159)" ref={this.offTapeRef}>
-              <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
+          <g id="normal" display={this.spdTapeVis}>
+            <g
+              id="SpeedOfftapeGroup"
+              transform=" translate(95 159)"
+              display={this.isFailed.map((v) => {
+                !v ? 'block' : 'none';
+              })}
+            >
+              <g
+                id="OfftapeFailedGroup"
+                display={this.isFailed.map((v) => {
+                  v ? 'block' : 'none';
+                })}
+              >
                 <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 170 v 383" />
                 <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m16 170 h 98" />
                 <path id="SpeedTapeOutlineLower" class="NormalStroke Green" d="m16 553 h 98" />
@@ -797,7 +698,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
               <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 170 v 383" />
               <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m16 170 h 98" />
               <SpeedTarget bus={this.props.bus} mode={WindMode.Normal} />
-              <text id="AutoBrkDecel" ref={this.decelRef} class="FontMedium EndAlign Green" x="91.9425" y="578.565">
+              <text id="AutoBrkDecel" display={this.decelVis} class="FontMedium EndAlign Green" x="91.9425" y="578.565">
                 DECEL
               </text>
               <path
@@ -805,7 +706,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
                 d="m62.763 360.863v3.254h29.367l14.006 5.153v-13.562l-14.006 5.153z"
               />
               <path class="Fill Green SmallOutline" d="m0.415 364.115v-3.254h9.035v3.254z" />
-              <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke Green" d="m16  553 h 98" />
+              <path id="SpeedTapeOutlineLower" display={this.showLower} class="NormalStroke Green" d="m16  553 h 98" />
               <text
                 id="SpdLimFailTextUpper"
                 x="143.7"
@@ -1761,16 +1662,9 @@ interface GroundSpeedIndicatorData {
 }
 
 class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private sVisibility = Subject.create('none');
   private readonly groundSpeedRef = FSComponent.createRef<SVGTextElement>();
 
-  private readonly trueAirSpeedRef = FSComponent.createRef<SVGTextElement>();
-
   private readonly groundSpeedRegister = Arinc429RegisterSubject.createEmpty();
-
-  private readonly trueAirSpeedRegister = Arinc429RegisterSubject.createEmpty();
 
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
