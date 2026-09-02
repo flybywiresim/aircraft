@@ -23,7 +23,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex } from './HUD';
-import { HudElems } from './HUDUtils';
+import { HudElems, HudMode } from './HUDUtils';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import {
@@ -794,7 +794,7 @@ interface A3CellProps extends CellProps {
 }
 
 class A3Cell extends DisplayComponent<A3CellProps> {
-  private decMode = 0;
+  private hudMode = 0;
 
   private classSub = Subject.create('');
 
@@ -811,6 +811,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         className = 'Green ';
         break;
       case A3Messages.LVR_TOGA:
+        text = 'LVR TOGA';
         className = 'Green ';
         break;
       case A3Messages.LVR_CLB:
@@ -834,6 +835,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     }
 
     this.textSub.set(text);
+    text == '' && this.hudMode == HudMode.TAXI
+      ? (this.modeArmed.instance.style.visibility = 'hidden')
+      : (this.modeArmed.instance.style.visibility = 'visible');
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
   }
 
@@ -845,10 +849,10 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
     sub
-      .on('decMode')
+      .on('hudMode')
       .whenChanged()
       .handle((mode) => {
-        this.decMode = mode;
+        this.hudMode = mode;
       });
 
     this.props.A3Message.sub((a3) => {
