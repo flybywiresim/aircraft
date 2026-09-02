@@ -253,6 +253,20 @@ impl FuelTestBed {
         self
     }
 
+    pub(super) fn desired_fuel_250000(mut self) -> Self {
+        self.write_by_name("FUEL_DESIRED", 250000.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
+        self
+    }
+
+    pub(super) fn desired_fuel_max(mut self) -> Self {
+        self.write_by_name("FUEL_DESIRED", 259755.);
+        self.write_by_name("AIRFRAME_ZFW_DESIRED", 300000.);
+        self.write_by_name("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", 36.5);
+        self
+    }
+
     pub(super) fn trigger_instant_refuel(mut self) -> Self {
         self.write_by_name("EFB_REFUEL_RATE_SETTING", RefuelRate::Instant);
         self.write_by_name("REFUEL_STARTED_BY_USR", true);
@@ -499,6 +513,40 @@ pub(super) fn assert_fuel_quantity_200000(test_bed: &FuelTestBed) {
     expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(21836.));
     expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(21836.));
     expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(20558.));
+
+    assert_fuel_quantity(test_bed, expected_quantities);
+}
+
+pub(super) fn assert_fuel_quantity_250000(test_bed: &FuelTestBed) {
+    let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(14500.));
+    expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(8121.0));
+    expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(8121.0));
+    expected_quantities.insert(A380FuelTankType::LeftMid, Mass::new::<kilogram>(28636.3));
+    expected_quantities.insert(A380FuelTankType::RightMid, Mass::new::<kilogram>(28636.3));
+    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(36240.0));
+    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(36240.0));
+    expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(21701.8));
+    expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(23050.9));
+    expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(23050.9));
+    expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(21701.8));
+
+    assert_fuel_quantity(test_bed, expected_quantities);
+}
+
+pub(super) fn assert_fuel_quantity_max(test_bed: &FuelTestBed) {
+    let mut expected_quantities = HashMap::new();
+    expected_quantities.insert(A380FuelTankType::Trim, Mass::new::<kilogram>(19000.));
+    expected_quantities.insert(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(8302.2));
+    expected_quantities.insert(A380FuelTankType::RightOuter, Mass::new::<kilogram>(8302.2));
+    expected_quantities.insert(A380FuelTankType::LeftMid, Mass::new::<kilogram>(29275.3));
+    expected_quantities.insert(A380FuelTankType::RightMid, Mass::new::<kilogram>(29275.3));
+    expected_quantities.insert(A380FuelTankType::LeftInner, Mass::new::<kilogram>(37048.7));
+    expected_quantities.insert(A380FuelTankType::RightInner, Mass::new::<kilogram>(37048.7));
+    expected_quantities.insert(A380FuelTankType::FeedOne, Mass::new::<kilogram>(22186.1));
+    expected_quantities.insert(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(23565.2));
+    expected_quantities.insert(A380FuelTankType::FeedThree, Mass::new::<kilogram>(23565.2));
+    expected_quantities.insert(A380FuelTankType::FeedFour, Mass::new::<kilogram>(22186.1));
 
     assert_fuel_quantity(test_bed, expected_quantities);
 }

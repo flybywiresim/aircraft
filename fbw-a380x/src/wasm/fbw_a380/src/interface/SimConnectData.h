@@ -172,8 +172,12 @@ struct SimInputAutopilot {
   double VS_FPA_set;
   double efis_mode_left_set;
   double efis_range_left_set;
+  double efis_navaid_mode_1_left_set;
+  double efis_navaid_mode_2_left_set;
   double efis_mode_right_set;
   double efis_range_right_set;
+  double efis_navaid_mode_1_right_set;
+  double efis_navaid_mode_2_right_set;
 };
 
 struct SimInputThrottles {

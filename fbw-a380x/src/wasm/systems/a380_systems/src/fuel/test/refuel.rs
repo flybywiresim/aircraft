@@ -102,6 +102,28 @@ fn spawn_no_fuel_load_desired_instant_200000() {
 }
 
 #[test]
+fn spawn_no_fuel_load_desired_instant_250000() {
+    let test_bed = test_bed_with()
+        .desired_fuel_250000()
+        .trigger_instant_refuel()
+        .and_run()
+        .and_stabilize();
+
+    assert_fuel_quantity_250000(&test_bed);
+}
+
+#[test]
+fn spawn_no_fuel_load_desired_instant_max() {
+    let test_bed = test_bed_with()
+        .desired_fuel_max()
+        .trigger_instant_refuel()
+        .and_run()
+        .and_stabilize();
+
+    assert_fuel_quantity_max(&test_bed);
+}
+
+#[test]
 fn spawn_no_fuel_load_desired_fast_50000_one_tick() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
@@ -193,6 +215,36 @@ fn spawn_no_fuel_load_desired_real_200000_done() {
 }
 
 #[test]
+fn spawn_no_fuel_load_desired_real_250000_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .desired_fuel_250000()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(95));
+
+    assert_fuel_quantity_250000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_no_fuel_load_desired_real_max_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .desired_fuel_max()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(100));
+
+    assert_fuel_quantity_max(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
 fn defuel_high_fuel_load_desired_real_done() {
     let mut test_bed: FuelTestBed = test_bed();
     test_bed.set_on_ground(true);
@@ -221,5 +273,37 @@ fn spawn_high_fuel_load_desired_real_200000_done() {
         .run_multiple_frames(Duration::from_mins(70));
 
     assert_fuel_quantity_200000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_high_fuel_load_desired_real_250000_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .fuel_high()
+        .desired_fuel_250000()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(95));
+
+    assert_fuel_quantity_250000(&test_bed);
+    assert_false!(test_bed.refuel_status());
+}
+
+#[test]
+fn spawn_high_fuel_load_desired_real_max_done() {
+    let mut test_bed: FuelTestBed = test_bed();
+    test_bed.set_on_ground(true);
+
+    test_bed = test_bed
+        .fuel_high()
+        .desired_fuel_max()
+        .trigger_real_refuel()
+        .and_run()
+        .run_multiple_frames(Duration::from_mins(100));
+
+    assert_fuel_quantity_max(&test_bed);
     assert_false!(test_bed.refuel_status());
 }

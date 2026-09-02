@@ -605,7 +605,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NDB_PUSH, "A32NX.FCU_EFIS_L_NDB_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_ARPT_PUSH, "A32NX.FCU_EFIS_L_ARPT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_1_PUSH, "A32NX.FCU_EFIS_L_NAVAID_1_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_1_SET, "A32NX.FCU_EFIS_L_NAVAID_1_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_2_PUSH, "A32NX.FCU_EFIS_L_NAVAID_2_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_NAVAID_2_SET, "A32NX.FCU_EFIS_L_NAVAID_2_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_WX_PUSH, "A32NX.FCU_EFIS_L_WX_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_TERR_PUSH, "A32NX.FCU_EFIS_L_TERR_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_L_TRAF_PUSH, "A32NX.FCU_EFIS_L_TRAF_PUSH", false);
@@ -629,7 +631,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NDB_PUSH, "A32NX.FCU_EFIS_R_NDB_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_ARPT_PUSH, "A32NX.FCU_EFIS_R_ARPT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NAVAID_1_PUSH, "A32NX.FCU_EFIS_R_NAVAID_1_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NAVAID_1_SET, "A32NX.FCU_EFIS_R_NAVAID_1_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NAVAID_2_PUSH, "A32NX.FCU_EFIS_R_NAVAID_2_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_NAVAID_2_SET, "A32NX.FCU_EFIS_R_NAVAID_2_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_WX_PUSH, "A32NX.FCU_EFIS_R_WX_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_TERR_PUSH, "A32NX.FCU_EFIS_R_TERR_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EFIS_R_TRAF_PUSH, "A32NX.FCU_EFIS_R_TRAF_PUSH", false);
@@ -1455,8 +1459,12 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.baro_right_set = -1;
   simInputAutopilot.efis_mode_left_set = -1;
   simInputAutopilot.efis_range_left_set = -1;
+  simInputAutopilot.efis_navaid_mode_1_left_set = -1;
+  simInputAutopilot.efis_navaid_mode_2_left_set = -1;
   simInputAutopilot.efis_mode_right_set = -1;
   simInputAutopilot.efis_range_right_set = -1;
+  simInputAutopilot.efis_navaid_mode_1_right_set = -1;
+  simInputAutopilot.efis_navaid_mode_2_right_set = -1;
 }
 
 void SimConnectInterface::resetFcuFrontPanelInputs() {
@@ -2562,9 +2570,21 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
+    case Events::A32NX_FCU_EFIS_L_NAVAID_1_SET: {
+      simInputAutopilot.efis_navaid_mode_1_left_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NAVAID_1_SET" << std::endl;
+      break;
+    }
+
     case Events::A32NX_FCU_EFIS_L_NAVAID_2_PUSH: {
       fcuEfisPanelInputs[0].navaid_2_button_pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NAVAID_2_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_L_NAVAID_2_SET: {
+      simInputAutopilot.efis_navaid_mode_2_left_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_NAVAID_2_SET" << std::endl;
       break;
     }
 
@@ -2714,9 +2734,21 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
+    case Events::A32NX_FCU_EFIS_R_NAVAID_1_SET: {
+      simInputAutopilot.efis_navaid_mode_1_right_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NAVAID_1_SET" << std::endl;
+      break;
+    }
+
     case Events::A32NX_FCU_EFIS_R_NAVAID_2_PUSH: {
       fcuEfisPanelInputs[1].navaid_2_button_pushed = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NAVAID_2_PUSH" << std::endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EFIS_R_NAVAID_2_SET: {
+      simInputAutopilot.efis_navaid_mode_2_right_set = data0;
+      std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_NAVAID_2_SET" << std::endl;
       break;
     }
 
