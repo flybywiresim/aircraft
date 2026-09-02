@@ -407,12 +407,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     this.useAltConstraint.sub((useAltConstraint) => {
       if (useAltConstraint) {
         this.selectedAltPipe.pause();
-        this.altConstraintPipe.resume();
+        this.altConstraintPipe.resume(true);
       } else {
-        this.selectedAltPipe.resume();
+        this.selectedAltPipe.resume(true);
         this.altConstraintPipe.pause();
       }
     }, true);
+
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     sub
       .on('altTape')
