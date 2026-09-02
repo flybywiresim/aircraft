@@ -80,6 +80,7 @@ fn pack_discrete_word_from_items<T>(
     word
 }
 
+#[allow(dead_code)]
 pub(super) fn bit_from_discrete_words<const WORD_COUNT: usize>(
     words: &[u32; WORD_COUNT],
     index: usize,

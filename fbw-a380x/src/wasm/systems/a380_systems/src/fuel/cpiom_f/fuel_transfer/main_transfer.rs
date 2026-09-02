@@ -283,7 +283,7 @@ mod tests {
             *self.quantities.get(&tank).unwrap_or(&Mass::default())
         }
 
-        fn get_tank_capacity(&self, tank: A380FuelTankType) -> Mass {
+        fn get_tank_capacity(&self, _tank: A380FuelTankType) -> Mass {
             // For testing, we assume all tanks have the same capacity
             Mass::new::<kilogram>(10_000.)
         }
@@ -370,7 +370,7 @@ mod tests {
 
     #[test]
     fn test_assign_pairwise_with_balanced_pairs() {
-        let quantities = [100.; 4].map(|q| Mass::new::<kilogram>(q));
+        let quantities = [100.; 4].map(Mass::new::<kilogram>);
         let below = [false; 4];
         let upper = [true; 4];
 
@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn test_assign_non_pairwise_all_below_upper() {
-        let quantities = [50.; 4].map(|q| Mass::new::<kilogram>(q));
+        let quantities = [50.; 4].map(Mass::new::<kilogram>);
         let below = [true; 4];
         let upper = [true; 4];
 
@@ -430,7 +430,7 @@ mod tests {
 
     #[test]
     fn test_assign_non_pairwise_with_mixed_prior_sources() {
-        let quantities = [60., 65., 60., 65.].map(|q| Mass::new::<kilogram>(q));
+        let quantities = [60., 65., 60., 65.].map(Mass::new::<kilogram>);
         let below = [false, true, false, true];
         let upper = [true, true, true, true];
 

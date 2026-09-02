@@ -3,7 +3,7 @@ mod fuel_measuring;
 mod fuel_transfer;
 
 use super::{
-    discrete_words::{bit_from_discrete_words, pack_fuel_pump_words, pack_fuel_valve_words},
+    discrete_words::{pack_fuel_pump_words, pack_fuel_valve_words},
     fuel_quantity_data_concentrator::FuelQuantityDataConcentrator,
     A380FuelPump, A380FuelTankType, A380FuelValve, FuelPumpStatus, SetFuelControlState,
     SetFuelLevel,
@@ -16,7 +16,7 @@ use crate::{
     systems::simulation::SimulationElement,
 };
 use bitflags::{bitflags, Flags};
-use enum_map::{enum_map, Enum, EnumMap};
+use enum_map::{Enum, EnumMap};
 use fuel_measuring::FuelMeasuringApplication;
 use fuel_transfer::FuelTransferApplication;
 use serde::Deserialize;
@@ -37,7 +37,7 @@ use systems::{
     },
 };
 use uom::si::{
-    f64::{Length, Mass, Power, Ratio, Velocity},
+    f64::{Mass, Power, Ratio, Velocity},
     mass::{kilogram, pound},
     power::watt,
     ratio::percent,
@@ -87,6 +87,7 @@ enum ModeSelect {
 
 trait FuelQuantityProvider {
     fn get_tank_quantity(&self, tank: A380FuelTankType) -> Mass;
+    #[allow(dead_code)]
     fn get_tank_capacity(&self, tank: A380FuelTankType) -> Mass;
 
     fn get_feed_tank_quantities(&self) -> [Mass; 4] {
@@ -103,11 +104,13 @@ trait FuelQuantityProvider {
     }
 
     /// Returns if the specified tank is full
+    #[allow(dead_code)]
     fn tank_full(&self, tank: A380FuelTankType) -> bool {
         (self.get_tank_quantity(tank) - self.get_tank_capacity(tank)).abs()
             <= Mass::new::<pound>(20.)
     }
 
+    #[allow(dead_code)]
     fn tanks_full(&self, tanks: impl IntoIterator<Item = A380FuelTankType>) -> bool {
         tanks.into_iter().all(|tank| self.tank_full(tank))
     }

@@ -70,7 +70,7 @@ impl FuelTransfer for CGTransfer {
 
             gallery_connections.set_aft_gallery_modes(
                 target_tanks
-                    .into_iter()
+                    .iter()
                     .map(|t| (*t, TankMode::Target))
                     .chain([(A380FuelTankType::Trim, TankMode::Source)]),
             );
