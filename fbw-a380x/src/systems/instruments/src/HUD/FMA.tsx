@@ -293,6 +293,7 @@ export class FMA extends DisplayComponent<{
           isAttExcessive={this.props.isAttExcessive}
           BC3Message={this.BC3Message}
           A3Message={this.A3Message}
+          A1A2Message={this.A1A2Message}
         />
       </g>
     );
@@ -491,6 +492,7 @@ class Row3 extends DisplayComponent<{
   readonly isAttExcessive: Subscribable<boolean>;
   readonly BC3Message: Subscribable<BC3Messages>;
   readonly A3Message: Subscribable<A3Messages>;
+  readonly A1A2Message: Subscribable<A1A2Messages>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -509,7 +511,7 @@ class Row3 extends DisplayComponent<{
   render(): VNode {
     return (
       <g>
-        <A3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
+        <A3Cell bus={this.props.bus} A3Message={this.props.A3Message} A1A2CellMessage={this.props.A1A2Message} />
         <g ref={this.cellsToHide}>
           <AB3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
           <D3Cell bus={this.props.bus} />
@@ -791,10 +793,13 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
 
 interface A3CellProps extends CellProps {
   A3Message: Subscribable<A3Messages>;
+  A1A2CellMessage: Subscribable<A1A2Messages>;
 }
 
 class A3Cell extends DisplayComponent<A3CellProps> {
   private hudMode = 0;
+
+  private a1a2Text = A1A2Messages.NONE;
 
   private classSub = Subject.create('');
 
@@ -835,10 +840,13 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     }
 
     this.textSub.set(text);
-    text == '' && this.hudMode == HudMode.TAXI
-      ? (this.modeArmed.instance.style.visibility = 'hidden')
-      : (this.modeArmed.instance.style.visibility = 'visible');
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
+  }
+
+  private handleSeparator(text: string, message: A1A2Messages, hudmode: HudMode) {
+    text != '' && message == A1A2Messages.NONE && hudmode == HudMode.TAXI
+      ? (this.modeArmed.instance.style.visibility = 'visible')
+      : (this.modeArmed.instance.style.visibility = 'hidden');
   }
 
   private readonly shouldFlash = this.props.A3Message.map(
@@ -848,15 +856,18 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-    sub
-      .on('hudMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.hudMode = mode;
-      });
+    sub.on('hudMode').handle((mode) => {
+      this.hudMode = mode;
+      this.handleSeparator(this.textSub.get(), this.a1a2Text, this.hudMode);
+    });
 
     this.props.A3Message.sub((a3) => {
       this.onUpdateAthrModeMessage(a3);
+    }, true);
+
+    this.props.A1A2CellMessage.sub((a1a2) => {
+      this.a1a2Text = a1a2;
+      this.handleSeparator(this.textSub.get(), a1a2, this.hudMode);
     }, true);
   }
 
