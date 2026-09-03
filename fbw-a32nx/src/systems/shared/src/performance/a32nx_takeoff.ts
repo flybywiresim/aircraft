@@ -3443,10 +3443,10 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
     const tempFactors = A320251NTakeoffPerformanceCalculator.runwayTemperatureFactor[conf];
 
-    if (conf = 2) {
-      runwayAltFactor = runwayLength - pressureAlt / 15;
+    if (conf == 2) {
+      const runwayAltFactor = runwayLength - pressureAlt / 15;
     } else {
-      runwayAltFactor = runwayLength - pressureAlt / 12;
+      const runwayAltFactor = runwayLength - pressureAlt / 12;
     }
     let weightDelta = 1000 * (runwayAltFactor * tempFactors[0] + tempFactors[1]) * (Math.min(temp, tRef) - isaTemp);
     if (temp > tRef) {
