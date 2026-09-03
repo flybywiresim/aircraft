@@ -1222,7 +1222,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
 
   private sub = this.props.bus.getArincSubscriber<PrimFgBusBaseEvents & Arinc429Values & HUDSimvars & HudElems>();
 
-  private decelActive = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
+  private readonly decelActive = ConsumerSubject.create(this.sub.on('autoBrakeDecel'), false);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
   private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').withArinc429Precision(2));
   private readonly fwcFlighPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
@@ -1286,13 +1286,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   );
 
   private readonly isBoundBgVisible = MappedSubject.create(
-    ([speedTargetLowerVisible, speedTargetUpperVisible, isSpeedManaged]) => {
-      //return isSpeedManaged && (speedTargetLowerVisible || speedTargetUpperVisible) ? 'visible' : 'hidden';
-      return isSpeedManaged && (speedTargetLowerVisible || speedTargetUpperVisible);
+    ([speedTargetLowerVisible, speedTargetUpperVisible, isSpeedManaged, decelActive]) => {
+      return !decelActive && isSpeedManaged && (speedTargetLowerVisible || speedTargetUpperVisible);
     },
     this.speedTargetLowerVisible,
     this.speedTargetUpperVisible,
     this.isSpeedManaged,
+    this.decelActive,
   );
 
   private setTargetSpeedBugBg() {
@@ -1337,26 +1337,6 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       inRange = true;
     }
 
-    if (inRange) {
-      this.BoundBgRef.instance.setAttribute('d', 'm70.5 348.5 h45v 0 h-45z');
-    } else {
-      if (this.isSpeedManaged.get()) {
-        this.BoundBgRef.instance.setAttribute('d', 'm70.5 348.5 h45v 27 h-45z');
-        this.upperBoundRef.instance.classList.add('InverseGreen');
-        this.upperBoundRef.instance.classList.remove('Green');
-        this.lowerBoundRef.instance.classList.add('InverseGreen');
-        this.lowerBoundRef.instance.classList.remove('Green');
-      } else {
-        this.upperBoundRef.instance.classList.remove('InverseGreen');
-        this.upperBoundRef.instance.classList.add('Green');
-        this.lowerBoundRef.instance.classList.remove('InverseGreen');
-        this.lowerBoundRef.instance.classList.add('Green');
-      }
-    }
-
-    if (this.decelActive.get()) {
-      this.BoundBgRef.instance.style.visibility = 'hidden';
-    }
     return inRange;
   }
   onAfterRender(node: VNode): void {
@@ -1376,8 +1356,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           d="m70.5 348.5 h45v27h-45z"
           class={{
             GreenFill: this.isBoundBgVisible,
+            HiddenElement: this.isBoundBgVisible.map(SubscribableMapFunctions.not()),
           }}
-          visible={this.isBoundBgVisible.map((v) => (v ? 'visible' : 'hidden'))}
         />
         <text
           ref={this.upperBoundRef}
