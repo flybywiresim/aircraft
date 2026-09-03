@@ -3,6 +3,7 @@
 
 import {
   ConsumerSubject,
+  ConsumerValue,
   EventBus,
   GameStateProvider,
   MappedSubject,
@@ -46,6 +47,7 @@ import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { VnavEvents } from '@fmgc/events/VnavEvents';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
@@ -228,13 +230,15 @@ export class FmcAircraftInterface {
   private readonly speedsManagedPfd = Subject.create<number | null>(null);
   private readonly latDiscontinuityAhead = Subject.create(false);
 
+  private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
+    null,
+  );
   private readonly fcuEfisLeftDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_l_discrete_word_2'),
-    Arinc429Register.empty().rawWord,
   );
   private readonly fcuEfisRightDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<FcuEfisCpBusEvents>().on('fcu_efis_r_discrete_word_2'),
-    Arinc429Register.empty().rawWord,
   );
 
   private readonly primChoiceProvider = new PrimChoiceProvider(this.bus);
@@ -1039,14 +1043,10 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = this.speedsManagedPfdVar.get();
-
+          vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? this.fmgc.getManagedDescentSpeed();
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
-          isMach = this.getManagedTargets(
-            this.fmgc.getManagedDescentSpeed(),
-            this.fmgc.getManagedDescentSpeedMach(),
-          )[1];
+          isMach = this.getManagedTargets(vPfd, this.fmgc.getManagedDescentSpeedMach())[1];
           break;
         }
         case FmgcFlightPhase.Approach: {
