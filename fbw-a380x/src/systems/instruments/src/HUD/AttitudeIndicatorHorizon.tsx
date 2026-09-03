@@ -132,7 +132,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private headingFailed = Subject.create(true);
 
-  private crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
+  private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode'), false);
+
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode'), 0);
 
   private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
 
@@ -158,6 +160,22 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     this.roll,
   );
 
+  private readonly currentClipPath = MappedSubject.create(
+    ([pitch, crosswindMode, hudMode]) => {
+      if (hudMode == HudMode.ROLLOUT_OR_RTO) {
+        return 'url(#rtoPitchScaleMask)';
+      } else {
+        if (pitch.isNormalOperation()) {
+          return crosswindMode ? 'url(#cwPitchScaleMask)' : 'url(#PitchScaleMask)';
+        } else {
+          return 'url(#PitchScaleMask)';
+        }
+      }
+    },
+    this.pitch,
+    this.crosswindMode,
+    this.hudMode,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -183,9 +201,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           -31.563,
         );
         this.yOffset.set(yOffset);
-        this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
-          ? 'url(#cwPitchScaleMask)'
-          : 'url(#PitchScaleMask)';
       });
 
     this.sub
@@ -201,9 +216,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         } else {
           this.rollGroupRef.instance.style.display = 'none';
         }
-        this.GroupRef.instance.style.clipPath = this.crosswindMode.get()
-          ? 'url(#cwPitchScaleMask)'
-          : 'url(#PitchScaleMask)';
       });
   }
 
@@ -211,6 +223,13 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     return (
       <g id="HorizonGroup">
         <defs>
+          <clipPath id="rtoPitchScaleMask" transform={this.maskTransform}>
+            <path
+              d=" m 0 125 L 1280 125
+                    L 1280 800   L 900 800  L 900 925  L 330 925 L 330 800 L 0 800 L 0 420
+                    L 0 712 L 219 712 L 219 329 L 95 329 L 95 712 L 0 712 Z"
+            />
+          </clipPath>
           <clipPath id="PitchScaleMask" transform={this.maskTransform}>
             <path
               d=" m 0 125 L 1280 125
@@ -229,7 +248,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           </clipPath>
         </defs>
 
-        <g ref={this.GroupRef}>
+        <g ref={this.GroupRef} clip-path={this.currentClipPath}>
           <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
             <g id="PitchGroup" ref={this.pitchGroupRef}>
               <PitchScale
