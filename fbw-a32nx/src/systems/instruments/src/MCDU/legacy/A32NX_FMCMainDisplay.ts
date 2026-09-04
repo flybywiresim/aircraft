@@ -438,22 +438,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return !v.isInvalid() && (v.bitValue(17) || v.bitValue(18));
   });
 
-  private readonly fmgc1AltitudeConstraint = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_altitude_constraint_1'),
-  );
-
-  private readonly fmgc2AltitudeConstraint = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_altitude_constraint_2'),
-  );
-
-  private readonly fmgcAltitudeConstraint = MappedSubject.create(
-    ([fg1, fg2]) => {
-      return fg1.isNormalOperation() ? fg1 : fg2;
-    },
-    this.fmgc1AltitudeConstraint,
-    this.fmgc2AltitudeConstraint,
-  );
-
   private fcuAltitudeChangeCheckCruiseFlightLevel = false;
 
   private readonly cruiseAltitudeChangeConfirm = new NXLogicConfirmNode(3);
