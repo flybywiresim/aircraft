@@ -95,6 +95,12 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
 1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
+1. [A32NX/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
+1. [A32NX/FG] Fixed uncommanded OP CLB activation during approach - @lukecologne (luke)
+1. [A32NX/FG] Fixed ground speed mini not working below 700 feet - @lukecologne (luke)
+1. [A32NX/FG] Fixed managed speed target not constrained by characteristic speeds outside of approach phase - @lukecologne (luke)
+1. [A32NX/FG] Fixed ATHR being constrainted by "F" speed when landing in CONF 3 - @lukecologne (luke)
+1. [A32NX/FG] Target the lower speed margin when underspeeding or on geometric path in DES mode - @lukecologne (luke)
 
 ## 2024.1.0
 
