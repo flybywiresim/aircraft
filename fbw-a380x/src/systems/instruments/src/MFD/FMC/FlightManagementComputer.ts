@@ -1487,7 +1487,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updatePerfSpeeds();
         this.acInterface.updateWeights();
         this.acInterface.toSpeedsChecks();
-        this.acInterface.checkForStepClimb();
+        this.acInterface.checkForCruiseStep();
         this.acInterface.checkTooSteepPath();
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
@@ -1816,20 +1816,34 @@ export class FlightManagementComputer implements FmcInterface {
       return false;
     }
     let flightLevelToInsert = fl;
-    if (plan.isActiveOrCopiedFromActive()) {
+    let newCrzAltMessage = false;
+    const isActive = intoPlan === FlightPlanIndex.Active;
+    if (isActive) {
       const phase = this.flightPhase.get();
       if (phase >= FmgcFlightPhase.Climb && phase < FmgcFlightPhase.Done) {
-        const fcuAltitude = this.acInterface.getFcuSelectedAltitude();
-        // Select the maximum of CRZ FL and FCU altitude, i.e. if crew entry < FCU, we set FCU
-        flightLevelToInsert = Math.max(fl, Math.floor(Math.max(0, fcuAltitude ?? 0) / 100));
+        const fcuFl = Math.floor(Math.max(0, this.acInterface.getFcuSelectedAltitude() ?? 0) / 100);
+        if (fl < fcuFl) {
+          flightLevelToInsert = fcuFl;
+          newCrzAltMessage =
+            phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach;
+        } else {
+          flightLevelToInsert = fl;
+        }
       }
     }
     plan.setPerformanceData('cruiseFlightLevel', flightLevelToInsert);
     if (flightLevelToInsert > (this.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
       this.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
     }
-    if (intoPlan === FlightPlanIndex.Active) {
+    if (isActive) {
       this.acInterface.onUpdateCruiseLevel(flightLevelToInsert);
+      if (newCrzAltMessage) {
+        this.addMessageToQueue(
+          NXSystemMessages.newCrzAlt.getModifiedMessage((flightLevelToInsert * 100).toFixed(0)),
+          undefined,
+          undefined,
+        );
+      }
     }
     return true;
   }
