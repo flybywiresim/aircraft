@@ -19,6 +19,8 @@ const fcu_outputs A380FcuComputer_rtZfcu_outputs{ { { 0.0,
 
     { 0.0F,
       0,
+      0,
+      0,
       0
     },
 
@@ -1600,14 +1602,16 @@ void A380FcuComputer::A380FcuComputer_NavaidLogic_Reset(rtDW_NavaidLogic_A380Fcu
   localDW->pNavaidStatus = a380_efis_navaid_selection::NONE;
 }
 
-void A380FcuComputer::A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, a380_efis_navaid_selection
-  *rty_navaidStatus, rtDW_NavaidLogic_A380FcuComputer_T *localDW)
+void A380FcuComputer::A380FcuComputer_NavaidLogic(boolean_T rtu_navaid_button, real_T rtu_sim_sync,
+  a380_efis_navaid_selection *rty_navaidStatus, rtDW_NavaidLogic_A380FcuComputer_T *localDW)
 {
-  if ((localDW->pNavaidStatus == a380_efis_navaid_selection::NONE) && rtu_navaid_button) {
+  if (((localDW->pNavaidStatus == a380_efis_navaid_selection::NONE) && rtu_navaid_button) || (rtu_sim_sync == 2.0)) {
     localDW->pNavaidStatus = a380_efis_navaid_selection::VOR;
-  } else if ((localDW->pNavaidStatus == a380_efis_navaid_selection::VOR) && rtu_navaid_button) {
+  } else if (((localDW->pNavaidStatus == a380_efis_navaid_selection::VOR) && rtu_navaid_button) || (rtu_sim_sync == 1.0))
+  {
     localDW->pNavaidStatus = a380_efis_navaid_selection::ADF;
-  } else if ((localDW->pNavaidStatus == a380_efis_navaid_selection::ADF) && rtu_navaid_button) {
+  } else if (((localDW->pNavaidStatus == a380_efis_navaid_selection::ADF) && rtu_navaid_button) || (rtu_sim_sync == 0.0))
+  {
     localDW->pNavaidStatus = a380_efis_navaid_selection::NONE;
   }
 
@@ -2084,10 +2088,10 @@ void A380FcuComputer::step()
         A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_btn);
         A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_l0);
         A380FcuComputer_MATLABFunction_m_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_o3n);
-        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ic);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_ft);
         A380FcuComputer_NavaidLogic_Reset(&A380FcuComputer_DWork.sf_NavaidLogic);
-        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_jv);
-        A380FcuComputer_NavaidLogic_Reset(&A380FcuComputer_DWork.sf_NavaidLogic_f);
+        A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_fw);
+        A380FcuComputer_NavaidLogic_Reset(&A380FcuComputer_DWork.sf_NavaidLogic_k);
         A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_k1);
         A380FcuComputer_DWork.vvActive = false;
         A380FcuComputer_MATLABFunction_i_Reset(&A380FcuComputer_DWork.sf_MATLABFunction_dj);
@@ -2289,13 +2293,13 @@ void A380FcuComputer::step()
       A380FcuComputer_MATLABFunction_b(rtb_Compare_j, &rtb_Equal8, A380FcuComputer_P.TFlipFlop2_init,
         &A380FcuComputer_DWork.sf_MATLABFunction_o3n);
       A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_1_button_pushed,
-        A380FcuComputer_P.PulseNode2_isRisingEdge_f, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_ic);
-      A380FcuComputer_NavaidLogic(rtb_Compare_j, &A380FcuComputer_Y.out.logic.efis.navaid_1,
-        &A380FcuComputer_DWork.sf_NavaidLogic);
+        A380FcuComputer_P.PulseNode2_isRisingEdge_n, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_ft);
+      A380FcuComputer_NavaidLogic(rtb_Compare_j, static_cast<real_T>(A380FcuComputer_U.in.sim_input.navaid_1_mode),
+        &A380FcuComputer_Y.out.logic.efis.navaid_1, &A380FcuComputer_DWork.sf_NavaidLogic);
       A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.navaid_2_button_pushed,
-        A380FcuComputer_P.PulseNode2_isRisingEdge_lq, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_jv);
-      A380FcuComputer_NavaidLogic(rtb_Compare_j, &A380FcuComputer_Y.out.logic.efis.navaid_2,
-        &A380FcuComputer_DWork.sf_NavaidLogic_f);
+        A380FcuComputer_P.PulseNode2_isRisingEdge_a, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_fw);
+      A380FcuComputer_NavaidLogic(rtb_Compare_j, static_cast<real_T>(A380FcuComputer_U.in.sim_input.navaid_2_mode),
+        &A380FcuComputer_Y.out.logic.efis.navaid_2, &A380FcuComputer_DWork.sf_NavaidLogic_k);
       A380FcuComputer_MATLABFunction_k(A380FcuComputer_U.in.discrete_inputs.efis_inputs.vv_button_pushed,
         A380FcuComputer_P.PulseNode_isRisingEdge_j, &rtb_Compare_j, &A380FcuComputer_DWork.sf_MATLABFunction_k1);
       if (rtb_DataTypeConversion_d) {
