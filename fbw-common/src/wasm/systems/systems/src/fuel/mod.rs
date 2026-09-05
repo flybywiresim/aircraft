@@ -7,8 +7,12 @@ use crate::{
 };
 use nalgebra::Vector3;
 use num_traits::Zero;
-use uom::si::{electric_current::ampere, f64::*, mass::kilogram};
+use uom::si::{
+    electric_current::ampere, electric_potential::volt, f64::*, mass::kilogram, power::watt,
+    ratio::ratio,
+};
 
+// Check: MSFS fuel density is currently always fixed, if this changes this will need to read from the var.
 pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -115,7 +119,7 @@ impl SimulationElement for FuelTank {
     }
 }
 
-pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
+pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize, const VALVE_COUNT: usize> {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
@@ -124,12 +128,16 @@ pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
 
     fuel_tanks: [FuelTank; N],
     fuel_pumps: [FuelPump; PUMP_COUNT],
+    fuel_valves: [FuelValve; VALVE_COUNT],
 }
-impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
+impl<const N: usize, const PUMP_COUNT: usize, const VALVE_COUNT: usize>
+    FuelSystem<N, PUMP_COUNT, VALVE_COUNT>
+{
     pub fn new(
         context: &mut InitContext,
         fuel_tanks: [FuelTank; N],
         fuel_pumps: [FuelPump; PUMP_COUNT],
+        fuel_valves: [FuelValve; VALVE_COUNT],
     ) -> Self {
         FuelSystem {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
@@ -138,6 +146,7 @@ impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
             total_fuel_volume_id: context.get_identifier("TOTAL_FUEL_VOLUME".to_owned()),
             fuel_tanks,
             fuel_pumps,
+            fuel_valves,
         }
     }
 
@@ -179,11 +188,34 @@ impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
     pub fn is_fuel_pump_running(&self, i: usize) -> bool {
         self.fuel_pumps[i].is_running()
     }
+
+    pub fn command_fuel_pump(&mut self, i: usize, running: bool) {
+        self.fuel_pumps[i].command(running);
+    }
+
+    pub fn is_fuel_valve_open(&self, i: usize) -> bool {
+        self.fuel_valves[i].is_open()
+    }
+
+    pub fn is_fuel_valve_closed(&self, i: usize) -> bool {
+        self.fuel_valves[i].is_closed()
+    }
+
+    pub fn command_fuel_valve(&mut self, i: usize, open: bool) {
+        if open {
+            self.fuel_valves[i].command_open();
+        } else {
+            self.fuel_valves[i].command_close();
+        }
+    }
 }
-impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N, PUMP_COUNT> {
+impl<const N: usize, const PUMP_COUNT: usize, const VALVE_COUNT: usize> SimulationElement
+    for FuelSystem<N, PUMP_COUNT, VALVE_COUNT>
+{
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.fuel_tanks, visitor);
         accept_iterable!(self.fuel_pumps, visitor);
+        accept_iterable!(self.fuel_valves, visitor);
         visitor.visit(self);
     }
 
@@ -204,27 +236,42 @@ impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N
 #[derive(Debug)]
 pub struct FuelPump {
     pump_id: VariableIdentifier,
+    commanded_id: VariableIdentifier,
     properties: FuelPumpProperties,
     available_potential: ElectricPotential,
     running: bool,
+    commanded: bool,
 }
 impl FuelPump {
     pub fn new(context: &mut InitContext, id: usize, properties: FuelPumpProperties) -> Self {
         Self {
             pump_id: context.get_identifier(format!("FUELSYSTEM PUMP ACTIVE:{id}")),
+            commanded_id: context.get_identifier(format!("FUEL_PUMP_{id}_ACTIVE_COMMAND")),
             properties,
             available_potential: ElectricPotential::default(),
             running: false,
+            commanded: false,
         }
     }
 
     pub fn is_running(&self) -> bool {
         self.running
     }
+
+    pub fn command(&mut self, running: bool) {
+        self.commanded = running;
+    }
 }
 impl SimulationElement for FuelPump {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.running = reader.read(&self.pump_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.commanded_id,
+            self.commanded && !self.available_potential.is_zero(),
+        );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -239,5 +286,103 @@ impl SimulationElement for FuelPump {
             Power::default()
         };
         power.consume_from_bus(self.properties.powered_by, consumed_power);
+    }
+}
+
+/// Represents a fuel valve
+pub struct FuelValve {
+    valve_id: VariableIdentifier,
+    commanded_id: VariableIdentifier,
+    powered_id: VariableIdentifier,
+    powered_by: (ElectricalBusType, Option<ElectricalBusType>),
+    available_potential: [ElectricPotential; 2],
+    position: Ratio,
+    commanded: bool,
+}
+impl FuelValve {
+    const POWER_CONSUMPTION_WATTS: f64 = 30.;
+
+    pub fn new(
+        context: &mut InitContext,
+        id: usize,
+        powered_by: (ElectricalBusType, Option<ElectricalBusType>),
+    ) -> Self {
+        Self {
+            valve_id: context.get_identifier(format!("FUEL_VALVE_{id}_OPEN")),
+            commanded_id: context.get_identifier(format!("FUEL_VALVE_{id}_OPEN_COMMAND")),
+            powered_id: context.get_identifier(format!("FUEL_VALVE_{id}_IS_POWERED")),
+            powered_by,
+            available_potential: [ElectricPotential::default(); 2],
+            position: Ratio::default(),
+            commanded: false,
+        }
+    }
+
+    /// Gives feedback if a valve is fully open.
+    pub fn is_open(&self) -> bool {
+        self.position.get::<ratio>() >= 0.99
+    }
+
+    /// Gives feedback if a valve is fully closed.
+    pub fn is_closed(&self) -> bool {
+        self.position.get::<ratio>() <= 0.01
+    }
+
+    pub fn command_open(&mut self) {
+        self.commanded = true;
+    }
+
+    pub fn command_close(&mut self) {
+        self.commanded = false;
+    }
+
+    fn is_powered(&self) -> bool {
+        self.available_potential
+            .iter()
+            .any(|pot| pot.get::<volt>() > 20.)
+    }
+
+    fn is_moving(&self) -> bool {
+        self.is_powered() && self.commanded != self.is_open()
+    }
+}
+impl SimulationElement for FuelValve {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.position = Ratio::new::<ratio>(reader.read(&self.valve_id));
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.commanded_id, self.commanded);
+        writer.write(&self.powered_id, self.is_powered());
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.available_potential = [
+            buses.potential_of(self.powered_by.0).raw(),
+            self.powered_by
+                .1
+                .map(|bus| buses.potential_of(bus).raw())
+                .unwrap_or_default(),
+        ];
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _context: &UpdateContext, power: &mut T) {
+        if self.is_moving() {
+            let power_consumption = Power::new::<watt>(Self::POWER_CONSUMPTION_WATTS);
+            let power_consumption = if let Some(mot2_power_by) = self.powered_by.1 {
+                let num_powered = self
+                    .available_potential
+                    .iter()
+                    .filter(|pot| pot.get::<volt>() > 20.)
+                    .count();
+                let power_consumption =
+                    Power::new::<watt>(Self::POWER_CONSUMPTION_WATTS) / (num_powered as f64);
+                power.consume_from_bus(mot2_power_by, power_consumption);
+                power_consumption
+            } else {
+                power_consumption
+            };
+            power.consume_from_bus(self.powered_by.0, power_consumption);
+        }
     }
 }
