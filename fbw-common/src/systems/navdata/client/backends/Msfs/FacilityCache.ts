@@ -103,7 +103,7 @@ export class FacilityCache {
   public async getFacilities<T extends LoadType>(
     icaos: readonly string[],
     loadType: T,
-    timeout = 500,
+    timeout = 10000,
   ): Promise<Map<string, FacilityType<T>>> {
     const toFetch = [];
     const fetched = new Map<string, FacilityType<T>>();
@@ -163,7 +163,7 @@ export class FacilityCache {
   public async getFacility<T extends LoadType>(
     icao: string,
     loadType: T,
-    timeout = 500,
+    timeout = 10000,
   ): Promise<FacilityType<T> | undefined> {
     const cache = await this.getCache();
 
