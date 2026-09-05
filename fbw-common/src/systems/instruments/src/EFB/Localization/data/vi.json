@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Độ cao tăng tốc (ft)",
       "EngineOutAccelerationHeight": "Độ cao tăng tốc khi động cơ ngừng hoạt động (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Đơn vị ISIS Baro",
       "IsisMetricAltitude": "Đơn vị ISIS hệ Mét",
       "LatLonExtendedFormat": "Định dạng điểm trên FMGC dạng vĩ/kinh",
