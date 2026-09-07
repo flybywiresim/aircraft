@@ -95,7 +95,8 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
 1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
-1. [A32NX/EFB] Minor change to CONF 3 Takeoff Speeds - @donstim (donbikes)
+1. [A32NX/EFB] Update A32NX takeoff perf calcs - @donstim (donbikes)
+1. [A380X/FLIGHT MODEL] Fix outer fuel tank transfer rate - @donstim (donbikes)
 
 ## 2024.1.0
 
