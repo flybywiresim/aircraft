@@ -11,7 +11,7 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import { EngineWarningDisplay } from './EWD';
 import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
-import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class A380X_EWD extends BaseInstrument {
@@ -23,7 +23,7 @@ class A380X_EWD extends BaseInstrument {
 
   private readonly cpiomPublisher = new CpiomDataPublisher(this.bus);
 
-  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+  private readonly fcdcPublisher = new FcdcBusPublisher(this.bus);
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
 

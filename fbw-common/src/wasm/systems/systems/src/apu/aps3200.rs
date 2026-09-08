@@ -799,6 +799,7 @@ impl SimulationElement for Aps3200StartMotor {
 
 #[cfg(test)]
 mod apu_generator_tests {
+    use more_asserts::*;
     use ntest::assert_about_eq;
     use uom::si::frequency::hertz;
 
@@ -850,7 +851,7 @@ mod apu_generator_tests {
 
             let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
-                assert!(test_bed.potential().get::<volt>() > 0.);
+                assert_gt!(test_bed.potential().get::<volt>(), 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -868,7 +869,7 @@ mod apu_generator_tests {
 
             let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
-                assert!(test_bed.frequency().get::<hertz>() > 0.);
+                assert_gt!(test_bed.frequency().get::<hertz>(), 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -957,7 +958,7 @@ mod apu_generator_tests {
             .power_demand(Power::new::<watt>(50000.))
             .run(Duration::from_secs(1_000));
 
-        assert!(test_bed.load() > Ratio::new::<percent>(0.));
+        assert_gt!(test_bed.load(), Ratio::new::<percent>(0.));
     }
 
     #[test]

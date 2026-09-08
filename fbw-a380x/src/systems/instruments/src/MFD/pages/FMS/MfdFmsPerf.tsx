@@ -48,7 +48,6 @@ import { FmgcData } from '../../FMC/fmgc';
 import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { qnhToMillibar } from '../../shared/QnhUtils';
 import {
@@ -679,13 +678,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly apprIdent = Subject.create<string>('-------');
 
-  private readonly towerHeadwind = Subject.create<number | null>(null);
+  private readonly approachCrossWindComponent = Subject.create<number | null>(null);
 
-  private readonly apprCrosswind = Subject.create<string>('');
+  private readonly approachHeadWindComponent = Subject.create<number | null>(null);
 
-  private readonly windDirectionLabel = this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+  private readonly apprCrosswind = this.approachCrossWindComponent.map((v) =>
+    v !== null ? Math.abs(v).toFixed(0).padStart(3, '0') : '---',
+  );
 
-  private readonly windSpeedDisplay = this.towerHeadwind.map((v) =>
+  private readonly windDirectionLabel = this.approachHeadWindComponent.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+
+  private readonly windSpeedDisplay = this.approachHeadWindComponent.map((v) =>
     v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
   );
 
@@ -1339,33 +1342,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       // Update APPR page // FIXME: Logic should be in FMS code
       const distanceToDest = this.props.fmcService.master.fmgc.getDistanceToDestination(fpIndex);
       this.approachParametersMandatory.set(isActiveOrTmpy && (distanceToDest ?? 0) <= 180);
-
       this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
       this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? NaN);
       this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
-
       this.approachVls.set(this.props.fmcService.master.getApproachVls(fpIndex) ?? null);
       this.approachVref.set(this.props.fmcService.master.getApproachVref(fpIndex) ?? null);
-      const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
-      const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
-      if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
-        const towerHeadwind = A380SpeedsUtils.getHeadwind(
-          apprWindMagnitude,
-          apprWindDirection,
-          this.loadedFlightPlan.destinationRunway.magneticBearing,
-        );
-        this.towerHeadwind.set(towerHeadwind);
-
-        const towerCrosswind = A380SpeedsUtils.getHeadwind(
-          apprWindMagnitude,
-          apprWindDirection,
-          this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
-        );
-        this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
-      } else {
-        this.towerHeadwind.set(null);
-        this.apprCrosswind.set('---');
-      }
+      this.approachCrossWindComponent.set(this.props.fmcService.master.getApproachCrossWindComponent(fpIndex) ?? null);
+      this.approachHeadWindComponent.set(this.props.fmcService.master.getApproachHeadWindComponent(fpIndex) ?? null);
     } else {
       this.approachParametersMandatory.set(false);
     }
@@ -1385,9 +1368,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}
                   dataHandlerDuringValidation={async (v) =>
-                    v
-                      ? this.props.fmcService.master.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get())
-                      : false
+                    v ? this.props.fmcService.master.trySetCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                   }
                   mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}

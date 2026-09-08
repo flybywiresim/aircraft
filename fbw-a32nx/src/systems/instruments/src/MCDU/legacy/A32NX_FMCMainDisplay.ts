@@ -23,6 +23,7 @@ import {
   NXLogicConfirmNode,
   NXUnits,
   Units,
+  Arinc429LocalVarConsumerSubject,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -31,6 +32,7 @@ import {
   MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { A32NXFcuBusEvents } from '../../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
@@ -101,11 +103,11 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
-
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
-  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents>();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
@@ -276,9 +278,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincThrustReductionAltitude = new FmArinc429OutputWord('THR_RED_ALT');
   private readonly arincAccelerationAltitude = new FmArinc429OutputWord('ACC_ALT');
   private readonly arincEoAccelerationAltitude = new FmArinc429OutputWord('EO_ACC_ALT');
-  private readonly arincMissedThrustReductionAltitude = new FmArinc429OutputWord('MISSED_THR_RED_ALT');
-  private readonly arincMissedAccelerationAltitude = new FmArinc429OutputWord('MISSED_ACC_ALT');
-  private readonly arincMissedEoAccelerationAltitude = new FmArinc429OutputWord('MISSED_EO_ACC_ALT');
   private readonly arincTransitionAltitude = new FmArinc429OutputWord('TRANS_ALT');
   private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
@@ -301,9 +300,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincThrustReductionAltitude,
     this.arincAccelerationAltitude,
     this.arincEoAccelerationAltitude,
-    this.arincMissedThrustReductionAltitude,
-    this.arincMissedAccelerationAltitude,
-    this.arincMissedEoAccelerationAltitude,
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincEisWord2,
@@ -342,6 +338,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly fmgc2DiscreteWord4 = RegisteredSimVar.create<number>(
     'L:A32NX_FMGC_2_DISCRETE_WORD_4',
     SimVarValueType.Enum,
+  );
+
+  private readonly fcuEisLeftDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_left'),
+  );
+  private readonly fcuEisRightDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fcu_eis_discrete_word_1_right'),
   );
 
   /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
@@ -502,7 +505,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   protected initVariables(resetTakeoffData = true) {
-    this.costIndex = undefined;
     this.resetCoroute();
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
@@ -604,14 +606,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.atsu?.onFmsReset();
 
     // Reset SimVars
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0); // Simulink model uses 0 as non valid
+    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
-    SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
 
@@ -656,6 +657,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUpdate(deltaTime: number) {
     this._deltaTime = deltaTime;
+
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -1818,17 +1820,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private getClbManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 330 * dCI;
   }
 
   private getCrzManagedSpeedFromCostIndex() {
-    const dCI = ((this.costIndex ? this.costIndex : 0) / 999) ** 2;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = ((ci ? ci : 0) / 999) ** 2;
     return 290 * (1 - dCI) + 310 * dCI;
   }
 
   private getDesManagedSpeedFromCostIndex() {
-    const dCI = (this.costIndex ? this.costIndex : 0) / 999;
+    const ci = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData.costIndex.get()
+      : undefined;
+    const dCI = (ci ? ci : 0) / 999;
     return 288 * (1 - dCI) + 300 * dCI;
   }
 
@@ -2117,78 +2128,102 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /* MCDU GET/SET METHODS */
 
   public setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean {
-    if (input === Keypad.clrValue) {
-      this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
-      return true;
-    }
-    const flString = input.split('/')[0].replace('FL', '');
-    const tempString = input.split('/')[1];
-    const onlyTemp = flString.length === 0;
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
 
-    if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
-      if (forPlan === FlightPlanIndex.Active) {
-        const newLevel = this.flightPlanService.active.performanceData.cruiseFlightLevel.get();
+    if (plan && plan.destinationAirport !== undefined) {
+      const flString = input.split('/')[0].replace('FL', '');
+      const tempString = input.split('/')[1];
+      const onlyTemp = flString.length === 0;
 
-        if (
-          SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
-          SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
-        ) {
-          SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', newLevel);
-        } else {
-          SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
-        }
-      }
-
-      if (!tempString) {
-        return true;
-      }
-    }
-
-    if (tempString) {
-      let temp = parseInt(tempString);
-
-      if (isFinite(temp) && this.getFlightPlan(forPlan).performanceData.cruiseFlightLevel.get()) {
-        if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
-          temp = -temp;
-        }
-        if (temp > -270 && temp < 100) {
-          this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
-          return true;
-        } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      // Temperature modification not allowed once at or after the cruise phase.
+      const crzTempModificationAllowed =
+        !plan.isActiveOrCopiedFromActive() || this.flightPhaseManager.phase < FmgcFlightPhase.Cruise;
+      if (!crzTempModificationAllowed) {
+        if (onlyTemp || input === Keypad.clrValue) {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        } else if (flString && tempString) {
+          this.setScratchpadMessage(NXSystemMessages.formatError);
           return false;
         }
-      } else {
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
       }
-    }
+      if (input === Keypad.clrValue) {
+        this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
+        return true;
+      }
 
-    this.setScratchpadMessage(NXSystemMessages.formatError);
+      if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
+        if (forPlan === FlightPlanIndex.Active) {
+          const newLevel = plan.performanceData.cruiseFlightLevel.get();
+
+          if (
+            SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
+            SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
+          ) {
+            SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', newLevel);
+          } else {
+            SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
+          }
+        }
+
+        if (!tempString) {
+          return true;
+        }
+      }
+
+      if (tempString) {
+        let temp = parseInt(tempString);
+
+        if (isFinite(temp) && plan.performanceData.cruiseFlightLevel.get()) {
+          if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
+            temp = -temp;
+          }
+          if (temp > -270 && temp < 100) {
+            this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+          }
+        } else {
+          this.setScratchpadMessage(NXSystemMessages.notAllowed);
+          return false;
+        }
+      }
+
+      this.setScratchpadMessage(NXSystemMessages.formatError);
+    }
     return false;
   }
 
-  public tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean {
-    const value = parseInt(costIndex);
-    if (isFinite(value)) {
-      if (value >= 0) {
-        if (value < 1000) {
-          this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
-          this.updateManagedSpeeds();
-          return true;
+  public async tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): Promise<boolean> {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+
+    if (plan && plan.destinationAirport !== undefined) {
+      if (this.isCostIndexModificationDisabled(plan)) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      } else {
+        const value = parseInt(costIndex);
+        if (isFinite(value)) {
+          if (value >= 0 && value < 1000) {
+            this.flightPlanService.setPerformanceData('costIndex', value, forPlan);
+            this.updateManagedSpeeds();
+            return true;
+          } else {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          }
         } else {
-          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-          return false;
+          this.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
     }
-    this.setScratchpadMessage(NXSystemMessages.notAllowed);
+
     return false;
   }
 
   /**
-   * Any tropopause altitude up to 60,000 ft is able to be entered
-   * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+   * Any tropopause altitude from 10,000 ft up to 60,000 ft is able to be entered
+   * @param {string} tropo Format: FLNNN or NNNNN.  Entry is rounded to the nearest 10 ft. NNN is assumed as flight level.
    * @param {number} forPlan the flight plan index to set tropopause for
    * @return {boolean} Whether tropopause could be set or not
    */
@@ -2204,14 +2239,27 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-      this.setScratchpadMessage(NXSystemMessages.formatError);
-      return false;
+    let value: number;
+    // Accept up to NNNNN
+    const feetMatch = tropo.match(/(^\d{1,5}$)/g);
+    if (!feetMatch) {
+      // Accept FLNN or FLNNN
+      const flMatch = tropo.match(/^FL(\d{2,3})$/g);
+      if (!flMatch) {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+      } else {
+        value = parseInt(flMatch[0].substring(2));
+      }
+    } else {
+      value = parseInt(tropo);
     }
 
-    const value = parseInt(tropo);
+    if (value >= 100 && value < 1000) {
+      value *= 100;
+    }
 
-    if (isFinite(value) && value >= 0 && value <= 60000) {
+    if (value >= 10000 && value <= 60000) {
       this.currFlightPlanService.setPerformanceData('pilotTropopause', Math.round(value / 10) * 10, forPlan);
       return true;
     }
@@ -2227,7 +2275,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /** MCDU Init page method for FROM/TO, NOT for programmatic use */
   public tryUpdateFromTo(fromTo: string, forPlan: number, callback = EmptyCallback.Boolean) {
-    if (fromTo === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (
+      !plan ||
+      (plan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        plan.destinationAirport !== undefined) ||
+      fromTo === Keypad.clrValue
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return callback(false);
     }
@@ -2391,6 +2446,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
+    if (flightNo === Keypad.clrValue) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return callback(false);
+    }
     if (flightNo.length > 7) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return callback(false);
@@ -2709,10 +2768,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
       this.flightPlanService.temporaryDelete();
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
@@ -2723,31 +2778,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
-      const oldCostIndex = this.costIndex;
+      const oldCostIndex = this.currFlightPlanService.active.performanceData.costIndex.get();
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
 
       await this.flightPlanService.temporaryInsert();
 
-      this.checkCostIndex(oldCostIndex);
-      // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+      this.checkCostIndex(oldCostIndex); //FIXME: Should trigger message by FMS event.
+
       if (oldDestination !== undefined) {
         this.checkDestination(oldDestination);
       }
-
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
-
       this.removeMessageFromQueue(NXSystemMessages.windTempUplkPending.text);
 
       callback();
     }
   }
 
-  private checkCostIndex(oldCostIndex) {
-    if (this.costIndex !== oldCostIndex) {
-      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(this.costIndex.toFixed(0)));
+  private checkCostIndex(oldCostIndex: number) {
+    const ci = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData.costIndex.get() : null;
+    if (ci !== null && ci !== oldCostIndex) {
+      this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(ci.toFixed(0)));
     }
   }
 
@@ -2889,7 +2941,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public trySetV1Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.v1.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2908,12 +2961,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV1Speed = undefined;
     }
 
-    this.setV1Speed(v, forPlan);
+    plan.setPerformanceData('v1', v);
     return true;
   }
 
   public trySetVRSpeed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isVspeedUpdateNotAllowed(plan, plan?.performanceData.vr.get(), s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2932,12 +2986,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedVRSpeed = undefined;
     }
 
-    this.setVrSpeed(v, forPlan);
+    plan.setPerformanceData('vr', v);
     return true;
   }
 
   public trySetV2Speed(s: string, forPlan: FlightPlanIndex): boolean {
-    if (s === Keypad.clrValue) {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    const hasV2 = plan?.performanceData.v2.get() !== null;
+    if (this.isVspeedUpdateNotAllowed(plan, hasV2 ? plan.performanceData.v2.get() : null, s)) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2956,7 +3012,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.unconfirmedV2Speed = undefined;
     }
 
-    this.setV2Speed(v, forPlan);
+    plan.setPerformanceData('v2', v);
     return true;
   }
 
@@ -3223,67 +3279,43 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateThrustReductionAcceleration() {
-    const activePerformanceData = this.flightPlanService.active.performanceData;
+    const activePerformanceData = this.flightPlanService.hasActive
+      ? this.flightPlanService.active.performanceData
+      : null;
 
+    const flightPhase = this.flightPhaseManager.phase;
+    // Set the thrust reduction altitude and acceleration altitude in a single output based on the flight phase.
+    let thrustReductionAlt: number | null = null;
+    let accelerationAlt: number | null = null;
+    let engineOutAccelerationAlt: number | null = null;
+    if (flightPhase <= FmgcFlightPhase.Takeoff) {
+      thrustReductionAlt = activePerformanceData?.thrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.accelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.engineOutAccelerationAltitude.get() ?? null;
+    } else if (flightPhase === FmgcFlightPhase.GoAround) {
+      thrustReductionAlt = activePerformanceData?.missedThrustReductionAltitude.get() ?? null;
+      accelerationAlt = activePerformanceData?.missedAccelerationAltitude.get() ?? null;
+      engineOutAccelerationAlt = activePerformanceData?.missedEngineOutAccelerationAltitude.get() ?? null;
+    }
     this.arincThrustReductionAltitude.setBnrValue(
-      activePerformanceData.thrustReductionAltitude.get() !== null
-        ? activePerformanceData.thrustReductionAltitude.get()
-        : 0,
-      activePerformanceData.thrustReductionAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincAccelerationAltitude.setBnrValue(
-      activePerformanceData.accelerationAltitude.get() !== null ? activePerformanceData.accelerationAltitude.get() : 0,
-      activePerformanceData.accelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincEoAccelerationAltitude.setBnrValue(
-      activePerformanceData.engineOutAccelerationAltitude.get() !== null
-        ? activePerformanceData.engineOutAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.engineOutAccelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
+      thrustReductionAlt ?? 0,
+      thrustReductionAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
 
-    this.arincMissedThrustReductionAltitude.setBnrValue(
-      activePerformanceData.missedThrustReductionAltitude.get() !== null
-        ? activePerformanceData.missedThrustReductionAltitude.get()
-        : 0,
-      activePerformanceData.missedThrustReductionAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
+    this.arincAccelerationAltitude.setBnrValue(
+      accelerationAlt ?? 0,
+      accelerationAlt !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
       17,
       131072,
       0,
     );
-    this.arincMissedAccelerationAltitude.setBnrValue(
-      activePerformanceData.missedAccelerationAltitude.get() !== null
-        ? activePerformanceData.missedAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.missedAccelerationAltitude.get() !== null
-        ? Arinc429SignStatusMatrix.NormalOperation
-        : Arinc429SignStatusMatrix.NoComputedData,
-      17,
-      131072,
-      0,
-    );
-    this.arincMissedEoAccelerationAltitude.setBnrValue(
-      activePerformanceData.missedEngineOutAccelerationAltitude.get() !== null
-        ? activePerformanceData.missedEngineOutAccelerationAltitude.get()
-        : 0,
-      activePerformanceData.missedEngineOutAccelerationAltitude.get() !== null
+
+    this.arincEoAccelerationAltitude.setBnrValue(
+      engineOutAccelerationAlt ?? 0,
+      engineOutAccelerationAlt !== null
         ? Arinc429SignStatusMatrix.NormalOperation
         : Arinc429SignStatusMatrix.NoComputedData,
       17,
@@ -3317,6 +3349,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public setPerfTOFlexTemp(s: string, forPlan: FlightPlanIndex): boolean {
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (this.isTakeoffFieldUpdateNotAllowed(plan, plan?.performanceData.flexTakeoffTemperature.get())) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('flexTakeoffTemperature', null, forPlan);
       return true;
@@ -4187,9 +4225,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public trySetFlapsTHS(s: string, forPlan: FlightPlanIndex): boolean {
     const plan = this.getFlightPlan(forPlan);
 
+    const thsExists = plan.performanceData.trimmableHorizontalStabilizer.get() !== null;
+    const flapsExists = plan.performanceData.takeoffFlaps.get() !== null;
+
+    // THS/FLAPS cannot be modified starting in takeoff phase if both have been set.
+    if (
+      thsExists &&
+      flapsExists &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.flightPhaseManager.phase > FmgcFlightPhase.Preflight
+    ) {
+      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      return false;
+    }
+
     if (s === Keypad.clrValue) {
       this.setTakeoffFlaps(null, forPlan);
       this.setTakeoffTrim(null, forPlan);
+
       this.tryCheckToData();
       return true;
     }
@@ -4248,13 +4301,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (newFlaps !== null) {
-      if (plan.performanceData.takeoffFlaps.get() !== null) {
+      if (flapsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffFlaps(newFlaps, forPlan);
     }
     if (newThs !== null) {
-      if (plan.performanceData.trimmableHorizontalStabilizer.get() !== null) {
+      if (thsExists) {
         this.tryCheckToData();
       }
       this.setTakeoffTrim(newThs, forPlan);
@@ -4507,22 +4560,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       );
   }
 
-  public trySetGroundTemp(scratchpadValue: string, forPlan: number) {
+  public async trySetGroundTemp(scratchpadValue: string, forPlan: number): Promise<boolean> {
     // TODO check if this condition is still applicable in SEC
-    if (forPlan === FlightPlanIndex.Active && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
-      throw NXSystemMessages.notAllowed;
-    }
 
-    if (scratchpadValue === Keypad.clrValue) {
-      this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
-      return;
-    }
+    const plan = this.flightPlanService.has(forPlan) ? this.flightPlanService.get(forPlan) : null;
+    if (plan && plan.destinationAirport !== undefined) {
+      if (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase !== FmgcFlightPhase.Preflight) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        return false;
+      }
 
-    if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
-      throw NXSystemMessages.formatError;
-    }
+      if (scratchpadValue === Keypad.clrValue) {
+        this.flightPlanService.setPerformanceData('pilotGroundTemperature', null, forPlan);
+        return true;
+      }
 
-    this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+      if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+      }
+
+      this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
+    }
+    return true;
   }
 
   public isNavModeEngaged() {
@@ -4808,25 +4868,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     return undefined;
-  }
-
-  public get costIndex() {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      return plan.performanceData.costIndex.get();
-    }
-
-    return undefined;
-  }
-
-  /** @deprecated */
-  public set costIndex(ci) {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      this.currFlightPlanService.setPerformanceData('costIndex', ci);
-    }
   }
 
   public get tropo() {
@@ -5552,13 +5593,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const activePlan = this.flightPlanService.active;
 
     this.subscriptions.push(
-      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? 0), true),
+      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? 0), true),
+      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? -1), true),
     );
     this.subscriptions.push(
-      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true),
+      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true), // Simulink model uses 0 as invalid.
     );
     // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
     this.subscriptions.push(
@@ -5603,7 +5644,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           SimVar.SetSimVarValue(
             'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
             'number',
-            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : 0,
+            Number.isFinite(cruiseLevel) ? cruiseLevel * 100 : -1,
           ),
         true,
       ),
@@ -5856,6 +5897,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
+  public isInhgSelected(): boolean {
+    const leftWord = this.fcuEisLeftDiscreteWord1.get();
+    if (!leftWord.isInvalid()) {
+      return leftWord.bitValueOr(11, false);
+    }
+    return this.fcuEisRightDiscreteWord1.get().bitValueOr(11, false);
+  }
+
   getPerformanceFactorPercent(): number | null {
     return null; // TODO implement with PERF FACTOR in AC STATUS page
   }
@@ -6004,5 +6053,66 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public clearEngineOutCondition(): void {
     this.bus.getPublisher<EngineOutControlEvents>().pub('fms_engine_out_clear', undefined, false, false);
+  }
+
+  /**
+   * Checks if cost index modification is disabled based on flight phase and if the plan is active or copied from active
+   * @param plan the flight plan to check cost index modification for
+   * @returns true if is disabled, false otherwise.
+   */
+  isCostIndexModificationDisabled(plan: FlightPlan): boolean {
+    return (
+      plan.performanceData.costIndex.get() !== null &&
+      plan.isActiveOrCopiedFromActive() &&
+      this.getFlightPhase() >= FmgcFlightPhase.Descent
+    );
+  }
+
+  confirmTakeoffData(): void {
+    const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
+    if (!plan) {
+      return;
+    }
+    this.setV1Speed(
+      this.unconfirmedV1Speed !== undefined ? this.unconfirmedV1Speed : plan.performanceData.v1.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setVrSpeed(
+      this.unconfirmedVRSpeed !== undefined ? this.unconfirmedVRSpeed : plan.performanceData.vr.get(),
+      FlightPlanIndex.Active,
+    );
+    this.setV2Speed(
+      this.unconfirmedV2Speed !== undefined ? this.unconfirmedV2Speed : plan.performanceData.v2.get(),
+      FlightPlanIndex.Active,
+    );
+    this.unconfirmedV1Speed = undefined;
+    this.unconfirmedVRSpeed = undefined;
+    this.unconfirmedV2Speed = undefined;
+    this._toFlexChecked = true;
+  }
+
+  shouldShowConfirmTakeoffData(forPlan: FlightPlanIndex): boolean {
+    if (forPlan !== FlightPlanIndex.Active || !this.flightPlanService.hasActive) {
+      return false;
+    }
+    return (
+      forPlan === FlightPlanIndex.Active &&
+      (this.unconfirmedV1Speed || this.unconfirmedVRSpeed || this.unconfirmedV2Speed || !this._toFlexChecked) &&
+      this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff
+    );
+  }
+
+  private isVspeedUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null, input: string) {
+    return input === Keypad.clrValue || this.isTakeoffFieldUpdateNotAllowed(flightplan, currentValue);
+  }
+
+  private isTakeoffFieldUpdateNotAllowed(flightplan: FlightPlan, currentValue: number | null) {
+    // Don't allow if beyond takeoff phase and the value already exists.
+    return (
+      !flightplan ||
+      (flightplan.isActiveOrCopiedFromActive() &&
+        this.getFlightPhase() >= FmgcFlightPhase.Takeoff &&
+        currentValue !== null)
+    );
   }
 }

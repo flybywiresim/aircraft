@@ -641,9 +641,9 @@ export class FwsMemos {
           : 1,
         this.fws.isAllGearDownlocked ? 4 : 3,
         this.fws.spoilersArmed.get() ? 6 : 5,
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+        (!SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-        (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+        (SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
           ? 8
           : 7,

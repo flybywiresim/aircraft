@@ -6,14 +6,23 @@
 Prim::Prim(bool isUnit1, bool isUnit2, bool isUnit3) : isUnit1(isUnit1), isUnit2(isUnit2), isUnit3(isUnit3) {
   primGeneralLogic.initialize();
   primFctl.initialize();
+  primFe.initialize();
+  primFg.initialize();
 }
 
 Prim::Prim(const Prim& obj) : isUnit1(obj.isUnit1), isUnit2(obj.isUnit2), isUnit3(obj.isUnit3) {
   primGeneralLogic.initialize();
   primFctl.initialize();
+  primFe.initialize();
+  primFg.initialize();
 }
 
-void Prim::clearMemory() {}
+void Prim::clearMemory() {
+  primGeneralLogic.initialize();
+  primFctl.initialize();
+  primFe.initialize();
+  primFg.initialize();
+}
 
 // If the power supply is valid, perform the self-test-sequence.
 // If at least one hydraulic source is pressurised, perform a short test.
@@ -41,17 +50,18 @@ void Prim::update(double deltaTime,
                   SimConnectInterface& simConnectInterface,
                   bool generalLogicDisabled,
                   bool fctlDisabled,
-                  bool feDisabled) {
+                  bool feDisabled,
+                  bool fgDisabled) {
   monitorPowerSupply(deltaTime, isPowered);
   monitorButtonStatus();
 
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  if (generalLogicDisabled || fctlDisabled || feDisabled) {
+  if (generalLogicDisabled || fctlDisabled || feDisabled || fgDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.analog_inputs);
-    simConnectInterface.setClientDataPrimTemporaryAp(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.temporary_ap_input);
+    simConnectInterface.setClientDataFms(primGeneralLogic.A380PrimComputerGeneralLogic_U.in.adcn_inputs.fms);
   }
 
   primGeneralLogic.A380PrimComputerGeneralLogic_U.in.sim_data.computer_running = monitoringHealthy;
@@ -67,7 +77,7 @@ void Prim::update(double deltaTime,
   }
   primFe.A380PrimComputerFe_U.in = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
 
-  if (fctlDisabled || feDisabled) {
+  if (fctlDisabled || feDisabled || fgDisabled) {
     simConnectInterface.setClientDataPrimGeneralLogicOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.general_logic);
   }
 
@@ -80,16 +90,41 @@ void Prim::update(double deltaTime,
     primFe.A380PrimComputerFe_U.in.fctl_logic = simConnectInterface.getClientDataPrimFctlLogicOutput();
   }
 
+  // Add loopback input (one cycle delay) from FG logic
+  if (!fgDisabled) {
+    primFe.A380PrimComputerFe_U.in.fg_logic = primFg.A380PrimComputerFg_Y.out.fg_logic;
+  } else {
+    primFe.A380PrimComputerFe_U.in.fg_logic = simConnectInterface.getClientDataPrimFgLogicOutput();
+  }
+
   if (!feDisabled) {
     primFe.step();
   } else {
     primFe.A380PrimComputerFe_Y.out = primGeneralLogic.A380PrimComputerGeneralLogic_Y.out;
     primFe.A380PrimComputerFe_Y.out.flight_envelope = simConnectInterface.getClientDataPrimFlightEnvelopeOutput();
   }
-  primFctl.A380PrimComputerFctl_U.in = primFe.A380PrimComputerFe_Y.out;
+  primFg.A380PrimComputerFg_U.in = primFe.A380PrimComputerFe_Y.out;
+
+  if (fctlDisabled || fgDisabled) {
+    simConnectInterface.setClientDataPrimFlightEnvelopeOutput(primFe.A380PrimComputerFe_Y.out.flight_envelope);
+  }
+
+  // --------------- FG Step -----------------
+
+  if (!fgDisabled) {
+    primFg.step();
+  } else {
+    primFg.A380PrimComputerFg_Y.out = primFe.A380PrimComputerFe_Y.out;
+    primFg.A380PrimComputerFg_Y.out.fg_logic = simConnectInterface.getClientDataPrimFgLogicOutput();
+    primFg.A380PrimComputerFg_Y.out.fg_mode_logic = simConnectInterface.getClientDataPrimFgModeLogicOutput();
+    primFg.A380PrimComputerFg_Y.out.fg_laws = simConnectInterface.getClientDataPrimFgLawsOutput();
+  }
+  primFctl.A380PrimComputerFctl_U.in = primFg.A380PrimComputerFg_Y.out;
 
   if (fctlDisabled) {
-    simConnectInterface.setClientDataPrimFlightEnvelopeOutput(primGeneralLogic.A380PrimComputerGeneralLogic_Y.out.flight_envelope);
+    simConnectInterface.setClientDataPrimFgLogicOutput(primFg.A380PrimComputerFg_Y.out.fg_logic);
+    simConnectInterface.setClientDataPrimFgModeLogicOutput(primFg.A380PrimComputerFg_Y.out.fg_mode_logic);
+    simConnectInterface.setClientDataPrimFgLawsOutput(primFg.A380PrimComputerFg_Y.out.fg_laws);
   }
 
   // --------------- FCTL Step -----------------
@@ -103,7 +138,7 @@ void Prim::update(double deltaTime,
   }
 
   // Set client data loopback if any other model is disabled
-  if (feDisabled) {
+  if (feDisabled || fgDisabled) {
     simConnectInterface.setClientDataPrimFctlLogicOutput(primFctl.A380PrimComputerFctl_Y.out.fctl_logic);
   }
 }
@@ -116,6 +151,7 @@ A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& Pri
 void Prim::monitorSelf(bool faultActive) {
   if (faultActive || powerSupplyFault || !selfTestComplete ||
       !primGeneralLogic.A380PrimComputerGeneralLogic_U.in.discrete_inputs.prim_overhead_button_pressed) {
+    clearMemory();
     monitoringHealthy = false;
   } else {
     monitoringHealthy = true;
@@ -238,4 +274,8 @@ base_prim_analog_outputs Prim::getAnalogOutputs() {
   }
 
   return output;
+}
+
+const prim_outputs& Prim::getDebugOutputs() {
+  return primFctl.A380PrimComputerFctl_Y.out;
 }
