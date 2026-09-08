@@ -1,5 +1,11 @@
-use super::{A380FuelPump, FuelLevel, FuelPumpStatus};
-use crate::fuel::{A380FuelTankType, ArincFuelPumpStatusProvider, ArincFuelQuantityProvider};
+use super::{
+    discrete_words::{pack_fuel_pump_words, pack_fuel_valve_words},
+    FuelLevel, FuelPumpStatus, FuelValveStatus,
+};
+use crate::fuel::{
+    A380FuelTankType, ArincFuelPumpStatusProvider, ArincFuelQuantityProvider,
+    ArincFuelValveStatusProvider,
+};
 use enum_map::Enum;
 use systems::{
     shared::{
@@ -22,32 +28,11 @@ pub(super) struct FuelQuantityDataConcentrator {
 
     left_fuel_pump_running: Arinc429Word<u32>,
     right_fuel_pump_running: Arinc429Word<u32>,
+
+    fuel_valve_open_words: [Arinc429Word<u32>; 3],
+    fuel_valve_closed_words: [Arinc429Word<u32>; 3],
 }
 impl FuelQuantityDataConcentrator {
-    const LEFT_FUEL_PUMPS: [A380FuelPump; 10] = [
-        A380FuelPump::Feed1Main,
-        A380FuelPump::Feed1Stby,
-        A380FuelPump::Feed2Main,
-        A380FuelPump::Feed2Stby,
-        A380FuelPump::LeftOuter,
-        A380FuelPump::LeftMidFwd,
-        A380FuelPump::LeftMidAft,
-        A380FuelPump::LeftInnerFwd,
-        A380FuelPump::LeftInnerAft,
-        A380FuelPump::TrimLeft,
-    ];
-    const RIGHT_FUEL_PUMPS: [A380FuelPump; 10] = [
-        A380FuelPump::Feed3Main,
-        A380FuelPump::Feed3Stby,
-        A380FuelPump::Feed4Main,
-        A380FuelPump::Feed4Stby,
-        A380FuelPump::RightOuter,
-        A380FuelPump::RightMidFwd,
-        A380FuelPump::RightMidAft,
-        A380FuelPump::RightInnerFwd,
-        A380FuelPump::RightInnerAft,
-        A380FuelPump::TrimRight,
-    ];
     pub(super) fn new(context: &mut InitContext, id: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             powered_by,
@@ -65,57 +50,59 @@ impl FuelQuantityDataConcentrator {
 
             left_fuel_pump_running: Arinc429Word::new(0, SignStatus::FailureWarning),
             right_fuel_pump_running: Arinc429Word::new(0, SignStatus::FailureWarning),
+
+            fuel_valve_open_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+            fuel_valve_closed_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
         }
     }
 
-    pub(super) fn update(&mut self, fuel_levels: &(impl FuelLevel + FuelPumpStatus)) {
+    pub(super) fn update(
+        &mut self,
+        fuel_status: &(impl FuelLevel + FuelPumpStatus + FuelValveStatus),
+    ) {
         if !self.is_powered {
             self.tank_quantities = Default::default();
             self.left_fuel_pump_running = Arinc429Word::default();
             self.right_fuel_pump_running = Arinc429Word::default();
+            self.fuel_valve_open_words = Default::default();
+            self.fuel_valve_closed_words = Default::default();
             return;
         }
 
         let ssm = SignStatus::NormalOperation;
 
         self.tank_quantities[A380FuelTankType::LeftOuter.into_usize()] =
-            Arinc429Word::new(fuel_levels.left_outer_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.left_outer_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::LeftMid.into_usize()] =
-            Arinc429Word::new(fuel_levels.left_mid_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.left_mid_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::LeftInner.into_usize()] =
-            Arinc429Word::new(fuel_levels.left_inner_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.left_inner_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::FeedOne.into_usize()] =
-            Arinc429Word::new(fuel_levels.feed_one_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.feed_one_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::FeedTwo.into_usize()] =
-            Arinc429Word::new(fuel_levels.feed_two_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.feed_two_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::FeedThree.into_usize()] =
-            Arinc429Word::new(fuel_levels.feed_three_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.feed_three_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::FeedFour.into_usize()] =
-            Arinc429Word::new(fuel_levels.feed_four_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.feed_four_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::RightInner.into_usize()] =
-            Arinc429Word::new(fuel_levels.right_inner_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.right_inner_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::RightMid.into_usize()] =
-            Arinc429Word::new(fuel_levels.right_mid_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.right_mid_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::RightOuter.into_usize()] =
-            Arinc429Word::new(fuel_levels.right_outer_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.right_outer_tank_quantity(), ssm);
         self.tank_quantities[A380FuelTankType::Trim.into_usize()] =
-            Arinc429Word::new(fuel_levels.trim_tank_quantity(), ssm);
+            Arinc429Word::new(fuel_status.trim_tank_quantity(), ssm);
 
-        self.left_fuel_pump_running =
-            Self::update_fuel_pump_state(fuel_levels, ssm, Self::LEFT_FUEL_PUMPS);
-        self.right_fuel_pump_running =
-            Self::update_fuel_pump_state(fuel_levels, ssm, Self::RIGHT_FUEL_PUMPS);
-    }
+        let [left_fuel_pump_running, right_fuel_pump_running] =
+            pack_fuel_pump_words(ssm, |pump| fuel_status.is_fuel_pump_running(pump));
+        self.left_fuel_pump_running = left_fuel_pump_running;
+        self.right_fuel_pump_running = right_fuel_pump_running;
 
-    fn update_fuel_pump_state(
-        pump_status: &impl FuelPumpStatus,
-        ssm: SignStatus,
-        fuel_pumps: impl IntoIterator<Item = A380FuelPump>,
-    ) -> Arinc429Word<u32> {
-        let value = (11..=29).zip(fuel_pumps).fold(0, |value, (bit, pump)| {
-            value | ((pump_status.is_fuel_pump_running(pump) as u32) << bit)
-        });
-        Arinc429Word::new(value, ssm)
+        self.fuel_valve_open_words =
+            pack_fuel_valve_words(ssm, |valve| fuel_status.is_fuel_valve_open(valve));
+        self.fuel_valve_closed_words =
+            pack_fuel_valve_words(ssm, |valve| fuel_status.is_fuel_valve_closed(valve));
     }
 
     pub(super) fn is_healthy(&self) -> bool {
@@ -134,6 +121,15 @@ impl ArincFuelPumpStatusProvider for FuelQuantityDataConcentrator {
 
     fn get_right_fuel_pump_running_word(&self) -> Arinc429Word<u32> {
         self.right_fuel_pump_running
+    }
+}
+impl ArincFuelValveStatusProvider for FuelQuantityDataConcentrator {
+    fn get_fuel_valve_open_words(&self) -> [Arinc429Word<u32>; 3] {
+        self.fuel_valve_open_words
+    }
+
+    fn get_fuel_valve_closed_words(&self) -> [Arinc429Word<u32>; 3] {
+        self.fuel_valve_closed_words
     }
 }
 impl SimulationElement for FuelQuantityDataConcentrator {
@@ -159,6 +155,8 @@ impl SimulationElement for FuelQuantityDataConcentrator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::fuel::{A380FuelPump, A380FuelValve};
+    use enum_map::Enum;
     use rstest::{fixture, rstest};
     use systems::simulation::{
         test::{SimulationTestBed, TestBed},
@@ -187,12 +185,85 @@ mod tests {
         }
     }
 
+    #[rstest]
+    fn fuel_quantity_data_concentrator_packs_fuel_valve_status_words(mut test_bed: FQDCTestBed) {
+        let mut fuel = TestFuelStatus::default();
+        fuel.set_valve_open(A380FuelValve::Engine1LowPressureValve);
+        fuel.set_valve_open(A380FuelValve::LeftInnerAftTransferValve);
+        fuel.set_valve_open(A380FuelValve::LeftMidAftTransferValve);
+        fuel.set_valve_open(A380FuelValve::LeftJettisonNozzleValve);
+        fuel.set_valve_open(A380FuelValve::TrimTankInletValve2);
+        fuel.set_valve_closed(A380FuelValve::Engine2LowPressureValve);
+        fuel.set_valve_closed(A380FuelValve::RightOuterAftTransferValve);
+
+        test_bed.set_fqdc_powered(true);
+        test_bed.update_fqdc(&fuel);
+
+        let open_words = test_bed.fuel_valve_open_words();
+        let closed_words = test_bed.fuel_valve_closed_words();
+
+        assert!(open_words.iter().all(Arinc429Word::is_normal_operation));
+        assert!(closed_words.iter().all(Arinc429Word::is_normal_operation));
+
+        assert!(open_words[0].get_bit(11));
+        assert!(open_words[0].get_bit(29));
+        assert!(open_words[1].get_bit(11));
+        assert!(open_words[1].get_bit(17));
+        assert!(open_words[2].get_bit(12));
+
+        assert!(closed_words[0].get_bit(12));
+        assert!(closed_words[1].get_bit(15));
+
+        assert!(!open_words[1].get_bit(19));
+        assert!(!open_words[2].get_bit(11));
+        assert!(!open_words[2].get_bit(13));
+        assert!(!closed_words[1].get_bit(19));
+    }
+
+    #[rstest]
+    fn unpowered_fuel_quantity_data_concentrator_resets_fuel_valve_status_words(
+        mut test_bed: FQDCTestBed,
+    ) {
+        let mut fuel = TestFuelStatus::default();
+        fuel.set_valve_open(A380FuelValve::Engine1LowPressureValve);
+        fuel.set_valve_closed(A380FuelValve::Engine2LowPressureValve);
+
+        test_bed.set_fqdc_powered(false);
+        test_bed.update_fqdc(&fuel);
+
+        for word in test_bed
+            .fuel_valve_open_words()
+            .into_iter()
+            .chain(test_bed.fuel_valve_closed_words())
+        {
+            assert_eq!(word.value(), 0);
+            assert!(word.is_failure_warning());
+        }
+    }
+
     #[fixture]
     fn test_bed() -> FQDCTestBed {
         FQDCTestBed(SimulationTestBed::new(TestAircraft::new))
     }
 
     struct FQDCTestBed(SimulationTestBed<TestAircraft>);
+    impl FQDCTestBed {
+        fn set_fqdc_powered(&mut self, is_powered: bool) {
+            self.command(|aircraft| aircraft.fqdc.is_powered = is_powered);
+        }
+
+        fn update_fqdc(&mut self, fuel: &TestFuelStatus) {
+            self.command(|aircraft| aircraft.fqdc.update(fuel));
+        }
+
+        fn fuel_valve_open_words(&self) -> [Arinc429Word<u32>; 3] {
+            self.query(|aircraft| aircraft.fqdc.get_fuel_valve_open_words())
+        }
+
+        fn fuel_valve_closed_words(&self) -> [Arinc429Word<u32>; 3] {
+            self.query(|aircraft| aircraft.fqdc.get_fuel_valve_closed_words())
+        }
+    }
     impl TestBed for FQDCTestBed {
         type Aircraft = TestAircraft;
 
@@ -202,6 +273,87 @@ mod tests {
 
         fn test_bed_mut(&mut self) -> &mut SimulationTestBed<Self::Aircraft> {
             &mut self.0
+        }
+    }
+
+    struct TestFuelStatus {
+        fuel_valve_open: [bool; A380FuelValve::LENGTH],
+        fuel_valve_closed: [bool; A380FuelValve::LENGTH],
+    }
+    impl Default for TestFuelStatus {
+        fn default() -> Self {
+            Self {
+                fuel_valve_open: [false; A380FuelValve::LENGTH],
+                fuel_valve_closed: [false; A380FuelValve::LENGTH],
+            }
+        }
+    }
+    impl TestFuelStatus {
+        fn set_valve_open(&mut self, valve: A380FuelValve) {
+            self.fuel_valve_open[valve.into_usize()] = true;
+        }
+
+        fn set_valve_closed(&mut self, valve: A380FuelValve) {
+            self.fuel_valve_closed[valve.into_usize()] = true;
+        }
+    }
+    impl FuelLevel for TestFuelStatus {
+        fn left_outer_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn feed_one_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn left_mid_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn left_inner_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn feed_two_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn feed_three_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn right_inner_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn right_mid_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn feed_four_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn right_outer_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn trim_tank_quantity(&self) -> Mass {
+            Mass::default()
+        }
+    }
+    impl FuelPumpStatus for TestFuelStatus {
+        fn is_fuel_pump_running(&self, _: A380FuelPump) -> bool {
+            false
+        }
+    }
+    impl FuelValveStatus for TestFuelStatus {
+        fn is_fuel_valve_open(&self, valve: A380FuelValve) -> bool {
+            self.fuel_valve_open[valve.into_usize()]
+        }
+
+        fn is_fuel_valve_closed(&self, valve: A380FuelValve) -> bool {
+            self.fuel_valve_closed[valve.into_usize()]
         }
     }
 

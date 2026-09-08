@@ -1,8 +1,11 @@
-use crate::fuel::{cpiom_f::FEED_TANKS, A380FuelTankType, ArincFuelQuantityProvider};
+use crate::fuel::{
+    cpiom_f::{FuelQuantityProvider, FEED_TANKS, TRIM_TANK, WING_TANKS},
+    A380FuelTankType, ArincFuelQuantityProvider,
+};
 use enum_map::{enum_map, Enum};
 use nalgebra::Vector3;
 use std::sync::LazyLock;
-use systems::payload::LoadsheetInfo;
+use systems::{fuel::FUEL_GALLONS_TO_KG, payload::LoadsheetInfo};
 use uom::si::{
     f64::{Mass, Ratio},
     mass::kilogram,
@@ -153,6 +156,21 @@ impl FuelMeasuringApplication {
         self.center_of_gravity
     }
 
+    pub(super) fn unavailable_tank_quantity_count(&self) -> usize {
+        WING_TANKS
+            .iter()
+            .chain(&[TRIM_TANK])
+            .map(|tank| self.tank_quantities[tank.into_usize()])
+            .filter(|q| q.value().is_none())
+            .count()
+    }
+
+    pub(super) fn all_feed_tanks_valid(&self) -> bool {
+        FEED_TANKS
+            .iter()
+            .all(|tank| self.tank_quantities[tank.into_usize()].value().is_some())
+    }
+
     fn update_total_fuel_onboard(&mut self) {
         // TODO: it takes some time for the calculation of the values
         self.total_fuel_onboard = self
@@ -234,6 +252,38 @@ impl FuelMeasuringApplication {
 
         self.tank_quantities[left_tank.into_usize()] = l_resolved;
         self.tank_quantities[right_tank.into_usize()] = r_resolved;
+    }
+}
+impl FuelQuantityProvider for FuelMeasuringApplication {
+    fn get_tank_quantity(&self, tank: A380FuelTankType) -> Mass {
+        self.tank_quantities[tank.into_usize()]
+            .value()
+            .unwrap_or_default()
+    }
+
+    fn get_tank_capacity(&self, tank: A380FuelTankType) -> Mass {
+        // TODO: deduplicate this information
+        static FUEL_TANK_CAPACITIES: LazyLock<[Mass; A380FuelTankType::LENGTH]> =
+            LazyLock::new(|| {
+                // The fuel tank capacities in gallons
+                let fuel_tank_capacities_gallons = enum_map! {
+                    A380FuelTankType::LeftOuter => 2731.5,
+                    A380FuelTankType::RightOuter => 2731.5,
+                    A380FuelTankType::FeedOne => 7299.6,
+                    A380FuelTankType::FeedTwo => 7753.2,
+                    A380FuelTankType::FeedThree => 7753.2,
+                    A380FuelTankType::FeedFour => 7299.6,
+                    A380FuelTankType::LeftMid => 9632.,
+                    A380FuelTankType::RightMid => 9632.,
+                    A380FuelTankType::LeftInner => 12189.4,
+                    A380FuelTankType::RightInner => 12189.4,
+                    A380FuelTankType::Trim => 6260.3,
+                };
+                fuel_tank_capacities_gallons
+                    .into_array()
+                    .map(|g| Mass::new::<kilogram>(g * FUEL_GALLONS_TO_KG))
+            });
+        FUEL_TANK_CAPACITIES[tank.into_usize()]
     }
 }
 
