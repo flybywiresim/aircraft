@@ -625,3 +625,60 @@ text, tspan, span {
   animation-duration: 1s;
   animation-iteration-count: infinite;
 }
+
+@mixin BackGroundFlashing($color, $name) {
+  @keyframes #{$name} {
+    0% {
+    ffill: transparent;
+    }
+    50% {
+    fill: $color;
+    }
+    100% {
+    fill: transparent;
+    }
+  }
+  animation-name: $name;
+  animation-timing-function: step-start;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.BackGroundFlashingAmber {
+  @include BackGroundFlashing($display-amber, amber-memo-flashing);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.BackGroundFlashingGreen {
+  @include BackGroundFlashing($display-green, green-memo-flashing);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+
+.MemoFlashing {
+  animation: text-white-flashing 1s steps(1, end) infinite;
+}
+
+@keyframes text-white-flashing {
+  0% {
+    fill: $display-background;
+  }
+  50% {
+    fill: $display-white;
+  }
+}
+
+
+.Green.MemoPulsing {
+  @include GenericPulsingFill($display-green, pulse-green-memo);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.Amber.MemoPulsing {
+  @include GenericPulsingFill($display-amber, pulse-amber-memo);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}

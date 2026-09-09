@@ -33,6 +33,7 @@ import {
   SwitchingPanelPublisher,
   RaBusPublisher,
   LgciuBusPublisher,
+  AdrBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from './Misc/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from './Misc/Communications/RmpAmuBusPublisher';
@@ -149,6 +150,7 @@ class SystemsHost extends BaseInstrument {
   private readonly egpwcPublisher = new EgpwcBusPublisher(this.bus, 'L');
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+  private readonly adrBusPublisher = new AdrBusPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
   private readonly raBusPublisher = new RaBusPublisher(this.bus);
   private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
@@ -236,6 +238,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
+    this.backplane.addPublisher('adrBusPublisher', this.adrBusPublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();

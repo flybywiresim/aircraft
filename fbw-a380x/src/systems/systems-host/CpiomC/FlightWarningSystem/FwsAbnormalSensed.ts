@@ -4055,32 +4055,23 @@ export class FwsAbnormalSensed {
     340800045: {
       // IR NOT ALIGNED
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
-      simVarIsActive: this.fws.irExcessMotion,
+      simVarIsActive: this.fws.irNotAlignedWarning,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
-        !this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          !this.fws.ir3MaintWord.bitValueOr(13, false),
-        this.fws.ir1MaintWord.bitValueOr(13, false) &&
-          this.fws.ir2MaintWord.bitValueOr(13, false) &&
-          this.fws.ir3MaintWord.bitValueOr(13, false),
+        this.fws.irPositionDisagree,
+        this.fws.irPositionDisagree,
+        this.fws.irPositionMissing,
+        this.fws.irPositionMissing,
+        this.fws.ir1ExcessMotion || this.fws.ir2ExcessMotion || this.fws.ir3ExcessMotion,
+        this.fws.ir1ExcessMotion && !this.fws.ir2ExcessMotion && !this.fws.ir3ExcessMotion,
+        this.fws.ir2ExcessMotion && !this.fws.ir1ExcessMotion && !this.fws.ir3ExcessMotion,
+        this.fws.ir3ExcessMotion && !this.fws.ir1ExcessMotion && !this.fws.ir2ExcessMotion,
+        this.fws.ir1ExcessMotion && this.fws.ir2ExcessMotion && !this.fws.ir3ExcessMotion,
+        this.fws.ir1ExcessMotion && this.fws.ir3ExcessMotion && !this.fws.ir2ExcessMotion,
+        this.fws.ir2ExcessMotion && this.fws.ir3ExcessMotion && !this.fws.ir1ExcessMotion,
+        this.fws.ir1ExcessMotion && this.fws.ir2ExcessMotion && this.fws.ir3ExcessMotion,
       ],
-      whichItemsChecked: () => [true, true, true, true, true, true, true],
+      whichItemsChecked: () => [false, true, false, true, false, true, true, true, true, true, true, true],
       failure: 2,
       sysPage: SdPages.None,
     },

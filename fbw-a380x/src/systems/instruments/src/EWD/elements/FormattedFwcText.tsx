@@ -12,9 +12,8 @@ interface FormattedFwcTextProps {
   pfd?: boolean;
 }
 export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
-  private linesRef = FSComponent.createRef<SVGGElement>();
-
-  private decorationRef = FSComponent.createRef<SVGGElement>();
+  private readonly linesRef = FSComponent.createRef<SVGGElement>();
+  private readonly decorationRef = FSComponent.createRef<SVGGElement>();
 
   private readonly messageSub = SubscribableUtils.toSubscribable(this.props.message, true);
 
@@ -33,23 +32,32 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       let color = 'White';
       let underlined = false;
-      // const flashing = false; TODO
+      let flashing = false;
       let framed = false;
-
+      let pulsing = false;
       let buffer = '';
       let startCol = 0;
       let col = 0;
+      let textSize = 0;
+      let backGroundFlashingColor: null | string = null;
       for (let i = 0; i < message.length; i++) {
         const char = message[i];
         if (char === '\x1b' || char === '\r') {
           if (buffer !== '') {
             // close current part
             spans.push(
-              <tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>
+              <tspan
+                key={buffer}
+                class={{ [color]: true, EWDWarn: true, MemoFlashing: flashing, MemoPulsing: pulsing }}
+              >
                 {buffer}
               </tspan>,
             );
             buffer = '';
+
+            if (flashing) {
+              backGroundFlashingColor = color;
+            }
 
             if (underlined) {
               const d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -88,7 +96,8 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 case 'm':
                   // Reset attribute
                   underlined = false;
-                  // flashing = false;
+                  flashing = false;
+                  pulsing = false;
                   framed = false;
                   break;
                 case '4m':
@@ -96,8 +105,11 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                   underlined = true;
                   break;
                 case ')m':
-                  // Flashing attribute
-                  // flashing = true;
+                  // pulsing attribute
+                  pulsing = true;
+                  break;
+                case ')f':
+                  flashing = true;
                   break;
                 case "'m":
                   // Characters which follow must be framed
@@ -140,28 +152,46 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 break;
               }
             }
-
+            textSize += 1;
             continue;
           }
 
           if (char === '\r') {
             const e = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            e.setAttribute('x', this.props.x.toString());
-            e.setAttribute('y', (this.props.y + yOffset).toString());
+            const x = this.props.x.toString();
+            const ynumber = this.props.y + yOffset;
+            const y = (this.props.y + yOffset).toString();
+            e.setAttribute('x', x);
+            e.setAttribute('y', y);
             spans.forEach((s) => {
               FSComponent.render(s, e);
             });
+
+            if (backGroundFlashingColor !== null) {
+              const ret = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+              ret.setAttribute('x', x);
+              ret.setAttribute('y', (ynumber - 19).toString());
+              ret.setAttribute('height', '21');
+              ret.setAttribute('width', (15 * textSize).toString());
+              ret.setAttribute('class', `BackGroundFlashing${backGroundFlashingColor}`);
+              this.linesRef.instance.appendChild(ret);
+            }
+
             this.linesRef.instance.appendChild(e);
             yOffset += LINE_SPACING;
 
             spans = [];
             col = 0;
             startCol = 0;
+            textSize = 0;
+            backGroundFlashingColor = null;
             continue;
           }
         }
 
         buffer += char;
+        textSize += 1;
         col++;
       }
 
@@ -178,13 +208,27 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       if (spans.length) {
         const e = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        e.setAttribute('x', this.props.x.toString());
-        e.setAttribute('y', (this.props.y + yOffset).toString());
+        const x = this.props.x.toString();
+        const ynumber = this.props.y + yOffset;
+        const y = (this.props.y + yOffset).toString();
+        e.setAttribute('x', x);
+        e.setAttribute('y', y);
         spans.forEach((s) => {
           FSComponent.render(s, e);
         });
+        if (backGroundFlashingColor !== null) {
+          const ret = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          ret.setAttribute('x', x);
+          ret.setAttribute('y', (ynumber - 19).toString());
+          ret.setAttribute('height', '21');
+          ret.setAttribute('width', (15 * textSize).toString());
+          ret.setAttribute('class', `BackGroundFlashing${backGroundFlashingColor}`);
+          this.linesRef.instance.appendChild(ret);
+        }
         this.linesRef.instance.appendChild(e);
         yOffset += LINE_SPACING;
+        textSize = 0;
+        backGroundFlashingColor = null;
       }
     }, true);
   }

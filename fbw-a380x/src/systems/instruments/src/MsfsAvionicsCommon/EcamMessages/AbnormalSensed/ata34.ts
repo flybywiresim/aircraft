@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { AbnormalProcedure, ChecklistLineStyle, DeferredProcedure, DeferredProcedureType } from '..';
@@ -584,41 +584,69 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IR 1 IN ALIGN',
+        name: 'POSITION DISAGREE',
         sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'ACFT PPOS',
+        sensed: false,
+        labelNotCompleted: 'REENTER',
+      },
+      {
+        name: 'POSITION MISSING',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'ACFT PPOS',
+        sensed: false,
+        labelNotCompleted: 'INSERT',
+      },
+      {
+        name: 'EXCESS MOTION',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 1,
+      },
+      {
+        name: 'IR 1 IN ALIGN',
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 2 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 3 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+2 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+3 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 2+3 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'IR 1+2+3 IN ALIGN',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
-    ], // Only EXCESS MOTION for now
+    ],
   },
   340800046: {
     title: '\x1b<4m\x1b4mNAV\x1bm LS 1 FAULT',
