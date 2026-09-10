@@ -11,9 +11,11 @@ import {
   Subject,
   Subscribable,
   VNode,
+  EventBus,
+  ClockEvents,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429WordData, Arinc429ConsumerSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429ConsumerSubject, GenericAdirsEvents, LowPassFilter } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
@@ -113,6 +115,8 @@ export class RoseVorPage<T extends number> extends RoseMode<T, RoseVorProps<T>> 
         />
 
         <VorCaptureOverlay
+          bus={this.props.bus}
+          instrument={this.props.instrument}
           index={this.props.index}
           heading={this.props.headingWord}
           course={this.courseSub}
@@ -130,6 +134,8 @@ export class RoseVorPage<T extends number> extends RoseMode<T, RoseVorProps<T>> 
 }
 
 interface VorCaptureOverlayProps extends ComponentProps {
+  bus: EventBus;
+  instrument: BaseInstrument;
   index: 1 | 2;
   heading: Subscribable<Arinc429WordData>;
   course: Subscribable<number>;
@@ -139,6 +145,10 @@ interface VorCaptureOverlayProps extends ComponentProps {
 }
 
 class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents>();
+
+  private readonly lagFilter = new LowPassFilter(1.5);
+
   private readonly visible = MappedSubject.create(([heading]) => {
     return heading.isNormalOperation();
   }, this.props.heading);
@@ -162,19 +172,6 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
     return 'White';
   }, this.props.heading);
 
-  /*     useEffect(() => {
-        let cdiDegrees: number;
-        if (Math.abs(courseDeviation) <= 90) {
-            cdiDegrees = courseDeviation;
-            setToward(true);
-        } else {
-            cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
-            setToward(false);
-        }
-        setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
-    }, [courseDeviation.toFixed(2)]);
- */
-
   private readonly cdiPx = Subject.create(12);
 
   private readonly toward = Subject.create(true);
@@ -191,18 +188,37 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
     return `translate(${cdiPx}, 0)`;
   }, this.cdiPx);
 
+  private handleNavRadialError(): void {
+    const smoothedDeviation = this.lagFilter.step(
+      this.props.courseDeviation.get(),
+      this.props.instrument.deltaTime / 1000,
+    );
+
+    let cdiDegrees: number;
+    if (Math.abs(smoothedDeviation) <= 90) {
+      cdiDegrees = smoothedDeviation;
+      this.toward.set(true);
+    } else {
+      cdiDegrees = Math.sign(smoothedDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(smoothedDeviation));
+      this.toward.set(false);
+    }
+    this.cdiPx.set((Math.min(12, Math.max(-12, cdiDegrees)) * 74) / 5);
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.props.courseDeviation.sub((courseDeviation) => {
-      let cdiDegrees: number;
-      if (Math.abs(courseDeviation) <= 90) {
-        cdiDegrees = courseDeviation;
-        this.toward.set(true);
+
+    // TODO figure out the correct update frequency here. We use 20 Hz because it's 20 Hz for the ILS deviations coming
+    // from the MMR
+    const lagFilterSub = this.sub.on('realTime').atFrequency(20).handle(this.handleNavRadialError.bind(this), true);
+
+    this.props.vorAvailable.sub((hasLoc) => {
+      if (hasLoc) {
+        lagFilterSub.resume(true);
       } else {
-        cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
-        this.toward.set(false);
+        lagFilterSub.pause();
+        this.lagFilter.reset();
       }
-      this.cdiPx.set((Math.min(12, Math.max(-12, cdiDegrees)) * 74) / 5);
     });
   }
 

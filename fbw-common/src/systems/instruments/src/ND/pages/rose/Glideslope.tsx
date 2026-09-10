@@ -12,17 +12,23 @@ import {
   MappedSubject,
   Subscribable,
   ConsumerSubject,
+  ClockEvents,
 } from '@microsoft/msfs-sdk';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
+import { LowPassFilter } from '../../../Filters';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export interface GlideSlopeProps extends ComponentProps {
   bus: EventBus;
+  instrument: BaseInstrument;
   backbeam?: Subscribable<boolean>;
 }
 
 export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
-  private readonly sub = this.props.bus.getSubscriber<GenericVorEvents>();
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & GenericVorEvents>();
+
+  private readonly lagFilter = new LowPassFilter(1.5);
 
   private readonly backbeam = this.props.backbeam ?? Subject.create(false);
 
@@ -45,9 +51,7 @@ export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
 
   private readonly gsDeviation = ConsumerSubject.create(this.sub.on('glideSlopeDeviation'), 0);
 
-  private readonly deviationPxSub = this.gsDeviation.map((deviation) => {
-    return (deviation / 0.8) * 128;
-  });
+  private readonly deviationPxSub = Subject.create(0);
 
   private readonly deviationUpperVisibleSub = MappedSubject.create(
     ([available, deviationPx]) => {
@@ -66,6 +70,29 @@ export class GlideSlope extends DisplayComponent<GlideSlopeProps> {
   );
 
   private readonly visibilityFn = (v) => (v ? 'inherit' : 'hidden');
+
+  private handleGsDeviation(): void {
+    const gsDeviation = MathUtils.correctMsfsLocaliserError(this.gsDeviation.get());
+    const smoothedDeviation = this.lagFilter.step(gsDeviation, this.props.instrument.deltaTime / 1000);
+
+    this.deviationPxSub.set((smoothedDeviation / 0.8) * 128);
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    // The MMR outputs the glideslope deviation at a rate of 20 Hz
+    const lagFilterSub = this.sub.on('realTime').atFrequency(20).handle(this.handleGsDeviation.bind(this), true);
+
+    this.glideSlopeValid.sub((valid) => {
+      if (valid) {
+        lagFilterSub.resume(true);
+      } else {
+        lagFilterSub.pause();
+        this.lagFilter.reset();
+      }
+    });
+  }
 
   render(): VNode | null {
     return (

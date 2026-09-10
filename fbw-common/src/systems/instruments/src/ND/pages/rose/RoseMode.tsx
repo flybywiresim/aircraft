@@ -11,6 +11,7 @@ import { NDControlEvents } from '../../NDControlEvents';
 
 export interface RoseModeProps<T extends number> extends ComponentProps {
   bus: ArincEventBus;
+  instrument: BaseInstrument;
   rangeValues: T[];
   headingWord: Subscribable<Arinc429WordData>;
   trueHeadingWord: Subscribable<Arinc429WordData>;

@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ComponentProps,
   ConsumerSubject,
   DisplayComponent,
+  EventBus,
   FSComponent,
   MappedSubject,
   Subject,
@@ -22,6 +24,7 @@ import { GlideSlope } from './Glideslope';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 import { GenericFlightManagementBusEvents } from '../../types/GenericFlightManagementBusEvents';
+import { LowPassFilter } from '../../../Filters';
 
 export interface RoseLsProps<T extends number> extends RoseModeProps<T> {
   index: 1 | 2;
@@ -105,7 +108,7 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
 
         <IlsInfoIndicator bus={this.props.bus} index={this.props.index} />
 
-        <GlideSlope bus={this.props.bus} backbeam={this.backbeam} />
+        <GlideSlope bus={this.props.bus} instrument={this.props.instrument} backbeam={this.backbeam} />
 
         <RoseModeUnderlay
           bus={this.props.bus}
@@ -115,6 +118,8 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
         />
 
         <IlsCaptureOverlay
+          bus={this.props.bus}
+          instrument={this.props.instrument}
           heading={this.props.headingWord}
           course={this.courseSub}
           courseDeviation={this.courseDeviationSub}
@@ -128,6 +133,8 @@ export class RoseLSPage<T extends number> extends RoseMode<T, RoseLsProps<T>> {
 }
 
 interface IlsCaptureOverlayProps extends ComponentProps {
+  bus: EventBus;
+  instrument: BaseInstrument;
   heading: Subscribable<Arinc429WordData>;
   course: Subscribable<number>;
   courseDeviation: Subscribable<number>;
@@ -137,6 +144,10 @@ interface IlsCaptureOverlayProps extends ComponentProps {
 }
 
 class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents>();
+
+  private readonly lagFilter = new LowPassFilter(1.5);
+
   // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
   private readonly pointerVisibilitySub = MappedSubject.create(([ilsFrequency]) => {
     return ilsFrequency >= 108 && ilsFrequency <= 112 ? 'inherit' : 'hidden';
@@ -157,23 +168,7 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
     this.props.course,
   );
 
-  private readonly pointerColor = MappedSubject.create(([heading]) => {
-    if (heading.isNormalOperation()) {
-      return 'Cyan';
-    }
-
-    return 'White';
-  }, this.props.heading);
-
-  private readonly deviation = MappedSubject.create(
-    ([courseDeviation, backbeam]) => {
-      const dots =
-        (backbeam ? -1 : 1) * Math.max(-2, Math.min(2, MathUtils.correctMsfsLocaliserError(courseDeviation) / 0.8));
-      return dots * 74;
-    },
-    this.props.courseDeviation,
-    this.props.backbeam,
-  );
+  private readonly deviation = Subject.create(0);
 
   // FIXME hook up when MMR ready
   private readonly mixLocVnav = Subject.create(false);
@@ -183,6 +178,30 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
     this.props.backbeam,
     this.mixLocVnav,
   );
+
+  private handleNavRadialError(): void {
+    const radialError = MathUtils.correctMsfsLocaliserError(this.props.courseDeviation.get());
+    const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
+    const dots = (this.props.backbeam.get() ? -1 : 1) * Math.max(-2, Math.min(2, deviation / 0.8));
+
+    this.deviation.set(dots * 74);
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    // The MMR outputs the localizer deviation at a rate of 20 Hz
+    const lagFilterSub = this.sub.on('realTime').atFrequency(20).handle(this.handleNavRadialError.bind(this), true);
+
+    this.props.available.sub((hasLoc) => {
+      if (hasLoc) {
+        lagFilterSub.resume(true);
+      } else {
+        lagFilterSub.pause();
+        this.lagFilter.reset();
+      }
+    });
+  }
 
   render(): VNode {
     return (
