@@ -108,6 +108,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private static readonly WindCache: PropagatedWindEntry[] = [];
 
+  /**
+   * Holder containing the draft wind entries of the flightplan keyed by the leg index.
+   * If the value contains null, no draft wind entries have been created.
+   * If undefined, draft winds are disabled per fpm config.
+   */
   protected readonly draftCruiseWindEntries: Value<Map<number, WindEntry[]> | null> | undefined;
 
   protected constructor(

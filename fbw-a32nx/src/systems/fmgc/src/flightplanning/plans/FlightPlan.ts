@@ -95,15 +95,21 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   public readonly pendingWindUplink: PendingWindUplink = new PendingWindUplink();
 
   /**
-   * The draft climb wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   * The draft climb wind entries used to store pilot edits prior to these being applied to the plan.
+   * If null, no draft climb winds have been created.
+   * If undefined, draft winds are disabled by fpm config.
    */
   private readonly draftClimbWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
   /**
-   * The draft descent wind entries used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   * The draft descent wind entries used to store pilot edits prior to these being applied to the plan.
+   * If null, no draft descent winds have been created.
+   * If undefined, draft winds are disabled by fpm config.
    */
   private readonly draftDescentWindEntries: Value<FlightPlanWindEntry[] | null> | undefined;
   /**
-   * The draft cruise wind entry used to store pilot edits prior to these being applied to the plan. If undefined, draft winds are disabled.
+   * The draft cruise wind entry used to store pilot edits prior to these being applied to the plan.
+   * If null, no alternate draft wind has been created.
+   * If undefined, draft winds are disabled by fpm config.
    */
   private readonly alternateDraftWind: Value<WindVector | null> | undefined;
 
