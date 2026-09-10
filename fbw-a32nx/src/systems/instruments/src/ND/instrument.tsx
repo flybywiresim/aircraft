@@ -40,8 +40,6 @@ import { FMMessageTypes } from '@fmgc/components/fms-messages/FmMessages';
 import './style.scss';
 
 class NDInstrument implements FsInstrument {
-  public readonly instrument: BaseInstrument;
-
   private readonly efisSide: EfisSide;
 
   private readonly bus: ArincEventBus;
@@ -80,7 +78,7 @@ class NDInstrument implements FsInstrument {
 
   private displayPowered = Subject.create(false);
 
-  constructor() {
+  constructor(public readonly instrument: BaseInstrument) {
     const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
     const stateSubject = Subject.create<'L' | 'R'>(side);
     this.efisSide = side;
@@ -152,6 +150,7 @@ class NDInstrument implements FsInstrument {
       >
         <NDComponent
           bus={this.bus}
+          instrument={this.instrument}
           side={this.efisSide}
           rangeValues={a320EfisRangeSettings}
           terrainThresholdPaddingText={a320TerrainThresholdPadValue}
@@ -197,7 +196,7 @@ class NDInstrument implements FsInstrument {
 
 class A32NX_ND extends FsBaseInstrument<NDInstrument> {
   constructInstrument(): NDInstrument {
-    return new NDInstrument();
+    return new NDInstrument(this);
   }
 
   get isInteractive(): boolean {

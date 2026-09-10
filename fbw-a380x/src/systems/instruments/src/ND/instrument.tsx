@@ -67,8 +67,6 @@ declare type MousePosition = {
 };
 
 class NDInstrument implements FsInstrument {
-  public readonly instrument!: BaseInstrument;
-
   private readonly efisSide: EfisSide;
 
   private readonly bus: ArincEventBus;
@@ -161,7 +159,7 @@ class NDInstrument implements FsInstrument {
 
   private readonly oansShown = Subject.create(false);
 
-  constructor() {
+  constructor(public readonly instrument: BaseInstrument) {
     const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
     const stateSubject = Subject.create<'L' | 'R'>(side);
     this.efisSide = side;
@@ -266,6 +264,7 @@ class NDInstrument implements FsInstrument {
           </div>
           <NDComponent
             bus={this.bus}
+            instrument={this.instrument}
             side={this.efisSide}
             rangeValues={a380EfisRangeSettings}
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
@@ -497,7 +496,7 @@ class NDInstrument implements FsInstrument {
 
 class A380X_ND extends FsBaseInstrument<NDInstrument> {
   constructInstrument(): NDInstrument {
-    return new NDInstrument();
+    return new NDInstrument(this);
   }
 
   get isInteractive(): boolean {
