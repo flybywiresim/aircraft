@@ -4,7 +4,7 @@
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
-import { BitFlags } from '@microsoft/msfs-sdk';
+import { BitFlags, DateTimeFormatter } from '@microsoft/msfs-sdk';
 import { FmcServiceInterface } from '../FMC/FmcServiceInterface';
 import { NXSystemMessages } from './NXSystemMessages';
 
@@ -53,10 +53,9 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
   return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
 
+export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
 export const noPositionAvailableText = '--°--.--/---°--.--';
-
 export const showReturnButtonUriExtra = 'withReturn';
-
 export const fmsActivePagePrefix = 'fms/active/';
 export const fmsSec1PagePrefix = 'fms/sec1/';
 export const fmsSec2PagePrefix = 'fms/sec2/';
