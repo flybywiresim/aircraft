@@ -100,16 +100,15 @@ void FadecComputer::step()
   real_T rtb_Switch2_idx_1;
   int32_T TLA_begin;
   int32_T TLA_end;
-  real32_T rtb_y_ps;
-  uint32_T rtb_y_c;
-  uint32_T rtb_y_jc;
-  uint32_T rtb_y_n;
+  real32_T rtb_y_c;
+  uint32_T rtb_y_a;
+  uint32_T rtb_y_h;
+  uint32_T rtb_y_p;
   boolean_T rtb_VectorConcatenate[19];
   boolean_T rtb_AND;
   boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range;
   boolean_T rtb_NOT1_f;
   boolean_T rtb_OR2;
-  boolean_T rtb_OR2_tmp;
   boolean_T rtb_y_i;
   athr_thrust_limit_type rtb_type;
   FadecComputer_TimeSinceCondition(FadecComputer_U.in.time.simulation_time, FadecComputer_U.in.input.ATHR_disconnect,
@@ -118,32 +117,32 @@ void FadecComputer::step()
   FadecComputer_DWork.Memory_PreviousInput = FadecComputer_P.Logic_table[(((static_cast<uint32_T>(rtb_OR2) << 1) +
     FadecComputer_U.in.input.ATHR_reset_disable) << 1) + FadecComputer_DWork.Memory_PreviousInput];
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel_bit,
-    &rtb_y_n);
+    &rtb_y_a);
   FadecComputer_MATLABFunction(&FadecComputer_U.in.fcu_input.n1_cmd_percent, &rtb_NOT1_f);
-  rtb_AND = ((rtb_y_n != 0U) && rtb_NOT1_f);
+  rtb_AND = ((rtb_y_a != 0U) && rtb_NOT1_f);
   FadecComputer_MATLABFunction_f(rtb_AND, FadecComputer_P.PulseNode_isRisingEdge, &rtb_NOT1_f,
     &FadecComputer_DWork.sf_MATLABFunction_f);
   FadecComputer_MATLABFunction(&FadecComputer_U.in.fcu_input.fcu_flex_to_temp_deg_c, &rtb_OR2);
   FadecComputer_MATLABFunction_p(&FadecComputer_U.in.fcu_input.fcu_flex_to_temp_deg_c,
-    FadecComputer_P.A429ValueOrDefault_defaultValue, &rtb_y_ps);
-  rtb_OR2 = (rtb_OR2 && (rtb_y_ps > FadecComputer_U.in.data.TAT_degC) && FadecComputer_U.in.data.on_ground);
-  FadecComputer_DWork.latch = ((rtb_OR2 && (FadecComputer_U.in.input.TLA_deg == 35.0)) || FadecComputer_DWork.latch);
+    FadecComputer_P.A429ValueOrDefault_defaultValue, &rtb_y_c);
+  rtb_OR2 = (rtb_OR2 && (rtb_y_c > FadecComputer_U.in.data.TAT_degC));
+  FadecComputer_DWork.latch = ((rtb_OR2 && FadecComputer_U.in.data.on_ground && (FadecComputer_U.in.input.TLA_deg ==
+    35.0)) || FadecComputer_DWork.latch);
   FadecComputer_DWork.latch = (((!FadecComputer_DWork.latch) || ((FadecComputer_U.in.input.TLA_deg != 25.0) &&
     (FadecComputer_U.in.input.TLA_deg != 45.0))) && FadecComputer_DWork.latch);
-  rtb_OR2_tmp = !FadecComputer_U.in.data.on_ground;
-  rtb_OR2 = (rtb_OR2 || (rtb_OR2_tmp && FadecComputer_DWork.latch));
+  rtb_OR2 = ((rtb_OR2 && FadecComputer_U.in.data.on_ground) || ((!FadecComputer_U.in.data.on_ground) &&
+              FadecComputer_DWork.latch));
   FadecComputer_TimeSinceCondition(FadecComputer_U.in.time.simulation_time, FadecComputer_U.in.data.on_ground,
     &rtb_Switch, &FadecComputer_DWork.sf_TimeSinceCondition1);
   rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range =
     (FadecComputer_U.in.input.TLA_deg <= FadecComputer_P.CompareToConstant1_const);
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel1_bit,
-    &rtb_y_n);
-  TLA_begin = static_cast<int32_T>((((FadecComputer_U.in.input.ATHR_disconnect ||
-    FadecComputer_DWork.Memory_PreviousInput || (rtb_y_n == 0U)) + (static_cast<uint32_T>(rtb_NOT1_f) << 1)) << 1) +
-    FadecComputer_DWork.Memory_PreviousInput_p);
-  FadecComputer_DWork.Memory_PreviousInput_p = FadecComputer_P.Logic_table_n[static_cast<uint32_T>(TLA_begin)];
-  FadecComputer_MATLABFunction_f(FadecComputer_P.Logic_table_n[static_cast<uint32_T>(TLA_begin) + 8U],
-    FadecComputer_P.PulseNode1_isRisingEdge, &rtb_NOT1_f, &FadecComputer_DWork.sf_MATLABFunction_b);
+    &rtb_y_a);
+  rtb_y_a = (((FadecComputer_U.in.input.ATHR_disconnect || FadecComputer_DWork.Memory_PreviousInput || (rtb_y_a == 0U))
+              + (static_cast<uint32_T>(rtb_NOT1_f) << 1)) << 1) + FadecComputer_DWork.Memory_PreviousInput_p;
+  FadecComputer_DWork.Memory_PreviousInput_p = FadecComputer_P.Logic_table_n[rtb_y_a];
+  FadecComputer_MATLABFunction_f(FadecComputer_P.Logic_table_n[rtb_y_a + 8U], FadecComputer_P.PulseNode1_isRisingEdge,
+    &rtb_NOT1_f, &FadecComputer_DWork.sf_MATLABFunction_b);
   rtb_y_i = (((FadecComputer_U.in.input.TLA_deg > 26.0) || (FadecComputer_U.in.input.TLA_deg < 24.0)) &&
              ((FadecComputer_U.in.input.TLA_deg > 36.0) || (FadecComputer_U.in.input.TLA_deg < 34.0)));
   FadecComputer_DWork.Memory_PreviousInput_j = FadecComputer_P.Logic_table_h[(((static_cast<uint32_T>(rtb_NOT1_f &&
@@ -192,14 +191,14 @@ void FadecComputer::step()
   rtb_N1c = (N1_end - N1_begin) / static_cast<real_T>(TLA_end - TLA_begin) * (rtb_N1c - static_cast<real_T>(TLA_begin))
     + N1_begin;
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel_bit_a,
-    &rtb_y_jc);
+    &rtb_y_p);
   N1_begin = FadecComputer_U.in.input.TLA_deg;
   if (!FadecComputer_U.in.data.on_ground) {
     N1_begin = std::fmax(0.0, FadecComputer_U.in.input.TLA_deg);
   }
 
-  if (rtb_OR2_tmp || (!FadecComputer_U.in.data.is_engine_operative)) {
-    if (rtb_y_jc != 0U) {
+  if ((!FadecComputer_U.in.data.on_ground) || (!FadecComputer_U.in.data.is_engine_operative)) {
+    if (rtb_y_p != 0U) {
       rtb_type = athr_thrust_limit_type::TOGA;
       N1_begin = FadecComputer_U.in.input.thrust_limit_TOGA_percent;
     } else if (N1_begin > 35.0) {
@@ -240,17 +239,17 @@ void FadecComputer::step()
   }
 
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel4_bit,
-    &rtb_y_n);
+    &rtb_y_a);
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel5_bit,
-    &rtb_y_c);
+    &rtb_y_h);
   FadecComputer_MATLABFunction_p(&FadecComputer_U.in.fcu_input.n1_cmd_percent,
-    FadecComputer_P.A429ValueOrDefault_defaultValue_a, &rtb_y_ps);
+    FadecComputer_P.A429ValueOrDefault_defaultValue_a, &rtb_y_c);
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel3_bit,
-    &rtb_y_jc);
-  rtb_NOT1_f = (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range || (rtb_y_jc
-    != 0U));
+    &rtb_y_p);
+  rtb_NOT1_f = (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_TLA_in_active_range || (rtb_y_p !=
+    0U));
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel2_bit,
-    &rtb_y_jc);
+    &rtb_y_p);
   if (!FadecComputer_DWork.pU_not_empty) {
     FadecComputer_DWork.pU = FadecComputer_U.in.data.engine_N1_percent;
     FadecComputer_DWork.pU_not_empty = true;
@@ -260,8 +259,8 @@ void FadecComputer::step()
     FadecComputer_DWork.pU = FadecComputer_U.in.data.engine_N1_percent;
   }
 
-  if (rtb_NOT1_f && (rtb_y_jc != 0U) && rtb_AND && FadecComputer_DWork.Memory_PreviousInput_p) {
-    if ((rtb_y_n != 0U) && (rtb_y_c != 0U) && rtb_OR2_tmp) {
+  if (rtb_NOT1_f && (rtb_y_p != 0U) && rtb_AND && FadecComputer_DWork.Memory_PreviousInput_p) {
+    if ((rtb_y_a != 0U) && (rtb_y_h != 0U) && (!FadecComputer_U.in.data.on_ground)) {
       N1_end = FadecComputer_U.in.input.thrust_limit_TOGA_percent;
       rtb_Switch2_idx_1 = rtb_N1c;
     } else {
@@ -269,12 +268,12 @@ void FadecComputer::step()
       rtb_Switch2_idx_1 = FadecComputer_U.in.input.thrust_limit_IDLE_percent;
     }
 
-    if (rtb_y_ps > N1_end) {
+    if (rtb_y_c > N1_end) {
       N1_end = static_cast<real32_T>(N1_end);
-    } else if (rtb_y_ps < rtb_Switch2_idx_1) {
+    } else if (rtb_y_c < rtb_Switch2_idx_1) {
       N1_end = static_cast<real32_T>(rtb_Switch2_idx_1);
     } else {
-      N1_end = rtb_y_ps;
+      N1_end = rtb_y_c;
     }
   } else if (FadecComputer_DWork.Memory_PreviousInput_j) {
     N1_end = FadecComputer_DWork.pU;
@@ -338,8 +337,8 @@ void FadecComputer::step()
   }
 
   FadecComputer_MATLABFunction_p(&FadecComputer_U.in.fcu_input.fcu_flex_to_temp_deg_c,
-    FadecComputer_P.A429ValueOrDefault_defaultValue_n, &rtb_y_ps);
-  FadecComputer_Y.out.fadec_bus_output.selected_flex_temp_deg.Data = rtb_y_ps;
+    FadecComputer_P.A429ValueOrDefault_defaultValue_n, &rtb_y_c);
+  FadecComputer_Y.out.fadec_bus_output.selected_flex_temp_deg.Data = rtb_y_c;
   FadecComputer_Y.out.fadec_bus_output.ecu_status_word_1.SSM = static_cast<uint32_T>
     (FadecComputer_P.EnumeratedConstant1_Value);
   FadecComputer_Y.out.fadec_bus_output.ecu_status_word_1.Data = FadecComputer_P.Constant2_Value_n;
@@ -357,8 +356,8 @@ void FadecComputer::step()
   rtb_VectorConcatenate[8] = FadecComputer_DWork.Memory_PreviousInput_p;
   rtb_VectorConcatenate[9] = FadecComputer_P.Constant_Value;
   FadecComputer_MATLABFunction_g(&FadecComputer_U.in.fcu_input.ats_discrete_word, FadecComputer_P.BitfromLabel5_bit_h,
-    &rtb_y_jc);
-  rtb_VectorConcatenate[10] = (rtb_y_jc != 0U);
+    &rtb_y_p);
+  rtb_VectorConcatenate[10] = (rtb_y_p != 0U);
   rtb_VectorConcatenate[11] = (rtb_type == athr_thrust_limit_type::TOGA);
   rtb_VectorConcatenate[12] = (rtb_type == athr_thrust_limit_type::FLEX);
   rtb_VectorConcatenate[13] = (rtb_type == athr_thrust_limit_type::MCT);

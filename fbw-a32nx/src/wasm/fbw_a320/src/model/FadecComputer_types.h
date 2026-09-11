@@ -40,19 +40,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
-#define DEFINED_TYPEDEF_FOR_athr_data_computed_
-
-struct athr_data_computed
-{
-  boolean_T TLA_in_active_range;
-  boolean_T is_FLX_active;
-  boolean_T ATHR_disabled;
-  real_T time_since_touchdown;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_ecu_bus_
 #define DEFINED_TYPEDEF_FOR_base_ecu_bus_
 
@@ -70,6 +57,19 @@ struct base_ecu_bus
   base_arinc_429 selected_n2_actual_percent;
   base_arinc_429 selected_n1_actual_percent;
   base_arinc_429 ecu_maintenance_word_6;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
+#define DEFINED_TYPEDEF_FOR_athr_data_computed_
+
+struct athr_data_computed
+{
+  boolean_T TLA_in_active_range;
+  boolean_T is_FLX_active;
+  boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
 };
 
 #endif

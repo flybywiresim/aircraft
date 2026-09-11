@@ -1079,8 +1079,6 @@ export class CDUPerformancePage {
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
       mcdu.setPerfApprWind(value, forPlan).then((v) => {
         if (v) {
-          mcdu.updateTowerHeadwind();
-          mcdu.updatePerfSpeeds();
           CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
