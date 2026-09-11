@@ -1084,7 +1084,6 @@ export class CDUPerformancePage {
     let magWindSpeedCell = `${hasDestination ? '[\xa0]' : '---'}`;
     const apprWindMagnitude = plan.performanceData.approachWindMagnitude.get();
     if (apprWindMagnitude !== null) {
-      console.log('magnitude' + apprWindMagnitude);
       magWindSpeedCell = apprWindMagnitude.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {

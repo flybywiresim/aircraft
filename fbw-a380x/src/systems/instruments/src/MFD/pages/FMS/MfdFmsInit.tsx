@@ -121,6 +121,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
   private readonly tropopauseIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly fpHasWindEntries = Subject.create(false);
+  private readonly tripWindEnteredByPilot = Subject.create(false);
   private readonly tripWind = Subject.create<number | null>(null);
 
   private readonly tripWindDisabled = MappedSubject.create(
@@ -230,6 +231,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
     this.tropopause.set(null);
     this.tropopauseIsPilotEntered.set(false);
     this.tripWind.set(null);
+    this.tripWindEnteredByPilot.set(false);
     this.crzFl.set(null);
     this.cruiseTemperature.set(null);
     this.cruiseTemperatureIsPilotEntered.set(false);
@@ -255,8 +257,11 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
       this.fpHasWindEntries.set(hasWind);
       if (this.tripWindDisabled.get() || !fp || !pd) {
         this.tripWind.set(null);
+        this.tripWindEnteredByPilot.set(false);
       } else {
-        this.tripWind.set(pd.pilotTripWind.get() ?? 0);
+        const trip = pd.pilotTripWind.get();
+        this.tripWindEnteredByPilot.set(trip !== null);
+        this.tripWind.set(trip ?? 0);
       }
 
       // Cruise temp is shown as -- once in the cruise phase.
