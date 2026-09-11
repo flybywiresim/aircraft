@@ -9,6 +9,7 @@
 #include <MSFS/Render/stb_image.h>
 #pragma clang diagnostic pop
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <string_view>
 #include <vector>
@@ -39,11 +40,11 @@ class DisplayBase {
  public:
   struct NdConfiguration {
     types::Length range;
-    std::uint8_t  mode;
-    bool          terrOnNd;
-    bool          terrOnVd;
-    float         potentiometer;
-    bool          powered;
+    std::uint8_t mode;
+    bool terrOnNd;
+    bool terrOnVd;
+    float potentiometer;
+    bool powered;
   };
 
   DisplayBase(const DisplayBase&) = delete;
@@ -54,21 +55,24 @@ class DisplayBase {
   virtual void update(const NdConfiguration& config) = 0;
 
   DisplaySide side() const;
-  void        destroy();
-  void        render(sGaugeDrawData* pDrawData);
+  void destroy();
+  void render(sGaugeDrawData* pDrawData);
 
  protected:
-  DisplaySide                                                                                       _side;
-  NdConfiguration                                                                                   _configuration;
-  std::size_t                                                                                       _frameBufferSize;
-  int                                                                                               _nanovgImage;
-  NVGcontext*                                                                                       _context;
-  std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>>                                 _thresholds;
+  DisplaySide _side;
+  NdConfiguration _configuration;
+  std::size_t _frameBufferSize;
+  int _nanovgImage;
+  NVGcontext* _context;
+  std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>> _thresholds;
   std::shared_ptr<simconnect::ClientDataAreaBuffered<std::uint8_t, SIMCONNECT_CLIENTDATA_MAX_SIZE>> _frameData;
 
   DisplayBase(DisplaySide side, FsContext context);
 
   void destroyImage();
+
+  static constexpr std::size_t MaxFrameByteCount = 4 * 1024 * 1024;
+  static constexpr std::uint32_t MaxFrameDimension = 4096;
 };
 
 /**
@@ -85,12 +89,12 @@ template <std::string_view const& NdMinElevation,
 class Display : public DisplayBase {
  private:
   std::shared_ptr<simconnect::LVarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>> _ndThresholdData;
-  bool                                                                                                            _ignoreNextFrame;
+  bool _ignoreNextFrame;
 
   void resetNavigationDisplayData() {
-    this->_ndThresholdData->template value<NdMinElevation>()     = -1;
+    this->_ndThresholdData->template value<NdMinElevation>() = -1;
     this->_ndThresholdData->template value<NdMinElevationMode>() = 0;
-    this->_ndThresholdData->template value<NdMaxElevation>()     = -1;
+    this->_ndThresholdData->template value<NdMaxElevation>() = -1;
     this->_ndThresholdData->template value<NdMaxElevationMode>() = 0;
     this->_ndThresholdData->writeValues();
   }
@@ -107,7 +111,8 @@ class Display : public DisplayBase {
    * @param side The display side
    * @param context The gauge context
    */
-  Display(simconnect::Connection& connection, DisplaySide side, FsContext context) : DisplayBase(side, context), _ndThresholdData(nullptr) {
+  Display(simconnect::Connection& connection, DisplaySide side, FsContext context)
+      : DisplayBase(side, context), _ndThresholdData(nullptr), _ignoreNextFrame(false) {
     this->_ndThresholdData = connection.lvarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>();
 
     // write initial values to avoid invalid drawings
@@ -123,18 +128,24 @@ class Display : public DisplayBase {
           this->_nanovgImage =
               nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
           if (this->_nanovgImage == 0) {
-            std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
+            const char* reason = stbi_failure_reason();
+            std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}",
+                                     reason != nullptr ? reason : "unknown")
+                      << std::endl;
           }
 
           return;
         }
 
         // Otherwise, decode the PNG manually and update the existing image
-        int      decodedWidth, decodedHeight;
+        int decodedWidth, decodedHeight;
         uint8_t* decodedImage = stbi_load_from_memory(this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize),
                                                       &decodedWidth, &decodedHeight, nullptr, 4);
         if (decodedImage == nullptr) {
-          std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
+          const char* reason = stbi_failure_reason();
+          std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}",
+                                   reason != nullptr ? reason : "unknown")
+                    << std::endl;
           return;
         }
 
@@ -162,7 +173,16 @@ class Display : public DisplayBase {
     this->_thresholds->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     this->_thresholds->setAlwaysChanges(true);
     this->_thresholds->setOnChangeCallback([=]() {
-      this->_frameBufferSize = this->_thresholds->data().frameByteCount;
+      const std::uint32_t frameByteCount = this->_thresholds->data().frameByteCount;
+      if (frameByteCount == 0 || frameByteCount > DisplayBase::MaxFrameByteCount) {
+        // corrupted or incompatible packet: allocating this size could kill the module
+        std::cerr << "TERR ON ND: Ignoring thresholds packet with implausible frame size: " << frameByteCount << std::endl;
+        this->_frameBufferSize = 0;
+        this->_frameData->reserve(0);
+        return;
+      }
+
+      this->_frameBufferSize = frameByteCount;
       this->_frameData->reserve(this->_frameBufferSize);
       this->_ignoreNextFrame =
           this->_ignoreNextFrame &&
@@ -170,9 +190,9 @@ class Display : public DisplayBase {
            this->_configuration.range != (this->_thresholds->data().displayRange * types::nauticmile));
 
       if (!this->_ignoreNextFrame) {
-        this->_ndThresholdData->template value<NdMinElevation>()     = this->_thresholds->data().lowerThreshold;
+        this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
         this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
-        this->_ndThresholdData->template value<NdMaxElevation>()     = this->_thresholds->data().upperThreshold;
+        this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
         this->_ndThresholdData->template value<NdMaxElevationMode>() = this->_thresholds->data().upperThresholdMode;
         this->_ndThresholdData->writeValues();
       }

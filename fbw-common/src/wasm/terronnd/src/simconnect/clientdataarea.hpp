@@ -25,10 +25,10 @@ class ClientDataAreaBase : public base::Changeable {
   friend Connection;
 
  protected:
-  HANDLE* _connection;
+  HANDLE*       _connection;
   std::uint32_t _dataId;
   std::uint32_t _definitionId;
-  bool _alwaysChanges;
+  bool          _alwaysChanges;
 
   ClientDataAreaBase(HANDLE* connection, std::uint32_t dataId, std::uint32_t definitionId)
       : _connection(connection), _dataId(dataId), _definitionId(definitionId), _alwaysChanges(false) {}
@@ -178,22 +178,26 @@ class ClientDataAreaBuffered : public ClientDataAreaBase {
 
  private:
   std::vector<T> _content;
-  std::size_t _expectedByteCount;
-  std::size_t _receivedBytes;
+  std::size_t    _expectedByteCount{};
+  std::size_t    _receivedBytes{};
 
   ClientDataAreaBuffered(HANDLE* connection, std::uint32_t dataId, std::uint32_t definitionId)
-      : ClientDataAreaBase(connection, dataId, definitionId), _content() {}
+      : ClientDataAreaBase(connection, dataId, definitionId), _content(), _expectedByteCount(0), _receivedBytes(0) {}
   ClientDataAreaBuffered(const ClientDataAreaBuffered<T, ChunkSize>&) = delete;
 
   ClientDataAreaBuffered<T, ChunkSize>& operator=(const ClientDataAreaBuffered<T, ChunkSize>&) = delete;
 
   void receivedData(void* data) override {
+    if (this->_receivedBytes >= this->_expectedByteCount) {
+      return;
+    }
+
     std::size_t remainingBytes = this->_expectedByteCount - this->_receivedBytes;
     if (remainingBytes > ChunkSize) {
       remainingBytes = ChunkSize;
     }
 
-    std::memcpy(&this->_content.data()[this->_receivedBytes], data, remainingBytes);
+    std::memcpy(&this->_content[this->_receivedBytes], data, remainingBytes);
     this->_receivedBytes += remainingBytes;
 
     if (this->_receivedBytes >= this->_expectedByteCount) {
@@ -220,37 +224,6 @@ class ClientDataAreaBuffered : public ClientDataAreaBase {
    */
   bool allocateArea(bool readOnlyForOthers) { return this->allocateClientArea(readOnlyForOthers, ChunkSize); }
 
-  /**
-   * @brief Sets an area object and sends it to the receivers
-   * @return true if the are is send
-   * @return false if the setting failed
-   */
-  bool setArea() {
-    if (*this->_connection == 0) {
-      return false;
-    }
-
-    HRESULT result = S_OK;
-    std::size_t sentBytes = 0;
-
-    while (sentBytes < this->_content.size()) {
-      std::size_t remainingBytes = this->_content.size() - sentBytes;
-
-      if (remainingBytes >= ChunkSize) {
-        result &= SimConnect_SetClientData(*this->_connection, this->_dataId, this->_definitionId, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT,
-                                           0, ChunkSize, &this->_content.data()[sentBytes]);
-        sentBytes += ChunkSize;
-      } else {
-        std::array<T, ChunkSize> buffer{};
-        std::memcpy(buffer.data(), &this->_content.data()[sentBytes], remainingBytes);
-        result &= SimConnect_SetClientData(*this->_connection, this->_dataId, this->_definitionId, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT,
-                                           0, ChunkSize, buffer.data());
-        sentBytes += remainingBytes;
-      }
-    }
-
-    return SUCCEEDED(result);
-  }
 
   /**
    * @brief Reserves internal data to receive the data
@@ -258,7 +231,7 @@ class ClientDataAreaBuffered : public ClientDataAreaBase {
    */
   void reserve(std::size_t expectedByteCount) {
     this->_expectedByteCount = expectedByteCount;
-    this->_content.reserve(expectedByteCount);
+    this->_content.resize(expectedByteCount);
     this->_receivedBytes = 0;
   }
 
