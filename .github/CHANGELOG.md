@@ -97,9 +97,10 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
 1. [A32NX/EFB] Update A32NX takeoff perf calcs - @donstim (donbikes)
 1. [A380X/FLIGHT MODEL] Fix outer fuel tank transfer rate - @donstim (donbikes)
-1. [A380X/FMS] Add WIND page - @BravoMike99 (bruno_pt99)
-1. [A380X/FMS] Add "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
