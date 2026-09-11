@@ -1,10 +1,9 @@
 // Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-
 import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
-import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
+import { RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
 import { FmsData } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
@@ -16,6 +15,7 @@ import {
   NXFictionalMessages,
   NXSystemMessages,
 } from '../shared/NXSystemMessages';
+import { FmsToDatalinkSubsystemEvents } from '../../../../shared/src/publishers/A380XFmsAtcBusPublisher';
 
 export type AirportAtis = {
   icao: string;
@@ -46,15 +46,16 @@ export interface AtcErrorMessage {
 }
 
 export class AtcDatalinkSystem implements Instrument {
+  // TODO this should be hosted in the CPIOM-D.
   private readonly messageStorage: MessageStorage;
 
-  private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages & FmsRouterMessages>();
+  private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages>();
 
-  private readonly sub = this.bus.getSubscriber<AtcFmsMessages & FmsData & RouterFmsMessages & FmsRouterMessages>();
+  private readonly sub = this.bus.getSubscriber<AtcFmsMessages & FmsData & RouterFmsMessages>();
+
+  private readonly fmsBusSub = this.bus.getSubscriber<FmsToDatalinkSubsystemEvents>();
 
   private requestId: number = 0;
-
-  private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
 
   private genericRequestResponseCallbacks: ((requestId: number) => boolean)[] = [];
 
@@ -178,6 +179,10 @@ export class AtcDatalinkSystem implements Instrument {
       .handle((icao) => {
         this.initAtis(2, icao);
       });
+
+    this.fmsBusSub.on('reset_auto_update').handle(() => {
+      this.resetAtisAutoUpdate();
+    });
   }
 
   init(): void {}
@@ -448,5 +453,9 @@ export class AtcDatalinkSystem implements Instrument {
       default:
         return DatalinkModeCode.None;
     }
+  }
+
+  private resetAtisAutoUpdate(): void {
+    this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
   }
 }

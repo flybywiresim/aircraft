@@ -1023,6 +1023,7 @@ export class CDUPerformancePage {
       }
     };
 
+    const hasDestination = plan.destinationAirport !== undefined;
     const distanceToDest = mcdu.getDistanceToDestination();
     const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
 
@@ -1065,29 +1066,29 @@ export class CDUPerformancePage {
         scratchpadCallback();
       }
     };
-    let magWindHeadingCell = '[\xa0]';
+    let magWindHeadingCell = `${hasDestination ? '[\xa0]' : '---'}`;
     const windDirection = plan.performanceData.approachWindDirection.get();
-    if (windDirection !== null && Number.isFinite(windDirection)) {
+    if (windDirection !== null) {
       magWindHeadingCell = ('' + windDirection.toFixed(0)).padStart(3, '0');
     }
-    let magWindSpeedCell = '[\xa0]';
+    let magWindSpeedCell = `${hasDestination ? '[\xa0]' : '---'}`;
     const windMagnitude = plan.performanceData.approachWindMagnitude.get();
-    if (windMagnitude !== null && Number.isFinite(windMagnitude)) {
+    if (windMagnitude !== null) {
       magWindSpeedCell = windMagnitude.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprWind(value, forPlan)) {
-        mcdu.updateTowerHeadwind();
-        mcdu.updatePerfSpeeds();
-        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
-      } else {
-        scratchpadCallback();
-      }
+      mcdu.setPerfApprWind(value, forPlan).then((v) => {
+        if (v) {
+          mcdu.updateTowerHeadwind();
+          mcdu.updatePerfSpeeds();
+          CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
+        } else {
+          scratchpadCallback();
+        }
+      });
     };
 
     let transAltCell = '\xa0'.repeat(5);
-    const hasDestination = !!plan.destinationAirport;
-
     if (hasDestination) {
       const transitionLevel = plan.performanceData.transitionLevel.get();
 
@@ -1251,7 +1252,7 @@ export class CDUPerformancePage {
       /* 2L */ [`${tempCell}${'\xa0'.repeat(6)}O=${cleanCell}`, baroCell + '[color]cyan'],
       /* 3l */ ['MAG WIND', radioLabel],
       /* 3L */ [
-        `{cyan}${magWindHeadingCell}°/${magWindSpeedCell}{end}\xa0\xa0S=${sltRetrCell}`,
+        `{${hasDestination ? 'cyan' : 'white'}}${magWindHeadingCell}°/${magWindSpeedCell}{end}\xa0\xa0S=${sltRetrCell}`,
         radioCell + '[color]cyan',
       ],
       /* 4l */ ['TRANS ALT', eoClrTitle],

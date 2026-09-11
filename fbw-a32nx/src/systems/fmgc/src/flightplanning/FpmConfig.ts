@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -14,7 +14,7 @@ export interface FpmConfig {
   TMPY_ON_CONSTRAINT_EDIT: boolean;
 
   /**
-   * Whether inserting a waypoint directly in the fligh plan creates a temporary flight plan
+   * Whether inserting a waypoint directly in the flight plan creates a temporary flight plan
    * Note that NEXT WPT will always create a temporary flight plan
    */
   TMPY_ON_INSERT_WAYPOINT: boolean;
@@ -45,6 +45,9 @@ export interface FpmConfig {
    */
   NUM_SECONDARY_FLIGHT_PLANS: number;
 
+  /** Whether to create draft wind entries upon editing a wind entry on the flightplan */
+  DRAFT_ON_WIND_EDIT: boolean;
+
   /** The number of different flight levels for which cruise wind entries may be made */
   NUM_CRUISE_WIND_LEVELS: number;
 
@@ -56,7 +59,7 @@ export interface FpmConfig {
 }
 
 export class FpmConfigs {
-  static A380: FpmConfig = {
+  static readonly A380: FpmConfig = {
     TMPY_ON_DELETE_WAYPOINT: true,
     TMPY_ON_OVERFLY: true,
     TMPY_ON_CONSTRAINT_EDIT: true,
@@ -64,16 +67,17 @@ export class FpmConfigs {
     ALLOW_REVISIONS_ON_TMPY: true,
     ALLOW_NON_ACTIVE_FIX_INFOS: false,
     MAX_NUM_LEGS: 200,
-    CHECK_VIA_COMPATIBILITY: true,
+    CHECK_VIA_COMPATIBILITY: false,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: true,
     NUM_SECONDARY_FLIGHT_PLANS: 3,
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
     NUM_DESCENT_WIND_LEVELS: 5,
+    DRAFT_ON_WIND_EDIT: true,
   };
 
-  static A320_HONEYWELL_H3: FpmConfig = {
+  static readonly A320_HONEYWELL_H4: FpmConfig = {
     TMPY_ON_DELETE_WAYPOINT: false,
     TMPY_ON_OVERFLY: false,
     TMPY_ON_CONSTRAINT_EDIT: false,
@@ -89,5 +93,6 @@ export class FpmConfigs {
     NUM_CLIMB_WIND_LEVELS: 5,
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
+    DRAFT_ON_WIND_EDIT: false,
   };
 }
