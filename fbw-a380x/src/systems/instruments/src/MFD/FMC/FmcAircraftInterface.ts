@@ -458,9 +458,9 @@ export class FmcAircraftInterface {
     );
     // Simvar subs
     this.subs.push(
-      this.simVarV1Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v ?? NaN), true),
-      this.simVarV2Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v ?? NaN), true),
-      this.simVarVrSpeed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v ?? NaN), true),
+      this.simVarV1Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v ?? -1), true),
+      this.simVarV2Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v ?? 0), true),
+      this.simVarVrSpeed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v ?? -1), true),
       this.simVarDestinationQnh.sub((v) => {
         SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', v !== null ? qnhToMillibar(v) : 0);
       }, true),
