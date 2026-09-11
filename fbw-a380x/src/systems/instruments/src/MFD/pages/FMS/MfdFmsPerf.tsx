@@ -49,7 +49,6 @@ import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/Cond
 import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { qnhToMillibar } from '../../shared/QnhUtils';
 import {
   getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
   getApproachName,
@@ -3110,7 +3109,6 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                               v,
                               this.loadedFlightPlanIndex.get(),
                             );
-                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhToMillibar(v));
                           }}
                           mandatory={this.approachParametersMandatory}
                           readonlyValue={this.approachQnh}
