@@ -36,7 +36,7 @@ interface FwsAural {
   periodicWithPause?: number;
   continuous?: boolean;
 
-  /** If true, sound is immedeatly stopped upon request */
+  /** If true, sound is immediately stopped upon request */
   immediateStop?: boolean;
 }
 
