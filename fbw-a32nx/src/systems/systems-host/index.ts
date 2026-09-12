@@ -26,6 +26,7 @@ import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublis
 import { FakeDmc } from './systems/ECP/FakeDmc';
 import { FwsManager } from './systems/FWC/FwsManager';
 import { A32NXFacBusPublisher } from '../shared/src/publishers/A32NXFacBusPublisher';
+import { A32NXSfccBusPublisher } from '../shared/src/publishers/A32NXSfccBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -51,6 +52,7 @@ class SystemsHost extends BaseInstrument {
   private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
   private readonly facBusPublisher = new A32NXFacBusPublisher(this.bus);
+  private readonly sfccBusPublisher = new A32NXSfccBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
@@ -77,6 +79,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
     this.backplane.addPublisher('FacBus', this.facBusPublisher);
+    this.backplane.addPublisher('SfccBus', this.sfccBusPublisher);
 
     this.fwc.init();
     let lastUpdateTime: number;

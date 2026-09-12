@@ -168,6 +168,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             24_113,
             FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
         ),
+        (27_100, FailureType::SlatWtb),
+        (27_101, FailureType::FlapWtb),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
         (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
         (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
