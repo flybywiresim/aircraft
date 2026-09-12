@@ -9,9 +9,9 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './MfdMsgList.scss';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { FmcServiceInterface } from '../../FMC/FmcServiceInterface';
 
 interface MfdMsgListProps {
   visible: Subject<boolean>;

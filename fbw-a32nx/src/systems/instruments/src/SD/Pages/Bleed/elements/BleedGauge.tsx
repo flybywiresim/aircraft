@@ -4,7 +4,7 @@
 
 import React, { FC } from 'react';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import Valve from './Valve';
 
 interface BleedGaugeProps {

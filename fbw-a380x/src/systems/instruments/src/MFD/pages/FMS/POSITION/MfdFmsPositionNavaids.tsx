@@ -1,18 +1,18 @@
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import {
   FrequencyILSFormat,
   FrequencyVORDMEFormat,
   InboundCourseFormat,
   LsCourseFormat,
   NavaidIdentFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+} from '../../common/DataEntryFormats';
+import { FmsPage } from '../../common/FmsPage';
+import { Footer } from '../../common/Footer';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { MfdSimvars } from '../../../shared/MFDSimvarPublisher';
+import { NXSystemMessages } from '../../../shared/NXSystemMessages';
 
 import { coordinateToString, NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
 import { NavRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';

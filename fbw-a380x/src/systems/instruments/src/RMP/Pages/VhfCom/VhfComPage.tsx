@@ -18,7 +18,7 @@ import { FrequencyMode, VhfComIndices } from '@flybywiresim/fbw-sdk';
 import { ReceptionMode, VhfComController } from './VhfComController';
 import { RmpPage, RmpPageProps } from '../../Components/RmpPage';
 import { PageKeys } from '../../Systems/KeypadController';
-import { RmpMessageControlEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { RmpMessageControlEvents } from '../../Systems/RmpMessageManager';
 
 import './VhfComPage.scss';
 

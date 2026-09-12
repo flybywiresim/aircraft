@@ -487,6 +487,7 @@ export class GuidanceController {
 
   tryUpdateFlightPlanGeometry(flightPlanIndex: number, alternate = false, force = false) {
     const geometryPIndex = (alternate ? 100 : 0) + flightPlanIndex;
+    const eosidGeoemtryIndex = 200 + flightPlanIndex;
 
     // Use geometry index here because main and alternate flight plans have the same indices
     // but different versions. Otherwise, we keep recomputing the geometry because their versions will not be the same
@@ -494,6 +495,7 @@ export class GuidanceController {
 
     if (!this.flightPlanService.has(flightPlanIndex)) {
       this.flightPlanGeometries.delete(geometryPIndex);
+      this.flightPlanGeometries.delete(eosidGeoemtryIndex);
       return;
     }
 
@@ -501,12 +503,12 @@ export class GuidanceController {
       ? this.flightPlanService.get(flightPlanIndex).alternateFlightPlan
       : this.flightPlanService.get(flightPlanIndex);
 
+    this.lastFlightPlanVersions.set(geometryPIndex, plan.version);
+
+    const geometry = this.flightPlanGeometries.get(geometryPIndex);
+
     let i = 0;
     for (; i < 5 && (force || this.lastFlightPlanVersions.get(geometryPIndex) !== plan.version); i++) {
-      this.lastFlightPlanVersions.set(geometryPIndex, plan.version);
-
-      const geometry = this.flightPlanGeometries.get(geometryPIndex);
-
       if (geometry) {
         GeometryFactory.updateFromFlightPlan(
           geometry,
@@ -534,6 +536,36 @@ export class GuidanceController {
     if (i > 2) {
       console.log(`[FMS/Geometry] Recorded ${i} recomputations`);
     }
+
+    if (flightPlanIndex === FlightPlanIndex.Active && !alternate) {
+      // The EOSID has no transitions, so we only need to do anything when the procedure changed.
+      if (plan.engineOutDepartureSegment.allLegs.length > 0) {
+        const lastEosidVersion = this.lastFlightPlanVersions.get(eosidGeoemtryIndex);
+        if (plan.engineOutDepartureSegment.version !== lastEosidVersion) {
+          this.lastFlightPlanVersions.set(eosidGeoemtryIndex, plan.engineOutDepartureSegment.version);
+
+          const newGeometry = GeometryFactory.createFromEngineOutDeparture(plan);
+
+          // FIXME... should not need this
+          const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
+
+          newGeometry.recomputeEosidGeometry(plan, this.lnavDriver.ppos, trueTrack);
+
+          geometry.updateCalculatedData(
+            plan.engineOutDepartureSegment.allLegs,
+            0,
+            plan.engineOutDepartureSegment.allLegs.length,
+          );
+
+          // we have to do it twice to get valid vectors and distances
+          newGeometry.recomputeEosidGeometry(plan, this.lnavDriver.ppos, trueTrack);
+
+          this.flightPlanGeometries.set(eosidGeoemtryIndex, newGeometry);
+        }
+      } else {
+        this.lastFlightPlanVersions.delete(eosidGeoemtryIndex);
+      }
+    }
   }
 
   recomputeGeometry(geometry: Geometry, plan: BaseFlightPlan) {
@@ -552,9 +584,9 @@ export class GuidanceController {
     );
 
     // Update distance to destination
-    geometry.updateCalculatedData(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
+    geometry.updateCalculatedData(plan.allLegs, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
     // Update distances in missed approach segment
-    geometry.updateCalculatedData(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
+    geometry.updateCalculatedData(plan.allLegs, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
 
     // Handle abeam point requests
     if (plan.index === FlightPlanIndex.Active) {

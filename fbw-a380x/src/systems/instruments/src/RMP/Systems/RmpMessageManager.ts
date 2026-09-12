@@ -3,7 +3,7 @@
 
 import { ConsumerSubject, EventBus, HEvent, MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { KeypadEvents, SystemKeys } from './KeypadController';
-import { TransponderEvents } from 'instruments/src/RMP/Data/TransponderPublisher';
+import { TransponderEvents } from '../Data/TransponderPublisher';
 
 export interface RmpMessageControlEvents {
   rmp_message_set: string;

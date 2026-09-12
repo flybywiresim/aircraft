@@ -4,7 +4,7 @@
 
 import { MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
 export enum FwsLimitationsPhases {
   AllPhases,

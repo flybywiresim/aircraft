@@ -4,7 +4,6 @@
 import {
   AtsuStatusCodes,
   AtisType,
-  AtsuMessage,
   FreetextMessage,
   WeatherMessage,
   WindUplinkMessage,
@@ -22,7 +21,8 @@ export interface AocFmsMessages {
 
   aocResynchronizeWeatherMessage: WeatherMessage;
   aocResynchronizeFreetextMessage: FreetextMessage;
-  aocPrintMessage: AtsuMessage;
+  // FIXME when sending the object via the event bus, the prototype is lost, so AtsuMessage methods are not available anymores
+  aocPrintMessage: string;
   aocDeleteMessage: number;
 
   aocWindsResponse: { requestId: number; data: [AtsuStatusCodes, WindUplinkMessage | null] };

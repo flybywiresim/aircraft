@@ -4,7 +4,7 @@
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from './FwsCore';
 
 export enum FwsInopSysPhases {
   AllPhases,

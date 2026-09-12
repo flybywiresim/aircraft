@@ -367,7 +367,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
   idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
-  idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
+  idFmgcV_APP = std::make_unique<LocalVariable>("A32NX_SPEEDS_VAPP");
   idFmsManagedSpeedTarget = std::make_unique<LocalVariable>("A32NX_SPEEDS_MANAGED_PFD");
   idFmsPresetMach = std::make_unique<LocalVariable>("A32NX_MachPreselVal");
   idFmsPresetSpeed = std::make_unique<LocalVariable>("A32NX_SpeedPreselVal");
@@ -376,11 +376,8 @@ void FlyByWireInterface::setupLocalVariables() {
   // FIXME consider FM1/FM2
   // thrust reduction/acceleration ARINC vars
   idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("A32NX_FM1_THR_RED_ALT");
-  idFmgcThrustReductionAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_THR_RED_ALT");
   idFmgcAccelerationAltitude = std::make_unique<LocalVariable>("A32NX_FM1_ACC_ALT");
   idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
-  idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
-  idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
 
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
@@ -389,6 +386,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmsSpeedMarginHigh = std::make_unique<LocalVariable>("A32NX_PFD_UPPER_SPEED_MARGIN");
   idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
   idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
+  idFmsTowerHeadwindComponent = std::make_unique<LocalVariable>("A32NX_FM_APPROACH_HEADWIND_COMPONENT");
+  idFmsFlap3ApproachSelected = std::make_unique<LocalVariable>("A32NX_FM_LANDING_CONF3");
 
   idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -403,16 +402,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
   idFmNavCaptureCondition = std::make_unique<LocalVariable>("A32NX_FM1_NAV_CAPTURE_CONDITION");
 
-  idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
-  idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
-  idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
   idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
-  idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasRaType = std::make_unique<LocalVariable>("A32NX_TCAS_RA_TYPE");
-  idTcasRaRateToMaintain = std::make_unique<LocalVariable>("A32NX_TCAS_RA_RATE_TO_MAINTAIN");
-  idTcasRaUpAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_UP_ADVISORY_STATUS");
-  idTcasRaDownAdvStatus = std::make_unique<LocalVariable>("A32NX_TCAS_RA_DOWN_ADVISORY_STATUS");
-  idTcasSensitivityLevel = std::make_unique<LocalVariable>("A32NX_TCAS_SENSITIVITY");
+  idTcasModeWord = std::make_unique<LocalVariable>("A32NX_TCAS_MODE_WORD");
+  idTcasVerticalAdvisoryWord = std::make_unique<LocalVariable>("A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD");
 
   idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -954,11 +946,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // FM thrust reduction/acceleration ARINC words
   fmThrustReductionAltitude->setFromSimVar(idFmgcThrustReductionAltitude->get());
-  fmThrustReductionAltitudeGoAround->setFromSimVar(idFmgcThrustReductionAltitudeGoAround->get());
   fmAccelerationAltitude->setFromSimVar(idFmgcAccelerationAltitude->get());
   fmAccelerationAltitudeEngineOut->setFromSimVar(idFmgcAccelerationAltitudeEngineOut->get());
-  fmAccelerationAltitudeGoAround->setFromSimVar(idFmgcAccelerationAltitudeGoAround->get());
-  fmAccelerationAltitudeGoAroundEngineOut->setFromSimVar(idFmgcAccelerationAltitudeGoAroundEngineOut->get());
 
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
@@ -1351,37 +1340,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 }
 
 bool FlyByWireInterface::updateTcas() {
-  uint8_t mode = 0;
-  if (idTcasMode->get() == 0) {
-    mode = 0;
-  } else if (idTcasTaOnly->get()) {
-    mode = 0b0010;
-  } else {
-    mode = 0b0011;
-  }
-
-  tcasBusOutputs.sensitivity_level.SSM = Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.sensitivity_level.Data = static_cast<float>(((idTcasMode->get() == 0 ? 1 : 0) << 24) | (mode << 25));
-
-  auto rateToMaintain = idTcasRaRateToMaintain->get();
-  uint8_t uintRateToMaintain = static_cast<uint8_t>(std::abs(rateToMaintain) / 100) & 0b00111111;
-  uint8_t combinedControl = 0;
-  if (idTcasState->get() < 2) {
-    combinedControl = 0;
-  } else if (idTcasRaCorrective->get() == 1) {
-    combinedControl = rateToMaintain > 0 ? 4 : 5;
-  } else if (idTcasRaCorrective->get() == 0) {
-    combinedControl = 6;
-  }
-  uint8_t verticalControl = static_cast<uint8_t>(idTcasRaType->get()) & 0b00000111;
-  uint8_t upAdvisory = static_cast<uint8_t>(idTcasRaUpAdvStatus->get()) & 0b00000111;
-  uint8_t downAdvisory = static_cast<uint8_t>(idTcasRaDownAdvStatus->get()) & 0b00000111;
-
-  tcasBusOutputs.vertical_resolution_advisory.SSM =
-      idTcasMode->get() < 2 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
-  tcasBusOutputs.vertical_resolution_advisory.Data =
-      static_cast<float>((uintRateToMaintain << 10) | (rateToMaintain < 0 ? 1u << 16 : 0) | (combinedControl << 17) |
-                         (verticalControl << 20) | (upAdvisory << 23) | (downAdvisory << 26));
+  tcasBusOutputs.sensitivity_level = Arinc429Utils::fromSimVar(idTcasModeWord->get());
+  tcasBusOutputs.vertical_resolution_advisory = Arinc429Utils::fromSimVar(idTcasVerticalAdvisoryWord->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataTcas(tcasBusOutputs);
@@ -1851,9 +1811,10 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_mach_mode_activate = simInputAutopilot.mach_mode_activate;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flex_temp_deg_c = idFmgcFlexTemperature->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_eo_ft = fmAccelerationAltitudeEngineOut->valueOr(0);
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.cruise_alt_ft = idFmgcCruiseAltitude->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tower_headwind_kts = Arinc429Utils::fromSimVar(idFmsTowerHeadwindComponent->get());
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flap_3_approach_selected = idFmsFlap3ApproachSelected->get();
 
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fac_opp_bus = facsBusOutputs[oppFmgcIndex];
   fmgcs[fmgcIndex].modelInputs.in.bus_inputs.fac_own_bus = facsBusOutputs[fmgcIndex];
@@ -2059,13 +2020,39 @@ bool FlyByWireInterface::updateFmgcShim(double sampleTime) {
   }
 
   int athrMode = 0;
-  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
+  if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 11, false)) {
+    athrMode = 1;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 13, false)) {
+    athrMode = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && !atActive) {
+    athrMode = 5;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && !atActive) {
+    athrMode = 6;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 19, false)) {
+    athrMode = 7;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 20, false)) {
+    athrMode = 8;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 12, false) && atEngaged && atActive) {
+    athrMode = 9;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 14, false)) {
+    athrMode = 10;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 15, false) && atEngaged && atActive) {
+    athrMode = 11;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 16, false)) {
+    athrMode = 12;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 17, false)) {
     athrMode = 13;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 18, false)) {
+    athrMode = 14;
   }
 
   int athrModeMessage = 0;
   if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 22, false)) {
     athrModeMessage = 3;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 23, false)) {
+    athrModeMessage = 4;
+  } else if (Arinc429Utils::bitFromValueOr(fcuBusOutputs.ats_fma_discrete_word, 21, false)) {
+    athrModeMessage = 5;
   }
 
   // Autoland warning

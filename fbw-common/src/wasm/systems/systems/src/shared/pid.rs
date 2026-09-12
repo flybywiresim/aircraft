@@ -126,8 +126,10 @@ impl PidController {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use more_asserts::*;
     use ntest::assert_about_eq;
+
+    use super::*;
 
     #[test]
     fn pid_init() {
@@ -181,7 +183,7 @@ mod tests {
         let mut pid = PidController::new(1.0, 0.0, 0.0, -1., 1.0, 10.0, 1.);
 
         let out = pid.next_control_output(0.0, None);
-        assert!((out - 1.).abs() < f64::EPSILON);
+        assert_lt!((out - 1.).abs(), f64::EPSILON);
 
         let out = pid.next_control_output(20.0, None);
 

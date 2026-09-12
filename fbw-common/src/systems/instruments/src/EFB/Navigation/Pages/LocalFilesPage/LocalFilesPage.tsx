@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { ClientState, Viewer } from '@flybywiresim/fbw-sdk';
+import { ClientState, Viewer } from '@flybywiresim/fbw-sdk-react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 
@@ -24,7 +24,7 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
     toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
     toast.dismiss(id);
     return objectURL;
-  } catch (err) {
+  } catch (_err) {
     toast.dismiss(id);
     toast.error(t('NavigationAndCharts.LoadingPdfFailed'), { autoClose: 1000 });
     return Promise.reject();
@@ -39,7 +39,7 @@ export const getImageUrl = async (fileName: string): Promise<string> => {
     toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
     toast.dismiss(id);
     return objectURL;
-  } catch (err) {
+  } catch (_err) {
     toast.dismiss(id);
     toast.error(t('NavigationAndCharts.LoadingImageFailed'), { autoClose: 1000 });
     return Promise.reject();

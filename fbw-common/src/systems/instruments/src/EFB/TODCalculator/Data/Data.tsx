@@ -5,7 +5,7 @@
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import Card from '../../UtilComponents/Card/Card';

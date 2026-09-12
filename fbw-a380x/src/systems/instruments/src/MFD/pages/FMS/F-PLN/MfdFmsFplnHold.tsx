@@ -10,13 +10,13 @@
 
 import './MfdFmsFpln.scss';
 import './MfdFmsFplnHold.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from '../../common/DataEntryFormats';
+import { RadioButtonColor, RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { NXDataStore, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';

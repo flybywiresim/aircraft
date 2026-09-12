@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import {
   ClockEvents,
   ConsumerSubject,
@@ -20,12 +20,12 @@ import {
   MathUtils,
   NXLogicConfirmNode,
 } from '@flybywiresim/fbw-sdk';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
+import { FormattedFwcText } from '../EWD/elements/FormattedFwcText';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
-import { SfccEvents } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
+import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;

@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
-import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
-import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
   Units,
   MetarParserType,
   useSimVar,
   usePersistentProperty,
   parseMetar,
-  ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
@@ -27,6 +24,7 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import { fetchRawMetarBySource } from '../../Service/WeatherService';
 import {
   isValidIcao,
   isWindMagnitudeAndDirection,
@@ -71,7 +69,6 @@ export const LandingWidget = () => {
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
   const { usingMetric } = Units;
 
@@ -177,28 +174,11 @@ export const LandingWidget = () => {
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
-    // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
-      let metar: MsfsMetar;
-      try {
-        metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-        if (metar.icao !== icao.toUpperCase()) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(metar.metarString);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else {
-      try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
-        if (!response.metar) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
+    try {
+      const rawMetar = await fetchRawMetarBySource(icao);
+      parsedMetar = parseMetar(rawMetar);
+    } catch (err) {
+      toast.error(err.message);
     }
 
     if (parsedMetar === undefined) {
@@ -219,7 +199,7 @@ export const LandingWidget = () => {
           pressure: parsedMetar.barometer.mb,
         }),
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error('Could not fetch airport');
     }
   };
@@ -268,7 +248,7 @@ export const LandingWidget = () => {
       }
 
       dispatch(setLandingValues(values));
-    } catch (err) {
+    } catch (_err) {
       showModal(
         <PromptModal
           title={t('Performance.Landing.MetarErrorDialogTitle')}
@@ -777,8 +757,8 @@ export const LandingWidget = () => {
                       value={temperatureUnit}
                       className="w-20 rounded-l-none"
                       options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
+                        { value: 'C', displayValue: '°C' },
+                        { value: 'F', displayValue: '°F' },
                       ]}
                       onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
                     />

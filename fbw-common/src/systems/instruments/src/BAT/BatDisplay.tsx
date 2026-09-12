@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk-react';
 import React, { useCallback, useRef, useState } from 'react';
 
 const BASE_DELAY_MS = 1_000;

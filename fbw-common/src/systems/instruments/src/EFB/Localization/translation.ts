@@ -4,7 +4,7 @@
 
 /* eslint-disable no-console */
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk-react';
 
 // source language
 import en from './data/en.json';

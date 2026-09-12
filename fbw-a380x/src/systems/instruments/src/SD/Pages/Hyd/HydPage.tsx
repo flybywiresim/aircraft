@@ -1,7 +1,7 @@
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 import { PageTitle } from '../Generic/PageTitle';
-import { HydraulicSystem } from 'instruments/src/SD/Pages/Hyd/elements/HydraulicSystem';
+import { HydraulicSystem } from './elements/HydraulicSystem';
 
 import '../../../index.scss';
 

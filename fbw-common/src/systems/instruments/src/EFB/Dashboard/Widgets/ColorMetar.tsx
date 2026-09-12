@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { ColorCode, MetarParserType } from '@flybywiresim/fbw-sdk';
+import { ColorCode, MetarParserType } from '@flybywiresim/fbw-sdk-react';
 
 /**
  * Returns HTML with coloring for METAR parts marked with coloring hints.

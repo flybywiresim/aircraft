@@ -11,7 +11,7 @@ import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
   ChartProvider,
-  ChartTabTypeIndices,
+  NavigraphChartTabTypeIndices,
   editPinnedChart,
   editTabProperty,
   LocalChartTabTypeIndices,
@@ -21,6 +21,7 @@ import {
   setBoundingBox,
   setProvider,
   setSelectedNavigationTabIndex,
+  MsfsChartTabTypeIndices,
 } from '../../Store/features/navigationPage';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
@@ -33,11 +34,13 @@ const getTagColor = (tagName?: string) => {
     case 'STAR':
       return 'text-utility-green';
     case 'APP':
+    case 'APPR':
       return 'text-utility-orange';
     case 'TAXI':
       return 'text-[#5280EA]';
     case 'SID':
       return 'text-utility-pink';
+    case 'ARPT':
     case 'REF':
       return 'text-utility-purple';
     case 'DEL':
@@ -108,8 +111,10 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete }: PinnedCh
                 tab,
                 selectedTabType:
                   provider === ChartProvider.NAVIGRAPH
-                    ? ChartTabTypeIndices[tabIndex]
-                    : LocalChartTabTypeIndices[tabIndex],
+                    ? NavigraphChartTabTypeIndices[tabIndex]
+                    : provider === ChartProvider.FAA || provider === ChartProvider.LIDO
+                      ? MsfsChartTabTypeIndices[tabIndex]
+                      : LocalChartTabTypeIndices[tabIndex],
               }),
             );
             dispatch(editTabProperty({ tab, chartRotation: 0 }));
@@ -157,6 +162,8 @@ export const PinnedChartUI = () => {
 
   const providerTabs: Record<ChartProvider | 'ALL', { alias: string; provider: ChartProvider | 'ALL' }> = {
     ALL: { alias: t('NavigationAndCharts.All'), provider: 'ALL' },
+    [ChartProvider.FAA]: { alias: t('NavigationAndCharts.FAA.Title'), provider: ChartProvider.FAA },
+    [ChartProvider.LIDO]: { alias: t('NavigationAndCharts.LIDO.Title'), provider: ChartProvider.LIDO },
     [ChartProvider.LOCAL_FILES]: {
       alias: t('NavigationAndCharts.LocalFiles.Title'),
       provider: ChartProvider.LOCAL_FILES,
@@ -177,6 +184,20 @@ export const PinnedChartUI = () => {
         { tag: 'TAXI', alias: 'TAXI' },
         { tag: 'SID', alias: 'SID' },
         { tag: 'REF', alias: 'REF' },
+        { tag: 'ALL', alias: 'ALL' },
+      ],
+      [ChartProvider.FAA]: [
+        { tag: 'SID', alias: 'SID' },
+        { tag: 'STAR', alias: 'STAR' },
+        { tag: 'APPR', alias: 'APPR' },
+        { tag: 'ARPT', alias: 'ARPT' },
+        { tag: 'ALL', alias: 'ALL' },
+      ],
+      [ChartProvider.LIDO]: [
+        { tag: 'SID', alias: 'SID' },
+        { tag: 'STAR', alias: 'STAR' },
+        { tag: 'APPR', alias: 'APPR' },
+        { tag: 'ARPT', alias: 'ARPT' },
         { tag: 'ALL', alias: 'ALL' },
       ],
     }[selectedProvider] ?? [];
@@ -208,6 +229,22 @@ export const PinnedChartUI = () => {
     }
 
     if (provider === ChartProvider.NAVIGRAPH) {
+      if (filterItem.tag === 'ALL') {
+        return true;
+      }
+
+      return pinnedChart.tag === filterItem.tag;
+    }
+
+    if (provider === ChartProvider.FAA) {
+      if (filterItem.tag === 'ALL') {
+        return true;
+      }
+
+      return pinnedChart.tag === filterItem.tag;
+    }
+
+    if (provider === ChartProvider.LIDO) {
       if (filterItem.tag === 'ALL') {
         return true;
       }

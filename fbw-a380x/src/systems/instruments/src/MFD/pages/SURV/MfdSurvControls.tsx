@@ -12,16 +12,16 @@ import {
 
 import './MfdSurvControls.scss';
 
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { SquawkFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvButton';
+import { MfdSurvEvents } from '../../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
+import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { SquawkFormat } from '../common/DataEntryFormats';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonColor, RadioButtonGroup } from '../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
+import { SurvButton } from '../../../MsfsAvionicsCommon/UiWidgets/SurvButton';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { FmsErrorType } from '@fmgc/FmsError';
 

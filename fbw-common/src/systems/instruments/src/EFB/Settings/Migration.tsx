@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk-react';
 
 type SimVarProp = { name: string; defaultValue: string };
 type migrationSet = [oldSimvar: SimVarProp, newSimvar: string];

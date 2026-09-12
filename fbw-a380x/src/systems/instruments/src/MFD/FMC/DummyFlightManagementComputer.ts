@@ -3,7 +3,7 @@
 
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { Subscribable, Subscription } from '@microsoft/msfs-sdk';
-import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcIndex } from './FmcServiceInterface';
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages

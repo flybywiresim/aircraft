@@ -3,7 +3,7 @@ import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router, VhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
-import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
+import { PowerSupplyBusTypes } from '../Misc/powersupply';
 import { FrequencyMode, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class A380xVhfProvider implements VhfRadioInterface {

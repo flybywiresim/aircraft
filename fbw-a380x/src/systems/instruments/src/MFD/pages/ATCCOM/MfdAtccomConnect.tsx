@@ -1,15 +1,16 @@
+import './MfdAtccomConnect.scss';
+
 import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdAtccomConnect.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-// import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+// import { FmsPage } from '../common/FmsPage';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
 
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { AdscButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/AdscButton';
+import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { AdscButton } from '../../../MsfsAvionicsCommon/UiWidgets/AdscButton';
 
 interface MfdAtccomConnectProps extends AbstractMfdPageProps {}
 

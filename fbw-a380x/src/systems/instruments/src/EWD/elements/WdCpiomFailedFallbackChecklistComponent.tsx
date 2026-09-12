@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
+import { FormattedFwcText } from './FormattedFwcText';
 import { CpiomEwdAvailabilityChecker } from '../EWD';
 
 interface WdCpiomFailedFallbackChecklistComponentProps {

@@ -33,6 +33,7 @@
       - [ARINC429 Output Bus](#arinc429-output-bus-1)
       - [Hardwired Discretes](#hardwired-discretes)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
+  - [Lighting (ATA 33)](#lighting-ata-33)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
@@ -296,11 +297,6 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_SPEEDS_VS
-    - Number
-    - Current config stall speed
-    - is mach corrected
-
 - A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
@@ -319,23 +315,17 @@
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_SPEEDS_LANDING_CONF3
+- A32NX_FM_LANDING_CONF3
     - Bool
-    - True if FLAPS 3 is selected in perf page
-
-- A32NX_SPEEDS_TO_CONF
-    - Number
-    - Flaps config for TakeOff, 1, 2 or 3
-
-- A32NX_SPEEDS_VLS_APP
-    - Number
-    - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
-    - is mach corrected
+    - True if CONF 3 is selected in the performance approach page.
 
 - A32NX_SPEEDS_VAPP
+    - Number (Knots)
+    - The VAPP pilot entry if it exists or the VAPP calculated by the FMS.
+
+- A32NX_SPEEDS_MANAGED_PFD
     - Number
-    - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
-    - is mach corrected
+    - The managed speed target requested by the FMS in knots. 0 if invalid
 
 - A32NX_APU_EGT_CAUTION
     - `Arinc429Word<Celsius>`
@@ -3028,7 +3018,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The acceleration altitude
+    - The acceleration altitude during the preflight and takeoff phases. The missed approach acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3084,7 +3074,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_EO_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The engine out acceleration altitude
+    - The engine out acceleration altitude during preflight and takeoff phases. The missed engine out acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3107,27 +3097,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- `L:A32NX_FM{number}_MISSED_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_EO_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_THR_RED_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
 - `L:A32NX_FM{number}_NAV_DISCRETE`
     - Arinc429<Discrete>
     - {number}
@@ -3144,7 +3113,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_THR_RED_ALT`
     - ARINC429<number> (feet MSL)
-    - The thrust reduction altitude
+    - The thrust reduction altitude during the preflight and takeoff phases. The missed thrust reduction altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3169,6 +3138,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
+
+- `L:A32NX_FM_APPROACH_HEADWIND_COMPONENT`
+    - Arinc429<number> (knots)
+    - The calculated headwind component by the fms based on the inserted wind on the PERF APPR page.
 
 ### Flight Control Unit (FCU)
 
@@ -4007,6 +3980,34 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
    - Right DMC IRS 3 discrete word. Raw ARINC word.
    - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
 
+- `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`
+   - The left DMC discrete word 272. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     |     | ADIRU used for ADR                |
+     |     | ADR1 ADR2 ADR3                    |
+     | 13  | 1    0    1                       |
+     | 14  | 0    1    1                       |
+
+- `L:A32NX_DMC_DISCRETE_WORD_272_RIGHT`
+   - The right DMC discrete word 272. Raw ARINC word.
+   - Same as `L:A32NX_DMC_DISCRETE_WORD_272_LEFT`.
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_LEFT`
+   - The left DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on CAPT side        |
+
+- `L:A32NX_DMC_DISCRETE_WORD_276_RIGHT`
+   - The right DMC discrete word 276. Raw ARINC word.
+   - Arinc429<Discrete>
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 19  | INHG selected on F/O side         |
+
 - `L:A32NX_DMC_DISCRETE_WORD_350_LEFT`
    - The left DMC discrete word. Raw ARINC word.
      | Bit |            Description            |
@@ -4020,6 +4021,14 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
      |:---:|:---------------------------------:|
      | 11  | STD baro mode                     |
      | 12  | QNH baro mode                     |
+
+- `L:A32NX_DMC_BARO_CORRECTION_LEFT`
+  - Left DMC BCD word 222, baro correction CAPT side. Raw ARINC word.
+  - Arinc429Word<hPa>
+
+- `L:A32NX_DMC_BARO_CORRECTION_RIGHT`
+  - Right DMC BCD word 223, baro correction F/O side. Raw ARINC word.
+  - Arinc429Word<hPa>
 
 - `L:A32NX_DMC_ALTITUDE_LEFT`
   - The left DMC displayed altitude feedback. Raw ARINC word.
@@ -4295,6 +4304,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
     - Indicates that gear lever just hit the baulk lock mechanism
     - Boolean
 
+## Lighting (ATA 33)
+
+- `L:A32NX_LIGHTS_NAV_LOGO`
+  - The state of the NAV/LOGO LT switch.
+  - Enum
+    | Mode     | Value |
+    |----------|-------|
+    | Off      | 0     |
+    | System 1 | 1     |
+    | System 2 | 2     |
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE
@@ -4497,13 +4517,13 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 ## ROW / ROP / OANS (ATA 34)
 
 - A32NX_ROW_ROP_WORD_1
-    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD.
+    - Data word for ROW and ROP functions. Used for displaying alerts on the PFD and generating warnings on the FWC.
     - Arinc429<Discrete>
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
-      | 11  | ROW/ROP operative                 |
-      | 12  | ROP: Active with autobrake        |
-      | 13  | ROP: Active with manual braking   |
+      | 11  | BRAKE MAX BRAKING Requested       |
+      | 12  | SET MAX REVERSE Requested         |
+      | 13  | KEEP MAX REVERSE Requested        |
       | 14  | ROW Wet: Runway too short         |
       | 15  | ROW Dry: Runway too short         |
 
@@ -4571,6 +4591,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
     - Enum
+    - Deprecated
     - Provides the selected NAVAIDs for display on the EFIS
       Value | Meaning
       --- | ---
@@ -4583,6 +4604,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_EFIS_{side}_ND_MODE
     - Enum
+    - Deprecated
     - Provides the selected navigation display mode for the EFIS
       Value | Meaning
       --- | ---
@@ -4597,6 +4619,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_EFIS_{side}_ND_RANGE
     - Enum
+    - Deprecated
     - Provides the selected navigation display range for the EFIS
       Value | Meaning
       --- | ---
@@ -4612,6 +4635,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_EFIS_{side}_OPTION
     - Flags
+    - Deprecated
     - Provides a bitmask of the selected EFIS option/overlays
       Value | Meaning
       --- | ---
@@ -4627,15 +4651,18 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_TRK_FPA_MODE_ACTIVE
     - Bool
+    - Deprecated
     - True if TRK/FPA mode is active
 
 - A32NX_AUTOPILOT_HEADING_SELECTED
     - Number (Degrees)
+    - Deprecated
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
 - A32NX_FCU_ALT_MANAGED
     - Boolean
+    - Deprecated
     - Indicates if managed altitude mode is active (dot)
       State | Value
       --- | ---
@@ -4644,6 +4671,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FCU_VS_MANAGED
     - Boolean
+    - Deprecated
     - Indicates if managed VS/FPA mode is active
       State | Value
       --- | ---
@@ -4652,10 +4680,12 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
     - Percent over 100
+    - Deprecated
     - Steering demand from autopilot to BSCU [-1;1] -1 left, 0 middle
 
 - A32NX_FMA_LATERAL_MODE
     - Enum
+    - Deprecated
     - Indicates **engaged** lateral mode of the Flight Director / Autopilot
       Mode | Value
       --- | ---
@@ -4674,6 +4704,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FMA_LATERAL_ARMED
     - Bitmask
+    - Deprecated
     - Indicates **armed** lateral mode of the Flight Director / Autopilot
       Mode | Bit
       --- | ---
@@ -4682,6 +4713,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FMA_VERTICAL_MODE
     - Enum
+    - Deprecated
     - Indicates **engaged** vertical mode of the Flight Director / Autopilot
       Mode | Value
       --- | ---
@@ -4708,6 +4740,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
+    - Deprecated
     - Indicates **armed** vertical mode of the Flight Director / Autopilot
       Mode | Bit
       --- | ---
@@ -4721,6 +4754,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
+    - Deprecated
     - Indicates if expedite mode is engaged
       State | Value
       --- | ---
@@ -4729,6 +4763,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOPILOT_AUTOLAND_WARNING
     - Boolean
+    - Deprecated
     - Indicates if Autoland warning light is illuminated
     - Possible values:
       State | Value
@@ -4738,6 +4773,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOPILOT_ACTIVE
     - Boolean
+    - Deprecated
     - Indicates if any Autopilot is engaged
     - Possible values:
       State | Value
@@ -4747,6 +4783,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOPILOT_{index}_ACTIVE
     - Boolean
+    - Deprecated
     - Indicates if Autopilot {index} is enaged, first Autopilot has the index 1
     - Possible values:
       State | Value
@@ -4756,11 +4793,13 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOPILOT_H_DOT_RADIO
     - Number (Feet per minute)
+    - Deprecated
     - Indicates the current estimated vertical speed relative to the runway
     - Important: the signal is only usable above the runway and is not to be used elsewhere
 
 - A32NX_AUTOTHRUST_STATUS
     - Enum
+    - Deprecated
     - Indicates the current status of the ATHR system
       Mode | Value
       --- | ---
@@ -4770,28 +4809,44 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOTHRUST_MODE
     - Enum
+    - Deprecated
     - Indicates the current thrust mode of the ATHR system
       Mode | Value
       --- | ---
       NONE | 0
+      MAN_TOGA | 1
+      MAN_FLEX | 3
+      MAN_MCT | 5
+      MAN_THR | 6
+      SPEED | 7
+      MACH | 8
+      THR_MCT | 9
+      THR_CLB | 10
+      THR_LVR | 11
+      THR_IDLE | 12
       A_FLOOR | 13
+      TOGA_LK | 14
 
 - A32NX_AUTOPILOT_SPEED_SELECTED
     - SPEED mode: 100 to 399 (knots)
     - MACH mode: 0.10 to 0.99 (M)
+    - Deprecated
     - Indicates the selected speed on the FCU, instantly updated
     - In case of managed speed mode, the value is -1
 
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Number (Degrees)
+    - Deprecated
     - Indicates the selected FPA on the FCU, instantly updated
 
 - A32NX_AUTOPILOT_VS_SELECTED
     - Number (Feet per minute)
+    - Deprecated
     - Indicates the selected V/S on the FCU, instantly updated
 
 - A32NX_FCU_SPD_MANAGED_DASHES
     - Boolean
+    - Deprecated
     - Indicates if managed speed/mach mode is active and a numerical value is not displayed
       State | Value
       --- | ---
@@ -4800,6 +4855,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FCU_SPD_MANAGED_DOT
     - Boolean
+    - Deprecated
     - Indicates if managed speed/mach mode is active
       State | Value
       --- | ---
@@ -4808,6 +4864,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FCU_HDG_MANAGED_DASHES
     - Boolean
+    - Deprecated
     - Indicates if managed heading mode is active and a numerical value is not displayed
       State | Value
       --- | ---
@@ -4816,6 +4873,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_FCU_HDG_MANAGED_DOT
     - Boolean
+    - Deprecated
     - Indicates if managed heading mode is active or armed
       State | Value
       --- | ---
@@ -4824,8 +4882,11 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 
 - A32NX_AUTOTHRUST_MODE_MESSAGE
     - Enum
+    - Deprecated
     - Indicates ATHR related message to be displayed on the PFD
       Mode | Value
       --- | ---
       NONE | 0
       LVR_CLB | 3
+      LVR_MCT | 4
+      LVR_ASYM | 5

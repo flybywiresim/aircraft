@@ -4,29 +4,20 @@
 export const WD_NUM_LINES = 18;
 export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
-import {
-  EcamAbnormalSensedAta212223,
-  EcamDeferredProcAta212223,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
-import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
-import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
-import {
-  EcamAbnormalSensedAta27,
-  EcamDeferredProcAta27,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
-import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
-import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
-import {
-  EcamAbnormalSensedAta313233,
-  EcamDeferredProcAta313233,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
-import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
-import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
-import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
-import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
-import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
-import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
-import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+import { EcamAbnormalSensedAta212223, EcamDeferredProcAta212223 } from './AbnormalSensed/ata21-22-23';
+import { EcamAbnormalSensedAta24 } from './AbnormalSensed/ata24';
+import { EcamAbnormalSensedAta26 } from './AbnormalSensed/ata26';
+import { EcamAbnormalSensedAta27, EcamDeferredProcAta27 } from './AbnormalSensed/ata27';
+import { EcamAbnormalSensedAta28 } from './AbnormalSensed/ata28';
+import { EcamAbnormalSensedAta2930 } from './AbnormalSensed/ata29-30';
+import { EcamAbnormalSensedAta313233, EcamDeferredProcAta313233 } from './AbnormalSensed/ata31-32-33';
+import { EcamAbnormalSensedAta34, EcamDeferredProcAta34 } from './AbnormalSensed/ata34';
+import { EcamAbnormalSensedAta353642 } from './AbnormalSensed/ata35-36-42';
+import { EcamAbnormalSensedAta46495256 } from './AbnormalSensed/ata46-49-52-56';
+import { EcamAbnormalSensedAta70 } from './AbnormalSensed/ata70';
+import { EcamAbnormalSensedAta80Rest } from './AbnormalSensed/ata80-rest';
+import { EcamAbnormalSecondaryFailures } from './AbnormalSensed/secondary-failures';
+import { AbnormalNonSensedCategory } from '../providers/FwsPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -207,6 +198,8 @@ export const EcamInfos: { [n: string]: string } = {
   220200011: '\x1b<3mFMS PRED UNRELIABLE', // TODO add without accurate fms penalty once multiple lines supported
   220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
   220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
+  220200014: '\x1b<3mFUEL CONSUMPT INCRSD',
+  220200015: '\x1b<3mRISK OF UNDUE OVERSPEED WARNING',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
@@ -225,6 +218,17 @@ export const EcamInfos: { [n: string]: string } = {
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
+  340200009: '\x1b<3mADJUST THR TO MAINTAIN ALTITUDE',
+  340200010: '\x1b<3mFOR CRUISE:',
+  340200011: '\x1b<3m\xa0\xa0PITCH TRGT : 3°',
+  340200012: '\x1b<3m\xa0\xa0ALL ENG THR : SEE FCOM', //TODO add table
+  340200013: '\x1b<3mFOR DESCENT:',
+  340200014: '\x1b<3m\xa0\xa0PITCH TRGT : 1.25°',
+  340200015: '\x1b<3m\xa0\xa0ALL THR LEVERS IDLE',
+  340200016: '\x1b<3mIF RADOME DESTRUCTION :',
+  340200017: '\x1b<3m\xa0\xa0INCREASE THRUST BY 5 %',
+  340200018: '\x1b<3m\xa0\xa0FUEL CONSUMPT INCRSD',
+  340200019: '\x1b<3m\xa0\xa0FMS PRED UNRELIABLE',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
@@ -257,11 +261,16 @@ export const EcamLimitations: { [n: string]: string } = {
   320400002: '\x1b<5mL/G GRVTY EXTN ONLY',
   320400003: '\x1b<5mSTEER ENDUR LIMITED',
   320400004: '\x1b<5mAUTO BRK:DO NOT USE',
+  340400001: '\x1b<5mALL SPEED : MAX 330 / M .82',
   700400001: '\x1b<5mREV : SYM USE ONLY',
   800400001: '\x1b<5mFUEL CONSUMPT INCRSD',
   800400002: '\x1b<5mLDG DIST AFFECTED',
   800400003: '\x1b<5mLDG PERF AFFECTED',
   800400004: '\x1b<5mFOR GA : KEEP S/F CONF',
+  800400005: '\x1b<5mMAX DIFF PR : 1 PSI',
+  800400006: '\x1b<5mMAX SPEED : 300/.85',
+  800400007: '\x1b<5mMIN SPEED : GREEN DOT',
+  800400008: '\x1b<5mTURB SPEED:',
 };
 
 /** All possible INOP sys, with special formatting characters. */
@@ -500,6 +509,7 @@ export const EcamInopSys: { [n: string]: string } = {
   290100011: '\x1b<4mMOST SPLRs',
   290100012: '\x1b<4mFLAPS',
   290100013: '\x1b<4mSLATS',
+  290100014: '\x1b<4mF/CTL ALTN LAW',
   290300001: '\x1b<4mG ELEC PMP A',
   290300002: '\x1b<4mG ELEC PMP B',
   290300003: '\x1b<4mY ELEC PMP A',
@@ -608,6 +618,7 @@ export enum ChecklistLineStyle {
   Standard = 'Standard',
   Cyan = 'Cyan',
   Green = 'Green',
+  GreenTable = 'GreenTable',
   Amber = 'Amber',
   White = 'White',
   Red = 'Red',
@@ -794,6 +805,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
   ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
+  ...EcamDeferredProcAta34,
 };
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */

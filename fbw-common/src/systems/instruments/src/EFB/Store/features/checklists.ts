@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChecklistJsonDefinition } from '@flybywiresim/fbw-sdk';
+import { ChecklistJsonDefinition } from '@flybywiresim/fbw-sdk-react';
 import { RootState, store } from '../store';
 
 interface ChecklistTrackingItem {

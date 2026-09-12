@@ -25,6 +25,7 @@ import {
   TurnDirection,
   WaypointConstraintType,
   WaypointDescriptor,
+  DepartureRunwayTransition,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import {
@@ -84,6 +85,7 @@ import { Geometry } from '../../guidance/Geometry';
 import { PathVectorType } from '../../guidance/lnav/PathVector';
 import { abeamBetween } from '../../guidance/lnav/CommonGeometry';
 import { debugFormatWindEntry, PropagatedWindEntry, PropagationType, WindEntry } from '../data/wind';
+import { EngineOutDepartureSegment } from '../segments/EngineOutDepartureSegment';
 
 export interface FlightPlanContext {
   get syncClientID(): number;
@@ -624,6 +626,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   departureRunwayTransitionSegment = new DepartureRunwayTransitionSegment(this);
 
+  /** This is a special segment that is not actually included in the plan legs, but existing for drawing of the EOSID. */
+  public readonly engineOutDepartureSegment: EngineOutDepartureSegment = new EngineOutDepartureSegment(this);
+
   departureSegment = new DepartureSegment(this);
 
   departureEnrouteTransitionSegment = new DepartureEnrouteTransitionSegment(this);
@@ -666,32 +671,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLeg() {
-    return this.legElementAt(this.destinationLegIndex);
+    const destinationLegIndex = this.destinationLegIndex;
+    return destinationLegIndex !== null ? this.legElementAt(destinationLegIndex) : undefined;
   }
 
   get destinationLegIndex() {
-    let targetSegment: FlightPlanSegment = undefined;
-
-    if (this.destinationSegment.allLegs.length > 0) {
-      targetSegment = this.destinationSegment;
-    } else if (this.approachSegment.allLegs.length > 0) {
-      targetSegment = this.approachSegment;
-    } else if (this.enrouteSegment.allLegs.length > 0) {
-      targetSegment = this.enrouteSegment;
-    } else {
-      return -1;
-    }
-
-    let accumulator = 0;
-    for (const segment of this.orderedSegments) {
-      accumulator += segment.allLegs.length;
-
-      if (segment === targetSegment) {
-        break;
+    for (let i = this.firstMissedApproachLegIndex - 1; i >= 0; i--) {
+      const leg = this.maybeElementAt(i);
+      if (
+        isLeg(leg) &&
+        (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationAirport) ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationRunway))
+      ) {
+        return i;
       }
     }
 
-    return accumulator - 1;
+    return null;
   }
 
   get endsAtRunway() {
@@ -763,6 +760,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     return this.cachedAllLegs;
+  }
+
+  /** @inheritdoc */
+  public getEngineOutDepartureLegs() {
+    return this.engineOutDepartureSegment.allLegs;
   }
 
   /**
@@ -927,7 +929,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get departureRunwayTransition(): ProcedureTransition {
+  get departureRunwayTransition(): DepartureRunwayTransition {
     return this.departureRunwayTransitionSegment.procedure;
   }
 
@@ -1016,7 +1018,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    */
   async setApproach(databaseId: string | undefined) {
     await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
-
     await this.flushOperationQueue();
     this.incrementVersion();
   }

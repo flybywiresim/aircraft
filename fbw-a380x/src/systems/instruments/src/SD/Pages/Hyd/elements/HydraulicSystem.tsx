@@ -1,6 +1,6 @@
 import React from 'react';
 import { Reservoir } from './Reservoir';
-import { Engine } from 'instruments/src/SD/Pages/Hyd/elements/Engine';
+import { Engine } from './Engine';
 import { useSimVar } from '@instruments/common/simVars';
 
 type HydraulicSystemProps = {

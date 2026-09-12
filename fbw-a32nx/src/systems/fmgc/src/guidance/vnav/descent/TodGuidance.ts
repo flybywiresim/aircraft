@@ -1,6 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
@@ -8,8 +7,7 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@flybywiresim/popup';
-import { NXDataStore, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, PopupControlEvents, PopupUuid, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 
 const TIMEOUT = 10_000;
@@ -29,7 +27,7 @@ export class TodGuidance {
 
   private cooldown: number;
 
-  private readonly todPauseOverlayPublisher: Publisher<TodPauseOverlayControlEvents>;
+  private readonly publisher: Publisher<PopupControlEvents>;
 
   private readonly apActive = RegisteredSimVar.createBoolean('L:A32NX_AUTOPILOT_ACTIVE');
   private readonly fmaLateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', 'Enum');
@@ -45,7 +43,8 @@ export class TodGuidance {
     this.tdReached = false;
     this.tdPaused = false;
     this.tdPauseEnabled = false;
-    this.todPauseOverlayPublisher = bus.getPublisher<TodPauseOverlayControlEvents>();
+
+    this.publisher = bus.getPublisher();
 
     NXDataStore.getAndSubscribeLegacy(
       'PAUSE_AT_TOD_DISTANCE',
@@ -73,17 +72,22 @@ export class TodGuidance {
     );
   }
 
-  private setTodPauseOverlayState(state: TodPauseOverlayState) {
-    this.todPauseOverlayPublisher.pub('tod_pause_overlay', state, true, false);
+  private showPausePopup(title: string, message: string): void {
+    this.cooldown = TIMEOUT;
+    this.publisher.pub(
+      'popup_enqueue_popup',
+      {
+        uuid: PopupUuid.TodPause,
+        title,
+        message,
+      },
+      true,
+      false,
+    );
   }
 
-  showPausePopup(title: string, message: string) {
-    this.cooldown = TIMEOUT;
-    this.setTodPauseOverlayState({
-      visible: true,
-      title,
-      message,
-    });
+  private hidePausePopup(): void {
+    this.publisher.pub('popup_dequeue_popup', PopupUuid.TodPause, true, false);
   }
 
   update(deltaTime: number) {
@@ -142,11 +146,7 @@ export class TodGuidance {
     ) {
       this.tdPaused = false;
       this.apEngaged = false;
-      this.setTodPauseOverlayState({
-        visible: false,
-        title: '',
-        message: '',
-      });
+      this.hidePausePopup();
     }
     // Iterate backoff timer
     if (this.cooldown > 0) {

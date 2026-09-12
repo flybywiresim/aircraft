@@ -26,8 +26,8 @@ export class OitFltOpsLoadingScreen extends DisplayComponent<OitFltOpsLoadingScr
 
   private readonly sub = this.props.bus.getSubscriber<OitSimvars & ClockEvents>();
 
-  private readonly laptopPowered = ConsumerSubject.create(
-    this.sub.on(this.props.captOrFo === 'CAPT' ? 'laptopCaptPowered' : 'laptopFoPowered'),
+  private readonly laptopHealthy = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'laptopCaptHealthy' : 'laptopFoHealthy'),
     false,
   );
 
@@ -42,8 +42,8 @@ export class OitFltOpsLoadingScreen extends DisplayComponent<OitFltOpsLoadingScr
   ).map((t) => `${t}%`);
 
   private readonly screenHidden = MappedSubject.create(
-    ([powered, remaining]) => !powered || remaining <= 0,
-    this.laptopPowered,
+    ([healthy, remaining]) => !healthy || remaining <= 0,
+    this.laptopHealthy,
     this.remainingStartupTime,
   );
 
@@ -56,13 +56,13 @@ export class OitFltOpsLoadingScreen extends DisplayComponent<OitFltOpsLoadingScr
         .atFrequency(4)
         .handle(() => {
           // Update loading progress bar
-          if (this.laptopPowered.get() && this.remainingStartupTime.get() > 0) {
+          if (this.laptopHealthy.get() && this.remainingStartupTime.get() > 0) {
             this.remainingStartupTime.set(Math.max(0, this.remainingStartupTime.get() - 0.25));
           }
         }),
-      this.laptopPowered.sub((powered) => {
-        this.totalStartupTime.set(powered ? parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '12')) * 2 : 0);
-        this.remainingStartupTime.set(powered ? this.totalStartupTime.get() : 0);
+      this.laptopHealthy.sub((healthy) => {
+        this.totalStartupTime.set(healthy ? parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '12')) * 2 : 0);
+        this.remainingStartupTime.set(healthy ? this.totalStartupTime.get() : 0);
       }, true),
     );
 

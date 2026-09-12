@@ -5,9 +5,9 @@ import {
   EcamAbNormalSensedSubMenuVector,
   isChecklistAction,
   isChecklistCondition,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+} from '../../MsfsAvionicsCommon/EcamMessages';
+import { AbnormalNonSensedProceduresOverview } from '../..//MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
+import { WdAbstractChecklistComponent } from './WdAbstractChecklistComponent';
 
 function removeUnderline(text: string): string {
   // eslint-disable-next-line no-control-regex
@@ -164,11 +164,11 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
           sensed: item.sensed,
           checked: false,
           text: text.substring(0, 39),
-          style: ChecklistLineStyle.ChecklistItem,
+          style: item.style ?? ChecklistLineStyle.ChecklistItem,
           firstLine: false,
           lastLine: index === abn.items.length - 1,
           originalItemIndex: index + 1,
-          inactive: true,
+          inactive: !this.checklistActivated.get(),
         });
       });
     }

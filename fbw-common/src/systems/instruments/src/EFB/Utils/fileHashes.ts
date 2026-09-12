@@ -1,4 +1,4 @@
-import { cyrb53_bytes } from '@flybywiresim/fbw-sdk';
+import { cyrb53_bytes } from '@flybywiresim/fbw-sdk-react';
 
 export interface HashMismatchResult {
   vfsPath: string;

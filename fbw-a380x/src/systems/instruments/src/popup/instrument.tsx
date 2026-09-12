@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FsBaseInstrument } from '@microsoft/msfs-sdk';
-import { PopupInstrument } from '@flybywiresim/popup';
+import { PopupFsInstrument } from '@flybywiresim/popup';
 
 import '../../../../../../fbw-common/src/systems/instruments/src/popup/style.scss';
 
-class A380X_POPUP extends FsBaseInstrument<PopupInstrument> {
-  constructInstrument(): PopupInstrument {
-    return new PopupInstrument();
+class A380X_POPUP extends FsBaseInstrument<PopupFsInstrument> {
+  constructInstrument(): PopupFsInstrument {
+    return new PopupFsInstrument(this);
   }
 
   get isInteractive(): boolean {

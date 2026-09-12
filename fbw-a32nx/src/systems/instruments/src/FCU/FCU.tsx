@@ -7,9 +7,9 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { EisDisplay } from 'instruments/src/FCU/Components/EisDisplay';
-import { AfsDisplay } from 'instruments/src/FCU/Components/AfsDisplay';
-import { FcuSimvars } from 'instruments/src/FCU/shared/FcuSimvarPublisher';
+import { EisDisplay } from './Components/EisDisplay';
+import { AfsDisplay } from './Components/AfsDisplay';
+import { FcuSimvars } from './shared/FcuSimvarPublisher';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
 
 import './style.scss';

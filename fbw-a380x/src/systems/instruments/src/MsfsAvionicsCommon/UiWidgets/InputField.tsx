@@ -14,7 +14,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { DataEntryFormat } from '../../MFD/pages/common/DataEntryFormats';
 import { A380FmsError } from '../../MFD/shared/A380FmsError';
 import { FmsError } from '@fmgc/FmsError';
 import { EfisSide } from '@flybywiresim/fbw-sdk';

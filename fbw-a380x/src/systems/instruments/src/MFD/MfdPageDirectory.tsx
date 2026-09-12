@@ -1,42 +1,42 @@
 import { EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 // Page imports
-import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataStatus';
-import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnAirways';
-import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnArr';
-import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDep';
-import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDirectTo';
-import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
-import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnHold';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/MfdFmsFuelLoad';
-import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/MfdFmsInit';
-import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/MfdNotFound';
-import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/MfdFmsPerf';
-import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionIrs';
-import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
-import { MfdAtccomConnect } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomConnect';
-import { MfdAtccomMsgRecord } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecord';
-import { MfdAtccomMsgRecordAll } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordAll';
-import { MfdAtccomMsgRecordMonitored } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordMonitored';
-import { MfdAtccomMsgRecordExpand } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordExpand';
-import { MfdAtccomDAtis } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomDAtis';
-import { MfdAtccomDAtisReceived } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomDAtisReceived';
+import { MfdFmsDataStatus } from './pages/FMS/DATA/MfdFmsDataStatus';
+import { MfdFmsFplnAirways } from './pages/FMS/F-PLN/MfdFmsFplnAirways';
+import { MfdFmsFplnArr } from './pages/FMS/F-PLN/MfdFmsFplnArr';
+import { MfdFmsFplnDep } from './pages/FMS/F-PLN/MfdFmsFplnDep';
+import { MfdFmsFplnDirectTo } from './pages/FMS/F-PLN/MfdFmsFplnDirectTo';
+import { MfdFmsFpln } from './pages/FMS/F-PLN/MfdFmsFpln';
+import { MfdFmsFplnHold } from './pages/FMS/F-PLN/MfdFmsFplnHold';
+import { MfdFmsFplnVertRev } from './pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdFmsFuelLoad } from './pages/FMS/MfdFmsFuelLoad';
+import { MfdFmsInit } from './pages/FMS/MfdFmsInit';
+import { MfdNotFound } from './pages/FMS/MfdNotFound';
+import { MfdFmsPerf } from './pages/FMS/MfdFmsPerf';
+import { MfdFmsPositionIrs } from './pages/FMS/POSITION/MfdFmsPositionIrs';
+import { MfdFmsPositionNavaids } from './pages/FMS/POSITION/MfdFmsPositionNavaids';
+import { MfdAtccomConnect } from './pages/ATCCOM/MfdAtccomConnect';
+import { MfdAtccomMsgRecord } from './pages/ATCCOM/MfdAtccomMsgRecord';
+import { MfdAtccomMsgRecordAll } from './pages/ATCCOM/MfdAtccomMsgRecordAll';
+import { MfdAtccomMsgRecordMonitored } from './pages/ATCCOM/MfdAtccomMsgRecordMonitored';
+import { MfdAtccomMsgRecordExpand } from './pages/ATCCOM/MfdAtccomMsgRecordExpand';
+import { MfdAtccomDAtis } from './pages/ATCCOM/MfdAtccomDAtis';
+import { MfdAtccomDAtisReceived } from './pages/ATCCOM/MfdAtccomDAtisReceived';
 
 // Header imports
-import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
-import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
-import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
-import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { AtccomHeader } from './pages/common/AtccomHeader';
+import { FcuBkupHeader } from './pages/common/FcuBkupHeader';
+import { FmsHeader } from './pages/common/FmsHeader';
+import { SurvHeader } from './pages/common/SurvHeader';
+import { FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
+import { MfdDisplayInterface } from './MFD';
+import { MfdUiService } from './pages/common/MfdUiService';
+import { MfdSurvControls } from './pages/SURV/MfdSurvControls';
 import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdFmsPositionMonitor } from './pages/FMS/POSITION/MfdFmsPositionMonitor';
-import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
-import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
+import { MfdSurvStatusSwitching } from './pages/SURV/MfdSurvStatusSwitching';
+import { MfdFmsDataAirport } from './pages/FMS/DATA/MfdFmsDataAirport';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import {
   activeFlightPlanFuelAndLoadUri,

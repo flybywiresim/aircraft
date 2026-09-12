@@ -301,6 +301,7 @@ impl SimulationElement for SteeringActuator {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
 
     use super::*;
 
@@ -483,7 +484,7 @@ mod tests {
         ));
 
         let normalized_position: f64 = test_bed.read_by_name("NOSE_WHEEL_POSITION_RATIO");
-        assert!(normalized_position == 0.);
+        assert_eq!(normalized_position, 0.);
     }
 
     #[test]
@@ -619,7 +620,10 @@ mod tests {
         test_bed.run_multiple_frames(Duration::from_millis(400));
 
         let new_position = test_bed.query(|a| a.steering_actuator.position_feedback());
-        assert!((position_captured - new_position).abs() < Angle::new::<degree>(10.));
+        assert_lt!(
+            (position_captured - new_position).abs(),
+            Angle::new::<degree>(10.)
+        );
     }
 
     #[test]

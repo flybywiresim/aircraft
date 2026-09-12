@@ -1,12 +1,12 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomMsgRecord.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MessageElementMonitored } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElementMonitored';
-import { MessageRecordNav } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageRecordNav';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { MessageElementMonitored } from './Elements/MessageElementMonitored';
+import { MessageRecordNav } from './Elements/MessageRecordNav';
 
 interface MfdAtccomMsgRecordMonitoredProps extends AbstractMfdPageProps {}
 

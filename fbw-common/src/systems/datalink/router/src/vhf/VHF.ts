@@ -1586,7 +1586,7 @@ export class Vhf {
   }
 
   private async updateUsedVoiceFrequencies(): Promise<void> {
-    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
+    const storedAtisSrc = NXDataStore.getSetting('CONFIG_ATIS_SRC').get().toLowerCase();
     this.frequencyOverlap = Array(DatalinkProviders.ProviderCount).fill(0);
 
     if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {

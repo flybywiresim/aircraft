@@ -8,15 +8,6 @@
       "AIRCRAFT.UI_MODEL": "A380X (A380-842 RR)",
       "AIRCRAFT.UI_VARIATION": "FlyByWire A380X House Livery",
 
-      "A380X.LOADING.TIPS.A380_001": "The FlyByWire A380X is a collaboration between hundreds of individual contributors.",
-      "A380X.LOADING.TIPS.A380_002": "Development of the FlyByWire A380X first started in October 2020.",
-      "A380X.LOADING.TIPS.A380_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
-      "A380X.LOADING.TIPS.A380_004": "Since 2007, A380s have thus far covered 3000 million nautical miles. That's enough to circle the globe 125,000 times!",
-      "A380X.LOADING.TIPS.A380_005": "The A380 has a range of over 8000 NM or 14800 KM. That's enough to fly from Dubai to Los Angeles!",
-      "A380X.LOADING.TIPS.A380_006": "The horizontal stabilizer on the A380 has a span of 30.4 meters. This is just shorter than the wingspan of the Airbus A320 at 35.8m.",
-      "A380X.LOADING.TIPS.A380_007": "The volume of all three decks (including the cargo hold) is 1,570 m3. This is enough space for 35 million ping-pong balls.",
-      "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
-      "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
       "A380X.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "A380X.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "A380X.TOOLTIPS.AUTOBRAKE_RTO": "Arm rejected take-off autobrake (RTO)",
@@ -129,6 +120,8 @@
       "A380X.TOOLTIPS.RMP_NAV_SEL_VOR_1": "VOR 1",
       "A380X.TOOLTIPS.RMP_NAV_SEL_VOR_2": "VOR 2",
       "A380X.TOOLTIPS.RMP_NAV_SEL_MKR": "MKR",
+
+      "A380X.TOOLTIPS.SIDESTICK_TOGGLE": "Toggle Sidestick"
 
       "A380X.TOOLTIPS.DOORS_OPEN_CLOSE": "Open or close passenger door",
       "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",

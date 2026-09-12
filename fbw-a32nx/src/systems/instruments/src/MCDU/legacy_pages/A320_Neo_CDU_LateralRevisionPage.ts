@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,6 +15,7 @@ import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { isAirport, isRunway } from '@flybywiresim/fbw-sdk';
 
 export class CDULateralRevisionPage {
   /**
@@ -36,7 +37,13 @@ export class CDULateralRevisionPage {
 
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
     const isFrom = legIndexFP === targetPlan.fromLegIndex && isActivePlan && !inAlternate;
-    const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
+    const legWaypoint = !isPpos ? leg.definition.waypoint : null;
+    const departure = targetPlan.originAirport;
+    const isDeparture =
+      legIndexFP === targetPlan.originLegIndex &&
+      !isPpos &&
+      (isAirport(legWaypoint) || isRunway(legWaypoint)) &&
+      legWaypoint.airportIdent === departure?.airportIdent;
     const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
     const isManual = leg && leg.isVectors();

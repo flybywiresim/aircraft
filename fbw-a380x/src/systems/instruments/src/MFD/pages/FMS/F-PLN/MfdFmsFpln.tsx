@@ -24,16 +24,16 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFpln.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
 
-import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
-import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
-import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
-import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { ContextMenu, ContextMenuElement } from '../../../../MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { FplnRevisionsMenuType, getRevisionsMenu } from './FplnRevisionsMenu';
+import { DestinationWindow } from './DestinationWindow';
+import { InsertNextWptFromWindow, NextWptInfo } from './InsertNextWptFrom';
+import { FmsPage } from '../../common/FmsPage';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -48,9 +48,9 @@ import {
   SpeedConstraint,
   NXDataStore,
 } from '@flybywiresim/fbw-sdk';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdFmsFplnVertRev } from './MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { InternalKccuKeyEvent } from '../../../shared/MFDSimvarPublisher';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   formatWindPredictionDirection,
@@ -849,9 +849,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private goToTimeConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
     if (
+      this.loadedFlightPlan &&
       isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
+      !data.isAltnWaypoint &&
+      data.originalLegIndex !== null &&
       MfdFmsFplnVertRev.isEligibleForVerticalRevision(
         data.originalLegIndex,
         this.loadedFlightPlan.legElementAt(data.originalLegIndex),
@@ -871,47 +872,49 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private goToSpeedConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
-    if (
-      isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
-      MfdFmsFplnVertRev.isEligibleForVerticalRevision(
-        data.originalLegIndex,
-        this.loadedFlightPlan.legElementAt(data.originalLegIndex),
-        this.loadedFlightPlan,
-      )
-    ) {
-      this.props.fmcService.master.setRevisedWaypoint(
-        data.originalLegIndex,
-        this.loadedFlightPlanIndex.get(),
-        data.isAltnWaypoint,
-      );
-      this.props.mfd.uiService.navigateTo(
-        `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
-      );
+    if (isWaypoint(data) && data.originalLegIndex !== null) {
+      const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+      if (
+        fp &&
+        MfdFmsFplnVertRev.isEligibleForVerticalRevision(
+          data.originalLegIndex,
+          fp.legElementAt(data.originalLegIndex),
+          fp,
+        )
+      ) {
+        this.props.fmcService.master.setRevisedWaypoint(
+          data.originalLegIndex,
+          this.loadedFlightPlanIndex.get(),
+          data.isAltnWaypoint,
+        );
+        this.props.mfd.uiService.navigateTo(
+          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
+        );
+      }
     }
   }
 
   private goToAltitudeConstraint(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
-    if (
-      isWaypoint(data) &&
-      data.originalLegIndex &&
-      this.loadedFlightPlan?.legElementAt(data.originalLegIndex) &&
-      MfdFmsFplnVertRev.isEligibleForVerticalRevision(
-        data.originalLegIndex,
-        this.loadedFlightPlan.legElementAt(data.originalLegIndex),
-        this.loadedFlightPlan,
-      )
-    ) {
-      this.props.fmcService.master.setRevisedWaypoint(
-        data.originalLegIndex,
-        this.loadedFlightPlanIndex.get(),
-        data.isAltnWaypoint,
-      );
-      this.props.mfd.uiService.navigateTo(
-        `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
-      );
+    if (isWaypoint(data) && data.originalLegIndex !== null) {
+      const fp = data.isAltnWaypoint ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+      if (
+        fp &&
+        MfdFmsFplnVertRev.isEligibleForVerticalRevision(
+          data.originalLegIndex,
+          fp.legElementAt(data.originalLegIndex),
+          fp,
+        )
+      ) {
+        this.props.fmcService.master.setRevisedWaypoint(
+          data.originalLegIndex,
+          this.loadedFlightPlanIndex.get(),
+          data.isAltnWaypoint,
+        );
+        this.props.mfd.uiService.navigateTo(
+          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
+        );
+      }
     }
   }
 
@@ -955,8 +958,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     this.checkScrollButtons();
     if (this.lineData) {
-      const whichLineIndex =
-        this.lineData.findIndex((it) => it && it.originalLegIndex === this.loadedFlightPlan?.destinationLegIndex) + 1;
+      const destLegIndex = this.loadedFlightPlan?.destinationLegIndex;
+      let whichLineIndex = -1;
+      if (destLegIndex !== null) {
+        whichLineIndex = this.lineData.findIndex((it) => it && it.originalLegIndex === destLegIndex) + 1;
+      }
       if (whichLineIndex === -1) {
         this.displayFplnFromLineIndex.set(0);
       } else {

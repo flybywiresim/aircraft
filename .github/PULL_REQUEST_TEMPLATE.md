@@ -8,6 +8,10 @@ Fixes #[issue_no]
 ## Summary of Changes
 <!-- Please provide a summary of changes for this pull request, ensuring all changes are explained. -->
 
+## Cockpit API Changes
+<!-- If applicable, list any Var added, removed, renamed, or otherwise changed by this PR. -->
+<!-- Ensure the corresponding documentation in `fbw-a32nx/docs` or `fbw-a380x/docs` is updated. -->
+
 ## Screenshots (if necessary)
 <!-- If your PR includes visual changes, screenshots from before and after your change should always be included. -->
 <!-- Please make your best efforts to provide useful before and after screenshots. They should match camera angle, zoom, size, time of day, etc. -->
@@ -35,4 +39,4 @@ Every new commit to this PR will cause new A32NX and A380X artifacts to be creat
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
 1. On the left side, find and click on the **PR Build** tab
-1. Click on either **flybywire-aircraft-a320-neo**, **flybywire-aircraft-a380-842 (4K)** or **flybywire-aircraft-a380-842 (8K)** download link at the bottom of the page
+1. Click on either **flybywire-aircraft-a320-neo** or **flybywire-aircraft-a380-842** download link at the bottom of the page

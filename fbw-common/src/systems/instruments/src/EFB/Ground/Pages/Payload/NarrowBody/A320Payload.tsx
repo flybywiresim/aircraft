@@ -14,7 +14,7 @@ import {
   usePersistentSetting,
   useSeatFlags,
   useSimVar,
-} from '@flybywiresim/fbw-sdk';
+} from '@flybywiresim/fbw-sdk-react';
 import {
   setPayloadImported,
   useAppDispatch,

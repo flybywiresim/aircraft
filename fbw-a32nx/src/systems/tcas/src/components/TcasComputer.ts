@@ -11,6 +11,8 @@ import {
   LocalSimVar,
   AirDataSwitchingKnob,
   registerTrafficListener,
+  Arinc429Register,
+  Arinc429SignStatusMatrix,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
@@ -208,6 +210,12 @@ export class TcasComputer {
 
   private downAdvisoryStatus: LocalSimVar<UpDownAdvisoryStatus>; // Down adivsory status (descend, don't climb, don't climb >500 etc.)
 
+  private tcasBusResolutionAdvisoryWord?: Arinc429Register;
+
+  private tcasBusTcasModeWord?: Arinc429Register;
+
+  private tcasBusTcasFaultSummaryWord?: Arinc429Register;
+
   private isSlewActive: boolean; // Slew Mode on?
 
   private simRate: number; // Simulation Rate
@@ -268,6 +276,9 @@ export class TcasComputer {
     this.rateToMaintain = new LocalSimVar('L:A32NX_TCAS_RA_RATE_TO_MAINTAIN', 'number');
     this.upAdvisoryStatus = new LocalSimVar('L:A32NX_TCAS_RA_UP_ADVISORY_STATUS', 'Enum');
     this.downAdvisoryStatus = new LocalSimVar('L:A32NX_TCAS_RA_DOWN_ADVISORY_STATUS', 'Enum');
+    this.tcasBusResolutionAdvisoryWord = Arinc429Register.empty();
+    this.tcasBusTcasModeWord = Arinc429Register.empty();
+    this.tcasBusTcasFaultSummaryWord = Arinc429Register.empty();
     this.airTraffic = [];
     this.raTraffic = [];
     this.sensitivity = new LocalSimVar('L:A32NX_TCAS_SENSITIVITY', 'number');
@@ -1188,6 +1199,10 @@ export class TcasComputer {
             console.log('TCAS: CLEAR OF CONFLICT');
           }
           this.soundManager.tryPlaySound(TCAS.SOUNDS.clear_of_conflict, true);
+          this.upAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+          this.downAdvisoryStatus.setVar(UpDownAdvisoryStatus.NO_ADVISORY);
+          this.rateToMaintain.setVar(0);
+          this.raType.setVar(RaType2.NONE);
           this.activeRa.info = null;
         }
         break;
@@ -1298,6 +1313,46 @@ export class TcasComputer {
     this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
   }
 
+  private updateBus(): void {
+    this.tcasBusResolutionAdvisoryWord.setSsm(
+      !this.tcasPower ? Arinc429SignStatusMatrix.FailureWarning : Arinc429SignStatusMatrix.NormalOperation,
+    );
+
+    const uintRateToMaintain = Math.round(Math.abs(this.rateToMaintain.getVar()) / 100) & 0b00111111;
+    let combinedControl = 0;
+    if (this.tcasState.getVar() < TcasState.RA) {
+      combinedControl = 0;
+    } else if (this.correctiveRa.getVar()) {
+      combinedControl = this.rateToMaintain.getVar() > 0 ? 4 : 5;
+    } else {
+      combinedControl = 6;
+    }
+
+    this.tcasBusResolutionAdvisoryWord.setValue(
+      (uintRateToMaintain << 10) |
+        (this.rateToMaintain.getVar() < 0 ? 1 << 16 : 0) |
+        (combinedControl << 17) |
+        ((this.raType.getVar() & 0b00000111) << 20) |
+        ((this.upAdvisoryStatus.getVar() & 0b00000111) << 23) |
+        ((this.downAdvisoryStatus.getVar() & 0b00000111) << 26),
+    );
+    this.tcasBusResolutionAdvisoryWord.writeToSimVar('L:A32NX_TCAS_VERTICAL_RESOLUTION_ADVISORY_WORD');
+
+    this.tcasBusTcasModeWord.setSsm(
+      !this.tcasPower ? Arinc429SignStatusMatrix.FailureWarning : Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.tcasBusTcasModeWord.setBitValue(25, this.tcasMode.getVar() === TcasMode.STBY);
+    this.tcasBusTcasModeWord.setBitValue(26, this.sensitivity.getVar() > 1);
+    this.tcasBusTcasModeWord.setBitValue(27, this.sensitivity.getVar() > 2);
+    this.tcasBusTcasModeWord.writeToSimVar('L:A32NX_TCAS_MODE_WORD');
+
+    this.tcasBusTcasFaultSummaryWord.setSsm(
+      !this.tcasPower ? Arinc429SignStatusMatrix.FailureWarning : Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.tcasBusTcasFaultSummaryWord.setBitValue(20, this.tcasFault.getVar() == 1);
+    this.tcasBusTcasFaultSummaryWord.writeToSimVar('L:A32NX_TCAS_FAULT_SUMMARY_WORD');
+  }
+
   /**
    * Main update loop
    * @param deltaTime delta time of this frame
@@ -1336,11 +1391,13 @@ export class TcasComputer {
         this.sendAirTraffic.length = 0;
         this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
       }
+      this.updateBus();
       return;
     }
     this.fetchRawTraffic(deltaTime);
     this.updateTraffic(deltaTime);
     this.updateRa(deltaTime);
     this.emitDisplay();
+    this.updateBus();
   }
 }

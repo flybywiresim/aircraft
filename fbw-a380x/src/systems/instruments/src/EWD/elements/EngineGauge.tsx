@@ -1,10 +1,10 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import { DisplayComponent, Subscribable, VNode, FSComponent, EventBus } from '@microsoft/msfs-sdk';
-import { AttentionGetter } from 'instruments/src/EWD/elements/AttentionGetter';
-import { EGT } from 'instruments/src/EWD/elements/EGT';
-import { N1 } from 'instruments/src/EWD/elements/N1';
-import { ThrustGauge } from 'instruments/src/EWD/elements/ThrustGauge';
+import { AttentionGetter } from './AttentionGetter';
+import { EGT } from './EGT';
+import { N1 } from './N1';
+import { ThrustGauge } from './ThrustGauge';
 
 interface EngineGaugeProps {
   bus: EventBus;

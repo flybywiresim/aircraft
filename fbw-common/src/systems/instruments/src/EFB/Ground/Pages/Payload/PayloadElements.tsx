@@ -13,7 +13,7 @@ import {
   Shuffle,
   StopCircleFill,
 } from 'react-bootstrap-icons';
-import { AirframeInfo, Units } from '@flybywiresim/fbw-sdk';
+import { AirframeInfo, Units } from '@flybywiresim/fbw-sdk-react';
 import { ProgressBar, t, TooltipWrapper, SimpleInput } from '@flybywiresim/flypad';
 
 export type AirframeSpec = {

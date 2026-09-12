@@ -834,16 +834,6 @@ export interface MsfsNearestSearchStructResult {
   removed: JS_ICAO[];
 }
 
-/**
- * Legacy nearest search result for MSFS2020.
- */
-export interface MsfsNearestSearchLegacyResult {
-  sessionId: number;
-  searchId: number;
-  added: string[];
-  removed: string[];
-}
-
 /** MSFS2024 and above data flags for LOAD_AIRPORT_FROM_STRUCT. */
 export enum JSAirportRequestFlags {
   Minimal = 0,

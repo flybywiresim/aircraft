@@ -23,6 +23,7 @@ import pushbackReducer from './features/pushback';
 import payloadReducer from './features/payload';
 import configReducer from './features/config';
 import fileHashReducer from './features/fileHashes';
+import temperatureCorrectionCalculatorReducer from './features/temperatureCorrectionCalculator';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -46,6 +47,7 @@ const combinedReducer = combineReducers({
   payload: payloadReducer,
   config: configReducer,
   fileHashes: fileHashReducer,
+  temperatureCorrectionCalculator: temperatureCorrectionCalculatorReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

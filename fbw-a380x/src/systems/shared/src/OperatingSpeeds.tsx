@@ -11,7 +11,8 @@ import { Feet, Knots } from 'msfs-geo';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
-import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+// FIXME should not import from instruments
+import { ADIRS } from '../../instruments/src/MFD/shared/Adirs';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {

@@ -21,7 +21,7 @@ import {
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 import { A32NXFwcBusEvents } from '../../../shared/src/publishers/A32NXFwcBusPublisher';
 
 const TensDigits = (value: number) => {

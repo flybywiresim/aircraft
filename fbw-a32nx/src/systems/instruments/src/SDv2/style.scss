@@ -1,0 +1,54 @@
+@import "../Common/definitions";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sdv2 {
+  visibility: visible !important;
+
+  font-family: "Ecam", monospace !important;
+
+  @import "../MsfsAvionicsCommon/duStyles.scss";
+}
+
+:root {
+  --bodyHeightScale: 1;
+}
+
+#Mainframe {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: relative;
+}
+
+#door-video-wrapper {
+  position: absolute;
+  top: -5%;
+  width: 100%;
+  height: 82%;
+  z-index: 100;
+  background-image: url(/Images/fbw-a32nx/SD/door_camera.png);
+  background-size: cover;
+}
+
+.sd-content-area-blocker {
+  display: flex;
+  height: 665px;
+  width: 768px;
+  position: absolute;
+  top: 0px;
+  background-color: $display-background;
+  z-index: -1;
+}
+
+text.Center {
+  text-anchor: middle;
+}

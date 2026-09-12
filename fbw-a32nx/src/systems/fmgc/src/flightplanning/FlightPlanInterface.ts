@@ -528,6 +528,20 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   insertWindUplink(planIndex: number): Promise<void>;
 
   /**
+   * If the aircraft is before the engine out branch point in the active plan,
+   * creates a TMPY plan from the active with the EOSID inserted in place of the SID,
+   * and the destination set to the origin airport.
+   * @returns True if the EOSID TMPY was created.
+   */
+  tryActivateEngineOutSid(): Promise<boolean>;
+
+  /**
+   * If there is a temporary flight plan created by activating the engine out SID, it is erased.
+   * @returns Whether a EOSID temporary plan was erased.
+   */
+  tryEraseEngineOutSid(): Promise<boolean>;
+
+  /**
    * Insert an abeam point of a reference fix into the flight plan along a given leg
    * @param alongLegIndex along which leg to insert the abeam point
    * @param location the coordinates of the abeam point

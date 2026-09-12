@@ -211,16 +211,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
   std::unique_ptr<LocalVariable> idFmNavCaptureCondition;
 
-  std::unique_ptr<LocalVariable> idTcasFault;
-  std::unique_ptr<LocalVariable> idTcasMode;
-  std::unique_ptr<LocalVariable> idTcasTaOnly;
   std::unique_ptr<LocalVariable> idTcasState;
-  std::unique_ptr<LocalVariable> idTcasRaCorrective;
-  std::unique_ptr<LocalVariable> idTcasRaType;
-  std::unique_ptr<LocalVariable> idTcasRaRateToMaintain;
-  std::unique_ptr<LocalVariable> idTcasRaUpAdvStatus;
-  std::unique_ptr<LocalVariable> idTcasRaDownAdvStatus;
-  std::unique_ptr<LocalVariable> idTcasSensitivityLevel;
+  std::unique_ptr<LocalVariable> idTcasModeWord;
+  std::unique_ptr<LocalVariable> idTcasVerticalAdvisoryWord;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -231,11 +224,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmsPresetSpeed;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
-  std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitude;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeEngineOut;
-  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAround;
-  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAroundEngineOut;
   std::unique_ptr<LocalVariable> idFmgcCruiseAltitude;
   std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
   std::unique_ptr<LocalVariable> idFmgcDirToTrigger;
@@ -243,6 +233,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmsSpeedMarginHigh;
   std::unique_ptr<LocalVariable> idFmsSpeedMarginLow;
   std::unique_ptr<LocalVariable> idFmsSpeedMarginVisible;
+  std::unique_ptr<LocalVariable> idFmsTowerHeadwindComponent;
+  std::unique_ptr<LocalVariable> idFmsFlap3ApproachSelected;
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;

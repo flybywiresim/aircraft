@@ -1,10 +1,10 @@
 // @ts-strict-ignore
 import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LegacySoundManager, soundList } from 'systems-host/Misc/LegacySoundManager';
+import { LegacySoundManager, soundList } from './LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
 import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
-import { FwsSoundManagerControlEvents } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
+import { FwsSoundManagerControlEvents } from '../CpiomC/FlightWarningSystem/FwsSoundManager';
 
 type ModesType = {
   current: number;
@@ -268,7 +268,7 @@ export class LegacyGpws {
       !gpwsFailed
     ) {
       // Activate between 10 - 2450 radio alt unless SYS is off
-      const flapsThreeSelected = SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'Bool');
+      const flapsThreeSelected = SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'Bool');
       const FlapPosition = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
       const FlapsInLandingConfig = flapsThreeSelected ? FlapPosition === 3 : FlapPosition === 4; // fixme should be actual flap angle
       const vSpeed = Simplane.getVerticalSpeed();

@@ -42,7 +42,7 @@ if [ ! -d "$A32NX_WASM_OUT_DIR" ]; then
   mkdir -p $A32NX_WASM_OUT_DIR
   echo "$A32NX_WASM_OUT_DIR directory created."
 fi
-A380X_WASM_OUT_DIR="../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel"
+A380X_WASM_OUT_DIR="../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel"
 if [ ! -d "$A380X_WASM_OUT_DIR" ]; then
   echo "$A380X_WASM_OUT_DIR directory does not exist."
   mkdir -p $A380X_WASM_OUT_DIR

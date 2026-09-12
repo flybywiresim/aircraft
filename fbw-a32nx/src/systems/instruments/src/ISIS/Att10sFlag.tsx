@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useRef, useState } from 'react';
-import { useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk';
+import { useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk-react';
 
 export const Att10sFlag: React.FC = ({ children }) => {
   const timeToReset = 10;

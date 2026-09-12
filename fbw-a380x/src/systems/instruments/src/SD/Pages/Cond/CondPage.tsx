@@ -1,11 +1,11 @@
 // @ts-strict-ignore
 import React from 'react';
-import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { PageTitle } from '../Generic/PageTitle';
 import A380Cond from './elements/A380Cond';
 import CabinTemperatures from './elements/CabinTemperatures';
 import CargoTemperatures from './elements/CargoTemperatures';
-import ExtractValve from 'instruments/src/SD/Pages/Press/elements/ExtractValve';
+import ExtractValve from '../Press/elements/ExtractValve';
 import CondHotAir from './elements/CondHotAir';
 import CondPack from './elements/CondPack';
 import { CondFan } from './elements/CondFan';
