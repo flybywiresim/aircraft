@@ -154,7 +154,7 @@ export class FwsCore {
 
   public readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
 
-  private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+  private readonly fwsUpdateThrottler = new UpdateThrottler(125);
 
   private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
@@ -288,9 +288,6 @@ export class FwsCore {
   public recallFailures: string[] = [];
 
   private requestMasterCautionFromFaults = false;
-  private requestMasterCautionFromAThrOff = false;
-
-  private requestSingleChimeFromAThrOff = false;
 
   private requestMasterWarningFromFaults = false;
   private requestMasterWarningFromApOff = false;
@@ -301,15 +298,25 @@ export class FwsCore {
 
   public readonly auralCrcActive = Subject.create(false);
 
+  private readonly auralSingleChimeActive = Subject.create(false);
+
   private auralSingleChimePending = false;
 
   public readonly auralSingleChimeInhibitTimer = new DebounceTimer();
 
   public readonly auralSingleChimePlayingTimer = new DebounceTimer();
 
-  public readonly masterWarning = Subject.create(false);
+  private readonly masterWarningPbLeftPulseNode = new NXLogicPulseNode(true);
 
-  public readonly masterCaution = Subject.create(false);
+  private readonly masterWarningPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbLeftPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterWarning = Subject.create(false);
+
+  private readonly masterCaution = Subject.create(false);
 
   private nonCancellableWarningCount = 0;
 
@@ -726,11 +733,11 @@ export class FwsCore {
 
   private readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
 
-  private readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1.5, true); // Save event for 1.5 sec
+  private readonly autoThrustInstinctiveDiscPressed = new NXLogicPulseNode();
 
   private readonly voluntaryAthrOffCautionMemory = new NXLogicMemoryNode();
   private readonly voluntaryAthrOffCautionMtrig = new NXLogicTriggeredMonostableNode(3, false); // Emit master caution for max. 3 sec
-  public readonly voluntaryAthrOffCaution = Subject.create(false);
+  private requestMasterCautionFromAThrOff = false;
 
   private readonly voluntaryAthrOffMemoMemory = new NXLogicMemoryNode();
   private readonly voluntaryAthrOffMemoMtrig = new NXLogicTriggeredMonostableNode(9, false); // Emit memo for max. 9 sec
@@ -744,7 +751,11 @@ export class FwsCore {
   private readonly autoThrustInvoluntaryPfdMemoMemoryNode = new NXLogicMemoryNode(false);
   private readonly autoThrustDiscIdleMtrig = new NXLogicTriggeredMonostableNode(2, true, true);
   private readonly phase1PulseNode = new NXLogicPulseNode();
-  private readonly voluntaryAthrDiscmemory = new NXLogicMemoryNode(false);
+
+  private readonly voluntaryAthrOffDiscMemory = new NXLogicMemoryNode(false);
+  private readonly voluntaryAthrOffMtrig = new NXLogicTriggeredMonostableNode(1, true, true);
+  private readonly voluntaryAthrOffMemoryDownPulse = new NXLogicPulseNode(false);
+  private readonly athrOffAndVoluntaryConditionMemorizedPulse = new NXLogicPulseNode(false);
 
   public autoThrustOffVoluntaryMemoInhibited = false;
 
@@ -2068,6 +2079,8 @@ export class FwsCore {
 
   public readonly apuAvailAndApuBleedOn = Subject.create(false);
 
+  private medianRadioHeight: number | null = null;
+
   public readonly radioHeight1 = Arinc429Register.empty();
 
   public readonly radioHeight2 = Arinc429Register.empty();
@@ -2717,6 +2730,9 @@ export class FwsCore {
       this.autoBrakeOffMemoAndAudio.sub((v) => {
         this.soundManager.handleSoundCondition('autoBrakeOff', v);
       }),
+      this.auralSingleChimeActive.sub((v) => {
+        this.soundManager.handleSoundCondition('singleChime', v);
+      }),
     );
 
     // Inhibit single chimes for the first two seconds after power-on
@@ -2933,7 +2949,7 @@ export class FwsCore {
     this.clUpPulseNode.write(this.clUpInputBuffer.read());
     this.clDownPulseNode.write(this.clDownInputBuffer.read());
     this.abnProcPulseNode.write(this.abnProcInputBuffer.read());
-    this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
+    const athrDiscPressed = this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read());
     this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read());
 
     // Inputs update
@@ -3178,10 +3194,18 @@ export class FwsCore {
     this.engineStartSelNorm.set(this.engSelectorPosition.get() === 1);
     this.engineStartSelIgnition.set(this.engSelectorPosition.get() === 2);
 
-    const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
-    const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
-    const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
-    const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+    const masterCautionButtonLeft = this.masterCautionPbLeftPulseNode.write(
+      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool') > 0,
+    );
+    const masterCautionButtonRight = this.masterCautionPbRightPulseNode.write(
+      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool') > 0,
+    );
+    const masterWarningButtonLeft = this.masterWarningPbLeftPulseNode.write(
+      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool') > 0,
+    );
+    const masterWarningButtonRight = this.masterWarningPbRightPulseNode.write(
+      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool') > 0,
+    );
 
     /* HYDRAULICS acquisition */
 
@@ -3745,29 +3769,71 @@ export class FwsCore {
     const athrDisengaged = this.autoThrustDisengagedInstantPulse.write(athrEngagedOrArmed);
     const allThrottleIdle = this.allThrottleIdle.get();
 
+    const ra1 = this.radioHeight1.valueOr(null);
+    const ra2 = this.radioHeight2.valueOr(null);
+    const ra3 = this.radioHeight3.valueOr(null);
+    const allRaValids = ra1 !== null && ra2 !== null && ra3 !== null;
+
+    if (allRaValids) {
+      if (ra1 < ra2) {
+        if (ra2 < ra3) {
+          this.medianRadioHeight = ra2;
+        } else {
+          this.medianRadioHeight = ra1 < ra3 ? ra3 : ra1;
+        }
+      } else {
+        if (ra1 < ra3) {
+          this.medianRadioHeight = ra3;
+        } else {
+          this.medianRadioHeight = ra2 < ra3 ? ra3 : ra2;
+        }
+      }
+    } else {
+      this.medianRadioHeight = null;
+    }
+
     const below50ft =
       onGround ||
-      (this.radioHeight1.valueOr(2500) < 50 &&
-        this.radioHeight2.valueOr(2500) < 50 &&
-        this.radioHeight3.valueOr(2500) < 50);
+      (this.medianRadioHeight ?? Infinity) < 50 ||
+      (ra1 ?? Infinity) < 50 ||
+      (ra2 ?? Infinity) < 50 ||
+      (ra3 ?? Infinity) < 50;
 
     const tlaIdleMtrig = this.autoThrustDiscIdleMtrig.write(allThrottleIdle, deltaTime);
 
-    const inhibitAthrInvoluntary = (tlaIdleMtrig || this.allThrottleReverse.get()) && below50ft;
+    const inhibitAthrDiscWarning = (tlaIdleMtrig || this.allThrottleReverse.get()) && below50ft;
 
     const tlaIdleAbove50Feet = !below50ft && allThrottleIdle;
-    const voluntaryAthrDiscCond = tlaIdleAbove50Feet || this.autoThrustInstinctiveDiscPressed.read();
-    const voluntaryAthrDisc = !athrEngagedOrArmed && voluntaryAthrDiscCond;
+    const voluntaryAthrOffWarningCondition = tlaIdleAbove50Feet || athrDiscPressed;
+    const voluntaryAthrDiscPreCondition = athrEngagedOrArmed && voluntaryAthrOffWarningCondition;
+
+    const voluntaryAthrOffMtrig = this.voluntaryAthrOffMtrig.write(voluntaryAthrDiscPreCondition, deltaTime);
+    const voluntaryAthrOffMemory = this.voluntaryAthrOffDiscMemory.write(
+      voluntaryAthrDiscPreCondition,
+      !voluntaryAthrOffMtrig || athrDisengaged,
+    );
+
+    const voluntaryAthrOffMemoryDownPulse = this.voluntaryAthrOffMemoryDownPulse.write(voluntaryAthrOffMemory);
+    const athrOffVoluntaryMemoryDownPulse = this.athrOffAndVoluntaryConditionMemorizedPulse.write(
+      !voluntaryAthrOffMemoryDownPulse && !voluntaryAthrOffWarningCondition && athrDisengaged,
+    );
+    const athrDisengagedOrMemorizedPulse = athrDisengaged || athrOffVoluntaryMemoryDownPulse;
+    const voluntaryAthrOffPulseOrPreCondition = voluntaryAthrOffMemoryDownPulse || voluntaryAthrOffWarningCondition;
+
+    const voluntaryAthrDisc =
+      !athrEngagedOrArmed && athrDisengagedOrMemorizedPulse && voluntaryAthrOffPulseOrPreCondition;
+
     const resetAthrWarning = this.phase1PulseNode.write(flightPhase === 1) || athrEngagedOrArmed;
-
-    const resetAthrCaution = resetAthrWarning || masterCautionButtonLeft || masterCautionButtonRight;
-
-    const voluntaryAthrDisc = false;
+    const resetAthrCaution =
+      resetAthrWarning ||
+      (!athrDisengagedOrMemorizedPulse && (masterCautionButtonLeft || masterCautionButtonRight)) ||
+      (!athrDisengagedOrMemorizedPulse && athrDiscPressed);
 
     // A/THR OFF SC
     const voluntaryAthrDiscMemoScMtrig = this.voluntaryAthrOffCautionMtrig.write(voluntaryAthrDisc, deltaTime);
-    this.voluntaryAthrOffCaution.set(
-      this.voluntaryAthrOffCautionMemory.write(voluntaryAthrDisc, !voluntaryAthrDiscMemoScMtrig || resetAthrCaution),
+    this.requestMasterCautionFromAThrOff = this.voluntaryAthrOffCautionMemory.write(
+      voluntaryAthrDisc,
+      !voluntaryAthrDiscMemoScMtrig || resetAthrCaution,
     );
     // A/THR OFF MEMO
     const voluntaryAThrDiscMemoMtrig = this.voluntaryAthrOffMemoMtrig.write(voluntaryAthrDisc, deltaTime);
@@ -3776,21 +3842,22 @@ export class FwsCore {
     );
 
     // UN
-    const athrOffUnvoluntary = false;
+    const athrOffUnvoluntary =
+      !athrEngagedOrArmed &&
+      !inhibitAthrDiscWarning &&
+      !voluntaryAthrOffPulseOrPreCondition &&
+      athrOffVoluntaryMemoryDownPulse;
 
     this.autoThrustOffInvoluntaryWarning.set(
       this.autoThrustOffInvoluntaryWarningMemory.write(athrOffUnvoluntary, resetAthrWarning),
     );
 
     this.autoThrustOffInvoluntaryCaution.set(
-      this.autoThrustOffInvoluntaryCautionMemory.write(athrOffUnvoluntary, resetAthrWarning),
+      this.autoThrustOffInvoluntaryCautionMemory.write(athrOffUnvoluntary, resetAthrCaution),
     );
 
     // PFD ONLY memo A/THR OFF
-    this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
-      involuntaryAThrDisc,
-      resetAthrWarning || this.autoThrustInstinctiveDiscPressed.read(),
-    );
+    this.autoThrustInvoluntaryPfdMemoMemoryNode.write(athrOffUnvoluntary, resetAthrWarning || athrDiscPressed);
 
     // A/THR LIMITED
     this.autoThrustModeMessage = this.autoThrustModeMessageSimVar.get();
@@ -5409,7 +5476,6 @@ export class FwsCore {
     if (masterCautionButtonLeft || masterCautionButtonRight) {
       this.auralSingleChimePending = false;
       this.requestMasterCautionFromFaults = false;
-      this.requestMasterCautionFromAThrOff = false;
     }
     if (masterWarningButtonLeft || masterWarningButtonRight) {
       this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
@@ -6087,18 +6153,20 @@ export class FwsCore {
     this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0);
 
     const chimeRequested =
-      (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
-    if (chimeRequested && !this.auralSingleChimeInhibitTimer.isPending()) {
-      this.auralSingleChimePending = false;
-      this.requestSingleChimeFromAThrOff = false;
-      this.soundManager.enqueueSound('singleChime');
-      // there can only be one SC per 2 seconds, non-cumulative, so clear any pending ones at the end of that inhibit period
-      this.auralSingleChimeInhibitTimer.schedule(
-        () => (this.auralSingleChimePending = false),
-        FwsCore.AURAL_SC_INHIBIT_TIME,
-      );
+      (this.auralSingleChimePending || this.requestMasterCautionFromAThrOff) && !this.auralCrcActive.get();
+    if (!chimeRequested) {
+      this.auralSingleChimeActive.set(false);
+    } else {
+      if (!this.auralSingleChimeInhibitTimer.isPending()) {
+        this.auralSingleChimePending = false;
+        this.auralSingleChimeActive.set(true);
+        // there can only be one SC per 2 seconds, non-cumulative, so clear any pending ones at the end of that inhibit period
+        this.auralSingleChimeInhibitTimer.schedule(
+          () => (this.auralSingleChimePending = false),
+          FwsCore.AURAL_SC_INHIBIT_TIME,
+        );
+      }
     }
-
     this.normalChecklists.update();
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
