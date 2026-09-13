@@ -35,6 +35,9 @@ interface FwsAural {
   /** If this is set, this sound is repeated periodically with the specified pause in seconds */
   periodicWithPause?: number;
   continuous?: boolean;
+
+  /** If true, sound is immediately stopped upon request */
+  immediateStop?: boolean;
 }
 
 export interface FwsAudioOutputSignals {
@@ -56,6 +59,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     priority: 0,
     type: FwsAuralWarningType.SingleChime,
     continuous: false,
+    immediateStop: true,
   },
   cavalryChargeOnce: {
     localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
@@ -325,17 +329,25 @@ export class FwsSoundManager {
   /** Remove sound from queue, e.g. when condition doesn't apply anymore. If sound is currently playing, stops sound immediately */
   dequeueSound(soundKey: keyof typeof FwsAuralsList) {
     // Check if this sound is currently playing
-    if (this.currentSoundPlaying === soundKey && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
-      this.stopCurrentSound();
+    if (this.currentSoundPlaying === soundKey) {
+      const sound = FwsAuralsList[this.currentSoundPlaying];
+      if (sound !== undefined) {
+        this.stopCurrentSound(sound);
+      }
     }
     this.soundQueue.delete(soundKey);
   }
 
-  private stopCurrentSound() {
-    if (this.currentSoundPlaying) {
-      const sound = FwsAuralsList[this.currentSoundPlaying];
-      // Only LVar sounds which are continuous can be stopped
-      if (!sound.localVarName || !sound.continuous) {
+  private stopCurrentSound(currentSound?: FwsAural) {
+    const sound =
+      currentSound !== undefined
+        ? currentSound
+        : this.currentSoundPlaying !== null
+          ? FwsAuralsList[this.currentSoundPlaying]
+          : null;
+    if (sound) {
+      // Only LVar sounds which are continuous or with explicit stop can be stopped
+      if (!sound.localVarName || (!sound.continuous && !sound.immediateStop)) {
         return;
       }
       SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
