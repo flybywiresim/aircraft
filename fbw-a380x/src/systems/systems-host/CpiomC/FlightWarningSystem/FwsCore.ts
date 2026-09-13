@@ -965,12 +965,10 @@ export class FwsCore {
   /* 27 - FLIGHT CONTROLS */
 
   public readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
-
   public readonly altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
-
   public readonly altnLawCondition = Subject.create(false);
   public readonly altn1ALawCondition = Subject.create(false);
-
+  public altn2LawConfirm = false;
   public readonly directLawCondition = Subject.create(false);
 
   public readonly fcdc1FaultCondition = Subject.create(false);
@@ -3231,10 +3229,8 @@ export class FwsCore {
       this.eng1Or2RunningAndPhaseConfirmationNode.read() && this.eng3Or4RunningAndPhaseConfirmationNode.read(),
     );
 
-    const phase1211Or12 = this.flightPhase12Or1112.get();
-
-    const greenAbnormLoPressure = gLoPressure && this.eng1Or2RunningAndPhaseConfirmationNode.read() && !phase1211Or12;
-    const yellowAbnormLoPressure = yLoPressure && this.eng3Or4RunningAndPhaseConfirmationNode.read() && !phase1211Or12;
+    const greenAbnormLoPressure = gLoPressure && this.eng1Or2RunningAndPhaseConfirmationNode.read();
+    const yellowAbnormLoPressure = yLoPressure && this.eng3Or4RunningAndPhaseConfirmationNode.read();
 
     this.greenAbnormLoPressure.set(greenAbnormLoPressure);
     this.yellowAbnormLoPressure.set(yellowAbnormLoPressure);
@@ -4675,18 +4671,21 @@ export class FwsCore {
     this.fcdc1FaultCondition.set(SFCDC1FT && !SFCDC12FT);
     this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || !this.dc2BusPowered.get()));
 
-    // ALTN LAW 2 computation
-    const altnLaw2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
-    const altnLaw2Confirm = this.altn2LawConfirmNode.write(altnLaw2, deltaTime);
-
-    // ALTN LAW 1 computation
-    const altnLaw1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
-    const altnLaw1Confirm = this.altn1LawConfirmNode.write(altnLaw1, deltaTime);
-
     const altnLawHydraulicAndPhasePreCondition =
       !flightPhase112 && !this.greenHydraulicLowPressureNormal && !this.yellowHydraulicLowPressureNormal;
 
-    this.altnLawCondition.set((altnLaw1Confirm || altnLaw2Confirm) && !altnLawHydraulicAndPhasePreCondition);
+    // ALTN LAW 2 computation
+    const altnLaw2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
+    this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && !altnLawHydraulicAndPhasePreCondition, deltaTime);
+
+    // ALTN LAW 1 computation
+    const altn1Law = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
+    const altn1LawConfirm = this.altn1LawConfirmNode.write(
+      altn1Law && !altnLawHydraulicAndPhasePreCondition,
+      deltaTime,
+    );
+
+    this.altnLawCondition.set(altn1LawConfirm || this.altn2LawConfirm);
     this.altn1ALawCondition.set(
       (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) &&
         !altnLawHydraulicAndPhasePreCondition,

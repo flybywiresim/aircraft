@@ -2573,8 +2573,8 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
       inopSysAllPhases: () => [
-        this.fws.altn2LawConfirmNodeOutput.get() ? '220300007' : '',
-        this.fws.altn2LawConfirmNodeOutput.get() ? '220300024' : '',
+        this.fws.altn2LawConfirm ? '220300007' : '',
+        this.fws.altn2LawConfirm ? '220300024' : '',
       ],
       info: () => ['340200002'],
     },
