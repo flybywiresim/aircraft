@@ -43,6 +43,19 @@ export interface AirframePerformanceEnvelope {
   flight: number[][];
 }
 
+export interface PayloadPerformanceEnvelopeVariant {
+  name: string;
+  weights: PayloadPerformanceEnvelopeVariantWeights;
+  envelope: AirframePerformanceEnvelope;
+  chartLimits: PayloadChartLimits;
+}
+
+export interface PayloadPerformanceEnvelopeVariantWeights {
+  mlw: number;
+  mtow: number;
+  mzfw: number;
+}
+
 export interface AirframeDimensions {
   aircraftWheelBase: number;
   aircraftLengthMeter: number;
@@ -58,6 +71,7 @@ export interface PayloadFlypadInfo {
   planeCanvas: PayloadPlaneCanvas;
   chartLimits: PayloadChartLimits;
   seatDisplay: PayloadSeatDisplay[];
+  performanceEnvelopeVariants?: PayloadPerformanceEnvelopeVariant[];
 }
 export interface PayloadPlaneCanvas {
   width: number;
