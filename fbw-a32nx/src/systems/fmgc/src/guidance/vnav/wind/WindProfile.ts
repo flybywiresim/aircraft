@@ -289,6 +289,10 @@ export class WindProfile implements WindInterface {
     }
   }
 
+  public getCurrentWindMeasurement(result: WindMeasurement) {
+    return this.measurementDevice.get(result);
+  }
+
   private computeTailwindComponent(distanceFromStart: number, vector: WindVector): TailwindComponent {
     const trueTrack = this.tracks.get(distanceFromStart);
 

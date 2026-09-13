@@ -7,6 +7,7 @@ import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
 import { CDUWaypointPage } from './A320_Neo_CDU_WaypointPage';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { CDUEquitimePointPage } from './A320_Neo_CDU_EquitimePointPage';
 
 export class CDUDataIndexPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface) {
@@ -67,6 +68,10 @@ export class CDUDataIndexPage {
 
     mcdu.onLeftInput[4] = () => {
       CDUAirportsMonitor.ShowPage(mcdu);
+    };
+
+    mcdu.onLeftInput[5] = () => {
+      CDUEquitimePointPage.ShowPage(mcdu);
     };
 
     mcdu.onNextPage = () => {
