@@ -103,6 +103,11 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FG] Fixed managed speed target not constrained by characteristic speeds outside of approach phase - @lukecologne (luke)
 1. [A32NX/FG] Fixed ATHR being constrainted by "F" speed when landing in CONF 3 - @lukecologne (luke)
 1. [A32NX/FG] Target the lower speed margin when underspeeding or on geometric path in DES mode - @lukecologne (luke)
+1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
