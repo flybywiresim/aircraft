@@ -12,7 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 // FIXME should not import from instruments
-import { FcdcSimvars } from '../../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
 // FIXME should not import from instruments
 import { PseudoFwcSimvars } from '../../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';

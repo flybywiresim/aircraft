@@ -89,7 +89,7 @@ import {
   OisDebugDataControlEvents,
 } from '../../../instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvars } from '@shared/publishers/FcdcPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));

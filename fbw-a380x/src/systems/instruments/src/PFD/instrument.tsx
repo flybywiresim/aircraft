@@ -12,7 +12,7 @@ import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneV
 import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
-import { FcdcSimvarPublisher } from '../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
 import { SfccSimVarPublisher } from '../MsfsAvionicsCommon/providers/SfccPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
