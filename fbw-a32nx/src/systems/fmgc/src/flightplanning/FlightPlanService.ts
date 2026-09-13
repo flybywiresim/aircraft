@@ -21,6 +21,8 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { Geometry } from '../guidance/Geometry';
+import { DirectTo } from './types/DirectTo';
 import { WindEntry, PropagatedWindEntry, WindVector, FlightPlanWindEntry } from './data/wind';
 import { FlightPlan } from './plans/FlightPlan';
 
@@ -568,32 +570,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     await plan.finaliseAirwayEntry();
   }
 
-  async directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
+  async directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo) {
+    const finalIndex = this.prepareDestructiveModification(FlightPlanIndex.Active);
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
-  }
-
-  async directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
-
-    const plan = this.flightPlanManager.get(finalIndex);
-
-    plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
+    plan.directTo(ppos, trueTrack, directTo);
   }
 
   async addOrEditManualHold(
@@ -742,6 +724,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
 
     plan.editFixInfoEntry(index, callback);
+  }
+
+  async requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, planIndex = FlightPlanIndex.Active) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    plan.requestFixInfoAbeamPoint(index);
   }
 
   async setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
@@ -1077,5 +1065,33 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     return Promise.resolve(false);
+  }
+
+  async insertAbeamPoint(
+    alongLegIndex: number,
+    location: Coordinates,
+    referenceFix: Fix,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
+  ): Promise<void> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    plan.insertAbeamPoint(alongLegIndex, location, referenceFix);
+  }
+
+  async locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLeg: number,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
+  ): Promise<[number, Coordinates] | undefined> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    return plan.locateAbeamPoint(geometry, referenceFix, endLeg);
   }
 }

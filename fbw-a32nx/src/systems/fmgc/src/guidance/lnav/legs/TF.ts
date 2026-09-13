@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { Fix, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { Fix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
@@ -32,13 +32,6 @@ export class TFLeg extends XFLeg {
     this.to = to;
     this.segment = segment;
     this.course = bearingTo(this.from.location, this.to.location);
-
-    // FIXME this is not how the real plane decides to show/hide runway/airport legs
-    // Do not display on map if this is an airport or runway leg
-    const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
-
-    this.displayedOnMap =
-      waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
   }
 
   get inboundCourse(): DegreesTrue {

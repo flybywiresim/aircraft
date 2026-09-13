@@ -37,9 +37,23 @@ export abstract class Leg extends Guidable {
     return 'location' in this.terminationWaypoint ? this.terminationWaypoint.location : this.terminationWaypoint;
   }
 
-  isNull = false;
+  /**
+   * The waypoint that is displayed on the ND for this leg. This is not always the same as the termination waypoint.
+   * FM legs do not have a termination waypoint, but display their defining fix on the ND
+   */
+  get displayWaypoint(): Fix | Coordinates | undefined {
+    return this.terminationWaypoint;
+  }
 
-  displayedOnMap = true;
+  get displayCoordinates(): Coordinates | undefined {
+    if (!this.displayWaypoint) {
+      return undefined;
+    }
+
+    return 'location' in this.displayWaypoint ? this.displayWaypoint.location : this.displayWaypoint;
+  }
+
+  isNull = false;
 
   predictedTas: Knots;
 

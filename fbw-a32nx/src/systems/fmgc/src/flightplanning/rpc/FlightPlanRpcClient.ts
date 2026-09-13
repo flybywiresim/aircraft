@@ -27,6 +27,8 @@ import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { Geometry } from '../../guidance/Geometry';
+import { DirectTo } from '../types/DirectTo';
 import { PropagatedWindEntry, WindEntry, WindVector } from '../data/wind';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
@@ -371,24 +373,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('finaliseAirwayEntry', planIndex, alternate);
   }
 
-  directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void> {
-    return this.callFunctionViaRpc('directToLeg', ppos, trueTrack, targetLegIndex, withAbeam, planIndex);
-  }
-
-  directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void> {
-    return this.callFunctionViaRpc('directToWaypoint', ppos, trueTrack, waypoint, withAbeam, planIndex);
+  directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('directTo', ppos, trueTrack, directTo, planIndex);
   }
 
   addOrEditManualHold(
@@ -487,6 +473,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     planIndex: number,
   ): Promise<void> {
     return this.callFunctionViaRpc('editFixInfoEntry', index, callback, planIndex);
+  }
+
+  requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('requestFixInfoAbeamPoint', index, planIndex);
   }
 
   setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
@@ -595,5 +585,25 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   /** @inheritdoc */
   public tryEraseEngineOutSid(): Promise<boolean> {
     return this.callFunctionViaRpc('tryActivateEngineOutSid');
+  }
+
+  insertAbeamPoint(
+    alongLegIndex: number,
+    location: Coordinates,
+    referenceFix: Fix,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void> {
+    return this.callFunctionViaRpc('insertAbeamPoint', alongLegIndex, location, referenceFix, planIndex, alternate);
+  }
+
+  locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLegIndex: number,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<[number, Coordinates] | undefined> {
+    return this.callFunctionViaRpc('locateAbeamPoint', geometry, referenceFix, endLegIndex, planIndex, alternate);
   }
 }

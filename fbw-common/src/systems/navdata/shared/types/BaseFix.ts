@@ -2,7 +2,7 @@ import { Coordinates } from 'msfs-geo';
 import { DatabaseItem } from './Common';
 import { VhfNavaid } from './VhfNavaid';
 import { SectionCode } from './SectionCode';
-import { Waypoint, WaypointArea } from './Waypoint';
+import { AbeamWaypoint, Waypoint, WaypointArea } from './Waypoint';
 import { NdbNavaid } from './NdbNavaid';
 import { Airport } from './Airport';
 import { Runway } from './Runway';
@@ -20,4 +20,8 @@ export type Fix = Airport | Runway | NdbNavaid | VhfNavaid | Waypoint;
 
 export function isFix(o: any): o is Fix {
   return typeof o === 'object' && 'location' in o && 'databaseId' in o;
+}
+
+export function isAbeamWaypoint(o: any): o is AbeamWaypoint {
+  return isFix(o) && 'referenceFix' in o;
 }

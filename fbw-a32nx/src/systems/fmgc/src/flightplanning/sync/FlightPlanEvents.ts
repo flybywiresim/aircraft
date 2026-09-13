@@ -76,6 +76,10 @@ export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent 
   fixInfo: FixInfoData | null;
 }
 
+export interface FlightPlanRequestFixInfoAbeamEvent extends FlightPlanEditSyncEvent {
+  index: 1 | 2 | 3 | 4;
+}
+
 export interface PerformanceDataSetEvent<T> extends FlightPlanEditSyncEvent {
   value: T;
 }
@@ -122,6 +126,7 @@ export interface FlightPlanEvents {
   'flightPlan.autoDeleteCruiseStep': FlightPlanEditSyncEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
+  'flightPlan.requestFixInfoAbeamPoint': FlightPlanRequestFixInfoAbeamEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
   'flightPlan.pendingAirwaysEdit': FlightPlanPendingAirwaysEditEvent;
   'flightPlan.setCruiseWinds': FlightPlanCruiseWindsEditEvent;
