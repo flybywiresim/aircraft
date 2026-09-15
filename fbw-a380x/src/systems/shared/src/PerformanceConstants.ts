@@ -27,10 +27,10 @@ export const minZfwCg = 23; // %
 export const maxZfwCg = 48; // %
 
 export const minZfw = 270_000; // kg, no reference yet
-export const maxZfw = 373_000; // kg
+export const maxZfw = 369_000; // kg
 
 export const minGw = 270_000; // kg
-export const maxGw = 512_000; // kg
+export const maxGw = 575_000; // kg
 
 export const maxBlockFuel = 289_982; // kg
 export const maxTaxiFuel = 9_889; // kg

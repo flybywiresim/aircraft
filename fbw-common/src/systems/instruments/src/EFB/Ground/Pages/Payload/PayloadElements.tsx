@@ -402,7 +402,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = ({
               <div className="text-md whitespace-nowrap px-4 font-light">
                 <PayloadValueInput
                   min={Math.round(Units.kilogramToUser(emptyWeight))}
-                  max={Math.round(Units.kilogramToUser(airframeInfo?.designLimits.weights.maxZfw))}
+                  max={Math.round(Units.kilogramToUser(999999))}
                   value={Units.kilogramToUser(zfwDesired)}
                   onBlur={(x) => {
                     if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
@@ -419,7 +419,7 @@ export const PayloadInputTable: React.FC<PayloadInputTableProps> = ({
               <div className="text-md whitespace-nowrap px-4 font-light">
                 <PayloadValueInput
                   min={Math.round(Units.kilogramToUser(emptyWeight))}
-                  max={Math.round(Units.kilogramToUser(airframeInfo?.designLimits.weights.maxGw))}
+                  max={Math.round(Units.kilogramToUser(999999))}
                   value={Units.kilogramToUser(gwDesired)}
                   onBlur={(x) => {
                     if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
