@@ -146,6 +146,7 @@ span.Amber {
   display: flex;
   flex: 8;
   border-bottom: 2px solid white;
+  flex-direction: column;
 }
 
 .atc-mailbox-cb-1 {
@@ -155,4 +156,45 @@ span.Amber {
 
 .atc-mailbox-cb-2 {
   flex: 1;
+}
+
+.atc-mailbox-text {
+  font-size: 28px;
+  color: $display-green;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+  line-height: 38px;
+}
+
+.atc-mailbox-msg-status {
+  display: flex;
+  flex-direction: row;
+}
+
+.atc-mailbox-msg-area {
+  padding: 0 5px;
+  display: flex;
+  flex-direction: row;
+}
+
+.atc-mailbox-msg-body {
+  white-space: pre-line;
+  width:440px;
+}
+
+.atc-mailbox-msg-pg-number-indication {
+  width: 80px;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-msg {
+  margin-left: auto;
+  width: 150px;
+  text-align: center;
+}
+
+.status-open {
+  color: rgb(0,255,255);
 }
