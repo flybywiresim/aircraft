@@ -1428,10 +1428,6 @@ export class FwsCore {
 
   public readonly yellowElecAandBPumpOff = Subject.create(false);
 
-  private yellowHydraulicLowPressureNormal = false;
-
-  private greenHydraulicLowPressureNormal = false;
-
   /* 31 - FWS */
 
   public readonly flightPhase = Subject.create<FwcFlightPhase>(FwcFlightPhase.ElecPwr);
@@ -3464,9 +3460,6 @@ export class FwsCore {
 
     this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_RAT_STOW_POSITION', 'percent over 100'));
 
-    this.yellowHydraulicLowPressureNormal = yLoPressure && !yellowAbnormLoPressure;
-    this.greenHydraulicLowPressureNormal = gLoPressure && !greenAbnormLoPressure;
-
     /* ADIRS acquisition */
     /* NAVIGATION */
 
@@ -4671,24 +4664,20 @@ export class FwsCore {
     this.fcdc1FaultCondition.set(SFCDC1FT && !SFCDC12FT);
     this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || !this.dc2BusPowered.get()));
 
-    const altnLawHydraulicAndPhasePreCondition =
-      !flightPhase112 && !this.greenHydraulicLowPressureNormal && !this.yellowHydraulicLowPressureNormal;
+    const altnLawPhasePreCondition = !flightPhase112;
 
     // ALTN LAW 2 computation
     const altnLaw2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
-    this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && !altnLawHydraulicAndPhasePreCondition, deltaTime);
+    this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && !altnLawPhasePreCondition, deltaTime);
 
     // ALTN LAW 1 computation
     const altn1Law = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
-    const altn1LawConfirm = this.altn1LawConfirmNode.write(
-      altn1Law && !altnLawHydraulicAndPhasePreCondition,
-      deltaTime,
-    );
+    const altn1LawConfirm = this.altn1LawConfirmNode.write(altn1Law && !altnLawPhasePreCondition, deltaTime);
 
     this.altnLawCondition.set(altn1LawConfirm || this.altn2LawConfirm);
     this.altn1ALawCondition.set(
       (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) &&
-        !altnLawHydraulicAndPhasePreCondition,
+        !altnLawPhasePreCondition,
     );
 
     // DIRECT LAW computation
