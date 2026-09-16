@@ -876,7 +876,7 @@ export class CDUWindPage {
     return this.parseWindEntry(mcdu, input, grndAltitude);
   }
 
-  private static parseWindVector(mcdu: LegacyFmsPageInterface, input: string): WindVector | null {
+  public static parseWindVector(mcdu: LegacyFmsPageInterface, input: string): WindVector | null {
     if (!input.match(/^\d{1,3}\/\d{1,3}$/)) {
       mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;

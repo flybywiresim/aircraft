@@ -107,6 +107,7 @@ import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
+import { EquitimePoint } from '@fmgc/EquitimePoint';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -505,6 +506,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       L: new EfisInterface(this.bus, 'L', this.currFlightPlanService),
       R: new EfisInterface(this.bus, 'R', this.currFlightPlanService),
     };
+    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.guidanceController = new GuidanceController(
       this.bus,
       this,
@@ -512,8 +514,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces,
       a320EfisRangeSettings,
       A320AircraftConfig,
+      this.navigation,
     );
-    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
       'L',
@@ -5626,6 +5628,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getHistoryWinds(cruiseLevel: number | null) {
     return this.historyWinds?.getRecordedWinds(cruiseLevel);
   }
+
+  public get equitimePoint(): EquitimePoint {
+    return this.guidanceController.equitimePoint;
+  }
+
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------
