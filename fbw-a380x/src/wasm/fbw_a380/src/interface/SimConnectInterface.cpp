@@ -3714,8 +3714,7 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
 
     default:
       // print unknown request id
-      std::printf("WASM: Unknown request id in SimConnect connection: ");
-      std::printf("%g\n", data->dwRequestID);
+      std::printf("WASM: Unknown request id in SimConnect connection: %ld\n", data->dwRequestID);
       return;
   }
 }
