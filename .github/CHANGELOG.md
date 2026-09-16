@@ -113,6 +113,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
+1. [GSX] Fix passenger and cargo loads reverting to values from the previous turnaround during GSX boarding and deboarding - @leon7891 (Leon)
 
 ## 2024.1.0
 
