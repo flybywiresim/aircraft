@@ -29,10 +29,10 @@ const normalizeWeightToKilograms = (weight: number, units: string): number | und
 /**
  * Find the A380 weight variant that corresponds to simbrief ofp weight limits
  *
- * @param {(PayloadPerformanceEnvelopeVariant[] | undefined)} variants
- * @param {(SimbriefStructuralWeights | undefined)} simbriefWeights
- * @param {string} simbriefUnits
- * @return {*}  {(PayloadPerformanceEnvelopeVariant | undefined)}
+ * @param variants Array of performance envelopes to parse.
+ * @param simbriefWeights Weights from simbrief OFP to find WV
+ * @param simbriefUnits Units used in Simbrief OFP
+ * @return Peformance envelope of variant matching Simbrief weights. Returns undefined if no match found.
  */
 export const selectPerformanceEnvelopeVariant = (
   variants: PayloadPerformanceEnvelopeVariant[] | undefined,
