@@ -74,26 +74,21 @@ FcdcBus Fcdc::getBusOutputs() {
   // Target: Should behave unsuspiciously in normal ops
   Arinc429SignStatus ssm = Arinc429SignStatus::NormalOperation;
 
-  LateralLaw systemLateralLaw =
-      allPrimsDead ? LateralLaw::DirectLaw
-                   : getLateralLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 19),
-                                                 bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 20));
-
   PitchLaw systemPitchLaw = allPrimsDead
                                 ? PitchLaw::DirectLaw
-                                : getPitchLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 16),
-                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
-                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
+                                : getLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 16),
+                                                       bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
+                                                       bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
 
   output.efcsStatus1.setSsm(ssm);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A || systemPitchLaw == PitchLaw::AlternateLaw1B ||
                                     systemPitchLaw == PitchLaw::AlternateLaw1C);
-  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw2);
+  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw2A || systemPitchLaw == PitchLaw::AlternateLaw2B);
   output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1A);
   output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::DirectLaw);
-  output.efcsStatus1.setBit(16, systemLateralLaw == LateralLaw::NormalLaw);
-  output.efcsStatus1.setBit(17, systemLateralLaw == LateralLaw::DirectLaw);
+  output.efcsStatus1.setBit(16, false);
+  output.efcsStatus1.setBit(17, false);
   output.efcsStatus3.setBit(19, allPrimsDead);
   output.efcsStatus3.setBit(20, allPrimsDead);
   output.efcsStatus3.setBit(21, allPrimsDead);
@@ -407,7 +402,7 @@ void Fcdc::updateSelfTest(double deltaTime) {
   }
 }
 
-PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
+PitchLaw Fcdc::getLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   if (!bit1 && !bit2 && bit3) {
     return PitchLaw::NormalLaw;
   } else if (!bit1 && bit2 && !bit3) {
@@ -417,20 +412,12 @@ PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   } else if (bit1 && !bit2 && !bit3) {
     return PitchLaw::AlternateLaw1C;
   } else if (bit1 && !bit2 && bit3) {
-    return PitchLaw::AlternateLaw2;
+    return PitchLaw::AlternateLaw2A;
   } else if (bit1 && bit2 && !bit3) {
+    return PitchLaw::AlternateLaw2B;
+  } else if (bit1 && bit2 && bit3) {
     return PitchLaw::DirectLaw;
   } else {
     return PitchLaw::None;
-  }
-}
-
-LateralLaw Fcdc::getLateralLawStatusFromBits(bool bit1, bool bit2) {
-  if (bit1) {
-    return LateralLaw::NormalLaw;
-  } else if (bit2) {
-    return LateralLaw::DirectLaw;
-  } else {
-    return LateralLaw::None;
   }
 }
