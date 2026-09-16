@@ -206,6 +206,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn gsx_bypassed_deboard_state(mut self) -> Self {
+        self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Bypassed);
+        self
+    }
+
     fn gsx_complete_deboard_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Completed);
         self
@@ -230,6 +235,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn board_gsx_pax(mut self, pax_board: i32) -> Self {
+        self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", pax_board);
+        self
+    }
+
     fn deboard_gsx_pax(mut self, pax_deboard: i32) -> Self {
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", pax_deboard);
         self
@@ -242,6 +252,16 @@ impl BoardingTestBed {
 
     fn board_gsx_cargo_full(mut self) -> Self {
         self.write_by_name("FSDT_GSX_BOARDING_CARGO_PERCENT", 100.);
+        self
+    }
+
+    fn board_gsx_cargo(mut self, cargo_percent: f64) -> Self {
+        self.write_by_name("FSDT_GSX_BOARDING_CARGO_PERCENT", cargo_percent);
+        self
+    }
+
+    fn deboard_gsx_cargo(mut self, cargo_percent: f64) -> Self {
+        self.write_by_name("FSDT_GSX_DEBOARDING_CARGO_PERCENT", cargo_percent);
         self
     }
 
@@ -578,6 +598,33 @@ impl BoardingTestBed {
                 cargo.get::<pound>().floor()
             );
         }
+    }
+
+    fn cargo_target(&mut self, cs: usize) -> Mass {
+        Mass::new::<kilogram>(
+            self.read_by_name(&format!("{}_DESIRED", A320Payload::A320_CARGO[cs].cargo_id)),
+        )
+    }
+
+    fn has_no_cargo_target(&mut self) {
+        for cs in 0..A320Payload::A320_CARGO.len() {
+            assert_eq!(0., self.cargo_target(cs).get::<kilogram>().floor());
+        }
+    }
+
+    fn total_cargo(&self) -> Mass {
+        let mut total = Mass::default();
+        for cs in 0..A320Payload::A320_CARGO.len() {
+            total += self.cargo(cs);
+        }
+        total
+    }
+
+    fn has_total_cargo(&self, cargo_kg: f64) {
+        assert_eq!(
+            cargo_kg.floor(),
+            self.total_cargo().get::<kilogram>().floor()
+        );
     }
 
     fn has_all_stations_half_cargo(&mut self) {
@@ -1641,4 +1688,297 @@ fn gsx_deboarding_full_pax_partial() {
     test_bed.has_no_sound_pax_deboarding();
     test_bed.has_no_sound_pax_boarding();
     test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn gsx_consecutive_boarding_uses_stale_pax_counter() {
+    // Cycle 1 - board 116 pax.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_pax_target(A320Pax::A.into(), 24)
+        .with_pax_target(A320Pax::B.into(), 28)
+        .with_pax_target(A320Pax::C.into(), 32)
+        .with_pax_target(A320Pax::D.into(), 32)
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .board_gsx_pax(116)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_board_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(116);
+
+    // Deboard everyone.
+    let test_bed = test_bed
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax(116)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(0);
+
+    // Cycle 2 - target 150. FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL is deliberately
+    // left at 116: GSX clears its cumulative counter lazily, so the first frames
+    // of a new boarding still report the previous cycle's total.
+    let test_bed = test_bed
+        .with_pax_target(A320Pax::A.into(), 36)
+        .with_pax_target(A320Pax::B.into(), 42)
+        .with_pax_target(A320Pax::C.into(), 48)
+        .with_pax_target(A320Pax::D.into(), 24)
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .and_run();
+
+    // No pax may board until GSX reports progress for this cycle.
+    test_bed.has_pax(0);
+}
+
+#[test]
+fn gsx_deboarding_complete_keeps_cabin_empty() {
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_pax(A320Pax::A.into(), 24)
+        .with_pax(A320Pax::B.into(), 28)
+        .with_pax(A320Pax::C.into(), 32)
+        .with_pax(A320Pax::D.into(), 32)
+        .with_pax_target(A320Pax::A.into(), 24)
+        .with_pax_target(A320Pax::B.into(), 28)
+        .with_pax_target(A320Pax::C.into(), 32)
+        .with_pax_target(A320Pax::D.into(), 32)
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax(116)
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(0);
+
+    // The flyPad re-renders and pushes its stale desired layout back into the seat
+    // target local vars while GSX is still performing the deboarding.
+    let test_bed = test_bed
+        .with_pax_target(A320Pax::A.into(), 24)
+        .with_pax_target(A320Pax::B.into(), 28)
+        .with_pax_target(A320Pax::C.into(), 32)
+        .with_pax_target(A320Pax::D.into(), 32)
+        .gsx_complete_deboard_state()
+        .and_run();
+
+    // The cabin must stay empty; the deboarding just finished.
+    test_bed.has_pax(0);
+}
+
+#[test]
+fn gsx_consecutive_boarding_uses_stale_cargo_percent() {
+    // Cycle 1 - load half the hold, GSX reports 100% of it loaded.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .target_half_cargo()
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .board_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_board_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_total_cargo(4717.);
+
+    // Unload everything.
+    let test_bed = test_bed
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // Cycle 2 - target the full hold. FSDT_GSX_BOARDING_CARGO_PERCENT is deliberately
+    // left at 100 from the previous cycle: GSX clears it lazily.
+    let test_bed = test_bed
+        .target_full_cargo()
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .and_run();
+
+    // Nothing may be loaded until GSX reports progress for this cycle.
+    test_bed.has_no_cargo();
+}
+
+#[test]
+fn gsx_deboarding_complete_keeps_hold_empty() {
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .target_full_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // The flyPad re-renders and pushes its stale desired load back into the cargo
+    // target local vars while GSX is still performing the deboarding.
+    let test_bed = test_bed
+        .target_full_cargo()
+        .gsx_complete_deboard_state()
+        .and_run();
+
+    // The hold must stay empty; the deboarding just finished.
+    test_bed.has_no_cargo();
+}
+
+#[test]
+fn gsx_consecutive_deboarding_uses_stale_pax_counter() {
+    // Cycle 1 - deboard a cabin of 116.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_pax(A320Pax::A.into(), 24)
+        .with_pax(A320Pax::B.into(), 28)
+        .with_pax(A320Pax::C.into(), 32)
+        .with_pax(A320Pax::D.into(), 32)
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax(116)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(0);
+
+    // Cycle 2 - a new cabin of 116 is aboard and GSX is asked to deboard again.
+    // FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL is deliberately left at 116.
+    let test_bed = test_bed
+        .with_pax(A320Pax::A.into(), 24)
+        .with_pax(A320Pax::B.into(), 28)
+        .with_pax(A320Pax::C.into(), 32)
+        .with_pax(A320Pax::D.into(), 32)
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .and_run();
+
+    // Nobody may leave until GSX reports progress for this cycle.
+    test_bed.has_pax(116);
+}
+
+#[test]
+fn gsx_consecutive_deboarding_uses_stale_cargo_percent() {
+    // Cycle 1 - empty a full hold.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // Cycle 2 - the hold is full again and GSX is asked to unload it.
+    let mut test_bed = test_bed
+        .with_full_cargo()
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        // GSX has not refreshed its cargo percentage for this cycle yet.
+        .deboard_gsx_cargo(100.)
+        .and_run();
+
+    // Nothing may be unloaded until GSX reports progress for this cycle.
+    test_bed.has_full_cargo();
+}
+
+#[test]
+fn gsx_deboarding_complete_clears_cargo_target() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .target_full_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // The desired load must be cleared too, otherwise the next boarding scales
+    // against the previous flight's target.
+    test_bed.has_no_cargo_target();
+}
+
+#[test]
+fn gsx_cancelled_deboarding_does_not_scale_next_boarding() {
+    // A deboarding is requested - which snapshots the loaded cargo - then cancelled
+    // before GSX ever performs it.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .target_full_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .and_stabilize()
+        .gsx_bypassed_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    // Next flight - half the hold, GSX reports it 50% loaded.
+    let test_bed = test_bed
+        .target_half_cargo()
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .board_gsx_cargo(50.)
+        .and_run()
+        .and_stabilize();
+
+    // Half of the new target, not half of the snapshot taken for the cancelled deboarding.
+    test_bed.has_total_cargo(2358.);
 }
