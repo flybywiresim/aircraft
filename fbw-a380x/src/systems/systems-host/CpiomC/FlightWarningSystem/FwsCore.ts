@@ -3567,7 +3567,7 @@ export class FwsCore {
     this.ir3InAttAlign = ir3Pitch.isNoComputedData() && ir3MaintenanceWord.bitValueOr(2, false);
     const allIrsInAttAlign = this.ir1InAttAlign && this.ir2InAttAlign && this.ir3InAttAlign;
     this.oneOrTwoIrsInAttAlignMemo.set(
-      (this.ir1InAttAlign || this.ir2InAttAlign || this.ir3InAttAlign) && allIrsInAttAlign,
+      (this.ir1InAttAlign || this.ir2InAttAlign || this.ir3InAttAlign) && !allIrsInAttAlign,
     );
     this.allIrsInAttAlignMemo.set(allIrsInAttAlign);
 

@@ -480,7 +480,7 @@ export class FwsMemos {
       memoInhibit: () => false,
     },
     '340003028': {
-      // IR IN ATT ALIGN
+      // ALL IRs IN ATT ALIGN
       flightPhaseInhib: [],
       simVarIsActive: this.fws.allIrsInAttAlignMemo,
       whichCodeToReturn: () => [0],
