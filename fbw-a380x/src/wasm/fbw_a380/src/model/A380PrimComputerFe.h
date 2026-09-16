@@ -3,6 +3,7 @@
 #include "rtwtypes.h"
 #include "A380PrimComputerFe_types.h"
 
+extern const prim_outputs A380PrimComputerFe_rtZprim_outputs;
 class A380PrimComputerFe final
 {
  public:
@@ -79,7 +80,7 @@ class A380PrimComputerFe final
     real_T RateLimiterGenericVariableTs2_up;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs1_up_j;
-    a380_pitch_efcs_law EnumeratedConstant_Value;
+    a380_efcs_law EnumeratedConstant_Value;
     boolean_T ConfirmNode_isRisingEdge;
     prim_outputs out_Y0;
     real_T Constant_Value;

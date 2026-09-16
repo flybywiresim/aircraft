@@ -3,6 +3,7 @@
 #include "rtwtypes.h"
 #include "A380PrimComputerGeneralLogic_types.h"
 
+extern const prim_outputs A380PrimComputerGeneralLogic_rtZprim_outputs;
 class A380PrimComputerGeneralLogic final
 {
  public:

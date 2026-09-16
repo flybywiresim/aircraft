@@ -1,5 +1,5 @@
-#ifndef A380PitchNormalLaw_types_h_
-#define A380PitchNormalLaw_types_h_
+#ifndef A380PitchNzLaw_types_h_
+#define A380PitchNzLaw_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
@@ -10,10 +10,8 @@ struct base_pitch_data_computed
   real_T eta_trim_deg_limit_up;
   real_T delta_eta_deg;
   real_T in_flight;
-  real_T in_rotation;
   real_T in_flare;
   real_T in_flight_gain;
-  real_T in_rotation_gain;
   real_T in_flare_gain;
   real_T nz_limit_up_g;
   real_T nz_limit_lo_g;
@@ -77,6 +75,8 @@ struct pitch_normal_input
   real_T high_speed_prot_low_kn;
   real_T ap_theta_c_deg;
   boolean_T any_ap_engaged;
+  boolean_T protections_available;
+  boolean_T flare_override;
 };
 
 #endif
@@ -86,7 +86,6 @@ struct pitch_normal_input
 
 struct base_pitch_rotation
 {
-  real_T qk_c_deg_s;
   real_T eta_deg;
 };
 

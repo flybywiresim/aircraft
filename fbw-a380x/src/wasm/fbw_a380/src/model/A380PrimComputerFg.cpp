@@ -9,6 +9,3090 @@
 #include "look1_iflf_binlxpw.h"
 #include "A380FgOuterLoops.h"
 
+const prim_outputs A380PrimComputerFg_rtZprim_outputs{ { { 0.0,
+      0.0,
+      0.0
+    },
+
+    { false,
+      false,
+      false,
+      false,
+      false
+    },
+
+    { 0.0F,
+      0.0F,
+      0.0F,
+      0.0F
+    },
+
+    { 0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    { { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+
+      { { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        },
+
+        { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        },
+
+        { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        }
+      },
+
+      { { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        },
+
+        { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        },
+
+        { { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          },
+
+          { 0U,
+            0.0F
+          }
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      }
+    },
+
+    { { false,
+        fms_flight_phase::Preflight,
+        fmgc_approach_type::None,
+        false,
+        0.0,
+        0.0,
+        false,
+        false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        false,
+        false,
+        false,
+        0.0,
+        fmgc_des_submode::None,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        false,
+        0.0,
+        0.0,
+        false,
+        false,
+        false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+
+        { 0U,
+          0.0F
+        },
+        false
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        },
+
+        { 0U,
+          0.0F
+        }
+      },
+
+      { false,
+        false,
+        false,
+        false,
+        0.0,
+        false
+      }
+    }
+  },
+
+  { false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0F,
+    0.0F,
+    0.0F,
+    0.0F,
+    0.0F,
+    0.0F,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+
+  { 0.0,
+    false,
+    false,
+    0.0,
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    0.0,
+    0.0,
+    false,
+    0.0,
+    false,
+    0.0,
+    false,
+    0.0,
+    0.0,
+    false,
+    0.0,
+    0.0,
+    0.0,
+    false,
+    false
+  },
+
+  { { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    }
+  },
+
+  { { false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    { 0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+    a380_efcs_law::NormalLaw,
+    a380_efcs_law::NormalLaw,
+    a380_pitch_law::None,
+    a380_lateral_law::None,
+    false,
+    false,
+    false,
+    0U,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    0.0,
+    false,
+    0.0,
+    false,
+    false,
+    false,
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    false,
+    0.0,
+    0.0
+  },
+
+  { false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+
+    { 0.0,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F
+    },
+    false,
+    false,
+    false,
+
+    { 0U,
+      0.0F
+    },
+
+    { 0U,
+      0.0F
+    },
+    false,
+    false,
+
+    { { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      }
+    },
+    false,
+    0.0,
+    false,
+    false
+  },
+
+  { { 0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
+
+    { 0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
+
+    { 0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    },
+    lateral_law::NONE,
+    vertical_law::NONE,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    a380_athr_fma_mode::NONE,
+    a380_athr_fma_message::NONE,
+    0.0,
+    0.0,
+    0.0,
+    false,
+    false,
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    false,
+    tcas_submode::VS,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0F,
+    false,
+    0.0F,
+    false,
+    0.0F,
+    0.0F,
+    false
+  },
+
+  { { 0.0,
+      0.0,
+
+      { 0.0,
+        0.0,
+        0.0
+      },
+
+      { 0.0,
+        0.0,
+        0.0
+      },
+
+      { false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      }
+    },
+
+    { 0.0,
+      0.0,
+
+      { 0.0,
+        0.0,
+        0.0
+      },
+
+      { 0.0,
+        0.0,
+        0.0
+      },
+
+      { false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      }
+    },
+    0.0
+  },
+
+  { 0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+
+  { 0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+  { { { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      }
+    },
+
+    { { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      }
+    },
+
+    { { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      },
+
+      { 0U,
+        0.0F
+      }
+    }
+  }
+};
+
 void A380PrimComputerFg::A380PrimComputerFg_MATLABFunction(const base_arinc_429 *rtu_u, real32_T rtu_default, real32_T
   *rty_y)
 {
@@ -933,8 +4017,9 @@ void A380PrimComputerFg::step()
     rtb_OR_lr = !rtb_y_gn;
     rtb_ap_fd_condition = ((rtb_OR_lr || (A380PrimComputerFg_DWork.Delay_DSTATE_c.lateral_modes.land_active ||
       A380PrimComputerFg_DWork.Delay_DSTATE_c.longitudinal_modes.pitch_goaround_active)) &&
-      ((A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability != a380_pitch_efcs_law::AlternateLaw2) &&
-       (A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability != a380_pitch_efcs_law::DirectLaw)) &&
+      ((A380PrimComputerFg_U.in.fctl_logic.law_capability != a380_efcs_law::AlternateLaw2A) &&
+       (A380PrimComputerFg_U.in.fctl_logic.law_capability != a380_efcs_law::AlternateLaw2B) &&
+       (A380PrimComputerFg_U.in.fctl_logic.law_capability != a380_efcs_law::DirectLaw)) &&
       (!A380PrimComputerFg_U.in.general_logic.double_adr_failure) &&
       (!A380PrimComputerFg_U.in.general_logic.double_ir_failure) &&
       ((!A380PrimComputerFg_U.in.general_logic.all_ra_failure) ||
@@ -4143,7 +7228,7 @@ void A380PrimComputerFg::step()
       A380PrimComputerFg_P.BitfromLabel1_bit_mi, &rtb_y);
     rtb_LowerRelop1 = (rtb_LowerRelop1 || (rtb_y != 0U));
     rtb_OR2_nm = !rtb_OR2_nm;
-    rtb_y_gn = (A380PrimComputerFg_U.in.fctl_logic.pitch_law_capability == a380_pitch_efcs_law::NormalLaw);
+    rtb_y_gn = (A380PrimComputerFg_U.in.fctl_logic.law_capability == a380_efcs_law::NormalLaw);
     rtb_OR4_kx = !rtb_OR4_kx;
     rtb_AND2 = !rtb_AND2;
     rtb_AND10_j = ((rtb_OR4_kx || rtb_AND2) && A380PrimComputerFg_B.BusAssignment_i.fg_logic.both_ils_valid &&
@@ -5104,6 +8189,8 @@ void A380PrimComputerFg::step()
 
 void A380PrimComputerFg::initialize()
 {
+  A380PrimComputerFg_U.in = A380PrimComputerFg_rtZprim_outputs;
+  A380PrimComputerFg_Y.out = A380PrimComputerFg_rtZprim_outputs;
   A380PrimComputerFg_DWork.Delay_DSTATE_c = A380PrimComputerFg_P.Delay_InitialCondition;
   A380PrimComputerFg_DWork.DelayOneStep_DSTATE = A380PrimComputerFg_P.DelayOneStep_InitialCondition;
   A380PrimComputerFg_DWork.Delay_DSTATE_aw = A380PrimComputerFg_P.Delay_InitialCondition_f;

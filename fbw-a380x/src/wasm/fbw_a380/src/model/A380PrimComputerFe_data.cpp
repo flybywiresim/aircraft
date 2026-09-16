@@ -26,7 +26,7 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   5.0,
   0.1,
   5.0,
-  a380_pitch_efcs_law::NormalLaw,
+  a380_efcs_law::NormalLaw,
   true,
 
   {
@@ -2916,12 +2916,14 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
         0.0,
         0.0
       },
-      a380_lateral_efcs_law::NormalLaw,
-      a380_lateral_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
+      a380_efcs_law::NormalLaw,
+      a380_efcs_law::NormalLaw,
+      a380_pitch_law::None,
+      a380_lateral_law::None,
       false,
       false,
+      false,
+      0U,
       false,
       false,
       false,

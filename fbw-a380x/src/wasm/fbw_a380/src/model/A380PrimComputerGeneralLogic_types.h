@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -218,19 +218,6 @@ struct base_elac_ir_computation_data
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-
-struct base_prim_sim_input
-{
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -275,6 +262,19 @@ struct base_lgciu_bus
   base_arinc_429 discrete_word_2;
   base_arinc_429 discrete_word_3;
   base_arinc_429 discrete_word_4;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+
+struct base_prim_sim_input
+{
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -842,30 +842,43 @@ struct base_prim_surface_status
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_efcs_law_
+#define DEFINED_TYPEDEF_FOR_a380_efcs_law_
 
-enum class a380_lateral_efcs_law
+enum class a380_efcs_law
   : int32_T {
-  NormalLaw = 0,
-  DirectLaw,
-  None
+  None = 0,
+  NormalLaw,
+  AlternateLaw1A,
+  AlternateLaw1B,
+  AlternateLaw1C,
+  AlternateLaw2A,
+  AlternateLaw2B,
+  DirectLaw
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_law_
+#define DEFINED_TYPEDEF_FOR_a380_pitch_law_
 
-enum class a380_pitch_efcs_law
+enum class a380_pitch_law
   : int32_T {
-  NormalLaw = 0,
-  AlternateLaw1A,
-  AlternateLaw1B,
-  AlternateLaw1C,
-  AlternateLaw2,
-  DirectLaw,
-  None
+  None = 0,
+  NzLaw,
+  DirectLaw
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_law_
+#define DEFINED_TYPEDEF_FOR_a380_lateral_law_
+
+enum class a380_lateral_law
+  : int32_T {
+  None = 0,
+  YStarLaw,
+  DirectLaw
 };
 
 #endif
@@ -878,12 +891,14 @@ struct base_prim_fctl_logic_outputs
   base_prim_surface_status surface_statuses;
   base_prim_lateral_surface_positions lateral_surface_positions;
   base_prim_pitch_surface_positions pitch_surface_positions;
-  a380_lateral_efcs_law lateral_law_capability;
-  a380_lateral_efcs_law active_lateral_law;
-  a380_pitch_efcs_law pitch_law_capability;
-  a380_pitch_efcs_law active_pitch_law;
+  a380_efcs_law law_capability;
+  a380_efcs_law active_law;
+  a380_pitch_law active_pitch_law;
+  a380_lateral_law active_lateral_law;
   boolean_T abnormal_condition_law_active;
+  boolean_T flare_law_override_active;
   boolean_T is_master_prim;
+  uint8_T prim_capability_score;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;
