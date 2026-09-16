@@ -3562,9 +3562,9 @@ export class FwsCore {
       this.oneIrAlignedError && !ir1ErrorPulse && !ir2ErrorPulse && !ir3ErrorPulse && flightPhase !== 1,
     );
 
-    this.ir1InAttAlign = ir1Pitch.isNoComputedData() && ir1MaintenanceWord.bitValueOr(1, false);
-    this.ir2InAttAlign = ir2Pitch.isNoComputedData() && ir2MaintenanceWord.bitValueOr(1, false);
-    this.ir3InAttAlign = ir3Pitch.isNoComputedData() && ir3MaintenanceWord.bitValueOr(1, false);
+    this.ir1InAttAlign = ir1Pitch.isNoComputedData() && ir1MaintenanceWord.bitValueOr(2, false);
+    this.ir2InAttAlign = ir2Pitch.isNoComputedData() && ir2MaintenanceWord.bitValueOr(2, false);
+    this.ir3InAttAlign = ir3Pitch.isNoComputedData() && ir3MaintenanceWord.bitValueOr(2, false);
     const allIrsInAttAlign = this.ir1InAttAlign && this.ir2InAttAlign && this.ir3InAttAlign;
     this.oneOrTwoIrsInAttAlignMemo.set(
       (this.ir1InAttAlign || this.ir2InAttAlign || this.ir3InAttAlign) && allIrsInAttAlign,
