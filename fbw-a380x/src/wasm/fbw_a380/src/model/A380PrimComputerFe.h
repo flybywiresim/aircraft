@@ -3,7 +3,6 @@
 #include "rtwtypes.h"
 #include "A380PrimComputerFe_types.h"
 
-extern const prim_outputs A380PrimComputerFe_rtZprim_outputs;
 class A380PrimComputerFe final
 {
  public:

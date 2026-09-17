@@ -4,7 +4,6 @@
 #include "A380PrimComputerFg_types.h"
 #include "A380FgOuterLoops.h"
 
-extern const prim_outputs A380PrimComputerFg_rtZprim_outputs;
 class A380PrimComputerFg final
 {
  public:

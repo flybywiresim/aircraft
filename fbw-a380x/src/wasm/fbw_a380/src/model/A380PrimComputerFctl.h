@@ -8,7 +8,6 @@
 #include "A380PitchDirectLaw.h"
 
 extern const real_T A380PrimComputerFctl_RGND;
-extern const prim_outputs A380PrimComputerFctl_rtZprim_outputs;
 class A380PrimComputerFctl final
 {
  public:

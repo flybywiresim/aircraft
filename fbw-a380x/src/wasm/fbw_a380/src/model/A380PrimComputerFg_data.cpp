@@ -4349,8 +4349,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         0.0,
         0.0
       },
-      a380_efcs_law::NormalLaw,
-      a380_efcs_law::NormalLaw,
+      a380_efcs_law::None,
+      a380_efcs_law::None,
       a380_pitch_law::None,
       a380_lateral_law::None,
       false,

@@ -584,19 +584,6 @@ enum class a380_pitch_law
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
 
@@ -818,6 +805,19 @@ struct base_sfcc_bus
   base_arinc_429 slat_flap_actual_position_word;
   base_arinc_429 slat_actual_position_deg;
   base_arinc_429 flap_actual_position_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
