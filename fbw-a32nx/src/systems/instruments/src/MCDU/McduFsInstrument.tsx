@@ -18,6 +18,7 @@ import {
 import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
 import { EnginePublisher, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
+import { A32NXFgBusPublisher } from '@shared/publishers/A32NXFGBusPublisher';
 
 export class McduFsInstrument implements FsInstrument {
   private static readonly INIT_DURATION = 1000;
@@ -29,7 +30,6 @@ export class McduFsInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
-  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
 
   //private readonly isFailedKey = A320Failure.Mcdu1;
   private readonly isFailed = Subject.create(false);
@@ -41,6 +41,9 @@ export class McduFsInstrument implements FsInstrument {
 
   private readonly monotonicSimTimeVar = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
   private lastTime = 0;
+
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly fgBusPublisher = new A32NXFgBusPublisher(this.bus);
 
   /**
    * Creates a new instance of FsInstrument.
@@ -56,6 +59,7 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
+    this.backplane.addPublisher('fgBus', this.fgBusPublisher);
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
 
     this.doInit();
@@ -107,7 +111,6 @@ export class McduFsInstrument implements FsInstrument {
 
   public onPowerOn(): void {
     this.isPowered.set(true);
-    this.legacyFms.onPowerOn();
   }
 
   public onPowerOff(): void {
