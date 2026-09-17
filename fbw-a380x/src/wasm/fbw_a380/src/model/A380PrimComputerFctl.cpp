@@ -1601,6 +1601,9 @@ void A380PrimComputerFctl::step()
     A380PrimComputerFctl_MATLABFunction_n(A380PrimComputerFctl_U.in.data.sim_data.slew_on,
       A380PrimComputerFctl_U.in.data.time.dt, A380PrimComputerFctl_P.ConfirmNode_isRisingEdge,
       A380PrimComputerFctl_P.ConfirmNode_timeDelay, &rtb_y_kc, &A380PrimComputerFctl_DWork.sf_MATLABFunction_nb);
+    rtb_y_d = (A380PrimComputerFctl_U.in.general_logic.triple_ir_failure ||
+               (A380PrimComputerFctl_U.in.general_logic.double_ir_failure &&
+                A380PrimComputerFctl_U.in.general_logic.ir_failure_not_self_detected));
     rtb_AND16_n = ((!rtb_y_kc) && (!A380PrimComputerFctl_U.in.general_logic.on_ground) &&
                    (((!A380PrimComputerFctl_U.in.general_logic.triple_adr_failure) &&
                      ((A380PrimComputerFctl_U.in.general_logic.adr_computation_data.mach > 0.96) ||
@@ -1608,13 +1611,10 @@ void A380PrimComputerFctl::step()
                       (A380PrimComputerFctl_U.in.general_logic.adr_computation_data.alpha_deg < -10.0) ||
                       (A380PrimComputerFctl_U.in.general_logic.adr_computation_data.alpha_deg > 37.5) ||
                       (A380PrimComputerFctl_U.in.general_logic.adr_computation_data.V_ias_kn > 420.0) ||
-                      (A380PrimComputerFctl_U.in.general_logic.adr_computation_data.V_ias_kn < 70.0))) ||
-                    ((!A380PrimComputerFctl_U.in.general_logic.triple_ir_failure) &&
-                     ((!A380PrimComputerFctl_U.in.general_logic.double_ir_failure) ||
-                      (!A380PrimComputerFctl_U.in.general_logic.ir_failure_not_self_detected)) && ((std::abs
-      (A380PrimComputerFctl_U.in.general_logic.ir_computation_data.phi_deg) > 120.0) ||
-      ((A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_deg > 50.0) ||
-       (A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_deg < -30.0))))));
+                      (A380PrimComputerFctl_U.in.general_logic.adr_computation_data.V_ias_kn < 70.0))) || ((!rtb_y_d) &&
+      ((std::abs(A380PrimComputerFctl_U.in.general_logic.ir_computation_data.phi_deg) > 120.0) ||
+       ((A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_deg > 50.0) ||
+        (A380PrimComputerFctl_U.in.general_logic.ir_computation_data.theta_deg < -30.0))))));
     A380PrimComputerFctl_DWork.abnormalConditionWasActive = (rtb_AND16_n ||
       ((!A380PrimComputerFctl_U.in.general_logic.on_ground) && A380PrimComputerFctl_DWork.abnormalConditionWasActive));
     nz = ((rtb_AND1_l + rtb_AND14) + rtb_AND5_e) + rtb_AND4_d;
@@ -1635,23 +1635,24 @@ void A380PrimComputerFctl::step()
                   (!A380PrimComputerFctl_U.in.fg_logic.ap_2_engaged)));
     if (((rtb_AND3_k + rtb_AND15_l <= 1) || ((nz <= 3) || (!rtb_AND6_b) || (((rtb_AND6_m || rtb_AND11) + (rtb_AND10 ||
              rtb_AND9)) + (rtb_AND4 || rtb_AND3_bu) <= 1) || (c_nz <= 2))) && rtb_OR_b) {
-      rtb_y_d = true;
+      rtb_NOT_k = true;
     } else {
-      rtb_y_d = (A380PrimComputerFctl_U.in.general_logic.slats_locked ||
-                 A380PrimComputerFctl_U.in.general_logic.flaps_locked ||
-                 A380PrimComputerFctl_DWork.abnormalConditionWasActive ||
-                 A380PrimComputerFctl_U.in.general_logic.all_sfcc_lost || rtb_AND20);
+      rtb_NOT_k = (A380PrimComputerFctl_U.in.general_logic.slats_locked ||
+                   A380PrimComputerFctl_U.in.general_logic.flaps_locked ||
+                   A380PrimComputerFctl_DWork.abnormalConditionWasActive ||
+                   A380PrimComputerFctl_U.in.general_logic.all_sfcc_lost || rtb_AND20);
     }
 
     if (A380PrimComputerFctl_U.in.general_logic.triple_adr_failure || rtb_AND16_n || ((nz <= 1) && rtb_OR_b)) {
       rtb_pitchLawCapability = a380_efcs_law::DirectLaw;
-    } else if (A380PrimComputerFctl_U.in.general_logic.double_ir_failure) {
+    } else if (rtb_y_d) {
       rtb_pitchLawCapability = a380_efcs_law::AlternateLaw2B;
     } else if (A380PrimComputerFctl_U.in.general_logic.double_lgciu_failure) {
       rtb_pitchLawCapability = a380_efcs_law::AlternateLaw2A;
-    } else if (((nz <= 2) && rtb_OR_b) || A380PrimComputerFctl_U.in.general_logic.double_adr_failure) {
+    } else if (((nz <= 2) && rtb_OR_b) || A380PrimComputerFctl_U.in.general_logic.double_adr_failure ||
+               A380PrimComputerFctl_U.in.general_logic.double_ir_failure) {
       rtb_pitchLawCapability = a380_efcs_law::AlternateLaw1B;
-    } else if (rtb_y_d) {
+    } else if (rtb_NOT_k) {
       rtb_pitchLawCapability = a380_efcs_law::AlternateLaw1A;
     } else {
       rtb_pitchLawCapability = a380_efcs_law::NormalLaw;
