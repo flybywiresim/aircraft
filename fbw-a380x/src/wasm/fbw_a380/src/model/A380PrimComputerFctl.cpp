@@ -4050,7 +4050,7 @@ void A380PrimComputerFctl::step()
     rtb_VectorConcatenate_o[0] = A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.alpha_floor_condition;
     rtb_VectorConcatenate_o[1] = A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.low_energy_warning_active;
     rtb_VectorConcatenate_o[2] = A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.pitch_pitch_warning_active;
-    rtb_VectorConcatenate_o[3] = A380PrimComputerFctl_P.Constant_Value_ho;
+    rtb_VectorConcatenate_o[3] = A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.bank_bank_warning_active;
     rtb_VectorConcatenate_o[4] = A380PrimComputerFctl_P.Constant_Value_ho;
     rtb_VectorConcatenate_o[5] = A380PrimComputerFctl_P.Constant_Value_ho;
     rtb_VectorConcatenate_o[6] = A380PrimComputerFctl_P.Constant_Value_ho;

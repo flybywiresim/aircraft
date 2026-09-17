@@ -8,6 +8,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   1.0,
   1.0,
   0.5,
+  1.0,
+  0.5,
   0.0,
   0.0,
   3.0,
@@ -17,16 +19,33 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   0.0,
   5.0,
   15000.0,
+  45.0,
+  30.0,
+  12.0,
+  50.0,
+  2500.0,
+  25000.0,
+  200.0,
+  1.0,
   -1.0,
   -5.0,
   -0.1,
   -5.0,
+  100.0,
+  1.0,
   5.0,
+  0.5,
+  3.0,
   1.0,
   5.0,
   0.1,
   5.0,
   a380_efcs_law::NormalLaw,
+  a380_efcs_law::DirectLaw,
+  a380_lateral_law::DirectLaw,
+  3.0F,
+  0.0F,
+  true,
   true,
 
   {
@@ -2765,6 +2784,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
         0.0,
         0.0,
         0.0,
+        0.0,
+        0.0,
         0.0
       },
       0.0,
@@ -2816,6 +2837,7 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
       0.0,
       0.0,
       0.0,
+      false,
       false,
       false
     },
@@ -3816,6 +3838,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   { 25.0, 25.0, 7.0, 10.0, 10.0, 8.0 },
 
   { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+  50.0,
+  0.0,
   120.0,
   0.001,
 
@@ -3842,6 +3866,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   { 29.0, 43.0 },
 
   { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+  500.0,
+  0.0,
   0.001,
 
   { 149.0, 163.0, 176.0, 188.0, 199.0, 210.0, 220.0, 231.0, 149.0, 163.0, 176.0, 189.0, 202.0, 216.0, 231.0, 243.0,
@@ -3950,6 +3976,22 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   1.0,
   57.295779513082323,
   0.017453292519943295,
+  0.00508,
+  500.0,
+  1.0,
+  0.5144,
+  57.295779513082323,
+
+  { -3.0, 0.0, 0.0, 3.0 },
+
+  { -10.0, -3.0, 3.0, 10.0 },
+
+  { -0.66666666666666663, -0.33333333333333331, -0.26666666666666666, 0.0 },
+
+  { -2.0, -1.0, -0.5, 0.0 },
+  0.0,
+  -5.0,
+  -10.0,
 
   { 340.0F, 245.0F, 243.0F, 219.0F, 186.0F, 263.0F, 222.0F, 220.0F, 216.0F, 184.0F, 220.0F, 218.0F, 216.0F, 196.0F,
     182.0F },
@@ -3957,6 +3999,14 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
   { 0.0F, 8.0F, 17.0F, 26.0F, 33.0F },
 
   { 0.0F, 20.0F, 23.0F },
+
+  { 11.0F, 11.0F, 10.3F, 10.3F },
+
+  { 0.0F, 17.0F, 26.0F, 33.0F },
+
+  { 1.9F, 1.9F, 2.5F, 2.5F },
+
+  { 0.0F, 17.0F, 26.0F, 33.0F },
 
   { 3U, 5U },
 

@@ -18,6 +18,11 @@ class A380PrimComputerFe final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_MATLABFunction_A380PrimComputerFe_T {
+    real_T timeSinceCondition;
+    boolean_T output;
+  };
+
   struct D_Work_A380PrimComputerFe_T {
     real_T Delay_DSTATE;
     real_T takeoff_config;
@@ -26,18 +31,23 @@ class A380PrimComputerFe final
     real_T pU;
     real_T takeoff_config_e;
     real_T takeoff_config_n;
-    real_T timeSinceCondition;
+    real_T remainingTriggerTime;
     real_T sAlphaFloor;
     uint8_T is_active_c15_A380PrimComputerFe;
     uint8_T is_c15_A380PrimComputerFe;
     boolean_T pY_not_empty;
     boolean_T pY_not_empty_d;
     boolean_T pU_not_empty;
+    boolean_T previousInput;
     boolean_T output;
     boolean_T Runtime_MODE;
     rtDW_RateLimiter_A380PrimComputerFe_T sf_RateLimiter_k;
     rtDW_RateLimiter_A380PrimComputerFe_T sf_RateLimiter_b;
     rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_d;
+    rtDW_MATLABFunction_A380PrimComputerFe_T sf_MATLABFunction_p;
+    rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_o;
+    rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_n;
+    rtDW_MATLABFunction_A380PrimComputerFe_T sf_MATLABFunction;
     rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_pa;
     rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_p;
     rtDW_LagFilter_A380PrimComputerFe_T sf_LagFilter_e;
@@ -60,6 +70,8 @@ class A380PrimComputerFe final
     real_T LagFilter2_C1;
     real_T LagFilter1_C1;
     real_T LagFilter_C1_f;
+    real_T LagFilter1_C1_c;
+    real_T LagFilter2_C1_a;
     real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterGenericVariableTs_InitialCondition;
@@ -70,17 +82,34 @@ class A380PrimComputerFe final
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_b;
     real_T CompareToConstant1_const_b;
+    real_T CompareToConstant3_const_f;
+    real_T CompareToConstant2_const_b;
+    real_T CompareToConstant_const_l;
+    real_T CompareToConstant1_const_n;
+    real_T CompareToConstant2_const_h;
+    real_T CompareToConstant3_const_e;
+    real_T HysteresisNode3_highTrigger;
+    real_T MTrigNode_isRisingEdge;
     real_T RateLimiterGenericVariableTs1_lo;
     real_T RateLimiterGenericVariableTs2_lo;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterGenericVariableTs1_lo_d;
+    real_T HysteresisNode3_lowTrigger;
+    real_T MTrigNode_retriggerable;
     real_T ConfirmNode_timeDelay;
+    real_T ConfirmNode_timeDelay_c;
+    real_T MTrigNode_triggerDuration;
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterGenericVariableTs2_up;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs1_up_j;
     a380_efcs_law EnumeratedConstant_Value;
+    a380_efcs_law EnumeratedConstant_Value_g;
+    a380_lateral_law EnumeratedConstant1_Value;
+    real32_T CompareToConstant_const_h;
+    real32_T CompareToConstant1_const_n1;
     boolean_T ConfirmNode_isRisingEdge;
+    boolean_T ConfirmNode_isRisingEdge_b;
     prim_outputs out_Y0;
     real_T Constant_Value;
     real_T Vmcl5_Value;
@@ -97,6 +126,8 @@ class A380PrimComputerFe final
     real_T Gain_Gain;
     real_T VLSincreasemaxdeflection_tableData[6];
     real_T VLSincreasemaxdeflection_bp01Data[6];
+    real_T Saturation1_UpperSat;
+    real_T Saturation1_LowerSat;
     real_T Vmcl_Value;
     real_T Gain2_Gain;
     real_T uDLookupTable1_tableData[96];
@@ -106,6 +137,8 @@ class A380PrimComputerFe final
     real_T nDLookupTable_bp01Data[8];
     real_T nDLookupTable_bp02Data[2];
     real_T nDLookupTable_bp03Data[6];
+    real_T Saturation_UpperSat;
+    real_T Saturation_LowerSat;
     real_T Gain2_Gain_m;
     real_T uDLookupTable1_tableData_n[96];
     real_T uDLookupTable1_bp01Data_p[8];
@@ -145,18 +178,34 @@ class A380PrimComputerFe final
     real_T uDLookupTable_bp01Data_m[6];
     real_T uDLookupTable1_tableData_l[6];
     real_T uDLookupTable1_bp01Data_j[6];
-    real_T Saturation_UpperSat;
-    real_T Saturation_LowerSat;
+    real_T Saturation_UpperSat_m;
+    real_T Saturation_LowerSat_o;
     real_T Gain_Gain_m;
     real_T Bias_Bias;
-    real_T Saturation1_UpperSat;
-    real_T Saturation1_LowerSat;
+    real_T Saturation1_UpperSat_b;
+    real_T Saturation1_LowerSat_k;
     real_T Bias1_Bias;
     real_T Gain_Gain_e;
     real_T Gain1_Gain;
+    real_T ftmintoms_Gain;
+    real_T Saturation_UpperSat_mz;
+    real_T Saturation_LowerSat_j;
+    real_T ktstoms_Gain;
+    real_T Gain_Gain_i;
+    real_T uDLookupTable_tableData_p3[4];
+    real_T uDLookupTable_bp01Data_a[4];
+    real_T uDLookupTable1_tableData_mb[4];
+    real_T uDLookupTable1_bp01Data_n[4];
+    real_T Saturation1_UpperSat_g;
+    real_T Saturation1_LowerSat_j;
+    real_T Bias_Bias_e;
     real32_T uDLookupTable_tableData_a[15];
     real32_T uDLookupTable_bp01Data_e[5];
     real32_T uDLookupTable_bp02Data_o[3];
+    real32_T uDLookupTable3_tableData[4];
+    real32_T uDLookupTable3_bp01Data[4];
+    real32_T uDLookupTable2_tableData[4];
+    real32_T uDLookupTable2_bp01Data[4];
     uint32_T alphafloor_maxIndex[2];
     uint32_T uDLookupTable1_maxIndex[2];
     uint32_T nDLookupTable_maxIndex[3];
@@ -198,10 +247,13 @@ class A380PrimComputerFe final
   static void A380PrimComputerFe_RateLimiter_Reset(rtDW_RateLimiter_A380PrimComputerFe_T *localDW);
   static void A380PrimComputerFe_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T
     rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputerFe_T *localDW);
+  static void A380PrimComputerFe_MATLABFunction_Reset(rtDW_MATLABFunction_A380PrimComputerFe_T *localDW);
+  static void A380PrimComputerFe_MATLABFunction(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerFe_T *localDW);
   static void A380PrimComputerFe_VS1GfromVLS(real_T rtu_vls_conf_0, real_T rtu_vls_conf_other, real_T
     rtu_flap_handle_index, real_T *rty_vs1g);
-  static void A380PrimComputerFe_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380PrimComputerFe_MATLABFunction_k(const base_arinc_429 *rtu_u, real32_T *rty_y);
+  static void A380PrimComputerFe_MATLABFunction_k(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380PrimComputerFe_MATLABFunction_kb(const base_arinc_429 *rtu_u, real32_T *rty_y);
 };
 
 #endif

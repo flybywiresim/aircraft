@@ -1460,7 +1460,7 @@ class A380PrimComputerFg final
     uint8_T CompareToConstant4_const_b;
     char_T pad_CompareToConstant4_const_b[7];
     prim_outputs out_Y0;
-    char_T pad_out_Y0[3];
+    char_T pad_out_Y0[2];
     base_prim_out_bus Constant_Value;
     base_prim_fg_laws_outputs Delay2_InitialCondition;
     char_T pad_Delay2_InitialCondition[6];

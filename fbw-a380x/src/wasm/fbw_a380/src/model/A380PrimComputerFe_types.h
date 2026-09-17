@@ -18,6 +18,18 @@ enum class a380_efcs_law
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_law_
+#define DEFINED_TYPEDEF_FOR_a380_lateral_law_
+
+enum class a380_lateral_law
+  : int32_T {
+  None = 0,
+  YStarLaw,
+  DirectLaw
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_elac_adr_computation_data_
 #define DEFINED_TYPEDEF_FOR_base_elac_adr_computation_data_
 
@@ -47,6 +59,8 @@ struct base_elac_ir_computation_data
   real_T n_z_g;
   real_T theta_dot_deg_s;
   real_T phi_dot_deg_s;
+  real_T V_gnd_kts;
+  real_T V_zbi_ft_min;
 };
 
 #endif
@@ -135,18 +149,6 @@ enum class a380_pitch_law
   : int32_T {
   None = 0,
   NzLaw,
-  DirectLaw
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_law_
-#define DEFINED_TYPEDEF_FOR_a380_lateral_law_
-
-enum class a380_lateral_law
-  : int32_T {
-  None = 0,
-  YStarLaw,
   DirectLaw
 };
 
@@ -867,6 +869,7 @@ struct base_prim_flight_envelope_outputs
   real_T gamma_a_deg;
   real_T gamma_t_deg;
   boolean_T pitch_pitch_warning_active;
+  boolean_T bank_bank_warning_active;
   boolean_T low_energy_warning_active;
 };
 

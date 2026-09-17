@@ -117,6 +117,8 @@ struct base_elac_ir_computation_data
   real_T n_z_g;
   real_T theta_dot_deg_s;
   real_T phi_dot_deg_s;
+  real_T V_gnd_kts;
+  real_T V_zbi_ft_min;
 };
 
 #endif
@@ -1131,6 +1133,7 @@ struct base_prim_flight_envelope_outputs
   real_T gamma_a_deg;
   real_T gamma_t_deg;
   boolean_T pitch_pitch_warning_active;
+  boolean_T bank_bank_warning_active;
   boolean_T low_energy_warning_active;
 };
 
