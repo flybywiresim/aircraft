@@ -9,7 +9,7 @@ import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
  */
 export function getRemainingAlignTime(v: Arinc429WordData): number | null {
   if (!v.isInvalid()) {
-    const firstBitMinute = v.bitValue(16) ? 0 : 1;
+    const firstBitMinute = v.bitValue(16) ? 1 : 0;
     const secondBitMinute = v.bitValue(17) ? 2 : 0;
     const thirdBitMinute = v.bitValue(18) ? 4 : 0;
     return firstBitMinute + secondBitMinute + thirdBitMinute;
