@@ -574,7 +574,6 @@ class A380PrimComputerFctl final
     real_T Saturation5_UpperSat;
     real_T Saturation5_LowerSat;
     real_T Gain_Gain_p;
-    real_T Constant_Value_g;
     real_T Constant_Value_j;
     real_T Saturation3_UpperSat_o;
     real_T Saturation3_LowerSat_f;

@@ -16,9 +16,6 @@ struct base_pitch_data_computed
   real_T nz_limit_up_g;
   real_T nz_limit_lo_g;
   boolean_T eta_trim_deg_should_freeze;
-  boolean_T eta_trim_deg_reset;
-  real_T eta_trim_deg_reset_deg;
-  boolean_T eta_trim_deg_should_write;
   real_T eta_trim_deg_rate_limit_up_deg_s;
   real_T eta_trim_deg_rate_limit_lo_deg_s;
 };
@@ -60,8 +57,6 @@ struct pitch_normal_input
   real_T spoilers_left_pos;
   real_T spoilers_right_pos;
   real_T gnd_splr_cmd_deg;
-  real_T thrust_lever_1_pos;
-  real_T thrust_lever_2_pos;
   boolean_T tailstrike_protection_on;
   real_T VLS_kn;
   real_T delta_eta_pos;
