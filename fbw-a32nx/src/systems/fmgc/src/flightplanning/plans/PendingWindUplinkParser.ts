@@ -9,36 +9,41 @@ import { FpmConfig } from '../FpmConfig';
 import { WindUtils } from '../../guidance/vnav/wind/WindUtils';
 
 export class PendingWindUplinkParser {
-  private static readonly MAX_CERTIFIED_LEVEL = 398;
-  private static readonly MAX_WIND_MAGNITUDE = 500;
+  private static readonly MAX_WIND_MAGNITUDE = 250;
 
   public static setFromUplink(
     uplink: WindUplinkMessage,
     plan: FlightPlan,
     flightPhase: FmgcFlightPhase,
     config: FpmConfig,
+    maxCertifiedFlightLevel: number,
   ) {
     switch (flightPhase) {
       case FmgcFlightPhase.Preflight:
       case FmgcFlightPhase.Takeoff:
       case FmgcFlightPhase.Done:
-        this.setClimbWinds(uplink, plan, config);
+        this.setClimbWinds(uplink, plan, config, maxCertifiedFlightLevel);
       // eslint-disable-next-line no-fallthrough
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
-        this.setCruiseWinds(uplink, plan, config);
-        this.setDescentWinds(uplink, plan, config);
+        this.setCruiseWinds(uplink, plan, config, maxCertifiedFlightLevel);
+        this.setDescentWinds(uplink, plan, config, maxCertifiedFlightLevel);
         this.setAlternateWinds(uplink, plan);
     }
 
     plan.pendingWindUplink.onUplinkReadyToInsert();
   }
 
-  private static setClimbWinds(uplink: WindUplinkMessage, plan: FlightPlan, config: FpmConfig) {
+  private static setClimbWinds(
+    uplink: WindUplinkMessage,
+    plan: FlightPlan,
+    config: FpmConfig,
+    maxCertifiedFlightLevel: number,
+  ) {
     const originElevationLevel = (plan.originAirport?.location.alt ?? 0) / 100;
 
     plan.pendingWindUplink.climbWinds = uplink.climbWinds
-      ?.filter((wind) => this.isValidWind(wind))
+      ?.filter((wind) => this.isValidWind(wind, maxCertifiedFlightLevel))
       .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source, originElevationLevel))
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, config.NUM_CLIMB_WIND_LEVELS)
@@ -80,11 +85,17 @@ export class PendingWindUplinkParser {
    * @param uplink The wind uplink message
    * @param plan The plan to insert the uplink into
    * @param config The flight plan configuration
+   * @param maxCertifiedFlightLevel the maximum flight level to consider a wind entry valid
    */
-  private static setCruiseWinds(uplink: WindUplinkMessage, plan: FlightPlan, config: FpmConfig) {
+  private static setCruiseWinds(
+    uplink: WindUplinkMessage,
+    plan: FlightPlan,
+    config: FpmConfig,
+    maxCertifiedFlightLevel: number,
+  ) {
     plan.pendingWindUplink.cruiseWinds = (
       uplink.cruiseWinds
-        ?.filter((wind) => this.isValidWindLevel(wind.flightLevel))
+        ?.filter((wind) => this.isValidWindLevel(wind.flightLevel, maxCertifiedFlightLevel))
         .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source))
         .slice(0, config.NUM_CRUISE_WIND_LEVELS)
         .reduce<PendingCruiseWind[]>((acc, uplinkedEntry) => {
@@ -131,11 +142,16 @@ export class PendingWindUplinkParser {
     });
   }
 
-  private static setDescentWinds(uplink: WindUplinkMessage, plan: FlightPlan, config: FpmConfig) {
+  private static setDescentWinds(
+    uplink: WindUplinkMessage,
+    plan: FlightPlan,
+    config: FpmConfig,
+    maxCertifiedFlightLevel: number,
+  ) {
     const destinationElevationLevel = (plan.destinationAirport?.location.alt ?? 0) / 100;
 
     plan.pendingWindUplink.descentWinds = uplink.descentWinds
-      ?.filter((wind) => this.isValidWind(wind))
+      ?.filter((wind) => this.isValidWind(wind, maxCertifiedFlightLevel))
       .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source, destinationElevationLevel))
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, config.NUM_DESCENT_WIND_LEVELS)
@@ -173,16 +189,16 @@ export class PendingWindUplinkParser {
     );
   }
 
-  private static isValidWindLevel(flightLevel: number): boolean {
-    return flightLevel >= 0 && flightLevel <= this.MAX_CERTIFIED_LEVEL;
+  private static isValidWindLevel(flightLevel: number, maxCertifiedFlightLevel: number): boolean {
+    return flightLevel >= 0 && flightLevel <= maxCertifiedFlightLevel;
   }
 
   private static isValidWindEntry({ magnitude, trueDegrees }: UplinkedWindEntry): boolean {
     return magnitude >= 0 && magnitude <= this.MAX_WIND_MAGNITUDE && trueDegrees >= 0 && trueDegrees <= 360;
   }
 
-  private static isValidWind(wind: UplinkedWindLevel): boolean {
-    return this.isValidWindLevel(wind.flightLevel) && this.isValidWindEntry(wind);
+  private static isValidWind(wind: UplinkedWindLevel, maxCertifiedFlightLevel: number): boolean {
+    return this.isValidWindLevel(wind.flightLevel, maxCertifiedFlightLevel) && this.isValidWindEntry(wind);
   }
 
   private static createWindEntryFromUplinkedWind(wind: UplinkedWindLevel): FlightPlanWindEntry {

@@ -17,7 +17,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
-import { maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { maxCertifiedAlt, maxCertifiedFlightLevel } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from './FmcAircraftInterface';
 import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from './fmgc';
@@ -2142,7 +2142,13 @@ export class FlightManagementComputer implements FmcInterface {
             this.addMessageToQueue(NXSystemMessages.receivedCpnyWindNotValid);
           } else {
             try {
-              PendingWindUplinkParser.setFromUplink(message, plan, this.flightPhaseManager.phase, FpmConfigs.A380);
+              PendingWindUplinkParser.setFromUplink(
+                message,
+                plan,
+                this.flightPhaseManager.phase,
+                FpmConfigs.A380,
+                maxCertifiedFlightLevel,
+              );
               // Remove messages related to failed wind uplink.
               this.removeMessageFromQueue(NXSystemMessages.receivedCpnyWindNotValid.text);
               this.removeMessageFromQueue(NXSystemMessages.noCompanyReply.text);
