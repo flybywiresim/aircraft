@@ -5615,6 +5615,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           plan,
           this.flightPhaseManager.phase,
           FpmConfigs.A320_HONEYWELL_H4,
+          this.maximumRecommendedCruiseFlightLevel,
         );
 
         this.addMessageToQueue(
