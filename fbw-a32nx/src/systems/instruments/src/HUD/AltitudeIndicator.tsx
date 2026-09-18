@@ -687,16 +687,24 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     if (this.props.mode === WindMode.Normal) {
       this.minimumLowerText.instance.setAttribute('x', '586.5');
       this.minimumLowerText.instance.setAttribute('y', '547');
+      this.selectedAltLowerText.instance.setAttribute('x', '580');
       this.selectedAltLowerText.instance.setAttribute('y', '547');
+      this.selectedAltLowerFLText.instance.setAttribute('x', '514');
       this.selectedAltLowerFLText.instance.setAttribute('y', '547');
+      this.selectedAltUpperText.instance.setAttribute('x', '580');
       this.selectedAltUpperText.instance.setAttribute('y', '158.3');
+      this.selectedAltUpperFLText.instance.setAttribute('x', '514');
       this.selectedAltUpperFLText.instance.setAttribute('y', '157.8');
     } else {
       this.minimumLowerText.instance.setAttribute('x', '599.25');
       this.minimumLowerText.instance.setAttribute('y', '412.25');
+      this.selectedAltLowerText.instance.setAttribute('x', '590');
       this.selectedAltLowerText.instance.setAttribute('y', '412.25');
+      this.selectedAltLowerFLText.instance.setAttribute('x', '519');
       this.selectedAltLowerFLText.instance.setAttribute('y', '412.25');
+      this.selectedAltUpperText.instance.setAttribute('x', '590');
       this.selectedAltUpperText.instance.setAttribute('y', '293.25');
+      this.selectedAltUpperFLText.instance.setAttribute('x', '519');
       this.selectedAltUpperFLText.instance.setAttribute('y', '293.25');
     }
   }
@@ -719,7 +727,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             id="SelectedAltLowerText"
             ref={this.selectedAltLowerText}
             class="FontMedium EndAlign Green"
-            x="593"
+            x="580"
             y="547"
             style="white-space: pre"
           >
@@ -740,7 +748,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             id="SelectedAltUpperText"
             ref={this.selectedAltUpperText}
             class="FontMedium EndAlign Green"
-            x="595"
+            x="580"
             y="158.3"
             style="white-space: pre"
           >
@@ -1004,7 +1012,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             visible={this.stdVisible}
           >
             <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
-              <path class="NormalStroke Green" d="m527 559.895h55.25v29.986h-55.25z" />
+              <path class="NormalStroke Green" d="m527 560 h 62 v 30 h -62 z" />
               <text class="FontMedium Green AlignLeft" x="534.471" y="583.78">
                 STD
               </text>
