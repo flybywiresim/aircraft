@@ -737,7 +737,7 @@ export class FwsCore {
 
   private readonly voluntaryAthrOffCautionMemory = new NXLogicMemoryNode();
   private readonly voluntaryAthrOffCautionMtrig = new NXLogicTriggeredMonostableNode(3, false); // Emit master caution for max. 3 sec
-  private requestMasterCautionFromAThrOff = false;
+  private requestMasterCautionFromAThrOffMemo = false;
 
   private readonly voluntaryAthrOffMemoMemory = new NXLogicMemoryNode();
   private readonly voluntaryAthrOffMemoMtrig = new NXLogicTriggeredMonostableNode(9, false); // Emit memo for max. 9 sec
@@ -3827,7 +3827,7 @@ export class FwsCore {
 
     // A/THR OFF SC
     const voluntaryAthrDiscMemoScMtrig = this.voluntaryAthrOffCautionMtrig.write(voluntaryAthrDisc, deltaTime);
-    this.requestMasterCautionFromAThrOff = this.voluntaryAthrOffCautionMemory.write(
+    this.requestMasterCautionFromAThrOffMemo = this.voluntaryAthrOffCautionMemory.write(
       voluntaryAthrDisc,
       !voluntaryAthrDiscMemoScMtrig || resetAthrCaution,
     );
@@ -6037,7 +6037,7 @@ export class FwsCore {
       this.requestMasterWarningFromFaults = false;
     }
 
-    this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromAThrOff);
+    this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromAThrOffMemo);
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
@@ -6152,7 +6152,7 @@ export class FwsCore {
     this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0);
 
     const chimeRequested =
-      (this.auralSingleChimePending || this.requestMasterCautionFromAThrOff) && !this.auralCrcActive.get();
+      (this.auralSingleChimePending || this.requestMasterCautionFromAThrOffMemo) && !this.auralCrcActive.get();
     if (!chimeRequested) {
       this.auralSingleChimeActive.set(false);
     } else {
