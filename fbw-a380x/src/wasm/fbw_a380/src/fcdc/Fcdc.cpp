@@ -172,9 +172,9 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fcdcFgDiscreteWord3.setSsm(ssm);  // Add FE bits here until FCDC rewrite.
   output.fcdcFgDiscreteWord3.setBit(11,
                                     bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));  // SPEED SPEED SPEED
-  output.fcdcFgDiscreteWord3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));  // PITCH PITCH
-  output.fcdcFgDiscreteWord3.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));  // BANK BANK
-  output.fcdcFgDiscreteWord3.setBit(14, false);
+  output.fcdcFgDiscreteWord3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));    // PITCH PITCH
+  output.fcdcFgDiscreteWord3.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));    // BANK BANK
+  output.fcdcFgDiscreteWord3.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 14, false));  // A/THR Limited
   output.fcdcFgDiscreteWord3.setBit(15, false);
   output.fcdcFgDiscreteWord3.setBit(16, modeReversionTripleClickMtrig.read() || capabilityTripleClickMtrig.read());
   output.fcdcFgDiscreteWord3.setBit(17, btvTripleClickMtrig.read());
