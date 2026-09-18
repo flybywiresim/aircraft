@@ -796,31 +796,29 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       return;
     } else {
-      const currentAlt = dataType === WindEntryData.Altitude ? value : oldAltitude;
-      const currentDir = dataType === WindEntryData.Direction ? value : displayEntry.direction;
-      const currentSpeed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
-      if (displayEntry.speedOrDirectionIsPropagated && (currentDir === null || currentSpeed === null)) {
+      const dataEntryIsDirection = dataType === WindEntryData.Direction;
+      const dataEntryIsSpeed = dataType === WindEntryData.Speed;
+      const altitude = dataType === WindEntryData.Altitude ? value : oldAltitude;
+      const direction = dataType === WindEntryData.Direction ? value : displayEntry.direction;
+      const speed = dataType === WindEntryData.Speed ? value : displayEntry.speed;
+      if (
+        displayEntry.speedOrDirectionIsPropagated &&
+        ((dataEntryIsDirection && value === null) || (dataEntryIsSpeed && value === null))
+      ) {
         // Don't allow clearing of speed or direction if the entry is propagated
         this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
         return;
       }
-      displayEntry.altitude = currentAlt;
-      displayEntry.direction = currentDir;
-      displayEntry.speed = currentSpeed;
+      displayEntry.altitude = altitude;
+      displayEntry.direction = direction;
+      displayEntry.speed = speed;
 
-      if (
-        (dataType === WindEntryData.Direction && currentAlt !== null) ||
-        (dataType === WindEntryData.Speed && currentSpeed !== null)
-      ) {
+      if ((dataEntryIsDirection && altitude !== null) || (dataEntryIsSpeed && speed !== null)) {
         displayEntry.speedOrDirectionIsPropagated = false;
       }
 
       // Cruise winds are always in FL.
-      const entry = this.getWindEntryFromValues(
-        currentAlt !== null ? currentAlt * 100 : null,
-        currentDir,
-        currentSpeed,
-      );
+      const entry = this.getWindEntryFromValues(altitude !== null ? altitude * 100 : null, direction, speed);
       if (displayEntry.entryInFp) {
         this.props.fmcService.master.flightPlanInterface.editCruiseWindEntry(
           selectedLegIndex,
