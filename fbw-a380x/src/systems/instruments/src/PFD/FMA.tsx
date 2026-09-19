@@ -161,6 +161,18 @@ export class FMA extends DisplayComponent<{
     this.B1Message,
   );
 
+  private readonly thrustLocked = MappedSubject.create(
+    ([ecu1MaintenanceWord6, ecu2MaintenanceWord6, ecu3MaintenanceWord6, ecu4MaintenanceWord6]) =>
+      ecu1MaintenanceWord6.bitValueOr(12, false) ||
+      ecu2MaintenanceWord6.bitValueOr(12, false) ||
+      ecu3MaintenanceWord6.bitValueOr(12, false) ||
+      ecu4MaintenanceWord6.bitValueOr(12, false),
+    this.ecu1MaintenanceWord6,
+    this.ecu2MaintenanceWord6,
+    this.ecu3MaintenanceWord6,
+    this.ecu4MaintenanceWord6,
+  );
+
   private readonly BC3Message = MappedSubject.create(
     ([
       isAttExcessive,
@@ -172,6 +184,7 @@ export class FMA extends DisplayComponent<{
       tdReached,
       disconnectApForLdg,
       btvExitMissed,
+      thrustLocked,
     ]) => {
       return computeBC3Message(
         isAttExcessive,
@@ -183,6 +196,7 @@ export class FMA extends DisplayComponent<{
         btvExitMissed,
         primFgDiscreteWord2,
         primFgDiscreteWord6,
+        thrustLocked,
       );
     },
     this.props.isAttExcessive,
@@ -194,6 +208,7 @@ export class FMA extends DisplayComponent<{
     this.tdReached,
     this.disconnectApForLdg,
     this.btvExitMissed,
+    this.thrustLocked,
   );
 
   private readonly A1A2Message = MappedSubject.create(
@@ -205,18 +220,6 @@ export class FMA extends DisplayComponent<{
     this.primFgAtsFmaDiscreteWord,
     this.autoBrakeActive,
     this.autoBrakeMode,
-  );
-
-  private readonly thrustLocked = MappedSubject.create(
-    ([ecu1MaintenanceWord6, ecu2MaintenanceWord6, ecu3MaintenanceWord6, ecu4MaintenanceWord6]) =>
-      ecu1MaintenanceWord6.bitValueOr(12, false) ||
-      ecu2MaintenanceWord6.bitValueOr(12, false) ||
-      ecu3MaintenanceWord6.bitValueOr(12, false) ||
-      ecu4MaintenanceWord6.bitValueOr(12, false),
-    this.ecu1MaintenanceWord6,
-    this.ecu2MaintenanceWord6,
-    this.ecu3MaintenanceWord6,
-    this.ecu4MaintenanceWord6,
   );
 
   private readonly A3Message = MappedSubject.create(
