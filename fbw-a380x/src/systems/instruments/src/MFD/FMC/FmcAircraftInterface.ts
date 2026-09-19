@@ -28,7 +28,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmcl, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, maxCertifiedFlightLevel, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from './fmgc';
 import { ADIRS } from '../shared/Adirs';
@@ -1359,13 +1359,15 @@ export class FmcAircraftInterface {
       if (cruiseLevel !== null) {
         this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
       }
-      this.fmc.addMessageToQueue(
-        NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
-        undefined,
-        undefined,
-      );
-      this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', primAltitude.value);
+      if (targetFlightLevel < maxCertifiedFlightLevel) {
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
+          undefined,
+          undefined,
+        );
+        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', primAltitude.value);
+      }
     }
   }
 
@@ -1406,6 +1408,7 @@ export class FmcAircraftInterface {
       const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
       if (
         fcuFlightLevel !== null &&
+        fcuFlightLevel < maxCertifiedFlightLevel &&
         ((isClimb && fcuFlightLevel > (cruiseLevel ?? 0)) || (isCruise && fcuFlightLevel !== cruiseLevel))
       ) {
         const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
