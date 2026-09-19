@@ -825,7 +825,7 @@ impl RefuelDriver {
 impl SimulationElement for RefuelDriver {}
 
 bitflags! {
-    #[derive(Copy, Clone, Default)]
+    #[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
     struct FQMSDiscreteFlags: u32 {
         const FMS_NO_DATA = 1 << 0;
         const FMS_DATA_DISAGREE = 1 << 1;
@@ -1117,8 +1117,9 @@ impl A380FuelQuantityManagementSystem {
         flags: impl Flags<Bits = u32>,
         is_powered: bool,
     ) {
-        // Shift to match ARINC 429 bit positions
-        self.write_arinc429(writer, identifier, Some(flags.bits() << 11), is_powered);
+        // Discrete flags are 0-based (flag n = 1 << n) and ARINC 429 discrete
+        // data starts at data bit 11, i.e. bit 10 with 0-based numbering.
+        self.write_arinc429(writer, identifier, Some(flags.bits() << 10), is_powered);
     }
 }
 impl SimulationElement for A380FuelQuantityManagementSystem {
@@ -1235,4 +1236,27 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
 
 fn tanks_balanced(tank1: Mass, tank2: Mass) -> bool {
     (tank1 - tank2).abs().get::<kilogram>() < 10.
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case([Some(300_000.), Some(300_000.)], Some(300_000.), FQMSDiscreteFlags::empty())]
+    #[case([Some(300_000.), Some(350_000.)], Some(300_000.), FQMSDiscreteFlags::FMS_DATA_DISAGREE)]
+    #[case([Some(300_000.), None], Some(300_000.), FQMSDiscreteFlags::empty())]
+    #[case([None, Some(350_000.)], Some(350_000.), FQMSDiscreteFlags::empty())]
+    #[case([None, None], None, FQMSDiscreteFlags::FMS_NO_DATA)]
+    fn get_fms_data_and_status(
+        #[case] fms_values: [Option<f64>; 2],
+        #[case] expected_value: Option<f64>,
+        #[case] expected_flags: FQMSDiscreteFlags,
+    ) {
+        let (value, flags) = A380FuelQuantityManagementSystem::get_fms_data_and_status(fms_values);
+
+        assert_eq!(value, expected_value);
+        assert_eq!(flags, expected_flags);
+    }
 }

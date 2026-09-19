@@ -343,6 +343,32 @@ mod tests {
     }
 
     #[test]
+    fn test_transfer_thresholds_inner_at_exactly_90_minutes_flight_time() {
+        // Exactly 90 minutes is not a short flight (the check is strictly < 90 min)
+        let (f1_4, f2_3, _diff, pairwise) = MainTransfer::transfer_thresholds(
+            &MockFuelQuantityProvider::with_mid_tank_total_quantity(Mass::new::<pound>(20_000.)),
+            TransferSourceTank::Inner,
+            Some(Duration::from_mins(90)),
+        );
+        assert_about_eq!(f1_4.get::<pound>(), 43_100., 1e-2);
+        assert_about_eq!(f2_3.get::<pound>(), 45_950., 1e-2);
+        assert!(pairwise);
+    }
+
+    #[test]
+    fn test_transfer_thresholds_mid_at_exactly_17_650_pound_mid_quantity() {
+        // Exactly 17 650 lb is not a low mid quantity (the check is strictly <)
+        let (f1_4, f2_3, _diff, pairwise) = MainTransfer::transfer_thresholds(
+            &MockFuelQuantityProvider::with_mid_tank_total_quantity(Mass::new::<pound>(17_650.)),
+            TransferSourceTank::Mid,
+            Some(Duration::from_mins(120)),
+        );
+        assert_about_eq!(f1_4.get::<pound>(), 43_100., 1e-2);
+        assert_about_eq!(f2_3.get::<pound>(), 45_950., 1e-2);
+        assert!(pairwise);
+    }
+
+    #[test]
     fn test_transfer_thresholds_trim() {
         let (f1_4, f2_3, diff, pairwise) = MainTransfer::transfer_thresholds(
             &MockFuelQuantityProvider::default(),
@@ -456,6 +482,28 @@ mod tests {
         assert_eq!(main_transfer.source_tank, TransferSourceTank::None);
     }
 
+    #[test]
+    fn test_feed_quantity_exactly_at_threshold_is_target() {
+        // The threshold comparison is inclusive (<=), so a feed tank exactly at
+        // the threshold must still be a transfer target
+        let quantities = FxHashMap::from_iter([
+            (A380FuelTankType::FeedOne, Mass::new::<pound>(43_100.)),
+            (A380FuelTankType::FeedTwo, Mass::new::<pound>(45_950.)),
+            (A380FuelTankType::FeedThree, Mass::new::<pound>(45_950.)),
+            (A380FuelTankType::FeedFour, Mass::new::<pound>(43_100.)),
+            (A380FuelTankType::LeftInner, Mass::new::<pound>(1_000.)),
+            (A380FuelTankType::RightInner, Mass::new::<pound>(1_000.)),
+            (A380FuelTankType::LeftMid, Mass::new::<pound>(10_000.)),
+            (A380FuelTankType::RightMid, Mass::new::<pound>(10_000.)),
+        ]);
+        let provider = MockFuelQuantityProvider { quantities };
+        let mut main_transfer = MainTransfer::default();
+        main_transfer.update(&provider, None);
+
+        assert_eq!(main_transfer.feed_tank_is_target, [true; 4]);
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::Inner);
+    }
+
     #[rstest]
     #[case(A380FuelTankType::LeftOuter, TransferSourceTank::Outer)]
     #[case(A380FuelTankType::LeftMid, TransferSourceTank::Mid)]
@@ -489,5 +537,7 @@ mod tests {
         let c = Mass::new::<kilogram>(200.);
         assert!(tanks_balanced(a, b));
         assert!(!tanks_balanced(a, c));
+        // Exactly 10 kg difference is not balanced (the check is strictly <)
+        assert!(!tanks_balanced(a, Mass::new::<kilogram>(110.)));
     }
 }

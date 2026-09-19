@@ -66,6 +66,7 @@ pub(super) struct FuelTestAircraft {
     fuel: A380Fuel,
     fuel_electrical_power_source: TestElectricitySource,
     fuel_electrical_buses: [ElectricalBus; 18],
+    depowered_buses: Vec<ElectricalBusType>,
     fqms_powered: bool,
     lgcius: [TestLgciu; 2],
 }
@@ -100,6 +101,7 @@ impl FuelTestAircraft {
                 ElectricalBusType::DirectCurrentHot(2),
             ]
             .map(|bus_type| ElectricalBus::new(context, bus_type)),
+            depowered_buses: Vec::new(),
             fqms_powered: false,
             lgcius: [TestLgciu::new(false), TestLgciu::new(false)],
         }
@@ -107,6 +109,10 @@ impl FuelTestAircraft {
 
     fn set_on_ground(&mut self, on_ground: bool) {
         self.lgcius = [TestLgciu::new(on_ground), TestLgciu::new(on_ground)];
+    }
+
+    fn set_bus_depowered(&mut self, bus_type: ElectricalBusType) {
+        self.depowered_buses.push(bus_type);
     }
 
     fn set_fqms_powered(&mut self, powered: bool) {
@@ -131,7 +137,9 @@ impl Aircraft for FuelTestAircraft {
         if self.fqms_powered {
             electricity.supplied_by(&self.fuel_electrical_power_source);
             for bus in &self.fuel_electrical_buses {
-                electricity.flow(&self.fuel_electrical_power_source, bus);
+                if !self.depowered_buses.contains(&bus.bus_type()) {
+                    electricity.flow(&self.fuel_electrical_power_source, bus);
+                }
             }
         }
 
@@ -186,6 +194,19 @@ impl FuelTestBed {
     pub(super) fn with_fqms_powered(mut self) -> Self {
         self.command(|aircraft| aircraft.set_fqms_powered(true));
         self
+    }
+
+    pub(super) fn with_bus_depowered(mut self, bus_type: ElectricalBusType) -> Self {
+        self.command(|aircraft| aircraft.set_bus_depowered(bus_type));
+        self
+    }
+
+    pub(super) fn fqms_status_word(&mut self) -> Arinc429Word<u32> {
+        self.read_arinc429_by_name("FQMS_STATUS_WORD")
+    }
+
+    pub(super) fn fqms_pump_target_word(&mut self, side: &str) -> Arinc429Word<u32> {
+        self.read_arinc429_by_name(&format!("FQMS_{side}_FUEL_PUMP_TARGET_STATE_WORD"))
     }
 
     pub(super) fn with_on_ground(mut self, on_ground: bool) -> Self {
