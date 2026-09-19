@@ -613,6 +613,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     if (this.fpIsActiveOrCopyOfActive.get()) {
       switch (phase) {
         case FmgcFlightPhase.Preflight:
+        case FmgcFlightPhase.Takeoff:
         case FmgcFlightPhase.Done:
         case FmgcFlightPhase.Climb:
           this.selectedSubPage.set(WindSubPageMenu.Climb);
@@ -985,7 +986,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           class="mfd-label-unit bigger"
                           style={{ visibility: this.historyWindsUnitVisiblity[value] }}
                         >
-                          ┬░&nbsp;&nbsp;
+                          °
                         </span>
                         <span class="mfd-label green biggest">{this.historyWindSpeeds[value]}</span>
                         <span

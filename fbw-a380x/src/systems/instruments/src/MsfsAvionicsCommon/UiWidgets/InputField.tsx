@@ -5,8 +5,8 @@
 import {
   ComponentProps,
   Consumer,
-  DisplayComponent,
   FSComponent,
+  LifecycleComponent,
   MappedSubject,
   MutableSubscribable,
   Subject,
@@ -89,7 +89,7 @@ export class InputField<
   T,
   U = T,
   S extends U extends T ? boolean : false = U extends T ? true : false,
-> extends DisplayComponent<ConditionalInputFieldProps<T, U, S>> {
+> extends LifecycleComponent<ConditionalInputFieldProps<T, U, S>> {
   private static readonly MAX_CHARACTERS_FREE_TEXT = 24;
 
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -139,6 +139,14 @@ export class InputField<
   private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? false, true);
 
   private readonly canBeCleared = SubscribableUtils.toSubscribable(this.props.canBeCleared ?? true, true);
+
+  private readonly unitVisibility = MappedSubject.create(
+    ([value, inactive]) => {
+      return value === null && inactive ? 'hidden' : 'inherit';
+    },
+    this.readValue,
+    this.inactive,
+  ).withLifecycle(this.defaultLifecycle);
 
   private onNewValue() {
     // Don't update if field is being edited
@@ -513,7 +521,6 @@ export class InputField<
         if (val) {
           this.containerRef.instance.classList.add('inactive');
           this.textInputRef.instance.classList.add('inactive');
-
           this.textInputRef.instance.tabIndex = 0;
         } else {
           this.containerRef.instance.classList.remove('inactive');
@@ -689,6 +696,7 @@ export class InputField<
           <span
             ref={this.leadingUnitRef}
             class={`mfd-label-unit ${this.props.bigUnit ? 'bigger' : ''} mfd-unit-leading mfd-input-field-unit`}
+            style={{ visibility: this.unitVisibility }}
           >
             {this.leadingUnit}
           </span>
@@ -705,6 +713,7 @@ export class InputField<
           <span
             ref={this.trailingUnitRef}
             class={`mfd-label-unit ${this.props.bigUnit ? 'bigger' : ''} mfd-unit-trailing mfd-input-field-unit`}
+            style={{ visibility: this.unitVisibility }}
           >
             {this.trailingUnit}
           </span>

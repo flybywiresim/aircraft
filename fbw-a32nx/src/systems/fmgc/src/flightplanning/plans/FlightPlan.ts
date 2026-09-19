@@ -1359,6 +1359,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         const sourceEntry = performanceDataDescentWindEntries[i];
         newDraftEntries.push(FlightPlan.cloneFlightPlanWindEntry(sourceEntry));
       }
+      this.draftDescentWindEntries.set(newDraftEntries);
       return newDraftEntries;
     }
 
