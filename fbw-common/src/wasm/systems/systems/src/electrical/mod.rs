@@ -133,6 +133,10 @@ impl ElectricalBus {
     fn potential_normal(&self) -> bool {
         self.potential > ElectricPotential::new::<volt>(25.0)
     }
+
+    pub fn bus_type(&self) -> ElectricalBusType {
+        self.bus_type
+    }
 }
 impl ElectricalElement for ElectricalBus {
     fn input_identifier(&self) -> ElectricalElementIdentifier {

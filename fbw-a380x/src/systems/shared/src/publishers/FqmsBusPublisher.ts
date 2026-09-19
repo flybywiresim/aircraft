@@ -47,16 +47,17 @@ interface FqmsBusBaseEvents {
    * Discrete status word for the right fuel pump status, raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
-   * | 11  | Main Feed Pump 3 running        |
-   * | 12  | Standby Feed Pump 3 running     |
-   * | 13  | Main Feed Pump 4 running        |
-   * | 14  | Standby Feed Pump 4 running     |
+   * | 11  | Main Feed Pump 3 running         |
+   * | 12  | Standby Feed Pump 3 running      |
+   * | 13  | Main Feed Pump 4 running         |
+   * | 14  | Standby Feed Pump 4 running      |
    * | 15  | Right Outer Pump running         |
    * | 16  | Right Mid Fwd Pump running       |
    * | 17  | Right Mid Aft Pump running       |
    * | 18  | Right Inner Fwd Pump running     |
    * | 19  | Right Inner Aft Pump running     |
    * | 20  | Right Trim Pump running          |
+   * | 21  | APU Pump running                 |
    */
   fqms_fuel_pump_running_right_word: number;
 }

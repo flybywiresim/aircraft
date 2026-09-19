@@ -1264,9 +1264,9 @@ export class FwsCore {
 
   private readonly fqmsStatusWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_status_word'));
 
-  public readonly fqmsZfwOrZfwCgNotSet = this.fqmsStatusWord.map((w) => w.bitValueOr(12, false));
+  public readonly fqmsZfwOrZfwCgNotSet = this.fqmsStatusWord.map((w) => w.bitValueOr(11, false));
 
-  public readonly fqmsZfwOrZfwCgDisagree = this.fqmsStatusWord.map((w) => w.bitValueOr(13, false));
+  public readonly fqmsZfwOrZfwCgDisagree = this.fqmsStatusWord.map((w) => w.bitValueOr(12, false));
 
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
@@ -4481,10 +4481,10 @@ export class FwsCore {
     const feedTank4Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:9', 'kilogram') < 1375;
     this.feedTank4Low.set(this.feedTank1LowConfirm.write(feedTank4Low, deltaTime));
 
-    this.crossFeed1ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:46', 'kilogram') > 0.1);
-    this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:47', 'kilogram') > 0.1);
-    this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
-    this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
+    this.crossFeed1ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:29', 'kilogram') > 0.1);
+    this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:30', 'kilogram') > 0.1);
+    this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:31', 'kilogram') > 0.1);
+    this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:32', 'kilogram') > 0.1);
 
     this.allEngineSwitchOff.set(
       !this.engine1ValueSwitch.get() &&
