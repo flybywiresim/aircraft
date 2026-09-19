@@ -995,7 +995,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           class="mfd-label-unit bigger"
                           style={{ visibility: this.historyWindsUnitVisiblity[value] }}
                         >
-                          °
+                          °&nbsp;&nbsp;
                         </span>
                         <span class="mfd-label green biggest">{this.historyWindSpeeds[value]}</span>
                         <span
