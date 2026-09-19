@@ -338,6 +338,19 @@ enum class fmgc_des_submode
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
 
@@ -369,19 +382,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -1288,6 +1288,22 @@ struct ap_raw_laws_flare
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_debug_alt_star_
+#define DEFINED_TYPEDEF_FOR_debug_alt_star_
+
+struct debug_alt_star
+{
+  boolean_T active;
+  real_T dh_offset_ft;
+  real_T k;
+  real_T max_h_dot_ft_min;
+  real_T H_dot_c_ft_min;
+  real_T AP_theta_c_raw;
+  real_T AP_theta_c_prot;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_
 #define DEFINED_TYPEDEF_FOR_ap_raw_output_
 
@@ -1298,6 +1314,7 @@ struct ap_raw_output
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
   ap_raw_laws_flare flare_law;
+  debug_alt_star alt_star_debug;
 };
 
 #endif

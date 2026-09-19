@@ -3261,6 +3261,16 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
           0.0,
           0.0,
           0.0
+        },
+
+        {
+          false,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
         }
       },
 
@@ -3275,6 +3285,16 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
         },
 
         {
+          0.0,
+          0.0,
+          0.0
+        },
+
+        {
+          false,
+          0.0,
+          0.0,
+          0.0,
           0.0,
           0.0,
           0.0
@@ -4526,6 +4546,16 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
         0.0,
         0.0,
         0.0
+      },
+
+      {
+        false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
       }
     },
 
@@ -4540,6 +4570,16 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       },
 
       {
+        0.0,
+        0.0,
+        0.0
+      },
+
+      {
+        false,
+        0.0,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0
