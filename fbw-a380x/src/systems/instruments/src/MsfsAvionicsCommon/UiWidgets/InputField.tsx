@@ -6,7 +6,7 @@ import {
   ComponentProps,
   Consumer,
   FSComponent,
-  LifecycleComponent,
+  DisplayComponent,
   MappedSubject,
   MutableSubscribable,
   Subject,
@@ -89,7 +89,7 @@ export class InputField<
   T,
   U = T,
   S extends U extends T ? boolean : false = U extends T ? true : false,
-> extends LifecycleComponent<ConditionalInputFieldProps<T, U, S>> {
+> extends DisplayComponent<ConditionalInputFieldProps<T, U, S>> {
   private static readonly MAX_CHARACTERS_FREE_TEXT = 24;
 
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -146,7 +146,7 @@ export class InputField<
     },
     this.readValue,
     this.inactive,
-  ).withLifecycle(this.defaultLifecycle);
+  );
 
   private onNewValue() {
     // Don't update if field is being edited
@@ -532,6 +532,7 @@ export class InputField<
         }
         this.updateDisplayElement();
       }, true),
+      this.unitVisibility,
     );
 
     this.subs.push(
