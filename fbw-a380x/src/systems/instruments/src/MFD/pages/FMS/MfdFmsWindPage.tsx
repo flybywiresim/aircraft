@@ -613,6 +613,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     if (this.fpIsActiveOrCopyOfActive.get()) {
       switch (phase) {
         case FmgcFlightPhase.Preflight:
+        case FmgcFlightPhase.Takeoff:
         case FmgcFlightPhase.Done:
         case FmgcFlightPhase.Climb:
           this.selectedSubPage.set(WindSubPageMenu.Climb);
