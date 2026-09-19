@@ -55,7 +55,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   singleChime: {
     localVarName: 'A32NX_FWC_SC',
-    length: 0.54,
+    length: 0.4,
     priority: 0,
     type: FwsAuralWarningType.SingleChime,
     continuous: false,

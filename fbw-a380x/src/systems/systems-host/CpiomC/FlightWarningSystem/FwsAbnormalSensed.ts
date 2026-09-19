@@ -1689,6 +1689,17 @@ export class FwsAbnormalSensed {
       monitorConfirmTime: 0.0,
       info: () => [],
     },
+    // A/THR OFF memo caution
+    220000002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.voluntaryAthrOffCaution,
+      failure: 2,
+      sysPage: -1,
+      monitorConfirmTime: 0.0,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      nonProcedureKey: true,
+    },
 
     // ATA 22 - AUTOFLIGHT
     220800003: {
