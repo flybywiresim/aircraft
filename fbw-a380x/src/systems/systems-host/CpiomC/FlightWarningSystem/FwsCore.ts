@@ -294,18 +294,11 @@ export class FwsCore {
 
   private auralCrcKeys: string[] = [];
 
-  /**
-   * The aural SC keys queue to generate a SC by the FWC.
-   */
-  private readonly auralScKeysToPlayQueue: string[] = [];
-
+  private readonly singleChimeRequestedMemory = new NXLogicMemoryNode(false);
+  private readonly singleChimeMtrig = new NXLogicTriggeredMonostableNode(2);
   private readonly auralSingleChimeRequest = Subject.create(false);
 
   public readonly auralCrcActive = Subject.create(false);
-
-  private auralSingleChimeQueuedPrev = false;
-
-  private readonly auralSingleChimeThrottler = new UpdateThrottler(2000);
 
   private static readonly masterWarnLeftRegisteredSimVar = RegisteredSimVar.createBoolean(
     'L:PUSH_AUTOPILOT_MASTERAWARN_L',
@@ -5570,7 +5563,8 @@ export class FwsCore {
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
     const auralCrcKeys: string[] = [];
-    const auralScKeys: string[] = [];
+    let newScKey = false;
+    let anyScKeyActive = false;
 
     const itemIsActiveConsideringFaultSuppression = (
       item: FwsSuppressableItem,
@@ -5782,9 +5776,9 @@ export class FwsCore {
         }
         if (value.auralWarning === undefined && value.failure === 2) {
           if (newWarning) {
-            this.auralScKeysToPlayQueue.push(key);
+            newScKey = true;
           }
-          auralScKeys.push(key);
+          anyScKeyActive = true;
         }
         // Add keys for STS page
         if (isProcedure) {
@@ -5831,9 +5825,9 @@ export class FwsCore {
 
       if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
         if (newWarning) {
-          this.auralScKeysToPlayQueue.push(key);
+          newScKey = true;
         }
-        auralScKeys.push(key);
+        anyScKeyActive = true;
       }
 
       if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
@@ -5924,40 +5918,13 @@ export class FwsCore {
       this.auralCrcActive.set(false);
     }
 
-    // Remove keys which are no longer present.
-    for (let i = 0; i < this.auralScKeysToPlayQueue.length; i++) {
-      const itemIdx = auralScKeys.indexOf(this.auralScKeysToPlayQueue[i]);
-      if (itemIdx === -1) {
-        this.auralScKeysToPlayQueue.splice(itemIdx, 1);
-      }
-    }
-    if (this.auralScKeysToPlayQueue.length !== 0) {
-      if (masterCautionPressed) {
-        this.auralScKeysToPlayQueue.length = 0;
-        this.auralSingleChimeRequest.set(false);
-        this.auralSingleChimeQueuedPrev = false;
-      } else {
-        // Only update SC every two seconds if there are keys pending and non cancelled.
-        const scCanUpdate = this.auralSingleChimeThrottler.canUpdate(deltaTime, !this.auralSingleChimeQueuedPrev);
-        if (scCanUpdate > 0) {
-          const key = this.auralScKeysToPlayQueue.pop();
-          if (!key) {
-            this.auralSingleChimeRequest.set(false);
-            this.auralSingleChimeQueuedPrev = false;
-          } else {
-            this.auralSingleChimeRequest.set(true);
-            this.auralSingleChimeQueuedPrev = true;
-            // Enforce notify to play again
-            this.auralSingleChimeRequest.notify();
-          }
-        }
-      }
-    } else {
-      if (auralScKeys.length === 0) {
-        this.auralSingleChimeRequest.set(false);
-      }
-      this.auralSingleChimeQueuedPrev = false;
-    }
+    const newScMtrig = this.singleChimeMtrig.write(newScKey, deltaTime);
+    const singleChimeRequestMemory = this.singleChimeRequestedMemory.write(
+      newScMtrig,
+      !newScMtrig || masterCautionPressed || !anyScKeyActive,
+    );
+    this.auralSingleChimeRequest.set(singleChimeRequestMemory);
+
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
 
