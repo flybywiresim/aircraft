@@ -425,9 +425,9 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
       this.transitionAltitude.set(fp?.performanceData.transitionAltitude.get() ?? null);
       this.departureElevation.set(fp?.originAirport?.location.alt ?? null);
       this.climbWindsDisabled.set(fp === undefined || hasTmpy);
-      this.climbWindsInactive.set(
-        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() != FmgcFlightPhase.Preflight,
-      );
+      const climbWindsInactive =
+        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() != FmgcFlightPhase.Preflight;
+      this.climbWindsInactive.set(climbWindsInactive);
       if (fp) {
         this.fillDisplayWindEntriesFromFlightPlan(fp.getClimbWindEntries(), this.climbWindDisplayEntries);
       } else {
@@ -438,13 +438,14 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         this.climbWindAltitudesVisible,
         this.climbWindsSpeedDirectionVisible,
         this.climbWindDisplayEntries,
+        climbWindsInactive,
       );
     } else if (subPage === WindSubPageMenu.Cruise) {
       this.findSuitableCruiseLeg();
+      const cruiseWindsInactive =
+        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() > FmgcFlightPhase.Cruise;
       this.cruiseWindsDisabled.set(fp === undefined || hasTmpy || this.availableWaypoints.length === 0);
-      this.cruiseWindsInactive.set(
-        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() > FmgcFlightPhase.Cruise,
-      );
+      this.cruiseWindsInactive.set(cruiseWindsInactive);
       const legIndex = this.selectedWaypointLegIndex.get();
       const winds =
         legIndex !== null
@@ -475,14 +476,15 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         this.cruiseWindAltitudesVisible,
         this.cruiseWindSpeedDirectionVisible,
         this.cruiseWindDisplayEntries,
+        cruiseWindsInactive,
       );
     } else if (subPage === WindSubPageMenu.Descent) {
       this.transitionLevel.set(fp?.performanceData.transitionLevel.get() ?? null);
       this.arrivalElevation.set(fp?.destinationAirport?.location.alt ?? null);
       this.descentWindsDisabled.set(fp === undefined || hasTmpy);
-      this.descentWindsInactive.set(
-        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Descent,
-      );
+      const descentWindsInactive =
+        isActiveOrCopyOfActive && this.props.fmcService.master.fmgc.getFlightPhase() >= FmgcFlightPhase.Descent;
+      this.descentWindsInactive.set(descentWindsInactive);
       this.alternateWindIsPrimaryFlightPlan.set(
         loadedFlightPlanIndex === FlightPlanIndex.Active || loadedFlightPlanIndex === FlightPlanIndex.Temporary,
       );
@@ -504,6 +506,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
         this.descentWindAltitudesVisible,
         this.descentWindSpeedDirectionVisible,
         this.descentWindDisplayEntries,
+        descentWindsInactive,
       );
     }
     this.wasSecPreviouslyActive =
@@ -852,21 +855,27 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
 
   /**
    * Updates displayed entry visibility based upon whether the previous entry has an altitude.
-   * The first row is always displayed.
+   * The first row is always displayed as long as winds are not disabled.
    */
   private updateWindDisplayedEntriesVisibility(
     altitudeVisible: Subject<boolean>[],
     speedDirectionVisible: Subject<boolean>[],
     entries: WindDisplayEntry[],
+    disabledDueToPhase: boolean,
   ) {
     for (let i = 0; i < altitudeVisible.length; i++) {
       const previousEntry = entries[i - 1];
       const currentEntry = entries[i];
       altitudeVisible[i].set(
-        i === 0 || previousEntry.altitude !== null || (previousEntry.altitude === null && previousEntry.entryInFp),
+        entries[i].altitude !== null ||
+          (!disabledDueToPhase &&
+            (i === 0 ||
+              previousEntry.altitude !== null ||
+              (previousEntry.altitude === null && previousEntry.entryInFp))),
       );
       speedDirectionVisible[i].set(
-        i === 0 || currentEntry.altitude !== null || (currentEntry.altitude === null && currentEntry.entryInFp),
+        (!disabledDueToPhase && (i === 0 || (currentEntry.altitude === null && currentEntry.entryInFp))) ||
+          currentEntry.altitude !== null,
       );
     }
   }
@@ -1122,7 +1131,6 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                   <div class="mfd-fms-wind-page-crz-dropdown-container">
                     <DropdownMenu
                       disabled={this.cruiseWindsDisabled}
-                      inactive={this.cruiseWindsInactive}
                       values={this.availableWaypoints}
                       selectedIndex={this.dropdownMenuSelectedWaypointIndex}
                       errorOnNotInList={() => {
