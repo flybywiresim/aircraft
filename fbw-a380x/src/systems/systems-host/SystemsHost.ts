@@ -265,7 +265,6 @@ class SystemsHost extends BaseInstrument {
         // Warning: Potential memory leak, if not all subscriptions are collected and cleaned up properly
         this.fwsCore.destroy();
         this.fwsCore = undefined;
-        FwsCore.sendFailureWarning(this.bus);
       } else if (!a && this.fwsCore === undefined) {
         this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
       }
