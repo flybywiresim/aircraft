@@ -10,7 +10,7 @@ import { TurnDirection, WaypointArea } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
 const HoldType = Object.freeze({
@@ -361,13 +361,22 @@ export class CDUHoldAtPage {
 
   static async modifyHold(
     mcdu: LegacyFmsPageInterface,
-    waypointIndexFP,
-    /** @type {FlightPlanLeg} */ waypointData,
-    param,
-    value,
-    forPlan,
-    inAlternate,
+    waypointIndexFP: number,
+    waypointData: FlightPlanLeg,
+    param: string,
+    value: number | string,
+    forPlan: number,
+    inAlternate: boolean,
   ) {
+    if (waypointData.modifiedHold === undefined) {
+      waypointData.modifiedHold = {
+        inboundMagneticCourse: waypointData.defaultHold.inboundMagneticCourse,
+        turnDirection: waypointData.defaultHold.turnDirection,
+        time: waypointData.defaultHold.time,
+        distance: waypointData.defaultHold.distance,
+        type: HoldType.Modified,
+      };
+    }
     waypointData.modifiedHold.type = HoldType.Modified;
 
     if (param === 'time') {

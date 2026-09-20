@@ -50,7 +50,7 @@ FadecComputer::Parameters_FadecComputer_T FadecComputer::FadecComputer_P{
 
   13.0,
 
-  11.0,
+  23.0,
 
   13.0,
 
