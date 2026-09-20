@@ -1434,8 +1434,8 @@ The PRIMs perform the flight guidance and flight envelope functions.
   - Status word indicating different status
   - | Bit |        Meaning        |
     |:---:|:---------------------:|
-    | 11   | FMS Data unavailable |
-    | 12   | FMS Data disagrees   |
+    | 11   | FMS ZFW or ZFWCG Data unavailable |
+    | 12   | FMS ZFW or ZFWCG Data disagrees   |
     | 13   | |
     | 14   | |
     | 15   | |

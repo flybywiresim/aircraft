@@ -8,8 +8,8 @@ interface FqmsBusBaseEvents {
    * Discrete status word for the FQMS, raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
-   * | 11  | FMS Data unavailable              |
-   * | 12  | FMS Data disagrees                |
+   * | 11  | FMS ZFW or ZFWCG Data unavailable |
+   * | 12  | FMS ZFW or ZFWCG Data disagrees   |
    */
   fqms_status_word: number;
   /**

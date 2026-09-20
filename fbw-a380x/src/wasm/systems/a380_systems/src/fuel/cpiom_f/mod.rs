@@ -827,8 +827,8 @@ impl SimulationElement for RefuelDriver {}
 bitflags! {
     #[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
     struct FQMSDiscreteFlags: u32 {
-        const FMS_NO_DATA = 1 << 0;
-        const FMS_DATA_DISAGREE = 1 << 1;
+        const FMS_NO_ZFW_ZFWCG_DATA = 1 << 0;
+        const FMS_ZFW_ZFWCG_DATA_DISAGREE = 1 << 1;
     }
 }
 
@@ -986,9 +986,9 @@ impl A380FuelQuantityManagementSystem {
 
         let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
         let (fms_zfwcg, flags2) = Self::get_fms_data_and_status(self.fms_zero_fuel_weight_cgs);
-        let (fms_remaining_flight_time, flags3) =
-            Self::get_fms_data_and_status(self.fms_remaining_times);
-        self.fqms_status_word = flags1 | flags2 | flags3;
+        // TODO: figure out real logic, should F1, F2 get it from FM1 and F3, F4 from FM2?
+        let fms_remaining_flight_time = Self::get_fms_data(self.fms_remaining_times);
+        self.fqms_status_word = flags1 | flags2;
 
         self.fuel_measuring_application
             .update(loadsheet, selected_fqdc, fms_zfw, fms_zfwcg);
@@ -1068,7 +1068,7 @@ impl A380FuelQuantityManagementSystem {
         &mut self.refuel_application
     }
 
-    /// Extracts the FMS data by get the first one available.
+    /// Extracts the FMS data by getting the first one available.
     /// Simultaniously it is checked that both values agree if multiple values are available.
     fn get_fms_data_and_status<T: PartialEq>(
         fms_values: [Option<T>; 2],
@@ -1080,7 +1080,7 @@ impl A380FuelQuantityManagementSystem {
                 .next()
                 .map(|second_value| {
                     if first_value != second_value {
-                        FQMSDiscreteFlags::FMS_DATA_DISAGREE
+                        FQMSDiscreteFlags::FMS_ZFW_ZFWCG_DATA_DISAGREE
                     } else {
                         FQMSDiscreteFlags::empty()
                     }
@@ -1088,8 +1088,13 @@ impl A380FuelQuantityManagementSystem {
                 .unwrap_or_default();
             (Some(first_value), flags)
         } else {
-            (None, FQMSDiscreteFlags::FMS_NO_DATA)
+            (None, FQMSDiscreteFlags::FMS_NO_ZFW_ZFWCG_DATA)
         }
+    }
+
+    /// Extracts the FMS data by getting the first one available.
+    fn get_fms_data<T: PartialEq>(fms_values: [Option<T>; 2]) -> Option<T> {
+        fms_values.into_iter().flat_map(|x| x.into_iter()).next()
     }
 
     fn write_arinc429<T: Default>(
@@ -1245,10 +1250,10 @@ mod tests {
 
     #[rstest]
     #[case([Some(300_000.), Some(300_000.)], Some(300_000.), FQMSDiscreteFlags::empty())]
-    #[case([Some(300_000.), Some(350_000.)], Some(300_000.), FQMSDiscreteFlags::FMS_DATA_DISAGREE)]
+    #[case([Some(300_000.), Some(350_000.)], Some(300_000.), FQMSDiscreteFlags::FMS_ZFW_ZFWCG_DATA_DISAGREE)]
     #[case([Some(300_000.), None], Some(300_000.), FQMSDiscreteFlags::empty())]
     #[case([None, Some(350_000.)], Some(350_000.), FQMSDiscreteFlags::empty())]
-    #[case([None, None], None, FQMSDiscreteFlags::FMS_NO_DATA)]
+    #[case([None, None], None, FQMSDiscreteFlags::FMS_NO_ZFW_ZFWCG_DATA)]
     fn get_fms_data_and_status(
         #[case] fms_values: [Option<f64>; 2],
         #[case] expected_value: Option<f64>,
