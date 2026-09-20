@@ -27,13 +27,16 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
 
   if (monitoringHealthy) {
     // Select master PRIM, use it for population of FCDC discrete words
-    allPrimsDead = true;
-    for (int i = 0; i < 3; i++) {
-      if (discreteInputs.primHealthy[i]) {
-        allPrimsDead = false;
-        masterPrimIndex = i;
-        break;
-      }
+    allPrimsDead = false;
+    if (bitFromValueOr(busInputs.prims[0].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 0;
+    } else if (bitFromValueOr(busInputs.prims[1].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 1;
+    } else if (bitFromValueOr(busInputs.prims[2].fctl.fctl_law_status_word, 21, false)) {
+      masterPrimIndex = 2;
+    } else {
+      allPrimsDead = true;
+      masterPrimIndex = 0;
     }
 
     radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
@@ -43,10 +46,11 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
     updateApproachCapability(deltaTime);
     updateBtvRowRop(deltaTime);
 
-    modeReversionTripleClickMtrig.write(discreteInputs.fmaModeReversion, deltaTime);
+    const auto modeReversionRequest = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_5, 28, false);
+
+    modeReversionTripleClickMtrig.write(modeReversionRequest, deltaTime);
   } else {
     previousLandCapacity = 0;
-    autolandWarningLatch = false;
   }
 }
 
@@ -60,14 +64,15 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
-    output.primFgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
-    output.primFgDiscreteWord8.setSsm(Arinc429SignStatus::FailureWarning);
+    output.fcdcFgDiscreteWord1.setSsm(Arinc429SignStatus::FailureWarning);
+    output.fcdcFgDiscreteWord2.setSsm(Arinc429SignStatus::FailureWarning);
+    output.fcdcFgDiscreteWord3.setSsm(Arinc429SignStatus::FailureWarning);
     return output;
   }
 
   // Phase 1 of refactoring: Populate FCDC discrete words as per a32nx spec, disregarding the obvious differences.
   // Target: Should behave unsuspiciously in normal ops
-  Arinc429SignStatus ssm = allPrimsDead ? Arinc429SignStatus::FailureWarning : Arinc429SignStatus::NormalOperation;
+  Arinc429SignStatus ssm = Arinc429SignStatus::NormalOperation;
 
   LateralLaw systemLateralLaw =
       allPrimsDead ? LateralLaw::DirectLaw
@@ -154,23 +159,30 @@ FcdcBus Fcdc::getBusOutputs() {
                            valueOr(busInputs.prims[masterPrimIndex].fctl.right_spoiler_position_deg, 0.0f) >= -2.5f;
   output.efcsStatus5.setBit(26, (analogInputs.spoilersLeverPos > 0.05) && spoilersRetracted);
 
-  output.primFgDiscreteWord4.setSsm(ssm);
-  output.primFgDiscreteWord4.setBit(20, land2Inop);
-  output.primFgDiscreteWord4.setBit(21, land3FailPassiveInop);
-  output.primFgDiscreteWord4.setBit(22, land3FailOperationalInop);
-  output.primFgDiscreteWord4.setBit(23, land2Capacity);
-  output.primFgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
-  output.primFgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
+  output.fcdcFgDiscreteWord1.setSsm(ssm);
+  output.fcdcFgDiscreteWord1.setBit(24, land2Capacity);
+  output.fcdcFgDiscreteWord1.setBit(25, land3FailPassiveCapacity);
+  output.fcdcFgDiscreteWord1.setBit(26, land3FailOperationalCapacity);
 
-  output.primFgDiscreteWord8.setSsm(ssm);
-  output.primFgDiscreteWord8.setBit(11, capabilityTripleClickMtrig.read());          // CAPABILITY DOWNGRADE
-  output.primFgDiscreteWord8.setBit(12, modeReversionTripleClickMtrig.read());       // FG MODE REVERSION
-  output.primFgDiscreteWord8.setBit(13, btvTripleClickMtrig.read());                 // BTV TRIPLE CLICK
-  output.primFgDiscreteWord8.setBit(14, false);                                      // AP 1 INOP
-  output.primFgDiscreteWord8.setBit(15, false);                                      // AP 2 INOP
-  output.primFgDiscreteWord8.setBit(16, false);                                      // FD 1 INOP
-  output.primFgDiscreteWord8.setBit(17, false);                                      // FD 2 INOP
-  output.primFgDiscreteWord8.setBit(18, !discreteInputs.nwsCommunicationAvailable);  // ROLLOUT FAULT
+  output.fcdcFgDiscreteWord2.setSsm(ssm);
+  output.fcdcFgDiscreteWord2.setBit(11, false);
+  output.fcdcFgDiscreteWord2.setBit(12, false);
+  output.fcdcFgDiscreteWord2.setBit(13, false);
+  output.fcdcFgDiscreteWord2.setBit(14, false);
+  output.fcdcFgDiscreteWord2.setBit(15, false);
+  output.fcdcFgDiscreteWord2.setBit(24, land2Inop);
+  output.fcdcFgDiscreteWord2.setBit(25, land3FailPassiveInop);
+  output.fcdcFgDiscreteWord2.setBit(26, land3FailOperationalInop);
+
+  output.fcdcFgDiscreteWord3.setSsm(ssm);
+  output.fcdcFgDiscreteWord3.setBit(11, false);
+  output.fcdcFgDiscreteWord3.setBit(12, false);
+  output.fcdcFgDiscreteWord3.setBit(13, false);
+  output.fcdcFgDiscreteWord3.setBit(14, false);
+  output.fcdcFgDiscreteWord3.setBit(15, false);
+  output.fcdcFgDiscreteWord3.setBit(16, modeReversionTripleClickMtrig.read() || capabilityTripleClickMtrig.read());
+  output.fcdcFgDiscreteWord3.setBit(17, btvTripleClickMtrig.read());
+  output.fcdcFgDiscreteWord3.setBit(18, false);
 
   output.landingFctDiscreteWord.setSsm(ssm);
   output.landingFctDiscreteWord.setBit(11, rowLost);                    // ROW LOST
@@ -197,125 +209,73 @@ FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
   output.fcdcValid = monitoringHealthy;
 
   if (!monitoringHealthy) {
-    output.autolandWarning = false;
     output.btvLost = false;
     return output;
   }
 
-  output.autolandWarning = autolandWarningTriggered;
   output.btvLost = btvLost;
 
   return output;
 }
 
 void Fcdc::updateApproachCapability(double deltaTime) {
-  // calculate and set approach capability
-  // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see
-  // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
-  // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
+  // Calculate and set approach capacity
+  // Each PRIM computes the approach capability it is able to provide. For LAND 3 Fail Op., PRIM 1 and 3 or 2 and 3 must be able to provide
+  // LAND 3 Fail Op. The FCDC additionally checks for peripheral status that is not included in the PRIM computation, such as PFD, FWS,
+  // FCDC Opp, etc, and the AP and A/THR engagement status.
 
-  int numberOfAutopilotsEngaged =
-      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
-  bool memorizeLand3Capacity =
-      radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
-      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33 ||
-       discreteInputs.autopilotStateMachineOutput.vertical_mode == 34);
-  // Select capability from master PRIM
-  bool land2Capability = false;
-  bool land3FailPassiveCapability = false;
-  bool land3FailOperationalCapability = false;
+  const auto primLand2Capability = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 27, false);
 
-  for (int i = 0; i < 3; i++) {
-    if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl.fctl_law_status_word)->bitFromValueOr(21, false)) {
-      Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl.fg_status_word);
-      land2Capability = fg_status_word->bitFromValueOr(16, false);
-      land3FailPassiveCapability = fg_status_word->bitFromValueOr(17, false);
-      land3FailOperationalCapability = fg_status_word->bitFromValueOr(18, false);
+  const auto primLand3FailPassiveCapability = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 28, false);
 
-      land2Inop = fg_status_word->bitFromValueOr(20, false);
-      land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
-      land3FailOperationalInop = fg_status_word->bitFromValueOr(22, false);
+  const auto primLand3FailOperationalCapability = (bitFromValueOr(busInputs.prims[0].fg.discrete_word_1, 29, false) &&
+                                                   bitFromValueOr(busInputs.prims[1].fg.discrete_word_1, 29, false)) ||
+                                                  (bitFromValueOr(busInputs.prims[0].fg.discrete_word_1, 29, false) &&
+                                                   bitFromValueOr(busInputs.prims[2].fg.discrete_word_1, 29, false));
 
-      break;
-    }
-  }
+  const auto oneApEngaged = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 11, false) ||
+                            bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 12, false);
+  const auto bothApEngaged = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 11, false) &&
+                             bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 12, false);
+  const auto athrEngaged = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 11, false);
 
-  // Check PRIM and SEC availability
-  int primAvailable = 0;
-  int secAvailable = 0;
-  int fwsAudioFunctionAvailable = 0;
+  const auto landModeArmedOrEngaged = bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 23, false) ||
+                                      bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_2, 28, false);
 
-  for (int i = 0; i < 3; i++) {
-    if (isNo(busInputs.prims[i].fctl.fctl_law_status_word) == true) {
-      primAvailable++;
-    }
-    if (isNo(busInputs.secs[i].fctl_law_status_word) == true) {
-      secAvailable++;
-    }
-  }
+  const auto fwsAudioFunctionAvailable =
+      bitFromValueOr(busInputs.fwsDiscreteWord126[0], 16, false) + bitFromValueOr(busInputs.fwsDiscreteWord126[1], 16, false);
+  const auto numEnginesOperative = discreteInputs.engineOperative[0] + discreteInputs.engineOperative[1] +
+                                   discreteInputs.engineOperative[2] + discreteInputs.engineOperative[3];
 
-  for (int i = 0; i < 2; i++) {
-    if (bitFromValueOr(busInputs.fwsDiscreteWord126[i], 16, false)) {
-      fwsAudioFunctionAvailable++;
-    }
-  }
-
-  int numEnginesOperative = 0;
-  for (int i = 0; i < 4; i++) {
-    if (discreteInputs.engineOperative[i]) {
-      numEnginesOperative++;
-    }
-  }
-
-  bool land2EngineCriteria = (discreteInputs.engineOperative[0] || discreteInputs.engineOperative[1]) &&
-                             (discreteInputs.engineOperative[2] || discreteInputs.engineOperative[3]);
-  bool land3FailPassiveEngineCriteria = numEnginesOperative >= 3;
+  const bool oneEngineOnEachSide = (discreteInputs.engineOperative[0] || discreteInputs.engineOperative[1]) &&
+                                   (discreteInputs.engineOperative[2] || discreteInputs.engineOperative[3]);
   bool land3FailOperationalEngineCriteria = numEnginesOperative == 4 || (numEnginesOperative == 3 && discreteInputs.apuGenConnected);
 
-  bool land2Criteria =
-      primAvailable >= 1 && secAvailable >= 1 && fwsAudioFunctionAvailable >= 1 && land2EngineCriteria && !discreteInputs.fcuNorthRefTrue;
-  bool land3SingleCriteria = land2Criteria && land3FailPassiveEngineCriteria;
-  bool land3DualCriteria = land3SingleCriteria &&
-                           ((isNo(busInputs.prims[0].fctl.fctl_law_status_word) && isNo(busInputs.prims[1].fctl.fctl_law_status_word)) ||
-                            (isNo(busInputs.prims[0].fctl.fctl_law_status_word) && isNo(busInputs.prims[2].fctl.fctl_law_status_word))) &&
-                           fwsAudioFunctionAvailable >= 2 && discreteInputs.otherFcdcHealthy && land3FailOperationalEngineCriteria &&
-                           discreteInputs.everyDcSuppliedByTr && discreteInputs.antiskidAvailable &&
-                           discreteInputs.nwsCommunicationAvailable;
+  const auto land2Capability = primLand2Capability && fwsAudioFunctionAvailable > 0 && oneEngineOnEachSide;
+  const auto land3FailPassiveCapability = land2Capability && primLand3FailPassiveCapability && numEnginesOperative >= 3;
+  const auto land3FailOperationalCapability = primLand3FailOperationalCapability && fwsAudioFunctionAvailable >= 2 &&
+                                              discreteInputs.otherFcdcHealthy && discreteInputs.everyDcSuppliedByTr &&
+                                              discreteInputs.antiskidAvailable && land3FailOperationalEngineCriteria;
 
-  if (!memorizeLand3Capacity) {
-    land3FailOperationalCapacity = land3FailOperationalCapability && land3DualCriteria;
-    land3FailPassiveCapacity =
-        (land3FailPassiveCapability || land3FailOperationalCapability) && land3SingleCriteria && !land3FailOperationalCapacity;
+  const auto memorizeLand3Capability = radioAlt < 200 && oneApEngaged && landModeArmedOrEngaged;
+  const auto northRefTrue = bitFromValueOr(busInputs.prims[0].fg.discrete_word_5, 13, false);
 
-    land3FailOperationalInop |= !land3DualCriteria;
-    land3FailPassiveInop |= !land3SingleCriteria;
-  }
+  land3FailOperationalCapacity =
+      (land3FailOperationalCapacity && memorizeLand3Capability) ||
+      (land3FailOperationalCapability && bothApEngaged && athrEngaged && landModeArmedOrEngaged && !northRefTrue);
+  land3FailPassiveCapacity =
+      (land3FailPassiveCapacity && memorizeLand3Capability) || (land3FailPassiveCapability && oneApEngaged && athrEngaged &&
+                                                                landModeArmedOrEngaged && !northRefTrue && !land3FailOperationalCapacity);
+  land2Capacity = land2Capability && oneApEngaged && landModeArmedOrEngaged && !northRefTrue && !land3FailPassiveCapacity &&
+                  !land3FailOperationalCapacity;
 
-  land2Capacity = (land2Capability || land3FailPassiveCapability || land3FailOperationalCapability) && land2Criteria &&
-                  !land3FailPassiveCapacity && !land3FailOperationalCapacity;
-  land2Inop |= !land2Criteria;
+  land2Inop = !land2Capability;
+  land3FailPassiveInop = !land3FailPassiveCapability;
+  land3FailOperationalInop = !land3FailOperationalCapability;
 
   int newLandCapacity = land3FailOperationalCapacity ? 5 : land3FailPassiveCapacity ? 4 : land2Capacity ? 3 : 0;
   capabilityTripleClickMtrig.write(newLandCapacity < previousLandCapacity, deltaTime);
   previousLandCapacity = newLandCapacity;
-
-  // autoland warning -------------------------------------------------------------------------------------------------
-  // if at least one AP engaged and LAND or FLARE mode -> latch
-  if (memorizeLand3Capacity) {
-    autolandWarningLatch = true;
-  } else if (radioAlt >= 200 || (discreteInputs.autopilotStateMachineOutput.vertical_mode != 32 &&
-                                 discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {
-    autolandWarningLatch = false;
-    autolandWarningTriggered = false;
-  }
-
-  if (autolandWarningLatch && !autolandWarningTriggered) {
-    if (numberOfAutopilotsEngaged == 0 ||
-        (radioAlt > 15 && (abs(discreteInputs.simData.nav_loc_error_deg) > 0.2 || discreteInputs.simData.nav_loc_valid == false)) ||
-        (radioAlt > 100 && (abs(discreteInputs.simData.nav_gs_error_deg) > 0.4 || discreteInputs.simData.nav_gs_valid == false))) {
-      autolandWarningTriggered = true;
-    }
-  }
 }
 
 void Fcdc::updateBtvRowRop(double deltaTime) {

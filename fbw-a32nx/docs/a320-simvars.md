@@ -297,11 +297,6 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_SPEEDS_VS
-    - Number
-    - Current config stall speed
-    - is mach corrected
-
 - A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
@@ -320,23 +315,17 @@
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_SPEEDS_LANDING_CONF3
+- A32NX_FM_LANDING_CONF3
     - Bool
-    - True if FLAPS 3 is selected in perf page
-
-- A32NX_SPEEDS_TO_CONF
-    - Number
-    - Flaps config for TakeOff, 1, 2 or 3
-
-- A32NX_SPEEDS_VLS_APP
-    - Number
-    - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
-    - is mach corrected
+    - True if CONF 3 is selected in the performance approach page.
 
 - A32NX_SPEEDS_VAPP
+    - Number (Knots)
+    - The VAPP pilot entry if it exists or the VAPP calculated by the FMS.
+
+- A32NX_SPEEDS_MANAGED_PFD
     - Number
-    - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
-    - is mach corrected
+    - The managed speed target requested by the FMS in knots. 0 if invalid
 
 - A32NX_APU_EGT_CAUTION
     - `Arinc429Word<Celsius>`
@@ -3029,7 +3018,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The acceleration altitude
+    - The acceleration altitude during the preflight and takeoff phases. The missed approach acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3085,7 +3074,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_EO_ACC_ALT`
     - ARINC429<number> (feet MSL)
-    - The engine out acceleration altitude
+    - The engine out acceleration altitude during preflight and takeoff phases. The missed engine out acceleration altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3108,27 +3097,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
-- `L:A32NX_FM{number}_MISSED_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_EO_ACC_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- `L:A32NX_FM{number}_MISSED_THR_RED_ALT`
-    - ARINC429<number> (feet MSL)
-    - The missed approach thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
 - `L:A32NX_FM{number}_NAV_DISCRETE`
     - Arinc429<Discrete>
     - {number}
@@ -3145,7 +3113,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `L:A32NX_FM{number}_THR_RED_ALT`
     - ARINC429<number> (feet MSL)
-    - The thrust reduction altitude
+    - The thrust reduction altitude during the preflight and takeoff phases. The missed thrust reduction altitude during the go around phase.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3170,6 +3138,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
+
+- `L:A32NX_FM_APPROACH_HEADWIND_COMPONENT`
+    - Arinc429<number> (knots)
+    - The calculated headwind component by the fms based on the inserted wind on the PERF APPR page.
 
 ### Flight Control Unit (FCU)
 
