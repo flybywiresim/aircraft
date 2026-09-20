@@ -22,6 +22,7 @@ export interface AirframeDesignLimits {
 }
 
 export interface AirframeDesignLimitsWeights {
+  maxRw: number;
   maxGw: number;
   maxZfw: number;
   minZfw: number;

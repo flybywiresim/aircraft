@@ -26,7 +26,8 @@
     "weightVariant": "WV011",
     "designLimits": {
         "weights": {
-            "maxGw": 577000,   // kg
+            "maxRw": 577000,   // kg
+            "maxGw": 575000,   // kg
             "maxZfw": 369000,  // kg
             "minZfw": 300007,  // kg
             "maxGwCg": 43,     // %CG MAC
