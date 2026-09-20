@@ -14,8 +14,8 @@ export type FcdcBusBaseEvents = {
    * | 12  | Alternate 1A Law Active           |
    * | 13  | Alternate 1B Law Active           |
    * | 14  | Alternate 1C Law Active           |
-   * | 15  | Alternate 2 Law Active            |
-   * | 16  | Spare                             |
+   * | 15  | Alternate 2A Law Active           |
+   * | 16  | Alternate 2B Law Active           |
    * | 17  | Spare                             |
    * | 18  | Direct Law Active                 |
    * | 19  | BCM Active                        |
