@@ -389,7 +389,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
     const subPage = this.selectedSubPage.get();
     const hasTmpy = this.tmpyActive.get();
     if (subPage === WindSubPageMenu.History) {
-      this.props.flightPlanInterface.getHistoryWindsEntries().then((historyWinds) => {
+      this.props.flightPlanInterface.getHistoryWindsEntries(false).then((historyWinds) => {
         let hasNonEmptyWind = false;
         const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
         for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
