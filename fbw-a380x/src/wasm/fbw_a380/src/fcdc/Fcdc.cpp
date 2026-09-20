@@ -519,8 +519,8 @@ FcdcBus Fcdc::getBusOutputs() {
   setSurfacePosition4(output.elevatorLeftOuterPos, busInputs.prims[0].fctl.elevator_1_position_deg,
                       busInputs.prims[1].fctl.elevator_2_position_deg, busInputs.secs[0].elevator_1_position_deg,
                       busInputs.secs[1].elevator_2_position_deg);
-  setSurfacePosition4(output.elevatorRightInnerPos, busInputs.prims[2].fctl.elevator_1_position_deg,
-                      busInputs.prims[1].fctl.elevator_3_position_deg, busInputs.secs[2].elevator_1_position_deg,
+  setSurfacePosition4(output.elevatorRightInnerPos, busInputs.prims[2].fctl.elevator_2_position_deg,
+                      busInputs.prims[1].fctl.elevator_3_position_deg, busInputs.secs[2].elevator_2_position_deg,
                       busInputs.secs[1].elevator_3_position_deg);
   setSurfacePosition4(output.elevatorRightOuterPos, busInputs.prims[1].fctl.elevator_1_position_deg,
                       busInputs.prims[0].fctl.elevator_3_position_deg, busInputs.secs[1].elevator_1_position_deg,

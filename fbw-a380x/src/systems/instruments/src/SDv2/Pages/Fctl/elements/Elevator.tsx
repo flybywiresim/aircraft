@@ -90,8 +90,8 @@ export class Elevator extends DisplayComponent<ElevatorProps> {
       failAvailBit += 2;
     }
 
-    this.failAvailBit1 = failAvailBit;
-    this.failAvailBit2 = failAvailBit + 1;
+    this.failAvailBit1 = failAvailBit + 1;
+    this.failAvailBit2 = failAvailBit;
   }
 
   render() {
