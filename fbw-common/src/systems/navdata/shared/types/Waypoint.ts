@@ -1,6 +1,6 @@
 import { NauticalMiles } from 'msfs-geo';
 import { AirportSubsectionCode, EnrouteSubsectionCode, SectionCode } from './SectionCode';
-import { BaseFix } from './BaseFix';
+import { BaseFix, Fix } from './BaseFix';
 
 /**
  * Waypoint area
@@ -34,4 +34,12 @@ interface BaseWaypoint<T extends SectionCode> extends BaseFix<T> {
    * Distance from centre location for nearby airport query
    */
   distance?: NauticalMiles;
+}
+
+export interface AbeamWaypoint extends EnrouteWaypoint {
+  // TODO resolve circular dependency
+  // "Fix" is defined from waypoints, this abeam waypoint references "Fix"
+  // Also this is not really a DatabaseItem because abeam points are not stored in the database
+  // but it is convenient to treat them as such
+  referenceFix: Fix;
 }

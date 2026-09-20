@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 import { WindEntry } from '@fmgc/flightplanning/data/wind';
 import { Accessible } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
@@ -106,8 +107,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setScratchpadMessage(message: McduMessage): void;
   logTroubleshootingError(msg: any): void;
   onToRwyChanged(): void;
-  directToWaypoint(waypoint: Fix): Promise<void>;
-  directToLeg(legIndex: number): Promise<void>;
+  directTo(directTo: DirectTo): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;
   insertWaypoint(
     newWaypointTo,

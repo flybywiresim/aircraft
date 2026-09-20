@@ -3,7 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EnrouteSubsectionCode, SectionCode, Waypoint, WaypointArea, Icao } from '@flybywiresim/fbw-sdk';
+import {
+  EnrouteSubsectionCode,
+  SectionCode,
+  Waypoint,
+  WaypointArea,
+  Icao,
+  AbeamWaypoint,
+  Fix,
+  isAbeamWaypoint,
+} from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 
 export namespace WaypointFactory {
@@ -16,6 +25,23 @@ export namespace WaypointFactory {
       area: WaypointArea.Enroute,
       ident,
       location,
+    };
+  }
+
+  export function abeamFromFix(ident: string, location: Coordinates, referenceFix: Fix): AbeamWaypoint {
+    if (isAbeamWaypoint(referenceFix)) {
+      console.warn('[FMS/WaypointFactory] Creating an abeam point from another abeam point, are you sure?');
+    }
+
+    return {
+      sectionCode: SectionCode.Enroute,
+      subSectionCode: EnrouteSubsectionCode.Waypoints,
+      databaseId: Icao.create('W', '', '', ident),
+      icaoCode: '  ',
+      area: WaypointArea.Enroute,
+      ident,
+      location,
+      referenceFix,
     };
   }
 

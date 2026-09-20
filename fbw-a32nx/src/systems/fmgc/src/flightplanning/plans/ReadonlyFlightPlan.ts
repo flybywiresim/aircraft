@@ -7,6 +7,7 @@ import {
   Approach,
   Arrival,
   Departure,
+  Fix,
   ProcedureTransition,
   Runway,
   WaypointConstraintType,
@@ -15,6 +16,8 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { Coordinates } from 'msfs-geo';
+import { Geometry } from '../../guidance/Geometry';
 import { PropagatedWindEntry } from '../data/wind';
 
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
@@ -126,4 +129,6 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   get performanceData(): P;
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
+
+  locateAbeamPoint(geometry: Geometry, referenceFix: Fix, endLeg: number): [number, Coordinates] | undefined;
 }

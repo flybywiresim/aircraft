@@ -95,6 +95,7 @@ import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlig
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
 import { isLeg, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -4960,10 +4961,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.guidanceController.getAlongTrackDistanceToDestination(forPlan);
   }
 
-  /**
-   * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
-   */
-  public async directToWaypoint(waypoint: Fix) {
+  async directTo(directTo: DirectTo) {
     // FIXME fm pos
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
@@ -4978,29 +4976,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
-  }
-
-  /**
-   * Modifies the active flight plan to go direct to a specific leg
-   * @param legIndex index of leg to go direct to
-   */
-  public async directToLeg(legIndex: number) {
-    // FIXME fm pos
-    const adirLat = ADIRS.getLatitude();
-    const adirLong = ADIRS.getLongitude();
-    const trueTrack = ADIRS.getTrueTrack();
-
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
-      return;
-    }
-
-    const ppos = {
-      lat: adirLat.value,
-      long: adirLong.value,
-    };
-
-    await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    await this.flightPlanService.directTo(ppos, trueTrack.value, directTo);
   }
 
   /**

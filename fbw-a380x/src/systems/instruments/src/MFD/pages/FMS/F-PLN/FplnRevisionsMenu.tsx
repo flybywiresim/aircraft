@@ -8,6 +8,7 @@ import { MfdFmsFpln } from './MfdFmsFpln';
 import { ContextMenuElement } from '../../../../MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { DirectToType } from '@fmgc/flightplanning/types/DirectTo';
 import { isConstraintRevisionAllowed, lateralRevisionHoldPage } from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
@@ -55,11 +56,14 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         //FIXME This should navigate to DIR TO page instead.
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
-          fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
+          fpln.props.fmcService.master?.flightPlanInterface.directTo(
             ppos,
             SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-            legIndex,
-            true,
+            {
+              type: DirectToType.Normal,
+              isToFlightPlanFix: true,
+              flightPlanLegIndex: legIndex,
+            },
             planIndex,
           );
           fpln.props.mfd.uiService.navigateTo(
