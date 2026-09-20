@@ -135,7 +135,8 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A);
   output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw1B);
   output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1C);
-  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::AlternateLaw2);
+  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::AlternateLaw2A);
+  output.efcsStatus1.setBit(16, systemPitchLaw == PitchLaw::AlternateLaw2B);
   output.efcsStatus1.setBit(18, systemPitchLaw == PitchLaw::DirectLaw);
   output.efcsStatus1.setBit(19, false);
   output.efcsStatus1.setBit(23, prim1Fault);
@@ -421,17 +422,17 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus9.setBit(28, false);
   output.efcsStatus9.setBit(29, false);
 
-  const auto prim1LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 11),
-                                                     bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 12),
-                                                     bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 13));
+  const auto prim1LawCap = getLawStatusFromBits(bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 11),
+                                                bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 12),
+                                                bitFromValue(busInputs.prims[0].fctl.fctl_law_status_word, 13));
 
-  const auto prim2LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
-                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
-                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
+  const auto prim2LawCap = getLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
+                                                bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
+                                                bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
 
-  const auto prim3LawCap = getPitchLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
-                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
-                                                     bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
+  const auto prim3LawCap = getLawStatusFromBits(bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 11),
+                                                bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 12),
+                                                bitFromValue(busInputs.prims[1].fctl.fctl_law_status_word, 13));
 
   output.efcsStatus10.setSsm(ssm);
   output.efcsStatus10.setBit(11, discreteInputs.primOff[0]);
@@ -853,16 +854,6 @@ PitchLaw Fcdc::getLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
     return PitchLaw::DirectLaw;
   } else {
     return PitchLaw::None;
-  }
-}
-
-LateralLaw Fcdc::getLateralLawStatusFromBits(bool bit1, bool bit2) {
-  if (bit1) {
-    return LateralLaw::NormalLaw;
-  } else if (bit2) {
-    return LateralLaw::DirectLaw;
-  } else {
-    return LateralLaw::None;
   }
 }
 
