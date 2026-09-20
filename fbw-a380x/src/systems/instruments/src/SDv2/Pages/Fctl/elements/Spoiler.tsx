@@ -1,14 +1,13 @@
 import {
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
   MappedSubject,
-  Subject,
   Subscribable,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 const SCALE_HEIGHT = -35;
 
@@ -39,33 +38,24 @@ export function deflectionToYOffset(deflection: number, maxDeflection: number): 
 }
 
 export class Spoiler extends DisplayComponent<SpoilerProps> {
-  private readonly deflectionInfoValid = Subject.create(true);
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
 
-  private readonly spoilerDeflection = ConsumerSubject.create(
-    this.props.bus
-      .getSubscriber<SDSimvars>()
-      .on(`${this.props.side}Spoiler${this.props.position}Deflection`)
-      .atFrequency(10),
-    0,
+  private readonly fcdcDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_8'));
+
+  private readonly fcdcSpoilerPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.side}_spoiler_${this.props.position}_position_deg`),
   );
 
-  private readonly hydPowerAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`greenPressureSwitch`),
-    false,
-  );
+  private readonly deflectionInfoValid = this.fcdcSpoilerPosition.map((word) => !word.isInvalid());
 
-  private readonly elecPowerAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`acEssPowered`),
-    false,
-  );
+  private readonly availBit: number;
 
-  // On ground, elec motors only active if G HYD system is pressurized
-  private readonly powerAvail = MappedSubject.create(
-    ([hydPowerAvailable, elecPowerAvailable, onGround]) =>
-      onGround ? hydPowerAvailable : hydPowerAvailable || elecPowerAvailable,
-    this.hydPowerAvailable,
-    this.elecPowerAvailable,
-    this.props.onGround,
+  private readonly powerAvail = this.fcdcDiscreteWord8.map((word) => word.bitValue(this.availBit));
+
+  private readonly powerNotAvailLinesVisible = MappedSubject.create(
+    ([powerAvail, deflectionInfoValid]) => deflectionInfoValid && !powerAvail,
+    this.powerAvail,
+    this.deflectionInfoValid,
   );
 
   private readonly maxDeflectionVisible = MappedSubject.create(
@@ -75,6 +65,19 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
     this.deflectionInfoValid,
     this.props.onGround,
   );
+
+  constructor(props: SpoilerProps) {
+    super(props);
+
+    if (this.props.position < 4) {
+      this.availBit = 11 + (this.props.position - 1);
+    } else if (this.props.position > 6) {
+      this.availBit = 14 + (this.props.position - 7);
+    } else {
+      // Spoilers 4,5 and 6 are PRIM-controlled and can be active on left and right side individually
+      this.availBit = (this.props.side === SpoilerSide.Left ? 16 : 19) + (this.props.position - 4);
+    }
+  }
 
   render() {
     const maxDeflection = this.props.position >= 3 ? 50 : 35;
@@ -112,21 +115,23 @@ export class Spoiler extends DisplayComponent<SpoilerProps> {
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             deflectionInfoValid ? 'inherit' : 'hidden',
           )}
-          d={this.spoilerDeflection.map(
-            (spoilerDeflection) => `m0,0 h15 v${deflectionToYOffset(spoilerDeflection * 50, maxDeflection)} h-16 z`,
+          d={this.fcdcSpoilerPosition.map(
+            (spoilerDeflection) => `m0,0 h15 v${deflectionToYOffset(-spoilerDeflection.value, maxDeflection)} h-16 z`,
           )}
         />
 
         <path
           class="Amber SW4 LineRound"
-          visibility={this.powerAvail.map((spoilersFailed) => (!spoilersFailed ? 'inherit' : 'hidden'))}
+          visibility={this.powerNotAvailLinesVisible.map((powerNotAvailLinesVisible) =>
+            powerNotAvailLinesVisible ? 'inherit' : 'hidden',
+          )}
           d="m1,-2 v-31 M14,-2 v-31"
         />
 
         <text
-          x={-1}
+          x={0}
           y={0}
-          class="Amber F32"
+          class="Amber F28"
           visibility={this.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'inherit' : 'hidden',
           )}

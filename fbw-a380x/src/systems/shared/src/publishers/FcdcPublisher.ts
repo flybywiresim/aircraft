@@ -5,16 +5,457 @@
 import { EventBus, SimVarValueType, SimVarPublisher, PublishPacer, SimVarPublisherEntry } from '@microsoft/msfs-sdk';
 
 export type FcdcBusBaseEvents = {
-  /** Indicates state of the FCDC. Still mixed with old a32x definition, needs to be adapted to a380x once we have refs. Raw ARINC Word. */
+  /**
+   * FCDC Discrete word 1, raw ARINC word.
+   * Indicates general EFCS status.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Normal Law Active                 |
+   * | 12  | Alternate 1A Law Active           |
+   * | 13  | Alternate 1B Law Active           |
+   * | 14  | Alternate 1C Law Active           |
+   * | 15  | Alternate 2A Law Active           |
+   * | 16  | Alternate 2B Law Active           |
+   * | 17  | Spare                             |
+   * | 18  | Direct Law Active                 |
+   * | 19  | BCM Active                        |
+   * | 20  | Spare                             |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | PRIM 1 Fault                      |
+   * | 24  | PRIM 2 Fault                      |
+   * | 25  | PRIM 3 Fault                      |
+   * | 26  | SEC 1 Fault                       |
+   * | 27  | SEC 2 Fault                       |
+   * | 28  | SEC 3 Fault                       |
+   * | 29  | FCDC Opposite Fault               |
+   */
   fcdc_discrete_word_1: number;
-  /** Indicates state of the FCDC. Still mixed with old a32x definition, needs to be adapted to a380x once we have refs. Raw ARINC Word. */
+  /**
+   * FCDC Discrete word 2, raw ARINC word.
+   * Indicates aileron actuator faults.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Aileron Actuator 1 Fault        |
+   * | 12  | L Aileron Actuator 2 Fault        |
+   * | 13  | L Aileron Actuator 3 Fault        |
+   * | 14  | L Aileron Actuator 4 Fault        |
+   * | 15  | L Aileron Actuator 5 Fault        |
+   * | 16  | L Aileron Actuator 6 Fault        |
+   * | 17  | L Aileron Actuator 1 Elec Fault   |
+   * | 18  | L Aileron Actuator 3 Elec Fault   |
+   * | 19  | R Aileron Actuator 1 Fault        |
+   * | 20  | R Aileron Actuator 2 Fault        |
+   * | 21  | R Aileron Actuator 3 Fault        |
+   * | 22  | R Aileron Actuator 4 Fault        |
+   * | 23  | R Aileron Actuator 5 Fault        |
+   * | 24  | R Aileron Actuator 6 Fault        |
+   * | 25  | R Aileron Actuator 1 Elec Fault   |
+   * | 26  | R Aileron Actuator 3 Elec Fault   |
+   * | 27  | Spare                             |
+   * | 28  | Spare                             |
+   * | 29  | Spare                             |
+   */
   fcdc_discrete_word_2: number;
-  /** Indicates state of the FCDC. Still mixed with old a32x definition, needs to be adapted to a380x once we have refs. Raw ARINC Word. */
+  /**
+   * FCDC Discrete word 3, raw ARINC word.
+   * Indicates aileron actuator availability.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Aileron Actuator 1 Avail        |
+   * | 12  | L Aileron Actuator 2 Avail        |
+   * | 13  | L Aileron Actuator 3 Avail        |
+   * | 14  | L Aileron Actuator 4 Avail        |
+   * | 15  | L Aileron Actuator 5 Avail        |
+   * | 16  | L Aileron Actuator 6 Avail        |
+   * | 17  | Spare                             |
+   * | 18  | Spare                             |
+   * | 19  | R Aileron Actuator 1 Avail        |
+   * | 20  | R Aileron Actuator 2 Avail        |
+   * | 21  | R Aileron Actuator 3 Avail        |
+   * | 22  | R Aileron Actuator 4 Avail        |
+   * | 23  | R Aileron Actuator 5 Avail        |
+   * | 24  | R Aileron Actuator 6 Avail        |
+   * | 25  | Spare                             |
+   * | 26  | Spare                             |
+   * | 27  | Spare                             |
+   * | 28  | Spare                             |
+   * | 29  | Spare                             |
+   */
   fcdc_discrete_word_3: number;
-  /** Indicates state of the FCDC. Still mixed with old a32x definition, needs to be adapted to a380x once we have refs. Raw ARINC Word. */
+  /**
+   * FCDC Discrete word 4, raw ARINC word.
+   * Indicates elevator actuator faults.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Elevator Actuator 1 Fault       |
+   * | 12  | L Elevator Actuator 2 Fault       |
+   * | 13  | L Elevator Actuator 3 Fault       |
+   * | 14  | L Elevator Actuator 4 Fault       |
+   * | 15  | L Elevator Actuator 1 Elec Fault  |
+   * | 16  | L Elevator Actuator 3 Elec Fault  |
+   * | 17  | R Elevator Actuator 1 Fault       |
+   * | 18  | R Elevator Actuator 2 Fault       |
+   * | 19  | R Elevator Actuator 3 Fault       |
+   * | 20  | R Elevator Actuator 4 Fault       |
+   * | 21  | R Elevator Actuator 1 Elec Fault  |
+   * | 22  | R Elevator Actuator 3 Elec Fault  |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | THS Actuator 1 Fault              |
+   * | 26  | THS Actuator 2 Fault              |
+   * | 27  | (THS Actuator 3 Fault)            |
+   * | 28  | Spare                             |
+   * | 29  | THS Jammed                        |
+   */
   fcdc_discrete_word_4: number;
-  /** Indicates state of the FCDC. Still mixed with old a32x definition, needs to be adapted to a380x once we have refs. Raw ARINC Word. */
+  /**
+   * FCDC Discrete word 5, raw ARINC word.
+   * Indicates elevator actuator availability.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Elevator Actuator 1 Avail       |
+   * | 12  | L Elevator Actuator 2 Avail       |
+   * | 13  | L Elevator Actuator 3 Avail       |
+   * | 14  | L Elevator Actuator 4 Avail       |
+   * | 15  | Spare                             |
+   * | 16  | Spare                             |
+   * | 17  | R Elevator Actuator 1 Avail       |
+   * | 18  | R Elevator Actuator 2 Avail       |
+   * | 19  | R Elevator Actuator 3 Avail       |
+   * | 20  | R Elevator Actuator 4 Avail       |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | THS Actuator 1 Avail              |
+   * | 26  | THS Actuator 2 Avail              |
+   * | 27  | (THS Actuator 3 Avail)            |
+   * | 28  | Spare                             |
+   * | 29  | Spare                             |
+   */
   fcdc_discrete_word_5: number;
+  /**
+   * FCDC Discrete word 6, raw ARINC word.
+   * Indicates rudder actuator status.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | UPR Rudder Actuator 1 Fault       |
+   * | 12  | UPR Rudder Actuator 2 Fault       |
+   * | 13  | UPR Rudder Actuator 1 Elec Fault  |
+   * | 14  | UPR Rudder Actuator 2 Elec Fault  |
+   * | 15  | LWR Rudder Actuator 1 Fault       |
+   * | 16  | LWR Rudder Actuator 2 Fault       |
+   * | 17  | LWR Rudder Actuator 1 Elec Fault  |
+   * | 18  | LWR Rudder Actuator 2 Elec Fault  |
+   * | 19  | UPR Rudder Actuator 1 PRIM1 Fault |
+   * | 20  | LWR Rudder Actuator 1 PRIM1 Fault |
+   * | 21  | UPR Rudder Actuator 2 PRIM2 Fault |
+   * | 22  | LWR Rudder Actuator 2 PRIM3 Fault |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | UPR Rudder Actuator 1 Avail       |
+   * | 26  | UPR Rudder Actuator 2 Avail       |
+   * | 27  | LWR Rudder Actuator 1 Avail       |
+   * | 28  | LWR Rudder Actuator 2 Avail       |
+   * | 29  | Spare                             |
+   */
+  fcdc_discrete_word_6: number;
+  /**
+   * FCDC Discrete word 7, raw ARINC word.
+   * Indicates Spoiler actuator faults.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Spoiler 1 Fault                   |
+   * | 12  | Spoiler 2 Fault                   |
+   * | 13  | Spoiler 3 Fault                   |
+   * | 14  | Spoiler 7 Fault                   |
+   * | 15  | Spoiler 8 Fault                   |
+   * | 16  | Left Spoiler 4 Fault              |
+   * | 17  | Left Spoiler 5 Fault              |
+   * | 18  | Left Spoiler 6 Fault              |
+   * | 19  | Right Spoiler 4 Fault             |
+   * | 20  | Right Spoiler 5 Fault             |
+   * | 21  | Right Spoiler 6 Fault             |
+   * | 22  | Spare                             |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | Spare                             |
+   * | 26  | Spoilers Fuel Consumption Incrsd  |
+   * | 27  | Speed Brake Disagree              |
+   * | 28  | Speed Brake Fault                 |
+   * | 29  | Ground Spoiler Fault              |
+   */
+  fcdc_discrete_word_7: number;
+  /**
+   * FCDC Discrete word 8, raw ARINC word.
+   * Indicates Spoiler actuator availability.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Spoiler 1 Avail                   |
+   * | 12  | Spoiler 2 Avail                   |
+   * | 13  | Spoiler 3 Avail                   |
+   * | 14  | Spoiler 7 Avail                   |
+   * | 15  | Spoiler 8 Avail                   |
+   * | 16  | Left Spoiler 4 Avail              |
+   * | 17  | Left Spoiler 5 Avail              |
+   * | 18  | Left Spoiler 6 Avail              |
+   * | 19  | Right Spoiler 4 Avail             |
+   * | 20  | Right Spoiler 5 Avail             |
+   * | 21  | Right Spoiler 6 Avail             |
+   * | 22  | Spare                             |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | Ground Spoilers Armed             |
+   * | 26  | Ground Spoilers Out               |
+   * | 27  | Speed Brake Command               |
+   * | 28  | Speed Brake Avail                 |
+   * | 29  | Ground Spoiler Avail              |
+   */
+  fcdc_discrete_word_8: number;
+  /**
+   * FCDC Discrete word 9, raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | PFTU 1 Fault                      |
+   * | 12  | PFTU 2 Fault                      |
+   * | 13  | PFTU 1 Avail                      |
+   * | 14  | PFTU 2 Avail                      |
+   * | 15  | Rudder Pedal Fault                |
+   * | 16  | Spare                             |
+   * | 17  | Spare                             |
+   * | 18  | Sidestick Priority Fault          |
+   * | 19  | L Sidestick Fault                 |
+   * | 20  | R Sidestick Fault                 |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | L Sidestick Priority              |
+   * | 26  | R Sidestick Priority              |
+   * | 27  | L Sidestick Priority Locked       |
+   * | 28  | R Sidestick Priority Locked       |
+   * | 29  | Dual Input                        |
+   */
+  fcdc_discrete_word_9: number;
+  /**
+   * FCDC Discrete word 10, raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | PRIM 1 P/B Off                    |
+   * | 12  | PRIM 2 P/B Off                    |
+   * | 13  | PRIM 3 P/B Off                    |
+   * | 14  | SEC 1 P/B Off                     |
+   * | 15  | SEC 2 P/B Off                     |
+   * | 16  | SEC 3 P/B Off                     |
+   * | 17  | Spare                             |
+   * | 18  | F/CTL Redundancy Lost             |
+   * | 19  | PRIM 1 Law Degraded               |
+   * | 20  | PRIM 2 Law Degraded               |
+   * | 21  | PRIM 3 Law Degraded               |
+   * | 22  | Spare                             |
+   * | 23  | Spare                             |
+   * | 24  | Spare                             |
+   * | 25  | Spare                             |
+   * | 26  | LAF Fault                         |
+   * | 27  | GLA Fault                         |
+   * | 28  | Spare                             |
+   * | 29  | Spare                             |
+   */
+  fcdc_discrete_word_10: number;
+  /**
+   * FCDC Discrete word 11, raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | All Air Data Disagree             |
+   * | 12  | ADR 1 Disagree                    |
+   * | 13  | ADR 2 Disagree                    |
+   * | 14  | ADR 3 Disagree                    |
+   * | 15  | ISIS Disagree                     |
+   * | 16  | AOA 1 Fault                       |
+   * | 17  | AOA 2 Fault                       |
+   * | 18  | AOA 3 Fault                       |
+   * | 19  | Risk of undue stall warn          |
+   * | 20  | Spare                             |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | RA 1 Disagree                     |
+   * | 24  | RA 2 Disagree                     |
+   * | 25  | RA 3 Disagree                     |
+   * | 26  | RA 1 Lost by PRIM                 |
+   * | 27  | RA 2 Lost by PRIM                 |
+   * | 28  | RA 3 Lost by PRIM                 |
+   * | 29  | Spare                             |
+   */
+  fcdc_discrete_word_11: number;
+  /**
+   * FCDC Discrete word 11, raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | L Elevator Actuator 1 PRIM1 Fault |
+   * | 12  | L Elevator Actuator 4 PRIM1 Fault |
+   * | 13  | R Elevator Actuator 3 PRIM1 Fault |
+   * | 14  | L Elevator Actuator 3 PRIM2 Fault |
+   * | 15  | R Elevator Actuator 1 PRIM2 Fault |
+   * | 16  | R Elevator Actuator 4 PRIM2 Fault |
+   * | 17  | L Elevator Actuator 2 PRIM3 Fault |
+   * | 18  | R Elevator Actuator 2 PRIM3 Fault |
+   * | 18  | Spare                             |
+   * | 19  | Spare                             |
+   * | 20  | Spare                             |
+   * | 21  | Spare                             |
+   * | 22  | Spare                             |
+   * | 23  | Elec Info Available               |
+   * | 24  | AC ESS Available                  |
+   * | 25  | AC 1 Available                    |
+   * | 26  | AC EHA Available                  |
+   * | 27  | Hyd Info Available                |
+   * | 28  | G Hyd Available                   |
+   * | 29  | Y Hyd Available                   |
+   */
+  fcdc_discrete_word_12: number;
+
+  /**
+   * Left side sidestick roll command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_capt_roll_command_deg: number;
+  /**
+   * Right side sidestick roll command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_fo_roll_command_deg: number;
+  /**
+   * Left side sidestick pitch command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_capt_pitch_command_deg: number;
+  /**
+   * Right side sidestick pitch command angle, in degrees. Raw ARINC word.
+   */
+  fcdc_fo_pitch_command_deg: number;
+  /**
+   * The rudder pedal deflection angle, in degrees. Raw ARINC word.
+   */
+  fcdc_rudder_pedal_position_deg: number;
+  /**
+   * The deflection angle of the left inner aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_inner_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left middle aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_middle_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left outer aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_left_outer_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right inner aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_inner_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right middle aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_middle_aileron_position_deg: number;
+  /**
+   * The deflection angle of the right outer aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_right_outer_aileron_position_deg: number;
+  /**
+   * The deflection angle of the left inner elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_left_inner_elevator_position_deg: number;
+  /**
+   * The deflection angle of the left outer elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_left_outer_elevator_position_deg: number;
+  /**
+   * The deflection angle of the right inner elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_right_inner_elevator_position_deg: number;
+  /**
+   * The deflection angle of the right outer elevator, in degrees. Raw ARINC word.
+   */
+  fcdc_right_outer_elevator_position_deg: number;
+  /**
+   * The deflection angle of trimmable horizontal stabilizer, in degrees. Raw ARINC word.
+   */
+  fcdc_ths_position_deg: number;
+  /**
+   * The deflection angle of the upper rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_upper_rudder_position_deg: number;
+  /**
+   * The deflection angle of the lower rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_lower_rudder_position_deg: number;
+  /**
+   * The deflection angle of the rudder trim, in degrees. Raw ARINC word.
+   */
+  fcdc_rudder_trim_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 1, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_1_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 2, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_2_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 3, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_3_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 4, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_4_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 5, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_5_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 6, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_6_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 7, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_7_position_deg: number;
+  /**
+   * The deflection angle of the left spoiler 8, in degrees. Raw ARINC word.
+   */
+  fcdc_left_spoiler_8_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 1, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_1_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 2, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_2_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 3, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_3_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 4, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_4_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 5, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_5_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 6, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_6_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 7, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_7_position_deg: number;
+  /**
+   * The deflection angle of the right spoiler 8, in degrees. Raw ARINC word.
+   */
+  fcdc_right_spoiler_8_position_deg: number;
+
   /**
    * FCDC FG Discrete word 1. Raw ARINC Word.
    * No references available, so defined our own bit allocation.
@@ -55,7 +496,8 @@ export type FcdcBusBaseEvents = {
    *       17 | A/THR failed on engine 2
    *       18 | A/THR failed on engine 3
    *       19 | A/THR failed on engine 4
-   *       20 |
+   *       20 | A/THR limited
+   *       21 |
    *       -  | Spare
    *       23 |
    *       24 | Land 2 Inop.
@@ -151,6 +593,384 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_5',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_5',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_6',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_6',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_7',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_7',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_8',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_8',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_9',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_9',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_10',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_10',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_11',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_11',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_discrete_word_12',
+        {
+          name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_12',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_capt_roll_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_CAPT_ROLL_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_fo_roll_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_FO_ROLL_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_capt_pitch_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_CAPT_PITCH_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_fo_pitch_command_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_FO_PITCH_COMMAND',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_rudder_pedal_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_PEDAL_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_inner_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_middle_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_MIDDLE_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_outer_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_inner_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_middle_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_MIDDLE_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_outer_aileron_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_inner_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_outer_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_inner_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_INNER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_outer_elevator_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_OUTER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_ths_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_ELEVATOR_TRIM_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_upper_rudder_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_UPPER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_lower_rudder_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_LOWER_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_rudder_trim_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_TRIM_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_1_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_1_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_2_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_2_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_3_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_3_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_4_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_4_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_5_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_5_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_6_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_6_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_7_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_7_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_left_spoiler_8_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_8_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_1_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_1_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_2_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_2_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_3_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_3_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_4_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_4_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_5_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_5_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_6_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_6_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_7_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_7_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_right_spoiler_8_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_8_POS',
           type: SimVarValueType.Number,
           indexed: true,
           defaultIndex: null,

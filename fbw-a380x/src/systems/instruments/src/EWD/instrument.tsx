@@ -13,6 +13,7 @@ import { EngineWarningDisplay } from './EWD';
 import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
 import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { EcuBusPublisher } from '@shared/publishers/EcuPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -32,6 +33,8 @@ class A380X_EWD extends BaseInstrument {
 
   private readonly fgPublisher = new FGDataPublisher(this.bus);
 
+  private readonly ecuPublisher = new EcuBusPublisher(this.bus);
+
   private readonly clock = new Clock(this.bus);
 
   constructor() {
@@ -44,6 +47,7 @@ class A380X_EWD extends BaseInstrument {
     this.backplane.addPublisher('ADR', this.adrPublisher);
     this.backplane.addPublisher('IR', this.irPublisher);
     this.backplane.addPublisher('FG', this.fgPublisher);
+    this.backplane.addPublisher('ECU', this.ecuPublisher);
   }
 
   get templateID(): string {
