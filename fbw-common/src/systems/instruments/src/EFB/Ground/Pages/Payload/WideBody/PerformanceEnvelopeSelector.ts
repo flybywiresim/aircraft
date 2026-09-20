@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import type { PayloadPerformanceEnvelopeVariant } from '@flybywiresim/fbw-sdk-react';
+import { UnitType } from '@microsoft/msfs-sdk';
 
 export interface SimbriefStructuralWeights {
   mlw: number;
   mtow: number;
   mzfw: number;
 }
-
-const POUNDS_PER_KILOGRAM = 2.20462;
 
 const normalizeWeightToKilograms = (weight: number, units: string): number | undefined => {
   if (!Number.isFinite(weight) || weight <= 0) {
@@ -20,7 +19,8 @@ const normalizeWeightToKilograms = (weight: number, units: string): number | und
     case 'kgs':
       return weight;
     case 'lbs':
-      return Math.round(weight / POUNDS_PER_KILOGRAM);
+      // round to nearest 10kg due to conversions
+      return Math.round(UnitType.KILOGRAM.convertFrom(weight, UnitType.POUND) / 10) * 10;
     default:
       return undefined;
   }
