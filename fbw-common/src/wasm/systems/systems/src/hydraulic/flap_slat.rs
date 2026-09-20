@@ -590,6 +590,8 @@ impl PositionPickoffUnit for FlapSlatAssembly {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use std::time::Duration;
@@ -1060,11 +1062,23 @@ mod tests {
             test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
-        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
 
-        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
     }
 
     #[test]
@@ -1098,11 +1112,23 @@ mod tests {
             test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(-2000.)
         );
 
-        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
 
-        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
     }
 
     #[test]
@@ -1135,8 +1161,14 @@ mod tests {
 
         assert_eq!(test_bed.left_motor_flow(), VolumeRate::ZERO);
 
-        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.right_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
     }
 
     #[test]
@@ -1169,8 +1201,14 @@ mod tests {
 
         assert_eq!(test_bed.right_motor_flow(), VolumeRate::ZERO);
 
-        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
-        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+        assert_ge!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(2.)
+        );
+        assert_le!(
+            test_bed.left_motor_flow(),
+            VolumeRate::new::<gallon_per_minute>(8.)
+        );
     }
 
     #[test]
@@ -1205,7 +1243,7 @@ mod tests {
         for _ in 0..300 {
             test_bed = test_bed.run_waiting_for(Duration::from_millis(50));
 
-            assert!(test_bed.synchro_position() <= test_bed.max_synchro_position());
+            assert_le!(test_bed.synchro_position(), test_bed.max_synchro_position());
 
             println!(
                 "Position {:.2}-> Motor speed {:.0}",
@@ -1226,8 +1264,8 @@ mod tests {
         for _ in 0..300 {
             test_bed = test_bed.run_waiting_for(Duration::from_millis(50));
 
-            assert!(test_bed.synchro_position() <= test_bed.max_synchro_position());
-            assert!(test_bed.synchro_position() >= Angle::ZERO);
+            assert_le!(test_bed.synchro_position(), test_bed.max_synchro_position());
+            assert_ge!(test_bed.synchro_position(), Angle::ZERO);
 
             println!(
                 "Position {:.2}-> Motor speed {:.0}",
@@ -1290,7 +1328,10 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_millis(5000));
         let current_speed = test_bed.flap_slat_speed();
-        assert!((current_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01));
+        assert_le!(
+            (current_speed).abs(),
+            AngularVelocity::new::<radian_per_second>(0.01)
+        );
     }
 
     #[test]

@@ -1,9 +1,8 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429LocalVarConsumerSubject, Arinc429OutputWord, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
+import { Arinc429OutputWord, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import { EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
-import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 import { SdPages } from '@shared/SdPages';
 
 export interface FakeDmcEvents {
@@ -22,18 +21,11 @@ export enum DmcEcpLightStatus {
  * To be replaced by a proper DMC simulation later.
  */
 export class FakeDmc implements Instrument {
-  private readonly sub = this.bus.getSubscriber<A32NXEcpBusEvents>();
   private readonly publisher = this.bus.getPublisher<FakeDmcEvents>();
 
   private readonly outputWord = new Arinc429OutputWord();
 
   private sdPage = SdPages.NONE;
-  private readonly ecpSystemButtons = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a32nx_ecp_system_switch_word'),
-  );
-  private readonly ecpWarningButtons = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a32nx_ecp_warning_switch_word'),
-  );
 
   constructor(private readonly bus: EventBus) {}
 

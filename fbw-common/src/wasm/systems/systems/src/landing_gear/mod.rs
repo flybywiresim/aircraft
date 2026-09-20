@@ -1542,6 +1542,8 @@ impl GearSystemStateMachine {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use crate::simulation::test::{
@@ -1918,7 +1920,10 @@ mod tests {
     fn gear_state_downlock_on_init() {
         let test_bed = SimulationTestBed::new(TestGearAircraft::new);
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
     }
 
     #[test]
@@ -1932,7 +1937,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
 
         println!("GEAR UP!!");
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
@@ -1941,7 +1949,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllUpLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllUpLocked
+        );
 
         // Gear DOWN
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
@@ -1950,7 +1961,10 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.gear_system_state()),
+            GearSystemState::AllDownLocked
+        );
     }
 
     #[test]
@@ -1960,19 +1974,31 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
     }
 
     #[test]
@@ -1982,22 +2008,37 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         // Two ticks needed after failure to have consistent state of lgciu vs coordinator
         test_bed = test_bed.run_one_tick().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
     }
 
     #[test]
@@ -2007,24 +2048,39 @@ mod tests {
             .set_gear_handle_down()
             .run_one_tick();
 
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         // Two ticks needed after failure to have consistent state of lgciu vs coordinator
         test_bed = test_bed.run_one_tick().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed.unfail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu1
+        );
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu_id()),
+            LgciuId::Lgciu2
+        );
     }
 
     #[test]
@@ -2039,11 +2095,20 @@ mod tests {
         test_bed.fail_hyd_pressure();
 
         test_bed.run_with_delta(Duration::from_secs(28));
-        assert!(test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::Ok);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.active_lgciu().status),
+            LgciuStatus::Ok
+        );
 
         test_bed.run_with_delta(Duration::from_secs(3));
-        assert!(test_bed.query(|a| a.lgcius.lgciu2().status) == LgciuStatus::FailedNoChangeOver);
-        assert!(test_bed.query(|a| a.lgcius.lgciu1().status) == LgciuStatus::Ok);
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.lgciu2().status),
+            LgciuStatus::FailedNoChangeOver
+        );
+        assert_eq!(
+            test_bed.query(|a| a.lgcius.lgciu1().status),
+            LgciuStatus::Ok
+        );
     }
 
     #[test]
@@ -2059,7 +2124,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() <= 0.1);
+        assert_le!(tilt_position.get::<ratio>(), 0.1);
     }
 
     #[test]
@@ -2075,7 +2140,8 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.2 && tilt_position.get::<ratio>() <= 0.8);
+        assert_ge!(tilt_position.get::<ratio>(), 0.2);
+        assert_le!(tilt_position.get::<ratio>(), 0.8);
     }
 
     #[test]
@@ -2091,7 +2157,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2108,7 +2174,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(2));
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2124,7 +2190,7 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 0.99);
+        assert_ge!(tilt_position.get::<ratio>(), 0.99);
     }
 
     #[test]
@@ -2140,7 +2206,8 @@ mod tests {
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() < 1. && tilt_position.get::<ratio>() > 0.);
+        assert_lt!(tilt_position.get::<ratio>(), 1.);
+        assert_gt!(tilt_position.get::<ratio>(), 0.);
     }
 
     #[test]
@@ -2160,8 +2227,8 @@ mod tests {
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
         //10 knots around 70rpm for A380 wheel radius of 0.7m
-        assert!(wheel_speed.get::<revolution_per_minute>() > 60.);
-        assert!(wheel_speed.get::<revolution_per_minute>() < 100.);
+        assert_gt!(wheel_speed.get::<revolution_per_minute>(), 60.);
+        assert_lt!(wheel_speed.get::<revolution_per_minute>(), 100.);
     }
 
     #[test]
@@ -2180,7 +2247,7 @@ mod tests {
         let mut wheel_speed =
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
-        assert!(wheel_speed.get::<revolution_per_minute>() > 200.);
+        assert_gt!(wheel_speed.get::<revolution_per_minute>(), 200.);
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1000.));
@@ -2191,8 +2258,8 @@ mod tests {
         wheel_speed =
             AngularVelocity::new::<revolution_per_minute>(test_bed.read_by_name("WHEEL_RPM_1"));
 
-        assert!(wheel_speed.get::<revolution_per_minute>() >= 0.);
-        assert!(wheel_speed.get::<revolution_per_minute>() < 50.);
+        assert_ge!(wheel_speed.get::<revolution_per_minute>(), 0.);
+        assert_lt!(wheel_speed.get::<revolution_per_minute>(), 50.);
     }
 
     fn test_tilting_gear_left(context: &mut InitContext) -> TiltingGear {

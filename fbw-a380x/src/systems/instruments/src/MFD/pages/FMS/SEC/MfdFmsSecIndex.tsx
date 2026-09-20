@@ -138,7 +138,7 @@ class MfdFmsSecIndexDataStore {
         this.onNewData();
         this.checkIfCanActivateOrSwapSecondary();
       }, true),
-      this.fmc!.acInterface.fmaLateralMode.sub(() => this.checkIfCanActivateOrSwapSecondary(), true),
+      this.fmc!.acInterface.isHdgOrTrackModeEngaged().sub(() => this.checkIfCanActivateOrSwapSecondary(), true),
     );
   }
 

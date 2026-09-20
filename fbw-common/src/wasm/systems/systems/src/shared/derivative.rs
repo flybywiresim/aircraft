@@ -35,22 +35,23 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use ntest::assert_about_eq;
+
+    use super::*;
 
     use uom::si::{f64::*, length::meter};
 
     #[test]
     fn derivative_init_f64() {
         let rate_limiter = DerivativeNode::<f64>::new();
-        assert!(rate_limiter.output() == 0.);
+        assert_eq!(rate_limiter.output(), 0.);
     }
 
     #[test]
     fn derivative_init_uom() {
         let rate_limiter = DerivativeNode::<Length>::new();
 
-        assert!(rate_limiter.output().get::<meter>() == 0.);
+        assert_eq!(rate_limiter.output().get::<meter>(), 0.);
     }
 
     #[test]

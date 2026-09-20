@@ -92,6 +92,7 @@ clang++ \
   -Werror=return-type \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
+  -I "${COMMON_DIR}/utils" \
   -I "${COMMON_DIR}/fbw_common/src" \
   -I "${COMMON_DIR}/fbw_common/src/inih" \
   -I "${DIR}/src/interface" \
@@ -104,6 +105,8 @@ clang++ \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/fcdc" \
   "${DIR}/src/fcdc/Fcdc.cpp" \
+  -I "${DIR}/src/fcu" \
+  "${DIR}/src/fcu/Fcu.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/TriggeredMonostableNode.cpp" \
@@ -111,12 +114,6 @@ clang++ \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
-  "${DIR}/src/model/AutopilotLaws_data.cpp" \
-  "${DIR}/src/model/AutopilotLaws.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine_data.cpp" \
-  "${DIR}/src/model/AutopilotStateMachine.cpp" \
-  "${DIR}/src/model/Autothrust_data.cpp" \
-  "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/A380PrimComputerGeneralLogic_data.cpp" \
@@ -125,16 +122,24 @@ clang++ \
   "${DIR}/src/model/A380PrimComputerFctl.cpp" \
   "${DIR}/src/model/A380PrimComputerFe_data.cpp" \
   "${DIR}/src/model/A380PrimComputerFe.cpp" \
+  "${DIR}/src/model/A380FgOuterLoops.cpp" \
+  "${DIR}/src/model/A380PrimComputerFg_data.cpp" \
+  "${DIR}/src/model/A380PrimComputerFg.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
   "${DIR}/src/model/A380SecComputer.cpp" \
+  "${DIR}/src/model/A380FadecComputer_data.cpp" \
+  "${DIR}/src/model/A380FadecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
   "${DIR}/src/model/A380PitchAlternateLaw.cpp" \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
   "${DIR}/src/model/A380LateralNormalLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
+  "${DIR}/src/model/A380FcuComputer_data.cpp" \
+  "${DIR}/src/model/A380FcuComputer.cpp" \
   "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
+  "${DIR}/src/model/look1_binlcpw.cpp" \
   "${DIR}/src/model/look1_iflf_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_iflf_binlxpw.cpp" \

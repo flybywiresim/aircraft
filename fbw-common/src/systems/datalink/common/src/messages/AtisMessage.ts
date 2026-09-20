@@ -20,7 +20,7 @@ export class AtisMessage extends WeatherMessage {
   constructor() {
     super();
     this.Type = AtsuMessageType.ATIS;
-    this.Station = NXDataStore.getSetting('CONFIG_ATIS_SRC').get();
+    this.Station = NXDataStore.getSetting('CONFIG_ATIS_SRC').get().toUpperCase();
   }
 
   public parseInformation(): void {

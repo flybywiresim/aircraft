@@ -149,7 +149,7 @@ export class DescentPhase extends Phase {
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
     const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
-    if (fl !== null && fl === cruiseFl && fcuSelFl === fl) {
+    if (fl !== null && cruiseFl > 0 && fl === cruiseFl && fcuSelFl === fl) {
       this.nextPhase = FmgcFlightPhase.Cruise;
       return true;
     }
