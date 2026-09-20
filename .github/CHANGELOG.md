@@ -105,6 +105,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FG] Target the lower speed margin when underspeeding or on geometric path in DES mode - @lukecologne (luke)
 1. [A380X/FWS] Single chime sound can be interrupted - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
+1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 
 ## 2024.1.0
 
