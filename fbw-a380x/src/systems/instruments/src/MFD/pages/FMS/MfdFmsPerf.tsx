@@ -42,7 +42,7 @@ import {
 } from '../common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
 import { ConfirmationDialog } from '../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcData } from '../../FMC/fmgc';
 import { ConditionalComponent } from '../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
@@ -79,7 +79,7 @@ enum FlightPhaseTabIndex {
   GoAround = 5,
 }
 
-export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );
@@ -673,6 +673,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly transFlIsPilotEntered = this.transitionLevelIsFromDatabase.map((it) => !it);
 
   // APPR page subjects, refs and methods
+
+  private readonly doesNotHaveDestination = Subject.create(true);
 
   private readonly precisionApproachSelected = Subject.create<boolean>(false);
 
@@ -1431,7 +1433,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
             </div>
             <TopTabNavigator
-              pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])}
+              pageTitles={['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA']}
               selectedPageIndex={this.flightPhasesSelectedPageIndex}
               pageChangeCallback={(val) => {
                 this.flightPhasesSelectedPageIndex.set(val);
@@ -1475,8 +1477,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.flightPlanInterface.setPerformanceData('v1', v, this.loadedFlightPlanIndex.get());
-                          SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v);
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('v1', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1512,27 +1514,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         }
                         onClick={() => {
                           const fm = this.props.fmcService.master.fmgc.data;
+                          const fpIndex = this.loadedFlightPlanIndex.get();
                           if (fm && this.loadedFlightPlan) {
-                            SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', fm.v1ToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'v1',
-                              fm.v1ToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('v1', fm.v1ToBeConfirmed.get(), fpIndex);
                             fm.v1ToBeConfirmed.set(null);
-                            SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', fm.vrToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'vr',
-                              fm.vrToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('vr', fm.vrToBeConfirmed.get(), fpIndex);
                             fm.vrToBeConfirmed.set(null);
-                            SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', fm.v2ToBeConfirmed.get());
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'v2',
-                              fm.v2ToBeConfirmed.get(),
-                              this.loadedFlightPlanIndex.get(),
-                            );
+                            this.props.flightPlanInterface.setPerformanceData('v2', fm.v2ToBeConfirmed.get(), fpIndex);
                             fm.v2ToBeConfirmed.set(null);
                           }
                         }}
@@ -1551,8 +1539,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v);
-                          this.props.flightPlanInterface.setPerformanceData('vr', v, this.loadedFlightPlanIndex.get());
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('vr', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1583,8 +1571,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v);
-                          this.props.flightPlanInterface.setPerformanceData('v2', v, this.loadedFlightPlanIndex.get());
+                          const fpIndex = this.loadedFlightPlanIndex.get();
+                          this.props.flightPlanInterface.setPerformanceData('v2', v, fpIndex);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -3064,8 +3052,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindDirectionFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.flightPlanInterface.setPerformanceData(
-                                'approachWindDirection',
+                              this.props.fmcService.master.setApproachWindDirection(
                                 v,
                                 this.loadedFlightPlanIndex.get(),
                               );
@@ -3080,19 +3067,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.flightPlanInterface.setPerformanceData(
-                                'approachWindMagnitude',
-                                v,
-                                this.loadedFlightPlanIndex.get(),
-                              );
+                              this.props.fmcService.master.setApproachWindSpeed(v, this.loadedFlightPlanIndex.get());
                             }}
                             readonlyValue={this.approachWindMagnitude}
+                            disabled={this.isDestAirportMissing}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
-                            disabled={this.isDestAirportMissing}
                           />
                         </div>
                       </div>
@@ -3133,23 +3116,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">QNH</span>
                         <InputField<number, number, false>
                           dataEntryFormat={new QnhFormat()}
-                          dataHandlerDuringValidation={async (v) => {
+                          dataHandlerDuringValidation={async (v, old) => {
                             if (!v) {
+                              if (old !== null) {
+                                this.props.fmcService.master.addMessageToQueue(
+                                  NXSystemMessages.notAllowed,
+                                  undefined,
+                                  undefined,
+                                );
+                              }
                               return;
                             }
 
-                            let qnhMillibar = v;
-
-                            if (v < 745 || v > 1050) {
-                              qnhMillibar = v * 33.8639;
-                            }
-
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'approachQnh',
-                              qnhMillibar,
-                              this.loadedFlightPlanIndex.get(),
-                            );
-                            SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+                            const fpIndex = this.loadedFlightPlanIndex.get();
+                            this.props.flightPlanInterface.setPerformanceData('approachQnh', v, fpIndex);
                           }}
                           mandatory={this.approachParametersMandatory}
                           readonlyValue={this.approachQnh}
@@ -3169,12 +3149,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number, number, false>
                           dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            this.props.flightPlanInterface.setPerformanceData(
-                              'approachBaroMinimum',
-                              v,
-                              this.loadedFlightPlanIndex.get(),
-                            );
-                            SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            const fpIndex = this.loadedFlightPlanIndex.get();
+                            this.props.flightPlanInterface.setPerformanceData('approachBaroMinimum', v, fpIndex);
                           }}
                           readonlyValue={this.approachBaroMinimum}
                           containerStyle="width: 150px;"
@@ -3192,12 +3168,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <InputField<number, number, false>
                               dataEntryFormat={new RadioAltitudeFormat()}
                               dataHandlerDuringValidation={async (v) => {
-                                this.props.flightPlanInterface.setPerformanceData(
-                                  'approachRadioMinimum',
-                                  v,
-                                  this.loadedFlightPlanIndex.get(),
-                                );
-                                SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v);
+                                const fpIndex = this.loadedFlightPlanIndex.get();
+                                this.props.flightPlanInterface.setPerformanceData('approachRadioMinimum', v, fpIndex);
                               }}
                               readonlyValue={this.approachRadioMinimum}
                               containerStyle="width: 150px;"

@@ -18,7 +18,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, EfisSide, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, EfisSide, logTroubleshootingError, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
@@ -366,7 +366,7 @@ export class MfdComponent
   }
 
   public logTroubleshootingError(msg: any) {
-    this.props.bus.pub('troubleshooting_log_error', String(msg), true, false);
+    logTroubleshootingError(this.props.bus, msg);
   }
 
   destroy(): void {

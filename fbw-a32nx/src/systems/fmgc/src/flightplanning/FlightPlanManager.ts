@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -28,6 +28,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanUtils } from './FlightPlanUtils';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
+import { FpmConfig } from './FpmConfig';
 
 export enum FlightPlanIndex {
   Active,
@@ -69,6 +70,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     private readonly performanceDataInit: P,
     private readonly syncClientID: number,
     private readonly master: boolean,
+    private readonly config?: FpmConfig,
   ) {
     const sub = bus.getSubscriber<FlightPlanEvents & ClockEvents>();
 
@@ -107,6 +109,10 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               this.bus,
               this.performanceDataInit.clone(),
               this.time.get(),
+              this.config?.DRAFT_ON_WIND_EDIT ?? false,
+              this.config?.NUM_CLIMB_WIND_LEVELS ?? 0,
+              this.config?.NUM_CRUISE_WIND_LEVELS ?? 0,
+              this.config?.NUM_DESCENT_WIND_LEVELS ?? 0,
             );
 
             this.set(intIndex, newPlan);
@@ -207,7 +213,11 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       index,
       this.bus,
       this.performanceDataInit.clone(),
+      this.config?.NUM_CLIMB_WIND_LEVELS ?? 0,
+      this.config?.NUM_CRUISE_WIND_LEVELS ?? 0,
+      this.config?.NUM_DESCENT_WIND_LEVELS ?? 0,
       this.time.get(),
+      this.config?.DRAFT_ON_WIND_EDIT ?? false,
     );
     if (flags !== undefined) {
       this.plans[index].flags |= flags;
