@@ -811,14 +811,14 @@ void A380PrimComputerFctl::step()
     } else {
       if (A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_2) {
         leftSpoilerHydraulicModeAvail = A380PrimComputerFctl_U.in.general_logic.is_yellow_hydraulic_power_avail;
-        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.left_spoiler_electric_mode_avail = true;
+        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.left_spoiler_electric_mode_avail = false;
         rightSpoilerHydraulicModeAvail = A380PrimComputerFctl_U.in.general_logic.is_yellow_hydraulic_power_avail;
-        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.right_spoiler_electric_mode_avail = true;
+        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.right_spoiler_electric_mode_avail = false;
       } else if (A380PrimComputerFctl_U.in.data.discrete_inputs.is_unit_3) {
         leftSpoilerHydraulicModeAvail = A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail;
-        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.left_spoiler_electric_mode_avail = true;
+        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.left_spoiler_electric_mode_avail = false;
         rightSpoilerHydraulicModeAvail = A380PrimComputerFctl_U.in.general_logic.is_green_hydraulic_power_avail;
-        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.right_spoiler_electric_mode_avail = true;
+        A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.right_spoiler_electric_mode_avail = false;
       } else {
         leftSpoilerHydraulicModeAvail = false;
         A380PrimComputerFctl_B.BusAssignment_nw.fctl_logic.left_spoiler_electric_mode_avail = false;
