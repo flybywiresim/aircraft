@@ -1230,11 +1230,11 @@ pub struct GsxDriver {
     performing_deboard: bool,
     gsx_pax_at_board_start: i32,
     cabin_pax_at_board_start: i32,
-    board_cargo_percent_stale: bool,
+    board_cargo_percent_awaiting_reset: bool,
     gsx_cargo_percent_at_board_start: f64,
     gsx_pax_at_deboard_start: i32,
     cabin_pax_at_deboard_start: i32,
-    deboard_cargo_percent_stale: bool,
+    deboard_cargo_percent_awaiting_reset: bool,
     gsx_cargo_percent_at_deboard_start: f64,
 }
 impl GsxDriver {
@@ -1245,11 +1245,11 @@ impl GsxDriver {
             performing_deboard: false,
             gsx_pax_at_board_start: 0,
             cabin_pax_at_board_start: 0,
-            board_cargo_percent_stale: false,
+            board_cargo_percent_awaiting_reset: false,
             gsx_cargo_percent_at_board_start: 0.,
             gsx_pax_at_deboard_start: 0,
             cabin_pax_at_deboard_start: 0,
-            deboard_cargo_percent_stale: false,
+            deboard_cargo_percent_awaiting_reset: false,
             gsx_cargo_percent_at_deboard_start: 0.,
         }
     }
@@ -1325,7 +1325,8 @@ impl GsxDriver {
                 self.gsx_pax_at_board_start = self.pax_boarding();
                 self.cabin_pax_at_board_start = passenger_deck.total_pax_num();
                 self.gsx_cargo_percent_at_board_start = self.cargo_boarding_percent();
-                self.board_cargo_percent_stale = self.gsx_cargo_percent_at_board_start > 0.;
+                self.board_cargo_percent_awaiting_reset =
+                    self.gsx_cargo_percent_at_board_start > 0.;
                 self.performing_board = false;
             }
             GsxState::Completed => {
@@ -1345,12 +1346,12 @@ impl GsxDriver {
                         + (self.pax_boarding() - self.gsx_pax_at_board_start),
                 );
 
-                if self.board_cargo_percent_stale
+                if self.board_cargo_percent_awaiting_reset
                     && self.cargo_boarding_percent() < self.gsx_cargo_percent_at_board_start
                 {
-                    self.board_cargo_percent_stale = false;
+                    self.board_cargo_percent_awaiting_reset = false;
                 }
-                if !self.board_cargo_percent_stale {
+                if !self.board_cargo_percent_awaiting_reset {
                     cargo_deck.load_cargo_deck_percent(self.cargo_boarding_percent());
                 }
 
@@ -1400,12 +1401,12 @@ impl GsxDriver {
                         - (self.pax_deboarding() - self.gsx_pax_at_deboard_start),
                 );
 
-                if self.deboard_cargo_percent_stale
+                if self.deboard_cargo_percent_awaiting_reset
                     && self.cargo_deboarding_percent() < self.gsx_cargo_percent_at_deboard_start
                 {
-                    self.deboard_cargo_percent_stale = false;
+                    self.deboard_cargo_percent_awaiting_reset = false;
                 }
-                if !self.deboard_cargo_percent_stale {
+                if !self.deboard_cargo_percent_awaiting_reset {
                     cargo_deck.load_cargo_deck_percent(100. - self.cargo_deboarding_percent());
                 }
 
@@ -1417,7 +1418,7 @@ impl GsxDriver {
     fn capture_deboard_progress(&mut self) {
         self.gsx_pax_at_deboard_start = self.pax_deboarding();
         self.gsx_cargo_percent_at_deboard_start = self.cargo_deboarding_percent();
-        self.deboard_cargo_percent_stale = self.gsx_cargo_percent_at_deboard_start > 0.;
+        self.deboard_cargo_percent_awaiting_reset = self.gsx_cargo_percent_at_deboard_start > 0.;
     }
 }
 impl SimulationElement for GsxDriver {
