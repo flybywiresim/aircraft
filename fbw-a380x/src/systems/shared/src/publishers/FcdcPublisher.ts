@@ -496,7 +496,8 @@ export type FcdcBusBaseEvents = {
    *       17 | A/THR failed on engine 2
    *       18 | A/THR failed on engine 3
    *       19 | A/THR failed on engine 4
-   *       20 |
+   *       20 | A/THR limited
+   *       21 |
    *       -  | Spare
    *       23 |
    *       24 | Land 2 Inop.
