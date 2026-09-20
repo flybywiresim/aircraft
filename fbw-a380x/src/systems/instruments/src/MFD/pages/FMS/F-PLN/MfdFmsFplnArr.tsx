@@ -16,8 +16,6 @@ import { FmsPage } from '../../common/FmsPage';
 import { getApproachName } from '../../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 import './MfdFmsFpln.scss';
@@ -347,15 +345,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     }
   }
 
-  private generateRunwayOptions(
-    flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
-    isAltn: boolean,
-  ) {
+  private generateRunwayOptions(flightPlan: ReadonlyFlightPlan, isAltn: boolean) {
     if (flightPlan.destinationAirport) {
       this.toIcao.set(flightPlan.destinationAirport.ident);
 
       const runways: ButtonMenuItem[] = [];
-      const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      const sortedRunways = [...flightPlan.availableDestinationRunways].sort((a, b) => a.ident.localeCompare(b.ident));
       sortedRunways.forEach((rw) => {
         runways.push({
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())}`,

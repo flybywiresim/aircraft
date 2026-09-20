@@ -13,8 +13,6 @@ import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from '../../common/FmsPage';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 import './MfdFmsFpln.scss';
@@ -89,7 +87,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
               },
             },
           ];
-          const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
+          const sortedDepartures = [...flightPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident));
           sortedDepartures.forEach((dep) => {
             sids.push({
               label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
@@ -169,14 +167,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     }
   }
 
-  private generateRunwayOptions(
-    flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
-    isAltn: boolean | null | undefined,
-  ) {
+  private generateRunwayOptions(flightPlan: ReadonlyFlightPlan, isAltn: boolean | null | undefined) {
     if (flightPlan.originAirport) {
       this.fromIcao.set(flightPlan.originAirport.ident);
 
-      const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      const sortedRunways = [...flightPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
       const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
         return {
           label: `${rw.ident.substring(4).padEnd(3, '\xa0')}\xa0${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, '\xa0')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,

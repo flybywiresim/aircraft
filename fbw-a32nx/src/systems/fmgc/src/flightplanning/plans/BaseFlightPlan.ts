@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 // Copyright (c) 2021-2026 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2026 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -91,7 +91,7 @@ export interface FlightPlanContext {
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
-  implements ReadonlyFlightPlan<P>
+  implements ReadonlyFlightPlan
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 

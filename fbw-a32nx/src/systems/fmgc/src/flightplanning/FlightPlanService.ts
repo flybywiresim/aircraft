@@ -57,6 +57,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.get(index);
   }
 
+  getAlternate(index: number) {
+    return this.flightPlanManager.get(index).alternateFlightPlan;
+  }
+
   has(index: number) {
     return this.flightPlanManager.has(index);
   }

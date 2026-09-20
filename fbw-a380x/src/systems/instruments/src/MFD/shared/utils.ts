@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { BitFlags, DateTimeFormatter } from '@microsoft/msfs-sdk';
 
@@ -78,9 +78,6 @@ export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: 
 
 export function isConstraintRevisionAllowed(leg: ReadonlyFlightPlanElement) {
   return (
-    leg instanceof FlightPlanLeg &&
-    !leg.isRunway() &&
-    leg.isXF() &&
-    !BitFlags.isAny(leg.flags, FlightPlanLegFlags.DirectToTurningPoint)
+    isLeg(leg) && !leg.isRunway() && leg.isXF() && !BitFlags.isAny(leg.flags, FlightPlanLegFlags.DirectToTurningPoint)
   );
 }

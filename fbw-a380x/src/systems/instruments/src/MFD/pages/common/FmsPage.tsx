@@ -32,9 +32,7 @@ import {
   verticalRevisionPage,
   fixInfoUri,
 } from '../../shared/utils';
-import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { ReadonlyFlightPlan, ReadonlyMainFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -46,9 +44,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly activePageTitle = Subject.create<string>('');
 
-  public loadedFlightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | null = null;
+  public loadedFlightPlan: ReadonlyMainFlightPlan | null = null;
 
-  public loadedAlternateFlightPlan: AlternateFlightPlan<FlightPlanPerformanceData> | null = null;
+  public loadedAlternateFlightPlan: ReadonlyFlightPlan | null = null;
 
   protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
@@ -192,9 +190,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       case 'active':
         if (this.props.flightPlanInterface.hasActive || hasTmpy) {
           this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
+          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.getAlternate(
             hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
-          ).alternateFlightPlan;
+          );
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
           this.tmpyActive.set(hasTmpy ?? false);
         } else if (activeUri.page === initPage) {
@@ -206,9 +204,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       case 'sec1':
         if (this.props.flightPlanInterface.hasSecondary(1)) {
           this.loadedFlightPlan = this.props.flightPlanInterface.secondary(1) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            FlightPlanIndex.FirstSecondary,
-          ).alternateFlightPlan;
+          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.getAlternate(FlightPlanIndex.FirstSecondary);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
@@ -226,9 +222,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       case 'sec2':
         if (this.props.flightPlanInterface.hasSecondary(2)) {
           this.loadedFlightPlan = this.props.flightPlanInterface.secondary(2) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
+          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.getAlternate(
             FlightPlanIndex.FirstSecondary + 1,
-          ).alternateFlightPlan;
+          );
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
@@ -244,9 +240,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       case 'sec3':
         if (this.props.flightPlanInterface.hasSecondary(3)) {
           this.loadedFlightPlan = this.props.flightPlanInterface.secondary(3) ?? null;
-          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
+          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.getAlternate(
             FlightPlanIndex.FirstSecondary + 2,
-          ).alternateFlightPlan;
+          );
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
           this.loadedFlightPlan = null;
@@ -263,9 +259,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       default:
         if (this.props.flightPlanInterface.hasActive || hasTmpy) {
           this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
-          this.loadedAlternateFlightPlan =
-            this.props.flightPlanInterface.get(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active)
-              .alternateFlightPlan ?? null;
+          this.loadedAlternateFlightPlan = this.props.flightPlanInterface.getAlternate(
+            hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
+          );
         }
         break;
     }

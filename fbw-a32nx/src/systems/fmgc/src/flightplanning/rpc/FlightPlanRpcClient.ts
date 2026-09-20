@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -192,6 +192,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   get(index: number): FlightPlan<P> {
     return this.flightPlanManager.get(index);
+  }
+
+  getAlternate(index: number) {
+    return this.flightPlanManager.get(index).alternateFlightPlan;
   }
 
   has(index: number): boolean {
