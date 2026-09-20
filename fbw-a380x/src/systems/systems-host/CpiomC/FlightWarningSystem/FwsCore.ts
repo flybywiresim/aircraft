@@ -4668,16 +4668,16 @@ export class FwsCore {
 
     // ALTN LAW 2 computation
     const altnLaw2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
-    this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && !altnLawPhasePreCondition, deltaTime);
+    this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && altnLawPhasePreCondition, deltaTime);
 
     // ALTN LAW 1 computation
     const altn1Law = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
-    const altn1LawConfirm = this.altn1LawConfirmNode.write(altn1Law && !altnLawPhasePreCondition, deltaTime);
+    const altn1LawConfirm = this.altn1LawConfirmNode.write(altn1Law && altnLawPhasePreCondition, deltaTime);
 
     this.altnLawCondition.set(altn1LawConfirm || this.altn2LawConfirm);
     this.altn1ALawCondition.set(
       (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) &&
-        !altnLawPhasePreCondition,
+        altnLawPhasePreCondition,
     );
 
     // DIRECT LAW computation
