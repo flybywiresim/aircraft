@@ -106,9 +106,9 @@ export class LightSync implements Instrument {
     this.setPotentiometer(79, autoBrightness); // OIT
 
     // Pedestal
-    this.setRmpBrightness(1, autoBrightness); // rmpCptLightLevel
-    this.setRmpBrightness(2, autoBrightness); // rmpFoLightLevel
-    this.setRmpBrightness(3, autoBrightness); // rmpOvhdLightLevel
+    this.setRmpBrightness(1, autoBrightness); // RMP CPT
+    this.setRmpBrightness(2, autoBrightness); // RMP FO
+    this.setRmpBrightness(3, autoBrightness); // RMP OVHD
     this.setPotentiometer(92, autoBrightness); // ecamUpperLightLevel
     this.setPotentiometer(93, autoBrightness); // ecamLowerLightLevel
     this.setPotentiometer(76, pedFloodLtValue); // pedFloodLightLevel
