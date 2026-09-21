@@ -234,6 +234,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn board_gsx_pax(mut self, pax_board: i32) -> Self {
+        self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", pax_board);
+        self
+    }
+
     fn deboard_gsx_pax(mut self, pax_deboard: i32) -> Self {
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", pax_deboard);
         self
@@ -246,6 +251,16 @@ impl BoardingTestBed {
 
     fn board_gsx_cargo_full(mut self) -> Self {
         self.write_by_name("FSDT_GSX_BOARDING_CARGO_PERCENT", 100.);
+        self
+    }
+
+    fn board_gsx_cargo(mut self, cargo_percent: f64) -> Self {
+        self.write_by_name("FSDT_GSX_BOARDING_CARGO_PERCENT", cargo_percent);
+        self
+    }
+
+    fn deboard_gsx_cargo(mut self, cargo_percent: f64) -> Self {
+        self.write_by_name("FSDT_GSX_DEBOARDING_CARGO_PERCENT", cargo_percent);
         self
     }
 
@@ -1721,4 +1736,180 @@ fn gsx_deboarding_half_pax() {
     test_bed = test_bed.and_run();
     test_bed.has_no_sound_pax_ambience();
     test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn gsx_consecutive_boarding_uses_stale_pax_counter() {
+    // Cycle 1 - board a cabin of 100.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_pax_target(A380Pax::MainFwdA.into(), 25)
+        .with_pax_target(A380Pax::MainFwdB.into(), 25)
+        .with_pax_target(A380Pax::MainAftA.into(), 25)
+        .with_pax_target(A380Pax::MainAftB.into(), 25)
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .board_gsx_pax(100)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_board_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(100);
+
+    // Deboard everyone.
+    let test_bed = test_bed
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax(100)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(0);
+
+    // Cycle 2 - target 112. FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL is deliberately
+    // left at 100: GSX clears its cumulative counter lazily, so the first frames
+    // of a new boarding still report the previous cycle's total.
+    let test_bed = test_bed
+        .with_pax_target(A380Pax::MainFwdA.into(), 28)
+        .with_pax_target(A380Pax::MainFwdB.into(), 28)
+        .with_pax_target(A380Pax::MainAftA.into(), 28)
+        .with_pax_target(A380Pax::MainAftB.into(), 28)
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .and_run();
+
+    // No pax may board until GSX reports progress for this cycle.
+    test_bed.has_pax(0);
+}
+
+#[test]
+fn gsx_consecutive_boarding_uses_stale_cargo_percent() {
+    // Cycle 1 - load half the hold, GSX reports 100% of it loaded.
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .target_half_cargo()
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .board_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_board_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_half_cargo();
+
+    // Unload everything.
+    let test_bed = test_bed
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // Cycle 2 - target the full hold. FSDT_GSX_BOARDING_CARGO_PERCENT is deliberately
+    // left at 100 from the previous cycle: GSX clears it lazily.
+    let test_bed = test_bed
+        .target_full_cargo()
+        .gsx_requested_board_state()
+        .and_run()
+        .gsx_performing_board_state()
+        .and_run();
+
+    // Nothing may be loaded until GSX reports progress for this cycle.
+    test_bed.has_no_cargo();
+}
+
+#[test]
+fn gsx_consecutive_deboarding_uses_stale_pax_counter() {
+    // Cycle 1 - deboard a cabin of 100.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_pax(A380Pax::MainFwdA.into(), 25)
+        .with_pax(A380Pax::MainFwdB.into(), 25)
+        .with_pax(A380Pax::MainAftA.into(), 25)
+        .with_pax(A380Pax::MainAftB.into(), 25)
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax(100)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_pax(0);
+
+    // Cycle 2 - a new cabin of 100 is aboard and GSX is asked to deboard again.
+    // FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL is deliberately left at 100.
+    let test_bed = test_bed
+        .with_pax(A380Pax::MainFwdA.into(), 25)
+        .with_pax(A380Pax::MainFwdB.into(), 25)
+        .with_pax(A380Pax::MainAftA.into(), 25)
+        .with_pax(A380Pax::MainAftB.into(), 25)
+        .target_no_pax()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .and_run();
+
+    // Nobody may leave until GSX reports progress for this cycle.
+    test_bed.has_pax(100);
+}
+
+#[test]
+fn gsx_consecutive_deboarding_uses_stale_cargo_percent() {
+    // Cycle 1 - empty a full hold.
+    let test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_cargo(100.)
+        .and_run()
+        .and_stabilize()
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_no_cargo();
+
+    // Cycle 2 - the hold is full again and GSX is asked to unload it.
+    let mut test_bed = test_bed
+        .with_full_cargo()
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
+        .gsx_performing_deboard_state()
+        // GSX has not refreshed its cargo percentage for this cycle yet.
+        .deboard_gsx_cargo(100.)
+        .and_run();
+
+    // Nothing may be unloaded until GSX reports progress for this cycle.
+    test_bed.has_full_cargo();
 }
