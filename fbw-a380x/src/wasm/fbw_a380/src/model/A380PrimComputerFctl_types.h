@@ -586,6 +586,35 @@ enum class a380_pitch_law
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+
+struct base_prim_discrete_outputs
+{
+  real_T alignment_dummy;
+  boolean_T elevator_1_active_mode;
+  boolean_T elevator_2_active_mode;
+  boolean_T elevator_3_active_mode;
+  boolean_T ths_active_mode;
+  boolean_T left_aileron_1_active_mode;
+  boolean_T left_aileron_2_active_mode;
+  boolean_T right_aileron_1_active_mode;
+  boolean_T right_aileron_2_active_mode;
+  boolean_T left_spoiler_electronic_module_enable;
+  boolean_T right_spoiler_electronic_module_enable;
+  boolean_T rudder_1_hydraulic_active_mode;
+  boolean_T rudder_1_electric_active_mode;
+  boolean_T rudder_2_hydraulic_active_mode;
+  boolean_T rudder_2_electric_active_mode;
+  boolean_T prim_healthy;
+  boolean_T fcu_1_select;
+  boolean_T fcu_2_select;
+  boolean_T ap_engaged;
+  boolean_T reverser_tertiary_lock;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -1323,35 +1352,6 @@ struct base_prim_fg_laws_outputs
   ap_raw_output ap_fd_1;
   ap_raw_output ap_fd_2;
   real_T n_1_c_percent;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-
-struct base_prim_discrete_outputs
-{
-  real_T alignment_dummy;
-  boolean_T elevator_1_active_mode;
-  boolean_T elevator_2_active_mode;
-  boolean_T elevator_3_active_mode;
-  boolean_T ths_active_mode;
-  boolean_T left_aileron_1_active_mode;
-  boolean_T left_aileron_2_active_mode;
-  boolean_T right_aileron_1_active_mode;
-  boolean_T right_aileron_2_active_mode;
-  boolean_T left_spoiler_electronic_module_enable;
-  boolean_T right_spoiler_electronic_module_enable;
-  boolean_T rudder_1_hydraulic_active_mode;
-  boolean_T rudder_1_electric_active_mode;
-  boolean_T rudder_2_hydraulic_active_mode;
-  boolean_T rudder_2_electric_active_mode;
-  boolean_T prim_healthy;
-  boolean_T fcu_1_select;
-  boolean_T fcu_2_select;
-  boolean_T ap_engaged;
-  boolean_T reverser_tertiary_lock;
 };
 
 #endif
