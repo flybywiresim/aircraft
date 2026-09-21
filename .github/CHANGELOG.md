@@ -106,6 +106,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FWS] Single chime sound can be interrupted - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
+1. [GSX] Fix passenger and cargo loads reverting to values from the previous turnaround during GSX boarding and deboarding - @leon7891 (Leon)
 
 ## 2024.1.0
 
