@@ -161,8 +161,6 @@ class A380SecComputer final
     real_T BitfromLabel3_bit_k;
     real_T CompareToConstant_const;
     real_T CompareToConstant1_const;
-    real_T CompareToConstant1_const_p;
-    real_T CompareToConstant1_const_d;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterGenericVariableTs_lo_o;
@@ -218,10 +216,10 @@ class A380SecComputer final
     int8_T CompareToConstant5_const;
     int8_T CompareToConstant3_const;
     int8_T CompareToConstant4_const;
-    int8_T CompareToConstant_const_l;
+    int8_T CompareToConstant2_const_b;
     int8_T CompareToConstant_const_f;
-    int8_T CompareToConstant1_const_p2;
-    int8_T CompareToConstant_const_fl;
+    int8_T CompareToConstant1_const_p;
+    int8_T CompareToConstant1_const_pv;
     int8_T CompareToConstant2_const_f;
     int8_T CompareToConstant_const_fs;
     int8_T CompareToConstant1_const_c;
@@ -237,8 +235,8 @@ class A380SecComputer final
     real_T Constant8_Value;
     real_T Constant2_Value_n;
     real_T Constant1_Value_f;
-    real_T Constant2_Value_l;
     real_T Constant3_Value_h;
+    real_T Constant2_Value_l;
     real_T Constant2_Value_m;
     real_T Constant_Value_l;
     real_T Gain_Gain;
