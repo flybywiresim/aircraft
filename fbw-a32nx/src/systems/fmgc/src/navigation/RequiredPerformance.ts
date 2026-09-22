@@ -6,7 +6,7 @@ import { FlightArea } from './FlightArea';
 import { ConsumerValue, EventBus, Subject } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
-import { FmsNavigationEvents } from '../events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '../events/NavigationEvents';
 import { isLeg } from '../flightplanning/legs/FlightPlanLeg';
 
 const rnpDefaults: Record<FlightArea, number> = {
