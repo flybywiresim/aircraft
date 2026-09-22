@@ -224,9 +224,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /**
    * Removes a message from the queue
-   * @param value {String}
+   * @param message {TypeIIMessage}
    */
-  removeMessageFromQueue(value: string): void;
+  removeMessageFromQueue(message: TypeIIMessage): void;
 
   /**
    * Checks whether a waypoint is currently in use
@@ -313,6 +313,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   getApproachHeadWindComponent(forPlan?: FlightPlanIndex): number | null;
 
   trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex): void;
+
+  /**
+   * Indicates whether the true heading reference has been manually selected by the pilot.
+   */
+  isTrueRefActive(): boolean;
 
   reset(): void;
 

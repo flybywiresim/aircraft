@@ -106,6 +106,9 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FWS] Single chime sound can be interrupted - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
+1. [A380X/FMS] Added AREA RNP IS and PROCEDURE RNP IS fms messages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Display leg RNP on F-PLN page if present in the navigation database - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed F-PLN page crashing when alternate flightplan contained a hold - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 

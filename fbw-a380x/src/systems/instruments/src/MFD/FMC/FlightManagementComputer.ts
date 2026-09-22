@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -70,6 +70,7 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { FmsNavigationEvents } from '@fmgc/events/NavigationEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -148,9 +149,9 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#fmgc;
   }
 
-  private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
+  private readonly fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
-  private efisInterfaces = {
+  private readonly efisInterfaces = {
     L: new EfisInterface(
       this.bus,
       'L',
@@ -232,7 +233,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   // TODO make private, and access methods through FmcInterface
-  public acInterface!: FmcAircraftInterface;
+  public readonly acInterface!: FmcAircraftInterface;
 
   public revisedLegIndex = Subject.create<number | null>(null);
 
@@ -383,7 +384,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.ZfwOrZfwCgUndefined,
       this.ZfwOrZfwCgUndefined.sub((v) => {
         if (!v) {
-          this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
+          this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg);
         }
       }),
 
@@ -391,13 +392,13 @@ export class FlightManagementComputer implements FmcInterface {
         if (v) {
           this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         } else {
-          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
+          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         }
       }),
       this.destDataEntered,
       this.destDataEntered.sub((v) => {
         if (v) {
-          this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
+          this.removeMessageFromQueue(NXSystemMessages.enterDestData);
         }
       }),
       this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
@@ -418,6 +419,26 @@ export class FlightManagementComputer implements FmcInterface {
           this.exitEngineOut();
         }
       }),
+      this.bus
+        .getSubscriber<FmsNavigationEvents>()
+        .on('fms_pilot_rnp_greater_than_area_rnp')
+        .handle((v) => {
+          if (v !== undefined) {
+            this.addMessageToQueue(NXSystemMessages.areaRnpis.getModifiedMessage(v.toFixed(2)));
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.areaRnpis);
+          }
+        }),
+      this.bus
+        .getSubscriber<FmsNavigationEvents>()
+        .on('fms_pilot_rnp_greater_than_proc_rnp')
+        .handle((v) => {
+          if (v !== undefined) {
+            this.addMessageToQueue(NXSystemMessages.procedureRnpIs.getModifiedMessage(v.toFixed(2)));
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.procedureRnpIs);
+          }
+        }),
       this.approachWindDirection.sub((v) => {
         this.approachHeadWindComponent.set(
           v !== null ? this.calculateApproachWindComponent(FlightPlanIndex.Active, true) : null,
@@ -486,6 +507,10 @@ export class FlightManagementComputer implements FmcInterface {
       approachWindDirection,
       plan.destinationRunway.magneticBearing + (headWind ? 0 : 90),
     );
+  }
+
+  isTrueRefActive(): boolean {
+    return this.acInterface.istrueRefActive();
   }
 
   destroy() {
@@ -950,7 +975,7 @@ export class FlightManagementComputer implements FmcInterface {
     if (zfwDiff !== null && zfwDiff > 5 && zfwCgDiff !== null && zfwCgDiff > 0.5) {
       this.addMessageToQueue(NXSystemMessages.checkZfw);
       const sub = this.#flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
-        this.removeMessageFromQueue(NXSystemMessages.checkZfw.text);
+        this.removeMessageFromQueue(NXSystemMessages.checkZfw);
         sub.destroy();
       });
     }
@@ -1153,22 +1178,28 @@ export class FlightManagementComputer implements FmcInterface {
       isResolvedOverride: isTypeIIMessage(message) ? message.isResolved : () => false,
     };
 
-    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
+    const exists = this.findMessageIndexInQueue(message);
     if (exists !== -1) {
       this.fmsErrors.removeAt(exists);
     }
     this.fmsErrors.insert(msg, 0);
   }
 
-  /**
-   * Removes a message from the queue
-   * @param value {String}
+  /** Removes a message from the fms message queue by its text content.
    */
-  removeMessageFromQueue(value: string) {
-    const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);
-    if (exists !== -1) {
-      this.fmsErrors.removeAt(exists);
+  removeMessageFromQueue(message: TypeIIMessage) {
+    const index = this.findMessageIndexInQueue(message);
+    if (index !== -1) {
+      this.fmsErrors.removeAt(index);
     }
+  }
+
+  private findMessageIndexInQueue(message: TypeIMessage | TypeIIMessage): number {
+    return this.fmsErrors
+      .getArray()
+      .findIndex((el) =>
+        isTypeIIMessage(message) ? message.isSameMessage(el.message) : el.messageText === message.text,
+      );
   }
 
   private updateMessageQueue() {
@@ -1313,7 +1344,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Descent: {
-        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt);
         this.checkDestData();
 
         this.triggerCheckSpeedModeMessage(null);
@@ -1326,7 +1357,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Approach: {
-        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt.text);
+        this.removeMessageFromQueue(NXSystemMessages.newCrzAlt);
         this.checkDestData();
 
         break;
@@ -1408,7 +1439,7 @@ export class FlightManagementComputer implements FmcInterface {
     const checkSpeedModeMessageActive =
       this.fmsErrors.getArray().filter((it) => it.message === NXSystemMessages.checkSpeedMode).length > 0;
     if (checkSpeedModeMessageActive && (this.acInterface.isAirspeedManaged() ?? true)) {
-      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+      this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode);
       SimVar.SetSimVarValue('L:A32NX_PFD_MSG_CHECK_SPEED_MODE', 'bool', false);
     }
   }

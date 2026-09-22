@@ -130,7 +130,7 @@ export class FmcAircraftInterface {
           SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'Bool', false);
         });
       } else {
-        this.fmc.removeMessageFromQueue(NXSystemMessages.tdReached.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.tdReached);
       }
     });
 
@@ -194,7 +194,7 @@ export class FmcAircraftInterface {
         // TODO Split across both MFDs & NDs
         this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
         this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
-        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimaryLost.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimaryLost);
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
         this.fmc.addMessageToQueue(NXSystemMessages.navprimary, undefined, () => {
@@ -204,7 +204,7 @@ export class FmcAircraftInterface {
       } else {
         this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
         this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
-        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimary.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimary);
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
@@ -279,6 +279,11 @@ export class FmcAircraftInterface {
     'AUTO_STEP_CLIMB',
     (_, v) => (this.autoStepClimbEnabled = v === 'ENABLED'),
     'DISABLED',
+  );
+
+  private readonly trueReference = RegisteredSimVar.createBoolean(
+    'L:A32NX_FCU_AFS_DISPLAY_TRUE_MODE',
+    SimVarValueType.Bool,
   );
 
   constructor(
@@ -357,7 +362,7 @@ export class FmcAircraftInterface {
         if (v) {
           this.fmc.addMessageToQueue(NXSystemMessages.lateralDiscontinuityAhead, undefined, undefined);
         } else {
-          this.fmc.removeMessageFromQueue(NXSystemMessages.lateralDiscontinuityAhead.text);
+          this.fmc.removeMessageFromQueue(NXSystemMessages.lateralDiscontinuityAhead);
         }
       }),
     );
@@ -375,7 +380,7 @@ export class FmcAircraftInterface {
         if (v) {
           this.fmc.addMessageToQueue(NXSystemMessages.destEfobBelowMin, undefined, undefined);
         } else {
-          this.fmc.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin.text);
+          this.fmc.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin);
         }
       }),
       this.tdReached,
@@ -383,7 +388,7 @@ export class FmcAircraftInterface {
         if (v) {
           this.fmc.addMessageToQueue(NXSystemMessages.checkMinFuelAtDest, undefined, undefined);
         } else {
-          this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinFuelAtDest.text);
+          this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinFuelAtDest);
         }
       }),
       this.flightPhase.sub((v) => {
@@ -998,7 +1003,7 @@ export class FmcAircraftInterface {
       if (this.setHoldSpeedMessageActive) {
         this.setHoldSpeedMessageActive = false;
         SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
-        this.fmc.removeMessageFromQueue(NXSystemMessages.setHoldSpeed.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.setHoldSpeed);
       }
       const engineOut = !this.fmgc.isAllEngineOn();
       switch (phase) {
@@ -1134,7 +1139,7 @@ export class FmcAircraftInterface {
         cas.value <= speedLimit + 5;
       if (resetLimitExceeded) {
         this.speedLimitExceeded = false;
-        this.fmc.removeMessageFromQueue(NXSystemMessages.spdLimExceeded.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.spdLimExceeded);
       }
     } else if (cas && alt && cas.isNormalOperation() && alt.isNormalOperation()) {
       const setLimitExceeded = alt.value < speedLimitAlt - 150 && cas.value > speedLimit + 10;
@@ -1361,7 +1366,7 @@ export class FmcAircraftInterface {
         (!isClimbVsDescent && stepLevel <= oldCruiseLevel && stepLevel >= newCruiseLevel)
       ) {
         element.cruiseStep = undefined; // TODO call a method on FPS so that we sync this (fms-v2)
-        this.fmc.removeMessageFromQueue(NXSystemMessages.stepAhead.text);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.stepAhead);
       }
     }
   }
@@ -1807,5 +1812,9 @@ export class FmcAircraftInterface {
 
   isAirspeedManaged(): boolean | null {
     return this.masterPrimFgWord5.get().bitValueOr(17, null);
+  }
+
+  istrueRefActive(): boolean {
+    return this.trueReference.get();
   }
 }
