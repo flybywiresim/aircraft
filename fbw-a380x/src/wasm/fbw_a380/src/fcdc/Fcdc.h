@@ -101,7 +101,4 @@ class Fcdc {
   TriggeredMonostableNode btvTripleClickMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
   TriggeredMonostableNode capabilityTripleClickMtrig = TriggeredMonostableNode(1);
   TriggeredMonostableNode modeReversionTripleClickMtrig = TriggeredMonostableNode(1);
-
-  bool autolandWarningLatch = false;
-  bool autolandWarningTriggered = false;
 };

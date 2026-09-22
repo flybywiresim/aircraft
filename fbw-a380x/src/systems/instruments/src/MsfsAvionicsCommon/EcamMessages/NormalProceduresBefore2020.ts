@@ -502,9 +502,9 @@ public sensedItems: FwsNormalChecklistsDict = {
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
         SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'),
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+        (!SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+          (SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
       ],
     },

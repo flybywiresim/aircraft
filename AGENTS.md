@@ -106,6 +106,17 @@ When adding an instrument, update the appropriate `mach.config.js`, choose the c
 - Follow the root `.clang-format` (Chromium base, two-space indentation, 140-column limit) or a closer subtree override for C/C++.
 - Preserve physical units and simulation update semantics. Prefer the existing typed-unit and simulation-element abstractions over raw numeric values.
 
+## Changelog
+
+Treat `.github/CHANGELOG.md` as the list of user-visible differences from the previous stable release, not as a record of every change merged to the development branch.
+
+- Add an entry only when the change affects something users can observe and that difference exists relative to the previous stable release.
+- Do not add entries for backend-only refactors, maintenance, or improvements with no user-visible effect.
+- Do not add an entry for a fix to a regression introduced after the previous stable release: if stable users never had the bug, the fix is not a stable-to-current change.
+- Before adding an entry, use the previous stable release as the baseline rather than assuming every user-visible pull request qualifies.
+- Add new entries at the end of the current release's list. The current release is the first release section at the top of the file; append immediately before the next release heading, without reordering existing entries.
+- Follow the format documented in the comments at the top of `.github/CHANGELOG.md`, including starting each item with `1.`.
+
 ## Tests and validation
 
 Run the smallest relevant checks first, followed by the broader checks justified by the change.
@@ -132,4 +143,4 @@ Before handing off a change:
 1. Review `git diff` and do not include build products, secrets, `.env` changes, or unrelated user modifications.
 2. Run lint/tests for touched languages and a focused build for affected instruments or aircraft.
 3. Keep `pnpm-lock.yaml` and `Cargo.lock` changes intentional.
-4. For contributions, follow `.github/Contributing.md`: realism changes need supporting documentation, commits/PR titles use Conventional Commits, and user-visible changes require an entry in `.github/CHANGELOG.md`.
+4. For contributions, follow `.github/Contributing.md`: realism changes need supporting documentation, commits/PR titles use Conventional Commits, and qualifying user-visible changes require an entry in `.github/CHANGELOG.md` as described above.

@@ -110,7 +110,7 @@ A380PitchAlternateLaw::Parameters_A380PitchAlternateLaw_T A380PitchAlternateLaw:
 
   { 1.0, 1.0, 0.5, 0.3, 0.3 },
 
-  17.0,
+  20.0,
 
   -0.5,
 
@@ -340,9 +340,9 @@ A380PitchAlternateLaw::Parameters_A380PitchAlternateLaw_T A380PitchAlternateLaw:
 
   0.0,
 
-  3.5,
+  2.0,
 
-  -11.0,
+  -10.0,
 
   false
 };
