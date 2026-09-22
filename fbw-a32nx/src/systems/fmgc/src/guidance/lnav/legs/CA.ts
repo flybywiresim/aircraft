@@ -13,13 +13,32 @@ import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lna
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { distanceTo, placeBearingDistance } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { Runway, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { isOnGround } from '@shared/flightphase';
 import { PathVector, PathVectorType } from '../PathVector';
+import {
+  alongTrackDistance,
+  DepartureReference,
+  getIndicatedAltitude,
+  getRunwayDepartureReference,
+  hasReachedAltitude,
+  isRunwayFix,
+  predictAltitudeTermination,
+} from './AltitudeTerminationPrediction';
 
 export class CALeg extends Leg {
-  public estimatedTermination: Coordinates | undefined;
+  private static readonly DEFAULT_CLIMB_RATE = 2000;
+  private static readonly DEFAULT_CLIMB_SPEED = 175;
 
+  public estimatedTermination: Coordinates | undefined;
   private computedPath: PathVector[] = [];
+  /** Start of the drawn path. Not necessarily the origin of the prediction. */
+  private start: Coordinates;
+  private altitudeReached = false;
+  private wasMovedByPpos = false;
+  /** Set when this leg directly follows the runway: the climb is predicted from the runway end. */
+  private departureRunway: Runway | undefined;
+  private departure: DepartureReference | undefined;
 
   constructor(
     public readonly course: Degrees,
@@ -29,37 +48,44 @@ export class CALeg extends Leg {
     private readonly extraLength?: NauticalMiles,
   ) {
     super();
-
     this.segment = segment;
   }
-
-  private start: Coordinates;
 
   get terminationWaypoint(): Coordinates | undefined {
     return this.estimatedTermination;
   }
-
   getPathStartPoint(): Coordinates | undefined {
-    return this.inboundGuidable?.getPathEndPoint();
+    return this.departure?.end ?? this.inboundGuidable?.getPathEndPoint();
   }
-
   getPathEndPoint(): Coordinates | undefined {
     return this.estimatedTermination;
   }
 
+  public get disableAutomaticSequencing(): boolean {
+    return !this.altitudeReached;
+  }
   get predictedPath(): PathVector[] {
     return this.computedPath;
   }
 
-  private wasMovedByPpos = false;
-
-  recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue) {
+  recomputeWithParameters(isActive: boolean, _tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue) {
+    const inbound = this.inboundGuidable;
     const afterRunway =
-      this.inboundGuidable instanceof IFLeg &&
-      this.inboundGuidable.metadata.flightPlanLegDefinition.waypointDescriptor === WaypointDescriptor.Runway;
+      inbound instanceof IFLeg &&
+      inbound.metadata.flightPlanLegDefinition.waypointDescriptor === WaypointDescriptor.Runway;
+    const inFlight = !isOnGround();
 
-    // We assign / spread properties here to avoid copying references and causing bugs
-    if (isActive && !afterRunway) {
+    // The runway navdata object is the fix of the runway IF leg.
+    this.updateDeparture(afterRunway && inbound instanceof IFLeg ? inbound.fix : undefined);
+
+    // TODO: hasReachedAltitude() can fire while still on the ground (bad QNH, or a target
+    // altitude at/below field elevation), sequencing the leg before takeoff. Not changed in this
+    // PR — flagged during review as a follow-up, e.g. require !isOnGround() here too.
+    if (!this.altitudeReached && isActive && hasReachedAltitude(this.altitude)) {
+      this.altitudeReached = true;
+      this.start = { ...ppos };
+      this.estimatedTermination = { ...ppos };
+    } else if (!this.altitudeReached && isActive && !afterRunway) {
       this.wasMovedByPpos = true;
 
       if (!this.start) {
@@ -69,106 +95,140 @@ export class CALeg extends Leg {
         this.start.long = ppos.long;
       }
 
-      if (!this.estimatedTermination) {
-        this.recomputeEstimatedTermination();
+      // Keep predicting while airborne (also in level flight); on the ground only make sure a prediction exists.
+      if (inFlight || !this.estimatedTermination) {
+        this.recomputeEstimatedTermination(isActive, inFlight, ppos, gs);
       }
-    } else if (!this.wasMovedByPpos) {
-      const newPreviousGuidableStart = this.inboundGuidable?.getPathEndPoint();
+    } else if (!this.altitudeReached && !this.wasMovedByPpos) {
+      // After the runway the leg starts at the runway end, not at the runway fix (the threshold).
+      const newStart = this.departure?.end ?? this.inboundGuidable?.getPathEndPoint();
+      let startChanged = false;
 
-      if (newPreviousGuidableStart) {
-        if (!this.start) {
-          this.start = { ...newPreviousGuidableStart };
-        } else {
-          this.start.lat = newPreviousGuidableStart.lat;
-          this.start.long = newPreviousGuidableStart.long;
+      if (newStart) {
+        if (!this.start || this.start.lat !== newStart.lat || this.start.long !== newStart.long) {
+          this.start = { ...newStart };
+          startChanged = true;
         }
       }
 
-      this.recomputeEstimatedTermination();
+      if (this.start && (startChanged || !this.estimatedTermination || (isActive && inFlight))) {
+        this.recomputeEstimatedTermination(isActive, inFlight, ppos, gs);
+      }
     }
 
-    this.computedPath = [
-      {
-        type: PathVectorType.Line,
-        startPoint: this.start,
-        endPoint: this.getPathEndPoint(),
-      },
-    ];
-
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
-      this.computedPath.push(
+    if (this.start && this.getPathEndPoint()) {
+      this.computedPath = [
         {
-          type: PathVectorType.DebugPoint,
+          type: PathVectorType.Line,
           startPoint: this.start,
-          annotation: 'CA START',
+          endPoint: this.getPathEndPoint() as Coordinates,
         },
-        {
-          type: PathVectorType.DebugPoint,
-          startPoint: this.getPathEndPoint(),
-          annotation: 'CA END',
-        },
-      );
+      ];
+
+      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+        this.computedPath.push(
+          { type: PathVectorType.DebugPoint, startPoint: this.start, annotation: 'CA START' },
+          { type: PathVectorType.DebugPoint, startPoint: this.getPathEndPoint() as Coordinates, annotation: 'CA END' },
+        );
+      }
     }
 
     this.isComputed = true;
   }
 
-  private recomputeEstimatedTermination() {
-    const ESTIMATED_VS = 2000; // feet per minute
-    const ESTIMATED_KTS = 175; // NM per hour
+  private updateDeparture(runwayFix: unknown) {
+    const runway = isRunwayFix(runwayFix) ? runwayFix : undefined;
 
-    // FIXME hax!
-    const originAltitude = 0;
-    // if (this.inboundGuidable instanceof IFLeg && this.inboundGuidable.fix.icao.startsWith('A')) {
-    //     originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
-    // }
+    if (runway !== this.departureRunway) {
+      this.departureRunway = runway;
+      this.departure = runway ? getRunwayDepartureReference(runway, this.course) : undefined;
+    }
+  }
 
-    const minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
-    let distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+  /** Decides where the prediction starts and which altitude it starts from. */
+  private getPredictionReference(
+    isActive: boolean,
+    inFlight: boolean,
+    ppos: Coordinates,
+  ): { origin: Coordinates; altitude: number } | undefined {
+    const indicatedAltitude = getIndicatedAltitude();
 
-    if (!this.wasMovedByPpos && this.extraLength > 0) {
-      distanceToTermination += this.extraLength;
+    if (this.departure) {
+      // On the ground, or airborne but still before the runway end: the climb is measured from the runway end
+      // and the runway elevation, independent of the altimeter setting.
+      const beyondRunwayEnd = isActive && inFlight && alongTrackDistance(this.departure.end, this.course, ppos) >= 0;
+
+      if (!beyondRunwayEnd) {
+        const altitude = this.departure.elevation ?? indicatedAltitude;
+        return altitude === undefined ? undefined : { origin: this.departure.end, altitude };
+      }
     }
 
-    this.estimatedTermination = placeBearingDistance(this.start, this.course, distanceToTermination);
+    if (indicatedAltitude === undefined) {
+      return undefined;
+    }
+
+    // The remaining altitude is measured from the current altitude, so once airborne the prediction has to
+    // originate at ppos. The drawn path still begins at this.start.
+    return { origin: isActive && inFlight ? ppos : this.start, altitude: indicatedAltitude };
+  }
+
+  private recomputeEstimatedTermination(isActive: boolean, inFlight: boolean, ppos: Coordinates, groundSpeed: Knots) {
+    const reference = this.getPredictionReference(isActive, inFlight, ppos);
+    if (!reference) {
+      return;
+    }
+
+    const predictedTermination = predictAltitudeTermination(
+      reference.origin,
+      reference.altitude,
+      this.altitude,
+      this.course,
+      groundSpeed,
+      {
+        defaultClimbRate: CALeg.DEFAULT_CLIMB_RATE,
+        defaultSpeed: CALeg.DEFAULT_CLIMB_SPEED,
+        useDefaultClimbRate: true,
+        ignoreInstantaneousVS: isOnGround(),
+      },
+    );
+
+    if (!predictedTermination) {
+      return;
+    }
+
+    this.estimatedTermination = predictedTermination;
+
+    if (!this.wasMovedByPpos && this.extraLength && this.extraLength > 0) {
+      this.estimatedTermination = placeBearingDistance(this.estimatedTermination, this.course, this.extraLength);
+    }
   }
 
   get inboundCourse(): Degrees {
     return this.course;
   }
-
   get outboundCourse(): Degrees {
     return this.course;
   }
-
   getDistanceToGo(ppos: Coordinates): NauticalMiles {
+    if (!this.estimatedTermination) return 0;
     return courseToFixDistanceToGo(ppos, this.course, this.estimatedTermination);
   }
-
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots): GuidanceParameters | undefined {
-    // FIXME: should be just track guidance, no xtk
-    // (the start of the predicted path should also float with ppos once active, along with the transition to the leg)
-    // return {
-    //    law: ControlLaw.TRACK,
-    //    course: this.course,
-    // };
+    if (!this.estimatedTermination) return undefined;
     return courseToFixGuidance(ppos, trueTrack, this.course, this.estimatedTermination);
   }
-
   getNominalRollAngle(_gs: Knots): Degrees {
     return undefined;
   }
-
   get distanceToTermination(): NauticalMiles {
-    const startPoint = this.getPathStartPoint();
-
-    return distanceTo(startPoint, this.estimatedTermination);
+    const start = this.getPathStartPoint();
+    if (!start || !this.estimatedTermination) return 0;
+    return distanceTo(start, this.estimatedTermination);
   }
-
   isAbeam(_ppos: Coordinates): boolean {
     return false;
   }
-
   get repr(): string {
     return `CA(${this.course.toFixed(1)}T) TO ${Math.round(this.altitude)} FT`;
   }
