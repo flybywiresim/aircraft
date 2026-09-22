@@ -281,7 +281,10 @@ export class FmcAircraftInterface {
     'DISABLED',
   );
 
-  private readonly trueReference = RegisteredSimVar.createBoolean('L:A32NX_PUSH_TRUE_REF', SimVarValueType.Bool);
+  private readonly trueReference = RegisteredSimVar.createBoolean(
+    'L:A32NX_FCU_AFS_DISPLAY_TRUE_MODE',
+    SimVarValueType.Bool,
+  );
 
   constructor(
     private bus: EventBus,
