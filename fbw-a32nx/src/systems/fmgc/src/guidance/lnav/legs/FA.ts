@@ -17,26 +17,29 @@ import { distanceTo, placeBearingDistance } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
+import { isOnGround } from '@shared/flightphase';
+import {
+  alongTrackDistance,
+  DepartureReference,
+  getIndicatedAltitude,
+  getRunwayDepartureReference,
+  hasReachedAltitude,
+  isRunwayFix,
+  predictAltitudeTermination,
+} from './AltitudeTerminationPrediction';
 import { Leg } from './Leg';
 
 export class FALeg extends Leg {
-  /** default climb rate in feet/nm. */
   private static readonly DEFAULT_CLIMB_RATE = 500;
+  private static readonly DEFAULT_CLIMB_SPEED = 175;
 
   private initialTermination: Coordinates;
-
   private calculatedTermination?: Coordinates;
-
+  private altitudeReached = false;
   public readonly predictedPath: PathVector[] = [];
+  /** Set when the fix is a runway: the climb is predicted from the runway end at the runway elevation. */
+  private readonly departure: DepartureReference | undefined;
 
-  /**
-   * A leg extending from a fix on a given course until reaching a given altitude.
-   * @param fix The fix this leg extends from.
-   * @param course The course in true degrees.
-   * @param altitude The termination altitude in feet MSL.
-   * @param metadata Leg metadata.
-   * @param segment The flight plan segment this leg appears in.
-   */
   constructor(
     public readonly fix: Fix,
     private readonly course: number,
@@ -45,125 +48,162 @@ export class FALeg extends Leg {
     public segment: SegmentType,
   ) {
     super();
+    this.departure = isRunwayFix(this.fix) ? getRunwayDepartureReference(this.fix, this.course) : undefined;
+    // inboundGuidable is not set yet, so this is only a first estimate.
+    // It is refined in recomputeWithParameters once the leg is linked into the guidance chain.
+    this.initialTermination = this.calculateTermination(this.getLineStart()) ?? this.getLineStart();
+  }
 
-    this.initialTermination = this.calculateTermination(this.fix.location);
+  /** Altitude at the start of the leg, derived from the inbound leg's constraint. */
+  private getStartingAltitudeFromInbound(): number {
+    if (this.fix.sectionCode === SectionCode.Airport && this.fix.subSectionCode === AirportSubsectionCode.Runways) {
+      return 0;
+    }
+
+    if (!(this.inboundGuidable instanceof Leg) || !this.inboundGuidable.metadata.flightPlanLegDefinition) {
+      return 0;
+    }
+
+    const inboundLeg = this.inboundGuidable.metadata.flightPlanLegDefinition;
+
+    switch (inboundLeg.altitudeDescriptor) {
+      case AltitudeDescriptor.AtAlt1:
+      case AltitudeDescriptor.AtAlt1AngleAlt2:
+      case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+      case AltitudeDescriptor.AtAlt1GsMslAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1:
+      case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+      case AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2:
+      case AltitudeDescriptor.AtOrBelowAlt1:
+      case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
+        return inboundLeg.altitude1;
+      case AltitudeDescriptor.BetweenAlt1Alt2:
+      case AltitudeDescriptor.AtOrAboveAlt2:
+        return inboundLeg.altitude2;
+      default:
+        return 0;
+    }
   }
 
   /**
-   * Calculate the termination point, optionally given a starting altitude in feet MSL.
-   * @param startingAltitude The altitude we are starting at in feet MSL. If not given it will be estimated based on previous legs.
-   * @returns The estimated termination location.
+   * @param startingPoint point the prediction starts from (must lie on the leg's course line)
+   * @param startingAltitude altitude at that point; if omitted it is derived from the ground state or inbound leg
+   * @param groundSpeed current ground speed, if known
    */
-  private calculateTermination(startingPoint: Coordinates, startingAltitude?: number): Coordinates {
-    // FIXME we need VNAV to calculate legs in lockstep with LNAV to get this right
+  private calculateTermination(
+    startingPoint: Coordinates,
+    startingAltitude?: number,
+    groundSpeed?: number,
+  ): Coordinates | undefined {
     if (startingAltitude === undefined) {
-      if (this.fix.sectionCode === SectionCode.Airport && this.fix.subSectionCode === AirportSubsectionCode.Runways) {
-        // FIXME runway altitude should be available on runway fix
-        startingAltitude = 0;
-      } else if (this.inboundGuidable instanceof Leg && this.inboundGuidable.metadata.flightPlanLegDefinition) {
-        const inboundLeg = this.inboundGuidable.metadata.flightPlanLegDefinition;
-        switch (inboundLeg.altitudeDescriptor) {
-          case AltitudeDescriptor.AtAlt1:
-          case AltitudeDescriptor.AtAlt1AngleAlt2:
-          case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtAlt1GsMslAlt2:
-          case AltitudeDescriptor.AtOrAboveAlt1:
-          case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-          case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
-          case AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2:
-          case AltitudeDescriptor.AtOrBelowAlt1:
-          case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-            startingAltitude = inboundLeg.altitude1;
-            break;
-          case AltitudeDescriptor.BetweenAlt1Alt2:
-          case AltitudeDescriptor.AtOrAboveAlt2:
-            startingAltitude = inboundLeg.altitude2;
-            break;
-          default:
-            startingAltitude = 0;
-        }
-      } else {
-        startingAltitude = 0;
-      }
+      const fallbackAltitude = isOnGround() ? (getIndicatedAltitude() ?? 0) : this.getStartingAltitudeFromInbound();
+      startingAltitude = this.departure?.elevation ?? fallbackAltitude;
     }
 
-    const altitudeDiff = Math.max(0, this.altitude - startingAltitude);
-    const distance = Math.max(0.1, altitudeDiff / FALeg.DEFAULT_CLIMB_RATE);
-
-    return placeBearingDistance(startingPoint, this.course, distance);
+    return predictAltitudeTermination(startingPoint, startingAltitude, this.altitude, this.course, groundSpeed, {
+      defaultClimbRate: FALeg.DEFAULT_CLIMB_RATE,
+      defaultSpeed: FALeg.DEFAULT_CLIMB_SPEED,
+      useDefaultClimbRate: true,
+      ignoreInstantaneousVS: isOnGround(),
+    });
   }
 
-  /** @inheritdoc */
+  /** Where the climb line starts: the runway end if the fix is a runway, otherwise the fix itself. */
+  private getLineStart(): Coordinates {
+    return this.departure?.end ?? this.fix.location;
+  }
+
+  /** Projects ppos onto the course line, so the termination always lies on that line. */
+  private projectOntoCourse(ppos: Coordinates): Coordinates {
+    const lineStart = this.getLineStart();
+    const alongTrack = Math.max(0, alongTrackDistance(lineStart, this.course, ppos));
+
+    return placeBearingDistance(lineStart, this.course, alongTrack);
+  }
+
   public get inboundCourse(): number {
     return this.course;
   }
-
-  /** @inheritdoc */
   public get outboundCourse(): number {
     return this.course;
   }
 
-  /** @inheritdoc */
   public get terminationWaypoint(): Coordinates {
     return this.calculatedTermination ?? this.initialTermination;
   }
 
-  /** @inheritdoc */
   public getPathStartPoint(): Coordinates {
-    return this.inboundGuidable?.getPathEndPoint() ?? this.fix.location;
+    return this.departure?.end ?? this.inboundGuidable?.getPathEndPoint() ?? this.fix.location;
   }
-
-  /** @inheritdoc */
   public getPathEndPoint(): Coordinates {
     return this.terminationWaypoint;
   }
 
-  /** @inheritdoc */
-  public get distanceToTermination(): number {
-    const startPoint = this.getPathStartPoint();
-    const term = this.terminationWaypoint;
-
-    return distanceTo(startPoint, term);
+  public get disableAutomaticSequencing(): boolean {
+    return !this.altitudeReached;
   }
 
-  /** @inheritdoc */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public getGuidanceParameters(ppos: Coordinates, trueTrack: number, tas: number, gs: number): GuidanceParameters {
+  public get distanceToTermination(): number {
+    return distanceTo(this.getPathStartPoint(), this.terminationWaypoint);
+  }
+
+  public getGuidanceParameters(ppos: Coordinates, trueTrack: number, _tas: number, _gs: number): GuidanceParameters {
     return fixToFixGuidance(ppos, trueTrack, this.fix.location, this.getPathEndPoint());
   }
 
-  /** @inheritdoc */
   public getDistanceToGo(ppos: Coordinates): number {
     return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
   }
 
-  /** @inheritdoc */
   public isAbeam(ppos: Coordinates): boolean {
     const dtg = this.getDistanceToGo(ppos);
-
     return dtg >= 0 && dtg <= this.distance;
   }
 
-  /** @inheritdoc */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public getNominalRollAngle(gs: number): number {
+  public getNominalRollAngle(_gs: number): number {
     return 0;
   }
 
-  /** @inheritdoc */
   public recomputeWithParameters(
-    _isActive: boolean,
+    isActive: boolean,
     _tas: Knots,
-    _gs: Knots,
-    _ppos: Coordinates,
+    gs: Knots,
+    ppos: Coordinates,
     _trueTrack: DegreesTrue,
   ) {
     const startPoint = this.getPathStartPoint();
-    // FIXME if we had a better alt estimation.. use startPoint instead
-    this.calculatedTermination = this.calculateTermination(this.fix.location);
+    const onGround = isOnGround();
+
+    if (!this.altitudeReached) {
+      // TODO: same as CALeg — this can fire on the ground with a bad QNH or a low target
+      // altitude. Not changed in this PR.
+      if (isActive && hasReachedAltitude(this.altitude)) {
+        this.altitudeReached = true;
+        this.calculatedTermination = this.projectOntoCourse(ppos);
+      } else if (isActive && !onGround) {
+        const indicatedAltitude = getIndicatedAltitude();
+
+        if (indicatedAltitude !== undefined) {
+          // Airborne but still before the runway end: keep measuring the climb from the runway end.
+          const beforeRunwayEnd =
+            this.departure !== undefined && alongTrackDistance(this.departure.end, this.course, ppos) < 0;
+
+          const predictedTermination = beforeRunwayEnd
+            ? this.calculateTermination(this.departure.end, undefined, gs)
+            : this.calculateTermination(this.projectOntoCourse(ppos), indicatedAltitude, gs);
+
+          if (predictedTermination) {
+            this.calculatedTermination = predictedTermination;
+          }
+        }
+      } else {
+        // Inactive legs (or legs on the ground) are refined here because inboundGuidable is only available now.
+        this.initialTermination = this.calculateTermination(this.getLineStart()) ?? this.getLineStart();
+      }
+    }
 
     const point0: Partial<LinePathVector> = (this.predictedPath[0] as LinePathVector) ?? {};
-
     point0.type = PathVectorType.Line;
     point0.startPoint = startPoint;
     point0.endPoint = this.getPathEndPoint();
@@ -175,7 +215,6 @@ export class FALeg extends Leg {
     this.isComputed = true;
   }
 
-  /** @inheritdoc */
   public get repr(): string {
     return `FA(${this.fix.ident}) ${this.course.toFixed(1)}T ${Math.round(this.altitude)}F`;
   }
