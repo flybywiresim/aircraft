@@ -1,6 +1,6 @@
 #include <cmath>
+#include <cstdio>
 #include <iomanip>
-#include <iostream>
 #include "inih/ini.h"
 #include "inih/ini_type_conversion.h"
 
@@ -36,7 +36,7 @@ bool FlyByWireInterface::connect() {
       idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
   // request data
   if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << std::endl;
+    std::printf("WASM: Request data failed!\n");
     return false;
   }
 
@@ -195,16 +195,16 @@ void FlyByWireInterface::loadConfiguration() {
   clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || fcuDisabled != -1 || fadecDisabled != -1);
 
   // print configuration into console
-  std::cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << std::endl;
-  std::cout << "WASM: MODEL     : PRIM_DISABLED                        = " << primDisabled << std::endl;
-  std::cout << "WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = " << primGeneralLogicDisabled << std::endl;
-  std::cout << "WASM: MODEL     : PRIM_FCTL_DISABLED                   = " << primFctlDisabled << std::endl;
-  std::cout << "WASM: MODEL     : PRIM_FE_DISABLED                     = " << primFeDisabled << std::endl;
-  std::cout << "WASM: MODEL     : PRIM_FG_DISABLED                     = " << primFgDisabled << std::endl;
-  std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
-  std::cout << "WASM: MODEL     : FCU_DISABLED                         = " << fcuDisabled << std::endl;
-  std::cout << "WASM: MODEL     : FADEC_DISABLED                       = " << fadecDisabled << std::endl;
-  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
+  std::printf("WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = %d\n", clientDataEnabled);
+  std::printf("WASM: MODEL     : PRIM_DISABLED                        = %d\n", primDisabled);
+  std::printf("WASM: MODEL     : PRIM_GENERAL_LOGIC_DISABLED          = %d\n", primGeneralLogicDisabled);
+  std::printf("WASM: MODEL     : PRIM_FCTL_DISABLED                   = %d\n", primFctlDisabled);
+  std::printf("WASM: MODEL     : PRIM_FE_DISABLED                     = %d\n", primFeDisabled);
+  std::printf("WASM: MODEL     : PRIM_FG_DISABLED                     = %d\n", primFgDisabled);
+  std::printf("WASM: MODEL     : SEC_DISABLED                         = %d\n", secDisabled);
+  std::printf("WASM: MODEL     : FCU_DISABLED                         = %d\n", fcuDisabled);
+  std::printf("WASM: MODEL     : FADEC_DISABLED                       = %d\n", fadecDisabled);
+  std::printf("WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = %d\n", tailstrikeProtectionEnabled);
 
   // --------------------------------------------------------------------------
   // load values - autopilot
@@ -214,10 +214,10 @@ void FlyByWireInterface::loadConfiguration() {
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
   // print configuration into console
-  std::cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << std::endl;
-  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << std::endl;
-  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << std::endl;
-  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << std::endl;
+  std::printf("WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = %g\n", idMinimumSimulationRate->get());
+  std::printf("WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = %g\n", idMaximumSimulationRate->get());
+  std::printf("WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = %d\n", limitSimulationRateByPerformance);
+  std::printf("WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = %d\n", simulationRateReductionEnabled);
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -225,7 +225,7 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", 0.813);
 
   // print configuration into console
-  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = " << autothrustThrustLimitReversePercentageToga << std::endl;
+  std::printf("WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = %g\n", autothrustThrustLimitReversePercentageToga);
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -240,12 +240,12 @@ void FlyByWireInterface::loadConfiguration() {
   enableRudder2AxisMode = INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "ENABLE_RUDDER_2_AXIS", false);
 
   // print configuration into console
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << std::endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << std::endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << std::endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
-            << std::endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : ENABLE_RUDDER_2_AXIS = " << enableRudder2AxisMode << std::endl;
+  std::printf("WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = %g\n", flightControlsKeyChangeAileron);
+  std::printf("WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = %g\n", flightControlsKeyChangeElevator);
+  std::printf("WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = %g\n", flightControlsKeyChangeRudder);
+  std::printf("WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = %d\n",
+              disableXboxCompatibilityRudderAxisPlusMinus);
+  std::printf("WASM: FLIGHT_CONTROLS : ENABLE_RUDDER_2_AXIS = %d\n", enableRudder2AxisMode);
 
   // --------------------------------------------------------------------------
   // load values - logging
@@ -253,8 +253,8 @@ void FlyByWireInterface::loadConfiguration() {
   idLoggingThrottlesEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "THROTTLES_ENABLED", false));
 
   // print configuration into console
-  std::cout << "WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = " << idLoggingFlightControlsEnabled->get() << std::endl;
-  std::cout << "WASM: LOGGING : THROTTLES_ENABLED = " << idLoggingThrottlesEnabled->get() << std::endl;
+  std::printf("WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = %d\n", idLoggingFlightControlsEnabled->get());
+  std::printf("WASM: LOGGING : THROTTLES_ENABLED = %d\n", idLoggingThrottlesEnabled->get());
 
   // --------------------------------------------------------------------------
   // create axis and load configuration
@@ -994,13 +994,13 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // request data
   if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << std::endl;
+    std::printf("WASM: Request data failed!\n");
     return false;
   }
 
   // read data
   if (!simConnectInterface.readData()) {
-    std::cout << "WASM: Read data failed!" << std::endl;
+    std::printf("WASM: Read data failed!\n");
     return false;
   }
 
@@ -1057,10 +1057,8 @@ bool FlyByWireInterface::updatePerformanceMonitoring(double sampleTime) {
   if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
     if (idPerformanceWarningActive->get() <= 0) {
       idPerformanceWarningActive->set(1);
-      std::cout << "WASM: WARNING Performance issues detected, at least stable ";
-      std::cout << std::round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME);
-      std::cout << " fps or more are needed at this simrate!";
-      std::cout << std::endl;
+      std::printf("WASM: WARNING Performance issues detected, at least stable %g fps or more are needed at this simrate!\n",
+                  std::round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME));
     }
   } else if (idPerformanceWarningActive > 0) {
     idPerformanceWarningActive->set(0);
@@ -1097,8 +1095,8 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     // sed event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
-    std::cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
-    std::cout << " (maximum allowed is " << idMaximumSimulationRate->get() << ")!" << std::endl;
+    std::printf("WASM: WARNING Reducing simulation rate to %g (maximum allowed is %g)!\n", simData.simulation_rate / 2,
+                idMaximumSimulationRate->get());
   }
 
   // check if simulation rate reduction is enabled
@@ -1122,9 +1120,8 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     // reset low performance timer
     lowPerformanceTimer = 0;
     // log event of reduction
-    std::cout << "WASM: WARNING Reducing simulation rate from " << simData.simulation_rate;
-    std::cout << " to " << simData.simulation_rate / 2;
-    std::cout << " due to performance issues or abnormal situation!" << std::endl;
+    std::printf("WASM: WARNING Reducing simulation rate from %g to %g due to performance issues or abnormal situation!\n",
+                simData.simulation_rate, simData.simulation_rate / 2);
   }
 
   // success
@@ -2338,6 +2335,10 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
       fcuIndex == 0 ? simInputAutopilot.efis_mode_left_set : simInputAutopilot.efis_mode_right_set;
   fcus[fcuIndex].modelInputs.in.sim_input.efis_range =
       fcuIndex == 0 ? simInputAutopilot.efis_range_left_set : simInputAutopilot.efis_range_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.navaid_1_mode =
+      fcuIndex == 0 ? simInputAutopilot.efis_navaid_mode_1_left_set : simInputAutopilot.efis_navaid_mode_1_right_set;
+  fcus[fcuIndex].modelInputs.in.sim_input.navaid_2_mode =
+      fcuIndex == 0 ? simInputAutopilot.efis_navaid_mode_2_left_set : simInputAutopilot.efis_navaid_mode_2_right_set;
 
   fcus[fcuIndex].modelInputs.in.discrete_inputs.fcu_switched_off = idFcuSwitchedOff->get();
   fcus[fcuIndex].modelInputs.in.discrete_inputs.efis_backup_activated = idFcuEisCpBackupActive[fcuIndex]->get();
@@ -2432,42 +2433,42 @@ bool FlyByWireInterface::updateEfisSync() {
       if (fcu1BusOutput.baro_setting_inhg.Data != fcu2BusOutput.baro_setting_inhg.Data) {
         const DWORD kohlsman = fcu2BusOutput.baro_setting_inhg.Data * 541.822186666672;
         simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
-        std::cout << "FBWInterface: Syncing left baro to " << fcu2BusOutput.baro_setting_inhg.Data << std::endl;
+        std::printf("FBWInterface: Syncing left baro to %g\n", fcu2BusOutput.baro_setting_inhg.Data);
       }
     } else if (fcu1BusOutput.baro_setting_hpa.Data != fcu2BusOutput.baro_setting_hpa.Data) {
       const DWORD kohlsman = fcu2BusOutput.baro_setting_hpa.Data * 16.;
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
-      std::cout << "FBWInterface: Syncing left baro to " << fcu2BusOutput.baro_setting_hpa.Data << std::endl;
+      std::printf("FBWInterface: Syncing left baro to %g\n", fcu2BusOutput.baro_setting_hpa.Data);
     }
 
     // FIXME need to handle QFE and we won't be able to do it this way
     if (!isLeftStd && isRightStd) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
-      std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
+      std::printf("FBWInterface: Syncing left baro to STD\n");
     } else if (!isLeftQnh && isRightQnh) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
-      std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
+      std::printf("FBWInterface: Syncing left baro to QNH\n");
     }
   } else {
     if (idFcuEisPanelBaroIsInhg[1]->get()) {
       if (fcu1BusOutput.baro_setting_inhg.Data != fcu2BusOutput.baro_setting_inhg.Data) {
         const DWORD kohlsman = fcu1BusOutput.baro_setting_inhg.Data * 541.822186666672;
         simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
-        std::cout << "FBWInterface: Syncing right baro to " << fcu1BusOutput.baro_setting_inhg.Data << std::endl;
+        std::printf("FBWInterface: Syncing right baro to %g\n", fcu1BusOutput.baro_setting_inhg.Data);
       }
     } else if (fcu1BusOutput.baro_setting_hpa.Data != fcu2BusOutput.baro_setting_hpa.Data) {
       const DWORD kohlsman = fcu1BusOutput.baro_setting_hpa.Data * 16.;
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
-      std::cout << "FBWInterface: Syncing right baro to " << fcu1BusOutput.baro_setting_hpa.Data << std::endl;
+      std::printf("FBWInterface: Syncing right baro to %g\n", fcu1BusOutput.baro_setting_hpa.Data);
     }
 
     // FIXME need to handle QFE and we won't be able to do it this way
     if (isLeftStd && !isRightStd) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
-      std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
+      std::printf("FBWInterface: Syncing right baro to STD\n");
     } else if (isLeftQnh && !isRightQnh) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
-      std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
+      std::printf("FBWInterface: Syncing right baro to QNH\n");
     }
   }
 
@@ -3012,7 +3013,7 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
                                              fadecOutputs[2].sim_thrust_mode,
                                              fadecOutputs[3].sim_thrust_mode};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
-      std::cout << "WASM: Write data failed!" << std::endl;
+      std::printf("WASM: Write data failed!\n");
       return false;
     }
 
