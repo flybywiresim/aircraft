@@ -104,6 +104,7 @@ import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutEvents';
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
+import { VnavEvents } from '@fmgc/events/VnavEvents';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
@@ -448,6 +449,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly approachVapp = Subject.create<number | null>(null);
 
   private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
+
+  private readonly vnavManagedSpeedForDescentPhase = ConsumerValue.create(
+    this.bus.getSubscriber<VnavEvents>().on('fms_vnav_managed_speed_descent_phase'),
+    null,
+  );
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -1362,7 +1368,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = FMCMainDisplay.speedsManagedPfdVar.get();
+          vPfd = this.vnavManagedSpeedForDescentPhase.get() ?? 0;
           isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
           break;
         }
