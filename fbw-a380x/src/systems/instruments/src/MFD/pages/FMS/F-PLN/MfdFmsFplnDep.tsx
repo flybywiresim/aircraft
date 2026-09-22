@@ -87,12 +87,13 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                   isAltn ?? false,
                 );
               },
+              textCentered: true,
             },
           ];
           const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
           sortedDepartures.forEach((dep) => {
             sids.push({
-              label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
+              label: dep.authorisationRequired ? `${dep.ident}(RNPAR)` : dep.ident,
               action: async () => {
                 await this.props.flightPlanInterface.setDepartureProcedure(
                   dep.databaseId,
@@ -105,6 +106,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                   isAltn ?? false,
                 );
               },
+              textCentered: true,
             });
           });
           this.sidOptions.set(sids);
@@ -132,17 +134,19 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 ),
+              textCentered: true,
             },
           ];
           flightPlan.originDeparture.enrouteTransitions.forEach((el) => {
             trans.push({
-              label: el.ident,
+              label: el.ident + (flightPlan.originDeparture?.authorisationRequired ? '(RNPAR)' : ''),
               action: () =>
                 this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   el.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 ),
+              textCentered: true,
             });
           });
           this.transOptions.set(trans);
@@ -197,6 +201,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
               isAltn ?? false,
             );
           },
+          textCentered: true,
         };
       });
       this.rwyOptions.set(runways);

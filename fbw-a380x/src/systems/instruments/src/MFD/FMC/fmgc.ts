@@ -21,7 +21,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
-import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { A380AircraftConfig } from './A380AircraftConfig';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 import { qnhToMillibar } from '../shared/QnhUtils';
 

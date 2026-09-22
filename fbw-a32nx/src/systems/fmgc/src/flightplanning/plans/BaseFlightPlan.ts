@@ -63,7 +63,7 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { Accessible, BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -88,6 +88,8 @@ export interface FlightPlanContext {
   get syncClientID(): number;
 
   get batchStack(): FlightPlanBatch[];
+
+  useApproachRnpArNaming: Accessible<boolean>;
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
@@ -319,7 +321,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return -1;
   }
 
-  get isDepartureProcedureActive(): boolean {
+  public isDepartureProcedureActive(): boolean {
     return (
       this.departureSegment.procedure !== undefined &&
       ((this.departureRunwayTransitionSegment.legCount > 0 && this.activeLegIndex < this.findLastDepartureLeg()[2]) ||
@@ -1012,7 +1014,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param databaseId the approach databaseId or `undefined` for NONE
    */
   async setApproach(databaseId: string | undefined) {
-    await this.approachSegment.setProcedure(databaseId).then(() => this.incrementVersion());
+    await this.approachSegment
+      .setProcedure(databaseId, false, this.context.useApproachRnpArNaming.get())
+      .then(() => this.incrementVersion());
     await this.flushOperationQueue();
     this.incrementVersion();
   }
@@ -2733,7 +2737,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     // the methods on BaseFlightPlan flush the op queue
 
     if (this.approach) {
-      await this.approachSegment.setProcedure(this.approach.databaseId);
+      await this.approachSegment.setProcedure(
+        this.approach.databaseId,
+        false,
+        this.context.useApproachRnpArNaming.get(),
+      );
     }
 
     if (this.approachVia) {

@@ -105,6 +105,7 @@ import { EngineOutControlEvents, EngineOutEvents } from '@fmgc/events/EngineOutE
 import { FmsModule } from '@fmgc/modules/FmsModule';
 import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { A32NX_EfisApproachMessageModule } from '@fmgc/modules/A32NX_EfisApproachMessageModule';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
 
@@ -140,7 +141,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly currFlightPlanService = new FlightPlanService(
     this.bus,
     new A320FlightPlanPerformanceData(),
-    FpmConfigs.A320_HONEYWELL_H3,
+    A320AircraftConfig,
     true,
   );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
@@ -325,7 +326,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private A32NXCore?: A32NX_Core;
   public dataManager?: DataManager;
   public efisInterfaces?: Record<EfisSide, EfisInterface>;
-  public guidanceController?: GuidanceController;
+  public guidanceController: GuidanceController;
   public navigation?: Navigation;
   private historyWinds?: HistoryWind;
 
@@ -455,6 +456,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
 
     this.addModule(new EngineOutMonitor(this.bus));
+    this.addModule(new A32NX_EfisApproachMessageModule(this.bus));
   }
 
   protected addModule(module: FmsModule) {

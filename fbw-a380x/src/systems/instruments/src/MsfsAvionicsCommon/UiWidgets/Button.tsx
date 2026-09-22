@@ -18,6 +18,7 @@ export type ButtonMenuItem = {
   label: string | Subscribable<string>;
   disabled?: boolean | Subscribable<boolean>;
   action(): void;
+  textCentered?: boolean; // Whether to center-align the text of the menu items. Defaults to false.
 };
 
 // FIXME these should all be immutable
@@ -164,6 +165,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                     id={`${this.props.idPrefix}_${idx}`}
                     class={{
                       'mfd-dropdown-menu-element': true,
+                      centered: el.textCentered ?? false,
                       disabled: el.disabled ?? false,
                     }}
                   >

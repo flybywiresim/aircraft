@@ -214,6 +214,10 @@
   padding: 5px 16px;
 }
 
+.mfd-dropdown-menu-element.centered {
+  text-align: center;
+}
+
 .mfd-dropdown-menu-element:hover {
   border: 3px solid $display-cyan;
 }

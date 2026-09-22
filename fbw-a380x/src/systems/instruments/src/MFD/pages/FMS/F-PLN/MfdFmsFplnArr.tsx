@@ -8,12 +8,11 @@ import {
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from '../../common/FmsPage';
-import { getApproachName } from '../../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -125,6 +124,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
               await this.props.flightPlanInterface.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
               await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
             },
+            textCentered: true,
           },
         ];
 
@@ -148,7 +148,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         let isFirstMatch = true;
         sortedApproaches.forEach((el, idx) => {
           appr.push({
-            label: getApproachName(el),
+            label: ApproachUtils.shortApproachName(el, true) + (el.authorisationRequired ? ' (AR)' : ''),
             action: async () => {
               await this.props.flightPlanInterface.setDestinationRunway(
                 el.runwayIdent ?? '',
@@ -158,6 +158,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
               await this.props.flightPlanInterface.setApproach(el.databaseId, this.loadedFlightPlanIndex.get(), isAltn);
               await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
             },
+            textCentered: true,
           });
 
           if (isFirstMatch && el.runwayIdent === flightPlan?.destinationRunway?.ident) {
@@ -172,7 +173,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }
 
       if (flightPlan.approach) {
-        this.approachName.set(getApproachName(flightPlan.approach, false));
+        this.approachName.set(ApproachUtils.shortApproachName(flightPlan.approach, true));
         const ls = flightPlan.approach ? LandingSystemUtils.getLsFromApproach(flightPlan.approach) : undefined;
         // FIXME handle non-localizer types
         this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '---.--');
@@ -190,6 +191,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   isAltn,
                 );
               },
+              textCentered: true,
             },
           ];
 
@@ -206,7 +208,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             })
             .forEach((via) => {
               vias.push({
-                label: isRnp ? `${via.ident} (RNP)` : via.ident,
+                label: isRnp ? `${via.ident} (AR)` : via.ident,
                 action: async () => {
                   await this.props.flightPlanInterface.setApproachVia(
                     via.databaseId,
@@ -253,6 +255,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 isAltn,
               );
             },
+            textCentered: true,
           },
         ];
 
@@ -267,6 +270,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 isAltn,
               );
             },
+            textCentered: true,
           };
 
           if (el.runwayTransitions.length > 0) {
@@ -309,6 +313,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   isAltn,
                 );
               },
+              textCentered: true,
             },
           ];
           flightPlan.arrival.enrouteTransitions.forEach((el) => {
@@ -321,6 +326,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                   isAltn,
                 );
               },
+              textCentered: true,
             });
           });
           this.transOptions.set(trans);
@@ -368,6 +374,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             await this.props.flightPlanInterface.setApproach(undefined, this.loadedFlightPlanIndex.get(), isAltn);
             await this.props.flightPlanInterface.setApproachVia(undefined, this.loadedFlightPlanIndex.get(), isAltn);
           },
+          textCentered: true,
         });
       });
       this.rwyOptions.set(runways);
