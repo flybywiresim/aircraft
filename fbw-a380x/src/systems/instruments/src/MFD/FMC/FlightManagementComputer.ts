@@ -70,7 +70,7 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
-import { FmsNavigationEvents } from '@fmgc/events/RequiredNavigationPerformanceEvents';
+import { FmsNavigationEvents } from '@fmgc/events/NavigationEvents';
 
 export interface FmsErrorMessage {
   message: McduMessage;
