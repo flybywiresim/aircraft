@@ -1457,8 +1457,8 @@ export class PseudoFWC {
   private readonly ir3FaultMtrig = new NXLogicTriggeredMonostableNode(10, true, true);
   private readonly ir3FaultFlipFlop = new NXLogicMemoryNode(false);
 
-  private readonly ir3UsedLeft = Subject.create(false);
-  private readonly ir3Used = Subject.create(false);
+  private ir3UsedLeft = false;
+  private ir3Used = false;
 
   private readonly ir1FaultActive = Subject.create(false);
   private readonly ir2FaultActive = Subject.create(false);
@@ -1468,13 +1468,9 @@ export class PseudoFWC {
   private readonly ir2and3FaultActive = Subject.create(false);
 
   private readonly adr3FaultFlipFlop = new NXLogicMemoryNode(false);
-  private readonly adr3UsedLeft = Subject.create(false);
-  private readonly adr3UsedRight = Subject.create(false);
-  private readonly adr3Used = MappedSubject.create(
-    ([adr3UsedLeft, adr3UsedRight]) => adr3UsedLeft || adr3UsedRight,
-    this.adr3UsedLeft,
-    this.adr3UsedRight,
-  );
+  private adr3UsedLeft = false;
+  private adr3UsedRight = false;
+  private adr3Used = false;
 
   private readonly adr1FaultActive = Subject.create(false);
   private readonly adr2FaultActive = Subject.create(false);
@@ -4427,17 +4423,14 @@ export class PseudoFWC {
     const ir3FaultDetected = this.ir3FaultConf.read() || this.ir3FaultMtrig.read();
     this.ir3FaultFlipFlop.write(ir3FaultDetected && this.fwcFlightPhase.get() == 2, !ir3FaultDetected);
 
-    this.ir3UsedLeft.set(
+    this.ir3UsedLeft =
       this.dmcLeftDiscreteWord272.get().bitValueOr(11, false) &&
-        this.dmcLeftDiscreteWord272.get().bitValueOr(12, false),
-    );
+      this.dmcLeftDiscreteWord272.get().bitValueOr(12, false);
+    const ir3UsedRight =
+      this.dmcRightDiscreteWord272.get().bitValueOr(11, false) &&
+      this.dmcRightDiscreteWord272.get().bitValueOr(12, false);
 
-    this.ir3Used.set(
-      (this.dmcLeftDiscreteWord272.get().bitValueOr(11, false) &&
-        this.dmcLeftDiscreteWord272.get().bitValueOr(12, false)) ||
-        (this.dmcRightDiscreteWord272.get().bitValueOr(11, false) &&
-          this.dmcRightDiscreteWord272.get().bitValueOr(12, false)),
-    );
+    this.ir3Used = this.ir3UsedLeft || ir3UsedRight;
 
     this.ir1and2FaultActive.set(ir1FaultDetected && ir2FaultDetected);
     this.ir2and3FaultActive.set(ir2FaultDetected && ir3FaultDetected && !this.elecEmergencyFor280Seconds.read());
@@ -4453,17 +4446,16 @@ export class PseudoFWC {
       ir3FaultDetected &&
         !(this.ir2and3FaultActive.get() || this.ir1and3FaultActive.get()) &&
         !this.elecEmergencyFor280Seconds.read() &&
-        (this.ir3FaultFlipFlop.read() || this.ir3Used.get() || this.fwcFlightPhase.get() != 3),
+        (this.ir3FaultFlipFlop.read() || this.ir3Used || this.fwcFlightPhase.get() != 3),
     );
 
-    this.adr3UsedLeft.set(
+    this.adr3UsedLeft =
       this.dmcLeftDiscreteWord272.get().bitValueOr(13, false) &&
-        this.dmcLeftDiscreteWord272.get().bitValueOr(14, false),
-    );
-    this.adr3UsedRight.set(
+      this.dmcLeftDiscreteWord272.get().bitValueOr(14, false);
+    this.adr3UsedRight =
       this.dmcRightDiscreteWord272.get().bitValueOr(13, false) &&
-        this.dmcRightDiscreteWord272.get().bitValueOr(14, false),
-    );
+      this.dmcRightDiscreteWord272.get().bitValueOr(14, false);
+    this.adr3Used = this.adr3UsedLeft || this.adr3UsedRight;
 
     const adr1Faulty = this.adr1DiscreteWord1.get().bitValueOr(13, true);
     const adr2Faulty =
@@ -4521,7 +4513,7 @@ export class PseudoFWC {
 
     this.adr3FaultActive.set(
       adr3Faulty &&
-        (this.adr3FaultFlipFlop.read() || this.adr3Used.get() || this.fwcFlightPhase.get() != 3) &&
+        (this.adr3FaultFlipFlop.read() || this.adr3Used || this.fwcFlightPhase.get() != 3) &&
         !(this.adr1and3FaultActive.get() || this.adr2and3FaultActive.get()) &&
         !this.adr1and2and3FaultActive.get() &&
         !(this.flightPhase110.get() || this.sdac00201Word.bitValue(20)),
@@ -6909,11 +6901,7 @@ export class PseudoFWC {
       // ADR 1 FAULT
       flightPhaseInhib: [1, 4, 8, 10],
       simVarIsActive: this.adr1FaultActive,
-      whichCodeToReturn: () => [
-        0,
-        !this.adr3Used.get() ? 1 : null,
-        !this.adr1DiscreteWord1.get().isInvalid() ? 2 : null,
-      ],
+      whichCodeToReturn: () => [0, !this.adr3Used ? 1 : null, !this.adr1DiscreteWord1.get().isInvalid() ? 2 : null],
       codesToReturn: ['340001001', '340001002', '340001003'],
       memoInhibit: () => false,
       failure: 2,
@@ -6924,12 +6912,7 @@ export class PseudoFWC {
       // ADR 2 FAULT
       flightPhaseInhib: [1, 4, 8, 10],
       simVarIsActive: this.adr2FaultActive,
-      whichCodeToReturn: () => [
-        0,
-        !this.adr3Used.get() ? 1 : null,
-        !this.adr2DiscreteWord1.get().isInvalid() ? 2 : null,
-        3,
-      ],
+      whichCodeToReturn: () => [0, !this.adr3Used ? 1 : null, !this.adr2DiscreteWord1.get().isInvalid() ? 2 : null, 3],
       codesToReturn: ['340002001', '340002002', '340002003', '340002004'],
       memoInhibit: () => false,
       failure: 2,
@@ -6942,7 +6925,7 @@ export class PseudoFWC {
       simVarIsActive: this.adr1and2FaultActive,
       whichCodeToReturn: () => [
         0,
-        !this.adr3UsedLeft.get() ? 1 : null,
+        !this.adr3UsedLeft ? 1 : null,
         !this.adr1DiscreteWord1.get().isInvalid() ? 2 : null,
         !this.adr2DiscreteWord1.get().isInvalid() ? 3 : null,
       ],
@@ -6958,7 +6941,7 @@ export class PseudoFWC {
       simVarIsActive: this.adr1and3FaultActive,
       whichCodeToReturn: () => [
         0,
-        this.adr3Used.get() ? 1 : null,
+        this.adr3Used ? 1 : null,
         null,
         !this.adr1DiscreteWord1.get().isInvalid() ? 3 : null,
         !this.adr3DiscreteWord1.get().isInvalid() ? 4 : null,
@@ -6975,7 +6958,7 @@ export class PseudoFWC {
       simVarIsActive: this.adr2and3FaultActive,
       whichCodeToReturn: () => [
         0,
-        this.adr3Used.get() ? 1 : null,
+        this.adr3Used ? 1 : null,
         null,
         !this.adr2DiscreteWord1.get().isInvalid() ? 3 : null,
         !this.adr3DiscreteWord1.get().isInvalid() ? 4 : null,
@@ -6990,11 +6973,7 @@ export class PseudoFWC {
       // ADR 3 FAULT
       flightPhaseInhib: [1, 4, 5, 7, 8, 10],
       simVarIsActive: this.adr3FaultActive,
-      whichCodeToReturn: () => [
-        0,
-        this.adr3Used.get() ? 1 : null,
-        !this.adr3DiscreteWord1.get().isInvalid() ? 2 : null,
-      ],
+      whichCodeToReturn: () => [0, this.adr3Used ? 1 : null, !this.adr3DiscreteWord1.get().isInvalid() ? 2 : null],
       codesToReturn: ['340004001', '340004002', '340004003'],
       memoInhibit: () => false,
       failure: 2,
@@ -7046,7 +7025,7 @@ export class PseudoFWC {
       // IR 1 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.ir1FaultActive,
-      whichCodeToReturn: () => [0, !this.ir3Used.get() ? 1 : null, null],
+      whichCodeToReturn: () => [0, !this.ir3Used ? 1 : null, null],
       codesToReturn: ['340005001', '340005002', '340005003'],
       memoInhibit: () => false,
       failure: 2,
@@ -7057,7 +7036,7 @@ export class PseudoFWC {
       // IR 2 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: this.ir2FaultActive,
-      whichCodeToReturn: () => [0, !this.ir3Used.get() ? 1 : null, null],
+      whichCodeToReturn: () => [0, !this.ir3Used ? 1 : null, null],
       codesToReturn: ['340006001', '340006002', '340006003'],
       memoInhibit: () => false,
       failure: 2,
@@ -7068,7 +7047,7 @@ export class PseudoFWC {
       // IR 1+2 FAULT
       flightPhaseInhib: [4, 7],
       simVarIsActive: this.ir1and2FaultActive,
-      whichCodeToReturn: () => [0, !this.ir3UsedLeft.get() ? 1 : null],
+      whichCodeToReturn: () => [0, !this.ir3UsedLeft ? 1 : null],
       codesToReturn: ['340006501', '340006502'],
       memoInhibit: () => false,
       failure: 2,
@@ -7079,7 +7058,7 @@ export class PseudoFWC {
       // IR 1+3 FAULT
       flightPhaseInhib: [4, 8],
       simVarIsActive: this.ir1and3FaultActive,
-      whichCodeToReturn: () => [0, this.ir3Used.get() ? 1 : null],
+      whichCodeToReturn: () => [0, this.ir3Used ? 1 : null],
       codesToReturn: ['340007001', '340007002'],
       memoInhibit: () => false,
       failure: 2,
@@ -7090,7 +7069,7 @@ export class PseudoFWC {
       // IR 2+3 FAULT
       flightPhaseInhib: [4, 8],
       simVarIsActive: this.ir2and3FaultActive,
-      whichCodeToReturn: () => [0, this.ir3Used.get() ? 1 : null],
+      whichCodeToReturn: () => [0, this.ir3Used ? 1 : null],
       codesToReturn: ['340007501', '340007502'],
       memoInhibit: () => false,
       failure: 2,
