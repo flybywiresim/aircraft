@@ -19,6 +19,7 @@ import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
 import { EnginePublisher, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusPublisher } from '@shared/publishers/A32NXFGBusPublisher';
+import { A32NXSfccBusPublisher } from '@shared/publishers/A32NXSfccBusPublisher';
 
 export class McduFsInstrument implements FsInstrument {
   private static readonly INIT_DURATION = 1000;
@@ -44,6 +45,7 @@ export class McduFsInstrument implements FsInstrument {
 
   private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
   private readonly fgBusPublisher = new A32NXFgBusPublisher(this.bus);
+  private readonly sfccBusPublisher = new A32NXSfccBusPublisher(this.bus);
 
   /**
    * Creates a new instance of FsInstrument.
@@ -61,7 +63,7 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
     this.backplane.addPublisher('fgBus', this.fgBusPublisher);
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
-
+    this.backplane.addPublisher('SfccBus', this.sfccBusPublisher);
     this.doInit();
   }
 
