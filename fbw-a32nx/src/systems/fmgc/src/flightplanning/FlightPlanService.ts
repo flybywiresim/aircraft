@@ -221,6 +221,24 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.active.fixInfos = fixInfos;
   }
 
+  /**
+   * Repositions the pending DIR TO turning point (T-P) of the temporary flight plan to the
+   * current aircraft position and track, so the dashed T/P preview on the ND follows the
+   * aircraft while the temporary flight plan is displayed.
+   * @returns true if a pending turning point was updated.
+   */
+  updatePendingDirectToTurningPoint(): boolean {
+    if (!this.hasTemporary) {
+      return false;
+    }
+
+    const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
+    const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+    const trueTrack: number = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', SimVarValueType.Degree);
+
+    return this.flightPlanManager.get(FlightPlanIndex.Temporary).updateTurningPoint({ lat, long }, trueTrack);
+  }
+
   async temporaryInsert(): Promise<void> {
     const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 

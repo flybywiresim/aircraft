@@ -810,6 +810,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (this.fmsUpdateThrottler.canUpdate(deltaTime) !== -1) {
+      this.flightPlanService.updatePendingDirectToTurningPoint();
       this.checkSpeedLimit();
       this.navigation.update(deltaTime);
       this.getGW();
