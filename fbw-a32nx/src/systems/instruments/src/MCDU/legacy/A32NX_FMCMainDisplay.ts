@@ -107,7 +107,6 @@ import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
-import { A32NXSfccBusEvents } from '@shared/publishers/A32NXSfccBusPublisher';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -137,9 +136,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
-  protected readonly sub = this.bus.getSubscriber<
-    ClockEvents & EngineOutEvents & A32NXFcuBusEvents & A32NXSfccBusEvents
-  >();
+  protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
   private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
