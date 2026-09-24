@@ -30,7 +30,6 @@ import {
   Waypoint,
   MagVar,
   Arinc429Register,
-  Arinc429WordData,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -115,6 +114,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private static readonly MMO = 0.8;
   private static readonly VMO = 340;
+
+  private static readonly flapHandleIndex = RegisteredSimVar.create<number>(
+    'L:A32NX_FLAPS_HANDLE_INDEX',
+    SimVarValueType.Enum,
+  ); // FIXME: FMGC should get this info from FAC
 
   private static readonly Vmax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
 
@@ -457,22 +461,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly approachVapp = Subject.create<number | null>(null);
 
   private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
-
-  private readonly sfccStatusSlatFlapStatus1 = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXSfccBusEvents>().on('a32nx_sfcc_1_slats_flaps_status'),
-  );
-
-  private readonly sfccStatusSlatFlapStatus2 = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<A32NXSfccBusEvents>().on('a32nx_sfcc_2_slats_flaps_status'),
-  );
-
-  private readonly flapPosition = MappedSubject.create(
-    ([sfcc1, sfcc2]) => {
-      return this.mapFlapLeverPositionFromSfcc(sfcc1, sfcc2);
-    },
-    this.sfccStatusSlatFlapStatus1,
-    this.sfccStatusSlatFlapStatus2,
-  );
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -1320,7 +1308,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private getManagedTargets(speedKnots: number, mach: number) {
     //const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
     const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', mach);
-    return speedKnots > vM ? [vM, true] : [mach, false];
+    return speedKnots > vM ? [vM, true] : [speedKnots, false];
   }
 
   private updateManagedSpeeds() {
@@ -1341,7 +1329,34 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.updateHoldingSpeed();
     this.clearCheckSpeedModeMessage();
 
-    if (this.holdDecelReached) {
+    const fmDiscreteWord1 = this.fmgc1DiscreteWord1.get();
+    // Expedite
+    if (fmDiscreteWord1.bitValueOr(24, false)) {
+      // CLB
+      if (fmDiscreteWord1.bitValue(11)) {
+        let characteristicSpeed: number | undefined = undefined;
+        switch (FMCMainDisplay.flapHandleIndex.get()) {
+          // FIXME: Should use speeds from FAC?
+          case 0:
+            characteristicSpeed = this.computedVgd;
+            break;
+          case 1:
+            characteristicSpeed = this.computedVss;
+            break;
+          default:
+            characteristicSpeed = this.computedVfs;
+        }
+        if (characteristicSpeed) {
+          vPfd = characteristicSpeed;
+          isMach = false;
+        }
+        // DES
+      } else {
+        const cleanConfig = FMCMainDisplay.flapHandleIndex.get() === 0;
+        vPfd = cleanConfig ? FMCMainDisplay.VMO : FMCMainDisplay.Vmax.get() - 10;
+        isMach = cleanConfig ? this.getManagedTargets(FMCMainDisplay.VMO, FMCMainDisplay.MMO)[1] : false;
+      }
+    } else if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget;
     } else {
       if (this.setHoldSpeedMessageActive) {
@@ -1410,35 +1425,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setV1Speed(null, FlightPlanIndex.Active);
       this.setVrSpeed(null, FlightPlanIndex.Active);
       this.setV2Speed(null, FlightPlanIndex.Active);
-    }
-
-    const fmDiscreteWord1 = this.fmgc1DiscreteWord1.get();
-    // Expedite
-    if (fmDiscreteWord1.bitValueOr(24, false)) {
-      // CLB
-      if (fmDiscreteWord1.bitValue(11)) {
-        let characteristicSpeed: number | null = null;
-        switch (this.flapPosition.get()) {
-          // FIXME: Should use speeds from FAC?
-          case 0:
-            characteristicSpeed = this.computedVgd;
-            break;
-          case 1:
-            characteristicSpeed = this.computedVfs;
-            break;
-          default:
-            characteristicSpeed = this.computedVss;
-        }
-        if (characteristicSpeed) {
-          vPfd = this.computedVgd;
-          isMach = false;
-        }
-      } else {
-        const cleanConfig = this.flapPosition.get() === 0;
-        // DES
-        vPfd = cleanConfig ? FMCMainDisplay.VMO : FMCMainDisplay.Vmax.get() - 10;
-        isMach = cleanConfig ? this.getManagedTargets(FMCMainDisplay.VMO, FMCMainDisplay.MMO)[1] : false;
-      }
     }
 
     this.speedsManagedPfd.set(vPfd);
@@ -1845,7 +1831,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private getAppManagedSpeed() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    switch (this.flapPosition.get()) {
+    switch (FMCMainDisplay.flapHandleIndex.get()) {
       case 0:
         return this.computedVgd;
       case 1:
@@ -5970,21 +5956,5 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.updatePerfSpeeds();
     this.updateConstraints();
     this.updateManagedSpeed();
-  }
-
-  private mapFlapLeverPositionFromSfcc(sfcc1Status: Arinc429WordData, sfcc2Status: Arinc429WordData): number {
-    const sfccToUse = sfcc1Status.isInvalid() ? sfcc2Status : sfcc1Status;
-    if (!sfccToUse.isInvalid()) {
-      if (sfccToUse.bitValue(18)) {
-        return 1;
-      } else if (sfccToUse.bitValue(19)) {
-        return 2;
-      } else if (sfccToUse.bitValue(20)) {
-        return 3;
-      } else if (sfccToUse.bitValue(21)) {
-        return 4;
-      }
-    }
-    return 0;
   }
 }
