@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { Coordinates, Degrees } from 'msfs-geo';
+import { Coordinates, Degrees, distanceTo } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
@@ -259,6 +259,60 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     this.setActiveLegIndex(turnEndLegIndexInPlan);
+  }
+
+  /**
+   * Updates the position and course of a pending direct-to turning point (T-P) leg, if one exists.
+   *
+   * The turning point is only moved, and the plan version only bumped, if the aircraft has actually
+   * moved, so that geometry is not recomputed while the aircraft is stationary.
+   * @param ppos The present position of the aircraft.
+   * @param trueTrack The present true ground track of the aircraft, in degrees.
+   * @returns True if the turning point was updated, i.e. the plan was modified.
+   */
+  updateTurningPoint(ppos: Coordinates, trueTrack: Degrees): boolean {
+    const tpIndex = this.allLegs.findIndex(
+      (it) =>
+        it.isDiscontinuity === false &&
+        BitFlags.isAll(
+          it.flags,
+          FlightPlanLegFlags.DirectToTurningPoint | FlightPlanLegFlags.PendingDirectToTurningPoint,
+        ),
+    );
+    // No pending turning point, nothing to do
+    if (tpIndex === -1) {
+      return false;
+    }
+
+    const tpLeg = this.legElementAt(tpIndex);
+    const tpLocation = tpLeg.terminationWaypoint()?.location;
+
+    // If the aircraft has not moved at all since the last update, don't churn the plan version
+    // (and thereby force a geometry recompute) on every tick.
+    if (tpLocation !== undefined && distanceTo(ppos, tpLocation) < 0.01) {
+      return false;
+    }
+
+    const magVar = MagVar.get(ppos.lat, ppos.long);
+    const course = magVar === null ? trueTrack : MagVar.trueToMagnetic(trueTrack, magVar);
+
+    this.editLegDefinition(tpIndex, {
+      course,
+      magVar,
+      waypoint: {
+        ...tpLeg.definition.waypoint,
+        location: {
+          // TODO fm pos
+          lat: ppos.lat,
+          long: ppos.long,
+        },
+      } as Waypoint, // Needed to avoid type error with ElevatedCoordinates on Airport.
+    });
+
+    this.incrementVersion();
+    this.wasModified = true;
+
+    return true;
   }
 
   /**
