@@ -1106,8 +1106,6 @@ impl<AdrRuntime> SimulationElement for AirDataInertialReferenceUnit<AdrRuntime> 
             self.adr_bus_output_data.discrete_word_1,
         );
 
-        writer.write(&self.wind_speed, self.wind_speed_bcd());
-        writer.write(&self.wind_direction, self.wind_dir_true_bcd());
         writer.write(&self.pitch, self.pitch_angle());
         writer.write(&self.roll, self.roll_angle());
         writer.write(&self.heading, self.magnetic_heading());
@@ -1171,8 +1169,8 @@ impl<AdrRuntime> SimulationElement for AirDataInertialReferenceUnit<AdrRuntime> 
             |value| value.get::<foot_per_minute>(),
         );
         writer.write(&self.ground_speed, self.ground_speed());
-        writer.write(&self.wind_speed, self.wind_speed());
-        writer.write(&self.wind_direction, self.wind_dir_true());
+        writer.write(&self.wind_speed, self.wind_speed_bcd());
+        writer.write(&self.wind_direction, self.wind_dir_true_bcd());
         writer.write(&self.wind_speed_bnr, self.wind_speed());
         writer.write(&self.wind_direction_bnr, self.wind_dir_true());
         writer.write(&self.latitude, self.ppos_latitude());
