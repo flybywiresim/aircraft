@@ -22,6 +22,7 @@ import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -920,7 +921,7 @@ export class CDUWindPage {
       return null;
     }
 
-    if (altitude < 0 || altitude > 45000) {
+    if (altitude < 0 || altitude > FMCMainDisplay.maximumRecommendedCruiseFlightLevel * 100) {
       mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return null;
     }

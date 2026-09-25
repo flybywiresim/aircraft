@@ -167,7 +167,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /** Declaration of every variable used (NOT initialization) */
   private readonly maximumAllowedCruiseFlightLevel = 390;
-  private readonly maximumRecommendedCruiseFlightLevel = 398;
+  public static readonly maximumRecommendedCruiseFlightLevel = 398;
   public coRoute = { routeNumber: undefined, routes: undefined };
 
   private readonly fuelComputationsCache: Map<FlightPlanIndex, FuelPredComputations> = new Map();
@@ -4438,7 +4438,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   //TODO: can this be an util? no
   public getMaxFlCorrected(): number | null {
     const maxFl = this.getMaxFL();
-    return maxFl !== null ? Math.min(maxFl, this.maximumRecommendedCruiseFlightLevel) : null;
+    return maxFl !== null ? Math.min(maxFl, FMCMainDisplay.maximumRecommendedCruiseFlightLevel) : null;
   }
 
   // only used by trySetMinDestFob
@@ -5474,7 +5474,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           plan,
           this.flightPhaseManager.phase,
           FpmConfigs.A320_HONEYWELL_H4,
-          this.maximumRecommendedCruiseFlightLevel,
+          FMCMainDisplay.maximumRecommendedCruiseFlightLevel,
         );
 
         this.addMessageToQueue(
