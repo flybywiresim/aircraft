@@ -2131,20 +2131,21 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   real_T limit;
   real_T rtb_AP_e;
   real_T rtb_Add1_d;
-  real_T rtb_Cos1_fv;
-  real_T rtb_Cos1_np;
+  real_T rtb_Cos1_aq;
+  real_T rtb_Cos1_c;
+  real_T rtb_Cos1_ik;
   real_T rtb_Cos_n;
   real_T rtb_Divide_dr;
   real_T rtb_Divide_mx;
   real_T rtb_FD_jv;
-  real_T rtb_Gain1_da;
   real_T rtb_Gain1_dd;
+  real_T rtb_Gain1_ot;
   real_T rtb_Gain4;
   real_T rtb_Gain5_c;
-  real_T rtb_Gain_g1;
-  real_T rtb_Gain_gr;
-  real_T rtb_Gain_ny;
-  real_T rtb_Gain_pq;
+  real_T rtb_Gain_d;
+  real_T rtb_Gain_gz;
+  real_T rtb_Gain_hg;
+  real_T rtb_Gain_o1;
   real_T rtb_ManualSwitch;
   real_T rtb_MaxH_dot_RA1;
   real_T rtb_Mod1;
@@ -2194,12 +2195,12 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
 
   rtb_Compare = (rtb_ManualSwitch == A380FgOuterLoops_rtP.CompareToConstant2_const);
   if (rtb_Mod1 < rtb_Mod2) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain1_Gain * rtb_Mod1;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain1_Gain * rtb_Mod1;
   } else {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain_Gain * rtb_Mod2;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain_Gain * rtb_Mod2;
   }
 
-  rtb_Mod1 = std::abs(rtb_Cos1_np);
+  rtb_Mod1 = std::abs(rtb_Cos1_c);
   if (!A380FgOuterLoops_DWork.limit_not_empty) {
     A380FgOuterLoops_DWork.limit = rtb_Mod1;
     A380FgOuterLoops_DWork.limit_not_empty = true;
@@ -2215,14 +2216,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
 
   A380FgOuterLoops_MATLABFunction(A380FgOuterLoops_rtP.tau_Value, A380FgOuterLoops_rtP.zeta_Value, &rtb_Mod2, &rtb_Y_nu);
   if (rtu_in->data.nav_dme_nmi > A380FgOuterLoops_rtP.Saturation_UpperSat_f) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_UpperSat_f;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_UpperSat_f;
   } else if (rtu_in->data.nav_dme_nmi < A380FgOuterLoops_rtP.Saturation_LowerSat_eg) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_LowerSat_eg;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_LowerSat_eg;
   } else {
-    rtb_Cos1_np = rtu_in->data.nav_dme_nmi;
+    rtb_Cos1_c = rtu_in->data.nav_dme_nmi;
   }
 
-  rtb_Mod1 = std::sin(A380FgOuterLoops_rtP.Gain1_Gain_ek * rtu_in->data.nav_loc_error_deg) * rtb_Cos1_np *
+  rtb_Mod1 = std::sin(A380FgOuterLoops_rtP.Gain1_Gain_ek * rtu_in->data.nav_loc_error_deg) * rtb_Cos1_c *
     A380FgOuterLoops_rtP.Gain_Gain_o * rtb_Y_nu / rtu_in->data.V_gnd_kn;
   rtb_Mod1_g = rt_modd((rtu_in->data.Chi_true_deg - (rt_modd(rt_modd(rtu_in->data.nav_loc_error_deg + rtb_Y_f,
     A380FgOuterLoops_rtP.Constant3_Value_a) + A380FgOuterLoops_rtP.Constant3_Value_a,
@@ -2236,12 +2237,12 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   }
 
   if (rtb_Mod1_g < rtb_Y_nu) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain1_Gain_n * rtb_Mod1_g;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain1_Gain_n * rtb_Mod1_g;
   } else {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain_Gain_l * rtb_Y_nu;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain_Gain_l * rtb_Y_nu;
   }
 
-  rtb_Mod1_g = (A380FgOuterLoops_rtP.Gain2_Gain_b * rtb_Cos1_np + rtb_Mod1) * rtb_Mod2 * rtu_in->data.V_gnd_kn;
+  rtb_Mod1_g = (A380FgOuterLoops_rtP.Gain2_Gain_b * rtb_Cos1_c + rtb_Mod1) * rtb_Mod2 * rtu_in->data.V_gnd_kn;
   A380FgOuterLoops_RateLimiter_e((rtb_ManualSwitch == A380FgOuterLoops_rtP.CompareToConstant1_const),
     A380FgOuterLoops_rtP.RateLimiterVariableTs_up, A380FgOuterLoops_rtP.RateLimiterVariableTs_lo, rtu_in->time.dt,
     A380FgOuterLoops_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_nu, &A380FgOuterLoops_DWork.sf_RateLimiter_e);
@@ -2260,13 +2261,13 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     - rtb_Mod2, A380FgOuterLoops_rtP.Constant3_Value_m), A380FgOuterLoops_rtP.Constant2_Value_a, &rtb_out_e,
     &A380FgOuterLoops_DWork.sf_Chart_k);
   if (rtu_in->data.H_radio_ft <= A380FgOuterLoops_rtP.CompareToConstant_const) {
-    rtb_Cos1_np = (A380FgOuterLoops_rtP.Gain_Gain_e * rtb_out_e + A380FgOuterLoops_rtP.Gain1_Gain_i *
-                   rtu_in->data.beta_deg) * A380FgOuterLoops_rtP.Gain5_Gain;
+    rtb_Cos1_c = (A380FgOuterLoops_rtP.Gain_Gain_e * rtb_out_e + A380FgOuterLoops_rtP.Gain1_Gain_i *
+                  rtu_in->data.beta_deg) * A380FgOuterLoops_rtP.Gain5_Gain;
   } else {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Constant1_Value;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Constant1_Value;
   }
 
-  A380FgOuterLoops_LagFilter(rtb_Cos1_np, A380FgOuterLoops_rtP.LagFilter1_C1, rtu_in->time.dt, &rtb_Y_ex,
+  A380FgOuterLoops_LagFilter(rtb_Cos1_c, A380FgOuterLoops_rtP.LagFilter1_C1, rtu_in->time.dt, &rtb_Y_ex,
     &A380FgOuterLoops_DWork.sf_LagFilter_a);
   if (rtb_Y_ex > A380FgOuterLoops_rtP.Saturation_UpperSat_g) {
     rtb_Y_ex = A380FgOuterLoops_rtP.Saturation_UpperSat_g;
@@ -2389,12 +2390,12 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
                        A380FgOuterLoops_rtP.Constant3_Value);
     rtb_Divide_mx = rt_modd(A380FgOuterLoops_rtP.Constant3_Value - rtb_Mod2, A380FgOuterLoops_rtP.Constant3_Value);
     if (rtb_Mod2 < rtb_Divide_mx) {
-      rtb_Cos1_np = A380FgOuterLoops_rtP.Gain1_Gain_k * rtb_Mod2;
+      rtb_Cos1_c = A380FgOuterLoops_rtP.Gain1_Gain_k * rtb_Mod2;
     } else {
-      rtb_Cos1_np = A380FgOuterLoops_rtP.Gain_Gain_h * rtb_Divide_mx;
+      rtb_Cos1_c = A380FgOuterLoops_rtP.Gain_Gain_h * rtb_Divide_mx;
     }
 
-    rtb_Mod2 = rt_modd((rt_modd(rt_modd(rtu_in->data.Psi_magnetic_track_deg + rtb_Cos1_np,
+    rtb_Mod2 = rt_modd((rt_modd(rt_modd(rtu_in->data.Psi_magnetic_track_deg + rtb_Cos1_c,
       A380FgOuterLoops_rtP.Constant3_Value_i) + A380FgOuterLoops_rtP.Constant3_Value_i,
       A380FgOuterLoops_rtP.Constant3_Value_i) - (rtb_Mod2_k + A380FgOuterLoops_rtP.Constant3_Value_o)) +
                        A380FgOuterLoops_rtP.Constant3_Value_o, A380FgOuterLoops_rtP.Constant3_Value_o);
@@ -2406,16 +2407,16 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     }
 
     if (rtb_Mod2 < rtb_Mod2_k) {
-      rtb_Cos1_np = A380FgOuterLoops_rtP.Gain1_Gain_e * rtb_Mod2;
+      rtb_Cos1_c = A380FgOuterLoops_rtP.Gain1_Gain_e * rtb_Mod2;
     } else {
-      rtb_Cos1_np = A380FgOuterLoops_rtP.Gain_Gain_j * rtb_Mod2_k;
+      rtb_Cos1_c = A380FgOuterLoops_rtP.Gain_Gain_j * rtb_Mod2_k;
     }
 
     rtb_Sum_d = (rtb_Y_n * look1_binlxpw(rtu_in->data.V_tas_kn,
       A380FgOuterLoops_rtP.ScheduledGain2_BreakpointsForDimension1, A380FgOuterLoops_rtP.ScheduledGain2_Table, 6U) *
                  A380FgOuterLoops_rtP.Gain4_Gain * look1_binlxpw(rtu_in->data.H_radio_ft,
       A380FgOuterLoops_rtP.ScheduledGain_BreakpointsForDimension1, A380FgOuterLoops_rtP.ScheduledGain_Table, 5U) + std::
-                 sin(A380FgOuterLoops_rtP.Gain1_Gain_c * rtb_Cos1_np) * rtu_in->data.V_gnd_kn *
+                 sin(A380FgOuterLoops_rtP.Gain1_Gain_c * rtb_Cos1_c) * rtu_in->data.V_gnd_kn *
                  A380FgOuterLoops_rtP.Gain2_Gain_n) + (rtu_in->data.beta_deg * look1_binlxpw(rtu_in->data.H_radio_ft,
       A380FgOuterLoops_rtP.ScheduledGain1_BreakpointsForDimension1, A380FgOuterLoops_rtP.ScheduledGain1_Table, 4U) +
       rtb_Y_ex * look1_binlxpw(rtu_in->data.H_radio_ft, A380FgOuterLoops_rtP.ScheduledGain3_BreakpointsForDimension1,
@@ -2494,14 +2495,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_rtP.LagFilter_C1_n, rtu_in->time.dt, &rtb_Y_b, &A380FgOuterLoops_DWork.sf_LagFilter_f);
   rtb_BusAssignment.output.flight_director.Phi_c_deg = A380FgOuterLoops_rtP.Gain_Gain_on * rtb_Y_b;
   if (rtu_in->data.nav_dme_nmi > A380FgOuterLoops_rtP.Saturation_UpperSat_n) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_UpperSat_n;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_UpperSat_n;
   } else if (rtu_in->data.nav_dme_nmi < A380FgOuterLoops_rtP.Saturation_LowerSat_i) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_LowerSat_i;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_LowerSat_i;
   } else {
-    rtb_Cos1_np = rtu_in->data.nav_dme_nmi;
+    rtb_Cos1_c = rtu_in->data.nav_dme_nmi;
   }
 
-  rtb_Switch1_b = std::sin(A380FgOuterLoops_rtP.Gain1_Gain_iy * rtu_in->data.nav_loc_error_deg) * rtb_Cos1_np *
+  rtb_Switch1_b = std::sin(A380FgOuterLoops_rtP.Gain1_Gain_iy * rtu_in->data.nav_loc_error_deg) * rtb_Cos1_c *
     A380FgOuterLoops_rtP.Gain2_Gain_f;
   if (rtb_Switch1_b > A380FgOuterLoops_rtP.Saturation1_UpperSat_k) {
     rtb_Switch1_b = A380FgOuterLoops_rtP.Saturation1_UpperSat_k;
@@ -2532,14 +2533,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
                      A380FgOuterLoops_rtP.Constant3_Value_e, A380FgOuterLoops_rtP.Constant3_Value_e);
   rtb_Y_nu = rt_modd(A380FgOuterLoops_rtP.Constant3_Value_e - rtb_Mod2, A380FgOuterLoops_rtP.Constant3_Value_e);
   if (rtb_Mod2 < rtb_Y_nu) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain1_Gain_a * rtb_Mod2;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain1_Gain_a * rtb_Mod2;
   } else {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Gain_Gain_g * rtb_Y_nu;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Gain_Gain_g * rtb_Y_nu;
   }
 
   rtb_Mod2 = rt_modd((rt_modd(rt_modd(((rtb_Switch1_b * look1_binlxpw(rtu_in->data.V_gnd_kn,
     A380FgOuterLoops_rtP.ScheduledGain_BreakpointsForDimension1_ia, A380FgOuterLoops_rtP.ScheduledGain_Table_ak, 2U) +
-    A380FgOuterLoops_DWork.Delay_DSTATE_p) + A380FgOuterLoops_rtP.Gain1_Gain_ke * rtb_Cos1_np) +
+    A380FgOuterLoops_DWork.Delay_DSTATE_p) + A380FgOuterLoops_rtP.Gain1_Gain_ke * rtb_Cos1_c) +
     rtu_in->data.Psi_true_deg, A380FgOuterLoops_rtP.Constant3_Value_k) + A380FgOuterLoops_rtP.Constant3_Value_k,
     A380FgOuterLoops_rtP.Constant3_Value_k) - (rtu_in->data.Psi_true_deg + A380FgOuterLoops_rtP.Constant3_Value_lz)) +
                      A380FgOuterLoops_rtP.Constant3_Value_lz, A380FgOuterLoops_rtP.Constant3_Value_lz);
@@ -2619,27 +2620,27 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
 
   switch (static_cast<int32_T>(rtb_ManualSwitch)) {
    case 0:
-    rtb_Mod2_k = A380FgOuterLoops_rtP.beta_Value;
+    rtb_Divide_mx = A380FgOuterLoops_rtP.beta_Value;
     break;
 
    case 1:
-    rtb_Mod2_k = A380FgOuterLoops_rtP.beta_Value_j;
+    rtb_Divide_mx = A380FgOuterLoops_rtP.beta_Value_j;
     break;
 
    case 2:
-    rtb_Mod2_k = A380FgOuterLoops_rtP.beta_Value_h;
+    rtb_Divide_mx = A380FgOuterLoops_rtP.beta_Value_h;
     break;
 
    case 3:
-    rtb_Mod2_k = A380FgOuterLoops_rtP.beta_Value_jb;
+    rtb_Divide_mx = A380FgOuterLoops_rtP.beta_Value_jb;
     break;
 
    case 4:
-    rtb_Mod2_k = A380FgOuterLoops_rtP.beta_Value_k;
+    rtb_Divide_mx = A380FgOuterLoops_rtP.beta_Value_k;
     break;
 
    case 5:
-    rtb_Mod2_k = rtb_Y_ex;
+    rtb_Divide_mx = rtb_Y_ex;
     break;
 
    default:
@@ -2649,12 +2650,12 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
       rtb_Y_nu = A380FgOuterLoops_rtP.Saturation_LowerSat_g;
     }
 
-    rtb_Mod2_k = A380FgOuterLoops_rtP.Gain7_Gain * rtb_Mod2 * rtb_Y_nu + (A380FgOuterLoops_rtP.Constant_Value_j -
+    rtb_Divide_mx = A380FgOuterLoops_rtP.Gain7_Gain * rtb_Mod2 * rtb_Y_nu + (A380FgOuterLoops_rtP.Constant_Value_j -
       rtb_Y_nu) * A380FgOuterLoops_DWork.storage;
     break;
   }
 
-  A380FgOuterLoops_LagFilter(rtb_Mod2_k, A380FgOuterLoops_rtP.LagFilter_C1_c, rtu_in->time.dt, &rtb_Y_n,
+  A380FgOuterLoops_LagFilter(rtb_Divide_mx, A380FgOuterLoops_rtP.LagFilter_C1_c, rtu_in->time.dt, &rtb_Y_n,
     &A380FgOuterLoops_DWork.sf_LagFilter_n);
   A380FgOuterLoops_DWork.icLoad = ((!rtu_in->input.ap_engaged) || A380FgOuterLoops_DWork.icLoad);
   if (A380FgOuterLoops_DWork.icLoad) {
@@ -2668,13 +2669,13 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   }
 
   if ((rtu_in->input.lateral_law == 4.0) || (rtu_in->input.lateral_law == 5.0) || (rtu_in->input.lateral_law == 6.0)) {
-    rtb_Cos1_np = 7.5;
+    rtb_Cos1_c = 7.5;
   } else {
-    rtb_Cos1_np = 5.0;
+    rtb_Cos1_c = 5.0;
   }
 
-  A380FgOuterLoops_DWork.pY += std::fmax(std::fmin(rtb_Cos1_np - A380FgOuterLoops_DWork.pY, 2.5 * rtu_in->time.dt), -2.5
-    * rtu_in->time.dt);
+  A380FgOuterLoops_DWork.pY += std::fmax(std::fmin(rtb_Cos1_c - A380FgOuterLoops_DWork.pY, 2.5 * rtu_in->time.dt), -2.5 *
+    rtu_in->time.dt);
   A380FgOuterLoops_DWork.Delay_DSTATE_f += std::fmax(std::fmin(rtb_Sum_d, A380FgOuterLoops_DWork.pY * rtu_in->time.dt),
     A380FgOuterLoops_rtP.Gain1_Gain_p * A380FgOuterLoops_DWork.pY * rtu_in->time.dt);
   A380FgOuterLoops_LagFilter(A380FgOuterLoops_DWork.Delay_DSTATE_f, A380FgOuterLoops_rtP.LagFilter_C1_m, rtu_in->time.dt,
@@ -2709,6 +2710,8 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_BusAssignment.output.alt_star_debug.H_dot_c_ft_min = 0.0;
   rtb_BusAssignment.output.alt_star_debug.AP_theta_c_raw = 0.0;
   rtb_BusAssignment.output.alt_star_debug.AP_theta_c_prot = 0.0;
+  rtb_BusAssignment.output.alt_star_debug.FD_theta_c_raw = 0.0;
+  rtb_BusAssignment.output.alt_star_debug.FD_theta_c_prot = 0.0;
   rtb_BusAssignment.output.Phi_loc_c = rtb_Mod1_g;
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain_Gain_ll * rtb_Sum2_c;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_b) {
@@ -2720,15 +2723,15 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   }
 
   rtb_BusAssignment.output.flight_director.Beta_c_deg = rtb_Y_n;
-  rtb_BusAssignment.output.autopilot.Beta_c_deg = rtb_Mod2_k;
+  rtb_BusAssignment.output.autopilot.Beta_c_deg = rtb_Divide_mx;
   rtb_BusAssignment.output.autopilot.Phi_c_deg = (A380FgOuterLoops_rtP.Constant_Value_h - rtb_Switch1_b) *
     rtu_in->data.Phi_deg + rtb_Y_ex * rtb_Switch1_b;
   A380FgOuterLoops_WashoutFilter(rtu_in->data.Theta_deg, A380FgOuterLoops_rtP.WashoutFilter_C1, rtu_in->time.dt,
     &rtb_Mod2, &A380FgOuterLoops_DWork.sf_WashoutFilter_hj);
   if (A380FgOuterLoops_rtP.ManualSwitch_CurrentSetting_o == 1) {
-    rtb_Y_nu = A380FgOuterLoops_rtP.Constant_Value_kr;
+    rtb_Mod2_k = A380FgOuterLoops_rtP.Constant_Value_kr;
   } else {
-    rtb_Y_nu = rtu_in->input.vertical_law;
+    rtb_Mod2_k = rtu_in->input.vertical_law;
   }
 
   if (rtu_in->input.ALT_soft_mode_active) {
@@ -2742,7 +2745,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum2_c = A380FgOuterLoops_rtP.Constant1_Value_b;
   }
 
-  if (rtb_Y_nu != A380FgOuterLoops_rtP.CompareToConstant5_const_k) {
+  if (rtb_Mod2_k != A380FgOuterLoops_rtP.CompareToConstant5_const_k) {
     A380FgOuterLoops_B.u = (rtu_in->input.H_c_ft + rtu_in->data.H_ft) - rtu_in->data.H_ind_ft;
   }
 
@@ -2769,8 +2772,8 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum_d = -1.0;
   }
 
-  rtb_Sum_p = A380FgOuterLoops_rtP.Gain_Gain_gp * std::asin(rtb_Sum_d);
-  rtb_Delay_l = (rtb_Y_nu == A380FgOuterLoops_rtP.CompareToConstant1_const_a);
+  rtb_Gain_d = A380FgOuterLoops_rtP.Gain_Gain_gp * std::asin(rtb_Sum_d);
+  rtb_Delay_l = (rtb_Mod2_k == A380FgOuterLoops_rtP.CompareToConstant1_const_a);
   if (!A380FgOuterLoops_DWork.wasActive_not_empty_h) {
     A380FgOuterLoops_DWork.wasActive_a = rtb_Delay_l;
     A380FgOuterLoops_DWork.wasActive_not_empty_h = true;
@@ -2825,8 +2828,8 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum_d = -1.0;
   }
 
-  rtb_Divide_dr = A380FgOuterLoops_rtP.Gain_Gain_jz * std::asin(rtb_Sum_d);
-  rtb_Mod1_g = A380FgOuterLoops_rtP.VS_Gain * rtb_Divide_dr;
+  rtb_Mod1_g = A380FgOuterLoops_rtP.Gain_Gain_jz * std::asin(rtb_Sum_d);
+  rtb_Y_nu = A380FgOuterLoops_rtP.VS_Gain * rtb_Mod1_g;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_dv * rtu_in->data.V_gnd_kn;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_d) {
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_UpperSat_d;
@@ -2861,30 +2864,30 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_rtP.LowPassFilter_C4, rtu_in->time.dt, &rtb_Y_b, &A380FgOuterLoops_DWork.sf_LeadLagFilter_n);
   rtb_Switch1_b = (rtb_Y_ex + rtb_Y_b) * A380FgOuterLoops_rtP.ug_Gain;
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain1_Gain_b5 * rtb_Sum2_c;
-  rtb_Divide_mx = rtb_Switch1_b + rtb_Sum_d;
-  rtb_lo = A380FgOuterLoops_rtP.Constant3_Value_lq - A380FgOuterLoops_rtP.Constant4_Value;
-  rtb_Gain_pq = (A380FgOuterLoops_rtP.Gain1_Gain_ac * rtb_Switch1_b + rtb_Sum_d) * A380FgOuterLoops_rtP.Gain_Gain_py;
-  if (rtb_lo > A380FgOuterLoops_rtP.Switch_Threshold_c) {
+  rtb_Divide_dr = rtb_Switch1_b + rtb_Sum_d;
+  rtb_Sum_p = A380FgOuterLoops_rtP.Constant3_Value_lq - A380FgOuterLoops_rtP.Constant4_Value;
+  rtb_lo = (A380FgOuterLoops_rtP.Gain1_Gain_ac * rtb_Switch1_b + rtb_Sum_d) * A380FgOuterLoops_rtP.Gain_Gain_py;
+  if (rtb_Sum_p > A380FgOuterLoops_rtP.Switch_Threshold_c) {
     rtb_Switch1_b = A380FgOuterLoops_rtP.Constant1_Value_h;
   } else {
-    rtb_Switch1_b = A380FgOuterLoops_rtP.Gain5_Gain_o * rtb_Gain_pq;
+    rtb_Switch1_b = A380FgOuterLoops_rtP.Gain5_Gain_o * rtb_lo;
   }
 
   A380FgOuterLoops_V_LSSpeedSelection1(rtu_in->input.V_c_kn, rtu_in->data.VLS_kn, &rtb_Y_b);
-  rtb_Y_ex = (rtu_in->data.V_ias_kn - rtb_Y_b) * A380FgOuterLoops_rtP.Gain1_Gain_jd;
-  if (rtb_Y_ex <= rtb_Switch1_b) {
-    if (rtb_lo > A380FgOuterLoops_rtP.Switch1_Threshold) {
+  rtb_Gain1_ot = (rtu_in->data.V_ias_kn - rtb_Y_b) * A380FgOuterLoops_rtP.Gain1_Gain_jd;
+  if (rtb_Gain1_ot <= rtb_Switch1_b) {
+    if (rtb_Sum_p > A380FgOuterLoops_rtP.Switch1_Threshold) {
       rtb_Switch1_b = A380FgOuterLoops_rtP.Constant_Value_d;
     } else {
-      rtb_Switch1_b = A380FgOuterLoops_rtP.Gain6_Gain * rtb_Gain_pq;
+      rtb_Switch1_b = A380FgOuterLoops_rtP.Gain6_Gain * rtb_lo;
     }
 
-    if (rtb_Y_ex >= rtb_Switch1_b) {
-      rtb_Switch1_b = rtb_Y_ex;
+    if (rtb_Gain1_ot >= rtb_Switch1_b) {
+      rtb_Switch1_b = rtb_Gain1_ot;
     }
   }
 
-  rtb_Gain_pq = (A380FgOuterLoops_rtP.Gain_Gain_b0 * rtb_Divide_mx - rtb_Sum2_c) + rtb_Switch1_b;
+  rtb_Divide_dr = (A380FgOuterLoops_rtP.Gain_Gain_b0 * rtb_Divide_dr - rtb_Sum2_c) + rtb_Switch1_b;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_dr * rtu_in->data.V_gnd_kn;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_jz) {
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_UpperSat_jz;
@@ -2920,33 +2923,33 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     &A380FgOuterLoops_DWork.sf_LeadLagFilter_o);
   rtb_Switch1_b = (rtb_Y_ex + rtb_Y_b) * A380FgOuterLoops_rtP.ug_Gain_b;
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain1_Gain_mf * rtb_Sum2_c;
-  rtb_Divide_mx = rtb_Switch1_b + rtb_Sum_d;
+  rtb_Sum_p = rtb_Switch1_b + rtb_Sum_d;
   rtb_lo = A380FgOuterLoops_rtP.Constant1_Value_l2 - A380FgOuterLoops_rtP.Constant2_Value_g;
-  rtb_Y_ex = (A380FgOuterLoops_rtP.Gain1_Gain_p5 * rtb_Switch1_b + rtb_Sum_d) * A380FgOuterLoops_rtP.Gain_Gain_kc;
+  rtb_Gain1_ot = (A380FgOuterLoops_rtP.Gain1_Gain_p5 * rtb_Switch1_b + rtb_Sum_d) * A380FgOuterLoops_rtP.Gain_Gain_kc;
   if (rtb_lo > A380FgOuterLoops_rtP.Switch_Threshold_bv) {
     rtb_Switch1_b = A380FgOuterLoops_rtP.Constant1_Value_l;
   } else {
-    rtb_Switch1_b = A380FgOuterLoops_rtP.Gain5_Gain_ob * rtb_Y_ex;
+    rtb_Switch1_b = A380FgOuterLoops_rtP.Gain5_Gain_ob * rtb_Gain1_ot;
   }
 
-  rtb_Gain1_da = (rtu_in->data.V_ias_kn - rtu_in->data.VMAX_kn) * A380FgOuterLoops_rtP.Gain1_Gain_bj;
-  if (rtb_Gain1_da <= rtb_Switch1_b) {
+  rtb_Y_ex = (rtu_in->data.V_ias_kn - rtu_in->data.VMAX_kn) * A380FgOuterLoops_rtP.Gain1_Gain_bj;
+  if (rtb_Y_ex <= rtb_Switch1_b) {
     if (rtb_lo > A380FgOuterLoops_rtP.Switch1_Threshold_a) {
       rtb_Switch1_b = A380FgOuterLoops_rtP.Constant_Value_p;
     } else {
-      rtb_Switch1_b = A380FgOuterLoops_rtP.Gain6_Gain_j * rtb_Y_ex;
+      rtb_Switch1_b = A380FgOuterLoops_rtP.Gain6_Gain_j * rtb_Gain1_ot;
     }
 
-    if (rtb_Gain1_da >= rtb_Switch1_b) {
-      rtb_Switch1_b = rtb_Gain1_da;
+    if (rtb_Y_ex >= rtb_Switch1_b) {
+      rtb_Switch1_b = rtb_Y_ex;
     }
   }
 
-  rtb_Sum2_c = (A380FgOuterLoops_rtP.Gain_Gain_a * rtb_Divide_mx - rtb_Sum2_c) + rtb_Switch1_b;
-  A380FgOuterLoops_SpeedProtectionSignalSelection(&rtb_BusAssignment, rtb_Divide_dr, rtb_Mod1_g, rtb_Gain_pq,
-    A380FgOuterLoops_rtP.Gain_Gain_bn * rtb_Gain_pq, rtb_Sum2_c, A380FgOuterLoops_rtP.Gain_Gain_gkv * rtb_Sum2_c,
-    A380FgOuterLoops_rtP.Constant_Value_d4, &rtb_lo, &rtb_Divide_mx);
-  rtb_Gain_pq = rtu_in->input.H_c_ft - rtu_in->data.H_ind_ft;
+  rtb_Sum2_c = (A380FgOuterLoops_rtP.Gain_Gain_a * rtb_Sum_p - rtb_Sum2_c) + rtb_Switch1_b;
+  A380FgOuterLoops_SpeedProtectionSignalSelection(&rtb_BusAssignment, rtb_Mod1_g, rtb_Y_nu, rtb_Divide_dr,
+    A380FgOuterLoops_rtP.Gain_Gain_bn * rtb_Divide_dr, rtb_Sum2_c, A380FgOuterLoops_rtP.Gain_Gain_gkv * rtb_Sum2_c,
+    A380FgOuterLoops_rtP.Constant_Value_d4, &rtb_Sum_p, &rtb_lo);
+  rtb_Gain1_ot = rtu_in->input.H_c_ft - rtu_in->data.H_ind_ft;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_o * rtu_in->data.V_gnd_kn;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_l) {
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_UpperSat_l;
@@ -2969,13 +2972,13 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
               (A380FgOuterLoops_rtP.fpmtoms_Gain_jv * rtu_in->data.H_dot_ft_min / rtb_Sum_d) *
               A380FgOuterLoops_rtP.Gain_Gain_lm * A380FgOuterLoops_rtP.Gain1_Gain_gw) *
     (A380FgOuterLoops_rtP.Constant_Value_gw - std::cos(rtb_Divide_dr));
-  rtb_Gain1_da = std::sin(rtb_Divide_dr);
+  rtb_Cos1_ik = std::sin(rtb_Divide_dr);
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain1_Gain_fp * rtu_in->data.Psi_magnetic_track_deg;
   rtb_Divide_dr = A380FgOuterLoops_rtP.ktstomps_Gain_no * rtu_in->data.V_gnd_kn;
   A380FgOuterLoops_WashoutFilter(A380FgOuterLoops_rtP._Gain_c * (A380FgOuterLoops_rtP.GStoGS_CAS_Gain_k * rtb_Divide_dr),
     A380FgOuterLoops_rtP.WashoutFilter_C1_p, rtu_in->time.dt, &rtb_Divide_dr, &A380FgOuterLoops_DWork.sf_WashoutFilter_h);
   A380FgOuterLoops_LeadLagFilter(rtb_Divide_dr - A380FgOuterLoops_rtP.g_Gain_gg * (A380FgOuterLoops_rtP.Gain1_Gain_in *
-    (A380FgOuterLoops_rtP.Gain_Gain_dr * (rtb_Y_ex + rtb_Gain1_da * std::sin(rtb_Sum_d -
+    (A380FgOuterLoops_rtP.Gain_Gain_dr * (rtb_Y_ex + rtb_Cos1_ik * std::sin(rtb_Sum_d -
     A380FgOuterLoops_rtP.Gain1_Gain_c1 * rtu_in->data.Psi_magnetic_deg)))), A380FgOuterLoops_rtP.HighPassFilter_C1_n,
     A380FgOuterLoops_rtP.HighPassFilter_C2_l, A380FgOuterLoops_rtP.HighPassFilter_C3_a,
     A380FgOuterLoops_rtP.HighPassFilter_C4_n, rtu_in->time.dt, &rtb_Sum_d, &A380FgOuterLoops_DWork.sf_LeadLagFilter_c);
@@ -2985,41 +2988,41 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     &A380FgOuterLoops_DWork.sf_LeadLagFilter_oer);
   rtb_Divide_dr = (rtb_Sum_d + rtb_Divide_dr) * A380FgOuterLoops_rtP.ug_Gain_p;
   rtb_Y_ex = (A380FgOuterLoops_rtP.Gain1_Gain_o3 * rtb_Divide_dr + rtb_Switch1_b) * A380FgOuterLoops_rtP.Gain_Gain_kp;
-  A380FgOuterLoops_Voter1(rtu_in->data.VLS_kn, rtu_in->input.V_c_kn, rtu_in->data.VMAX_kn, &rtb_Gain1_da);
-  rtb_Gain1_da = (rtu_in->data.V_ias_kn - rtb_Gain1_da) * A380FgOuterLoops_rtP.Gain1_Gain_ox;
-  rtb_AND = ((rtb_Gain_pq > A380FgOuterLoops_rtP.CompareToConstant6_const) && (rtb_Y_ex <
-              A380FgOuterLoops_rtP.CompareToConstant5_const_ko) && (rtb_Gain1_da <
-              A380FgOuterLoops_rtP.CompareToConstant2_const_f) && (rtb_Y_nu ==
+  A380FgOuterLoops_Voter1(rtu_in->data.VLS_kn, rtu_in->input.V_c_kn, rtu_in->data.VMAX_kn, &rtb_Cos1_ik);
+  rtb_Cos1_ik = (rtu_in->data.V_ias_kn - rtb_Cos1_ik) * A380FgOuterLoops_rtP.Gain1_Gain_ox;
+  rtb_AND = ((rtb_Gain1_ot > A380FgOuterLoops_rtP.CompareToConstant6_const) && (rtb_Y_ex <
+              A380FgOuterLoops_rtP.CompareToConstant5_const_ko) && (rtb_Cos1_ik <
+              A380FgOuterLoops_rtP.CompareToConstant2_const_f) && (rtb_Mod2_k ==
               A380FgOuterLoops_rtP.CompareToConstant2_const_c));
   rtb_Add1_d = rtb_Divide_dr + rtb_Switch1_b;
   if (rtb_AND) {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Constant_Value_k;
   } else {
-    if (rtb_Gain_pq > A380FgOuterLoops_rtP.CompareToConstant_const_j) {
+    if (rtb_Gain1_ot > A380FgOuterLoops_rtP.CompareToConstant_const_j) {
       rtb_Divide_dr = A380FgOuterLoops_rtP.Constant1_Value_c;
     } else {
       rtb_Divide_dr = A380FgOuterLoops_rtP.Gain5_Gain_c * rtb_Y_ex;
     }
 
-    if (rtb_Gain1_da <= rtb_Divide_dr) {
-      if (rtb_Gain_pq > A380FgOuterLoops_rtP.CompareToConstant4_const_k) {
+    if (rtb_Cos1_ik <= rtb_Divide_dr) {
+      if (rtb_Gain1_ot > A380FgOuterLoops_rtP.CompareToConstant4_const_k) {
         rtb_Divide_dr = std::fmax(A380FgOuterLoops_rtP.Constant2_Value, A380FgOuterLoops_rtP.Gain1_Gain_j * rtb_Y_ex);
       } else {
         rtb_Divide_dr = A380FgOuterLoops_rtP.Gain6_Gain_h * rtb_Y_ex;
       }
 
-      if (rtb_Gain1_da >= rtb_Divide_dr) {
-        rtb_Divide_dr = rtb_Gain1_da;
+      if (rtb_Cos1_ik >= rtb_Divide_dr) {
+        rtb_Divide_dr = rtb_Cos1_ik;
       }
     }
   }
 
-  rtb_Gain1_da = (A380FgOuterLoops_rtP.Gain_Gain_dt * rtb_Add1_d - rtb_Sum2_c) + rtb_Divide_dr;
+  rtb_Cos1_ik = (A380FgOuterLoops_rtP.Gain_Gain_dt * rtb_Add1_d - rtb_Sum2_c) + rtb_Divide_dr;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_c * rtu_in->data.V_tas_kn;
-  if (rtb_Gain_pq < 0.0) {
+  if (rtb_Gain1_ot < 0.0) {
     i = -1;
   } else {
-    i = (rtb_Gain_pq > 0.0);
+    i = (rtb_Gain1_ot > 0.0);
   }
 
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_b2) {
@@ -3068,14 +3071,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     ((rtu_in->input.H_dot_c_fpm == 0.0) && (A380FgOuterLoops_DWork.prevTarget > 500.0)) || ((rtu_in->input.H_dot_c_fpm ==
     0.0) && (rtu_in->input.vertical_law == 4.0) && A380FgOuterLoops_DWork.islevelOffActive));
   if (rtu_in->input.TCAS_mode_active) {
-    rtb_Cos1_np = 0.3;
+    rtb_Cos1_c = 0.3;
   } else if (A380FgOuterLoops_DWork.islevelOffActive) {
-    rtb_Cos1_np = 0.1;
+    rtb_Cos1_c = 0.1;
   } else {
-    rtb_Cos1_np = 0.05;
+    rtb_Cos1_c = 0.05;
   }
 
-  limit = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_np * 57.295779513082323;
+  limit = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_c * 57.295779513082323;
   A380FgOuterLoops_DWork.prevVerticalLaw = rtu_in->input.vertical_law;
   A380FgOuterLoops_DWork.prevTarget = rtu_in->input.H_dot_c_fpm;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_ov * rtu_in->data.V_gnd_kn;
@@ -3089,7 +3092,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_rtP.Gain_Gain_gg;
   rtb_Sum2_c = A380FgOuterLoops_rtP.Gain1_Gain_l * rtu_in->data.Phi_deg;
   rtb_Cos_n = std::cos(rtb_Sum2_c);
-  rtb_Y_b = std::sin(rtb_Sum2_c);
+  rtb_Cos1_aq = std::sin(rtb_Sum2_c);
   rtb_Switch1_b = A380FgOuterLoops_rtP.Gain1_Gain_b3 * rtu_in->data.Psi_magnetic_track_deg;
   rtb_Sum2_c = A380FgOuterLoops_rtP.ktstomps_Gain_gp * rtu_in->data.V_gnd_kn;
   A380FgOuterLoops_WashoutFilter(A380FgOuterLoops_rtP._Gain_p * (A380FgOuterLoops_rtP.GStoGS_CAS_Gain_a * rtb_Sum2_c),
@@ -3105,7 +3108,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     (A380FgOuterLoops_rtP.Gain_Gain_kd * ((A380FgOuterLoops_rtP.Gain1_Gain_bjj * rtu_in->data.Theta_deg -
     A380FgOuterLoops_rtP.Gain1_Gain_br * (A380FgOuterLoops_rtP.Gain_Gain_dj * std::atan
     (A380FgOuterLoops_rtP.fpmtoms_Gain_k * rtu_in->data.H_dot_ft_min / rtb_Sum_d))) *
-    (A380FgOuterLoops_rtP.Constant_Value_b - rtb_Cos_n) + rtb_Y_b * std::sin(rtb_Switch1_b -
+    (A380FgOuterLoops_rtP.Constant_Value_b - rtb_Cos_n) + rtb_Cos1_aq * std::sin(rtb_Switch1_b -
     A380FgOuterLoops_rtP.Gain1_Gain_gc * rtu_in->data.Psi_magnetic_deg)))), A380FgOuterLoops_rtP.HighPassFilter_C1_h,
     A380FgOuterLoops_rtP.HighPassFilter_C2_i, A380FgOuterLoops_rtP.HighPassFilter_C3_e,
     A380FgOuterLoops_rtP.HighPassFilter_C4_pz, rtu_in->time.dt, &rtb_Switch1_b,
@@ -3117,21 +3120,21 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_Sum2_c = (rtb_Switch1_b + rtb_Sum2_c) * A380FgOuterLoops_rtP.ug_Gain_o;
   rtb_Switch1_b = A380FgOuterLoops_rtP.Gain1_Gain_h * rtb_Divide_dr;
   rtb_Cos_n = rtb_Sum2_c + rtb_Switch1_b;
-  rtb_Sum_d = A380FgOuterLoops_rtP.Constant3_Value_hk - A380FgOuterLoops_rtP.Constant4_Value_h;
-  rtb_Y_b = (A380FgOuterLoops_rtP.Gain1_Gain_f5 * rtb_Sum2_c + rtb_Switch1_b) * A380FgOuterLoops_rtP.Gain_Gain_f;
-  if (rtb_Sum_d > A380FgOuterLoops_rtP.Switch_Threshold_m) {
+  rtb_Cos1_aq = A380FgOuterLoops_rtP.Constant3_Value_hk - A380FgOuterLoops_rtP.Constant4_Value_h;
+  rtb_Sum_d = (A380FgOuterLoops_rtP.Gain1_Gain_f5 * rtb_Sum2_c + rtb_Switch1_b) * A380FgOuterLoops_rtP.Gain_Gain_f;
+  if (rtb_Cos1_aq > A380FgOuterLoops_rtP.Switch_Threshold_m) {
     rtb_Sum2_c = A380FgOuterLoops_rtP.Constant1_Value_e;
   } else {
-    rtb_Sum2_c = A380FgOuterLoops_rtP.Gain5_Gain_k * rtb_Y_b;
+    rtb_Sum2_c = A380FgOuterLoops_rtP.Gain5_Gain_k * rtb_Sum_d;
   }
 
   A380FgOuterLoops_V_LSSpeedSelection1(rtu_in->input.V_c_kn, rtu_in->data.VLS_kn, &rtb_Switch1_b);
   rtb_Switch1_b = (rtu_in->data.V_ias_kn - rtb_Switch1_b) * A380FgOuterLoops_rtP.Gain1_Gain_bt;
   if (rtb_Switch1_b <= rtb_Sum2_c) {
-    if (rtb_Sum_d > A380FgOuterLoops_rtP.Switch1_Threshold_p) {
+    if (rtb_Cos1_aq > A380FgOuterLoops_rtP.Switch1_Threshold_p) {
       rtb_Sum2_c = A380FgOuterLoops_rtP.Constant_Value_i;
     } else {
-      rtb_Sum2_c = A380FgOuterLoops_rtP.Gain6_Gain_n * rtb_Y_b;
+      rtb_Sum2_c = A380FgOuterLoops_rtP.Gain6_Gain_n * rtb_Sum_d;
     }
 
     if (rtb_Switch1_b >= rtb_Sum2_c) {
@@ -3151,7 +3154,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_rtP.Gain_Gain_g0;
   rtb_Sum2_c = A380FgOuterLoops_rtP.Gain1_Gain_n0 * rtu_in->data.Phi_deg;
   rtb_Cos_n = std::cos(rtb_Sum2_c);
-  rtb_Cos1_fv = std::sin(rtb_Sum2_c);
+  rtb_Cos1_aq = std::sin(rtb_Sum2_c);
   rtb_Switch1_b = A380FgOuterLoops_rtP.Gain1_Gain_gn * rtu_in->data.Psi_magnetic_track_deg;
   rtb_Sum2_c = A380FgOuterLoops_rtP.ktstomps_Gain_p * rtu_in->data.V_gnd_kn;
   A380FgOuterLoops_WashoutFilter(A380FgOuterLoops_rtP._Gain_d * (A380FgOuterLoops_rtP.GStoGS_CAS_Gain_k1 * rtb_Sum2_c),
@@ -3167,7 +3170,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     (A380FgOuterLoops_rtP.Gain_Gain_mq * ((A380FgOuterLoops_rtP.Gain1_Gain_kl * rtu_in->data.Theta_deg -
     A380FgOuterLoops_rtP.Gain1_Gain_pr * (A380FgOuterLoops_rtP.Gain_Gain_is * std::atan
     (A380FgOuterLoops_rtP.fpmtoms_Gain_c * rtu_in->data.H_dot_ft_min / rtb_Sum_d))) *
-    (A380FgOuterLoops_rtP.Constant_Value_k3 - rtb_Cos_n) + rtb_Cos1_fv * std::sin(rtb_Switch1_b -
+    (A380FgOuterLoops_rtP.Constant_Value_k3 - rtb_Cos_n) + rtb_Cos1_aq * std::sin(rtb_Switch1_b -
     A380FgOuterLoops_rtP.Gain1_Gain_c4 * rtu_in->data.Psi_magnetic_deg)))), A380FgOuterLoops_rtP.HighPassFilter_C1_ne,
     A380FgOuterLoops_rtP.HighPassFilter_C2_p, A380FgOuterLoops_rtP.HighPassFilter_C3_oi,
     A380FgOuterLoops_rtP.HighPassFilter_C4_m, rtu_in->time.dt, &rtb_Switch1_b,
@@ -3179,31 +3182,31 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_Sum2_c = (rtb_Switch1_b + rtb_Sum2_c) * A380FgOuterLoops_rtP.ug_Gain_oy;
   rtb_Switch1_b = A380FgOuterLoops_rtP.Gain1_Gain_fb * rtb_Divide_dr;
   rtb_Cos_n = rtb_Sum2_c + rtb_Switch1_b;
-  rtb_Sum_d = A380FgOuterLoops_rtP.Constant1_Value_bk - A380FgOuterLoops_rtP.Constant2_Value_j;
+  rtb_Cos1_aq = A380FgOuterLoops_rtP.Constant1_Value_bk - A380FgOuterLoops_rtP.Constant2_Value_j;
   rtb_Switch1_b = (A380FgOuterLoops_rtP.Gain1_Gain_nd * rtb_Sum2_c + rtb_Switch1_b) * A380FgOuterLoops_rtP.Gain_Gain_ci;
-  if (rtb_Sum_d > A380FgOuterLoops_rtP.Switch_Threshold_g) {
+  if (rtb_Cos1_aq > A380FgOuterLoops_rtP.Switch_Threshold_g) {
     rtb_Sum2_c = A380FgOuterLoops_rtP.Constant1_Value_mr;
   } else {
     rtb_Sum2_c = A380FgOuterLoops_rtP.Gain5_Gain_j * rtb_Switch1_b;
   }
 
-  rtb_Cos1_fv = (rtu_in->data.V_ias_kn - rtu_in->data.VMAX_kn) * A380FgOuterLoops_rtP.Gain1_Gain_hy;
-  if (rtb_Cos1_fv <= rtb_Sum2_c) {
-    if (rtb_Sum_d > A380FgOuterLoops_rtP.Switch1_Threshold_e3) {
+  rtb_Sum_d = (rtu_in->data.V_ias_kn - rtu_in->data.VMAX_kn) * A380FgOuterLoops_rtP.Gain1_Gain_hy;
+  if (rtb_Sum_d <= rtb_Sum2_c) {
+    if (rtb_Cos1_aq > A380FgOuterLoops_rtP.Switch1_Threshold_e3) {
       rtb_Sum2_c = A380FgOuterLoops_rtP.Constant_Value_m;
     } else {
       rtb_Sum2_c = A380FgOuterLoops_rtP.Gain6_Gain_a * rtb_Switch1_b;
     }
 
-    if (rtb_Cos1_fv >= rtb_Sum2_c) {
-      rtb_Sum2_c = rtb_Cos1_fv;
+    if (rtb_Sum_d >= rtb_Sum2_c) {
+      rtb_Sum2_c = rtb_Sum_d;
     }
   }
 
   rtb_Divide_dr = (A380FgOuterLoops_rtP.Gain_Gain_n * rtb_Cos_n - rtb_Divide_dr) + rtb_Sum2_c;
   A380FgOuterLoops_SpeedProtectionSignalSelection(&rtb_BusAssignment, rtb_Y_ex, std::fmax(-limit, std::fmin(limit,
     A380FgOuterLoops_rtP.VS_Gain_c * rtb_Y_ex)), rtb_Y_b, A380FgOuterLoops_rtP.Gain_Gain_fz * rtb_Y_b, rtb_Divide_dr,
-    A380FgOuterLoops_rtP.Gain_Gain_e0 * rtb_Divide_dr, A380FgOuterLoops_rtP.Constant_Value_nc, &rtb_Cos1_fv, &rtb_Cos_n);
+    A380FgOuterLoops_rtP.Gain_Gain_e0 * rtb_Divide_dr, A380FgOuterLoops_rtP.Constant_Value_nc, &rtb_Cos1_aq, &rtb_Cos_n);
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_cp * rtu_in->data.V_gnd_kn;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_c2) {
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_UpperSat_c2;
@@ -3228,12 +3231,12 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     0.0) && (A380FgOuterLoops_DWork.prevTarget_h > 1.0)) || ((rtu_in->input.FPA_c_deg == 0.0) &&
     (rtu_in->input.vertical_law == 5.0) && A380FgOuterLoops_DWork.islevelOffActive_o));
   if (A380FgOuterLoops_DWork.islevelOffActive_o) {
-    rtb_Cos1_np = 0.1;
+    rtb_Cos1_c = 0.1;
   } else {
-    rtb_Cos1_np = 0.05;
+    rtb_Cos1_c = 0.05;
   }
 
-  limit = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_np * 57.295779513082323;
+  limit = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_c * 57.295779513082323;
   A380FgOuterLoops_DWork.prevVerticalLaw_j = rtu_in->input.vertical_law;
   A380FgOuterLoops_DWork.prevTarget_h = rtu_in->input.FPA_c_deg;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_de * rtu_in->data.V_gnd_kn;
@@ -3398,10 +3401,10 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_Switch1_b = A380FgOuterLoops_rtP.Constant_Value_jm - rtb_Divide_dr;
   A380FgOuterLoops_LagFilter(rtu_in->data.nav_gs_error_deg, A380FgOuterLoops_rtP.LagFilter2_C1_m, rtu_in->time.dt,
     &rtb_Y_f, &A380FgOuterLoops_DWork.sf_LagFilter_fd);
-  rtb_Gain_gr = A380FgOuterLoops_rtP.DiscreteDerivativeVariableTs_Gain_k * rtb_Y_f;
+  rtb_Gain_gz = A380FgOuterLoops_rtP.DiscreteDerivativeVariableTs_Gain_k * rtb_Y_f;
   rtb_Sum2_c = look1_binlxpw(rtu_in->data.H_radio_ft, A380FgOuterLoops_rtP.ScheduledGain3_BreakpointsForDimension1_j,
     A380FgOuterLoops_rtP.ScheduledGain3_Table_b, 4U);
-  A380FgOuterLoops_LagFilter(rtb_Y_f + (rtb_Gain_gr - A380FgOuterLoops_DWork.Delay_DSTATE_l) / rtu_in->time.dt *
+  A380FgOuterLoops_LagFilter(rtb_Y_f + (rtb_Gain_gz - A380FgOuterLoops_DWork.Delay_DSTATE_l) / rtu_in->time.dt *
     rtb_Sum2_c, A380FgOuterLoops_rtP.LagFilter_C1_b, rtu_in->time.dt, &rtb_Sum2_c,
     &A380FgOuterLoops_DWork.sf_LagFilter_k);
   rtb_Divide_dr = look1_binlxpw(rtu_in->data.H_radio_ft, A380FgOuterLoops_rtP.ScheduledGain2_BreakpointsForDimension1_f,
@@ -3409,7 +3412,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   A380FgOuterLoops_SignalEnablerGSTrack(A380FgOuterLoops_rtP.Gain3_Gain_f * (rtb_Y_ex + rtb_Switch1_b * (rtb_Sum2_c *
     rtb_Divide_dr)), ((rtu_in->data.H_radio_ft > A380FgOuterLoops_rtP.CompareToConstant_const_n) &&
                       rtu_in->data.nav_gs_valid), &rtb_Sum_d);
-  A380FgOuterLoops_storevalue((rtb_Y_nu == A380FgOuterLoops_rtP.CompareToConstant6_const_l), rtu_in->data.nav_gs_deg,
+  A380FgOuterLoops_storevalue((rtb_Mod2_k == A380FgOuterLoops_rtP.CompareToConstant6_const_l), rtu_in->data.nav_gs_deg,
     &rtb_Divide_dr, &A380FgOuterLoops_DWork.sf_storevalue_f);
   if (rtb_Divide_dr > A380FgOuterLoops_rtP.Saturation_UpperSat_dj) {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Saturation_UpperSat_dj;
@@ -3437,7 +3440,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_Gain5_c = A380FgOuterLoops_rtP.Gain5_Gain_m * rtu_in->data.bz_m_s2;
   A380FgOuterLoops_WashoutFilter(rtu_in->data.bx_m_s2, A380FgOuterLoops_rtP.WashoutFilter_C1_eg, rtu_in->time.dt,
     &rtb_Y_n, &A380FgOuterLoops_DWork.sf_WashoutFilter_b);
-  rtb_Compare_mk = (rtb_Y_nu == A380FgOuterLoops_rtP.CompareToConstant7_const);
+  rtb_Compare_mk = (rtb_Mod2_k == A380FgOuterLoops_rtP.CompareToConstant7_const);
   rtb_Divide_dr = A380FgOuterLoops_rtP.kntofpm_Gain * rtu_in->data.V_gnd_kn * A380FgOuterLoops_rtP.maxslope_Gain;
   A380FgOuterLoops_LagFilter(rtu_in->data.H_dot_ft_min, A380FgOuterLoops_rtP.LagFilterH_C1, rtu_in->time.dt, &rtb_Y_ex,
     &A380FgOuterLoops_DWork.sf_LagFilter_or);
@@ -3469,14 +3472,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_rtP.LeadLagFilter_C4_a, rtu_in->time.dt, &rtb_Switch1_b, &A380FgOuterLoops_DWork.sf_LeadLagFilter_i);
   rtb_Divide_dr = A380FgOuterLoops_rtP.kntoms_Gain_p3 * rtu_in->data.V_gnd_kn;
   if (rtb_Divide_dr > A380FgOuterLoops_rtP.Saturation_UpperSat_i5) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_UpperSat_i5;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_UpperSat_i5;
   } else if (rtb_Divide_dr < A380FgOuterLoops_rtP.Saturation_LowerSat_bs) {
-    rtb_Cos1_np = A380FgOuterLoops_rtP.Saturation_LowerSat_bs;
+    rtb_Cos1_c = A380FgOuterLoops_rtP.Saturation_LowerSat_bs;
   } else {
-    rtb_Cos1_np = rtb_Divide_dr;
+    rtb_Cos1_c = rtb_Divide_dr;
   }
 
-  rtb_Sum_d = A380FgOuterLoops_rtP.ftmintoms_Gain_b * rtb_Switch1_b / rtb_Cos1_np;
+  rtb_Sum_d = A380FgOuterLoops_rtP.ftmintoms_Gain_b * rtb_Switch1_b / rtb_Cos1_c;
   if (rtb_Divide_dr > A380FgOuterLoops_rtP.Saturation_UpperSat_hw) {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Saturation_UpperSat_hw;
   } else if (rtb_Divide_dr < A380FgOuterLoops_rtP.Saturation_LowerSat_k1) {
@@ -3521,7 +3524,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
 
   rtb_Switch1_b = A380FgOuterLoops_rtP.Gain1_Gain_ni * rtu_in->data.Phi_deg;
   limit = std::cos(rtb_Switch1_b);
-  rtb_Cos1_np = std::sin(rtb_Switch1_b);
+  rtb_Cos1_c = std::sin(rtb_Switch1_b);
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain1_Gain_jj * rtu_in->data.Psi_magnetic_track_deg;
   rtb_Switch1_b = A380FgOuterLoops_rtP.ktstomps_Gain_lu * rtu_in->data.V_gnd_kn;
   A380FgOuterLoops_WashoutFilter(A380FgOuterLoops_rtP._Gain_h * (A380FgOuterLoops_rtP.GStoGS_CAS_Gain_l * rtb_Switch1_b),
@@ -3531,7 +3534,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     (A380FgOuterLoops_rtP.Gain_Gain_c1 * ((A380FgOuterLoops_rtP.Gain1_Gain_ekc * rtu_in->data.Theta_deg -
     A380FgOuterLoops_rtP.Gain1_Gain_o1 * (A380FgOuterLoops_rtP.Gain_Gain_ij * std::atan
     (A380FgOuterLoops_rtP.fpmtoms_Gain_cr * rtu_in->data.H_dot_ft_min / rtb_Y_f))) *
-    (A380FgOuterLoops_rtP.Constant_Value_ac - limit) + rtb_Cos1_np * std::sin(rtb_Sum_d -
+    (A380FgOuterLoops_rtP.Constant_Value_ac - limit) + rtb_Cos1_c * std::sin(rtb_Sum_d -
     A380FgOuterLoops_rtP.Gain1_Gain_ku * rtu_in->data.Psi_magnetic_deg)))), A380FgOuterLoops_rtP.HighPassFilter_C1_g,
     A380FgOuterLoops_rtP.HighPassFilter_C2_k, A380FgOuterLoops_rtP.HighPassFilter_C3_j,
     A380FgOuterLoops_rtP.HighPassFilter_C4_jw, rtu_in->time.dt, &rtb_Sum_d, &A380FgOuterLoops_DWork.sf_LeadLagFilter_k);
@@ -3544,7 +3547,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   rtb_Sum_d = (rtu_in->data.V_ias_kn - rtu_in->input.V_c_kn) * A380FgOuterLoops_rtP.Gain1_Gain_kz;
   rtb_AND_g = ((rtb_Sum3_a > A380FgOuterLoops_rtP.CompareToConstant6_const_o) && (limit <
     A380FgOuterLoops_rtP.CompareToConstant5_const_e) && (rtb_Sum_d < A380FgOuterLoops_rtP.CompareToConstant2_const_a) &&
-               (rtb_Y_nu == A380FgOuterLoops_rtP.CompareToConstant8_const));
+               (rtb_Mod2_k == A380FgOuterLoops_rtP.CompareToConstant8_const));
   rtb_Switch1_b += rtb_Sum2_c;
   if (rtb_AND_g) {
     rtb_Sum2_c = A380FgOuterLoops_rtP.Constant_Value_db;
@@ -3590,7 +3593,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum_d = -1.0;
   }
 
-  rtb_Gain_ny = A380FgOuterLoops_rtP.Gain_Gain_n2 * std::asin(rtb_Sum_d);
+  rtb_Gain_hg = A380FgOuterLoops_rtP.Gain_Gain_n2 * std::asin(rtb_Sum_d);
   rtb_Divide_dr = A380FgOuterLoops_rtP.kntoms_Gain_k * rtu_in->data.V_tas_kn;
   if (rtb_Divide_dr > A380FgOuterLoops_rtP.Saturation_UpperSat_hd) {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Saturation_UpperSat_hd;
@@ -3606,16 +3609,16 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum_d = -1.0;
   }
 
-  rtb_Gain_g1 = A380FgOuterLoops_rtP.Gain_Gain_ibk * std::asin(rtb_Sum_d);
+  rtb_Gain_o1 = A380FgOuterLoops_rtP.Gain_Gain_ibk * std::asin(rtb_Sum_d);
   if (rtb_AND_g) {
-    rtb_Cos1_np = rtb_Switch1_b;
+    rtb_Cos1_c = rtb_Switch1_b;
   } else if (rtb_Sum3_a > A380FgOuterLoops_rtP.Switch_Threshold_e) {
-    rtb_Cos1_np = std::fmax(rtb_Switch1_b, rtb_Gain_ny);
+    rtb_Cos1_c = std::fmax(rtb_Switch1_b, rtb_Gain_hg);
   } else {
-    rtb_Cos1_np = std::fmin(rtb_Switch1_b, rtb_Gain_ny);
+    rtb_Cos1_c = std::fmin(rtb_Switch1_b, rtb_Gain_hg);
   }
 
-  A380FgOuterLoops_Voter1(rtb_Sum_ik, rtb_Cos1_np, rtb_Gain_g1, &limit);
+  A380FgOuterLoops_Voter1(rtb_Sum_ik, rtb_Cos1_c, rtb_Gain_o1, &limit);
   A380FgOuterLoops_LagFilter(rtu_in->data.fms_H_c_profile_ft - rtu_in->data.H_ft, A380FgOuterLoops_rtP.LagFilter_C1_k,
     rtu_in->time.dt, &rtb_Divide_dr, &A380FgOuterLoops_DWork.sf_LagFilter_ag);
   rtb_Sum_d = A380FgOuterLoops_rtP.Gain2_Gain_l * rtb_Divide_dr;
@@ -3641,64 +3644,64 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   }
 
   rtb_Sum2_c = A380FgOuterLoops_rtP.Gain_Gain_gd * std::asin(rtb_Sum_d);
-  switch (static_cast<int32_T>(rtb_Y_nu)) {
+  switch (static_cast<int32_T>(rtb_Mod2_k)) {
    case 0:
-    rtb_lo = A380FgOuterLoops_rtP.Constant_Value_j0;
+    rtb_Cos1_aq = A380FgOuterLoops_rtP.Constant_Value_j0;
     break;
 
    case 1:
-    rtb_lo = rtb_Sum_p;
+    rtb_Cos1_aq = rtb_Gain_d;
     break;
 
    case 2:
+    rtb_Cos1_aq = rtb_Sum_p;
     break;
 
    case 3:
     if (rtb_AND) {
-      rtb_lo = rtb_Gain1_da;
-    } else if (rtb_Gain_pq > A380FgOuterLoops_rtP.Switch_Threshold) {
-      rtb_lo = std::fmax(rtb_Gain1_da, rtb_Add1_d);
+      rtb_Cos1_aq = rtb_Cos1_ik;
+    } else if (rtb_Gain1_ot > A380FgOuterLoops_rtP.Switch_Threshold) {
+      rtb_Cos1_aq = std::fmax(rtb_Cos1_ik, rtb_Add1_d);
     } else {
-      rtb_lo = std::fmin(rtb_Gain1_da, rtb_Add1_d);
+      rtb_Cos1_aq = std::fmin(rtb_Cos1_ik, rtb_Add1_d);
     }
     break;
 
    case 4:
-    rtb_lo = rtb_Cos1_fv;
     break;
 
    case 5:
-    rtb_lo = rtb_FD_jv;
+    rtb_Cos1_aq = rtb_FD_jv;
     break;
 
    case 6:
-    rtb_lo = A380FgOuterLoops_rtP.Gain1_Gain_o * rtb_Product_kf;
+    rtb_Cos1_aq = A380FgOuterLoops_rtP.Gain1_Gain_o * rtb_Product_kf;
     break;
 
    case 7:
     if (rtu_in->data.on_ground) {
-      rtb_lo = A380FgOuterLoops_rtP.Gain2_Gain_h * rtb_Gain4;
+      rtb_Cos1_aq = A380FgOuterLoops_rtP.Gain2_Gain_h * rtb_Gain4;
     } else {
-      rtb_lo = ((A380FgOuterLoops_rtP.Gain1_Gain_g * rtb_Y_n + rtb_Gain5_c) + rtb_Sum1_i * rtb_uDLookupTable_o) *
+      rtb_Cos1_aq = ((A380FgOuterLoops_rtP.Gain1_Gain_g * rtb_Y_n + rtb_Gain5_c) + rtb_Sum1_i * rtb_uDLookupTable_o) *
         A380FgOuterLoops_rtP.Gain6_Gain_lb;
     }
     break;
 
    case 8:
-    rtb_lo = limit;
+    rtb_Cos1_aq = limit;
     break;
 
    default:
-    rtb_lo = rtb_Sum2_c;
+    rtb_Cos1_aq = rtb_Sum2_c;
     break;
   }
 
-  if (rtb_lo > A380FgOuterLoops_rtP.Constant1_Value_o) {
+  if (rtb_Cos1_aq > A380FgOuterLoops_rtP.Constant1_Value_o) {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Constant1_Value_o;
   } else {
     rtb_Divide_dr = A380FgOuterLoops_rtP.Gain1_Gain_e1 * A380FgOuterLoops_rtP.Constant1_Value_o;
-    if (rtb_lo >= rtb_Divide_dr) {
-      rtb_Divide_dr = rtb_lo;
+    if (rtb_Cos1_aq >= rtb_Divide_dr) {
+      rtb_Divide_dr = rtb_Cos1_aq;
     }
   }
 
@@ -3713,20 +3716,20 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     A380FgOuterLoops_DWork.Delay_DSTATE_e = rtu_in->data.Theta_deg;
   }
 
-  A380FgOuterLoops_VSLimiter(A380FgOuterLoops_rtP.VS_Gain_a * rtb_Sum_p, &rtb_BusAssignment, &rtb_Divide_dr);
+  A380FgOuterLoops_VSLimiter(A380FgOuterLoops_rtP.VS_Gain_a * rtb_Gain_d, &rtb_BusAssignment, &rtb_Divide_dr);
   if (!rtb_AND) {
-    if (rtb_Gain_pq > A380FgOuterLoops_rtP.Switch_Threshold_b) {
-      rtb_Gain1_da = std::fmax(rtb_Gain1_da, A380FgOuterLoops_rtP.VS_Gain_j * rtb_Add1_d);
+    if (rtb_Gain1_ot > A380FgOuterLoops_rtP.Switch_Threshold_b) {
+      rtb_Cos1_ik = std::fmax(rtb_Cos1_ik, A380FgOuterLoops_rtP.VS_Gain_j * rtb_Add1_d);
     } else {
-      rtb_Gain1_da = std::fmin(rtb_Gain1_da, A380FgOuterLoops_rtP.VS_Gain_j * rtb_Add1_d);
+      rtb_Cos1_ik = std::fmin(rtb_Cos1_ik, A380FgOuterLoops_rtP.VS_Gain_j * rtb_Add1_d);
     }
   }
 
-  A380FgOuterLoops_VSLimiter(A380FgOuterLoops_rtP.Gain_Gain_jr * rtb_Gain1_da, &rtb_BusAssignment, &rtb_Gain_pq);
+  A380FgOuterLoops_VSLimiter(A380FgOuterLoops_rtP.Gain_Gain_jr * rtb_Cos1_ik, &rtb_BusAssignment, &rtb_Add1_d);
   limit = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * 0.3 * 57.295779513082323;
-  rtb_Sum_p = A380FgOuterLoops_rtP.Gain3_Gain_e * rtb_Y_n;
-  rtb_lo = A380FgOuterLoops_rtP.VS_Gain_k * rtb_Sum1_i;
-  A380FgOuterLoops_WashoutFilter(rtb_Mod2_k, A380FgOuterLoops_rtP.WashoutFilterBeta_c_C1, rtu_in->time.dt, &rtb_Mod2,
+  rtb_Gain_d = A380FgOuterLoops_rtP.Gain3_Gain_e * rtb_Y_n;
+  rtb_Gain1_ot = A380FgOuterLoops_rtP.VS_Gain_k * rtb_Sum1_i;
+  A380FgOuterLoops_WashoutFilter(rtb_Divide_mx, A380FgOuterLoops_rtP.WashoutFilterBeta_c_C1, rtu_in->time.dt, &rtb_Mod2,
     &A380FgOuterLoops_DWork.sf_WashoutFilter_l);
   rtb_Sum_d = std::abs(rtb_Mod2);
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_mf) {
@@ -3735,27 +3738,27 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_LowerSat_fa;
   }
 
-  rtb_Mod2_k = A380FgOuterLoops_rtP.Gain_Gain_cx * rtb_Sum_d;
+  rtb_Divide_mx = A380FgOuterLoops_rtP.Gain_Gain_cx * rtb_Sum_d;
   rtb_Mod2 = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * 0.6 * 57.295779513082323;
   if (!rtb_AND_g) {
     if (rtb_Sum3_a > A380FgOuterLoops_rtP.Switch_Threshold_h) {
-      rtb_Switch1_b = std::fmax(rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_n * rtb_Gain_ny);
+      rtb_Switch1_b = std::fmax(rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_n * rtb_Gain_hg);
     } else {
-      rtb_Switch1_b = std::fmin(rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_n * rtb_Gain_ny);
+      rtb_Switch1_b = std::fmin(rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_n * rtb_Gain_hg);
     }
   }
 
   A380FgOuterLoops_Voter1(rtb_Sum_ik, A380FgOuterLoops_rtP.Gain_Gain_cv * rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_b *
-    rtb_Gain_g1, &rtb_Gain1_da);
-  rtb_Add1_d = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * 0.5 * 57.295779513082323;
+    rtb_Gain_o1, &rtb_Cos1_ik);
+  rtb_Switch1_b = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * 0.5 * 57.295779513082323;
   if (rtu_in->input.FINAL_DES_mode_active) {
-    rtb_Cos1_np = 0.15;
+    rtb_Cos1_c = 0.15;
   } else {
-    rtb_Cos1_np = 0.1;
+    rtb_Cos1_c = 0.1;
   }
 
-  rtb_Switch1_b = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_np * 57.295779513082323;
-  switch (static_cast<int32_T>(rtb_Y_nu)) {
+  rtb_Cos1_aq = 9.81 / (rtu_in->data.V_tas_kn * 0.51444444444444448) * rtb_Cos1_c * 57.295779513082323;
+  switch (static_cast<int32_T>(rtb_Mod2_k)) {
    case 0:
     rtb_Divide_dr = A380FgOuterLoops_rtP.Constant_Value_j0;
     break;
@@ -3764,11 +3767,11 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     break;
 
    case 2:
-    rtb_Divide_dr = rtb_Divide_mx;
+    rtb_Divide_dr = rtb_lo;
     break;
 
    case 3:
-    rtb_Divide_dr = rtb_Gain_pq;
+    rtb_Divide_dr = rtb_Add1_d;
     break;
 
    case 4:
@@ -3785,18 +3788,18 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
 
    case 7:
     if (!rtu_in->data.on_ground) {
-      rtb_Gain4 = ((rtb_Gain5_c + rtb_Sum_p) + rtb_uDLookupTable_o * rtb_lo) + rtb_Mod2_k;
+      rtb_Gain4 = ((rtb_Gain5_c + rtb_Gain_d) + rtb_uDLookupTable_o * rtb_Gain1_ot) + rtb_Divide_mx;
     }
 
     rtb_Divide_dr = std::fmax(-rtb_Mod2, std::fmin(rtb_Mod2, rtb_Gain4));
     break;
 
    case 8:
-    rtb_Divide_dr = std::fmax(-rtb_Add1_d, std::fmin(rtb_Add1_d, rtb_Gain1_da));
+    rtb_Divide_dr = std::fmax(-rtb_Switch1_b, std::fmin(rtb_Switch1_b, rtb_Cos1_ik));
     break;
 
    default:
-    rtb_Divide_dr = std::fmax(-rtb_Switch1_b, std::fmin(rtb_Switch1_b, A380FgOuterLoops_rtP.VS_Gain_d * rtb_Sum2_c));
+    rtb_Divide_dr = std::fmax(-rtb_Cos1_aq, std::fmin(rtb_Cos1_aq, A380FgOuterLoops_rtP.VS_Gain_d * rtb_Sum2_c));
     break;
   }
 
@@ -3826,30 +3829,32 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Divide_dr = A380FgOuterLoops_rtP.Saturation_LowerSat_mt;
   }
 
-  rtb_Y_nu = rtb_Mod2 * rtb_Divide_dr;
+  rtb_Mod2_k = rtb_Mod2 * rtb_Divide_dr;
   rtb_Sum2_c = A380FgOuterLoops_rtP.kntofpm_Gain_k * rtu_in->data.V_gnd_kn * A380FgOuterLoops_rtP.maxslope_Gain_k;
   A380FgOuterLoops_LagFilter(rtb_Y_b, A380FgOuterLoops_rtP.LagFilter1_C1_n, rtu_in->time.dt, &rtb_Mod2,
     &A380FgOuterLoops_DWork.sf_LagFilter_d);
   *rty_out = rtb_BusAssignment.output;
   rty_out->flight_director.Theta_c_deg = rtb_Y_f;
   rty_out->autopilot.Theta_c_deg = (A380FgOuterLoops_rtP.Constant_Value_mv - rtb_Divide_dr) * rtu_in->data.Theta_deg +
-    rtb_Y_nu;
+    rtb_Mod2_k;
   rty_out->flare_law.condition_Flare = (rtb_Compare_mk || ((rtu_in->data.H_radio_ft < 80.0) && ((rtu_in->data.H_radio_ft
     * 14.0 <= std::abs(std::fmin(std::fmax(rtb_Y_ex - rtb_Sum2_c, A380FgOuterLoops_rtP.Gain7_Gain_k * rtb_Mod2),
     rtb_Sum2_c + rtb_Y_ex))) || (rtu_in->data.H_radio_ft <= 42.0))));
   rty_out->flare_law.H_dot_radio_fpm = rtb_MaxH_dot_RA1;
   rty_out->flare_law.H_dot_c_fpm = rtb_Vz;
-  rty_out->flare_law.delta_Theta_H_dot_deg = rtb_lo;
+  rty_out->flare_law.delta_Theta_H_dot_deg = rtb_Gain1_ot;
   rty_out->flare_law.delta_Theta_bz_deg = rtb_Gain5_c;
-  rty_out->flare_law.delta_Theta_bx_deg = rtb_Sum_p;
-  rty_out->flare_law.delta_Theta_beta_c_deg = rtb_Mod2_k;
+  rty_out->flare_law.delta_Theta_bx_deg = rtb_Gain_d;
+  rty_out->flare_law.delta_Theta_beta_c_deg = rtb_Divide_mx;
   rty_out->alt_star_debug.active = rtb_Delay_l;
   rty_out->alt_star_debug.dh_offset_ft = A380FgOuterLoops_DWork.dH_offset;
   rty_out->alt_star_debug.k = A380FgOuterLoops_DWork.k;
   rty_out->alt_star_debug.max_h_dot_ft_min = A380FgOuterLoops_DWork.maxH_dot;
   rty_out->alt_star_debug.H_dot_c_ft_min = rtb_ManualSwitch;
-  rty_out->alt_star_debug.AP_theta_c_raw = rtb_Mod1_g;
-  rty_out->alt_star_debug.AP_theta_c_prot = rtb_Divide_mx;
+  rty_out->alt_star_debug.AP_theta_c_raw = rtb_Y_nu;
+  rty_out->alt_star_debug.AP_theta_c_prot = rtb_lo;
+  rty_out->alt_star_debug.FD_theta_c_raw = rtb_Mod1_g;
+  rty_out->alt_star_debug.FD_theta_c_prot = rtb_Sum_p;
   A380FgOuterLoops_DWork.Delay_DSTATE = rtb_Mod1;
   for (i = 0; i < 99; i++) {
     A380FgOuterLoops_DWork.Delay_DSTATE_l4[i] = A380FgOuterLoops_DWork.Delay_DSTATE_l4[i + 1];
@@ -3860,7 +3865,7 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   A380FgOuterLoops_DWork.Delay_DSTATE_n[99] = rtb_Delay_d;
   A380FgOuterLoops_DWork.icLoad = false;
   A380FgOuterLoops_DWork.Delay_DSTATE_i = rtb_Gain1_dd;
-  A380FgOuterLoops_DWork.Delay_DSTATE_l = rtb_Gain_gr;
+  A380FgOuterLoops_DWork.Delay_DSTATE_l = rtb_Gain_gz;
   A380FgOuterLoops_DWork.icLoad_f = false;
 }
 
