@@ -106,6 +106,9 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FWS] Single chime sound can be interrupted - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
+1. [ADIRS] Add computerized ADIRS simulation - @lukecologne (luke)
+1. [ADIRS] Add basic simulation of air data sensors - @lukecologne (luke)
+1. [ADIRS] Add simulation of ADIRS power supplies - @lukecologne (luke)
 
 ## 2024.1.0
 

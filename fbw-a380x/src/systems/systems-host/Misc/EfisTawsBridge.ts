@@ -558,7 +558,7 @@ export class EfisTawsBridge implements Instrument {
     }
 
     const tawsWxrSelected = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
-    const extremeLatitude = this.validIrMaintWord ? this.validIrMaintWord.get().bitValueOr(15, false) : false;
+    const extremeLatitude = this.validIrMaintWord ? this.validIrMaintWord.get().bitValueOr(25, false) : false;
     this.terr1Failed.set(
       this.failuresConsumer.isActive(A380Failure.Terr1) ||
         this.aesu1ResetPulled.get() ||
