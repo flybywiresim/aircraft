@@ -43,7 +43,7 @@ import {
   UpdateThrottler,
   IrBusEvents,
 } from '@flybywiresim/fbw-sdk';
-import { VerticalMode, LateralMode, AutoThrustModeMessage } from '@shared/autopilot';
+import { VerticalMode, LateralMode } from '@shared/autopilot';
 import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
 // FIXME should not import from instruments
 import { PseudoFwcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
@@ -92,6 +92,7 @@ import {
 // FIXME should not import from instruments
 import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { EcuBusEvents } from '@shared/publishers/EcuPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -147,7 +148,8 @@ export class FwsCore {
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
       StallWarningEvents &
-      IrBusEvents
+      IrBusEvents &
+      EcuBusEvents
   >();
 
   private subs: Subscription[] = [];
@@ -2171,11 +2173,17 @@ export class FwsCore {
 
   public readonly eng3Or4TakeoffPower = Subject.create(false);
 
-  public autoThrustModeMessage = AutoThrustModeMessage.None;
-
-  private readonly autoThrustModeMessageSimVar = RegisteredSimVar.create<AutoThrustModeMessage>(
-    'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
-    SimVarValueType.Enum,
+  private readonly ecu1MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_1'),
+  );
+  private readonly ecu2MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_2'),
+  );
+  private readonly ecu3MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_3'),
+  );
+  private readonly ecu4MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_4'),
   );
 
   private readonly autoThrustLimitedConfNode = new NXLogicConfirmNode(5, true);
@@ -3856,11 +3864,8 @@ export class FwsCore {
     this.autoThrustInvoluntaryPfdMemoMemoryNode.write(athrOffUnvoluntary, resetAthrWarning || athrDiscPressed);
 
     // A/THR LIMITED
-    this.autoThrustModeMessage = this.autoThrustModeMessageSimVar.get();
-    this.autoThrustLimitedClb = this.autoThrustModeMessage === AutoThrustModeMessage.LeverClb;
-    this.autoThrustLimitedMct = this.autoThrustModeMessage === AutoThrustModeMessage.LeverMct;
-    const athrEngaged = this.autoThrustStatus.get() === 2;
-    const athrIsLimited = !below50ft && athrEngaged && (this.autoThrustLimitedClb || this.autoThrustLimitedMct);
+    const athrIsLimited =
+      this.fcdc1FgDiscreteWord3.get().bitValueOr(14, false) || this.fcdc2FgDiscreteWord3.get().bitValueOr(14, false);
     this.autoThrustLimitedConfNode.write(athrIsLimited, deltaTime);
     this.autoThrustLimitedMtrigNode.write(
       this.autoThrustLimitedConfNode.read() && !this.autoThrustLimitedDelayNode,
@@ -3871,7 +3876,11 @@ export class FwsCore {
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedDelayNode);
 
     // ENG THRUST LOCKED
-    this.engineThrustLocked = this.autoThrustModeMessage === AutoThrustModeMessage.ThrustLock;
+    this.engineThrustLocked =
+      this.ecu1MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu2MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu3MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu4MaintenanceWord.get().bitValueOr(12, false);
 
     const engineThrustLockedAndAthrDisconnected5s = this.autoThrustDisconnected5SecondsConfNode.write(
       this.engineThrustLocked && !athrEngagedOrArmed,

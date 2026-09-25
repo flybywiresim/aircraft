@@ -6,6 +6,7 @@
 #include "look1_binlxpw.h"
 #include "plook_binx.h"
 #include "intrp3d_l_pw.h"
+#include "look1_iflf_binlxpw.h"
 #include "look2_iflf_binlxpw.h"
 
 const uint8_T A380PrimComputerFe_IN_Flying{ 1U };
@@ -66,6 +67,28 @@ void A380PrimComputerFe::A380PrimComputerFe_RateLimiter(real_T rtu_u, real_T rtu
   localDW->pY = *rty_Y;
 }
 
+void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction_Reset(rtDW_MATLABFunction_A380PrimComputerFe_T *localDW)
+{
+  localDW->output = false;
+  localDW->timeSinceCondition = 0.0;
+}
+
+void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge,
+  real_T rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerFe_T *localDW)
+{
+  if (rtu_u == rtu_isRisingEdge) {
+    localDW->timeSinceCondition += rtu_Ts;
+    if (localDW->timeSinceCondition >= rtu_timeDelay) {
+      localDW->output = rtu_u;
+    }
+  } else {
+    localDW->timeSinceCondition = 0.0;
+    localDW->output = rtu_u;
+  }
+
+  *rty_y = localDW->output;
+}
+
 void A380PrimComputerFe::A380PrimComputerFe_VS1GfromVLS(real_T rtu_vls_conf_0, real_T rtu_vls_conf_other, real_T
   rtu_flap_handle_index, real_T *rty_vs1g)
 {
@@ -76,12 +99,12 @@ void A380PrimComputerFe::A380PrimComputerFe_VS1GfromVLS(real_T rtu_vls_conf_0, r
   }
 }
 
-void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y)
+void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction_k(const base_arinc_429 *rtu_u, boolean_T *rty_y)
 {
   *rty_y = (rtu_u->SSM == static_cast<uint32_T>(SignStatusMatrix::NormalOperation));
 }
 
-void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction_k(const base_arinc_429 *rtu_u, real32_T *rty_y)
+void A380PrimComputerFe::A380PrimComputerFe_MATLABFunction_kb(const base_arinc_429 *rtu_u, real32_T *rty_y)
 {
   *rty_y = rtu_u->Data;
 }
@@ -92,24 +115,27 @@ void A380PrimComputerFe::step()
   real_T fractions_0[3];
   real_T fractions_1[3];
   real_T fractions_2[3];
+  real_T rtb_BusAssignment_i_flight_envelope_v_ls_kn;
   real_T rtb_BusAssignment_ji_flight_envelope_computed_gross_weight_kg;
   real_T rtb_Gain;
+  real_T rtb_Saturation1_b;
   real_T rtb_Switch;
-  real_T rtb_Y_p;
+  real_T rtb_Y_lb;
   real_T rtb_conf;
-  real_T rtb_uDLookupTable;
   real_T rtb_vs1g;
   real_T rtb_vs1g_c;
+  real_T tmp_0;
   int32_T rtb_alpha_floor_inhib;
   int32_T tmp;
-  real32_T rtb_uDLookupTable_a;
+  real32_T rtb_uDLookupTable2;
   uint32_T bpIndices[3];
   uint32_T bpIndices_0[3];
   uint32_T bpIndices_1[3];
   uint32_T bpIndices_2[3];
   boolean_T guard1;
   boolean_T rtb_Equal;
-  boolean_T rtb_NOT;
+  boolean_T rtb_NOT4;
+  boolean_T rtb_y_b;
   if (A380PrimComputerFe_U.in.data.sim_data.computer_running) {
     if (!A380PrimComputerFe_DWork.Runtime_MODE) {
       A380PrimComputerFe_DWork.Delay_DSTATE = A380PrimComputerFe_P.DiscreteDerivativeVariableTs_InitialCondition;
@@ -118,8 +144,7 @@ void A380PrimComputerFe::step()
       A380PrimComputerFe_DWork.is_active_c15_A380PrimComputerFe = 0U;
       A380PrimComputerFe_DWork.is_c15_A380PrimComputerFe = A380PrimComputerFe_IN_NO_ACTIVE_CHILD;
       A380PrimComputerFe_DWork.sAlphaFloor = 0.0;
-      A380PrimComputerFe_DWork.output = false;
-      A380PrimComputerFe_DWork.timeSinceCondition = 0.0;
+      A380PrimComputerFe_MATLABFunction_Reset(&A380PrimComputerFe_DWork.sf_MATLABFunction_p);
       A380PrimComputerFe_RateLimiter_Reset(&A380PrimComputerFe_DWork.sf_RateLimiter_k);
       A380PrimComputerFe_DWork.takeoff_config = 0.0;
       A380PrimComputerFe_DWork.pY_not_empty = false;
@@ -132,6 +157,12 @@ void A380PrimComputerFe::step()
       A380PrimComputerFe_LagFilter_Reset(&A380PrimComputerFe_DWork.sf_LagFilter_pa);
       A380PrimComputerFe_LagFilter_Reset(&A380PrimComputerFe_DWork.sf_LagFilter_p);
       A380PrimComputerFe_LagFilter_Reset(&A380PrimComputerFe_DWork.sf_LagFilter_e);
+      A380PrimComputerFe_LagFilter_Reset(&A380PrimComputerFe_DWork.sf_LagFilter_n);
+      A380PrimComputerFe_LagFilter_Reset(&A380PrimComputerFe_DWork.sf_LagFilter_o);
+      A380PrimComputerFe_DWork.output = false;
+      A380PrimComputerFe_MATLABFunction_Reset(&A380PrimComputerFe_DWork.sf_MATLABFunction);
+      A380PrimComputerFe_DWork.previousInput = false;
+      A380PrimComputerFe_DWork.remainingTriggerTime = 0.0;
       A380PrimComputerFe_DWork.Runtime_MODE = true;
     }
 
@@ -206,7 +237,7 @@ void A380PrimComputerFe::step()
       }
     }
 
-    rtb_Equal = (A380PrimComputerFe_U.in.fctl_logic.active_pitch_law == A380PrimComputerFe_P.EnumeratedConstant_Value);
+    rtb_Equal = (A380PrimComputerFe_U.in.fctl_logic.active_law == A380PrimComputerFe_P.EnumeratedConstant_Value);
     guard1 = false;
     if ((rtb_alpha_floor_inhib == 0) && (A380PrimComputerFe_U.in.general_logic.adr_computation_data.mach < 0.6)) {
       if (A380PrimComputerFe_U.in.general_logic.flap_handle_index >= 4.0F) {
@@ -232,33 +263,32 @@ void A380PrimComputerFe::step()
       }
     }
 
-    A380PrimComputerFe_MATLABFunction_k(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_kg,
-      &rtb_uDLookupTable_a);
-    rtb_Switch = rtb_uDLookupTable_a;
-    A380PrimComputerFe_MATLABFunction(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_kg, &rtb_Equal);
+    A380PrimComputerFe_MATLABFunction_kb(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_kg,
+      &rtb_uDLookupTable2);
+    rtb_Switch = rtb_uDLookupTable2;
+    A380PrimComputerFe_MATLABFunction_k(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_kg, &rtb_Equal);
     A380PrimComputerFe_Y.out.flight_envelope.gross_weight_lost = !rtb_Equal;
-    A380PrimComputerFe_MATLABFunction_k(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_cg_pct,
-      &rtb_uDLookupTable_a);
-    A380PrimComputerFe_MATLABFunction(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_cg_pct, &rtb_Equal);
-    rtb_NOT = !A380PrimComputerFe_U.in.general_logic.on_ground;
-    if (rtb_NOT == A380PrimComputerFe_P.ConfirmNode_isRisingEdge) {
-      A380PrimComputerFe_DWork.timeSinceCondition += A380PrimComputerFe_U.in.data.time.dt;
-      if (A380PrimComputerFe_DWork.timeSinceCondition >= A380PrimComputerFe_P.ConfirmNode_timeDelay) {
-        A380PrimComputerFe_DWork.output = rtb_NOT;
-      }
-    } else {
-      A380PrimComputerFe_DWork.timeSinceCondition = 0.0;
-      A380PrimComputerFe_DWork.output = rtb_NOT;
+    A380PrimComputerFe_MATLABFunction_kb(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_cg_pct,
+      &rtb_uDLookupTable2);
+    A380PrimComputerFe_MATLABFunction_k(&A380PrimComputerFe_U.in.data.adcn_inputs.fqms.gross_weight_cg_pct, &rtb_Equal);
+    A380PrimComputerFe_Y.out.flight_envelope.gross_weight_cg_lost = !rtb_Equal;
+    A380PrimComputerFe_MATLABFunction(!A380PrimComputerFe_U.in.general_logic.on_ground,
+      A380PrimComputerFe_U.in.data.time.dt, A380PrimComputerFe_P.ConfirmNode_isRisingEdge,
+      A380PrimComputerFe_P.ConfirmNode_timeDelay, &rtb_Equal, &A380PrimComputerFe_DWork.sf_MATLABFunction_p);
+    rtb_BusAssignment_ji_flight_envelope_computed_gross_weight_kg = rtb_Switch;
+    rtb_Y_lb = A380PrimComputerFe_P.Gain_Gain * A380PrimComputerFe_U.in.fctl_logic.speed_brake_command_deg *
+      look1_binlxpw(static_cast<real_T>(A380PrimComputerFe_U.in.general_logic.flap_handle_index),
+                    A380PrimComputerFe_P.VLSincreasemaxdeflection_bp01Data,
+                    A380PrimComputerFe_P.VLSincreasemaxdeflection_tableData, 5U);
+    if (rtb_Y_lb > A380PrimComputerFe_P.Saturation1_UpperSat) {
+      rtb_Y_lb = A380PrimComputerFe_P.Saturation1_UpperSat;
+    } else if (rtb_Y_lb < A380PrimComputerFe_P.Saturation1_LowerSat) {
+      rtb_Y_lb = A380PrimComputerFe_P.Saturation1_LowerSat;
     }
 
-    rtb_BusAssignment_ji_flight_envelope_computed_gross_weight_kg = rtb_Switch;
-    A380PrimComputerFe_RateLimiter(A380PrimComputerFe_P.Gain_Gain *
-      A380PrimComputerFe_U.in.fctl_logic.speed_brake_command_deg * look1_binlxpw(static_cast<real_T>
-      (A380PrimComputerFe_U.in.general_logic.flap_handle_index), A380PrimComputerFe_P.VLSincreasemaxdeflection_bp01Data,
-      A380PrimComputerFe_P.VLSincreasemaxdeflection_tableData, 5U),
-      A380PrimComputerFe_P.RateLimiterGenericVariableTs2_up, A380PrimComputerFe_P.RateLimiterGenericVariableTs2_lo,
-      A380PrimComputerFe_U.in.data.time.dt, A380PrimComputerFe_P.reset_Value_p, &rtb_vs1g,
-      &A380PrimComputerFe_DWork.sf_RateLimiter_k);
+    A380PrimComputerFe_RateLimiter(rtb_Y_lb, A380PrimComputerFe_P.RateLimiterGenericVariableTs2_up,
+      A380PrimComputerFe_P.RateLimiterGenericVariableTs2_lo, A380PrimComputerFe_U.in.data.time.dt,
+      A380PrimComputerFe_P.reset_Value_p, &rtb_vs1g, &A380PrimComputerFe_DWork.sf_RateLimiter_k);
     if (A380PrimComputerFe_U.in.general_logic.on_ground) {
       A380PrimComputerFe_DWork.takeoff_config = A380PrimComputerFe_U.in.general_logic.flap_handle_index;
     } else if (A380PrimComputerFe_DWork.takeoff_config != A380PrimComputerFe_U.in.general_logic.flap_handle_index) {
@@ -274,50 +304,58 @@ void A380PrimComputerFe::step()
       A380PrimComputerFe_DWork.pY = A380PrimComputerFe_P.RateLimiterGenericVariableTs_InitialCondition;
     } else {
       if (A380PrimComputerFe_U.in.general_logic.flap_handle_index == 0.0F) {
-        rtb_vs1g_c = 1.23;
+        tmp_0 = 1.23;
       } else if (A380PrimComputerFe_U.in.general_logic.flap_handle_index == 1.0F) {
-        rtb_vs1g_c = 1.18;
+        tmp_0 = 1.18;
       } else if (A380PrimComputerFe_DWork.takeoff_config != -1.0) {
-        rtb_vs1g_c = 1.15;
+        tmp_0 = 1.15;
       } else {
-        rtb_vs1g_c = 1.23;
+        tmp_0 = 1.23;
       }
 
-      A380PrimComputerFe_DWork.pY += std::fmax(std::fmin(rtb_vs1g_c - A380PrimComputerFe_DWork.pY, std::abs
+      A380PrimComputerFe_DWork.pY += std::fmax(std::fmin(tmp_0 - A380PrimComputerFe_DWork.pY, std::abs
         (A380PrimComputerFe_P.RateLimiterGenericVariableTs_up) * A380PrimComputerFe_U.in.data.time.dt), -std::abs
         (A380PrimComputerFe_P.RateLimiterGenericVariableTs_lo) * A380PrimComputerFe_U.in.data.time.dt);
     }
 
-    rtb_uDLookupTable = A380PrimComputerFe_P.Gain2_Gain * rtb_Switch;
-    bpIndices[0U] = plook_binx(rtb_uDLookupTable, A380PrimComputerFe_P.nDLookupTable_bp01Data, 7U, &rtb_vs1g_c);
+    rtb_Saturation1_b = A380PrimComputerFe_P.Gain2_Gain * rtb_Switch;
+    bpIndices[0U] = plook_binx(rtb_Saturation1_b, A380PrimComputerFe_P.nDLookupTable_bp01Data, 7U, &rtb_vs1g_c);
     fractions[0U] = rtb_vs1g_c;
-    bpIndices[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable_a), A380PrimComputerFe_P.nDLookupTable_bp02Data, 1U,
+    bpIndices[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable2), A380PrimComputerFe_P.nDLookupTable_bp02Data, 1U,
       &rtb_vs1g_c);
     fractions[1U] = rtb_vs1g_c;
     bpIndices[2U] = plook_binx(static_cast<real_T>(A380PrimComputerFe_U.in.general_logic.flap_handle_index),
       A380PrimComputerFe_P.nDLookupTable_bp03Data, 5U, &rtb_vs1g_c);
     fractions[2U] = rtb_vs1g_c;
-    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_uDLookupTable,
+    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_Saturation1_b,
       A380PrimComputerFe_U.in.general_logic.adr_computation_data.altitude_standard_ft,
       A380PrimComputerFe_P.uDLookupTable1_bp01Data, A380PrimComputerFe_P.uDLookupTable1_bp02Data,
       A380PrimComputerFe_P.uDLookupTable1_tableData, A380PrimComputerFe_P.uDLookupTable1_maxIndex, 8U), intrp3d_l_pw
       (bpIndices, fractions, A380PrimComputerFe_P.nDLookupTable_tableData, A380PrimComputerFe_P.nDLookupTable_dimSizes),
-      static_cast<real_T>(A380PrimComputerFe_U.in.general_logic.flap_handle_index), &rtb_vs1g_c);
-    A380PrimComputerFe_RateLimiter(rtb_vs1g_c, A380PrimComputerFe_P.RateLimiterGenericVariableTs1_up_j,
+      static_cast<real_T>(A380PrimComputerFe_U.in.general_logic.flap_handle_index), &rtb_Y_lb);
+    if (rtb_Y_lb > A380PrimComputerFe_P.Saturation_UpperSat) {
+      tmp_0 = A380PrimComputerFe_P.Saturation_UpperSat;
+    } else if (rtb_Y_lb < A380PrimComputerFe_P.Saturation_LowerSat) {
+      tmp_0 = A380PrimComputerFe_P.Saturation_LowerSat;
+    } else {
+      tmp_0 = rtb_Y_lb;
+    }
+
+    A380PrimComputerFe_RateLimiter(tmp_0, A380PrimComputerFe_P.RateLimiterGenericVariableTs1_up_j,
       A380PrimComputerFe_P.RateLimiterGenericVariableTs1_lo_d, A380PrimComputerFe_U.in.data.time.dt,
-      A380PrimComputerFe_P.reset_Value_h, &rtb_Y_p, &A380PrimComputerFe_DWork.sf_RateLimiter_b);
-    A380PrimComputerFe_Y.out.flight_envelope.v_ls_kn = std::fmax(A380PrimComputerFe_P.Vmcl_Value,
-      A380PrimComputerFe_DWork.pY * rtb_Y_p) + rtb_vs1g;
-    rtb_uDLookupTable = A380PrimComputerFe_P.Gain2_Gain_m * rtb_Switch;
-    bpIndices_0[0U] = plook_binx(rtb_uDLookupTable, A380PrimComputerFe_P.nDLookupTable_bp01Data_n, 7U, &rtb_vs1g_c);
+      A380PrimComputerFe_P.reset_Value_h, &rtb_Y_lb, &A380PrimComputerFe_DWork.sf_RateLimiter_b);
+    rtb_BusAssignment_i_flight_envelope_v_ls_kn = std::fmax(A380PrimComputerFe_P.Vmcl_Value, A380PrimComputerFe_DWork.pY
+      * rtb_Y_lb) + rtb_vs1g;
+    rtb_Saturation1_b = A380PrimComputerFe_P.Gain2_Gain_m * rtb_Switch;
+    bpIndices_0[0U] = plook_binx(rtb_Saturation1_b, A380PrimComputerFe_P.nDLookupTable_bp01Data_n, 7U, &rtb_vs1g_c);
     fractions_0[0U] = rtb_vs1g_c;
-    bpIndices_0[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable_a), A380PrimComputerFe_P.nDLookupTable_bp02Data_j,
+    bpIndices_0[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable2), A380PrimComputerFe_P.nDLookupTable_bp02Data_j,
       1U, &rtb_vs1g_c);
     fractions_0[1U] = rtb_vs1g_c;
     bpIndices_0[2U] = plook_binx(A380PrimComputerFe_P.Constant1_Value, A380PrimComputerFe_P.nDLookupTable_bp03Data_k, 5U,
       &rtb_vs1g_c);
     fractions_0[2U] = rtb_vs1g_c;
-    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_uDLookupTable,
+    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_Saturation1_b,
       A380PrimComputerFe_U.in.general_logic.adr_computation_data.altitude_standard_ft,
       A380PrimComputerFe_P.uDLookupTable1_bp01Data_p, A380PrimComputerFe_P.uDLookupTable1_bp02Data_h,
       A380PrimComputerFe_P.uDLookupTable1_tableData_n, A380PrimComputerFe_P.uDLookupTable1_maxIndex_f, 8U), intrp3d_l_pw
@@ -336,21 +374,21 @@ void A380PrimComputerFe::step()
       }
     }
 
-    rtb_uDLookupTable = A380PrimComputerFe_P.Gain2_Gain_d * rtb_Switch;
+    rtb_Saturation1_b = A380PrimComputerFe_P.Gain2_Gain_d * rtb_Switch;
     if (A380PrimComputerFe_DWork.takeoff_config_n != -1.0) {
       rtb_conf = 2.0;
     } else {
       rtb_conf = A380PrimComputerFe_U.in.general_logic.flap_handle_index;
     }
 
-    bpIndices_1[0U] = plook_binx(rtb_uDLookupTable, A380PrimComputerFe_P.nDLookupTable_bp01Data_c, 7U, &rtb_vs1g_c);
+    bpIndices_1[0U] = plook_binx(rtb_Saturation1_b, A380PrimComputerFe_P.nDLookupTable_bp01Data_c, 7U, &rtb_vs1g_c);
     fractions_1[0U] = rtb_vs1g_c;
-    bpIndices_1[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable_a), A380PrimComputerFe_P.nDLookupTable_bp02Data_e,
+    bpIndices_1[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable2), A380PrimComputerFe_P.nDLookupTable_bp02Data_e,
       1U, &rtb_vs1g_c);
     fractions_1[1U] = rtb_vs1g_c;
     bpIndices_1[2U] = plook_binx(rtb_conf, A380PrimComputerFe_P.nDLookupTable_bp03Data_l, 5U, &rtb_vs1g_c);
     fractions_1[2U] = rtb_vs1g_c;
-    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_uDLookupTable,
+    A380PrimComputerFe_VS1GfromVLS(look2_binlxpw(rtb_Saturation1_b,
       A380PrimComputerFe_U.in.general_logic.adr_computation_data.altitude_standard_ft,
       A380PrimComputerFe_P.uDLookupTable1_bp01Data_o, A380PrimComputerFe_P.uDLookupTable1_bp02Data_p,
       A380PrimComputerFe_P.uDLookupTable1_tableData_p, A380PrimComputerFe_P.uDLookupTable1_maxIndex_g, 8U), intrp3d_l_pw
@@ -370,7 +408,7 @@ void A380PrimComputerFe::step()
     rtb_Switch *= A380PrimComputerFe_P.Gain2_Gain_n;
     bpIndices_2[0U] = plook_binx(rtb_Switch, A380PrimComputerFe_P.nDLookupTable_bp01Data_cz, 7U, &rtb_vs1g_c);
     fractions_2[0U] = rtb_vs1g_c;
-    bpIndices_2[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable_a), A380PrimComputerFe_P.nDLookupTable_bp02Data_i,
+    bpIndices_2[1U] = plook_binx(static_cast<real_T>(rtb_uDLookupTable2), A380PrimComputerFe_P.nDLookupTable_bp02Data_i,
       1U, &rtb_vs1g_c);
     fractions_2[1U] = rtb_vs1g_c;
     bpIndices_2[2U] = plook_binx(A380PrimComputerFe_P.Constant_Value_a, A380PrimComputerFe_P.nDLookupTable_bp03Data_h,
@@ -383,58 +421,127 @@ void A380PrimComputerFe::step()
       (bpIndices_2, fractions_2, A380PrimComputerFe_P.nDLookupTable_tableData_d,
        A380PrimComputerFe_P.nDLookupTable_dimSizes_j), A380PrimComputerFe_P.Constant_Value_a, &rtb_vs1g);
     rtb_Switch = std::fmax(A380PrimComputerFe_P.Gain2_Gain_j * rtb_vs1g, A380PrimComputerFe_P.Vmcl20_Value);
-    A380PrimComputerFe_Y.out.flight_envelope.v_stall_kn = rtb_Y_p;
-    rtb_uDLookupTable = std::fmax(A380PrimComputerFe_P.Constant1_Value_j, 0.0);
-    if (A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn > A380PrimComputerFe_P.Saturation_UpperSat)
+    A380PrimComputerFe_Y.out.flight_envelope.v_stall_kn = rtb_Y_lb;
+    rtb_vs1g_c = std::fmax(A380PrimComputerFe_P.Constant1_Value_j, 0.0);
+    if (A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn > A380PrimComputerFe_P.Saturation_UpperSat_m)
     {
-      rtb_vs1g_c = A380PrimComputerFe_P.Saturation_UpperSat;
+      tmp_0 = A380PrimComputerFe_P.Saturation_UpperSat_m;
     } else if (A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn <
-               A380PrimComputerFe_P.Saturation_LowerSat) {
-      rtb_vs1g_c = A380PrimComputerFe_P.Saturation_LowerSat;
+               A380PrimComputerFe_P.Saturation_LowerSat_o) {
+      tmp_0 = A380PrimComputerFe_P.Saturation_LowerSat_o;
     } else {
-      rtb_vs1g_c = A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn;
+      tmp_0 = A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn;
     }
 
-    A380PrimComputerFe_LagFilter(rtb_vs1g_c, A380PrimComputerFe_P.LagFilter_C1_d, A380PrimComputerFe_U.in.data.time.dt,
-      &rtb_Y_p, &A380PrimComputerFe_DWork.sf_LagFilter_d);
+    A380PrimComputerFe_LagFilter(tmp_0, A380PrimComputerFe_P.LagFilter_C1_d, A380PrimComputerFe_U.in.data.time.dt,
+      &rtb_Y_lb, &A380PrimComputerFe_DWork.sf_LagFilter_d);
     if ((!A380PrimComputerFe_DWork.pY_not_empty_d) || (!A380PrimComputerFe_DWork.pU_not_empty)) {
-      A380PrimComputerFe_DWork.pU = rtb_Y_p;
+      A380PrimComputerFe_DWork.pU = rtb_Y_lb;
       A380PrimComputerFe_DWork.pU_not_empty = true;
-      A380PrimComputerFe_DWork.pY_b = rtb_Y_p;
+      A380PrimComputerFe_DWork.pY_b = rtb_Y_lb;
       A380PrimComputerFe_DWork.pY_not_empty_d = true;
     }
 
     rtb_vs1g = A380PrimComputerFe_U.in.data.time.dt * A380PrimComputerFe_P.WashoutFilter_C1 + 2.0;
-    rtb_vs1g_c = 2.0 / rtb_vs1g;
+    rtb_Saturation1_b = 2.0 / rtb_vs1g;
     A380PrimComputerFe_DWork.pY_b = (2.0 - A380PrimComputerFe_U.in.data.time.dt * A380PrimComputerFe_P.WashoutFilter_C1)
-      / rtb_vs1g * A380PrimComputerFe_DWork.pY_b + (rtb_Y_p * rtb_vs1g_c - A380PrimComputerFe_DWork.pU * rtb_vs1g_c);
-    A380PrimComputerFe_DWork.pU = rtb_Y_p;
+      / rtb_vs1g * A380PrimComputerFe_DWork.pY_b + (rtb_Y_lb * rtb_Saturation1_b - A380PrimComputerFe_DWork.pU *
+      rtb_Saturation1_b);
+    A380PrimComputerFe_DWork.pU = rtb_Y_lb;
     A380PrimComputerFe_LagFilter(A380PrimComputerFe_U.in.general_logic.ir_computation_data.n_z_g +
-      A380PrimComputerFe_P.Bias_Bias, A380PrimComputerFe_P.LagFilter2_C1, A380PrimComputerFe_U.in.data.time.dt, &rtb_Y_p,
-      &A380PrimComputerFe_DWork.sf_LagFilter_pa);
+      A380PrimComputerFe_P.Bias_Bias, A380PrimComputerFe_P.LagFilter2_C1, A380PrimComputerFe_U.in.data.time.dt,
+      &rtb_Y_lb, &A380PrimComputerFe_DWork.sf_LagFilter_pa);
     if (A380PrimComputerFe_U.in.general_logic.on_ground) {
       rtb_vs1g = A380PrimComputerFe_U.in.general_logic.ir_computation_data.theta_deg;
     } else {
       rtb_vs1g = A380PrimComputerFe_U.in.general_logic.adr_computation_data.alpha_deg;
     }
 
-    if (rtb_Y_p > A380PrimComputerFe_P.Saturation1_UpperSat) {
-      rtb_vs1g_c = A380PrimComputerFe_P.Saturation1_UpperSat;
-    } else if (rtb_Y_p < A380PrimComputerFe_P.Saturation1_LowerSat) {
-      rtb_vs1g_c = A380PrimComputerFe_P.Saturation1_LowerSat;
+    if (rtb_Y_lb > A380PrimComputerFe_P.Saturation1_UpperSat_b) {
+      tmp_0 = A380PrimComputerFe_P.Saturation1_UpperSat_b;
+    } else if (rtb_Y_lb < A380PrimComputerFe_P.Saturation1_LowerSat_k) {
+      tmp_0 = A380PrimComputerFe_P.Saturation1_LowerSat_k;
     } else {
-      rtb_vs1g_c = rtb_Y_p;
+      tmp_0 = rtb_Y_lb;
     }
 
     A380PrimComputerFe_LagFilter(A380PrimComputerFe_P.Gain_Gain_e *
-      A380PrimComputerFe_U.in.general_logic.ir_computation_data.n_x_g - rtb_vs1g * (rtb_vs1g_c +
+      A380PrimComputerFe_U.in.general_logic.ir_computation_data.n_x_g - rtb_vs1g * (tmp_0 +
       A380PrimComputerFe_P.Bias1_Bias), A380PrimComputerFe_P.LagFilter1_C1, A380PrimComputerFe_U.in.data.time.dt,
-      &rtb_Y_p, &A380PrimComputerFe_DWork.sf_LagFilter_p);
+      &rtb_Y_lb, &A380PrimComputerFe_DWork.sf_LagFilter_p);
     rtb_vs1g *= std::cos(A380PrimComputerFe_P.Gain1_Gain *
                          A380PrimComputerFe_U.in.general_logic.ir_computation_data.phi_deg);
     A380PrimComputerFe_LagFilter(A380PrimComputerFe_U.in.general_logic.ir_computation_data.theta_deg - rtb_vs1g,
       A380PrimComputerFe_P.LagFilter_C1_f, A380PrimComputerFe_U.in.data.time.dt, &rtb_vs1g,
       &A380PrimComputerFe_DWork.sf_LagFilter_e);
+    rtb_Saturation1_b = rtb_vs1g;
+    rtb_conf = rtb_Y_lb;
+    if (A380PrimComputerFe_U.in.general_logic.ir_computation_data.V_gnd_kts >
+        A380PrimComputerFe_P.Saturation_UpperSat_mz) {
+      tmp_0 = A380PrimComputerFe_P.Saturation_UpperSat_mz;
+    } else if (A380PrimComputerFe_U.in.general_logic.ir_computation_data.V_gnd_kts <
+               A380PrimComputerFe_P.Saturation_LowerSat_j) {
+      tmp_0 = A380PrimComputerFe_P.Saturation_LowerSat_j;
+    } else {
+      tmp_0 = A380PrimComputerFe_U.in.general_logic.ir_computation_data.V_gnd_kts;
+    }
+
+    A380PrimComputerFe_LagFilter(A380PrimComputerFe_P.Gain_Gain_i * (A380PrimComputerFe_P.ftmintoms_Gain *
+      A380PrimComputerFe_U.in.general_logic.ir_computation_data.V_zbi_ft_min / (A380PrimComputerFe_P.ktstoms_Gain *
+      tmp_0)), A380PrimComputerFe_P.LagFilter1_C1_c, A380PrimComputerFe_U.in.data.time.dt, &rtb_Y_lb,
+      &A380PrimComputerFe_DWork.sf_LagFilter_n);
+    rtb_vs1g = look1_binlxpw(rtb_Y_lb, A380PrimComputerFe_P.uDLookupTable_bp01Data_a,
+      A380PrimComputerFe_P.uDLookupTable_tableData_p3, 3U);
+    A380PrimComputerFe_LagFilter(rtb_conf - rtb_Saturation1_b, A380PrimComputerFe_P.LagFilter2_C1_a,
+      A380PrimComputerFe_U.in.data.time.dt, &rtb_Y_lb, &A380PrimComputerFe_DWork.sf_LagFilter_o);
+    rtb_NOT4 = (rtb_BusAssignment_i_flight_envelope_v_ls_kn >
+                A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn);
+    A380PrimComputerFe_DWork.output = (((!A380PrimComputerFe_DWork.output) &&
+      (A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft >= A380PrimComputerFe_P.HysteresisNode3_highTrigger))
+      || (((!A380PrimComputerFe_DWork.output) || (A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft >
+      A380PrimComputerFe_P.HysteresisNode3_lowTrigger)) && A380PrimComputerFe_DWork.output));
+    rtb_y_b = (A380PrimComputerFe_U.in.fg_logic.ap_1_engaged || A380PrimComputerFe_U.in.fg_logic.ap_2_engaged);
+    rtb_Y_lb = look1_binlxpw(rtb_Y_lb, A380PrimComputerFe_P.uDLookupTable1_bp01Data_n,
+      A380PrimComputerFe_P.uDLookupTable1_tableData_mb, 3U) * look1_iflf_binlxpw
+      (A380PrimComputerFe_U.in.general_logic.flap_surface_angle_deg, A380PrimComputerFe_P.uDLookupTable2_bp01Data,
+       A380PrimComputerFe_P.uDLookupTable2_tableData, 3U);
+    if (rtb_Y_lb > A380PrimComputerFe_P.Saturation1_UpperSat_g) {
+      rtb_Y_lb = A380PrimComputerFe_P.Saturation1_UpperSat_g;
+    } else if (rtb_Y_lb < A380PrimComputerFe_P.Saturation1_LowerSat_j) {
+      rtb_Y_lb = A380PrimComputerFe_P.Saturation1_LowerSat_j;
+    }
+
+    A380PrimComputerFe_MATLABFunction((((((((rtb_vs1g + rtb_Y_lb) + look1_iflf_binlxpw
+      (A380PrimComputerFe_U.in.general_logic.flap_surface_angle_deg, A380PrimComputerFe_P.uDLookupTable3_bp01Data,
+       A380PrimComputerFe_P.uDLookupTable3_tableData, 3U) <
+      A380PrimComputerFe_U.in.general_logic.adr_computation_data.alpha_deg) && rtb_NOT4) ||
+      (rtb_BusAssignment_i_flight_envelope_v_ls_kn + A380PrimComputerFe_P.Bias_Bias_e >
+       A380PrimComputerFe_U.in.general_logic.adr_computation_data.V_ias_kn)) &&
+      ((A380PrimComputerFe_U.in.general_logic.flap_handle_index >= A380PrimComputerFe_P.CompareToConstant_const_h) ||
+       ((A380PrimComputerFe_U.in.general_logic.flap_handle_index > A380PrimComputerFe_P.CompareToConstant1_const_n1) &&
+        (A380PrimComputerFe_U.in.general_logic.flaps_locked || A380PrimComputerFe_U.in.general_logic.slats_locked))) &&
+      (A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft < A380PrimComputerFe_P.CompareToConstant2_const_h) &&
+      A380PrimComputerFe_DWork.output) || (rtb_NOT4 &&
+      (A380PrimComputerFe_U.in.general_logic.adr_computation_data.altitude_standard_ft >
+       A380PrimComputerFe_P.CompareToConstant3_const_e) && (!A380PrimComputerFe_U.in.general_logic.engine_out) &&
+      rtb_y_b)) && (!A380PrimComputerFe_U.in.fg_mode_logic.alpha_floor_mode_active) &&
+      (!A380PrimComputerFe_U.in.fg_mode_logic.tla_to_ga_set) && (!A380PrimComputerFe_U.in.general_logic.on_ground)),
+      A380PrimComputerFe_U.in.data.time.dt, A380PrimComputerFe_P.ConfirmNode_isRisingEdge_b,
+      A380PrimComputerFe_P.ConfirmNode_timeDelay_c, &rtb_y_b, &A380PrimComputerFe_DWork.sf_MATLABFunction);
+    if (A380PrimComputerFe_DWork.remainingTriggerTime > 0.0) {
+      A380PrimComputerFe_DWork.remainingTriggerTime -= A380PrimComputerFe_U.in.data.time.dt;
+    } else if (A380PrimComputerFe_DWork.remainingTriggerTime < 0.0) {
+      A380PrimComputerFe_DWork.remainingTriggerTime = 0.0;
+    }
+
+    if (((A380PrimComputerFe_P.MTrigNode_retriggerable != 0.0) || (A380PrimComputerFe_DWork.remainingTriggerTime == 0.0))
+        && (((A380PrimComputerFe_P.MTrigNode_isRisingEdge != 0.0) && rtb_y_b && (!A380PrimComputerFe_DWork.previousInput))
+            || ((A380PrimComputerFe_P.MTrigNode_isRisingEdge == 0.0) && (!rtb_y_b) &&
+                A380PrimComputerFe_DWork.previousInput))) {
+      A380PrimComputerFe_DWork.remainingTriggerTime = A380PrimComputerFe_P.MTrigNode_triggerDuration;
+    }
+
+    A380PrimComputerFe_DWork.previousInput = rtb_y_b;
     A380PrimComputerFe_Y.out.data = A380PrimComputerFe_U.in.data;
     A380PrimComputerFe_Y.out.general_logic = A380PrimComputerFe_U.in.general_logic;
     A380PrimComputerFe_Y.out.flight_envelope.beta_target_deg = 0.0;
@@ -442,15 +549,15 @@ void A380PrimComputerFe::step()
     A380PrimComputerFe_Y.out.flight_envelope.alpha_floor_condition = (A380PrimComputerFe_DWork.sAlphaFloor != 0.0);
     A380PrimComputerFe_Y.out.flight_envelope.computed_gross_weight_kg =
       rtb_BusAssignment_ji_flight_envelope_computed_gross_weight_kg;
-    A380PrimComputerFe_Y.out.flight_envelope.computed_gross_weight_cg_percent = rtb_uDLookupTable_a;
-    A380PrimComputerFe_Y.out.flight_envelope.gross_weight_cg_lost = !rtb_Equal;
+    A380PrimComputerFe_Y.out.flight_envelope.computed_gross_weight_cg_percent = rtb_uDLookupTable2;
     A380PrimComputerFe_Y.out.flight_envelope.gross_weight_disagree =
       A380PrimComputerFe_U.in.flight_envelope.gross_weight_disagree;
     A380PrimComputerFe_Y.out.flight_envelope.gross_weight_cg_disagree =
       A380PrimComputerFe_U.in.flight_envelope.gross_weight_cg_disagree;
     A380PrimComputerFe_Y.out.flight_envelope.speed_scale_lost = (A380PrimComputerFe_U.in.general_logic.all_sfcc_lost ||
       A380PrimComputerFe_U.in.general_logic.triple_adr_failure);
-    A380PrimComputerFe_Y.out.flight_envelope.speed_scale_visible = A380PrimComputerFe_DWork.output;
+    A380PrimComputerFe_Y.out.flight_envelope.speed_scale_visible = rtb_Equal;
+    A380PrimComputerFe_Y.out.flight_envelope.v_ls_kn = rtb_BusAssignment_i_flight_envelope_v_ls_kn;
     A380PrimComputerFe_Y.out.flight_envelope.v_3_visible = ((A380PrimComputerFe_U.in.general_logic.flap_handle_index ==
       A380PrimComputerFe_P.CompareToConstant4_const) || (A380PrimComputerFe_U.in.general_logic.flap_handle_index ==
       A380PrimComputerFe_P.CompareToConstant2_const));
@@ -466,13 +573,13 @@ void A380PrimComputerFe::step()
     A380PrimComputerFe_Y.out.flight_envelope.v_man_visible = (A380PrimComputerFe_U.in.general_logic.flap_handle_index ==
       A380PrimComputerFe_P.CompareToConstant_const);
     if (A380PrimComputerFe_U.in.general_logic.landing_gear_down) {
-      rtb_vs1g_c = A380PrimComputerFe_P.Constant2_Value;
+      tmp_0 = A380PrimComputerFe_P.Constant2_Value;
     } else {
-      rtb_vs1g_c = A380PrimComputerFe_P.Constant3_Value;
+      tmp_0 = A380PrimComputerFe_P.Constant3_Value;
     }
 
-    A380PrimComputerFe_Y.out.flight_envelope.v_max_kn = std::fmin(std::fmin(std::fmin(rtb_vs1g_c, std::sqrt(std::pow
-      ((std::pow(rtb_uDLookupTable * rtb_uDLookupTable * 0.2 + 1.0, 3.5) - 1.0) * (std::fmax
+    A380PrimComputerFe_Y.out.flight_envelope.v_max_kn = std::fmin(std::fmin(std::fmin(tmp_0, std::sqrt(std::pow((std::
+      pow(rtb_vs1g_c * rtb_vs1g_c * 0.2 + 1.0, 3.5) - 1.0) * (std::fmax
       (A380PrimComputerFe_U.in.general_logic.adr_computation_data.p_s_c_hpa, 0.0) / 1013.25) + 1.0, 0.2857142857142857)
       - 1.0) * 1479.1), static_cast<real_T>(look2_iflf_binlxpw
       (A380PrimComputerFe_U.in.general_logic.flap_surface_angle_deg,
@@ -490,9 +597,22 @@ void A380PrimComputerFe::step()
         A380PrimComputerFe_P.CompareToConstant1_const_b));
     A380PrimComputerFe_Y.out.flight_envelope.v_c_trend_kn = A380PrimComputerFe_P.Gain_Gain_m *
       A380PrimComputerFe_DWork.pY_b;
-    A380PrimComputerFe_Y.out.flight_envelope.gamma_a_deg = rtb_vs1g;
-    A380PrimComputerFe_Y.out.flight_envelope.gamma_t_deg = rtb_Y_p;
-    A380PrimComputerFe_Y.out.flight_envelope.pitch_pitch_warning_active = false;
+    A380PrimComputerFe_Y.out.flight_envelope.gamma_a_deg = rtb_Saturation1_b;
+    A380PrimComputerFe_Y.out.flight_envelope.gamma_t_deg = rtb_conf;
+    A380PrimComputerFe_Y.out.flight_envelope.pitch_pitch_warning_active =
+      (((A380PrimComputerFe_U.in.fctl_logic.active_law == A380PrimComputerFe_P.EnumeratedConstant_Value_g) &&
+        (A380PrimComputerFe_U.in.general_logic.ir_computation_data.theta_deg >
+         A380PrimComputerFe_P.CompareToConstant2_const_b)) ||
+       ((A380PrimComputerFe_U.in.general_logic.ir_computation_data.theta_deg +
+         A380PrimComputerFe_U.in.general_logic.ir_computation_data.theta_dot_deg_s >
+         A380PrimComputerFe_P.CompareToConstant_const_l) && ((!A380PrimComputerFe_U.in.fg_logic.ap_1_engaged) &&
+         (!A380PrimComputerFe_U.in.fg_logic.ap_2_engaged)) && (!A380PrimComputerFe_U.in.fg_mode_logic.tla_to_ga_set) &&
+        ((A380PrimComputerFe_U.in.general_logic.ra_computation_data_ft <=
+          A380PrimComputerFe_P.CompareToConstant1_const_n) && (!A380PrimComputerFe_U.in.general_logic.all_ra_failure))));
+    A380PrimComputerFe_Y.out.flight_envelope.bank_bank_warning_active =
+      ((A380PrimComputerFe_U.in.fctl_logic.active_lateral_law == A380PrimComputerFe_P.EnumeratedConstant1_Value) && (std::
+        abs(A380PrimComputerFe_U.in.general_logic.ir_computation_data.phi_deg) >
+        A380PrimComputerFe_P.CompareToConstant3_const_f));
     A380PrimComputerFe_Y.out.laws = A380PrimComputerFe_U.in.laws;
     A380PrimComputerFe_Y.out.fctl_logic = A380PrimComputerFe_U.in.fctl_logic;
     A380PrimComputerFe_Y.out.fg_logic = A380PrimComputerFe_U.in.fg_logic;
@@ -501,7 +621,11 @@ void A380PrimComputerFe::step()
     A380PrimComputerFe_Y.out.discrete_outputs = A380PrimComputerFe_U.in.discrete_outputs;
     A380PrimComputerFe_Y.out.analog_outputs = A380PrimComputerFe_U.in.analog_outputs;
     A380PrimComputerFe_Y.out.bus_outputs = A380PrimComputerFe_U.in.bus_outputs;
-    A380PrimComputerFe_Y.out.flight_envelope.low_energy_warning_active = false;
+    A380PrimComputerFe_Y.out.flight_envelope.low_energy_warning_active =
+      ((!A380PrimComputerFe_U.in.general_logic.all_ra_failure) &&
+       (!A380PrimComputerFe_U.in.general_logic.triple_adr_failure) &&
+       (!A380PrimComputerFe_U.in.general_logic.triple_ir_failure) && (rtb_y_b ||
+        (A380PrimComputerFe_DWork.remainingTriggerTime > 0.0)));
     A380PrimComputerFe_DWork.Delay_DSTATE = rtb_Gain;
   } else {
     A380PrimComputerFe_DWork.Runtime_MODE = false;

@@ -71,6 +71,7 @@ import { FmsSymbolsPublisher } from '../instruments/src/ND/FmsSymbolsPublisher';
 // FIXME should not import from instruments
 import { FmsMessagePublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { EcuBusPublisher } from '@shared/publishers/EcuPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -154,6 +155,7 @@ class SystemsHost extends BaseInstrument {
   private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
+  private readonly ecuPublisher = new EcuBusPublisher(this.bus);
 
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
@@ -236,6 +238,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
+    this.backplane.addPublisher('ecuBus', this.ecuPublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();

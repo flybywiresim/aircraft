@@ -22,6 +22,7 @@ import { PrimFeBusPublisher } from '@shared/publishers/PrimFePublisher';
 import { PrimFctlBusPublisher } from '@shared/publishers/PrimFctlPublisher';
 import { PrimFgBusPublisher } from '@shared/publishers/PrimFgPublisher';
 import { FdSelectionProvider } from './shared/FdSelectionProvider';
+import { EcuBusPublisher } from '@shared/publishers/EcuPublisher';
 
 import './style.scss';
 
@@ -78,6 +79,8 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly efisCpBusPublisher = new FcuEfisCpBusPublisher(this.bus);
 
+  private readonly ecuBusPublisher = new EcuBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -109,6 +112,8 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('PrimFgPublisher', this.primFgPublisher);
 
     this.backplane.addPublisher('EfisCpPublisher', this.efisCpBusPublisher);
+
+    this.backplane.addPublisher('EcuPublisher', this.ecuBusPublisher);
   }
 
   get templateID(): string {
