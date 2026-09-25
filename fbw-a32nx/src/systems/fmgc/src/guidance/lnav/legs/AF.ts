@@ -10,7 +10,7 @@ import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { Fix, isMsfs2024, MagVar, MathUtils, TurnDirection, VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { Fix, MagVar, MathUtils, TurnDirection, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
@@ -27,10 +27,9 @@ export class AFLeg extends XFLeg {
     ? this.theta
     : MagVar.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
 
-  public readonly centre =
-    isMsfs2024() && this.recommendedNavaid.dmeLocation
-      ? this.recommendedNavaid.dmeLocation
-      : AFLeg.dmeLocationFallback(this.fix, this.terminationRadialTrue, this.rho);
+  public readonly centre = this.recommendedNavaid.dmeLocation
+    ? this.recommendedNavaid.dmeLocation
+    : AFLeg.dmeLocationFallback(this.fix, this.terminationRadialTrue, this.rho);
   public readonly radius = distanceTo(this.centre, this.fix.location);
 
   constructor(

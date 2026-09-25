@@ -218,7 +218,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
         this.linesRef.instance.appendChild(e);
         yOffset += LINE_SPACING;
       }
-    });
+    }, true);
   }
 
   render(): VNode {

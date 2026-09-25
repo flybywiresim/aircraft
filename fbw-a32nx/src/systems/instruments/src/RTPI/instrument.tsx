@@ -7,15 +7,16 @@ import {
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
-  DisplayComponent,
+  LifecycleComponent,
   MappedSubject,
+  RegisteredSimVarUtils,
   SimVarValueType,
   Subject,
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429Register, Arinc429RegisterSubject, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 interface RtpiProps {
   readonly isLightTestActive: Subscribable<boolean>;
@@ -23,12 +24,12 @@ interface RtpiProps {
   readonly trimPosition: Subscribable<Arinc429Register>;
 }
 
-class Rtpi extends DisplayComponent<RtpiProps> {
+class Rtpi extends LifecycleComponent<RtpiProps> {
   private isBlank = MappedSubject.create(
     ([isPowered, trim]) => !isPowered || trim.isFailureWarning(),
     this.props.isPowered,
     this.props.trimPosition,
-  );
+  ).withLifecycle(this.defaultLifecycle);
 
   public render(): VNode | null {
     return (
@@ -38,14 +39,14 @@ class Rtpi extends DisplayComponent<RtpiProps> {
             ([test, trim]) => (test ? 'T' : trim.value >= 0 ? 'L' : 'R'),
             this.props.isLightTestActive,
             this.props.trimPosition,
-          )}
+          ).withLifecycle(this.defaultLifecycle)}
         </text>
         <text x="330" y="110" class="value">
           {MappedSubject.create(
             ([test, trim]) => (test ? '88.8' : Math.abs(trim.value).toFixed(1)),
             this.props.isLightTestActive,
             this.props.trimPosition,
-          )}
+          ).withLifecycle(this.defaultLifecycle)}
         </text>
       </svg>
     );
@@ -55,21 +56,21 @@ class Rtpi extends DisplayComponent<RtpiProps> {
 class RtpiFsInstrument implements FsInstrument {
   private static readonly arincCache = Arinc429Register.empty();
 
-  private readonly dc2IsPoweredVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_DC_2_BUS_IS_POWERED');
+  private readonly dc2IsPoweredVar = RegisteredSimVarUtils.createBoolean('L:A32NX_ELEC_DC_2_BUS_IS_POWERED');
 
-  private readonly annLtTestVar = RegisteredSimVar.create('L:A32NX_OVHD_INTLT_ANN', SimVarValueType.Enum);
+  private readonly annLtTestVar = RegisteredSimVarUtils.create('L:A32NX_OVHD_INTLT_ANN', SimVarValueType.Enum);
 
-  private readonly fac2DiscreteWord2Var = RegisteredSimVar.create(
+  private readonly fac2DiscreteWord2Var = RegisteredSimVarUtils.create(
     'L:A32NX_FAC_2_DISCRETE_WORD_2',
     SimVarValueType.Enum,
   );
 
-  private readonly fac1RudderTrimPosVar = RegisteredSimVar.create(
+  private readonly fac1RudderTrimPosVar = RegisteredSimVarUtils.create(
     'L:A32NX_FAC_1_RUDDER_TRIM_POS',
     SimVarValueType.Enum,
   );
 
-  private readonly fac2RudderTrimPosVar = RegisteredSimVar.create(
+  private readonly fac2RudderTrimPosVar = RegisteredSimVarUtils.create(
     'L:A32NX_FAC_2_RUDDER_TRIM_POS',
     SimVarValueType.Enum,
   );

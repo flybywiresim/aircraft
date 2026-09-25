@@ -10,6 +10,7 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 export interface FmsSymbolsData {
   symbols: NdSymbol[];
   vectorsActive: PathVector[];
+  vectorsActiveEosid: PathVector[];
   vectorsDashed: PathVector[];
   vectorsTemporary: PathVector[];
   vectorsMissed: PathVector[];
@@ -34,6 +35,12 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
       new GenericDataListenerSync((ev, data: PathVector[]) => {
         this.publish('vectorsActive', data);
       }, `A32NX_EFIS_VECTORS_${side}_ACTIVE`),
+    );
+
+    this.events.push(
+      new GenericDataListenerSync((ev, data: PathVector[]) => {
+        this.publish('vectorsActiveEosid', data);
+      }, `A32NX_EFIS_VECTORS_${side}_ACTIVE_EOSID`),
     );
 
     this.events.push(

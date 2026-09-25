@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -81,6 +81,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
     newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan, options);
+    (newPlan.engineOutDepartureSegment as any) = this.engineOutDepartureSegment.clone(newPlan, options);
     newPlan.departureSegment = this.departureSegment.clone(newPlan, options);
     newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan, options);
     newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan, options);
@@ -484,11 +485,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param data performance data available in uplink
    */
   setImportedPerformanceData(data: ImportedPerformanceData) {
-    // Workaround for MSFS2020 not having transition alt/level in the navdata
-    if (!isMsfs2024()) {
-      this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
-      this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
-    }
     this.setPerformanceData('costIndex', data.costIndex);
     this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
     this.setPerformanceData('pilotTropopause', data.pilotTropopause);
@@ -735,12 +731,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return false;
   }
 
+  isActive(): boolean {
+    return this.index === FlightPlanIndex.Active || this.index === FlightPlanIndex.Temporary;
+  }
+
   isActiveOrCopiedFromActive(): boolean {
-    return (
-      this.index === FlightPlanIndex.Active ||
-      this.index === FlightPlanIndex.Temporary ||
-      (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
-    );
+    return this.isActive() || (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
   }
 
   getFlightNumber(): Subject<string | null> {

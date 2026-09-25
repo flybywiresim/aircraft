@@ -28,7 +28,7 @@ import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { FlightPlanElement, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { BitFlags } from '@microsoft/msfs-sdk';
@@ -81,15 +81,18 @@ export class Geometry {
 
   public missedCachedVectorsVersion = 0;
 
+  private cachedActiveLegIndex?: number;
+
   public getAllPathVectors(activeLegIndex?: number, missedApproach = false): PathVector[] {
     if (missedApproach) {
       if (this.version === this.missedCachedVectorsVersion) {
         return this.missedCachedVectors;
       }
-    } else if (this.version === this.cachedVectorsVersion) {
+    } else if (this.version === this.cachedVectorsVersion && activeLegIndex === this.cachedActiveLegIndex) {
       return this.cachedVectors;
     }
 
+    // FIXME should really only be for active plan?
     const transmitHoldEntry = !this.temp;
 
     const ret: PathVector[] = [];
@@ -108,23 +111,27 @@ export class Geometry {
         continue;
       }
 
+      if (activeLegIndex !== undefined && index < activeLegIndex) {
+        continue;
+      }
+
       // TODO don't transmit any course reversals when this side range >= 160
       const transmitCourseReversal =
         LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS ||
         index === activeLegIndex ||
         index === activeLegIndex + 1;
 
-      if (activeLegIndex !== undefined) {
-        if (isCourseReversalLeg(leg) && !transmitCourseReversal) {
-          continue;
-        }
-        if (index < activeLegIndex) {
-          continue;
-        }
+      if (isCourseReversalLeg(leg) && !transmitCourseReversal) {
+        continue;
       }
+
       const legInboundTransition = leg.inboundGuidable instanceof Transition ? leg.inboundGuidable : null;
 
-      if (legInboundTransition && !legInboundTransition.isNull && (!isHold(leg) || transmitHoldEntry)) {
+      if (
+        legInboundTransition &&
+        !legInboundTransition.isNull &&
+        (!isHold(leg) || (transmitHoldEntry && transmitCourseReversal))
+      ) {
         ret.push(...legInboundTransition.predictedPath);
       }
 
@@ -139,6 +146,7 @@ export class Geometry {
     } else {
       this.cachedVectors = ret;
       this.cachedVectorsVersion = this.version;
+      this.cachedActiveLegIndex = activeLegIndex;
     }
 
     return ret;
@@ -188,16 +196,30 @@ export class Geometry {
 
       const wasNull = leg.isNull;
 
-      this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
+      this.computeLeg(plan.legElementAt(i), i, activeLegIdx, ppos, trueTrack, tas, gs);
 
       // If a leg became null/not null, we immediately recompute it to calculate the new guidables and transitions
       if ((!wasNull && leg.isNull) || (wasNull && !leg.isNull)) {
-        this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
+        this.computeLeg(plan.legElementAt(i), i, activeLegIdx, ppos, trueTrack, tas, gs);
       }
     }
 
     if (LnavConfig.DEBUG_GEOMETRY) {
       console.timeEnd('geometry_recompute');
+    }
+  }
+
+  public recomputeEosidGeometry(plan: BaseFlightPlan, ppos: Coordinates, trueTrack: number) {
+    const planLegs = plan.getEngineOutDepartureLegs();
+
+    for (let i = 0; this.legs.get(i) || this.legs.get(i + 1); i++) {
+      const geometryLeg = this.legs.get(i);
+      const planLeg = planLegs[i];
+      if (!geometryLeg || planLeg.isDiscontinuity === true) {
+        continue;
+      }
+
+      this.computeLeg(planLeg, i, 0, ppos, trueTrack, 0, 0);
     }
   }
 
@@ -210,7 +232,7 @@ export class Geometry {
   }
 
   private computeLeg(
-    plan: BaseFlightPlan,
+    planLeg: FlightPlanLeg,
     index: number,
     activeLegIdx: number,
     ppos: Coordinates,
@@ -353,21 +375,19 @@ export class Geometry {
       }
     }
 
-    const element = plan.legElementAt(index);
-
     // Only copy predictions from geometry to calculated if the leg is not using copied predictions (copied from primary to SEC)
-    if (!BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
-      if (!element.calculated) {
-        this.initializeCalculatedData(element, leg);
+    if (!BitFlags.isAll(planLeg.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+      if (!planLeg.calculated) {
+        this.initializeCalculatedData(planLeg, leg);
       }
 
-      element.calculated.path.length = 0;
+      planLeg.calculated.path.length = 0;
 
       if (inboundTransition) {
-        element.calculated.path.push(...inboundTransition.predictedPath);
+        planLeg.calculated.path.push(...inboundTransition.predictedPath);
       }
 
-      element.calculated.path.push(...leg.predictedPath);
+      planLeg.calculated.path.push(...leg.predictedPath);
     }
   }
 
@@ -527,12 +547,6 @@ export class Geometry {
     return dtg !== undefined && dtg < 0.001;
   }
 
-  onLegSequenced(_sequencedLeg: Leg, nextLeg: Leg, followingLeg: Leg): void {
-    if (isCourseReversalLeg(nextLeg) || isCourseReversalLeg(followingLeg)) {
-      this.version++;
-    }
-  }
-
   legsInSegment(segmentType: SegmentType): Map<number, Leg> {
     const newMap = new Map<number, Leg>();
 
@@ -549,12 +563,10 @@ export class Geometry {
    * Updates the Calculated data like leg distances and cumulative distances for all flight plan legs.
    * @param plan the flight plan
    */
-  updateCalculatedData(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
+  updateCalculatedData(flightPlanLegs: FlightPlanElement[], fromIndex: number, toIndex: number): void {
     let cumulativeDistance = 0;
     let cumulativeDistanceWithTransitions = 0;
     let lastCoordinates: Coordinates | undefined = undefined;
-
-    const flightPlanLegs = plan.allLegs;
 
     // Set calculated distances on downpath leg
     for (let i = fromIndex; i < toIndex; i++) {
@@ -615,7 +627,13 @@ export class Geometry {
     }
 
     // Iterate again to compute distance to end using using the previously computed total distance
-    this.reflowDistancesToEnd(plan, cumulativeDistance, cumulativeDistanceWithTransitions, fromIndex, toIndex);
+    this.reflowDistancesToEnd(
+      flightPlanLegs,
+      cumulativeDistance,
+      cumulativeDistanceWithTransitions,
+      fromIndex,
+      toIndex,
+    );
   }
 
   private initializeCalculatedData(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
@@ -687,14 +705,14 @@ export class Geometry {
   }
 
   private reflowDistancesToEnd(
-    plan: BaseFlightPlan,
+    flightPlanLegs: FlightPlanElement[],
     cumulativeDistance: NauticalMiles,
     cumulativeDistanceWithTransitions: NauticalMiles,
     fromIndex: number,
     toIndex: number,
   ) {
     for (let i = fromIndex; i < toIndex; i++) {
-      const leg = plan.allLegs[i];
+      const leg = flightPlanLegs[i];
       if (!leg || leg.isDiscontinuity === true || !leg.calculated) {
         continue;
       }

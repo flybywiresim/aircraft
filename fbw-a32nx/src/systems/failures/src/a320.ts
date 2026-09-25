@@ -63,9 +63,6 @@ export const A320Failure = Object.freeze({
   Fcdc1Failure: 27005,
   Fcdc2Failure: 27006,
 
-  SlatWtbFailure: 27100,
-  FlapWtbFailure: 27101,
-
   GreenReservoirLeak: 29000,
   BlueReservoirLeak: 29001,
   YellowReservoirLeak: 29002,
@@ -185,8 +182,6 @@ export const A320FailureDefinitions: FailureDefinition[] = [
   [27, A320Failure.Sec3Failure, 'SEC 3'],
   [27, A320Failure.Fcdc1Failure, 'FCDC 1'],
   [27, A320Failure.Fcdc2Failure, 'FCDC 2'],
-  [27, A320Failure.SlatWtbFailure, 'Slat WTB'],
-  [27, A320Failure.FlapWtbFailure, 'Flap WTB'],
 
   [29, A320Failure.GreenReservoirLeak, 'Green reservoir leak'],
   [29, A320Failure.BlueReservoirLeak, 'Blue reservoir leak'],

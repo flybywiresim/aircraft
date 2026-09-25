@@ -1,0 +1,238 @@
+@import "./definitions";
+
+.NoFill {
+    fill: none;
+}
+
+text,
+tspan,
+.Fill {
+    color: $display-white;
+    fill: currentColor;
+    stroke: none;
+}
+
+:not(text, tspan, .Fill) {
+    color: $display-white;
+    fill: none;
+    stroke: currentColor;
+}
+
+.Green {
+    color: $display-green;
+}
+
+.Green.DimColor {
+    color: scale-color($display-green, $lightness: -50%) !important;
+}
+
+.Cyan {
+    color: $display-cyan;
+}
+
+.Cyan.DimColor {
+    color: scale-color($display-cyan, $lightness: -50%) !important;
+}
+
+.White {
+    color: $display-white;
+}
+
+.Grey {
+    color: $display-grey;
+}
+
+.Amber {
+    color: $display-amber;
+}
+
+.Amber.DimColor {
+    color: scale-color($display-amber, $lightness: -50%) !important;
+}
+
+.Magenta {
+    color: $display-magenta;
+}
+
+.Magenta.DimColor {
+    color: scale-color($display-magenta, $lightness: -50%) !important;
+}
+
+.Red {
+    color: $display-red;
+}
+
+.Red.DimColor {
+    color: scale-color($display-red, $lightness: -50%) !important;
+}
+
+.Transparent {
+    color: transparent;
+}
+
+.Background {
+    color: $display-background;
+}
+
+.XSmall,
+.F19 {
+    font-size: 19px !important;
+}
+
+.F20 {
+    font-size: 20px !important;
+}
+
+.Small,
+.F21 {
+    font-size: 21px !important;
+}
+
+.Medium,
+.F22 {
+    font-size: 22px !important;
+}
+
+.Large,
+.F23 {
+    font-size: 23px !important;
+}
+
+.VLarge,
+.F24 {
+    font-size: 24px !important;
+}
+
+.F25 {
+    font-size: 25px !important;
+}
+
+.F26 {
+    font-size: 26px !important;
+}
+
+.XLarge,
+.F27 {
+    font-size: 27px !important;
+}
+
+.F28 {
+    font-size: 28px !important;
+}
+
+.F29 {
+    font-size: 29px !important;
+}
+
+.Huge,
+.F30 {
+    font-size: 30px !important;
+}
+
+.F32 {
+    font-size: 32px !important;
+}
+
+.F34 {
+    font-size: 34px !important;
+}
+
+.F35 {
+    font-size: 35px !important;
+}
+
+.F36 {
+    font-size: 36px !important;
+}
+
+.LS1 {
+    letter-spacing: 1px !important;
+}
+
+.LS2 {
+    letter-spacing: 2px !important;
+}
+
+.LS-1 {
+    letter-spacing: -1px !important;
+}
+
+.LS-8 {
+    letter-spacing: -8px !important;
+}
+
+.WS-6 {
+    word-spacing: -6px !important;
+}
+
+.WS-8 {
+    word-spacing: -8px !important;
+}
+
+.WS-10 {
+    word-spacing: -10px !important;
+}
+
+.StartAlign {
+    text-anchor: start;
+}
+
+.Center,
+.MiddleAlign {
+    text-anchor: middle !important;
+}
+
+.End,
+.EndAlign {
+    text-anchor: end !important;
+}
+
+.Underline {
+    text-decoration: underline;
+}
+
+.TextOutline2 {
+    stroke-width: 2px;
+    // currentColor uses the color attribute, so we need to add that to the classes specifying the colors
+    // Important is necessary as some color classes specify stroke:none
+    stroke: currentColor !important;
+}
+
+.LineRound {
+    stroke-linecap: round;
+}
+
+.LineJoinRound {
+    stroke-linejoin: round;
+}
+
+.Mitre10 {
+    stroke-miterlimit: 10;
+}
+
+.Line,
+.SW2 {
+    stroke-width: 2px;
+}
+
+.ThickLine,
+.SW3 {
+    stroke-width: 3px;
+}
+
+.SW4 {
+    stroke-width: 4px !important;
+}
+
+.VThickLine,
+.SW6 {
+    stroke-width: 6px;
+}
+
+.Show {
+    display: block !important;
+}
+
+.Hide {
+    display: none !important;
+}
