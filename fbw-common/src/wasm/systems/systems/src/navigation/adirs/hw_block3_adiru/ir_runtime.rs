@@ -948,6 +948,7 @@ impl InertialReferenceRuntime {
     fn is_aligning(&self) -> bool {
         self.active_mode == IrOperationMode::AlignCoarse
             || self.active_mode == IrOperationMode::AlignFine
+            || self.active_mode == IrOperationMode::Realign
     }
 
     fn remaining_align_duration(&self) -> Option<Duration> {
