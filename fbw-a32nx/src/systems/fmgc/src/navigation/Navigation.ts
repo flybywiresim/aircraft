@@ -277,8 +277,8 @@ export class Navigation implements NavigationProvider {
       // Check if in NAV mode and aligned
       if (
         !Navigation.arincWordCache.isInvalid() &&
-        Navigation.arincWordCache.bitValue(3) &&
-        !Navigation.arincWordCache.bitValue(1)
+        Navigation.arincWordCache.bitValue(13) &&
+        !Navigation.arincWordCache.bitValue(11)
       ) {
         this.isGpirsAvailable = true;
         break;

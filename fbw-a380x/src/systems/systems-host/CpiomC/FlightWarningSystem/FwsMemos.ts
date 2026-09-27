@@ -438,18 +438,18 @@ export class FwsMemos {
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
-          const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
-          const allInAlign = ir1Align && ir2Align && ir3Align;
-          return remainingTimeAbove240 && allInAlign;
+          const remainingTimeAbove3 = adirsRemainingAlignTime > 3;
+          const anyInAlign = ir1Align || ir2Align || ir3Align;
+          return remainingTimeAbove3 && anyInAlign;
         },
-        this.fws.adirsRemainingAlignTime,
+        this.fws.timeToNav,
         this.fws.ir1Align,
         this.fws.ir2Align,
         this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage1(
-          this.fws.adirsRemainingAlignTime.get(),
+          this.fws.timeToNav.get(),
           (this.fws.engine1State.get() > 0 && this.fws.engine1State.get() < 4) ||
             (this.fws.engine2State.get() > 0 && this.fws.engine2State.get() < 4) ||
             (this.fws.engine3State.get() > 0 && this.fws.engine3State.get() < 4) ||
@@ -474,18 +474,18 @@ export class FwsMemos {
       simVarIsActive: MappedSubject.create(
         ([adirsRemainingAlignTime, ir1Align, ir2Align, ir3Align]) => {
           const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
-          const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
-          const allInAlign = ir1Align && ir2Align && ir3Align;
-          return remainingTimeAbove0 && remainingTimeBelow240 && allInAlign;
+          const remainingTimeBelow4 = adirsRemainingAlignTime < 4;
+          const anyInAlign = ir1Align || ir2Align || ir3Align;
+          return remainingTimeAbove0 && remainingTimeBelow4 && anyInAlign;
         },
-        this.fws.adirsRemainingAlignTime,
+        this.fws.timeToNav,
         this.fws.ir1Align,
         this.fws.ir2Align,
         this.fws.ir3Align,
       ),
       whichCodeToReturn: () => [
         this.fws.adirsMessage2(
-          this.fws.adirsRemainingAlignTime.get(),
+          this.fws.timeToNav.get(),
           (this.fws.engine1State.get() > 0 && this.fws.engine1State.get() < 4) ||
             (this.fws.engine2State.get() > 0 && this.fws.engine2State.get() < 4) ||
             (this.fws.engine3State.get() > 0 && this.fws.engine3State.get() < 4) ||
@@ -502,6 +502,27 @@ export class FwsMemos {
         '340003107',
         '340003108',
       ],
+      memoInhibit: () => false,
+    },
+    '340002701': {
+      // IR IN ATT ALIGN
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        ([ir1AttAlign, ir2AttAlign, ir3AttAlign]) => {
+          return ir1AttAlign || ir2AttAlign || ir3AttAlign;
+        },
+        this.fws.ir1AttAlign,
+        this.fws.ir2AttAlign,
+        this.fws.ir3AttAlign,
+      ),
+      whichCodeToReturn: () => [
+        this.fws.adirsAttAlignMessage(
+          this.fws.ir1AttAlign.get(),
+          this.fws.ir2AttAlign.get(),
+          this.fws.ir3AttAlign.get(),
+        ),
+      ],
+      codesToReturn: ['340002701', '340002702', '340002703', '340002704', '340002705', '340002706', '340002707'],
       memoInhibit: () => false,
     },
     '340068001': {
