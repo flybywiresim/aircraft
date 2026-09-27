@@ -192,7 +192,7 @@ export const PressureComponent = () => {
   const radius = 50;
 
   const deltaPress = splitDecimals(deltaPsi);
-
+  const deltaPressGreen = deltaPsi < 8.5 && deltaPsi >= -0.4;
   const [vsShouldFlash, setVsShouldFlash] = useState(false);
   const [cabAltShouldFlash, setCabAltShouldFlash] = useState(false);
 
@@ -322,19 +322,14 @@ export const PressureComponent = () => {
       </text>
       <text
         id="Large Green"
-        className={`Large ${deltaPsi >= 8.5 || deltaPsi <= -0.4 ? (deltaPsi > 1.5 ? 'AmberTextPulse' : 'Amber') : deltaPsi > 1.5 ? 'GreenTextPulse' : 'Green'}`}
+        className={`Large ${deltaPressGreen ? 'Green' : 'Amber'}`}
         x="290"
         y="370"
         textAnchor="end"
       >
         {deltaPress[0]}.
       </text>
-      <text
-        id="standard green"
-        className={`Standard ${deltaPsi >= 8.5 || deltaPsi <= -0.4 ? (deltaPsi > 1.5 ? 'AmberTextPulse' : 'Amber') : deltaPsi > 1.5 ? 'GreenTextPulse' : 'Green'}`}
-        x="290"
-        y="370"
-      >
+      <text id="standard green" className={`Standard ${deltaPressGreen ? 'Green' : 'Amber'}`} x="290" y="370">
         {deltaPress[1]}
       </text>
       <text className="Standard Cyan" x="320" y="370">
