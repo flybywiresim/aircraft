@@ -192,7 +192,7 @@ export const PressureComponent = () => {
   const radius = 50;
 
   const deltaPress = splitDecimals(deltaPsi);
-  const deltaPressGreen = deltaPsi < 8.5 && deltaPsi >= -0.4;
+  const deltaPressGreen = deltaPsi < 8.5 && deltaPsi > -0.4;
   const [vsShouldFlash, setVsShouldFlash] = useState(false);
   const [cabAltShouldFlash, setCabAltShouldFlash] = useState(false);
 
