@@ -1274,7 +1274,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
-        this.flightPlanInterface.active.performanceData.takeoffWeight?.set(this.fmgc.getGrossWeightKg());
+        this.flightPlanInterface.active.setPerformanceData('takeoffWeight', this.fmgc.getGrossWeightKg());
 
         this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
@@ -1316,7 +1316,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', fcuAltitude / 100);
           SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
         }
-        plan.performanceData.preselectedClimbSpeed.set(null);
+        this.flightPlanInterface.active.setPerformanceData('preselectedClimbSpeed', null);
 
         break;
       }
@@ -1329,7 +1329,7 @@ export class FlightManagementComputer implements FmcInterface {
         if (prevPhase === FmgcFlightPhase.Climb && preselectedCruiseSpeed !== null) {
           this.acInterface.activatePreSelSpeedMach(preselectedCruiseSpeed);
         }
-        this.flightPlanInterface.active.performanceData.preselectedCruiseSpeed.set(null);
+        this.flightPlanInterface.active.setPerformanceData('preselectedCruiseSpeed', null);
         break;
       }
 
@@ -1711,8 +1711,8 @@ export class FlightManagementComputer implements FmcInterface {
 
     // Delete pre-selected speeds
     const activePlan = this.flightPlanInterface.active;
-    activePlan.performanceData.preselectedClimbSpeed.set(null);
-    activePlan.performanceData.preselectedCruiseSpeed.set(null);
+    activePlan.setPerformanceData('preselectedClimbSpeed', null);
+    activePlan.setPerformanceData('preselectedCruiseSpeed', null);
     let stepDeleted = false;
 
     // Delete planned/future altitude steps
