@@ -1,6 +1,7 @@
 use uom::si::{
-    f64::{Angle, Pressure, ThermodynamicTemperature},
-    pressure::inch_of_mercury,
+    f64::{Angle, Pressure, ThermodynamicTemperature, Velocity},
+    pressure::{hectopascal, inch_of_mercury},
+    velocity::knot,
 };
 
 use crate::{
@@ -25,31 +26,43 @@ pub trait PressureSource {
 pub struct PitotTube {
     pitot_blockage: Failure,
 
-    dynamic_pressure: Pressure,
+    indicated_airspeed: Velocity,
     static_pressure: Pressure,
 
-    dynamic_pressure_id: VariableIdentifier,
+    indicated_airspeed_id: VariableIdentifier,
     static_pressure_id: VariableIdentifier,
 }
 impl PitotTube {
-    const DYNAMIC_PRESSURE_ID: &str = "DYNAMIC PRESSURE";
+    const INDICATED_AIRSPEED_ID: &str = "AIRSPEED INDICATED";
     const AMBIENT_PRESSURE_ID: &str = "AMBIENT PRESSURE";
+    const STANDARD_SPEED_OF_SOUND_KNOT: f64 = 661.4746;
+    const STANDARD_SEA_LEVEL_PRESSURE_HPA: f64 = 1013.25;
 
     pub fn new(context: &mut InitContext, num: AdiruNumber) -> Self {
         Self {
             pitot_blockage: Failure::new(FailureType::PitotBlockage(num.into())),
 
-            dynamic_pressure: Pressure::default(),
+            indicated_airspeed: Velocity::default(),
             static_pressure: Pressure::default(),
 
-            dynamic_pressure_id: context.get_identifier(Self::DYNAMIC_PRESSURE_ID.to_owned()),
+            indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_ID.to_owned()),
             static_pressure_id: context.get_identifier(Self::AMBIENT_PRESSURE_ID.to_owned()),
         }
     }
 }
 impl PressureSource for PitotTube {
     fn get_pressure(&self) -> Pressure {
-        self.dynamic_pressure + self.static_pressure
+        // Calculate q via IAS, as the sim reported q seems to be for incompressible fluids.
+        let impact_pressure = (((self.indicated_airspeed.get::<knot>()
+            / Self::STANDARD_SPEED_OF_SOUND_KNOT)
+            .powi(2)
+            / 5.
+            + 1.)
+            .powf(3.5)
+            - 1.)
+            * Self::STANDARD_SEA_LEVEL_PRESSURE_HPA;
+
+        Pressure::new::<hectopascal>(impact_pressure) + self.static_pressure
     }
 }
 impl SimulationElement for PitotTube {
@@ -62,8 +75,7 @@ impl SimulationElement for PitotTube {
     fn read(&mut self, reader: &mut SimulatorReader) {
         // If it pitot blockage failure is active, no longer update the measured pressure, as it should retain the current value
         if !self.pitot_blockage.is_active() {
-            let dynamic_pressure = reader.read(&self.dynamic_pressure_id);
-            self.dynamic_pressure = Pressure::new::<inch_of_mercury>(dynamic_pressure);
+            self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
 
             let static_pressure = reader.read(&self.static_pressure_id);
             self.static_pressure = Pressure::new::<inch_of_mercury>(static_pressure);
