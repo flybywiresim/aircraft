@@ -293,6 +293,9 @@ export class FlightManagementComputer implements FmcInterface {
 
   private simBriefOfp: ISimbriefData | null = null;
 
+  private readonly preselectedClimbSpeed = Subject.create<number | null>(null);
+  private readonly preselectedCruiseSpeed = Subject.create<number | null>(null);
+
   constructor(
     private instance: FmcIndex,
     private _operatingMode: FmcOperatingModes,
@@ -435,6 +438,16 @@ export class FlightManagementComputer implements FmcInterface {
       }),
       this.approachHeadWindComponent.sub((v) => {
         this.acInterface.updateApproachHeadWindComponent(v);
+      }),
+      this.preselectedClimbSpeed.sub((v) => {
+        if (v === null || this.flightPhase.get() === FmgcFlightPhase.Takeoff) {
+          this.acInterface.updatePreSelSpeedMach(v);
+        }
+      }),
+      this.preselectedCruiseSpeed.sub((v) => {
+        if (v === null || this.flightPhase.get() === FmgcFlightPhase.Climb) {
+          this.acInterface.updatePreSelSpeedMach(v);
+        }
       }),
     );
 
@@ -978,6 +991,14 @@ export class FlightManagementComputer implements FmcInterface {
       if (flightNumber !== null) {
         await this.onActiveFlightNumberChanged(flightNumber);
       }
+      // Invalidate preselected speeds if we are beyond the relevant flight phases.
+      const flightPhase = this.#fmgc.getFlightPhase();
+      if (flightPhase > FmgcFlightPhase.Takeoff) {
+        this.#flightPlanService.active.setPerformanceData('preselectedClimbSpeed', null);
+      }
+      if (flightPhase > FmgcFlightPhase.Climb) {
+        this.#flightPlanService.active.setPerformanceData('preselectedCruiseSpeed', null);
+      }
     }
     this.loadActiveFlightPlanFuelAndApproachData();
   }
@@ -1265,9 +1286,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         /** Arm preselected speed/mach for next flight phase */
         const climbPreSel = plan.performanceData.preselectedClimbSpeed.get();
-        if (climbPreSel) {
-          this.acInterface.updatePreSelSpeedMach(climbPreSel);
-        }
+        this.acInterface.updatePreSelSpeedMach(climbPreSel);
         if (thrustOrAccelerationChanged) {
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -1282,7 +1301,7 @@ export class FlightManagementComputer implements FmcInterface {
         /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Takeoff) {
           const climbPreSel = plan.performanceData.preselectedClimbSpeed.get();
-          if (climbPreSel) {
+          if (climbPreSel !== null) {
             this.acInterface.activatePreSelSpeedMach(climbPreSel);
           }
         }
@@ -1297,6 +1316,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', fcuAltitude / 100);
           SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', fcuAltitude);
         }
+        plan.performanceData.preselectedClimbSpeed.set(null);
 
         break;
       }
@@ -1306,9 +1326,10 @@ export class FlightManagementComputer implements FmcInterface {
         const preselectedCruiseSpeed = this.flightPlanInterface.active.performanceData.preselectedCruiseSpeed.get();
 
         /** Activate pre selected speed/mach */
-        if (prevPhase === FmgcFlightPhase.Climb && preselectedCruiseSpeed) {
+        if (prevPhase === FmgcFlightPhase.Climb && preselectedCruiseSpeed !== null) {
           this.acInterface.activatePreSelSpeedMach(preselectedCruiseSpeed);
         }
+        this.flightPlanInterface.active.performanceData.preselectedCruiseSpeed.set(null);
         break;
       }
 
@@ -1468,7 +1489,6 @@ export class FlightManagementComputer implements FmcInterface {
 
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
-      this.loadActiveFlightPlanFuelAndApproachData();
       if (this.flightPlanInterface.hasActive) {
         const flightPhase = this.flightPhase.get();
         this.enginesWereStarted.set(
@@ -1526,6 +1546,7 @@ export class FlightManagementComputer implements FmcInterface {
     if (flightPlanChanged) {
       this.acInterface.updateManagedProfile();
       this.acInterface.updateDestinationData();
+      this.loadActiveFlightPlanFuelAndApproachData();
 
       // Update ND plan center, but only if not on F-PLN page. There has to be a better solution though.
       if (this.mfdReference?.uiService.activeUri.get().page !== 'f-pln') {
@@ -1799,6 +1820,8 @@ export class FlightManagementComputer implements FmcInterface {
     this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
     this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
     this.destinationRunwayBearing.set(flightplan?.destinationRunway?.magneticBearing ?? null);
+    this.preselectedClimbSpeed.set(pd?.preselectedClimbSpeed.get() ?? null);
+    this.preselectedCruiseSpeed.set(pd?.preselectedCruiseSpeed.get() ?? null);
   }
 
   public trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active): boolean {
