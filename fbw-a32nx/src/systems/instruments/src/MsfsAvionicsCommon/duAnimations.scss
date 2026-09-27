@@ -1,0 +1,23 @@
+@mixin GenericPulsingFill($name, $color) {
+ @keyframes #{$name} {
+      0%, 100% {
+          fill: $color;
+      }
+      50% {
+          fill: scale-color($color, $lightness: -50%);
+      }
+  }
+  animation: #{$name} 1s step-end infinite;
+}
+
+@mixin GenericPulsingStroke($name, $color) {
+@keyframes #{$name} {
+  0%, 100% {
+      stroke: $color;
+  }
+  50% {
+      stroke: scale-color($color, $lightness: -50%);
+  }
+}
+animation: #{$name} 1s step-end infinite;
+}
