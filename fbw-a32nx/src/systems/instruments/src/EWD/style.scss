@@ -1,29 +1,5 @@
 @import "../MsfsAvionicsCommon/definitions";
-
-@mixin GenericPulsingFill($color) {
-  @keyframes pulsing {
-      0%, 100% {
-          fill: $color;
-      }
-      50% {
-          fill: scale-color($color, $lightness: -50%);
-      }
-  }
-  animation: pulsing 1s step-end infinite;
-}
-
-@mixin GenericPulsingStroke($color) {
-@keyframes pulsingS {
-  0%, 100% {
-      stroke: $color;
-  }
-  50% {
-      stroke: scale-color($color, $lightness: -50%);
-  }
-}
-animation: pulsingS 1s step-end infinite;
-}
-
+@import "../MsfsAvionicsCommon/duAnimations";
 
 @font-face {
   font-family: "Ecam";
@@ -124,7 +100,7 @@ animation: pulsingS 1s step-end infinite;
         }
 
         &.GreenTextPulse {
-            @include GenericPulsingFill($display-green);
+            @include GenericPulsingFill(green-pulse, $display-green);
         }
 
         &.Underline {

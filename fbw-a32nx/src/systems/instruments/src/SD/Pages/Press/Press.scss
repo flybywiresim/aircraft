@@ -1,29 +1,6 @@
 @import "../../../Common/definitions";
 @import "../../../Common/gauges";
-
-@mixin GenericPulsingFill($color) {
-    @keyframes pulsing {
-        0%, 100% {
-            fill: $color;
-        }
-        50% {
-            fill: scale-color($color, $lightness: -50%);
-        }
-    }
-    animation: pulsing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-@mixin GenericPulsingStroke($color) {
-@keyframes pulsingS {
-    0%, 100% {
-        stroke: $color;
-    }
-    50% {
-        stroke: scale-color($color, $lightness: -50%);
-    }
-}
-animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
+@import "../../../MsfsAvionicsCommon/duAnimations";
 
 
 
@@ -73,7 +50,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         &.GreenTextPulse {
-            @include GenericPulsingFill($display-green);
+            @include GenericPulsingFill(green-pulse, $display-green);
         }
     }
 
@@ -128,7 +105,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
     .GreenIndicatorPulse {
-        @include GenericPulsingStroke($display-green);
+        @include GenericPulsingStroke(green-pulse-stroke, $display-green);
         stroke-width: 3;
     }
 
