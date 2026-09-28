@@ -75,7 +75,12 @@
       "A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_ACTION": "Switch the NAV & LOGO lights on/off",
 
       "A32NX.TOOLTIPS.STATE_SYS_1": "System 1",
-      "A32NX.TOOLTIPS.STATE_SYS_2": "System 2"
+      "A32NX.TOOLTIPS.STATE_SYS_2": "System 2",
+
+      "A32NX.TOOLTIPS.CIRCUIT_BREAKER_TITLE": "Circuit Breaker",
+      "A32NX.TOOLTIPS.CIRCUIT_BREAKER_ACTION": "Toggle",
+      "A32NX.TOOLTIPS.CIRCUIT_BREAKER_TRIPPED": "Tripped",
+      "A32NX.TOOLTIPS.CIRCUIT_BREAKER_CLOSED": "Closed",
     }
   }
 }

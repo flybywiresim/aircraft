@@ -29,8 +29,8 @@ use systems::air_conditioning::{
 };
 use systems::failures::FailureType;
 use systems::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
-    HydraulicColor, LgciuId, ProximityDetectorId,
+    report_diagnostic, AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType,
+    GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -38,6 +38,13 @@ use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
+    // The default panic output is lost when the WASM instance aborts, so print the
+    // panic message and location to the MSFS console before the trap happens.
+    std::panic::set_hook(Box::new(|panic_info| {
+        println!("A32NX_SYSTEMS PANIC: {panic_info}");
+        report_diagnostic(&format!("A32NX_SYSTEMS PANIC: {panic_info}"));
+    }));
+
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let key_prefix = "A32NX_";

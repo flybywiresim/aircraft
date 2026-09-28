@@ -30,7 +30,7 @@ module.exports = {
   instruments: [
     msfsAvionicsInstrument('Clock'),
     msfsAvionicsInstrument('EWD'),
-    msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
+    msfsAvionicsInstrument('FCU'),
     msfsAvionicsInstrument('MFD'),
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('OIT'),

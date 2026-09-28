@@ -7,7 +7,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { FormattedFwcText } from './FormattedFwcText';
 import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';

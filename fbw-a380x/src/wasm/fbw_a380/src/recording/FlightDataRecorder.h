@@ -2,11 +2,7 @@
 
 #include <fstream>
 
-#include "../fac/Fac.h"
 #include "../interface/FuelSystemData.h"
-#include "../model/AutopilotLaws.h"
-#include "../model/AutopilotStateMachine.h"
-#include "../model/Autothrust.h"
 #include "../prim/Prim.h"
 #include "../sec/Sec.h"
 #include "LocalVariable.h"
@@ -16,11 +12,10 @@
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 3800006;
+  const uint64_t INTERFACE_VERSION = 3800008;
 
   const uint32_t NUMBER_OF_PRIM_TO_WRITE = 3;
   const uint32_t NUMBER_OF_SEC_TO_WRITE = 3;
-  const uint32_t NUMBER_OF_FAC_TO_WRITE = 2;
 
   void initialize();
 
@@ -28,10 +23,6 @@ class FlightDataRecorder {
               const AircraftSpecificData& aircraftSpecificData,
               Prim (&prims)[3],
               Sec (&secs)[3],
-              Fac (&facs)[2],
-              const AutopilotStateMachine& autopilotStateMachine,
-              const AutopilotLawsModelClass& autopilotLaws,
-              const Autothrust& autoThrust,
               const FuelSystemData& fuelSystemData);
 
   void terminate();
@@ -53,9 +44,9 @@ class FlightDataRecorder {
 
   void loadConfiguration();
 
-  void writePrim(Prim& prim);
+  void writePrimOutputs(Prim& prim);
+
+  void writeMasterPrim(int masterPrim, Prim& prim);
 
   void writeSec(Sec& sec);
-
-  void writeFac(Fac& fac);
 };

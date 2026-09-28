@@ -2183,7 +2183,7 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_ANNOUNCEMENTS_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_ANNOUNCEMENT_TOGGLE" />
         </Sound>
 
-        <Sound WwiseEvent="welcomeonboard" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="false" LocalVar="A32NX_SOUND_BOARDING_COMPLETE">
+        <Sound WwiseEvent="welcomeonboard" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="false" LocalVar="A32NX_SOUND_WELCOME_ONBOARD">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_CIDS_IS_POWERED">
                 <Range LowerBound="1" />

@@ -20,6 +20,7 @@ dependencies = [
 name = "a320_systems"
 version = "0.1.0"
 dependencies = [
+ "more-asserts",
  "nalgebra",
  "ntest",
  "rand",
@@ -46,6 +47,7 @@ version = "0.1.0"
 dependencies = [
  "bitflags",
  "enum-map",
+ "more-asserts",
  "nalgebra",
  "ntest",
  "rand",
@@ -737,6 +739,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "more-asserts"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fafa6961cabd9c63bcd77a45d7e3b7f3b552b70417831fb0f56db717e72407e"
+
+[[package]]
 name = "msfs"
 version = "0.2.0"
 source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#2f697b9aac9fa3c00474f901a7f7ee4218cf534b"
@@ -1386,6 +1394,7 @@ version = "0.1.0"
 dependencies = [
  "bitflags",
  "bounded-vec-deque",
+ "more-asserts",
  "nalgebra",
  "ntest",
  "num-derive",

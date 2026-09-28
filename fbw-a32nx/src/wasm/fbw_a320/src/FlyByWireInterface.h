@@ -224,11 +224,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmsPresetSpeed;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
-  std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitude;
   std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeEngineOut;
-  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAround;
-  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAroundEngineOut;
   std::unique_ptr<LocalVariable> idFmgcCruiseAltitude;
   std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
   std::unique_ptr<LocalVariable> idFmgcDirToTrigger;
@@ -236,6 +233,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmsSpeedMarginHigh;
   std::unique_ptr<LocalVariable> idFmsSpeedMarginLow;
   std::unique_ptr<LocalVariable> idFmsSpeedMarginVisible;
+  std::unique_ptr<LocalVariable> idFmsTowerHeadwindComponent;
+  std::unique_ptr<LocalVariable> idFmsFlap3ApproachSelected;
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;

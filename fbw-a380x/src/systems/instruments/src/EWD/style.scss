@@ -455,6 +455,38 @@ text, tspan, span {
   color: $display-green;
 }
 
+.EclLine.Underline {
+  text-decoration: none;
+  border-bottom: 2px solid currentColor;
+}
+
+.EclTableRow {
+  flex: 1;
+
+  .EclTableLeft {
+    flex: 1.5;
+    text-align: left;
+    border-right: 2px solid currentColor;
+    padding-right: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .EclTableRight {
+    flex: 1;
+    padding-left: 6px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .EclTableRightHeader {
+    flex: 1;
+    padding-left: 6px;
+    text-align: left;
+    white-space: nowrap;
+  }
+}
+
 .EclLine.Cyan {
   color: $display-cyan;
 }

@@ -344,7 +344,7 @@ function _addWindComponent(vw) {
  * @returns {number} angle diff
  * @private
  */
-function _getdiffAngle(a, b) {
+function _getdiffAngle(a: number, b: number) {
   return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
@@ -521,7 +521,7 @@ export class NXSpeedsUtils {
    * @param b {number} angle: b
    * @returns {number} velocity headwind
    */
-  static getHeadwind(v, a, b) {
+  static getHeadwind(v: number, a: number, b: number) {
     return v * Math.cos(_getdiffAngle(a, b) * (Math.PI / 180));
   }
 
@@ -533,26 +533,6 @@ export class NXSpeedsUtils {
    */
   static getHeadWindDiff(vTwr, vCur = SimVar.GetSimVarValue('AIRCRAFT WIND Z', 'knots') * -1) {
     return Math.round((1 / 3) * (vCur - vTwr));
-  }
-
-  /**
-   * Returns Vtarget limited by Vapp and VFE next
-   * @param vapp {number} Vapp
-   * @param windDiff {number} ground speed mini
-   * @returns {number}
-   */
-  static getVtargetGSMini(vapp, windDiff) {
-    return Math.max(
-      vapp,
-      Math.min(
-        Math.round(vapp + windDiff),
-        Math.round(
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 4
-            ? SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'Number') - 5
-            : SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFEN', 'Number'),
-        ),
-      ),
-    );
   }
 
   static convertKCasToMach(

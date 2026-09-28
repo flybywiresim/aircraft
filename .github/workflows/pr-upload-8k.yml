@@ -26,6 +26,7 @@ jobs:
           remove-cached-tools: 'true'
       - name: Install dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y rclone
       - name: Download PR metadata
         uses: actions/download-artifact@v5

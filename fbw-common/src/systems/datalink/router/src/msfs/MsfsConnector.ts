@@ -8,7 +8,7 @@ export class MsfsConnector {
   public static async receiveMsfsMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     try {
       const metar: Metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-      let report = metar.metarString;
+      let report = metar.metarString.toUpperCase();
       if (!report || metar.icao !== icao) {
         report = 'NO METAR AVAILABLE';
       }

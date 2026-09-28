@@ -1,10 +1,6 @@
 #include "SpoilersHandler.h"
 
 #include <cmath>
-#include <iostream>
-
-using std::cout;
-using std::endl;
 
 bool SpoilersHandler::getIsInitialized() const {
   return isInitialized;

@@ -233,8 +233,6 @@ export class MfdComponent
         .getSubscriber<HEvent>()
         .on('hEvent')
         .handle((eventName) => {
-          this.props.fmcService.master.acInterface.onEvent(eventName);
-
           if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
             const key = eventName.substring(13);
 

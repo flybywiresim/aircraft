@@ -2,6 +2,8 @@
 
 #include "../interface/SimConnectInterface.h"
 #include "../model/A380PrimComputerFctl.h"
+#include "../model/A380PrimComputerFe.h"
+#include "../model/A380PrimComputerFg.h"
 #include "../model/A380PrimComputerGeneralLogic.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/HysteresisNode.h"
@@ -20,7 +22,9 @@ class Prim {
               bool isPowered,
               SimConnectInterface& simConnectInterface,
               bool generalLogicDisabled,
-              bool fctlDisabled);
+              bool fctlDisabled,
+              bool feDisabled,
+              bool fgDisabled);
 
   base_prim_out_bus getBusOutputs();
 
@@ -29,6 +33,8 @@ class Prim {
   base_prim_analog_outputs getAnalogOutputs();
 
   A380PrimComputerGeneralLogic::ExternalInputs_A380PrimComputerGeneralLogic_T& externalInputs();
+
+  const prim_outputs& getDebugOutputs();
 
  private:
   void initSelfTests(bool viaPushButton);
@@ -46,6 +52,8 @@ class Prim {
   // Model
   A380PrimComputerGeneralLogic primGeneralLogic;
   A380PrimComputerFctl primFctl;
+  A380PrimComputerFe primFe;
+  A380PrimComputerFg primFg;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

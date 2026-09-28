@@ -18,7 +18,6 @@ import {
   setCabinInfo,
   setFlypadInfo,
   store,
-  TroubleshootingContextProvider,
   useAppDispatch,
   useEventBus,
   useNavigraphAuthInfo,
@@ -137,24 +136,22 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
       }}
     >
       <Provider store={store}>
-        <TroubleshootingContextProvider eventBus={eventBus}>
-          <FailuresOrchestratorProvider failures={[]}>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-              <Router>
-                <ModalProvider>
-                  <EventBusContextProvider eventBus={eventBus}>
-                    <NavigraphAuthProvider>
-                      <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        <ToastContainer position="top-center" draggableDirection="y" limit={2} />
-                        <OitEfbPageWrapper eventBus={eventBus} />
-                      </PowerContext.Provider>
-                    </NavigraphAuthProvider>
-                  </EventBusContextProvider>
-                </ModalProvider>
-              </Router>
-            </ErrorBoundary>
-          </FailuresOrchestratorProvider>
-        </TroubleshootingContextProvider>
+        <FailuresOrchestratorProvider failures={[]}>
+          <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+            <Router>
+              <ModalProvider>
+                <EventBusContextProvider eventBus={eventBus}>
+                  <NavigraphAuthProvider>
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                      <ToastContainer position="top-center" draggableDirection="y" limit={2} />
+                      <OitEfbPageWrapper eventBus={eventBus} />
+                    </PowerContext.Provider>
+                  </NavigraphAuthProvider>
+                </EventBusContextProvider>
+              </ModalProvider>
+            </Router>
+          </ErrorBoundary>
+        </FailuresOrchestratorProvider>
       </Provider>
     </AircraftContext.Provider>
   );

@@ -190,8 +190,6 @@ jobs:
           sudo rm -rf /usr/lib/jvm
           sudo rm -rf /usr/local/sqlpackage
           sudo rm -rf /usr/share/gradle-8.10.2
-          sudo rm -rf /usr/lib/python3
-          sudo rm -rf /usr/lib/python3.10
           sudo rm -rf /usr/lib/mono
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
@@ -253,3 +251,19 @@ jobs:
           name: build-modules-a380x
           path: ./fbw-a380x/out/build-modules/
           retention-days: 1
+
+  check_fdr2csv:
+    name: Lint fdr2csv
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Build fdr2csv
+        run: |
+          ./scripts/dev-env/run.sh cargo clippy --manifest-path=/external/tools/fdr2csv/Cargo.toml --all-targets --all-features --keep-going -- -D warnings

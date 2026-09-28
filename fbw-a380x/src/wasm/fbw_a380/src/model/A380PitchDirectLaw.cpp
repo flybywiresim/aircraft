@@ -12,13 +12,13 @@ A380PitchDirectLaw::Parameters_A380PitchDirectLaw_T A380PitchDirectLaw::A380Pitc
 
   0.0,
 
-  3.5,
+  2.0,
 
-  -11.0,
+  -10.0,
 
   -30.0,
 
-  17.0,
+  20.0,
 
   -30.0
 };

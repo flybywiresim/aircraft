@@ -2,7 +2,7 @@ import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
 import { FmsPage } from '../../common/FmsPage';
 import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { DestroyableComponent } from '../../../../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 
 import {
   BitFlags,
@@ -138,7 +138,7 @@ class MfdFmsSecIndexDataStore {
         this.onNewData();
         this.checkIfCanActivateOrSwapSecondary();
       }, true),
-      this.fmc!.acInterface.fmaLateralMode.sub(() => this.checkIfCanActivateOrSwapSecondary(), true),
+      this.fmc!.acInterface.isHdgOrTrackModeEngaged().sub(() => this.checkIfCanActivateOrSwapSecondary(), true),
     );
   }
 

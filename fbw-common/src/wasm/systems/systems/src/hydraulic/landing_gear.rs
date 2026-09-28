@@ -838,6 +838,8 @@ impl SimulationElement for ProximityDetector {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
 
     use nalgebra::Vector3;
@@ -1249,7 +1251,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert!(test_bed.query(|a| a.gear_system_manifold_pressure()) < Pressure::new::<psi>(200.));
+        assert_lt!(
+            test_bed.query(|a| a.gear_system_manifold_pressure()),
+            Pressure::new::<psi>(200.)
+        );
     }
 
     #[test]
@@ -1265,7 +1270,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert!(test_bed.query(|e| e.gear_system_manifold_pressure()) < Pressure::new::<psi>(100.));
+        assert_lt!(
+            test_bed.query(|e| e.gear_system_manifold_pressure()),
+            Pressure::new::<psi>(100.)
+        );
     }
 
     #[test]
@@ -1281,7 +1289,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert!(test_bed.query(|e| e.gear_system_manifold_pressure()) < Pressure::new::<psi>(100.));
+        assert_lt!(
+            test_bed.query(|e| e.gear_system_manifold_pressure()),
+            Pressure::new::<psi>(100.)
+        );
     }
 
     #[test]
@@ -1297,7 +1308,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert!(test_bed.query(|e| e.gear_system_manifold_pressure()) < Pressure::new::<psi>(100.));
+        assert_lt!(
+            test_bed.query(|e| e.gear_system_manifold_pressure()),
+            Pressure::new::<psi>(100.)
+        );
     }
 
     #[test]
@@ -1313,7 +1327,10 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert!(test_bed.query(|e| e.gear_system_manifold_pressure()) < Pressure::new::<psi>(100.));
+        assert_lt!(
+            test_bed.query(|e| e.gear_system_manifold_pressure()),
+            Pressure::new::<psi>(100.)
+        );
     }
 
     #[test]
@@ -1331,8 +1348,9 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(10));
 
         assert!(test_bed.query(|a| a.door_assembly.is_locked()));
-        assert!(
-            test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
+        assert_eq!(
+            test_bed.query(|a| a.door_assembly.position_normalized()),
+            Ratio::new::<ratio>(0.)
         );
     }
 
@@ -1350,8 +1368,9 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(10));
 
-        assert!(
-            test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
+        assert_eq!(
+            test_bed.query(|a| a.door_assembly.position_normalized()),
+            Ratio::new::<ratio>(0.)
         );
 
         assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));

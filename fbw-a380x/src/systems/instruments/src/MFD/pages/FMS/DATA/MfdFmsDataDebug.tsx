@@ -15,9 +15,9 @@ interface MfdFmsDataDebugProps extends AbstractMfdPageProps {}
 export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
   private selectedPageIndex = Subject.create<number>(0);
 
-  private readonly facVls = Arinc429Register.empty();
-  private readonly facV_a_prot = Arinc429Register.empty();
-  private readonly facV_a_max = Arinc429Register.empty();
+  private readonly primVls = Arinc429Register.empty();
+  private readonly primV_a_prot = Arinc429Register.empty();
+  private readonly primV_a_max = Arinc429Register.empty();
 
   private tab1lineLabels = [
     Subject.create<string>(''),
@@ -72,20 +72,20 @@ export class MfdFmsDataDebug extends FmsPage<MfdFmsDataDebugProps> {
       (SimVar.GetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number') as number).toFixed(2) ?? '',
     );
 
-    this.facVls.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_LS', 'number'));
-    this.tab1lineLabels[5].set('VLS (PSEUDO FAC)');
-    this.tab1lineValues[5].set(this.facVls.value.toFixed(1));
+    this.primVls.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_V_LS', 'number'));
+    this.tab1lineLabels[5].set('VLS (PRIM 1)');
+    this.tab1lineValues[5].set(this.primVls.value.toFixed(1));
 
-    this.facV_a_prot.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_PROT', 'number'));
-    this.tab1lineLabels[6].set('V_A_PROT (PSEUDO FAC)');
-    this.tab1lineValues[6].set(this.facV_a_prot.value.toFixed(1));
+    this.primV_a_prot.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_V_ALPHA_PROT', 'number'));
+    this.tab1lineLabels[6].set('V_A_PROT (PRIM 1)');
+    this.tab1lineValues[6].set(this.primV_a_prot.value.toFixed(1));
 
-    this.facV_a_max.set(SimVar.GetSimVarValue('L:A32NX_FAC_1_V_ALPHA_LIM', 'number'));
-    this.tab1lineLabels[7].set('V_A_MAX (PSEUDO FAC)');
-    this.tab1lineValues[7].set(this.facV_a_max.value.toFixed(1));
+    this.primV_a_max.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_V_ALPHA_LIM', 'number'));
+    this.tab1lineLabels[7].set('V_A_MAX ((PRIM 1))');
+    this.tab1lineValues[7].set(this.primV_a_max.value.toFixed(1));
 
-    this.tab1lineLabels[8].set('FAC SSM');
-    this.tab1lineValues[8].set(this.facVls.ssm.toFixed(0));
+    this.tab1lineLabels[8].set('PRIM SSM');
+    this.tab1lineValues[8].set(this.primVls.ssm.toFixed(0));
 
     this.tab1lineLabels[10].set('GD SPEED (FCOM LOOKUP)');
     this.tab1lineValues[10].set((SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number') as number).toFixed(2) ?? '');

@@ -24,7 +24,7 @@ import { WdNormalChecklists } from './elements/WdNormalChecklists';
 import { FwsEvents } from '../MsfsAvionicsCommon/providers/FwsPublisher';
 import { WdAbnormalSensedProcedures } from './elements/WdAbnormalSensedProcedures';
 import { WdAbnormalNonSensedProcedures } from './elements/WdAbnormalNonSensed';
-import { DestroyableComponent } from '../MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
 import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';

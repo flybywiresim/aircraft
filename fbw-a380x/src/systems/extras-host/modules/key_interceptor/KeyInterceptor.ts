@@ -245,19 +245,19 @@ export class A380XKeyInterceptor extends KeyInterceptor {
 
   private onComTxSelect(data: KeyEventData): void {
     const vhfIndex = (data.value0 ?? 0) + 1;
-    if (this.shouldControlRmp1()) {
+    if (this.shouldControlRmp1() && !SimVar.GetSimVarValue(`L:A380X_RMP_1_VHF_TX_${vhfIndex}`, SimVarValueType.Bool)) {
       SimVar.SetSimVarValue(`H:RMP_1_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
       requestAnimationFrame(() =>
         SimVar.SetSimVarValue(`H:RMP_1_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),
       );
     }
-    if (this.shouldControlRmp2()) {
+    if (this.shouldControlRmp2() && !SimVar.GetSimVarValue(`L:A380X_RMP_2_VHF_TX_${vhfIndex}`, SimVarValueType.Bool)) {
       SimVar.SetSimVarValue(`H:RMP_2_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
       requestAnimationFrame(() =>
         SimVar.SetSimVarValue(`H:RMP_2_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),
       );
     }
-    if (this.shouldControlRmp3()) {
+    if (this.shouldControlRmp3() && !SimVar.GetSimVarValue(`L:A380X_RMP_3_VHF_TX_${vhfIndex}`, SimVarValueType.Bool)) {
       SimVar.SetSimVarValue(`H:RMP_3_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
       requestAnimationFrame(() =>
         SimVar.SetSimVarValue(`H:RMP_3_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),

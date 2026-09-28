@@ -29,8 +29,7 @@ import { FacilityCache, LoadType } from './FacilityCache';
 import { MsfsMapping } from './Mapping';
 import { Gate } from '../../../shared/types/Gate';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
-import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
-import { Msfs2020NearbyFacilityMonitor, MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
+import { MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
 import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 export class MsfsBackend implements DataInterface {
@@ -103,7 +102,7 @@ export class MsfsBackend implements DataInterface {
   }
 
   public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
-    return isMsfs2024() ? new MsfsNearbyFacilityMonitor(type) : new Msfs2020NearbyFacilityMonitor(type);
+    return new MsfsNearbyFacilityMonitor(type);
   }
 
   /** @inheritdoc */

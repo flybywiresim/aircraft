@@ -9,7 +9,6 @@ import { SettingsPage } from '../Settings';
 import { useTroubleshooting } from '../../TroubleshootingContext';
 import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
 import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
-import { isMsfs2024 } from '../../../../../shared/src/MsfsDetect';
 
 export const TroubleshootingPage = () => {
   const errorLog = useTroubleshooting();
@@ -34,7 +33,8 @@ export const TroubleshootingPage = () => {
       <pre className="w-full whitespace-pre-wrap font-mono text-base">
         Aircraft Version: {buildInfo?.version}
         {'\n'}
-        MSFS2024: {isMsfs2024() ? 'True\n' : 'False\n'}
+        MSFS2024: True
+        {'\n'}
         NavData Dates: {navDates + '\n'}
         Navigraph NavData: {naviInstalled ? 'True\n' : 'False\n'}
         {fileHashMismatches.length > 0

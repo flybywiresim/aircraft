@@ -15,7 +15,6 @@ export * from './GenericDataListenerSync';
 export * from './MagVar';
 export * from './MathUtils';
 export * from './Vec2Utils';
-export * from './MsfsDetect';
 export * from './ObjectUtils';
 export * from './PathVector';
 export * from './PilotSeat';

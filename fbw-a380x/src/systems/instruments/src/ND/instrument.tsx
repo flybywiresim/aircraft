@@ -53,7 +53,7 @@ import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCom
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
@@ -115,7 +115,7 @@ class NDInstrument implements FsInstrument {
 
   private readonly aesuPublisher: AesuBusPublisher;
 
-  private readonly a380xFcuBusPublisher: A380XFcuBusPublisher;
+  private readonly fcuEfisCpBusPublisher: FcuEfisCpBusPublisher;
 
   private readonly clock: Clock;
 
@@ -186,7 +186,7 @@ class NDInstrument implements FsInstrument {
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
     this.aesuPublisher = new AesuBusPublisher(this.bus);
-    this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
+    this.fcuEfisCpBusPublisher = new FcuEfisCpBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -211,7 +211,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);
-    this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
+    this.backplane.addPublisher('fcuEfisCp', this.fcuEfisCpBusPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);

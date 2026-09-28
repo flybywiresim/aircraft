@@ -156,6 +156,7 @@ impl ElectricDriveMotor {
 
         powered_by_bus_array: Vec<ElectricalBusType>,
     ) -> Self {
+        // FIXME no runtime panics please! Use the type system or compile time checks
         // Only supports one main bus or one main plus one standby
         assert!(powered_by_bus_array.len() <= 2);
 
@@ -810,6 +811,8 @@ impl SimulationElement for TrimmableHorizontalStabilizerActuator {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use uom::si::angle::degree;
     use uom::si::{angular_velocity::degree_per_second, electric_potential::volt, ratio::percent};
 
@@ -1045,7 +1048,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(100));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>().abs() < 0.01);
+        assert_lt!(deflection.get::<degree>().abs(), 0.01);
     }
 
     #[rstest]
@@ -1061,18 +1064,18 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 12.9);
-        assert!(deflection.get::<degree>() < 13.1);
+        assert_gt!(deflection.get::<degree>(), 12.9);
+        assert_lt!(deflection.get::<degree>(), 13.1);
 
         let man_override: f64 = test_bed.read_by_name("HYD_THS_TRIM_MANUAL_OVERRIDE");
-        assert!(man_override <= 0.5);
+        assert_le!(man_override, 0.5);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-2.), motor_idx));
         test_bed.run_with_delta(Duration::from_millis(25000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() >= -2.1);
-        assert!(deflection.get::<degree>() < -1.9);
+        assert_ge!(deflection.get::<degree>(), -2.1);
+        assert_lt!(deflection.get::<degree>(), -1.9);
     }
 
     #[test]
@@ -1083,7 +1086,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(5000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 2.);
+        assert_gt!(deflection.get::<degree>(), 2.);
 
         println!("PRESSURE DROP");
         test_bed.command(|a| {
@@ -1092,7 +1095,10 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(5000));
 
         let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
+        assert_lt!(
+            (deflection - deflection_after_hyd_fail).abs(),
+            Angle::new::<degree>(1.)
+        );
     }
 
     #[test]
@@ -1103,12 +1109,12 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 13.45);
-        assert!(deflection.get::<degree>() < 13.55);
+        assert_gt!(deflection.get::<degree>(), 13.45);
+        assert_lt!(deflection.get::<degree>(), 13.55);
 
         let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
-        assert!(trim_wheel_position_percent.get::<percent>() > 99.9);
-        assert!(trim_wheel_position_percent.get::<percent>() < 100.1);
+        assert_gt!(trim_wheel_position_percent.get::<percent>(), 99.9);
+        assert_lt!(trim_wheel_position_percent.get::<percent>(), 100.1);
     }
 
     #[test]
@@ -1120,8 +1126,8 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() >= -0.1);
-        assert!(deflection.get::<degree>() <= 0.1);
+        assert_ge!(deflection.get::<degree>(), -0.1);
+        assert_le!(deflection.get::<degree>(), 0.1);
     }
 
     #[test]
@@ -1132,12 +1138,12 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > -4.1);
-        assert!(deflection.get::<degree>() < -3.9);
+        assert_gt!(deflection.get::<degree>(), -4.1);
+        assert_lt!(deflection.get::<degree>(), -3.9);
 
         let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
-        assert!(trim_wheel_position_percent.get::<percent>() > -0.1);
-        assert!(trim_wheel_position_percent.get::<percent>() < 0.1);
+        assert_gt!(trim_wheel_position_percent.get::<percent>(), -0.1);
+        assert_lt!(trim_wheel_position_percent.get::<percent>(), 0.1);
     }
 
     #[test]
@@ -1153,6 +1159,6 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(5000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 5.);
+        assert_gt!(deflection.get::<degree>(), 5.);
     }
 }
