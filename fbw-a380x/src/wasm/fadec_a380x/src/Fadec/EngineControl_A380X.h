@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H
@@ -61,8 +61,10 @@ class EngineControl_A380X {
   double transitionStartTime;
   double transitionFactor;
 
-  // TODO - might not be required - feeds into stateMachine but really relevant
+  // Previous simulator values used for engine updates and master/starter transitions.
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
+  double prevEngineMasterPos[4] = {};
+  bool prevEngineStarterState[4] = {};
 
   // Engine oil state
   double thermalEnergy[4] = {0.0, 0.0, 0.0, 0.0};
@@ -165,6 +167,9 @@ class EngineControl_A380X {
    * @param engine The engine number (1-4).
    * @param engineIgniter The status of the engine igniter (enum 0=Crank, 1=Norm, 2=Ign).
    * @param engineStarter The status of the engine starter as bool.
+   * @param engineStarterTurnedOff Whether the reconciled starter changed from on to off.
+   * @param engineMasterTurnedOn Whether the engine fuel valve just reached fully open.
+   * @param engineMasterTurnedOff Whether the engine fuel valve just reached fully closed.
    * @param simN3 The current N2 value from the simulator used as N3 for the A380X in percent.
    * @param idleN3 The idle N3 value in percent.
    * @param ambientTemperature The current ambient temperature in degrees Celsius.
@@ -174,6 +179,9 @@ class EngineControl_A380X {
   EngineControl_A380X::EngineState engineStateMachine(int    engine,
                                                       int    engineIgniter,
                                                       bool   engineStarter,
+                                                      bool engineStarterTurnedOff,
+                                                      bool engineMasterTurnedOn,
+                                                      bool engineMasterTurnedOff,
                                                       double simN3,
                                                       double idleN3,
                                                       double ambientTemperature);
@@ -184,18 +192,12 @@ class EngineControl_A380X {
    * @param engine The engine number (1-4).
    * @param engineState The current state of the engine as an enum of type EngineState.
    * @param deltaTime The time difference since the last update in seconds.
-   * @param engineTimer A timer used to calculate the elapsed time for various operations.
    * @param simN3 The current N3 value from the simulator in percent (actually reading the sim's N2 as the sim does not have an N3.
    * @param ambientTemperature The current ambient temperature in degrees Celsius.
    *
    * @see EngineState
    */
-  void engineStartProcedure(int         engine,
-                            EngineState engineState,
-                            double      deltaTime,
-                            double      engineTimer,
-                            double      simN3,
-                            double      ambientTemperature);
+  void engineStartProcedure(int engine, EngineState engineState, double deltaTime, double simN3, double ambientTemperature);
 
   /**
    * @brief This function manages the engine shutdown procedure.

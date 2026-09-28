@@ -442,7 +442,9 @@ struct EngineStarterValveController {
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting => Some(EngineStarterValveSignal::new_open()),
+            EngineState::Starting | EngineState::Restarting => {
+                Some(EngineStarterValveSignal::new_open())
+            }
             _ => Some(EngineStarterValveSignal::new_closed()),
         }
     }
@@ -2909,7 +2911,10 @@ mod tests {
     }
 
     #[rstest]
-    fn starter_valve_opens_on_engine_start(#[values(1, 2, 3, 4)] engine_number: usize) {
+    fn starter_valve_opens_on_engine_start(
+        #[values(1, 2, 3, 4)] engine_number: usize,
+        #[values(EngineState::Starting, EngineState::Restarting)] engine_state: EngineState,
+    ) {
         let mut test_bed = test_bed_with().stop_eng1().stop_eng2().and_run();
 
         assert!(!test_bed.es_valve_is_open(engine_number));
@@ -2921,6 +2926,7 @@ mod tests {
             4 => test_bed.start_eng4(),
             _ => panic!("Unexpected engine number"),
         }
+        .set_engine_state(engine_number, engine_state)
         .and_run();
 
         assert!(test_bed.es_valve_is_open(engine_number));

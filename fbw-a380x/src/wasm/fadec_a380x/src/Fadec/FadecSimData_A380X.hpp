@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A380X_HPP
@@ -151,7 +151,8 @@ class FadecSimData_A380X {
     FLOAT64 pressureAltitude;        // in Feet
     FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
     FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineIgniter[4];        // 0 or 1
+    FLOAT64 engineFuelValveOpen[4];  // 0 (closed) to 1 (fully open)
+    FLOAT64 engineIgniter[4];        // 0: crank, 1: norm, 2: ign/start
     FLOAT64 engineStarter[4];        // 0 or 1
     FLOAT64 simEngineN1[4];          // in Percent
     FLOAT64 simEngineN2[4];          // in Percent
@@ -168,6 +169,10 @@ class FadecSimData_A380X {
       {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
+      {"FUELSYSTEM VALVE OPEN", 1, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 2, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 3, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 4, UNITS.Number},         //
       {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
       {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
       {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
@@ -192,7 +197,6 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
   // Client events
-  // TODO: not yet used in this A380x implementation but kept for future use
   ClientEventPtr toggleEngineStarter1Event;
   ClientEventPtr toggleEngineStarter2Event;
   ClientEventPtr toggleEngineStarter3Event;
