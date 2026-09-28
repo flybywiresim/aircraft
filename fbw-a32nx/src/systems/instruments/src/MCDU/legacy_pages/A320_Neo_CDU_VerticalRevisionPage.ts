@@ -18,6 +18,9 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { CduRtaPage } from './CDU_RTA_Page';
 
 export class CDUVerticalRevisionPage {
+  /** Maximum certified altitude (39800 ft) minus 100 ft */
+  private static readonly MAX_ALTITUDE_CONSTRAINT = 39700;
+
   /**
    * @param mcdu
    * @param {FlightPlanLeg} waypoint
@@ -442,7 +445,7 @@ export class CDUVerticalRevisionPage {
               ? AltitudeDescriptor.AtOrBelowAlt1
               : AltitudeDescriptor.AtOrAboveAlt1;
 
-        if (altitude > 45000) {
+        if (altitude > CDUVerticalRevisionPage.MAX_ALTITUDE_CONSTRAINT) {
           mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
           scratchpadCallback();
           return;
@@ -804,7 +807,10 @@ export class CDUVerticalRevisionPage {
       alt = parseInt(matchResult[9]);
     }
 
-    if ((speed !== undefined && (speed < 90 || speed > 350)) || (alt !== undefined && alt > 45000)) {
+    if (
+      (speed !== undefined && (speed < 90 || speed > 350)) ||
+      (alt !== undefined && alt > CDUVerticalRevisionPage.MAX_ALTITUDE_CONSTRAINT)
+    ) {
       mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       scratchpadCallback();
       return;
