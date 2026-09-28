@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_FADECSIMDATA_A380X_HPP
@@ -151,7 +151,8 @@ class FadecSimData_A380X {
     FLOAT64 pressureAltitude;        // in Feet
     FLOAT64 fuelWeightLbsPerGallon;  // in Pounds
     FLOAT64 engineAntiIce[4];        // 0 or 1
-    FLOAT64 engineIgniter[4];        // 0 or 1
+    FLOAT64 engineFuelValveOpen[4];  // 0 (closed) to 1 (fully open)
+    FLOAT64 engineIgniter[4];        // 0: crank, 1: norm, 2: ign/start
     FLOAT64 engineStarter[4];        // 0 or 1
     FLOAT64 simEngineN1[4];          // in Percent
     FLOAT64 simEngineN2[4];          // in Percent
@@ -168,6 +169,10 @@ class FadecSimData_A380X {
       {"ENG ANTI ICE",                 2, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 3, UNITS.Bool     }, //
       {"ENG ANTI ICE",                 4, UNITS.Bool     }, //
+      {"FUELSYSTEM VALVE OPEN", 1, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 2, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 3, UNITS.Number},         //
+      {"FUELSYSTEM VALVE OPEN", 4, UNITS.Number},         //
       {"TURB ENG IGNITION SWITCH EX1", 1, UNITS.Number   }, //
       {"TURB ENG IGNITION SWITCH EX1", 2, UNITS.Number   }, //
       {"TURB ENG IGNITION SWITCH EX1", 3, UNITS.Number   }, //
@@ -192,7 +197,6 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
   // Client events
-  // TODO: not yet used in this A380x implementation but kept for future use
   ClientEventPtr toggleEngineStarter1Event;
   ClientEventPtr toggleEngineStarter2Event;
   ClientEventPtr toggleEngineStarter3Event;
@@ -226,6 +230,7 @@ class FadecSimData_A380X {
   NamedVariablePtr enginePreFF[4];  // kg/hour
   NamedVariablePtr engineState[4];
   NamedVariablePtr engineTimer[4];
+  NamedVariablePtr engineStarterPressurized[4];
   NamedVariablePtr fuelLeftOuterPre;   // Pounds
   NamedVariablePtr fuelFeedOnePre;     // Pounds
   NamedVariablePtr fuelLeftMidPre;     // Pounds
@@ -359,6 +364,11 @@ class FadecSimData_A380X {
     engineState[E2] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
     engineState[E3] = dm->make_named_var("A32NX_ENGINE_STATE:3", UNITS.Number, AUTO_READ_WRITE);
     engineState[E4] = dm->make_named_var("A32NX_ENGINE_STATE:4", UNITS.Number, AUTO_READ_WRITE);
+
+    engineStarterPressurized[E1] = dm->make_named_var("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
+    engineStarterPressurized[E2] = dm->make_named_var("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
+    engineStarterPressurized[E3] = dm->make_named_var("A32NX_PNEU_ENG_3_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
+    engineStarterPressurized[E4] = dm->make_named_var("A32NX_PNEU_ENG_4_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
 
     engineN1[E1] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
     engineN1[E2] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);
