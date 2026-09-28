@@ -728,8 +728,7 @@ struct EngineBleedAirSystem {
     differential_pressure_transducer: DifferentialPressureTransducer,
 }
 impl EngineBleedAirSystem {
-    // Provisional simulation thresholds shared with the A32NX start mechanism.
-    // TODO: Validate these against A380 starter data when refining the pneumatic model.
+    // TODO: Values copied from A320.
     const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH: f64 = 10.;
     const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW: f64 = 5.;
 

@@ -67,12 +67,10 @@ void EngineControl_A380X::update() {
     const bool engineFuelValveFullyClosed = engineFuelValveOpen == 0;
     const bool engineFuelValveFullyOpen = engineFuelValveOpen == 1;
 
-    // Fuel valve travel supplies the delay between the master command and the start request.
+    // Fuel valve travel from the cfg supplies the delay between the command and the start request.
     const bool engineMasterTurnedOn = prevEngineMasterPos[engineIdx] < 1 && engineFuelValveFullyOpen;
     const bool engineMasterTurnedOff = prevEngineMasterPos[engineIdx] > 0 && engineFuelValveFullyClosed;
 
-    // Reconcile external starter events before evaluating state transitions. Retain the existing
-    // 20% simulator core-speed threshold for an engine that is already rotating.
     if (!engineStarter && engineFuelValveFullyOpen && (engineStarterPressurized || simN3 >= 20)) {
       simData.setStarterHeldEvent[engineIdx]->trigger(1);
       engineStarter = true;

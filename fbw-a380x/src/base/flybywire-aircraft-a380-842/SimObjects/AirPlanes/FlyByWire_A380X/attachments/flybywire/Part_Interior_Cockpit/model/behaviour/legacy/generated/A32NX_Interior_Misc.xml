@@ -319,7 +319,6 @@
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_OFF</ANIMTIP_1>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <!-- The master commands the fuel valve; FADEC owns the simulator starter. -->
             <UseTemplate Name="ASOBO_GT_Switch_Code">
                 <ANIM_CODE>
                     (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
