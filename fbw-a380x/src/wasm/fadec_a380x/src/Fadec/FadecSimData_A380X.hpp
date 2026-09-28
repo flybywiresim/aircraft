@@ -230,7 +230,6 @@ class FadecSimData_A380X {
   NamedVariablePtr enginePreFF[4];  // kg/hour
   NamedVariablePtr engineState[4];
   NamedVariablePtr engineTimer[4];
-  NamedVariablePtr engineStarterPressurized[4];
   NamedVariablePtr fuelLeftOuterPre;   // Pounds
   NamedVariablePtr fuelFeedOnePre;     // Pounds
   NamedVariablePtr fuelLeftMidPre;     // Pounds
@@ -364,11 +363,6 @@ class FadecSimData_A380X {
     engineState[E2] = dm->make_named_var("A32NX_ENGINE_STATE:2", UNITS.Number, AUTO_READ_WRITE);
     engineState[E3] = dm->make_named_var("A32NX_ENGINE_STATE:3", UNITS.Number, AUTO_READ_WRITE);
     engineState[E4] = dm->make_named_var("A32NX_ENGINE_STATE:4", UNITS.Number, AUTO_READ_WRITE);
-
-    engineStarterPressurized[E1] = dm->make_named_var("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
-    engineStarterPressurized[E2] = dm->make_named_var("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
-    engineStarterPressurized[E3] = dm->make_named_var("A32NX_PNEU_ENG_3_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
-    engineStarterPressurized[E4] = dm->make_named_var("A32NX_PNEU_ENG_4_STARTER_PRESSURIZED", UNITS.Bool, AUTO_READ);
 
     engineN1[E1] = dm->make_named_var("A32NX_ENGINE_N1:1", UNITS.Number, AUTO_READ_WRITE);
     engineN1[E2] = dm->make_named_var("A32NX_ENGINE_N1:2", UNITS.Number, AUTO_READ_WRITE);

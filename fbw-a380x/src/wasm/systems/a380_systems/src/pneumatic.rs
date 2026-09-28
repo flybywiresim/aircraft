@@ -696,7 +696,6 @@ struct EngineBleedAirSystem {
     high_pressure_valve_open_id: VariableIdentifier,
     pressure_regulating_valve_open_id: VariableIdentifier,
     starter_valve_open_id: VariableIdentifier,
-    engine_starter_pressurized_id: VariableIdentifier,
     intermediate_pressure_transducer_pressure_id: VariableIdentifier,
     transfer_pressure_transducer_pressure_id: VariableIdentifier,
     regulated_pressure_transducer_pressure_id: VariableIdentifier,
@@ -717,7 +716,6 @@ struct EngineBleedAirSystem {
     precooler_supply_pipe: PneumaticPipe,
     engine_starter_exhaust: PneumaticExhaust,
     engine_starter_container: PneumaticPipe,
-    engine_starter_pressurized: bool,
     engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: Precooler,
@@ -728,10 +726,6 @@ struct EngineBleedAirSystem {
     differential_pressure_transducer: DifferentialPressureTransducer,
 }
 impl EngineBleedAirSystem {
-    // TODO: Values copied from A320.
-    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH: f64 = 10.;
-    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW: f64 = 5.;
-
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             high_pressure_id: context.get_identifier(format!("PNEU_ENG_{}_HP_PRESSURE", number)),
@@ -757,8 +751,6 @@ impl EngineBleedAirSystem {
                 .get_identifier(format!("PNEU_ENG_{}_PR_VALVE_OPEN", number)),
             starter_valve_open_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", number)),
-            engine_starter_pressurized_id: context
-                .get_identifier(format!("PNEU_ENG_{}_STARTER_PRESSURIZED", number)),
             intermediate_pressure_transducer_pressure_id: context.get_identifier(format!(
                 "PNEU_ENG_{}_INTERMEDIATE_TRANSDUCER_PRESSURE",
                 number
@@ -815,7 +807,6 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
-            engine_starter_pressurized: false,
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(180. * 2.),
             intermediate_pressure_transducer: PressureTransducer::new(powered_by),
@@ -891,7 +882,6 @@ impl EngineBleedAirSystem {
         );
         self.engine_starter_exhaust
             .update_move_fluid(context, &mut self.engine_starter_container);
-        self.update_engine_start_pressurization(context.ambient_pressure());
 
         self.intermediate_pressure_transducer
             .update(context, &self.intermediate_pressure_compression_chamber);
@@ -901,18 +891,6 @@ impl EngineBleedAirSystem {
             .update(context, &self.precooler_inlet_pipe);
         self.differential_pressure_transducer
             .update(&self.precooler_inlet_pipe, &self.precooler_outlet_pipe);
-    }
-
-    fn update_engine_start_pressurization(&mut self, ambient_pressure: Pressure) {
-        let starter_container_pressure_psig =
-            self.engine_starter_container.pressure() - ambient_pressure;
-
-        self.engine_starter_pressurized = (!self.engine_starter_pressurized
-            && starter_container_pressure_psig.get::<psi>()
-                > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH)
-            || (self.engine_starter_pressurized
-                && starter_container_pressure_psig.get::<psi>()
-                    > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW);
     }
 
     fn intermediate_pressure(&self) -> Pressure {
@@ -1054,10 +1032,6 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.starter_valve_open_id,
             self.engine_starter_valve.is_open(),
-        );
-        writer.write(
-            &self.engine_starter_pressurized_id,
-            self.engine_starter_pressurized,
         );
     }
 }
@@ -1492,8 +1466,7 @@ mod tests {
         payload::NumberOfPassengers,
         pneumatic::{
             ControllablePneumaticValve, CrossBleedValveSelectorMode, EngineState,
-            PneumaticContainer, PneumaticPipe, PneumaticValveSignal,
-            TargetPressureTemperatureSignal,
+            PneumaticContainer, PneumaticValveSignal, TargetPressureTemperatureSignal,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
@@ -1504,7 +1477,7 @@ mod tests {
             PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
-            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+            test::{SimulationTestBed, TestBed, WriteByName},
             Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -1513,7 +1486,7 @@ mod tests {
 
     use uom::si::{
         f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     use crate::{
@@ -2957,77 +2930,6 @@ mod tests {
         .and_run();
 
         assert!(test_bed.es_valve_is_open(engine_number));
-    }
-
-    #[rstest]
-    fn starter_pressurization_requires_bleed_air(
-        #[values(1, 2, 3, 4)] engine_number: usize,
-        #[values(EngineState::Starting, EngineState::Restarting)] engine_state: EngineState,
-    ) {
-        let mut test_bed = test_bed_with()
-            .stop_eng1()
-            .stop_eng2()
-            .stop_eng3()
-            .stop_eng4()
-            .set_engine_state(engine_number, engine_state)
-            .and_stabilize();
-        let variable = format!("PNEU_ENG_{}_STARTER_PRESSURIZED", engine_number);
-
-        assert!(test_bed.es_valve_is_open(engine_number));
-        let pressurized: bool = test_bed.read_by_name(&variable);
-        assert!(!pressurized);
-
-        test_bed = test_bed.set_bleed_air_running().and_stabilize();
-        let pressurized: bool = test_bed.read_by_name(&variable);
-        assert!(pressurized);
-
-        test_bed = test_bed
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed())
-            .set_apu_bleed_air_pb(false)
-            .and_stabilize();
-        // Allow the air stored in the pipes to exhaust after isolating the APU.
-        test_bed
-            .test_bed
-            .run_multiple_frames(Duration::from_secs(600));
-        let pressurized: bool = test_bed.read_by_name(&variable);
-        assert!(
-            !pressurized,
-            "Starter pressure: {:?}",
-            test_bed.engine_starter_container_pressure(engine_number)
-        );
-    }
-
-    #[rstest]
-    fn starter_pressurization_uses_gauge_pressure_and_hysteresis(
-        #[values(1, 2, 3, 4)] engine_number: usize,
-        #[values(14.7, 4.4)] ambient_pressure_psi: f64,
-    ) {
-        let mut test_bed = test_bed_with();
-        for (gauge_pressure_psi, expected) in [
-            (8., false),
-            (11., true),
-            (7., true),
-            (4., false),
-            (7., false),
-        ] {
-            test_bed.command(|aircraft| {
-                let engine = &mut aircraft.pneumatic.engine_systems[engine_number - 1];
-                engine.engine_starter_container = PneumaticPipe::new(
-                    Volume::new::<cubic_meter>(1.),
-                    Pressure::new::<psi>(ambient_pressure_psi + gauge_pressure_psi),
-                    ThermodynamicTemperature::new::<degree_celsius>(15.),
-                );
-                engine
-                    .update_engine_start_pressurization(Pressure::new::<psi>(ambient_pressure_psi));
-            });
-            assert_eq!(
-                test_bed.query(
-                    |aircraft| aircraft.pneumatic.engine_systems[engine_number - 1]
-                        .engine_starter_pressurized
-                ),
-                expected,
-            );
-        }
     }
 
     #[test]

@@ -10,7 +10,6 @@ Please keep all vars under the correct ATA chapter where they relate to aircraft
 
 - [A380X Private Local Vars](#a380x-private-local-vars)
   - [23 - Communications](#23---communications)
-  - [36 - Bleed Air](#36---bleed-air)
   - [Sim Specific](#sim-specific)
 
 ## 23 - Communications
@@ -215,14 +214,6 @@ Please keep all vars under the correct ATA chapter where they relate to aircraft
 - `L:FBW_VHF{vhf_index}_FREQUENCY`
     - ARINC429 - BCD VHF COM Frequency
     - The tuned frequency from the VHF radios.
-
-## 36 - Bleed Air
-
-- `L:A32NX_PNEU_ENG_{number}_STARTER_PRESSURIZED`
-    - Boolean; engine number 1 through 4.
-    - Written by the pneumatic system and read by FADEC to control the simulator starter.
-    - Uses starter-container pressure above ambient: becomes true above 10 psi and stays true until pressure falls to 5 psi or below.
-    - These are provisional simulation thresholds adopted from A32NX, pending validation against A380 starter data.
 
 ## Sim Specific
 

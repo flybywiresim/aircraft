@@ -62,7 +62,6 @@ void EngineControl_A380X::update() {
     bool engineStarter = static_cast<bool>(simData.simVarsDataPtr->data().engineStarter[engineIdx]);
     const int engineIgniter = static_cast<int>(simData.simVarsDataPtr->data().engineIgniter[engineIdx]);
     const double simN3 = simData.simVarsDataPtr->data().simEngineN2[engineIdx];  // MSFS N2 represents A380X N3.
-    const bool engineStarterPressurized = simData.engineStarterPressurized[engineIdx]->getAsBool();
     const double engineFuelValveOpen = simData.simVarsDataPtr->data().engineFuelValveOpen[engineIdx];
     const bool engineFuelValveFullyClosed = engineFuelValveOpen == 0;
     const bool engineFuelValveFullyOpen = engineFuelValveOpen == 1;
@@ -71,10 +70,11 @@ void EngineControl_A380X::update() {
     const bool engineMasterTurnedOn = prevEngineMasterPos[engineIdx] < 1 && engineFuelValveFullyOpen;
     const bool engineMasterTurnedOff = prevEngineMasterPos[engineIdx] > 0 && engineFuelValveFullyClosed;
 
-    if (!engineStarter && engineFuelValveFullyOpen && (engineStarterPressurized || simN3 >= 20)) {
+    // Reconcile external starter events with the fuel valve before evaluating state transitions.
+    if (!engineStarter && engineFuelValveFullyOpen) {
       simData.setStarterHeldEvent[engineIdx]->trigger(1);
       engineStarter = true;
-    } else if (engineStarter && (engineFuelValveFullyClosed || (engineFuelValveFullyOpen && !engineStarterPressurized && simN3 < 20))) {
+    } else if (engineStarter && engineFuelValveFullyClosed) {
       simData.setStarterHeldEvent[engineIdx]->trigger(0);
       simData.setStarterEvent[engineIdx]->trigger(0);
       engineStarter = false;
