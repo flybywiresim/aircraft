@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk-react';
+import { MathUtils, useSimVar, useArinc429Var, usePersistentSetting } from '@flybywiresim/fbw-sdk-react';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -303,7 +303,7 @@ export const PressureComponent = () => {
             textNudgeY={-10}
           />
           <GaugeMarkerComponent
-            value={Math.abs(((cabinVs / 50) * 50) / 1000) <= 2.25 ? ((cabinVs / 50) * 50) / 1000 : 2.25}
+            value={MathUtils.clamp((Math.round(cabinVs / 50) * 50) / 1000, -2.25, 2.25)}
             x={vsx}
             y={y}
             min={-2}
