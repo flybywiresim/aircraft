@@ -32,6 +32,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
 
   private readonly rwyEoSid = Subject.create<string>('');
 
+  private readonly rwyLsIdent = Subject.create<string>('----');
+
   private readonly rwyFreq = Subject.create<string>('');
 
   private readonly rwySid = Subject.create<string>('');
@@ -69,6 +71,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         this.rwyLength.set(Number(flightPlan.originRunway.length.toFixed(0)), UnitType.METER);
         this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
         this.rwyEoSid.set('NONE');
+        this.rwyLsIdent.set(flightPlan.originRunway.lsIdent ? `ILS ${flightPlan.originRunway.lsIdent}` : '----');
         this.rwyFreq.set(flightPlan.originRunway.lsFrequencyChannel?.toFixed(2) ?? '---.--');
 
         if (flightPlan.availableDepartures?.length > 0) {
@@ -115,6 +118,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         this.rwyLength.set(NaN);
         this.rwyCrs.set('---');
         this.rwyEoSid.set('------');
+        this.rwyLsIdent.set('----');
         this.rwyFreq.set('---.--');
         this.sidDisabled.set(true);
       }
@@ -249,7 +253,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         <div class="mfd-fms-fpln-labeled-box-container">
           <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">SELECTED DEPARTURE</span>
           <div class="mfd-fms-fpln-label-bottom-space fr aic">
-            <div class="fr aic" style="flex: 3;">
+            <div class="fr aic" style="flex: 2;">
               <span class="mfd-label mfd-spacing-right">FROM</span>
               <span
                 class={{
@@ -259,6 +263,18 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 }}
               >
                 {this.fromIcao}
+              </span>
+            </div>
+            <div class="fc" style="flex: 1;">
+              <span class="mfd-label mfd-fms-fpln-label-bottom-space">LS</span>
+              <span
+                class={{
+                  'mfd-value': true,
+                  tmpy: this.tmpyActive,
+                  sec: this.secActive,
+                }}
+              >
+                {this.rwyLsIdent}
               </span>
             </div>
             <div class="fc" style="flex: 1;">
