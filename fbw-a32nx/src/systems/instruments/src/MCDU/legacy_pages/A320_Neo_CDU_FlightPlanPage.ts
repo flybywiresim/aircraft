@@ -1212,8 +1212,8 @@ export class CDUFlightPlanPage {
       };
     }
 
-    mcdu.onNextPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
-    mcdu.onPrevPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+    mcdu.onNextPage = () => CDUFlightPlanPage.switchPageAB(mcdu, offset, isPageB, forPlan);
+    mcdu.onPrevPage = () => CDUFlightPlanPage.switchPageAB(mcdu, offset, isPageB, forPlan);
 
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}';
@@ -1235,6 +1235,9 @@ export class CDUFlightPlanPage {
       return (value: string, scratchpadCallback: () => void) => {
         if (fpIndex === targetPlan.destinationLegIndex) {
           if (value === '') {
+            if (CDUFlightPlanPage.rejectIfTemporaryExists(mcdu, forPlan, scratchpadCallback)) {
+              return;
+            }
             CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
             mcdu.efisInterfaces?.L.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
             mcdu.efisInterfaces?.R.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
@@ -1259,6 +1262,9 @@ export class CDUFlightPlanPage {
 
         switch (value) {
           case '':
+            if (CDUFlightPlanPage.rejectIfTemporaryExists(mcdu, forPlan, scratchpadCallback)) {
+              return;
+            }
             CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
             break;
           case Keypad.clrValue:
@@ -1366,6 +1372,9 @@ export class CDUFlightPlanPage {
     return (mcdu: LegacyFmsPageInterface, forPlan: number, offset: number, _isPageB: boolean) => {
       return (value: string, scratchpadCallback: () => void) => {
         if (value === '') {
+          if (CDUFlightPlanPage.rejectIfTemporaryExists(mcdu, forPlan, scratchpadCallback)) {
+            return;
+          }
           CDUVerticalRevisionPage.ShowPage(
             mcdu,
             wp,
@@ -1426,6 +1435,35 @@ export class CDUFlightPlanPage {
         scratchpadCallback();
       };
     };
+  }
+
+  /**
+   * Switches between F-PLN A and B. F-PLN B cannot be opened while a TMPY is pending,
+   * but going back to F-PLN A is always possible so that the TMPY can be erased or inserted.
+   */
+  static switchPageAB(mcdu: LegacyFmsPageInterface, offset: number, isPageB: boolean, forPlan: number) {
+    if (!isPageB && CDUFlightPlanPage.rejectIfTemporaryExists(mcdu, forPlan)) {
+      return;
+    }
+    CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+  }
+
+  /**
+   * Shows TEMPORARY F-PLN EXISTS if the active flight plan has a pending TMPY.
+   * @returns true if the action must be rejected
+   */
+  static rejectIfTemporaryExists(
+    mcdu: LegacyFmsPageInterface,
+    forPlan: number,
+    scratchpadCallback?: () => void,
+  ): boolean {
+    if (forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
+      mcdu.setScratchpadMessage(NXSystemMessages.temporaryFplnExists);
+      scratchpadCallback?.();
+      return true;
+    }
+
+    return false;
   }
 
   static async clearElement(
