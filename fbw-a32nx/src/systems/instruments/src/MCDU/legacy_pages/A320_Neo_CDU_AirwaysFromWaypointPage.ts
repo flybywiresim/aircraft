@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
@@ -144,19 +144,16 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
             if (value.length > 0) {
               const wp = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
 
-              if (wp) {
-                const result = await mcdu.flightPlanService.continueAirwayEntryToFix(
-                  wp,
-                  false,
-                  planIndexToEdit,
-                  inAlternate,
-                );
+              // The entry is only accepted if the waypoint lies on the pending airway
+              const result =
+                wp && (await mcdu.flightPlanService.continueAirwayEntryToFix(wp, false, planIndexToEdit, inAlternate));
 
+              if (result) {
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,
                   reviseIndex,
                   undefined,
-                  result ? 1 : -1,
+                  1,
                   forPlan,
                   inAlternate,
                   planIndexToEdit,
