@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -117,8 +117,11 @@ export class CDUPilotsWaypoint {
   }
 
   static formatAngle(angle, digits) {
-    const mins = (Math.abs(angle) % 1) * 60;
-    return `${Math.abs(Math.trunc(angle)).toFixed(0).padStart(digits, '0')}${Math.trunc(mins).toFixed(0).padStart(2, '0')}.${((mins % 1) * 10).toFixed(0)}`;
+    // Work in whole tenths of an arcminute so floating point error can't leak into the minutes or the tenths
+    const tenths = Math.round(Math.abs(angle) * 600);
+    const degrees = Math.floor(tenths / 600);
+    const minutes = Math.floor((tenths % 600) / 10);
+    return `${degrees.toFixed(0).padStart(digits, '0')}${minutes.toFixed(0).padStart(2, '0')}.${tenths % 10}`;
   }
 
   // TODO is this already existing?
