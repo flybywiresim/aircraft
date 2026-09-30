@@ -1382,9 +1382,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // Reset V1/R/2 speed after the TAKEOFF phase
     if (this.flightPhaseManager.phase > FmgcFlightPhase.Takeoff) {
-      this.setV1Speed(null, FlightPlanIndex.Active);
-      this.setVrSpeed(null, FlightPlanIndex.Active);
-      this.setV2Speed(null, FlightPlanIndex.Active);
+      if (this.v1Speed !== null) {
+        this.setV1Speed(null, FlightPlanIndex.Active);
+      }
+      if (this.vRSpeed !== null) {
+        this.setVrSpeed(null, FlightPlanIndex.Active);
+      }
+      if (this.v2Speed !== null) {
+        this.setV2Speed(null, FlightPlanIndex.Active);
+      }
     }
 
     this.speedsManagedPfd.set(vPfd);
