@@ -1071,6 +1071,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           canBeCleared={true}
                           enteredByPilot={this.displayedClimbWindAltitudeIsEnteredByPilot[value]}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                       <div
@@ -1091,6 +1092,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedClimbWindDirections[value]}
                           canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1106,6 +1108,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedClimbWindSpeeds[value]}
                           canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                     </div>
@@ -1210,6 +1213,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedCruiseWindFlightLevels[value]}
                           canBeCleared={false}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                       <div
@@ -1231,6 +1235,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           canBeCleared={true}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1247,6 +1252,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           canBeCleared={true}
                           enteredByPilot={this.displayedCruiseWindVectorIsEnteredByPilot[value]}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                     </div>
@@ -1338,6 +1344,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedDescentWindAltitudes[value]}
                           canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                       <div
@@ -1362,6 +1369,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedDescentWindDirections[value]}
                           canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                         <InputField
                           containerStyle="height: 42px; width:115px;"
@@ -1377,6 +1385,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
                           value={this.displayedDescentWindSpeeds[value]}
                           canBeCleared={true}
                           tmpyActive={this.draftWindsExist}
+                          whiteInactive={this.secActive}
                         ></InputField>
                       </div>
                     </div>

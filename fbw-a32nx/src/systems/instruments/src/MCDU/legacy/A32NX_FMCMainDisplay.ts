@@ -102,8 +102,8 @@ import { EngineOutMonitor } from '@fmgc/modules/EngineOutMonitor';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
-
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
+import { MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstants';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -167,7 +167,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /** Declaration of every variable used (NOT initialization) */
   private readonly maximumAllowedCruiseFlightLevel = 390;
-  public static readonly maximumRecommendedCruiseFlightLevel = 398;
   public coRoute = { routeNumber: undefined, routes: undefined };
 
   private readonly fuelComputationsCache: Map<FlightPlanIndex, FuelPredComputations> = new Map();
@@ -4438,7 +4437,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   //TODO: can this be an util? no
   public getMaxFlCorrected(): number | null {
     const maxFl = this.getMaxFL();
-    return maxFl !== null ? Math.min(maxFl, FMCMainDisplay.maximumRecommendedCruiseFlightLevel) : null;
+    return maxFl !== null ? Math.min(maxFl, MAXIMUM_CERTIFIED_FLIGHT_LEVEL) : null;
   }
 
   // only used by trySetMinDestFob
@@ -5474,7 +5473,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           plan,
           this.flightPhaseManager.phase,
           FpmConfigs.A320_HONEYWELL_H4,
-          FMCMainDisplay.maximumRecommendedCruiseFlightLevel,
+          MAXIMUM_CERTIFIED_FLIGHT_LEVEL,
         );
 
         this.addMessageToQueue(

@@ -1827,7 +1827,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   tryGoInApproachPhase(): void {
-    this.flightPhaseManager.tryGoInApproachPhase();
+    const appr = this.flightPhaseManager.tryGoInApproachPhase();
+    if (appr && this.#flightPlanService.hasActive) {
+      this.#flightPlanService.active.setPerformanceData('cruiseFlightLevel', null);
+    }
   }
 
   private updateVerticalPath() {
