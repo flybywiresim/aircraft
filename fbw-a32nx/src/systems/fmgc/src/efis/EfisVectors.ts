@@ -45,6 +45,9 @@ export class EfisVectors {
     SimVarValueType.Enum,
   );
 
+  // Scratch space for collection; filter creates the separate arrays retained by the data bus.
+  private readonly flightPlanVectorCache: PathVector[] = [];
+
   private readonly eoSidVectorCache: PathVector[] = [];
 
   constructor(
@@ -253,18 +256,24 @@ export class EfisVectors {
 
     // ACTIVE
 
-    const vectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, plan.activeLegIndex).filter((it) =>
-      EfisVectors.isVectorReasonable(it),
-    );
+    // TODO, still creates one new array due to .filter
+    const vectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(
+      plan,
+      this.flightPlanVectorCache,
+      plan.activeLegIndex,
+    ).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
 
     const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
 
     if (transmitMissed) {
-      const missedVectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, 0, true).filter((it) =>
-        EfisVectors.isVectorReasonable(it),
-      );
+      const missedVectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(
+        plan,
+        this.flightPlanVectorCache,
+        0,
+        true,
+      ).filter((it) => EfisVectors.isVectorReasonable(it));
 
       if (missedApproachGroup === mainGroup) {
         vectors.push(...missedVectors);
