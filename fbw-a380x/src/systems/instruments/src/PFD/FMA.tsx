@@ -115,13 +115,13 @@ export class FMA extends DisplayComponent<{
 
   private secondBorderRef = FSComponent.createRef<SVGPathElement>();
 
-  private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
+  private readonly radioHeight = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
 
   private readonly altitude = Arinc429ConsumerSubject.create(
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
   );
 
-  private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
+  private readonly landingElevation = Arinc429ConsumerSubject.create(this.sub.on('landingElevation'));
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 

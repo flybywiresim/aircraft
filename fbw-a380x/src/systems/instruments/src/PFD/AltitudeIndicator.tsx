@@ -15,7 +15,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429RegisterSubject,
-  Arinc429Word,
+  Arinc429WordData,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -39,7 +39,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
 
   private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private landingElevation = new Arinc429Word(0);
+  private landingElevation: Arinc429WordData = Arinc429Register.empty();
 
   private flightPhase = 0;
 
@@ -62,24 +62,19 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
     sub
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
         this.flightPhase = fp;
-
-        if ((fp !== 9 && fp !== 10) || this.delta > DisplayRange) {
-          this.landingElevationIndicator.instance.classList.add('HiddenElement');
-        } else {
-          this.landingElevationIndicator.instance.classList.remove('HiddenElement');
-        }
+        this.handleLandingElevation();
       });
 
     sub
       .on('landingElevation')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((le) => {
         this.landingElevation = le;
         this.handleLandingElevation();
@@ -98,7 +93,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
 
   private offsetSub = Subject.create('');
 
-  private radioAltitude = new Arinc429Word(0);
+  private radioAltitude: Arinc429WordData = Arinc429Register.empty();
 
   private setOffset() {
     if (
@@ -157,7 +152,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private landingElevation = new Arinc429Word(0);
+  private landingElevation: Arinc429WordData = Arinc429Register.empty();
 
   private updateIndication(): void {
     const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(12, false);
