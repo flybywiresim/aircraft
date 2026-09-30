@@ -113,29 +113,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private static readonly MMO = 0.8;
   private static readonly VMO = 340;
-
-  private static readonly flapHandleIndex = RegisteredSimVar.create<number>(
-    'L:A32NX_FLAPS_HANDLE_INDEX',
-    SimVarValueType.Enum,
-  ); // FIXME: FMGC should get this info from FAC
-
-  private static readonly Vmax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
-
-  private static readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
-    'L:A32NX_SPEEDS_MANAGED_PFD',
-    SimVarValueType.Knots,
-  );
-
-  private static readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
-    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
-    SimVarValueType.String,
-  );
-
-  private static readonly approachVappRegisteredSimVar = RegisteredSimVar.create(
-    'L:A32NX_SPEEDS_VAPP',
-    SimVarValueType.Enum,
-  );
-
   protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
@@ -459,6 +436,25 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
 
+  private readonly flapHandleIndex = RegisteredSimVar.create<number>(
+    'L:A32NX_FLAPS_HANDLE_INDEX',
+    SimVarValueType.Enum,
+  ); // FIXME: FMGC should get this info from FAC
+
+  private readonly Vmax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
+
+  private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
+    'L:A32NX_SPEEDS_MANAGED_PFD',
+    SimVarValueType.Knots,
+  );
+
+  private readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
+    SimVarValueType.String,
+  );
+
+  private readonly approachVappRegisteredSimVar = RegisteredSimVar.create('L:A32NX_SPEEDS_VAPP', SimVarValueType.Enum);
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
     this.currFlightPlanService.createFlightPlans();
@@ -605,10 +601,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.subscriptions.push(
       this.arincHeadWindComponentRaw.sub((v) => {
-        FMCMainDisplay.fmApproachHeadWindRegisteredSimVar.set(v.toString());
+        this.fmApproachHeadWindRegisteredSimVar.set(v.toString());
       }),
       this.speedsManagedPfd.sub((v) => {
-        FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0);
+        this.speedsManagedPfdVar.set(v ?? 0);
       }, true),
       this.managedSpeedIsMach.sub((v) => {
         if (v) {
@@ -644,7 +640,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
         }
       }),
-      this.approachVapp.sub((v) => FMCMainDisplay.approachVappRegisteredSimVar.set(v ?? 0), true),
+      this.approachVapp.sub((v) => this.approachVappRegisteredSimVar.set(v ?? 0), true),
       this.destinationRunwayMagneticBearing.sub((v) => {
         const pd = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
         this.updateTowerHeadwind(pd?.approachWindMagnitude.get() ?? null, pd?.approachWindDirection.get() ?? null, v);
@@ -1332,7 +1328,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       // CLB
       if (fmDiscreteWord1.bitValue(11)) {
         let characteristicSpeed: number | undefined = undefined;
-        switch (FMCMainDisplay.flapHandleIndex.get()) {
+        switch (this.flapHandleIndex.get()) {
           // FIXME: Should use speeds from FAC?
           case 0:
             characteristicSpeed = this.computedVgd;
@@ -1349,8 +1345,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         // DES
       } else {
-        const cleanConfig = FMCMainDisplay.flapHandleIndex.get() === 0;
-        vPfd = cleanConfig ? FMCMainDisplay.VMO : FMCMainDisplay.Vmax.get() - 10;
+        const cleanConfig = this.flapHandleIndex.get() === 0;
+        vPfd = cleanConfig ? FMCMainDisplay.VMO : this.Vmax.get() - 10;
         isMach = cleanConfig ? this.getManagedTargets(FMCMainDisplay.VMO, FMCMainDisplay.MMO)[1] : false;
       }
     } else if (this.holdDecelReached) {
@@ -1399,7 +1395,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = FMCMainDisplay.speedsManagedPfdVar.get();
+          vPfd = this.speedsManagedPfdVar.get();
           isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
           break;
         }
@@ -1828,7 +1824,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private getAppManagedSpeed() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    switch (FMCMainDisplay.flapHandleIndex.get()) {
+    switch (this.flapHandleIndex.get()) {
       case 0:
         return this.computedVgd;
       case 1:
