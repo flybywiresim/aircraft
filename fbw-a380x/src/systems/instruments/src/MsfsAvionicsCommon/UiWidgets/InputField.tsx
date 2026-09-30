@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -154,6 +154,18 @@ export class InputField<
   private readonly valueSelected = Subject.create(false);
 
   private readonly editing = Subject.create(false);
+
+  private readonly computedByFms = this.props.enteredByPilot?.map((v) => !v) ?? false;
+
+  private readonly tmpyActive = this.props.tmpyActive
+    ? MappedSubject.create(
+        ([tmpy, focused]) => {
+          return tmpy && !focused; // Typing is always blue
+        },
+        this.props.tmpyActive,
+        this.isFocused,
+      )
+    : false;
 
   private onNewValue() {
     // Don't update if field is being edited
@@ -622,6 +634,13 @@ export class InputField<
       }
     });
 
+    if (SubscribableUtils.isSubscribable(this.tmpyActive)) {
+      this.subs.push(this.tmpyActive);
+    }
+    if (SubscribableUtils.isSubscribable(this.computedByFms)) {
+      this.subs.push(this.computedByFms);
+    }
+
     // preparation for automatic un-focusing if the node isn't in view anymore. Model changes needed FIXME
     /* if (this.props.inViewEvent) {
             this.subs.push(this.props.inViewEvent.whenChanged().handle((inView) =>
@@ -685,17 +704,9 @@ export class InputField<
               class={{
                 'mfd-input-field-text-input': true,
                 validating: this.isValidating,
-                computedByFms: this.props.enteredByPilot?.map((v) => !v).withLifecycle(this.defaultLifecycle) ?? false,
+                computedByFms: this.computedByFms,
                 valueSelected: this.valueSelected,
-                tmpy: this.props.tmpyActive
-                  ? MappedSubject.create(
-                      ([tmpy, focused]) => {
-                        return tmpy && !focused; // Typing is always blue
-                      },
-                      this.props.tmpyActive,
-                      this.isFocused,
-                    ).withLifecycle(this.defaultLifecycle)
-                  : false,
+                tmpy: this.tmpyActive,
                 editing: this.editing,
                 inactive: this.inactive,
                 white: this.props.whiteInactive ?? false,
