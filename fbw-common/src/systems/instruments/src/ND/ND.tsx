@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,11 +12,12 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  TypedDataBusClient,
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { FMMessage, GenericAdirsEvents, NXDataStore, OansControlEvents } from '@flybywiresim/fbw-sdk';
+import { EfisVectorsData, FMMessage, GenericAdirsEvents, NXDataStore, OansControlEvents } from '@flybywiresim/fbw-sdk';
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
@@ -68,6 +69,8 @@ export const getDisplayIndex = () => {
 
 export interface NDProps<T extends number> {
   bus: ArincEventBus;
+
+  efisVectors: TypedDataBusClient<EfisVectorsData>;
 
   side: EfisSide;
 
@@ -452,7 +455,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
             <SelectedHeadingBug bus={this.props.bus} rotationOffset={this.planeRotation} mode={this.currentPageMode} />
 
-            <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+            <TrackLine
+              bus={this.props.bus}
+              efisVectors={this.props.efisVectors}
+              side={this.props.side}
+              isUsingTrackUpMode={this.isUsingTrackUpMode}
+            />
             <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} ndMode={this.currentPageMode} />
 
             <WindIndicator bus={this.props.bus} />
@@ -504,6 +512,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           {/* ND Raster map - middle layer */}
           <CanvasMap
             bus={this.props.bus}
+            efisVectors={this.props.efisVectors}
+            side={this.props.side}
             x={Subject.create(384)}
             y={Subject.create(384)}
             options={this.props.mapOptions}

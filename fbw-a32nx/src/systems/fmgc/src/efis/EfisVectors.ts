@@ -1,5 +1,5 @@
 // Copyright (c) 2021-2026 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2026 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,26 +7,27 @@ import {
   EfisNdMode,
   EfisSide,
   EfisVectorsGroup,
-  GenericDataListenerSync,
+  EfisVectorsData,
+  EFIS_VECTORS_DATA_BUS_NAME,
   RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, PathVectorType, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { ConsumerValue, DataItemStatus, EventBus, SharedDataBusHost, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
-  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
+  private readonly dataBus = new SharedDataBusHost(EFIS_VECTORS_DATA_BUS_NAME).of<EfisVectorsData>();
 
   private lastFpVersions = new Map<number, number>();
 
@@ -277,8 +278,6 @@ export class EfisVectors {
       this.transmit(null, eosidGroup, side);
     }
 
-    this.transmit(vectors, mainGroup, side);
-
     // ALTN
 
     const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isPlanMode);
@@ -314,9 +313,32 @@ export class EfisVectors {
     } else if (alternateGroup !== mainGroup) {
       this.transmit(null, alternateGroup, side);
     }
+
+    this.transmit(vectors, mainGroup, side);
   }
 
   private transmit(vectors: PathVector[] | null, vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
-    this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
+    if (vectors === null) {
+      this.dataBus.publish(side, vectorsGroup, undefined, DataItemStatus.EmptyValue);
+      return;
+    }
+
+    // The bus shares references across views. Keep published geometry independent of mutable FMS caches.
+    const snapshot = vectors.map((vector): PathVector => {
+      switch (vector.type) {
+        case PathVectorType.Line:
+          return { ...vector, startPoint: { ...vector.startPoint }, endPoint: { ...vector.endPoint } };
+        case PathVectorType.Arc:
+          return {
+            ...vector,
+            startPoint: { ...vector.startPoint },
+            endPoint: { ...vector.endPoint },
+            centrePoint: { ...vector.centrePoint },
+          };
+        case PathVectorType.DebugPoint:
+          return { ...vector, startPoint: { ...vector.startPoint } };
+      }
+    });
+    this.dataBus.publish(side, vectorsGroup, snapshot, DataItemStatus.Normal);
   }
 }

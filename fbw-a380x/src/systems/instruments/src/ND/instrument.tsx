@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -11,6 +11,7 @@ import {
   HEvent,
   HEventPublisher,
   InstrumentBackplane,
+  SharedDataBusClient,
   MappedSubject,
   Subject,
 } from '@microsoft/msfs-sdk';
@@ -24,6 +25,8 @@ import {
   BtvSimvarPublisher,
   EfisNdMode,
   EfisSide,
+  EfisVectorsData,
+  EFIS_VECTORS_DATA_BUS_NAME,
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
@@ -74,6 +77,10 @@ class NDInstrument implements FsInstrument {
   private readonly bus: ArincEventBus;
 
   private readonly backplane = new InstrumentBackplane();
+
+  private readonly efisVectorsClient = new SharedDataBusClient(EFIS_VECTORS_DATA_BUS_NAME);
+
+  private readonly efisVectors = this.efisVectorsClient.of<EfisVectorsData>();
 
   private readonly simVarPublisher: NDSimvarPublisher;
 
@@ -266,6 +273,7 @@ class NDInstrument implements FsInstrument {
           </div>
           <NDComponent
             bus={this.bus}
+            efisVectors={this.efisVectors}
             side={this.efisSide}
             rangeValues={a380EfisRangeSettings}
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
@@ -325,7 +333,7 @@ class NDInstrument implements FsInstrument {
             visible={this.cursorVisible}
             color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
-          <VerticalDisplay bus={this.bus} side={this.efisSide} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} efisVectors={this.efisVectors} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),
@@ -467,6 +475,7 @@ class NDInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
+    this.efisVectorsClient.update();
     this.backplane.onUpdate();
 
     if (this.oansRef.getOrDefault()) {
