@@ -2423,8 +2423,9 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
 }
 
 bool FlyByWireInterface::updateEfisSync() {
-  // Disable EFIS Sync if it's disabled or one or more FCUs is faulty (nothing to sync in that case)
-  if (!idSyncFoEfisEnabled->get() || !fcus[0].getDiscreteOutputs().fcu_healthy || !fcus[1].getDiscreteOutputs().fcu_healthy) {
+  // Disable EFIS Sync if it's disabled, one or more FCUs is faulty or one or more EFIS CPs is disabled (nothing to sync in that case)
+  if (!idSyncFoEfisEnabled->get() || !fcus[0].getDiscreteOutputs().fcu_healthy || !fcus[1].getDiscreteOutputs().fcu_healthy ||
+      fcus[0].modelInputs.in.discrete_inputs.efis_backup_activated || fcus[1].modelInputs.in.discrete_inputs.efis_backup_activated) {
     return true;
   }
 
