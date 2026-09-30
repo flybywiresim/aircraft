@@ -29,7 +29,7 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean> | boolean;
-  /** If inactive, will be rendered as static value (green text) */
+  /** If inactive, will be rendered as static value */
   inactive?: Subscribable<boolean> | boolean;
   /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
   disabled?: Subscribable<boolean> | boolean;
@@ -72,6 +72,9 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
 
   /** Indicates whether the input field is part of a fixed values dropdown. If so, all keyboard inputs are ignored.*/
   fixedValuesDropDown?: boolean;
+
+  /** If true, text is rendered as white when input field is inactive, otherwise as green */
+  whiteInactive?: Subscribable<boolean>;
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -148,6 +151,10 @@ export class InputField<
     this.inactive,
   );
 
+  private readonly valueSelected = Subject.create(false);
+
+  private readonly editing = Subject.create(false);
+
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -172,6 +179,7 @@ export class InputField<
         this.textInputRef.getOrDefault()?.classList.add('mandatory');
       }
     }
+
     this.updateDisplayElement();
   }
 
@@ -272,7 +280,7 @@ export class InputField<
     }
 
     // Un-select the text
-    this.textInputRef.instance.classList.remove('valueSelected');
+    this.valueSelected.set(false);
 
     // ev.key is undefined, so we have to use the deprecated keyCode here
     const key = String.fromCharCode(ev.keyCode).toUpperCase();
@@ -335,8 +343,8 @@ export class InputField<
           Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
         }
       }, 20_000);
-      this.textInputRef.instance.classList.add('valueSelected');
-      this.textInputRef.instance.classList.add('editing');
+      this.valueSelected.set(true);
+      this.editing.set(true);
       if (this.mandatory.get()) {
         this.textInputRef.instance.classList.remove('mandatory');
       }
@@ -354,7 +362,7 @@ export class InputField<
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
       }
       this.isFocused.set(false);
-      this.textInputRef.instance.classList.remove('valueSelected');
+      this.valueSelected.set(false);
       this.caretRef.instance.style.display = 'none';
       this.updateDisplayElement();
 
@@ -378,7 +386,7 @@ export class InputField<
       }
 
       this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
-      this.textInputRef.instance.classList.remove('editing');
+      this.editing.set(false);
     }
   }
 
@@ -400,7 +408,7 @@ export class InputField<
     let newValue = null;
     let updateWasSuccessful = true;
     const oldValue = this.readValue.get();
-    let valueChanged: boolean;
+    let valueChanged = false;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
       valueChanged = newValue !== oldValue;
@@ -496,16 +504,6 @@ export class InputField<
     }
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
-      this.isValidating.sub((val) => {
-        if (val) {
-          this.textInputRef.instance.classList.add('validating');
-        } else {
-          this.textInputRef.instance.classList.remove('validating');
-        }
-      }),
-    );
-
-    this.subs.push(
       this.mandatory.sub((val) => {
         if (val && this.readValue.get() === null) {
           this.textInputRef.instance.classList.add('mandatory');
@@ -519,13 +517,8 @@ export class InputField<
     this.subs.push(
       this.inactive.sub((val) => {
         if (val) {
-          this.containerRef.instance.classList.add('inactive');
-          this.textInputRef.instance.classList.add('inactive');
           this.textInputRef.instance.tabIndex = 0;
         } else {
-          this.containerRef.instance.classList.remove('inactive');
-          this.textInputRef.instance.classList.remove('inactive');
-
           if (!this.disabled.get()) {
             this.textInputRef.instance.tabIndex = -1;
           }
@@ -560,30 +553,6 @@ export class InputField<
       }, true),
     );
 
-    this.subs.push(
-      this.props.enteredByPilot.sub((val) => {
-        if (!val) {
-          this.textInputRef.instance.classList.add('computedByFms');
-        } else {
-          this.textInputRef.instance.classList.remove('computedByFms');
-        }
-      }, true),
-    );
-
-    this.subs.push(
-      MappedSubject.create(
-        ([tmpy, focused]) => {
-          if (tmpy && !focused) {
-            this.textInputRef.instance.classList.add('tmpy');
-          } else {
-            this.textInputRef.instance.classList.remove('tmpy');
-          }
-        },
-        this.props.tmpyActive,
-        this.isFocused,
-      ),
-    );
-
     if (this.props.dataEntryFormat.reFormatTrigger) {
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
@@ -605,7 +574,7 @@ export class InputField<
       }
 
       // Un-select the text
-      this.textInputRef.instance.classList.remove('valueSelected');
+      this.valueSelected.set(false);
 
       if (key[1].match(/^[a-zA-Z0-9]{1}$/)) {
         this.handleKeyInput(key[1]);
@@ -693,7 +662,11 @@ export class InputField<
   render(): VNode {
     return (
       <div ref={this.topRef} class={`mfd-input-field-root ${this.props.class ?? ''}`}>
-        <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle ?? ''}`}>
+        <div
+          ref={this.containerRef}
+          class={{ 'mfd-input-field-container': true, inactive: this.inactive }}
+          style={`${this.props.containerStyle ?? ''}`}
+        >
           <span
             ref={this.leadingUnitRef}
             class={`mfd-label-unit ${this.props.bigUnit ? 'bigger' : ''} mfd-unit-leading mfd-input-field-unit`}
@@ -706,7 +679,28 @@ export class InputField<
             class="mfd-input-field-text-input-container"
             style={`justify-content: ${this.alignTextSub.get()};`}
           >
-            <span ref={this.textInputRef} tabIndex={-1} class="mfd-input-field-text-input">
+            <span
+              ref={this.textInputRef}
+              tabIndex={-1}
+              class={{
+                'mfd-input-field-text-input': true,
+                validating: this.isValidating,
+                computedByFms: this.props.enteredByPilot?.map((v) => !v).withLifecycle(this.defaultLifecycle) ?? false,
+                valueSelected: this.valueSelected,
+                tmpy: this.props.tmpyActive
+                  ? MappedSubject.create(
+                      ([tmpy, focused]) => {
+                        return tmpy && !focused; // Typing is always blue
+                      },
+                      this.props.tmpyActive,
+                      this.isFocused,
+                    ).withLifecycle(this.defaultLifecycle)
+                  : false,
+                editing: this.editing,
+                inactive: this.inactive,
+                white: this.props.whiteInactive ?? false,
+              }}
+            >
               .
             </span>
             <span ref={this.caretRef} class="mfd-input-field-caret" />
