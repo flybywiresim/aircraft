@@ -215,6 +215,7 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
@@ -376,15 +377,16 @@ struct base_fcu_afs_panel_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
 
-struct base_fcu_discrete_outputs
+struct base_fcu_sim_input
 {
-  base_fcu_efis_panel_outputs efis_outputs;
-  base_fcu_afs_panel_outputs afs_outputs;
-  boolean_T true_selected;
-  boolean_T fcu_healthy;
+  real32_T baro_setting_hpa;
+  int8_T efis_mode;
+  int8_T efis_range;
+  int8_T navaid_1_mode;
+  int8_T navaid_2_mode;
 };
 
 #endif
@@ -438,16 +440,15 @@ struct base_fcu_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
 
-struct base_fcu_sim_input
+struct base_fcu_discrete_outputs
 {
-  real32_T baro_setting_hpa;
-  int8_T efis_mode;
-  int8_T efis_range;
-  int8_T navaid_1_mode;
-  int8_T navaid_2_mode;
+  base_fcu_efis_panel_outputs efis_outputs;
+  base_fcu_afs_panel_outputs afs_outputs;
+  boolean_T true_selected;
+  boolean_T fcu_healthy;
 };
 
 #endif

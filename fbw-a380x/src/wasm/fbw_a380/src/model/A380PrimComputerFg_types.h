@@ -279,6 +279,7 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
@@ -573,6 +574,19 @@ enum class a380_athr_fma_message
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
@@ -667,15 +681,15 @@ struct ap_laws_input
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
 
-struct base_lgciu_bus
+struct base_prim_sim_input
 {
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -711,19 +725,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-
-struct base_prim_sim_input
-{
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
 };
 
 #endif
@@ -1217,7 +1218,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T abnormal_condition_law_active;
   boolean_T flare_law_override_active;
   boolean_T is_master_prim;
-  uint8_T prim_capability_score;
+  uint16_T prim_capability_score;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;

@@ -382,6 +382,7 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
@@ -1165,7 +1166,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T abnormal_condition_law_active;
   boolean_T flare_law_override_active;
   boolean_T is_master_prim;
-  uint8_T prim_capability_score;
+  uint16_T prim_capability_score;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;
