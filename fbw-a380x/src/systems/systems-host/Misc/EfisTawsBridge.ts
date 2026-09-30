@@ -366,10 +366,14 @@ export class EfisTawsBridge implements Instrument {
   private readonly efisVectorsClient = new SharedDataBusClient(EFIS_VECTORS_DATA_BUS_NAME);
 
   // TAWS currently uses a single lateral path for both displays.
+  // Preserve publication notifications even when the FMS reuses the same array.
   private readonly fmsLateralPath = this.efisVectorsClient
     .of<EfisVectorsData>()
     .getSubscribable('L', EfisVectorsGroup.ACTIVE)
-    .map((data) => data.value);
+    .map(
+      (data) => data.value,
+      () => false,
+    );
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_2'));

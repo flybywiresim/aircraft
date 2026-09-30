@@ -13,7 +13,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, PathVectorType, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -52,7 +52,11 @@ export class EfisVectors {
     private readonly flightPlanService: FlightPlanService,
     private guidanceController: GuidanceController,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
-  ) {}
+  ) {
+    // Reused arrays and vector objects must still notify consumers on each publication.
+    this.dataBus.defineEquality('L', () => false);
+    this.dataBus.defineEquality('R', () => false);
+  }
 
   public forceUpdate() {
     this.updateTimer = UPDATE_TIMER + 1;
@@ -323,22 +327,6 @@ export class EfisVectors {
       return;
     }
 
-    // The bus shares references across views. Keep published geometry independent of mutable FMS caches.
-    const snapshot = vectors.map((vector): PathVector => {
-      switch (vector.type) {
-        case PathVectorType.Line:
-          return { ...vector, startPoint: { ...vector.startPoint }, endPoint: { ...vector.endPoint } };
-        case PathVectorType.Arc:
-          return {
-            ...vector,
-            startPoint: { ...vector.startPoint },
-            endPoint: { ...vector.endPoint },
-            centrePoint: { ...vector.centrePoint },
-          };
-        case PathVectorType.DebugPoint:
-          return { ...vector, startPoint: { ...vector.startPoint } };
-      }
-    });
-    this.dataBus.publish(side, vectorsGroup, snapshot, DataItemStatus.Normal);
+    this.dataBus.publish(side, vectorsGroup, vectors, DataItemStatus.Normal);
   }
 }
