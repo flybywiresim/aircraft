@@ -14,12 +14,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import {
-  Arinc429ConsumerSubject,
-  Arinc429LocalVarConsumerSubject,
-  Arinc429Word,
-  ArincEventBus,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
