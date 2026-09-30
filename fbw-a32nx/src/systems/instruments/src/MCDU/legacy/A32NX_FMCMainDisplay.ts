@@ -441,7 +441,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   ); // FIXME: FMGC should get this info from FAC
 
-  private readonly Vmax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
+  private readonly vMax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
 
   private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
     'L:A32NX_SPEEDS_MANAGED_PFD',
@@ -1346,7 +1346,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         // DES
       } else {
         const cleanConfig = this.flapHandleIndex.get() === 0;
-        vPfd = cleanConfig ? FMCMainDisplay.VMO : this.Vmax.get() - 10;
+        vPfd = cleanConfig ? FMCMainDisplay.VMO : this.vMax.get() - 10;
         isMach = cleanConfig ? this.getManagedTargets(FMCMainDisplay.VMO, FMCMainDisplay.MMO)[1] : false;
       }
     } else if (this.holdDecelReached) {
