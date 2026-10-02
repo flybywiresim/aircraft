@@ -31,7 +31,7 @@ impl MainTransfer {
         remaining_flight_time: Option<Duration>,
     ) {
         // Determine the source for a fuel transfer depending on priority and available fuel
-        self.source_tank = if !tank_quantities.tanks_empty(INNER_TANKS) {
+        let new_source_tank = if !tank_quantities.tanks_empty(INNER_TANKS) {
             TransferSourceTank::Inner
         } else if !tank_quantities.tanks_empty(MID_TANKS) {
             TransferSourceTank::Mid
@@ -43,6 +43,16 @@ impl MainTransfer {
             *self = Default::default();
             return;
         };
+
+        // A source change invalidates the previously latched targets, since each
+        // source starts and stops at its own feed tank thresholds. Without this
+        // reset, a tank latched by the previous source would remain a target
+        // under the new source as long as it is below the new upper threshold,
+        // even far above the new start threshold.
+        if new_source_tank != self.source_tank {
+            self.feed_tank_is_target = [false; 4];
+            self.source_tank = new_source_tank;
+        }
 
         // Get thresholds and whether pairwise balancing applies
         let (feed_1_4_threshold, feed_2_3_threshold, transfer_threshold_diff, pairwise_synced) =
@@ -528,6 +538,92 @@ mod tests {
         );
         assert_eq!(main_transfer.feed_tank_is_target, [false; 4]);
         assert_eq!(main_transfer.source_tank, TransferSourceTank::None);
+    }
+
+    #[test]
+    fn test_trim_main_transfer_does_not_start_from_stale_feed_targets() {
+        // FCOM: "The main transfer from the trim tank starts, when the
+        // fuel quantity in any feed tank is less than 6'000 kg" (13'250 lb).
+        //
+        // Phase 1: the mid -> feed transfer latches all four feed tanks while
+        // they are in the mid-phase maintenance band (~19.5-20.8 t).
+        let quantities = FxHashMap::from_iter([
+            (A380FuelTankType::FeedOne, Mass::new::<pound>(43_000.)),
+            (A380FuelTankType::FeedTwo, Mass::new::<pound>(45_900.)),
+            (A380FuelTankType::FeedThree, Mass::new::<pound>(45_900.)),
+            (A380FuelTankType::FeedFour, Mass::new::<pound>(43_000.)),
+            (A380FuelTankType::LeftMid, Mass::new::<pound>(10_000.)),
+            (A380FuelTankType::RightMid, Mass::new::<pound>(10_000.)),
+            (A380FuelTankType::Trim, Mass::new::<kilogram>(10_000.)),
+        ]);
+        let mut main_transfer = MainTransfer::default();
+        main_transfer.update(
+            &MockFuelQuantityProvider { quantities },
+            Some(Duration::from_hours(2)),
+        );
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::Mid);
+        assert_eq!(main_transfer.feed_tank_is_target, [true; 4]);
+
+        // Phase 2: the mid tanks run dry, so the source switches to the trim
+        // tank. The feed tanks are still ~3x above the 6'000 kg start
+        // threshold, so no feed tank should remain a transfer target.
+        let quantities = FxHashMap::from_iter([
+            (A380FuelTankType::FeedOne, Mass::new::<pound>(43_000.)),
+            (A380FuelTankType::FeedTwo, Mass::new::<pound>(45_900.)),
+            (A380FuelTankType::FeedThree, Mass::new::<pound>(45_900.)),
+            (A380FuelTankType::FeedFour, Mass::new::<pound>(43_000.)),
+            (A380FuelTankType::Trim, Mass::new::<kilogram>(10_000.)),
+        ]);
+        main_transfer.update(
+            &MockFuelQuantityProvider { quantities },
+            Some(Duration::from_hours(2)),
+        );
+
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::Trim);
+        assert_eq!(main_transfer.feed_tank_is_target, [false; 4]);
+    }
+
+    #[test]
+    fn test_outer_main_transfer_does_not_start_from_stale_feed_targets() {
+        // FCOM: "A main transfer to a pair of symmetric feed tanks
+        // starts, when the fuel quantity in any of these feed tanks is less
+        // than 4'000 kg" (8'800 lb).
+        //
+        // Phase 1: the trim -> feed transfer is legitimately active because
+        // every feed tank is below the 13'250 lb (6'000 kg) start threshold.
+        let quantities = FxHashMap::from_iter([
+            (A380FuelTankType::FeedOne, Mass::new::<pound>(13_000.)),
+            (A380FuelTankType::FeedTwo, Mass::new::<pound>(13_000.)),
+            (A380FuelTankType::FeedThree, Mass::new::<pound>(13_000.)),
+            (A380FuelTankType::FeedFour, Mass::new::<pound>(13_000.)),
+            (A380FuelTankType::Trim, Mass::new::<kilogram>(10_000.)),
+        ]);
+        let mut main_transfer = MainTransfer::default();
+        main_transfer.update(
+            &MockFuelQuantityProvider { quantities },
+            Some(Duration::from_hours(2)),
+        );
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::Trim);
+        assert_eq!(main_transfer.feed_tank_is_target, [true; 4]);
+
+        // Phase 2: the trim tank empties, so the source switches to the outer
+        // tanks. The feed tanks are now at 9'500 lb (4'309 kg), above the
+        // 4'000 kg start threshold, so no outer -> feed transfer may start.
+        let quantities = FxHashMap::from_iter([
+            (A380FuelTankType::FeedOne, Mass::new::<pound>(9_500.)),
+            (A380FuelTankType::FeedTwo, Mass::new::<pound>(9_500.)),
+            (A380FuelTankType::FeedThree, Mass::new::<pound>(9_500.)),
+            (A380FuelTankType::FeedFour, Mass::new::<pound>(9_500.)),
+            (A380FuelTankType::LeftOuter, Mass::new::<pound>(5_000.)),
+            (A380FuelTankType::RightOuter, Mass::new::<pound>(5_000.)),
+        ]);
+        main_transfer.update(
+            &MockFuelQuantityProvider { quantities },
+            Some(Duration::from_hours(2)),
+        );
+
+        assert_eq!(main_transfer.source_tank, TransferSourceTank::Outer);
+        assert_eq!(main_transfer.feed_tank_is_target, [false; 4]);
     }
 
     #[test]
