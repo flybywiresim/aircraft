@@ -652,4 +652,11 @@ export class GuidanceController {
       this.automaticSequencing = true;
     }
   }
+
+  /**
+   * @return true if the vertical profile has a step descent, false otherwise.
+   */
+  public hasStepDescent(): boolean {
+    return this.vnavDriver.hasStepDescent();
+  }
 }
