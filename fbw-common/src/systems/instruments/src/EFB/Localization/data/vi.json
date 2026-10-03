@@ -87,7 +87,7 @@
       "Title": "Chuyến bay của bạn",
       "ToastFuelPayloadImported": "Nhiêu liệu + Tải trọng đã nhập!",
       "ToastWrongAircraftType": "SimBrief - Phát hiện loại máy bay không hợp lệ. Kiểm tra xem loại máy bay trong SimBrief OFP có chính xác không.",
-      "ZFW": "Trọng lượng máy bay không kể nhiên liệu"
+      "ZFW": "Trọng lượng ZFW"
     }
   },
   "Dispatch": {
@@ -108,7 +108,7 @@
       "MMO": "Tốc độ vận hành tối đa theo số Mach",
       "MRW": "Trong lượng bãi đậu tối đa",
       "MTOW": "Trọng lượng cất cánh tối đa",
-      "MZFW": "Trọng lượng nhỏ nhất không có nhiên liệu",
+      "MZFW": "Trọng lượng nhỏ nhất không tính nhiên liệu",
       "MaximumCargo": "Hàng hóa tối đa",
       "MaximumFuelCapacity": "Công suất nhiên liệu tối đa",
       "MaximumPassengers": "Số hành khách tối đa",

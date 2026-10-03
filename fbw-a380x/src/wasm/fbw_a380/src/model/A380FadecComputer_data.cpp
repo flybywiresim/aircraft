@@ -34,7 +34,7 @@ A380FadecComputer::Parameters_A380FadecComputer_T A380FadecComputer::A380FadecCo
 
   11.0,
 
-  23.0,
+  24.0,
 
   11.0,
 

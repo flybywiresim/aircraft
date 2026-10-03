@@ -81,12 +81,12 @@
       "CostIndex": "Kainos indeksas",
       "CruiseAlt": "Kreiserinis aukštis",
       "ImportSimBriefData": "Įkelti SimBrief duomenis",
-      "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!",
+      "NoImportDueToBoardingOrRefuel": "Įkėlimas negalimas dėl vykstančio laipinimo ar degalų pildymo!",
       "Route": "Maršrutas",
       "SimBriefDataNotYetLoaded": "SimBrief duomenys dar neužkrauti.",
       "Title": "Jūsų skrydis",
-      "ToastFuelPayloadImported": "Fuel & Payload imported!",
-      "ToastWrongAircraftType": "SimBrief - Invalid aircraft type detected. Check that aircraft type in SimBrief OFP is correct.",
+      "ToastFuelPayloadImported": "Degalai ir krovinys įkelti!",
+      "ToastWrongAircraftType": "SimBrief – aptiktas netinkamas orlaivio tipas. Patikrinkite, ar SimBrief OFP nurodytas orlaivio tipas yra teisingas.",
       "ZFW": "ZFW"
     }
   },
@@ -95,7 +95,7 @@
       "TT": {
         "IncreaseFontSize": "Padidinti šrifto dydį",
         "NextLoadsheetSection": "Next loadsheet section",
-        "PreviousLoadsheetSection": "Previous loadsheet section",
+        "PreviousLoadsheetSection": "Ankstesnė krovinio lapo skiltis",
         "ReduceFontSize": "Sumažinti šrifto dydį"
       },
       "Title": "OFP",
@@ -171,7 +171,7 @@
       "SelectItem": {
         "CargoDeck": "Cargo",
         "MainDeck": "Main",
-        "UpperDeck": "Upper"
+        "UpperDeck": "Viršutinis"
       },
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Norint pakeisti laipinimo trukmę, orlaivis turi būti ant žemės, užgesintais varikliais",
@@ -289,7 +289,7 @@
   "Performance": {
     "Data": "Duomenys",
     "Landing": {
-      "Airport": "Airport",
+      "Airport": "Oro uostas",
       "AirportIcao": "Oro uosto ICAO",
       "ApproachSpeed": "Priartėjimo greitis",
       "ApproachSpeedUnit": "kns",
@@ -298,10 +298,10 @@
       "Clear": "Išvalyti",
       "DropDownNo": "Ne",
       "DropDownYes": "Taip",
-      "EnterManually": "Enter Manually",
+      "EnterManually": "Įvesti rankiniu būdu",
       "FillDataFrom": "Naudoti duomenis iš",
       "FlapsConfiguration": "Posparnių konfiguracija",
-      "LandingWeight": "Landing Weight",
+      "LandingWeight": "Tūpimo svoris",
       "Low": "Žemas",
       "MaximumManual": "Maksimalus rankinis",
       "Medium": "Vidutinis",
@@ -310,7 +310,7 @@
       "OverweightProcedure": "Antsvorio procedūra",
       "Qnh": "QNH",
       "ReverseThrust": "Atbulinė trauka",
-      "Runway": "Runway",
+      "Runway": "Kilimo ir tūpimo takas",
       "RunwayAltitude": "Tako aukštis",
       "RunwayAltitudeUnit": "pėdos virš jūros lygio",
       "RunwayCondition": "Tako kondicija",
@@ -322,7 +322,7 @@
         "MediumPoor": "Prasta (2)",
         "Poor": "Labai prasta (1)"
       },
-      "RunwayElevation": "Runway Elevation",
+      "RunwayElevation": "Tako aukštis",
       "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Tako kryptis",
       "RunwayHeadingUnit": "°",
@@ -339,7 +339,7 @@
       "UnitFt": "pėdų",
       "UnitMeter": "m",
       "Weight": "Svoris",
-      "Wind": "Wind",
+      "Wind": "Vėjas",
       "WindDirection": "Vėjo kryptis",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Vėjo stipris",
@@ -347,9 +347,9 @@
     },
     "SYNC": "Sinchr.",
     "Takeoff": {
-      "Airport": "Airport",
+      "Airport": "Oro uostas",
       "AntiIce": "Anti-Ice",
-      "Calculate": "Calculate",
+      "Calculate": "Apskaičiuoti",
       "CentreOfGravity": "TOCG",
       "Clear": "Clear",
       "CoGPosition": "CG Position",
@@ -357,10 +357,10 @@
         "Forward": "Forward (<27%)",
         "Standard": "Standard"
       },
-      "Configuration": "Configuration",
+      "Configuration": "Konfigūracija",
       "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
-      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
-      "EnterManually": "Enter Manually",
+      "CrosswindAboveLimitTitle": "Maksimalus šoninis vėjas yra {max_crosswind} mazgų",
+      "EnterManually": "Įvesti rankiniu būdu",
       "EntryAngle": "Entry Angle",
       "EntryAngles": {
         "0": "0°",
@@ -373,7 +373,7 @@
         "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
         "InvalidData": "Invalid Inputs",
         "MaximumPressureAlt": "Above Maximum Pressure Altitude ({max_zp} ft)",
-        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumRunwaySlope": "Už kilimo tako nuolydžio ribų (±2 %)",
         "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
         "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
         "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
