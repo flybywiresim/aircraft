@@ -1148,7 +1148,7 @@
 
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="mastercaution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_SC" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="mastercaution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_SC" Continuous="true">
             <Range LowerBound="0.5" />
 
         </Sound>

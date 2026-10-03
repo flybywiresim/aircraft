@@ -5860,15 +5860,25 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private handleFcuVSKnob(onStepClimbDescent: () => void): void {
-    this.flightPhaseManager.handleFcuVSKnob(this.getDistanceToDestination() ?? -1, onStepClimbDescent);
+    this.flightPhaseManager.handleFcuVSKnob(
+      this.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+      onStepClimbDescent,
+    );
   }
 
   handleFcuAltKnobPushPull(): void {
-    this.flightPhaseManager.handleFcuAltKnobPushPull(this.getDistanceToDestination() ?? -1);
+    this.flightPhaseManager.handleFcuAltKnobPushPull(
+      this.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+    );
   }
 
   handleFcuAltKnobTurn(): void {
-    this.flightPhaseManager.handleFcuAltKnobTurn(this.getDistanceToDestination() ?? -1);
+    this.flightPhaseManager.handleFcuAltKnobTurn(
+      this.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+    );
   }
 
   private checkCruiseLevelChangeDueToFcu(deltaTime: number) {
