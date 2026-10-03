@@ -1,4 +1,4 @@
-// Copyright (c) 2020, 2022 FlyByWire Simulations
+// Copyright (c) 2020, 2022, 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { CDUFlightPlanPage, Markers } from './A320_Neo_CDU_FlightPlanPage';
@@ -11,11 +11,28 @@ import { Wait } from '@microsoft/msfs-sdk';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUDirectToPage {
+  private static isRedrawing = false;
+
   static ShowPage(mcdu: LegacyFmsPageInterface, directWaypoint?: Fix, wptsListIndex = 0) {
     const plan = mcdu.flightPlanService.active;
 
-    mcdu.clearDisplay();
+    CDUDirectToPage.isRedrawing = true;
+    try {
+      mcdu.clearDisplay();
+    } finally {
+      CDUDirectToPage.isRedrawing = false;
+    }
     mcdu.page.Current = mcdu.page.DirectToPage;
+
+    if (directWaypoint !== undefined) {
+      // The pending DIR TO is abandoned when another page is shown, but not when this page redraws itself
+      mcdu.onUnload = () => {
+        if (!CDUDirectToPage.isRedrawing) {
+          mcdu.eraseTemporaryFlightPlan();
+        }
+      };
+    }
+
     mcdu.returnPageCallback = () => {
       CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
     };
