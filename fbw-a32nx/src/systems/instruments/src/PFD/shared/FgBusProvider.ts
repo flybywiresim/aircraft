@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Instrument, Publisher } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from '../PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';

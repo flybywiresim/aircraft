@@ -1,14 +1,12 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export type PseudoFwcSimvars = {
-  engine1Master: number;
-  engine2Master: number;
-  engine3Master: number;
-  engine4Master: number;
+  engine1Master: boolean;
+  engine2Master: boolean;
   wheel1Rpm: number;
   fmgc1DiscreteWord1: number;
   fmgc2DiscreteWord1: number;
@@ -22,8 +20,6 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
   private static simvars = new Map<keyof PseudoFwcSimvars, SimVarDefinition>([
     ['engine1Master', { name: 'A:FUELSYSTEM VALVE SWITCH:1', type: SimVarValueType.Bool }],
     ['engine2Master', { name: 'A:FUELSYSTEM VALVE SWITCH:2', type: SimVarValueType.Bool }],
-    ['engine3Master', { name: 'A:FUELSYSTEM VALVE SWITCH:3', type: SimVarValueType.Bool }],
-    ['engine4Master', { name: 'A:FUELSYSTEM VALVE SWITCH:4', type: SimVarValueType.Bool }],
     ['wheel1Rpm', { name: 'A:WHEEL RPM:1', type: SimVarValueType.Number }],
     ['fmgc1DiscreteWord1', { name: 'L:A32NX_FMGC_1_DISCRETE_WORD_1', type: SimVarValueType.Number }],
     ['fmgc2DiscreteWord1', { name: 'L:A32NX_FMGC_2_DISCRETE_WORD_1', type: SimVarValueType.Number }],

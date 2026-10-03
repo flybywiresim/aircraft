@@ -1,12 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  AbnormalProcedure,
-  ChecklistLineStyle,
-  DeferredProcedure,
-  DeferredProcedureType,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle, DeferredProcedure, DeferredProcedureType } from '..';
 
 // Convention for IDs:
 // First two digits: ATA chapter

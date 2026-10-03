@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';

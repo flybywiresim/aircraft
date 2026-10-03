@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ComponentProps, ConsumerSubject, DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { RmpMessageDataEvents } from 'instruments/src/RMP/Systems/RmpMessageManager';
+import { RmpMessageDataEvents } from '../Systems/RmpMessageManager';
 
 export interface RmpMessagesProps extends ComponentProps {
   bus: EventBus;

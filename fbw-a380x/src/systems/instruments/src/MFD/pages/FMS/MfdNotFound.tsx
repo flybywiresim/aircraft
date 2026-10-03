@@ -1,8 +1,8 @@
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
 interface MfdNotFoundProps extends AbstractMfdPageProps {}
 

@@ -9,7 +9,7 @@ import {
   MappedSubject,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import {
   GaugeComponent,
   GaugeMarkerComponent,

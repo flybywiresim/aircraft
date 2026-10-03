@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import { MathUtils, useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 type DeviationIndicatorProps = {
   deviation: number;

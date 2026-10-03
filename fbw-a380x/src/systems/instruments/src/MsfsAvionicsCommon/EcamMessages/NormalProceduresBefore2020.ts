@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 // Left this one here if we decide to also implement the older ECL from before 2020.
-import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistLineStyle, NormalProcedure } from './';
 
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */
@@ -502,9 +502,9 @@ public sensedItems: FwsNormalChecklistsDict = {
         SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
         SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'),
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+        (!SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
+          (SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
       ],
     },

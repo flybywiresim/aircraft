@@ -461,6 +461,9 @@ class A380PitchNormalLaw final
     real_T Saturation_UpperSat_p;
     real_T Saturation_LowerSat_hs;
     real_T Constant_Value_fw;
+    real_T Gain3_Gain_f;
+    real_T Saturation1_UpperSat_n;
+    real_T Saturation1_LowerSat_p;
     real_T Gain_Gain_m;
     real_T Gain1_Gain_h;
     real_T Bias_Bias_d;
@@ -483,14 +486,15 @@ class A380PitchNormalLaw final
             *rtu_In_qk_dot_deg_s2, const real_T *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T
             *rtu_In_alpha_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_V_tas_kn, const real_T
             *rtu_In_H_radio_ft, const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const
-            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_thrust_lever_1_pos, const real_T
-            *rtu_In_thrust_lever_2_pos, const boolean_T *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn,
-            const real_T *rtu_In_delta_eta_pos, const boolean_T *rtu_In_on_ground, const boolean_T
-            *rtu_In_tracking_mode_on, const boolean_T *rtu_In_high_aoa_prot_active, const boolean_T
-            *rtu_In_high_speed_prot_active, const real_T *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const
-            real_T *rtu_In_high_speed_prot_high_kn, const real_T *rtu_In_high_speed_prot_low_kn, const real_T
-            *rtu_In_ap_theta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T
-            *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
+            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_gnd_splr_cmd_deg, const real_T
+            *rtu_In_thrust_lever_1_pos, const real_T *rtu_In_thrust_lever_2_pos, const boolean_T
+            *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn, const real_T *rtu_In_delta_eta_pos, const
+            boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const boolean_T
+            *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T
+            *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const real_T *rtu_In_high_speed_prot_high_kn, const
+            real_T *rtu_In_high_speed_prot_low_kn, const real_T *rtu_In_ap_theta_c_deg, const boolean_T
+            *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T *rty_Out_eta_trim_dot_deg_s, real_T
+            *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
   void reset();
   A380PitchNormalLaw();
   ~A380PitchNormalLaw();

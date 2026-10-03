@@ -6,13 +6,13 @@
 import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;

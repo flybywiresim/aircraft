@@ -111,6 +111,9 @@ impl SimulationElement for AirIntakeFlap {
 
 #[cfg(test)]
 mod air_intake_flap_tests {
+    use more_asserts::*;
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
@@ -119,7 +122,6 @@ mod air_intake_flap_tests {
     use crate::simulation::test::TestBed;
     use crate::simulation::{test::SimulationTestBed, Aircraft, SimulationElement};
     use crate::simulation::{InitContext, SimulationElementVisitor};
-    use ntest::assert_about_eq;
     use uom::si::power::watt;
 
     struct TestAircraft {
@@ -249,7 +251,10 @@ mod air_intake_flap_tests {
         test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.flap_open_amount().get::<percent>()) > 0.);
+        assert_gt!(
+            test_bed.query(|a| a.flap_open_amount().get::<percent>()),
+            0.
+        );
     }
 
     #[test]
@@ -261,7 +266,10 @@ mod air_intake_flap_tests {
             (AirIntakeFlap::MINIMUM_TRAVEL_TIME_SECS - 1) as u64,
         ));
 
-        assert!(test_bed.query(|a| a.flap_open_amount().get::<percent>()) < 100.);
+        assert_lt!(
+            test_bed.query(|a| a.flap_open_amount().get::<percent>()),
+            100.
+        );
     }
 
     #[test]
@@ -276,7 +284,7 @@ mod air_intake_flap_tests {
         test_bed.command(|a| a.command_flap_close());
         test_bed.run_with_delta(Duration::from_secs(2));
 
-        assert!(test_bed.query(|a| a.flap_open_amount()) < flap_open_amount);
+        assert_lt!(test_bed.query(|a| a.flap_open_amount()), flap_open_amount);
     }
 
     #[test]
@@ -293,7 +301,10 @@ mod air_intake_flap_tests {
             (AirIntakeFlap::MINIMUM_TRAVEL_TIME_SECS - 1) as u64,
         ));
 
-        assert!(test_bed.query(|a| a.flap_open_amount().get::<percent>()) > 0.);
+        assert_gt!(
+            test_bed.query(|a| a.flap_open_amount().get::<percent>()),
+            0.
+        );
     }
 
     #[test]
@@ -360,7 +371,7 @@ mod air_intake_flap_tests {
         test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(2));
 
-        assert!(test_bed.query(|a| a.power_consumption().get::<watt>()) > 0.);
+        assert_gt!(test_bed.query(|a| a.power_consumption().get::<watt>()), 0.);
     }
 
     #[test]

@@ -566,6 +566,8 @@ impl SimulationElement for RudderMechanicalControl {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use uom::si::{angle::degree, electric_potential::volt, volume_rate::gallon_per_minute};
 
     use crate::electrical::test::TestElectricitySource;
@@ -936,7 +938,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() < 10.);
+        assert_lt!(limiter_deflection.get::<degree>(), 10.);
 
         test_bed.command(|a| {
             a.set_limiter_demand(
@@ -950,7 +952,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() > 10.);
+        assert_gt!(limiter_deflection.get::<degree>(), 10.);
     }
 
     #[test]
@@ -966,7 +968,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() < 10.);
+        assert_lt!(limiter_deflection.get::<degree>(), 10.);
 
         test_bed.command(|a| {
             a.set_limiter_demand(
@@ -981,7 +983,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() > 10.);
+        assert_gt!(limiter_deflection.get::<degree>(), 10.);
     }
 
     #[test]
@@ -997,7 +999,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() < 10.);
+        assert_lt!(limiter_deflection.get::<degree>(), 10.);
 
         test_bed.command(|a| {
             a.set_limiter_demand(
@@ -1013,7 +1015,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
-        assert!(limiter_deflection.get::<degree>() < 10.);
+        assert_lt!(limiter_deflection.get::<degree>(), 10.);
     }
 
     #[test]
@@ -1032,7 +1034,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(6000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
+        assert_lt!(final_rudder_deflection.get::<degree>().abs(), 0.1);
     }
 
     #[test]
@@ -1086,7 +1088,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
+        assert_lt!(final_rudder_deflection.get::<degree>().abs(), 0.1);
     }
 
     #[test]
@@ -1118,7 +1120,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
+        assert_lt!(final_rudder_deflection.get::<degree>().abs(), 0.1);
     }
 
     #[test]
@@ -1133,15 +1135,24 @@ mod tests {
             )
         });
         test_bed.run_with_delta(Duration::from_millis(100));
-        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() < -22.);
+        assert_lt!(
+            test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>(),
+            -22.
+        );
 
         test_bed.run_with_delta(Duration::from_millis(30000));
 
-        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() > -4.);
+        assert_gt!(
+            test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>(),
+            -4.
+        );
 
         test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(25.)));
 
         test_bed.run_with_delta(Duration::from_millis(100));
-        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() < 4.);
+        assert_lt!(
+            test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>(),
+            4.
+        );
     }
 }

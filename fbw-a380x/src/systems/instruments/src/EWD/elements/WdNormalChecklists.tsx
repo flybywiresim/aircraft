@@ -1,19 +1,16 @@
 import { ConsumerSubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import {
-  deferredProcedureIds,
-  EcamNormalProcedures,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
+import { deferredProcedureIds, EcamNormalProcedures } from '../../MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import {
   ChecklistLineStyle,
   DeferredProcedureType,
   EcamDeferredProcedures,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+} from '../..//MsfsAvionicsCommon/EcamMessages';
+import { WdAbstractChecklistComponent } from './WdAbstractChecklistComponent';
 import {
   ProcedureLinesGenerator,
   ProcedureType,
   SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+} from '../../MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 
 export class WdNormalChecklists extends WdAbstractChecklistComponent {
   private readonly checklists = ConsumerSubject.create(this.sub.on('fws_normal_checklists'), []);

@@ -105,6 +105,7 @@ export class ClimbPathBuilder {
             profile,
             climbStrategy,
             currentSpeedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
+            finalAltitude,
             VerticalCheckpointReason.SpeedConstraint,
           );
 
@@ -173,6 +174,7 @@ export class ClimbPathBuilder {
           profile,
           climbStrategy,
           speedConstraint.distanceFromStart - profile.lastCheckpoint.distanceFromStart,
+          finalAltitude,
           VerticalCheckpointReason.SpeedConstraint,
         );
 
@@ -262,22 +264,38 @@ export class ClimbPathBuilder {
     profile: BaseGeometryProfile,
     climbStrategy: ClimbStrategy,
     distance: NauticalMiles,
+    finalAltitude: NauticalMiles,
     reason: VerticalCheckpointReason,
   ) {
-    let distanceCrossed = 0;
-    for (; distanceCrossed + 3 < distance; distanceCrossed += 3) {
+    const stepDistance = 3; // NM
+    const numSteps = Math.ceil(distance / stepDistance);
+
+    for (let i = 0; i < numSteps; i++) {
       // The reason we don't check the actual distance travelled is because we don't want to have an infinite loop if the distance step travels no distance for some reason.
       // With this loop, it terminates at some point at least
-      this.distanceStepFromLastCheckpoint(profile, climbStrategy, 3, VerticalCheckpointReason.AtmosphericConditions);
+      this.distanceStepFromLastCheckpoint(
+        profile,
+        climbStrategy,
+        Math.min(stepDistance, distance - i * stepDistance),
+        finalAltitude,
+        VerticalCheckpointReason.AtmosphericConditions,
+      );
+
+      if (profile.lastCheckpoint.altitude >= finalAltitude) {
+        break;
+      }
     }
 
-    this.distanceStepFromLastCheckpoint(profile, climbStrategy, distance - distanceCrossed, reason);
+    if (numSteps > 0) {
+      profile.lastCheckpoint.reason = reason;
+    }
   }
 
   private distanceStepFromLastCheckpoint(
     profile: BaseGeometryProfile,
     climbStrategy: ClimbStrategy,
     distance: NauticalMiles,
+    finalAltitude: NauticalMiles,
     reason: VerticalCheckpointReason,
   ) {
     const { managedClimbSpeedMach } = this.computationParametersObserver.get();
@@ -291,6 +309,11 @@ export class ClimbPathBuilder {
       remainingFuelOnBoard,
       -profile.winds.getClimbTailwind(distanceFromStart, altitude),
     );
+
+    if (step.finalAltitude > finalAltitude) {
+      const scaling = (finalAltitude - altitude) / (step.finalAltitude - altitude);
+      this.scaleStepBasedOnLastCheckpoint(profile.lastCheckpoint, step, scaling);
+    }
 
     this.addCheckpointFromStep(profile, step, reason);
   }

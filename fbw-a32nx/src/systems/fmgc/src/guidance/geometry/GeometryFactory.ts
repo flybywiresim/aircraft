@@ -80,6 +80,41 @@ export namespace GeometryFactory {
     return new Geometry(transitions, legs, false);
   }
 
+  export function createFromEngineOutDeparture(plan: BaseFlightPlan): Geometry {
+    const legs = new Map<number, Leg>();
+    const transitions = new Map<number, Transition>();
+
+    const planElements = plan.engineOutDepartureSegment.allLegs;
+    for (let i = 0; i < planElements.length; i++) {
+      const prevElement = planElements[i - 1];
+      const element = planElements[i];
+      const nextElement = planElements[i + 1];
+      const nextNextElement = planElements[i + 2];
+
+      if (element.isDiscontinuity === true) {
+        continue;
+      }
+
+      let nextGeometryLeg: Leg;
+      if (nextElement?.isDiscontinuity === false && !nextElement.isXI()) {
+        nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
+          ? geometryLegFromFlightPlanLeg(nextNextElement.definition.magVar, nextElement, nextNextElement)
+          : geometryLegFromFlightPlanLeg(nextElement.definition.magVar, element, nextElement);
+      }
+
+      const magVar = element.definition.magVar;
+      const geometryLeg = geometryLegFromFlightPlanLeg(magVar, prevElement, element, nextGeometryLeg);
+
+      if (isXiIfXf(prevElement, element, nextElement)) {
+        geometryLeg.isNull = true;
+      }
+
+      legs.set(i, geometryLeg);
+    }
+
+    return new Geometry(transitions, legs, false);
+  }
+
   export function updateFromFlightPlan(geometry: Geometry, flightPlan: BaseFlightPlan, doGenerateTransitions = true) {
     geometry.version++;
 

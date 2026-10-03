@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { VdSymbol, NdSymbolTypeFlags, MathUtils } from '@flybywiresim/fbw-sdk';
-import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
-import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
-import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
+import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
+import { VerticalDisplayMapLayer } from './VerticalDisplayMapLayer';
+import { VerticalDisplayPaintUtils } from './VerticalDisplayPaintUtils';
 
 export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<VdSymbol> {
   public data: VdSymbol[] = [];

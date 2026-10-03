@@ -5,7 +5,7 @@ RCLONE_REMOTE="cloudflare-r2"
 CDN_URL="flybywirecdn.com"
 FILES=${1}
 R2_BUCKET="flybywiresim"
-CDN_DIR=${2:-"addons/a32nx/test"}
+CDN_DIR=${2:-"addons/simulator/addon/test"}
 
 echo "Syncing files from: ${FILES}/*"
 echo "Syncing to: $RCLONE_REMOTE:$CDN_DIR"

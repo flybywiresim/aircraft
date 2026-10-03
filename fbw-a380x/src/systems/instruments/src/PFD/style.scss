@@ -180,6 +180,10 @@ tspan.Cyan {
   fill: $display-cyan;
   stroke: none;
 }
+.DimmedCyan.Fill {
+  fill: scale-color($display-cyan, $lightness: -30%);
+  stroke: none;
+}
 
 .None {
   fill: none;

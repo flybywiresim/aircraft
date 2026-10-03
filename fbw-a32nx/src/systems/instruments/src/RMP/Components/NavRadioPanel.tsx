@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { useSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk-react';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { StandbyCourse } from './StandbyCourse';
 import { RadioPanelDisplay } from './RadioPanelDisplay';

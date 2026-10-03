@@ -120,6 +120,10 @@ export abstract class FlightPlanSegment {
       // Move legs after cut to enroute
       const removed = this.allLegs.splice(atPoint);
 
+      if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+        this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+      }
+
       this.flightPlan.syncSegmentLegsChange(this);
       this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
       return removed;
@@ -147,7 +151,11 @@ export abstract class FlightPlanSegment {
    * @param to   end of the range, exclusive
    */
   removeRange(from: number, to: number) {
-    this.allLegs.splice(from, to - from);
+    const removed = this.allLegs.splice(from, to - from);
+
+    if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.flightPlan.syncSegmentLegsChange(this);
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -160,7 +168,10 @@ export abstract class FlightPlanSegment {
    */
   removeBefore(before: number) {
     for (let i = 0; i < before; i++) {
-      this.allLegs.shift();
+      const removed = this.allLegs.shift();
+      if (removed.isDiscontinuity === false && removed.definition.isEngineOutBranch) {
+        this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+      }
     }
 
     this.flightPlan.syncSegmentLegsChange(this);
@@ -173,7 +184,11 @@ export abstract class FlightPlanSegment {
    * @param from start of the range, inclusive
    */
   removeAfter(from: number) {
-    this.allLegs.splice(from);
+    const removed = this.allLegs.splice(from);
+
+    if (removed.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.flightPlan.syncSegmentLegsChange(this);
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -181,6 +196,10 @@ export abstract class FlightPlanSegment {
 
   clear(): FlightPlanElement[] {
     const legs = this.allLegs.slice();
+
+    if (legs.find((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch)) {
+      this.flightPlan.engineOutDepartureSegment.setProcedure(undefined, undefined);
+    }
 
     this.allLegs.length = 0;
     this.flightPlan.syncSegmentLegsChange(this);

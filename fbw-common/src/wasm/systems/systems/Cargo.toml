@@ -16,5 +16,6 @@ rustc-hash = "2.1.1"
 bitflags = "2.10"
 
 [dev-dependencies]
+more-asserts.workspace = true
 ntest.workspace = true
 rstest.workspace = true

@@ -2,7 +2,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   CpdlcMessage,
@@ -26,15 +26,28 @@ import { AcarsClient } from './AcarsClient';
 export class AcarsConnector {
   private static flightNumber: string = '';
 
+  private static connectionAttemptCounter = 0;
+
+  private static readonly MAX_CONNECTION_ATTEMPTS = 60; // 60 * 5s = 5 min
+
+  private static readonly RETRY_DELAY_MS = 5_000;
+
+  private static connected = false;
+
+  private static activationRequested = false;
+
+  private static activationLoopRunning = false;
+
   public static fansMode: FansMode = FansMode.FansNone;
 
-  public static async activateAcars() {
-    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
+  private static stopActivation(): void {
+    AcarsConnector.activationRequested = false;
+    AcarsConnector.connectionAttemptCounter = 0;
+    AcarsConnector.connected = false;
+  }
 
-    if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
-      console.log('CPDLC deactivated in EFB');
-      return;
-    }
+  private static async attemptActivation(): Promise<void> {
+    AcarsConnector.connectionAttemptCounter += 1;
 
     const body = {
       from: 'FBWA32NX',
@@ -43,36 +56,78 @@ export class AcarsConnector {
       packet: '',
     };
 
-    const maxRetryDuration = 5 * 60 * 1000;
-    const retryInterval = 5000;
-    const startTime = Date.now();
-
-    const attemptConnection = async (): Promise<void> => {
-      try {
-        // TODO SayIntentions allows ping without valid logon so we cannot fully verify here, awaiting reply of developers
-        const resp = await AcarsClient.getData(body);
-        if (resp.response !== 'error {invalid logon code}') {
-          SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
-          console.log('Activated ACARS-ID');
-        } else {
-          console.log('Invalid ACARS-ID set');
-        }
-      } catch (e) {
-        const elapsed = Date.now() - startTime;
-        if (elapsed < maxRetryDuration) {
-          console.log(`Could not connect to ACARS, retrying in ${retryInterval / 1000}s...`, e);
-          await new Promise((resolve) => setTimeout(resolve, retryInterval));
-          return attemptConnection();
-        } else {
-          console.log(`Could not connect to ACARS after 5 minutes, giving up`, e);
-        }
+    try {
+      const resp = await AcarsClient.getData(body);
+      if (resp.response !== 'error {invalid logon code}') {
+        SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
+        console.log('Activated ACARS-ID');
+        AcarsConnector.connected = true;
+        return;
       }
-    };
 
-    await attemptConnection();
+      console.log('Invalid ACARS-ID set');
+      AcarsConnector.activationRequested = false;
+    } catch (e) {
+      console.log(
+        `Could not connect to ACARS, retrying... (${AcarsConnector.connectionAttemptCounter}/${AcarsConnector.MAX_CONNECTION_ATTEMPTS})`,
+        e,
+      );
+    }
+  }
+
+  private static async runActivationLoop(): Promise<void> {
+    if (AcarsConnector.activationLoopRunning) {
+      return;
+    }
+
+    AcarsConnector.activationLoopRunning = true;
+
+    try {
+      while (
+        AcarsConnector.activationRequested &&
+        !AcarsConnector.connected &&
+        AcarsConnector.connectionAttemptCounter < AcarsConnector.MAX_CONNECTION_ATTEMPTS
+      ) {
+        await AcarsConnector.attemptActivation();
+
+        if (!AcarsConnector.activationRequested || AcarsConnector.connected) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, AcarsConnector.RETRY_DELAY_MS));
+      }
+
+      if (
+        AcarsConnector.activationRequested &&
+        !AcarsConnector.connected &&
+        AcarsConnector.connectionAttemptCounter >= AcarsConnector.MAX_CONNECTION_ATTEMPTS
+      ) {
+        console.log('Could not connect to ACARS after 5 minutes, giving up');
+        NXDataStore.getSetting('ACARS_PROVIDER').set('NONE');
+        NXDataStore.getSetting('CONFIG_ATIS_SRC').set(ConfigWeatherMap.VATSIM);
+        NXDataStore.getSetting('CONFIG_METAR_SRC').set(ConfigWeatherMap.MSFS);
+
+        AcarsConnector.stopActivation();
+      }
+    } finally {
+      AcarsConnector.activationLoopRunning = false;
+    }
+  }
+
+  public static activateAcars(): void {
+    AcarsConnector.stopActivation();
+    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
+
+    if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
+      return;
+    }
+
+    AcarsConnector.activationRequested = true;
+    void AcarsConnector.runActivationLoop();
   }
 
   public static deactivateAcars(): void {
+    AcarsConnector.stopActivation();
     SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
   }
 
@@ -93,6 +148,8 @@ export class AcarsConnector {
 
   public static disconnect(): AtsuStatusCodes {
     AcarsConnector.flightNumber = '';
+    AcarsConnector.activationRequested = false;
+    AcarsConnector.connected = false;
     return AtsuStatusCodes.Ok;
   }
 

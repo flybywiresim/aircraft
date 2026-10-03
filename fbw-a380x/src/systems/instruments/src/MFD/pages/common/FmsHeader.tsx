@@ -1,6 +1,6 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
+import { AbstractHeader } from './AbstractHeader';
+import { PageSelectorDropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 import { activeFlightPlanPageUri, activeFlightPlanFuelAndLoadUri, dataStatusUri } from '../../shared/utils';
 
 /*

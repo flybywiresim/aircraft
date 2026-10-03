@@ -4,11 +4,11 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
-import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
-import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
-import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { FmsErrorMessage } from './FlightManagementComputer';
+import { FmcAircraftInterface } from './FmcAircraftInterface';
+import { MfdDisplayInterface } from '../MFD';
+import { FmgcDataService } from './fmgc';
+import { TypeIMessage, TypeIIMessage } from '../shared/NXSystemMessages';
 import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
@@ -22,11 +22,20 @@ export enum FmcOperatingModes {
 }
 
 export interface FlightPhaseManagerProxyInterface {
+<<<<<<< HEAD
   handleFcuAltKnobPushPull(distanceToDestination: number, hasStepDescent: boolean): void;
 
   handleFcuAltKnobTurn(distanceToDestination: number, hasStepDescent: boolean): void;
+  handleFcuAltKnobTurn(): void;
 
   handleFcuVSKnob(distanceToDestination: number, hasStepDescent: boolean, onStepClimbDescent: () => void): void;
+=======
+  handleFcuAltKnobPushPull(): void;
+
+  handleFcuAltKnobTurn(): void;
+
+  handleFcuVSKnob(onStepClimbDescent: () => void): void;
+>>>>>>> upstream/master
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void;
 
@@ -155,6 +164,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /** in kilograms */
   getTakeoffWeight(forPlan: FlightPlanIndex): number | null;
+
+  calculateTakeoffWeight(forPlan: FlightPlanIndex): void;
 
   /** in kilograms */
   getTripFuel(forPlan: FlightPlanIndex): number | null;
@@ -300,6 +311,17 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
+
+  engineOutActive(): boolean;
+
+  /** Returns whether inches is selected on the FCU of the associated side */
+  inchesSelectedOnFcu(side: EfisSide): boolean;
+
+  getApproachCrossWindComponent(forPlan?: FlightPlanIndex): number | null;
+
+  getApproachHeadWindComponent(forPlan?: FlightPlanIndex): number | null;
+
+  trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex): void;
 
   reset(): void;
 

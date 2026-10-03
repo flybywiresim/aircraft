@@ -52,13 +52,6 @@ export type PFDSimvars = AdirsSimVars &
     tla1: number;
     tla2: number;
     landingElevation: number;
-    tcasState: number;
-    tcasCorrective: boolean;
-    tcasRedZoneL: number;
-    tcasRedZoneH: number;
-    tcasGreenZoneL: number;
-    tcasGreenZoneH: number;
-    tcasFail: boolean;
     engOneRunning: boolean;
     engTwoRunning: boolean;
     setHoldSpeed: boolean;
@@ -227,13 +220,6 @@ export enum PFDVars {
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
-  tcasState = 'L:A32NX_TCAS_STATE',
-  tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
-  tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
-  tcasRedZoneH = 'L:A32NX_TCAS_VSPEED_RED:2',
-  tcasGreenZoneL = 'L:A32NX_TCAS_VSPEED_GREEN:1',
-  tcasGreenZoneH = 'L:A32NX_TCAS_VSPEED_GREEN:2',
-  tcasFail = 'L:A32NX_TCAS_FAULT',
   engOneRunning = 'GENERAL ENG COMBUSTION:1',
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
@@ -407,13 +393,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
     ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
     ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
-    ['tcasState', { name: PFDVars.tcasState, type: SimVarValueType.Enum }],
-    ['tcasCorrective', { name: PFDVars.tcasCorrective, type: SimVarValueType.Bool }],
-    ['tcasRedZoneL', { name: PFDVars.tcasRedZoneL, type: SimVarValueType.Number }],
-    ['tcasRedZoneH', { name: PFDVars.tcasRedZoneH, type: SimVarValueType.Number }],
-    ['tcasGreenZoneL', { name: PFDVars.tcasGreenZoneL, type: SimVarValueType.Number }],
-    ['tcasGreenZoneH', { name: PFDVars.tcasGreenZoneH, type: SimVarValueType.Number }],
-    ['tcasFail', { name: PFDVars.tcasFail, type: SimVarValueType.Bool }],
     ['engOneRunning', { name: PFDVars.engOneRunning, type: SimVarValueType.Bool }],
     ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
     ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],

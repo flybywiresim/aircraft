@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useContext, useEffect, useState } from 'react';
-import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import {
   AircraftContext,

@@ -38,9 +38,9 @@ class FlightDataRecorder {
   const std::string CONFIGURATION_FILEPATH = "\\work\\FlightDataRecorder.ini";
 
   std::unique_ptr<LocalVariable> idIsEnabled;
-  std::unique_ptr<LocalVariable> idMaximumSampleCounter;
-  std::unique_ptr<LocalVariable> idMaximumFileCount;
   int sampleCounter = 0;
+  int maximumSampleCounter = 864000;
+  int maximumFileCount = 15;
   std::shared_ptr<gzofstream> fileStream;
 
   void manageFlightDataRecorderFiles();
@@ -50,8 +50,6 @@ class FlightDataRecorder {
   void cleanUpFlightDataRecorderFiles();
 
   void loadConfiguration();
-
-  void writeConfiguration();
 
   void writeElac(Elac& elac);
 

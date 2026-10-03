@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useRef } from 'react';
-import { MathUtils, usePersistentNumberProperty, useSimVar, useSplitSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, usePersistentNumberProperty, useSimVar, useSplitSimVar } from '@flybywiresim/fbw-sdk-react';
 import {
   ArrowDown,
   ArrowLeft,

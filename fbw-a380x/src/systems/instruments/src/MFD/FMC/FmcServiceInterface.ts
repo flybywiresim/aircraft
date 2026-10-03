@@ -1,7 +1,7 @@
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { Subscribable } from '@microsoft/msfs-sdk';
-import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
+import { FmcInterface } from './FmcInterface';
+import { MfdDisplayInterface } from '../MFD';
 
 export enum FmcIndex {
   FmcA,

@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
 import '../Assets/Keyboard.scss';
 import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 import { useAppSelector } from '../Store/store';
 
 interface KeyboardWrapperProps {

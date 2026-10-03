@@ -7,7 +7,7 @@ import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router, VhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
-import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
+import { PowerSupplyBusTypes } from './powersupply';
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class A32nxVhfProvider implements VhfRadioInterface {

@@ -5,10 +5,9 @@
 import { DisplayUnit } from './displayUnit';
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
 import { PagesContainer } from './PagesContainer';
-import { StatusArea } from './StatusArea/StatusArea';
 
 import './style.scss';
 
@@ -25,8 +24,6 @@ const Idle = () => {
       </svg>
 
       {doorVideoVisible && <div id="door-video-wrapper" />}
-
-      <StatusArea />
     </div>
   );
 };

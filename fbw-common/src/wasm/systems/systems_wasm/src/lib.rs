@@ -30,7 +30,7 @@ use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 use std::{error::Error, time::Duration};
-use systems::shared::ElectricalBusType;
+use systems::shared::{set_diagnostics_reporter, ElectricalBusType};
 use systems::simulation::{InitContext, StartState};
 use systems::{
     failures::FailureType,
@@ -199,6 +199,15 @@ impl MsfsHandler {
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
         let failures = Rc::new(RefCell::new(failures));
+
+        set_diagnostics_reporter(|message| {
+            CommBus::call(
+                "FBW_SYSTEMS_TROUBLESHOOTING_LOG",
+                message,
+                CommBusBroadcastFlags::JS,
+            );
+        });
+
         let mut commbus = CommBus::default();
         {
             let failures = failures.clone();

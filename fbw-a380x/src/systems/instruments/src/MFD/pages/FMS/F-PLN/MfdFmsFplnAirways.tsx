@@ -2,16 +2,16 @@
 
 import './MfdFmsFplnAirways.scss';
 import '../../common/style.scss';
-import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
+import { Footer } from '../../common/Footer';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { AirwayFormat, WaypointFormat } from '../../common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { NXSystemMessages } from '../../../shared/NXSystemMessages';
+import { FmcInterface } from '../../../FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';

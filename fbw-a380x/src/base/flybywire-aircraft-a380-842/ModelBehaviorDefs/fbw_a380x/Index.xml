@@ -1,0 +1,4 @@
+<ModelBehaviors>
+	<Include RelativeFile="Templates\Anims_Door.xml"/>
+    <Include RelativeFile="Templates\Anims_Exterior.xml"/>
+</ModelBehaviors>

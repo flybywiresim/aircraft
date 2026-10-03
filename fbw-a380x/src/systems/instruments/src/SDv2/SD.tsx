@@ -1,4 +1,4 @@
-//  Copyright (c) 2024 FlyByWire Simulations
+//  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -14,14 +14,16 @@ import {
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { PermanentData } from './StatusArea';
 import { AtcMailbox } from './AtcMailbox';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { SdPages } from '@shared/EcamSystemPages';
 
 import './style.scss';
 import '../index.scss';
 import { CruisePage } from './Pages/Cruise/CruisePage';
-import { SDSimvars } from './SDSimvarPublisher';
+import { VideoPage } from './Pages/Video/VideoPage';
 import { StatusPage } from './Pages/Status/StatusPage';
+import { FctlPage } from './Pages/Fctl/FctlPage';
+import { SDSimvars } from './SDSimvarPublisher';
 
 export interface SDProps {
   readonly bus: EventBus;
@@ -63,15 +65,15 @@ export class SD extends DestroyableComponent<SDProps> {
     null, // FUEL
     null, // WHEEL
     null, // HYD
-    null, // FCTL
+    <FctlPage ref={this.pageRef[SdPages.Fctl]} bus={this.props.bus} visible={this.pageVisible[SdPages.Fctl]} />,
     null, // CB
     <CruisePage ref={this.pageRef[SdPages.Crz]} bus={this.props.bus} visible={this.pageVisible[SdPages.Crz]} />,
-    <StatusPage ref={this.pageRef[SdPages.Status]} bus={this.props.bus} visible={this.pageVisible[SdPages.Status]} />, // STATUS
-    null, // TODO video page
+    <StatusPage ref={this.pageRef[SdPages.Status]} bus={this.props.bus} visible={this.pageVisible[SdPages.Status]} />,
+    <VideoPage ref={this.pageRef[SdPages.Video]} bus={this.props.bus} visible={this.pageVisible[SdPages.Video]} />,
   ];
 
   // Once a page is ported, add its enum value here
-  private readonly indicesToShowInV2 = [SdPages.Crz, SdPages.Status];
+  private readonly indicesToShowInV2 = [SdPages.Fctl, SdPages.Crz, SdPages.Status, SdPages.Video];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

@@ -1,0 +1,21 @@
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_Control_Surface_Template">
+        <Component ID="#ANIM_NAME#">
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_CODE>#DEFLECTION_CODE# 50 * 50 +</ANIM_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+    <Template Name="FBW_Spoiler_Surface_Template">
+        <Component ID="#ANIM_NAME#">
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <!-- Scales down the animation with a factor of 50/65, since the animation goes
+                to 65°, but max deflection is 50° -->
+                <ANIM_CODE>#DEFLECTION_CODE# 100 * 50 * 65 /</ANIM_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

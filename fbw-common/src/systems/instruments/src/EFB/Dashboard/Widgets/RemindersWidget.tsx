@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 import { ArrowDown, ArrowUp, PencilFill } from 'react-bootstrap-icons';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';

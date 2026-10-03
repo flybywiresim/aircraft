@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 import { PromptModal, ScrollableContainer, t, Toggle, useModals } from '@flybywiresim/flypad';
 
 import { useViewListenerEvent } from '../../Utils/listener';

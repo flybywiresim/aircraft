@@ -1227,8 +1227,10 @@ mod tests {
 
     #[cfg(test)]
     mod apu_tests {
-        use super::*;
+        use more_asserts::*;
         use ntest::assert_about_eq;
+
+        use super::*;
         use uom::si::{mass::kilogram, power::watt};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
@@ -1296,7 +1298,7 @@ mod tests {
                 }
             }
 
-            assert!(n < 2.);
+            assert_lt!(n, 2.);
             test_bed = test_bed
                 .then_continue_with()
                 .master_off()
@@ -1407,7 +1409,7 @@ mod tests {
                 max_egt = egt;
             }
 
-            assert!(max_egt > temp);
+            assert_gt!(max_egt, temp);
         }
 
         #[rstest]
@@ -1706,7 +1708,7 @@ mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(test_bed.n().normal_value().unwrap().get::<percent>() > 0.);
+            assert_gt!(test_bed.n().normal_value().unwrap().get::<percent>(), 0.);
 
             test_bed = test_bed
                 .then_continue_with()
@@ -1715,7 +1717,7 @@ mod tests {
                 .start_off()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(test_bed.n().normal_value().unwrap().get::<percent>() > 90.);
+            assert_gt!(test_bed.n().normal_value().unwrap().get::<percent>(), 90.);
 
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -2029,7 +2031,7 @@ mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_millis(10));
 
-                assert!(test_bed.n().normal_value().unwrap().get::<percent>() >= 0.);
+                assert_ge!(test_bed.n().normal_value().unwrap().get::<percent>(), 0.);
 
                 if test_bed.apu_is_available() {
                     break;
@@ -2054,14 +2056,14 @@ mod tests {
                 .master_on()
                 .run(Duration::from_secs(0));
 
-            assert!(test_bed.egt().value().get::<degree_celsius>() > 100.);
+            assert_gt!(test_bed.egt().value().get::<degree_celsius>(), 100.);
 
             test_bed = test_bed
                 .then_continue_with()
                 .starting_apu()
                 .run(Duration::from_secs(5));
 
-            assert!(test_bed.egt().value().get::<degree_celsius>() > 100.);
+            assert_gt!(test_bed.egt().value().get::<degree_celsius>(), 100.);
         }
 
         #[rstest]
@@ -2087,7 +2089,7 @@ mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(5));
 
-            assert!(test_bed.egt().value() < initial_egt);
+            assert_lt!(test_bed.egt().value(), initial_egt);
         }
 
         #[rstest]
@@ -2874,14 +2876,14 @@ mod tests {
                 test_bed = test_bed.run(Duration::from_secs(1));
 
                 maximum_power = maximum_power.max(test_bed.power_consumption());
-                assert!(test_bed.power_consumption() >= Power::new::<watt>(0.));
+                assert_ge!(test_bed.power_consumption(), Power::new::<watt>(0.));
 
                 if test_bed.apu_is_available() {
                     break;
                 }
             }
 
-            assert!(maximum_power < Power::new::<watt>(10000.));
+            assert_lt!(maximum_power, Power::new::<watt>(10000.));
         }
 
         #[rstest]
@@ -2945,7 +2947,7 @@ mod tests {
                 let n = test_bed.n().normal_value().unwrap().get::<percent>();
 
                 if n > 55. && n <= 70. {
-                    assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
+                    assert_gt!(test_bed.power_consumption(), Power::new::<watt>(0.));
                 }
 
                 if (n - 100.).abs() < f64::EPSILON {
@@ -3001,7 +3003,7 @@ mod tests {
                 if test_bed.is_air_intake_flap_fully_closed() && test_bed.turbine_is_shutdown() {
                     break;
                 } else if test_bed.n().value().get::<percent>() <= 70. {
-                    assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
+                    assert_gt!(test_bed.power_consumption(), Power::new::<watt>(0.));
                 } else {
                     assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
                 }
@@ -3132,7 +3134,7 @@ mod tests {
 
             test_bed = test_bed.then_continue_with().running_apu();
 
-            assert!(test_bed.n_raw().get::<percent>() >= 99.);
+            assert_ge!(test_bed.n_raw().get::<percent>(), 99.);
         }
 
         #[rstest]

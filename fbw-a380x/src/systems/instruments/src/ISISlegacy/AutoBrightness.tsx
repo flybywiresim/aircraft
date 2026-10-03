@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useInterval, MathUtils, useInteractionEvent } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInterval, MathUtils, useInteractionEvent } from '@flybywiresim/fbw-sdk-react';
 
 type AutoBrightnessProps = {
   bugsActive: boolean;

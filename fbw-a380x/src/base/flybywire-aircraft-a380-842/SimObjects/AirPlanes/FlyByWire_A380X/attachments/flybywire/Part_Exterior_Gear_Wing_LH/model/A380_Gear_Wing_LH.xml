@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+<ModelInfo>
+	<LODS>
+		<LOD minSize="0" ModelFile="../../Part_Exterior_Gear_Wing_LH/model/A380_GEAR_WING_LH.gltf"/>
+	</LODS>
+	<Behaviors>
+		<Include ModelBehaviorFile="Asobo\Common.xml"/>
+		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
+		<Include ModelBehaviorFile="Asobo\Generic\Interactions.xml"/>
+		<Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
+		<Component ID="GEARS">
+
+			<!-- LH Wing Gear-->
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>l_w_gear</ANIM_NAME>
+				<ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.5 * (A:CONTACT POINT COMPRESSION:3, Percent) 0.5 * + </ANIM_CODE>
+			</UseTemplate>
+
+			<!-- WIng Landing Gear Left Rotation-->
+			<UseTemplate Name="ASOBO_GEAR_Left_Tire_Template">
+				<ANIM_NAME>l_tire_key</ANIM_NAME>
+				<NODE_ID_STILL>LANDINGGEAR_Wing_Wheel1_Still_Left</NODE_ID_STILL>
+				<NODE_ID_STILL_2>LANDINGGEAR_Wing_Wheel2_Still_Left</NODE_ID_STILL_2>
+				<NO_STILL_BLURRED_TRANSITION/>
+			</UseTemplate>
+
+		</Component>
+
+		<Component ID="LANDING_GEAR_TILT">
+
+            <!-- LH Wing Tilt-->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_w_gear_tilt</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_3_TILT_POSITION, Percent over 100) 100 *</ANIM_CODE>
+            </UseTemplate>
+
+        </Component>
+	</Behaviors>
+</ModelInfo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelInfo>
+	<LODS>
+		<LOD ModelFile="Helper.gltf"/>
+	</LODS>
+</ModelInfo>

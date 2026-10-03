@@ -11,6 +11,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { TodGuidance } from './TodGuidance';
 import { SpeedMargin } from './SpeedMargin';
 import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
@@ -56,6 +57,7 @@ export class LatchedDescentGuidance {
 
   constructor(
     config: AircraftConfig,
+    bus: EventBus,
     private guidanceController: GuidanceController,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
@@ -63,6 +65,7 @@ export class LatchedDescentGuidance {
   ) {
     this.speedMargin = new SpeedMargin(config, this.observer);
     this.todGuidance = new TodGuidance(
+      bus,
       this.aircraftToDescentProfileRelation,
       this.observer,
       this.atmosphericConditions,

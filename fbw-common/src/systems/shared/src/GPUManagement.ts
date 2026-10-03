@@ -30,17 +30,16 @@ export class GPUManagement implements Instrument {
 
   private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
-  private readonly cameraState = Subject.create(-1);
+  private readonly isInAircraft = Subject.create(0);
 
   private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
   private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
-  // state 2 is cockpit, state 3 is external
   private readonly isIngame = MappedSubject.create(
-    ([gameState, cameraState]) => gameState === GameState.ingame && (cameraState === 2 || cameraState === 3),
+    ([gameState, isInAircraft]) => gameState === GameState.ingame && isInAircraft === 1,
     GameStateProvider.get(),
-    this.cameraState,
+    this.isInAircraft,
   );
 
   private initialIngameFrame: boolean;
@@ -81,7 +80,7 @@ export class GPUManagement implements Instrument {
       }
       this.initialIngameFrame = false;
     } else {
-      this.cameraState.set(SimVar.GetSimVarValue('CAMERA STATE', 'enum'));
+      this.isInAircraft.set(SimVar.GetSimVarValue('E:IS AIRCRAFT', 'enum'));
     }
   }
 

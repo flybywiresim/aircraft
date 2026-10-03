@@ -9,8 +9,8 @@ import {
   ConsumerSubject,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
+import { Arinc429Values } from '../shared/ArincValueProvider';
 
 import {
   GaugeComponent,
@@ -19,7 +19,7 @@ import {
   splitDecimals,
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
-} from 'instruments/src/MsfsAvionicsCommon/gauges';
+} from '../../MsfsAvionicsCommon/gauges';
 import { AdrBusEvents, Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {

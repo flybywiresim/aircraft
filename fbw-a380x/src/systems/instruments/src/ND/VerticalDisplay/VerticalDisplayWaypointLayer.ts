@@ -5,9 +5,9 @@
 import { VdSymbol, NdSymbolTypeFlags, MathUtils, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 import { BitFlags } from '@microsoft/msfs-sdk';
-import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
-import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
-import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
+import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
+import { VerticalDisplayMapLayer } from './VerticalDisplayMapLayer';
+import { VerticalDisplayPaintUtils } from './VerticalDisplayPaintUtils';
 import { VERTICAL_DISPLAY_MAX_ALTITUDE, VERTICAL_DISPLAY_MIN_ALTITUDE } from './VerticalDisplay';
 
 const BELOW_CONSTRAINT_PATH = new Path2D('M 0 0 l 5 -10 h -10 l 5 10');

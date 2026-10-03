@@ -1,8 +1,8 @@
 import './MfdFmsFplnFixInfo.scss';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';

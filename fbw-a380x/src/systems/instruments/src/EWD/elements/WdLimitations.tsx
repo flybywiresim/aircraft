@@ -7,11 +7,11 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from '../../MsfsAvionicsCommon/DestroyableComponent';
-import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
+import { FormattedFwcText } from './FormattedFwcText';
+import { EwdSimvars } from '../shared/EwdSimvarPublisher';
 import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';
-import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 
 interface WdLimitationsProps {
   bus: EventBus;

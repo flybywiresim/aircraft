@@ -45,11 +45,11 @@ macro_rules! provide_potential {
     };
 }
 
-macro_rules! read_write_enum {
+macro_rules! try_read_write_enum {
     ($t: ty) => {
-        impl<T: Reader> Read<$t> for T {
-            fn convert(&mut self, value: f64) -> $t {
-                value.into()
+        impl<T: Reader> Read<Result<$t, <$t as TryFrom<f64>>::Error>> for T {
+            fn convert(&mut self, value: f64) -> Result<$t, <$t as TryFrom<f64>>::Error> {
+                value.try_into()
             }
         }
 

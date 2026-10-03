@@ -1,5 +1,5 @@
 import { DisplayComponent, FSComponent, SimVarValueType, VNode } from '@microsoft/msfs-sdk';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { IconButton } from '../../MsfsAvionicsCommon/UiWidgets/IconButton';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 interface EclSoftKeysProps {}

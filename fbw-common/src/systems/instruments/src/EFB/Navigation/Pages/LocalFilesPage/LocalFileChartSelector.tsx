@@ -5,7 +5,7 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk';
+import { LocalChartCategory, Viewer } from '@flybywiresim/fbw-sdk-react';
 import { t } from '../../../Localization/translation';
 import {
   addPinnedChart,
@@ -72,7 +72,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         return await getPdfUrl(chart.fileName, 1);
       }
       return await getImageUrl(chart.fileName);
-    } catch (err) {
+    } catch (_err) {
       return Promise.reject();
     }
   };
@@ -81,7 +81,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     if (chart.type === 'PDF') {
       try {
         return await Viewer.getPDFPageNum(chart.fileName);
-      } catch (err) {
+      } catch (_err) {
         return Promise.reject();
       }
     }

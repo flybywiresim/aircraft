@@ -14,12 +14,14 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
+// FIXME should not import from instruments
 import {
   ProcedureLinesGenerator,
   ProcedureType,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
-import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+// FIXME should not import from instruments
+import { ChecklistState, FwsEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
+import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from './FwsCore';
 
 export interface EwdAbnormalItem extends FwsSuppressableItem {
   flightPhaseInhib: number[];
@@ -71,6 +73,9 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
    * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
    */
   limitationsPfd?: (checked: boolean[]) => (string | null)[];
+
+  /** If true, is not used to display on the EWD */
+  nonProcedureKey?: boolean;
 }
 
 export interface EwdAbnormalDict {
@@ -1672,7 +1677,10 @@ export class FwsAbnormalSensed {
     220800004: {
       // A/THR OFF involuntary
       flightPhaseInhib: [3, 4, 5, 10],
-      simVarIsActive: this.fws.autoThrustOffInvoluntary,
+      simVarIsActive: this.fws.autoThrustOffInvoluntaryWarning,
+      auralWarning: this.fws.autoThrustOffInvoluntaryCaution.map((a) =>
+        a ? FwcAuralWarning.SingleChime : FwcAuralWarning.None,
+      ),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [!this.fws.engineThrustLocked],
@@ -1680,6 +1688,17 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.None,
       monitorConfirmTime: 0.0,
       info: () => [],
+    },
+    // A/THR OFF memo caution
+    220000002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.voluntaryAthrOffCaution,
+      failure: 2,
+      sysPage: -1,
+      monitorConfirmTime: 0.0,
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      nonProcedureKey: true,
     },
 
     // ATA 22 - AUTOFLIGHT
@@ -1978,7 +1997,7 @@ export class FwsAbnormalSensed {
       ],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
-        this.fws.throttle1Position.get() == 0 && !this.fws.fireButtonEng1.get(),
+        this.fws.thrustLever1Idle.get() && !this.fws.fireButtonEng1.get(),
         !this.fws.engine1ValueSwitch.get(),
         this.fws.fireButtonEng1.get(),
         !this.fws.apuBleedValveOpen.get(),
@@ -2014,7 +2033,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
-        this.fws.throttle2Position.get() == 0 && !this.fws.fireButtonEng2.get(),
+        this.fws.thrustLever2Idle.get() && !this.fws.fireButtonEng2.get(),
         !this.fws.engine2ValueSwitch.get(),
         this.fws.fireButtonEng2.get(),
         this.fws.eng2Agent1Discharged.get(),
@@ -2046,7 +2065,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
-        this.fws.throttle3Position.get() == 0 && !this.fws.fireButtonEng3.get(),
+        this.fws.thrustLever3Idle.get() && !this.fws.fireButtonEng3.get(),
         !this.fws.engine3ValueSwitch.get(),
         this.fws.fireButtonEng3.get(),
         this.fws.eng3Agent1Discharged.get(),
@@ -2078,7 +2097,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
-        this.fws.throttle4Position.get() == 0 && !this.fws.fireButtonEng4.get(),
+        this.fws.thrustLever4Idle.get() && !this.fws.fireButtonEng4.get(),
         !this.fws.engine4ValueSwitch.get(),
         this.fws.fireButtonEng4.get(),
         this.fws.eng4Agent1Discharged.get(),
@@ -2565,8 +2584,8 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
       inopSysAllPhases: () => [
-        this.fws.altn2LawConfirmNodeOutput.get() ? '220300007' : '',
-        this.fws.altn2LawConfirmNodeOutput.get() ? '220300024' : '',
+        this.fws.altn2LawConfirm ? '220300007' : '',
+        this.fws.altn2LawConfirm ? '220300024' : '',
       ],
       info: () => ['340200002'],
     },
@@ -3689,6 +3708,19 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Wheel,
       cancel: true,
     },
+    320000001: {
+      // AUTO BRK OFF Master Caution light
+      simVarIsActive: this.fws.autoBrakeOffMasterCautionLight,
+      failure: 2,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      flightPhaseInhib: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.None,
+      monitorConfirmTime: 0,
+      nonProcedureKey: true,
+    },
+
     // ATA 34 - NAVIGATION
     340800001: {
       // ADR 1 FAULT

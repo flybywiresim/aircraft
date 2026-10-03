@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ChecklistLineStyle, NormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistLineStyle, NormalProcedure } from './';
 
 export const deferredProcedureIds = [1000007, 1000008, 1000009, 1000011];
 

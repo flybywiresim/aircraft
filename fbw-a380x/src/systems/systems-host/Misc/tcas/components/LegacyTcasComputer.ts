@@ -36,9 +36,10 @@ import {
   UpDownAdvisoryStatus,
   TCAS_CONST,
 } from '../lib/TcasConstants';
-import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
+import { LegacySoundManager } from '../../LegacySoundManager';
 import { ClockEvents, ConsumerSubject, EventBus, GameStateProvider, Instrument, Wait } from '@microsoft/msfs-sdk';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+// FIXME should not import from instruments
+import { MfdSurvEvents } from '../../../../instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export class NDTcasTraffic {
   ID: string;
@@ -1188,8 +1189,6 @@ export class LegacyTcasComputer implements Instrument {
 
     switch (this.advisoryState) {
       case TcasState.TA:
-        SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
-        SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
         if (raThreatCount > 0 && this.inhibitions !== Inhibit.ALL_RA && this.inhibitions !== Inhibit.ALL_RA_AURAL_TA) {
           this.advisoryState = TcasState.RA;
           this.tcasState.setVar(TcasState.RA);
@@ -1202,8 +1201,6 @@ export class LegacyTcasComputer implements Instrument {
         }
         break;
       case TcasState.RA:
-        SimVar.SetSimVarValue('L:A380X_EFIS_L_TRAF_BUTTON_IS_ON', 'boolean', true);
-        SimVar.SetSimVarValue('L:A380X_EFIS_R_TRAF_BUTTON_IS_ON', 'boolean', true);
         if (raThreatCount === 0) {
           if (taThreatCount > 0) {
             this.advisoryState = TcasState.TA;

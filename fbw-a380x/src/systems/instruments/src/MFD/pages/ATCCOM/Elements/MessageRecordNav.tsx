@@ -1,5 +1,5 @@
 import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton';
 
 interface MessageRecordNavProps extends ComponentProps {}
 

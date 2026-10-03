@@ -2,7 +2,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty, getRootElement, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, getRootElement, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../../../Store/store';

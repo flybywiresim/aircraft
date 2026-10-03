@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { PathVector } from '@flybywiresim/fbw-sdk';
+import { LegType, PathVector } from '@flybywiresim/fbw-sdk';
 import { ReadonlyFlightPlan } from './plans/ReadonlyFlightPlan';
-import { ReadonlyFlightPlanElement } from './legs/ReadonlyFlightPlanLeg';
+import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from './legs/ReadonlyFlightPlanLeg';
 
 export class FlightPlanUtils {
   public static getAllPathVectorsInFlightPlan(
@@ -26,10 +26,57 @@ export class FlightPlanUtils {
         continue;
       }
 
+      if (FlightPlanUtils.isCourseReversal(element) && i > plan.activeLegIndex + 1) {
+        continue;
+      }
+
       array.push(...(element.calculated?.path ?? []));
     }
 
     return array;
+  }
+
+  private static isCourseReversal(leg: ReadonlyFlightPlanLeg): boolean {
+    switch (leg.type) {
+      case LegType.HA:
+      case LegType.HF:
+      case LegType.HM:
+      case LegType.PI:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  public static getEngineOutVectorsInFlightPlan(plan: ReadonlyFlightPlan, out: PathVector[]): PathVector[] {
+    let vectorCount = 0;
+
+    // We assume here that the plan legs and eosid legs are identical up to the branch.
+    // The flight plan should reset the EOSID if any legs prior to the branch are edited
+    // to preserve this invariant.
+    const eosidLegs = plan.getEngineOutDepartureLegs();
+    const planLegs = plan.allLegs;
+    const branchIndex = planLegs.findIndex((leg) => leg.isDiscontinuity === false && leg.definition.isEngineOutBranch);
+
+    if (branchIndex < 0) {
+      out.length = 0;
+      return out;
+    }
+
+    for (let i = branchIndex + 1; i < eosidLegs.length; i++) {
+      const leg = eosidLegs[i];
+      if (leg.isDiscontinuity === true || !leg.calculated || FlightPlanUtils.isCourseReversal(leg)) {
+        continue;
+      }
+
+      for (let j = 0; j < leg.calculated.path.length; j++) {
+        out[vectorCount++] = leg.calculated.path[j];
+      }
+    }
+
+    out.length = vectorCount;
+
+    return out;
   }
 
   /**

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { NXDataStore, useSimVar, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, useSimVar, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk-react';
 
 import '../Common/common.scss';
 

@@ -17,7 +17,7 @@ import '../index.scss';
 import { DateFormatting } from '@shared/DateFormatting';
 import { Arinc429LocalVarConsumerSubject, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
-import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 export interface PermanentDataProps {
@@ -29,7 +29,7 @@ const getValuePrefix = (value: number) => (value >= 0 ? '+' : '');
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FqmsBusEvents & A380XFcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FqmsBusEvents & FcuEfisCpBusEvents>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 
@@ -38,10 +38,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly zp = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitude'));
 
   private readonly fcuLeftEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a380x_fcu_eis_discrete_word_2_left'),
+    this.sub.on('fcu_efis_l_discrete_word_2'),
   );
   private readonly fcuRightEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('a380x_fcu_eis_discrete_word_2_right'),
+    this.sub.on('fcu_efis_r_discrete_word_2'),
   );
 
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
@@ -64,7 +64,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly isaVisibility = MappedSubject.create(
     ([fcuLeft, fcuRight, zp, sat]) =>
-      (fcuLeft.bitValueOr(28, false) || fcuRight.bitValueOr(28, false)) &&
+      (fcuLeft.bitValueOr(11, true) || fcuRight.bitValueOr(11, true)) &&
       zp.isNormalOperation() &&
       sat.isNormalOperation()
         ? 'inherit'

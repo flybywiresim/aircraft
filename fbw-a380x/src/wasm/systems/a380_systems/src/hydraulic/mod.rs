@@ -7096,6 +7096,7 @@ impl SimulationElement for A380TiltingGears {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use more_asserts::*;
 
     mod a380_hydraulics {
         use super::*;
@@ -8741,7 +8742,7 @@ mod tests {
                         .set_park_brake(true)
                         .run_waiting_for(Duration::from_secs(1));
                     number_of_loops += 1;
-                    assert!(number_of_loops < 20);
+                    assert_lt!(number_of_loops, 20);
                 }
 
                 self = self
@@ -9638,25 +9639,31 @@ mod tests {
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
-            assert!(test_bed._get_mean_right_spoilers_position().get::<ratio>() < 0.01);
+            assert_lt!(
+                test_bed._get_mean_right_spoilers_position().get::<ratio>(),
+                0.01
+            );
 
-            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+            assert_lt!(
+                test_bed.get_mean_left_spoilers_position().get::<ratio>(),
+                0.01
+            );
 
             test_bed = test_bed
                 .ac_ess_active()
                 .set_left_spoiler_6_elec_backup_active()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.5);
-            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() < 0.1);
+            assert_gt!(test_bed.get_left_spoiler_position(6).get::<ratio>(), 0.5);
+            assert_lt!(test_bed.get_right_spoiler_position(6).get::<ratio>(), 0.1);
 
             test_bed = test_bed
                 .ac_ess_active()
                 .set_right_spoiler_6_elec_backup_active()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.5);
-            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() > 0.5);
+            assert_gt!(test_bed.get_left_spoiler_position(6).get::<ratio>(), 0.5);
+            assert_gt!(test_bed.get_right_spoiler_position(6).get::<ratio>(), 0.5);
         }
 
         #[test]
@@ -9668,10 +9675,10 @@ mod tests {
                 .run_one_tick();
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
         }
 
         #[test]
@@ -9683,10 +9690,10 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
         }
 
         #[test]
@@ -9733,10 +9740,10 @@ mod tests {
 
             // ALMOST No pressure
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1000.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(1000.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
@@ -9744,10 +9751,10 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
+            assert_gt!(test_bed.green_pressure(), Pressure::new::<psi>(4500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
 
             // Stoping engine, pressure should fall in 20s
             test_bed = test_bed
@@ -9755,10 +9762,10 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(20));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1500.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(1500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
         }
 
         #[test]
@@ -9770,30 +9777,30 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
+            assert_gt!(test_bed.green_pressure(), Pressure::new::<psi>(4500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
 
             test_bed = test_bed
                 .set_disconnect_engine_edp(2)
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
+            assert_gt!(test_bed.green_pressure(), Pressure::new::<psi>(4500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
 
             test_bed = test_bed
                 .set_disconnect_engine_edp(1)
                 .run_waiting_for(Duration::from_secs(20));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1500.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(1500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(50.));
         }
 
         #[test]
@@ -9805,30 +9812,30 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(4500.));
+            assert_gt!(test_bed.yellow_pressure(), Pressure::new::<psi>(4500.));
 
             test_bed = test_bed
                 .set_disconnect_engine_edp(4)
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(4500.));
+            assert_gt!(test_bed.yellow_pressure(), Pressure::new::<psi>(4500.));
 
             test_bed = test_bed
                 .set_disconnect_engine_edp(3)
                 .run_waiting_for(Duration::from_secs(20));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1500.));
+            assert_lt!(test_bed.yellow_pressure(), Pressure::new::<psi>(1500.));
         }
 
         #[test]
@@ -9948,7 +9955,7 @@ mod tests {
 
             // No more fault LOW expected
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
+            assert_gt!(test_bed.yellow_pressure(), Pressure::new::<psi>(2500.));
             assert!(!test_bed.is_yellow_epump_a_press_low());
 
             // Stoping epump, no fault expected
@@ -9978,10 +9985,22 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
             // Positive climb, gear up
             test_bed = test_bed
@@ -9992,22 +10011,52 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             // Check auto brake is active
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(1500.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(1500.));
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1500.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1500.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
             // Check no more autobrakes after 3s
             test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
 
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10024,10 +10073,22 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
             // Now full brakes
             test_bed = test_bed
@@ -10036,11 +10097,23 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             // Check no action on brakes
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10059,11 +10132,23 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             // Brakes norm should work normally
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10083,11 +10168,23 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             // Brakes norm should work normally
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(900.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(900.));
+            assert_gt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(900.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(900.)
+            );
         }
 
         #[test]
@@ -10115,10 +10212,22 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(100.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(500.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(500.));
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_gt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(500.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(500.)
+            );
 
             // With no more fluid in yellow accumulator, green should work as emergency
             test_bed = test_bed
@@ -10127,10 +10236,22 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(100.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10141,37 +10262,37 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
 
             // BTV not programmed cannot arm
             test_bed = test_bed
                 .set_autobrake_btv()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_low()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::LOW);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::LOW);
 
             test_bed = test_bed
                 .set_autobrake_l2()
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L2);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L2);
 
             test_bed = test_bed
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_autobrake_high()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::HIGH);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::HIGH);
         }
 
         #[test]
@@ -10183,25 +10304,25 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             // sim is not ready --> no disarm
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             // sim is now ready --> disarm expected
             test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10212,19 +10333,19 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10235,13 +10356,13 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
 
             test_bed = test_bed
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10257,14 +10378,14 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_right_brake(Ratio::new::<percent>(100.))
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
         }
 
         #[test]
@@ -10281,18 +10402,30 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10309,18 +10442,30 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
 
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert_lt!(
+                test_bed.get_brake_left_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_yellow_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10337,21 +10482,27 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_retract_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10369,15 +10520,21 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
 
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(70.))
@@ -10385,9 +10542,15 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
 
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(78.))
@@ -10395,9 +10558,15 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10415,15 +10584,21 @@ mod tests {
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
 
             test_bed = test_bed
                 .set_right_brake(Ratio::new::<percent>(50.))
@@ -10431,9 +10606,15 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(1000.)
+            );
 
             test_bed = test_bed
                 .set_right_brake(Ratio::new::<percent>(55.))
@@ -10441,9 +10622,15 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
+            assert_lt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
+            assert_lt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(50.)
+            );
         }
 
         #[test]
@@ -10460,15 +10647,15 @@ mod tests {
                 .set_autobrake_rto()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::RTO);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::RTO);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10482,15 +10669,15 @@ mod tests {
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
         }
 
         #[test]
@@ -10507,13 +10694,13 @@ mod tests {
                 .set_autobrake_l3()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::L3);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::L3);
 
             test_bed = test_bed
                 .adirs_not_aligned()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A380AutobrakeMode::DISARM);
+            assert_eq!(test_bed.autobrake_mode(), A380AutobrakeMode::DISARM);
         }
 
         #[test]
@@ -10717,10 +10904,10 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(10));
 
-            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
-            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
-            assert!(test_bed.get_slats_left_position_percent() <= 1.);
-            assert!(test_bed.get_slats_right_position_percent() <= 1.);
+            assert_le!(test_bed.get_flaps_left_position_percent(), 1.);
+            assert_le!(test_bed.get_flaps_right_position_percent(), 1.);
+            assert_le!(test_bed.get_slats_left_position_percent(), 1.);
+            assert_le!(test_bed.get_slats_right_position_percent(), 1.);
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
@@ -10807,10 +10994,10 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
             assert!(!test_bed.is_flaps_moving());
 
-            assert!(test_bed.get_flaps_left_position_percent() >= 98.);
-            assert!(test_bed.get_flaps_right_position_percent() >= 98.);
-            assert!(test_bed.get_slats_left_position_percent() >= 98.);
-            assert!(test_bed.get_slats_right_position_percent() >= 98.);
+            assert_ge!(test_bed.get_flaps_left_position_percent(), 98.);
+            assert_ge!(test_bed.get_flaps_right_position_percent(), 98.);
+            assert_ge!(test_bed.get_slats_left_position_percent(), 98.);
+            assert_ge!(test_bed.get_slats_right_position_percent(), 98.);
         }
 
         #[test]
@@ -10822,12 +11009,12 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
         }
 
         #[test]
@@ -10839,19 +11026,19 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
 
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs_f64(1.));
 
             assert!(!test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() >= 0.);
+            assert_ge!(test_bed.cargo_fwd_door_position(), 0.);
         }
 
         #[test]
@@ -10863,7 +11050,7 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
 
             test_bed = test_bed
                 .open_fwd_cargo_door()
@@ -10877,13 +11064,16 @@ mod tests {
                 HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
-            assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
+            assert_gt!(
+                test_bed.cargo_fwd_door_position(),
+                current_position_unlocked
+            );
 
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
-            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert_gt!(test_bed.cargo_fwd_door_position(), 0.85);
         }
 
         #[test]
@@ -10895,15 +11085,15 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() == 0.);
-            assert!(test_bed.cargo_aft_door_position() == 0.);
+            assert_eq!(test_bed.cargo_fwd_door_position(), 0.);
+            assert_eq!(test_bed.cargo_aft_door_position(), 0.);
 
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
-            assert!(test_bed.cargo_fwd_door_position() > 0.85);
-            assert!(test_bed.cargo_aft_door_position() == 0.);
+            assert_gt!(test_bed.cargo_fwd_door_position(), 0.85);
+            assert_eq!(test_bed.cargo_aft_door_position(), 0.);
         }
 
         #[test]
@@ -10919,14 +11109,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
             assert!(!test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert_gt!(test_bed.cargo_fwd_door_position(), 0.85);
 
             test_bed = test_bed
                 .close_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs_f64(60.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() <= 0.);
+            assert_le!(test_bed.cargo_fwd_door_position(), 0.);
         }
 
         #[test]
@@ -10942,7 +11132,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
             assert!(!test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert_gt!(test_bed.cargo_fwd_door_position(), 0.85);
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(30.));
 
@@ -10953,7 +11143,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(40.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() <= 0.);
+            assert_le!(test_bed.cargo_fwd_door_position(), 0.);
         }
 
         #[test]
@@ -10969,15 +11159,15 @@ mod tests {
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
+            assert_le!(test_bed.nose_steering_position().get::<degree>(), 0.1);
+            assert_ge!(test_bed.nose_steering_position().get::<degree>(), -0.1);
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(-1.))
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
+            assert_le!(test_bed.nose_steering_position().get::<degree>(), 0.1);
+            assert_ge!(test_bed.nose_steering_position().get::<degree>(), -0.1);
         }
 
         #[test]
@@ -10998,8 +11188,8 @@ mod tests {
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
+            assert_ge!(test_bed.nose_steering_position().get::<degree>(), -0.1);
+            assert_le!(test_bed.nose_steering_position().get::<degree>(), 0.1);
         }
 
         #[test]
@@ -11019,7 +11209,7 @@ mod tests {
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 40.);
+            assert_ge!(test_bed.nose_steering_position().get::<degree>(), 40.);
         }
 
         #[test]
@@ -11035,13 +11225,13 @@ mod tests {
                 .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.yellow_pressure().get::<psi>() > 4500.);
+            assert_gt!(test_bed.yellow_pressure().get::<psi>(), 4500.);
 
             test_bed = test_bed
                 .air_press_low()
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.yellow_pressure().get::<psi>() < 3500.);
+            assert_lt!(test_bed.yellow_pressure().get::<psi>(), 3500.);
         }
 
         #[test]
@@ -11052,8 +11242,14 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
+            assert_lt!(
+                test_bed.get_left_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
+            assert_lt!(
+                test_bed.get_right_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
         }
 
         #[test]
@@ -11068,15 +11264,27 @@ mod tests {
                 .set_ailerons_left_turn()
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
+            assert_lt!(
+                test_bed.get_left_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
+            assert_lt!(
+                test_bed.get_right_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
 
             test_bed = test_bed
                 .set_ailerons_right_turn()
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
+            assert_lt!(
+                test_bed.get_left_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
+            assert_lt!(
+                test_bed.get_right_aileron_mean_position().get::<ratio>(),
+                0.1
+            );
         }
 
         #[test]
@@ -11093,7 +11301,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully after 5s
-            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
+            assert_gt!(test_bed.get_nose_steering_ratio(), Ratio::new::<ratio>(0.9));
 
             // Going left
             test_bed = test_bed
@@ -11102,29 +11310,32 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             // Has turned fully left after 5s
-            assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
+            assert_lt!(
+                test_bed.get_nose_steering_ratio(),
+                Ratio::new::<ratio>(-0.9)
+            );
         }
 
         #[test]
         fn nominal_gear_retraction_extension_cycles_in_flight() {
             let mut test_bed = test_bed_on_ground_with().set_cold_dark_inputs().in_flight();
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllDownLocked);
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
 
             test_bed = test_bed
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllDownLocked);
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
         }
 
         #[test]
@@ -11159,7 +11370,7 @@ mod tests {
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             let initial_fluid_quantity = test_bed.get_green_reservoir_volume();
@@ -11167,19 +11378,25 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(20.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
             let uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
 
-            assert!(initial_fluid_quantity - uplocked_fluid_quantity > Volume::new::<gallon>(1.));
-            assert!(initial_fluid_quantity - uplocked_fluid_quantity < Volume::new::<gallon>(2.));
+            assert_gt!(
+                initial_fluid_quantity - uplocked_fluid_quantity,
+                Volume::new::<gallon>(1.)
+            );
+            assert_lt!(
+                initial_fluid_quantity - uplocked_fluid_quantity,
+                Volume::new::<gallon>(2.)
+            );
 
             test_bed = test_bed
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(20.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
@@ -11198,13 +11415,13 @@ mod tests {
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_auxiliary_gear_door_opened());
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(20.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_auxiliary_gear_door_closed());
 
@@ -11239,7 +11456,7 @@ mod tests {
                 .in_flight()
                 .run_one_tick();
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_auxiliary_gear_door_closed());
         }
 
@@ -11251,7 +11468,7 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(1.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
 
             test_bed = test_bed
                 .activate_emergency_gear_extension()
@@ -11265,8 +11482,14 @@ mod tests {
                 .set_right_brake(Ratio::new::<ratio>(1.))
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
+            assert_gt!(
+                test_bed.get_brake_left_green_pressure(),
+                Pressure::new::<psi>(500.)
+            );
+            assert_gt!(
+                test_bed.get_brake_right_green_pressure(),
+                Pressure::new::<psi>(500.)
+            );
         }
 
         #[test]
@@ -11287,8 +11510,11 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(2800.));
+            assert_le!(test_bed.green_pressure(), Pressure::new::<psi>(1500.));
+            assert_gt!(
+                test_bed.green_pressure_auxiliary(),
+                Pressure::new::<psi>(2800.)
+            );
         }
 
         #[test]
@@ -11305,12 +11531,15 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(50.));
-            assert!(test_bed.green_pressure_auxiliary() <= Pressure::new::<psi>(50.));
+            assert_le!(test_bed.green_pressure(), Pressure::new::<psi>(50.));
+            assert_le!(
+                test_bed.green_pressure_auxiliary(),
+                Pressure::new::<psi>(50.)
+            );
 
             // TODO dunno what to expect from leak measurement valve state there
             //assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() >= Pressure::new::<psi>(2500.));
+            assert_ge!(test_bed.yellow_pressure(), Pressure::new::<psi>(2500.));
         }
 
         #[test]
@@ -11321,7 +11550,7 @@ mod tests {
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(1.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert_eq!(test_bed.gear_system_state(), GearSystemState::AllUpLocked);
 
             test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu1));
             test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
@@ -11360,8 +11589,11 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(160));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(500.));
+            assert_le!(test_bed.green_pressure(), Pressure::new::<psi>(1500.));
+            assert_gt!(
+                test_bed.green_pressure_auxiliary(),
+                Pressure::new::<psi>(500.)
+            );
 
             assert!(test_bed.is_cargo_fwd_door_locked_up());
         }
@@ -11389,8 +11621,11 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(35));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(500.));
+            assert_le!(test_bed.green_pressure(), Pressure::new::<psi>(1500.));
+            assert_gt!(
+                test_bed.green_pressure_auxiliary(),
+                Pressure::new::<psi>(500.)
+            );
 
             assert!(test_bed.is_cargo_fwd_door_locked_up());
             assert!(test_bed.is_cargo_aft_door_locked_up());
@@ -11487,14 +11722,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(15));
 
             // Expecting around 6 degrees, so ratio with 0.5 margin should be 5.5/75
-            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() >= 5.5 / 75.);
+            assert_ge!(test_bed.get_nose_steering_ratio().get::<ratio>(), 5.5 / 75.);
 
             test_bed = test_bed
                 .set_ground_speed(Velocity::new::<knot>(155.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // Expecting around 2 degrees, so ratio with 0.5 margin should be 2.5/75
-            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() <= 2.5 / 75.);
+            assert_le!(test_bed.get_nose_steering_ratio().get::<ratio>(), 2.5 / 75.);
         }
 
         #[test]
@@ -11515,7 +11750,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(15));
 
             // Expecting  0 degrees, so ratio with 0.5 margin should be 0.5/75
-            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() < 0.5 / 75.);
+            assert_lt!(test_bed.get_nose_steering_ratio().get::<ratio>(), 0.5 / 75.);
 
             // At lower speed in landing mode should get 6 degrees range
             test_bed = test_bed
@@ -11523,7 +11758,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             // Expecting around 6 degrees, so ratio with .5 margin should be 5./75
-            assert!(test_bed.get_nose_steering_ratio().get::<ratio>() > 5.5 / 75.);
+            assert_gt!(test_bed.get_nose_steering_ratio().get::<ratio>(), 5.5 / 75.);
         }
     }
 }

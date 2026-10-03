@@ -8,7 +8,7 @@
 
 /* eslint-disable max-len */
 
-import { Units } from '@flybywiresim/fbw-sdk';
+import { Units } from '@flybywiresim/fbw-sdk-react';
 import React, { useEffect, useState } from 'react';
 
 export type DistanceLabel = {

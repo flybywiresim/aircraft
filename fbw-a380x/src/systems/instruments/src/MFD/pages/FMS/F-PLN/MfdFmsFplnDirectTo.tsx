@@ -1,14 +1,14 @@
 ﻿import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFplnDirectTo.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { AbstractMfdPageProps } from '../../../MFD';
+import { Footer } from '../../common/Footer';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { FmsPage } from '../../common/FmsPage';
+import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+import { RadioButtonColor, RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { ADIRS } from '../../../shared/Adirs';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 

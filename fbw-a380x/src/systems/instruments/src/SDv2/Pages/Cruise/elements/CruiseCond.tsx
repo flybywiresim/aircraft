@@ -1,5 +1,5 @@
 import { ConsumerSubject, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '@flybywiresim/msfs-avionics-common';
 import { SDSimvars } from '../../../SDSimvarPublisher';
 
 export interface CruiseCondProps {

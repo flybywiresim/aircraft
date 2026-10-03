@@ -5,13 +5,13 @@
 
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
 
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;

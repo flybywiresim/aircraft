@@ -12,13 +12,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
+import { MfdDisplayInterface } from '../../../MFD';
 import { FmsError } from '@fmgc/FmsError';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
@@ -39,6 +39,8 @@ interface InsertNextWptFromWindowProps extends ComponentProps {
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
+
+  private pageVisibilitySub?: Subscription;
 
   private readonly display = Subject.create('none');
 
@@ -104,23 +106,30 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subs.push(
-      this.props.visible.sub((val) => {
-        this.display.set(val ? 'block' : 'none');
-        this.selectedWaypointIndex.set(null);
-      }, true),
-    );
+    this.pageVisibilitySub = this.props.visible.sub((val) => {
+      this.display.set(val ? 'block' : 'none');
+      this.selectedWaypointIndex.set(null);
+      this.subs.forEach((s) => {
+        if (val) {
+          s.resume(true);
+        } else {
+          s.pause();
+        }
+      });
+    }, true);
 
     if (this.props.fmcService.master) {
       this.subs.push(
         this.props.fmcService.master.revisedLegIndex.sub((wptIdx) => {
           if (wptIdx !== null && this.props.fmcService.master.revisedWaypoint()) {
-            const fpln = this.props.flightPlanInterface.get(
+            const isAltn = this.props.fmcService.master.revisedLegIsAltn.get();
+            const fp = this.props.flightPlanInterface.get(
               this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active,
             );
+            const revisedLegPlan = isAltn ? fp?.alternateFlightPlan : fp;
 
-            if (fpln.elementAt(wptIdx)?.isDiscontinuity === false) {
-              const wpt = fpln.legElementAt(wptIdx);
+            if (revisedLegPlan?.elementAt(wptIdx).isDiscontinuity === false) {
+              const wpt = revisedLegPlan.legElementAt(wptIdx);
               this.waypointIdent.set(wpt.ident);
               this.selectedWaypointIndex.set(null);
 
@@ -143,6 +152,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+    this.pageVisibilitySub?.destroy();
 
     super.destroy();
   }

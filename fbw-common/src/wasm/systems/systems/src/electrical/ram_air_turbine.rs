@@ -212,6 +212,8 @@ impl Default for GeneratorControlUnit {
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::*;
+
     use super::*;
     use crate::shared::update_iterator::MaxStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed};
@@ -399,7 +401,7 @@ mod tests {
         let turbine_speed = test_bed.query(|a| a.turbine_speed());
         let generator_speed = test_bed.query(|a| a.generator_speed());
 
-        assert!(turbine_speed.get::<revolution_per_minute>() > 3000.);
+        assert_gt!(turbine_speed.get::<revolution_per_minute>(), 3000.);
 
         assert!(
             (generator_speed.get::<revolution_per_minute>()

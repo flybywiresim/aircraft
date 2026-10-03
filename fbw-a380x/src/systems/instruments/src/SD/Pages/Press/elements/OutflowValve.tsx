@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { EngineNumber, Position, ValidRedundantSystem } from '@instruments/common/types';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var } from '@flybywiresim/fbw-sdk-react';
 
 const OutflowValve: React.FC<Position & EngineNumber & ValidRedundantSystem> = memo(({ x, y, engine, system }) => {
   const ofradius = 52;

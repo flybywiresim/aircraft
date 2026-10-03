@@ -1,13 +1,13 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomMsgRecord.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps } from '../../MFD';
+import { Footer } from '../common/Footer';
 
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { MessageElement } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElement';
-import { MessageRecordNav } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageRecordNav';
+import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
+import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { MessageElement } from './Elements/MessageElement';
+import { MessageRecordNav } from './Elements/MessageRecordNav';
 
 interface MfdAtccomMsgRecordAllProps extends AbstractMfdPageProps {}
 
