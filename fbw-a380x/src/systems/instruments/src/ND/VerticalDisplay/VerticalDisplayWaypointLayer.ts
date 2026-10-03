@@ -161,7 +161,6 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
           break;
         case AltitudeDescriptor.AtOrBelowAlt1:
         case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-          console.log('at or below', cst);
           if (cst.altitude1) {
             this.paintPath(
               context,

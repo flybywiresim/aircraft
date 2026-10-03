@@ -7,7 +7,8 @@ import {
   EfisNdMode,
   EfisSide,
   EfisVectorsGroup,
-  GenericDataListenerSync,
+  EfisVectorsData,
+  EFIS_VECTORS_DATA_BUS_NAME,
   RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 
@@ -19,14 +20,14 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { ConsumerValue, DataItemStatus, EventBus, SharedDataBusHost, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
-  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
+  private readonly dataBus = new SharedDataBusHost(EFIS_VECTORS_DATA_BUS_NAME).of<EfisVectorsData>();
 
   private lastFpVersions = new Map<number, number>();
 
@@ -44,6 +45,9 @@ export class EfisVectors {
     SimVarValueType.Enum,
   );
 
+  // Scratch space for collection; filter creates the separate arrays retained by the data bus.
+  private readonly flightPlanVectorCache: PathVector[] = [];
+
   private readonly eoSidVectorCache: PathVector[] = [];
 
   constructor(
@@ -51,7 +55,11 @@ export class EfisVectors {
     private readonly flightPlanService: FlightPlanService,
     private guidanceController: GuidanceController,
     private efisInterfaces: Record<EfisSide, EfisInterface>,
-  ) {}
+  ) {
+    // Reused arrays and vector objects must still notify consumers on each publication.
+    this.dataBus.defineEquality('L', () => false);
+    this.dataBus.defineEquality('R', () => false);
+  }
 
   public forceUpdate() {
     this.updateTimer = UPDATE_TIMER + 1;
@@ -248,18 +256,24 @@ export class EfisVectors {
 
     // ACTIVE
 
-    const vectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, plan.activeLegIndex).filter((it) =>
-      EfisVectors.isVectorReasonable(it),
-    );
+    // TODO, still creates one new array due to .filter
+    const vectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(
+      plan,
+      this.flightPlanVectorCache,
+      plan.activeLegIndex,
+    ).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
 
     const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
 
     if (transmitMissed) {
-      const missedVectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(plan, 0, true).filter((it) =>
-        EfisVectors.isVectorReasonable(it),
-      );
+      const missedVectors = FlightPlanUtils.getAllPathVectorsInFlightPlan(
+        plan,
+        this.flightPlanVectorCache,
+        0,
+        true,
+      ).filter((it) => EfisVectors.isVectorReasonable(it));
 
       if (missedApproachGroup === mainGroup) {
         vectors.push(...missedVectors);
@@ -276,8 +290,6 @@ export class EfisVectors {
     } else if (eosidGroup) {
       this.transmit(null, eosidGroup, side);
     }
-
-    this.transmit(vectors, mainGroup, side);
 
     // ALTN
 
@@ -314,9 +326,16 @@ export class EfisVectors {
     } else if (alternateGroup !== mainGroup) {
       this.transmit(null, alternateGroup, side);
     }
+
+    this.transmit(vectors, mainGroup, side);
   }
 
   private transmit(vectors: PathVector[] | null, vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
-    this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
+    if (vectors === null) {
+      this.dataBus.publish(side, vectorsGroup, undefined, DataItemStatus.EmptyValue);
+      return;
+    }
+
+    this.dataBus.publish(side, vectorsGroup, vectors, DataItemStatus.Normal);
   }
 }

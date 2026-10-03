@@ -14,12 +14,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import {
-  Arinc429ConsumerSubject,
-  Arinc429LocalVarConsumerSubject,
-  Arinc429Word,
-  ArincEventBus,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
@@ -115,13 +110,13 @@ export class FMA extends DisplayComponent<{
 
   private secondBorderRef = FSComponent.createRef<SVGPathElement>();
 
-  private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
+  private readonly radioHeight = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
 
   private readonly altitude = Arinc429ConsumerSubject.create(
     this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
   );
 
-  private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
+  private readonly landingElevation = Arinc429ConsumerSubject.create(this.sub.on('landingElevation'));
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
