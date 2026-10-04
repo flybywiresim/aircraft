@@ -170,7 +170,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   );
 
   /** Declaration of every variable used (NOT initialization) */
-  private readonly maximumAllowedCruiseFlightLevel = 390;
+  private readonly maximumAllowedCruiseFlightLevel = 398;
   private readonly maximumRecommendedCruiseFlightLevel = 398;
   public coRoute = { routeNumber: undefined, routes: undefined };
 
