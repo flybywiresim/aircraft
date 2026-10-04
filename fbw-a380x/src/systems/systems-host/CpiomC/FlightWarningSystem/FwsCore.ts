@@ -43,7 +43,7 @@ import {
   UpdateThrottler,
   IrBusEvents,
 } from '@flybywiresim/fbw-sdk';
-import { VerticalMode, LateralMode, AutoThrustModeMessage } from '@shared/autopilot';
+import { VerticalMode, LateralMode } from '@shared/autopilot';
 import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
 // FIXME should not import from instruments
 import { PseudoFwcSimvars } from '../../../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
@@ -92,6 +92,7 @@ import {
 // FIXME should not import from instruments
 import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
+import { EcuBusEvents } from '@shared/publishers/EcuPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -147,7 +148,8 @@ export class FwsCore {
       MsfsFlightModelEvents &
       OisDebugDataControlEvents &
       StallWarningEvents &
-      IrBusEvents
+      IrBusEvents &
+      EcuBusEvents
   >();
 
   private subs: Subscription[] = [];
@@ -2171,11 +2173,17 @@ export class FwsCore {
 
   public readonly eng3Or4TakeoffPower = Subject.create(false);
 
-  public autoThrustModeMessage = AutoThrustModeMessage.None;
-
-  private readonly autoThrustModeMessageSimVar = RegisteredSimVar.create<AutoThrustModeMessage>(
-    'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
-    SimVarValueType.Enum,
+  private readonly ecu1MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_1'),
+  );
+  private readonly ecu2MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_2'),
+  );
+  private readonly ecu3MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_3'),
+  );
+  private readonly ecu4MaintenanceWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('ecu_maintenance_word_6_4'),
   );
 
   private readonly autoThrustLimitedConfNode = new NXLogicConfirmNode(5, true);
@@ -3856,11 +3864,8 @@ export class FwsCore {
     this.autoThrustInvoluntaryPfdMemoMemoryNode.write(athrOffUnvoluntary, resetAthrWarning || athrDiscPressed);
 
     // A/THR LIMITED
-    this.autoThrustModeMessage = this.autoThrustModeMessageSimVar.get();
-    this.autoThrustLimitedClb = this.autoThrustModeMessage === AutoThrustModeMessage.LeverClb;
-    this.autoThrustLimitedMct = this.autoThrustModeMessage === AutoThrustModeMessage.LeverMct;
-    const athrEngaged = this.autoThrustStatus.get() === 2;
-    const athrIsLimited = !below50ft && athrEngaged && (this.autoThrustLimitedClb || this.autoThrustLimitedMct);
+    const athrIsLimited =
+      this.fcdc1FgDiscreteWord2.get().bitValueOr(20, false) || this.fcdc2FgDiscreteWord2.get().bitValueOr(20, false);
     this.autoThrustLimitedConfNode.write(athrIsLimited, deltaTime);
     this.autoThrustLimitedMtrigNode.write(
       this.autoThrustLimitedConfNode.read() && !this.autoThrustLimitedDelayNode,
@@ -3871,7 +3876,11 @@ export class FwsCore {
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedDelayNode);
 
     // ENG THRUST LOCKED
-    this.engineThrustLocked = this.autoThrustModeMessage === AutoThrustModeMessage.ThrustLock;
+    this.engineThrustLocked =
+      this.ecu1MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu2MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu3MaintenanceWord.get().bitValueOr(12, false) ||
+      this.ecu4MaintenanceWord.get().bitValueOr(12, false);
 
     const engineThrustLockedAndAthrDisconnected5s = this.autoThrustDisconnected5SecondsConfNode.write(
       this.engineThrustLocked && !athrEngagedOrArmed,
@@ -4584,6 +4593,10 @@ export class FwsCore {
     const fcdc2DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_4');
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
+    const fcdc1DiscreteWord7 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_7');
+    const fcdc2DiscreteWord7 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_7');
+    const fcdc1DiscreteWord8 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_8');
+    const fcdc2DiscreteWord8 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_8');
 
     this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
@@ -4667,16 +4680,26 @@ export class FwsCore {
     const altnLawPhasePreCondition = !flightPhase112;
 
     // ALTN LAW 2 computation
-    const altnLaw2 = fcdc1DiscreteWord1.bitValueOr(13, false) || fcdc2DiscreteWord1.bitValueOr(13, false);
+    const altnLaw2 =
+      fcdc1DiscreteWord1.bitValueOr(15, false) ||
+      fcdc2DiscreteWord1.bitValueOr(15, false) ||
+      fcdc1DiscreteWord1.bitValueOr(16, false) ||
+      fcdc2DiscreteWord1.bitValueOr(17, false);
     this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && altnLawPhasePreCondition, deltaTime);
 
     // ALTN LAW 1 computation
-    const altn1Law = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
+    const altn1Law =
+      fcdc1DiscreteWord1.bitValueOr(12, false) ||
+      fcdc2DiscreteWord1.bitValueOr(12, false) ||
+      fcdc1DiscreteWord1.bitValueOr(13, false) ||
+      fcdc2DiscreteWord1.bitValueOr(13, false) ||
+      fcdc1DiscreteWord1.bitValueOr(14, false) ||
+      fcdc2DiscreteWord1.bitValueOr(15, false);
     const altn1LawConfirm = this.altn1LawConfirmNode.write(altn1Law && altnLawPhasePreCondition, deltaTime);
 
     this.altnLawCondition.set(altn1LawConfirm || this.altn2LawConfirm);
     this.altn1ALawCondition.set(
-      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) &&
+      (fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false)) &&
         altnLawPhasePreCondition,
     );
 
@@ -4714,8 +4737,8 @@ export class FwsCore {
       (sec2GroundSpoilerFault || sec2SpeedbrakeLeverFault) &&
       (sec3GroundSpoilerFault || sec3SpeedbrakeLeverFault);
 
-    this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
-    this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
+    this.spoilersArmed.set(fcdc1DiscreteWord8.bitValueOr(25, false) || fcdc2DiscreteWord8.bitValueOr(25, false));
+    this.speedBrakeCommand.set(fcdc1DiscreteWord8.bitValueOr(27, false) || fcdc2DiscreteWord8.bitValueOr(27, false));
 
     // TODO: add switching between SFCC_1 and SFCC_2
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
@@ -4761,7 +4784,7 @@ export class FwsCore {
       (this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || this.slatConfigSr.read(),
     );
 
-    const speedbrakesNotInToPos = fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
+    const speedbrakesNotInToPos = this.speedBrakeCommand.get();
     this.speedbrakesConfigSr.write(
       this.flightPhase345.get() && speedbrakesNotInToPos,
       !speedbrakesNotInToPos || phase6 || this.flightPhase.get() === 7,
@@ -4868,7 +4891,7 @@ export class FwsCore {
     );
 
     // spd brk pos/lvr disagree
-    const spdBrkPositionDisagree = fcdc1DiscreteWord5.bitValueOr(26, false) || fcdc2DiscreteWord5.bitValueOr(26, false);
+    const spdBrkPositionDisagree = fcdc1DiscreteWord7.bitValueOr(27, false) || fcdc2DiscreteWord7.bitValueOr(27, false);
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime); // remove delay timer once there are more references relating to the sensitivity of SPEED BRAKES POS/LEVER DISAGREE
     this.speedBrakePosLeverDisagree.set(spdBrkPositionDisagree && this.speedBrakeCommand5sConfirm.read());
 
@@ -4930,14 +4953,8 @@ export class FwsCore {
       this.lgciu1DiscreteWord1.bitValueOr(29, false) ||
       (this.lgciu2DiscreteWord1.bitValueOr(29, false) && mainGearDownlocked);
     this.phase104s5Trigger.write(this.flightPhase.get() === 10, deltaTime);
-    this.groundSpoiler5sDelayed.write(
-      fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false),
-      deltaTime,
-    );
-    this.speedBrake5sDelayed.write(
-      fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false),
-      deltaTime,
-    );
+    this.groundSpoiler5sDelayed.write(this.spoilersArmed.get(), deltaTime);
+    this.speedBrake5sDelayed.write(this.speedBrakeCommand.get(), deltaTime);
 
     this.groundSpoilerNotArmedWarning.set(
       raBelow500 &&

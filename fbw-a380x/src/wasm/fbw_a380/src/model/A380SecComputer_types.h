@@ -21,7 +21,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -154,6 +154,30 @@ struct base_prim_fg_out_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+
+struct base_sec_discrete_inputs
+{
+  boolean_T sec_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T rudder_trim_left_pressed;
+  boolean_T rudder_trim_right_pressed;
+  boolean_T rudder_trim_reset_pressed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
 #define DEFINED_TYPEDEF_FOR_base_sec_discrete_outputs_
 
@@ -208,35 +232,6 @@ struct base_sec_out_bus
   base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
-
-struct base_sec_analog_inputs
-{
-  real_T capt_pitch_stick_pos;
-  real_T fo_pitch_stick_pos;
-  real_T capt_roll_stick_pos;
-  real_T fo_roll_stick_pos;
-  real_T elevator_1_pos_deg;
-  real_T elevator_2_pos_deg;
-  real_T elevator_3_pos_deg;
-  real_T ths_pos_deg;
-  real_T left_aileron_1_pos_deg;
-  real_T left_aileron_2_pos_deg;
-  real_T right_aileron_1_pos_deg;
-  real_T right_aileron_2_pos_deg;
-  real_T left_spoiler_1_pos_deg;
-  real_T right_spoiler_1_pos_deg;
-  real_T left_spoiler_2_pos_deg;
-  real_T right_spoiler_2_pos_deg;
-  real_T rudder_1_pos_deg;
-  real_T rudder_2_pos_deg;
-  real_T rudder_pedal_pos_deg;
-  real_T rudder_trim_actual_pos_deg;
 };
 
 #endif
@@ -297,30 +292,6 @@ struct base_sec_pitch_surface_positions
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-
-struct base_sec_discrete_inputs
-{
-  boolean_T sec_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T rudder_trim_left_pressed;
-  boolean_T rudder_trim_right_pressed;
-  boolean_T rudder_trim_reset_pressed;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T rat_deployed;
-  boolean_T rat_contactor_closed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 #define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
@@ -330,6 +301,35 @@ struct base_lgciu_bus
   base_arinc_429 discrete_word_2;
   base_arinc_429 discrete_word_3;
   base_arinc_429 discrete_word_4;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_analog_inputs_
+
+struct base_sec_analog_inputs
+{
+  real_T capt_pitch_stick_pos;
+  real_T fo_pitch_stick_pos;
+  real_T capt_roll_stick_pos;
+  real_T fo_roll_stick_pos;
+  real_T elevator_1_pos_deg;
+  real_T elevator_2_pos_deg;
+  real_T elevator_3_pos_deg;
+  real_T ths_pos_deg;
+  real_T left_aileron_1_pos_deg;
+  real_T left_aileron_2_pos_deg;
+  real_T right_aileron_1_pos_deg;
+  real_T right_aileron_2_pos_deg;
+  real_T left_spoiler_1_pos_deg;
+  real_T right_spoiler_1_pos_deg;
+  real_T left_spoiler_2_pos_deg;
+  real_T right_spoiler_2_pos_deg;
+  real_T rudder_1_pos_deg;
+  real_T rudder_2_pos_deg;
+  real_T rudder_pedal_pos_deg;
+  real_T rudder_trim_actual_pos_deg;
 };
 
 #endif
@@ -530,34 +530,6 @@ struct base_sec_laws_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
-
-enum class a380_lateral_efcs_law
-  : int32_T {
-  NormalLaw = 0,
-  DirectLaw,
-  None
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
-
-enum class a380_pitch_efcs_law
-  : int32_T {
-  NormalLaw = 0,
-  AlternateLaw1A,
-  AlternateLaw1B,
-  AlternateLaw1C,
-  AlternateLaw2,
-  DirectLaw,
-  None
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_elac_adr_computation_data_
 #define DEFINED_TYPEDEF_FOR_base_elac_adr_computation_data_
 
@@ -597,8 +569,6 @@ struct base_sec_logic_outputs
   boolean_T on_ground;
   boolean_T tracking_mode_on;
   int8_T master_prim;
-  a380_lateral_efcs_law active_lateral_law;
-  a380_pitch_efcs_law active_pitch_law;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;

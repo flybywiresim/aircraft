@@ -533,6 +533,14 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
     idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
+    idFcdcDiscreteWord6[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_6");
+    idFcdcDiscreteWord7[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_7");
+    idFcdcDiscreteWord8[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_8");
+    idFcdcDiscreteWord9[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_9");
+    idFcdcDiscreteWord10[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_10");
+    idFcdcDiscreteWord11[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_11");
+    idFcdcDiscreteWord12[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_12");
+
     idFcdcFgDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_1");
     idFcdcFgDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_2");
     idFcdcFgDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_3");
@@ -542,21 +550,36 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcCaptPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
     idFcdcFoPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
     idFcdcRudderPedalPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_PEDAL_POS");
-    idFcdcAileronLeftPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
-    idFcdcElevatorLeftPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
-    idFcdcAileronRightPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
-    idFcdcElevatorRightPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_POS");
+    idFcdcAileronLeftInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_INNER_POS");
+    idFcdcAileronLeftMiddlePos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_MIDDLE_POS");
+    idFcdcAileronLeftOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_OUTER_POS");
+    idFcdcAileronRightInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_INNER_POS");
+    idFcdcAileronRightMiddlePos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_MIDDLE_POS");
+    idFcdcAileronRightOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_OUTER_POS");
+    idFcdcElevatorLeftInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_INNER_POS");
+    idFcdcElevatorLeftOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_OUTER_POS");
+    idFcdcElevatorRightInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_INNER_POS");
+    idFcdcElevatorRightOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_OUTER_POS");
     idFcdcElevatorTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_TRIM_POS");
+    idFcdcRudderUpperPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_UPPER_POS");
+    idFcdcRudderLowerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_LOWER_POS");
+    idFcdcRudderTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_TRIM_POS");
     idFcdcSpoilerLeft1Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_1_POS");
     idFcdcSpoilerLeft2Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_2_POS");
     idFcdcSpoilerLeft3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_3_POS");
     idFcdcSpoilerLeft4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_4_POS");
     idFcdcSpoilerLeft5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_5_POS");
+    idFcdcSpoilerLeft6Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_6_POS");
+    idFcdcSpoilerLeft7Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_7_POS");
+    idFcdcSpoilerLeft8Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_8_POS");
     idFcdcSpoilerRight1Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_1_POS");
     idFcdcSpoilerRight2Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_2_POS");
     idFcdcSpoilerRight3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
     idFcdcSpoilerRight4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
     idFcdcSpoilerRight5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
+    idFcdcSpoilerRight6Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_6_POS");
+    idFcdcSpoilerRight7Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_7_POS");
+    idFcdcSpoilerRight8Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_8_POS");
 
     idFcdcPriorityCaptGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
     idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
@@ -760,7 +783,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
   idElecDc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_1_BUS_IS_POWERED");
   idElecDc2BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+  idElecAcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED");
+  idElecAc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_AC_1_BUS_IS_POWERED");
   idElecAc2BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_AC_2_BUS_IS_POWERED");
+  idElecAcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247XP_BUS_IS_POWERED");
   idRatContactorClosed = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_5XE_IS_CLOSED");
   idRatPosition = std::make_unique<LocalVariable>("A32NX_RAT_STOW_POSITION");
 
@@ -904,6 +930,13 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFcuShimLeftBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_LEFT_EIS_BARO_HPA");
   idFcuShimRightBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_RIGHT_EIS_BARO_HPA");
+
+  for (int i = 0; i < 4; i++) {
+    std::string idString = std::to_string(i + 1);
+
+    idEcuStatusWord3[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_STATUS_WORD_3");
+    idEcuMaintenanceWord6[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_MAINTENANCE_WORD_6");
+  }
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -2228,9 +2261,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   if (afdxCommAvailable) {
     fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
-    fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
     fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
-    fcdcs[fcdcIndex].discreteInputs.simData = simData;
     fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[0] = simData.engine_combustion_1;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[1] = simData.engine_combustion_2;
@@ -2255,12 +2286,12 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.dcEssFailed = !idElecDcEssBusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.dc2Failed = !idElecDc2BusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.ac2Failed = !idElecAc2BusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.acEssAvail = idElecAcEssBusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.ac1Avail = idElecAc1BusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.acEhaAvail = idElecAcEhaBusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.autoBrakeActive = idAutobrakeActive->get() == 1;
     fcdcs[fcdcIndex].discreteInputs.autoBrakeMode = idAutobrakeArmedMode->get();
     fcdcs[fcdcIndex].discreteInputs.btvState = idBtvState->get();
-
-    // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
-    fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
   }
 
   bool primSecReachable[3] = {fcdcIndex == 0 ? (idAfdx1_3Reachable->get() == 1 || idAfdx11_13Reachable->get() == 1)
@@ -2271,8 +2302,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
                                              : (idAfdx9_4Reachable->get() == 1 || idAfdx19_14Reachable->get() == 1)};
 
   for (int i = 0; i < 3; i++) {
-    fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primSecReachable[i] ? primsDiscreteOutputs[i].prim_healthy : false;
-
     if (primSecReachable[i]) {
       fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
       fcdcs[fcdcIndex].busInputs.secs[i] = secsBusOutputs[i];
@@ -2303,6 +2332,50 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
+  idFcdcDiscreteWord6[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus6.toSimVar());
+  idFcdcDiscreteWord7[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus7.toSimVar());
+  idFcdcDiscreteWord8[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus8.toSimVar());
+  idFcdcDiscreteWord9[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus9.toSimVar());
+  idFcdcDiscreteWord10[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus10.toSimVar());
+  idFcdcDiscreteWord11[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus11.toSimVar());
+  idFcdcDiscreteWord12[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus12.toSimVar());
+
+  idFcdcCaptRollCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].captRollCommand.toSimVar());
+  idFcdcFoRollCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foRollCommand.toSimVar());
+  idFcdcCaptPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].captPitchCommand.toSimVar());
+  idFcdcFoPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foPitchCommand.toSimVar());
+  idFcdcRudderPedalPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderPedalPosition.toSimVar());
+  idFcdcAileronLeftInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronLeftInnerPos.toSimVar());
+  idFcdcAileronLeftMiddlePos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronLeftMiddlePos.toSimVar());
+  idFcdcAileronLeftOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronLeftOuterPos.toSimVar());
+  idFcdcAileronRightInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightInnerPos.toSimVar());
+  idFcdcAileronRightMiddlePos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightMiddlePos.toSimVar());
+  idFcdcAileronRightOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightOuterPos.toSimVar());
+  idFcdcElevatorLeftInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftInnerPos.toSimVar());
+  idFcdcElevatorLeftOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftOuterPos.toSimVar());
+  idFcdcElevatorRightInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorRightInnerPos.toSimVar());
+  idFcdcElevatorRightOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorRightOuterPos.toSimVar());
+  idFcdcElevatorTrimPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].horizStabTrimPos.toSimVar());
+  idFcdcRudderUpperPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderUpperPos.toSimVar());
+  idFcdcRudderLowerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderLowerPos.toSimVar());
+  idFcdcRudderTrimPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderTrimPos.toSimVar());
+  idFcdcSpoilerLeft1Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft1Pos.toSimVar());
+  idFcdcSpoilerLeft2Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft2Pos.toSimVar());
+  idFcdcSpoilerLeft3Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft3Pos.toSimVar());
+  idFcdcSpoilerLeft4Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft4Pos.toSimVar());
+  idFcdcSpoilerLeft5Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft5Pos.toSimVar());
+  idFcdcSpoilerLeft6Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft6Pos.toSimVar());
+  idFcdcSpoilerLeft7Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft7Pos.toSimVar());
+  idFcdcSpoilerLeft8Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft8Pos.toSimVar());
+  idFcdcSpoilerRight1Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight1Pos.toSimVar());
+  idFcdcSpoilerRight2Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight2Pos.toSimVar());
+  idFcdcSpoilerRight3Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight3Pos.toSimVar());
+  idFcdcSpoilerRight4Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight4Pos.toSimVar());
+  idFcdcSpoilerRight5Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight5Pos.toSimVar());
+  idFcdcSpoilerRight6Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight6Pos.toSimVar());
+  idFcdcSpoilerRight7Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight7Pos.toSimVar());
+  idFcdcSpoilerRight8Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight8Pos.toSimVar());
+
   idFcdcFgDiscreteWord1[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord1.toSimVar());
   idFcdcFgDiscreteWord2[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord2.toSimVar());
   idFcdcFgDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fcdcFgDiscreteWord3.toSimVar());
@@ -2997,6 +3070,9 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
     fadecOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.output;
     fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
+
+  idEcuStatusWord3[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_status_word_3));
+  idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
 
   if (primDisabled != -1 || secDisabled != -1) {
     simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
