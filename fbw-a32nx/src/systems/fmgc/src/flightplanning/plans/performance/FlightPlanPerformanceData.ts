@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 2026 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -659,6 +659,8 @@ export interface FlightPlanPerformanceData {
    */
   readonly takeoffWeight?: MutableSubscribable<number | null>;
 
+  serialize(): SerializedFlightPlanPerformanceData;
+
   clone(): this;
 
   destroy(): void;
@@ -667,6 +669,21 @@ export interface FlightPlanPerformanceData {
 
   pipeTo(other: FlightPlanPerformanceData, isBeforeEngineStart: boolean): void;
 }
+
+/**
+ * Read-only view of flight-plan performance data.
+ *
+ * Mutable subscribables are exposed as subscribables, and lifecycle/copy operations which return or mutate the
+ * writable performance-data object are intentionally omitted.
+ */
+type ReadonlyFlightPlanPerformanceDataValue<T> = T extends Subscribable<infer V> ? Subscribable<V> : T;
+
+export type ReadonlyFlightPlanPerformanceData = {
+  readonly [K in keyof Omit<
+    FlightPlanPerformanceData,
+    'serialize' | 'clone' | 'destroy' | 'pipeTo'
+  >]: ReadonlyFlightPlanPerformanceDataValue<FlightPlanPerformanceData[K]>;
+};
 
 export type FlightPlanPerformanceDataProperties = {
   [K in keyof FlightPlanPerformanceData as FlightPlanPerformanceData[K] extends MutableSubscribable<any> | undefined

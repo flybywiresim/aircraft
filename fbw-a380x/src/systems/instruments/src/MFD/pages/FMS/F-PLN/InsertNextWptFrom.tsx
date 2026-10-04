@@ -62,7 +62,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       const wptInfo = this.props.availableWaypoints.get(idx);
       const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       const fpln = this.props.fmcService.master.revisedLegIsAltn.get()
-        ? this.props.flightPlanInterface.get(revWptPlanIndex).alternateFlightPlan
+        ? this.props.flightPlanInterface.getAlternate(revWptPlanIndex)
         : this.props.flightPlanInterface.get(revWptPlanIndex);
       const wptToInsert = fpln?.legElementAt(wptInfo.originalLegIndex).definition.waypoint;
       if (
@@ -123,10 +123,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         this.props.fmcService.master.revisedLegIndex.sub((wptIdx) => {
           if (wptIdx !== null && this.props.fmcService.master.revisedWaypoint()) {
             const isAltn = this.props.fmcService.master.revisedLegIsAltn.get();
-            const fp = this.props.flightPlanInterface.get(
-              this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active,
-            );
-            const revisedLegPlan = isAltn ? fp?.alternateFlightPlan : fp;
+            const planIndex = this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active;
+            const fp = this.props.flightPlanInterface.get(planIndex);
+            const revisedLegPlan = isAltn ? this.props.flightPlanInterface.getAlternate(planIndex) : fp;
 
             if (revisedLegPlan?.elementAt(wptIdx).isDiscontinuity === false) {
               const wpt = revisedLegPlan.legElementAt(wptIdx);

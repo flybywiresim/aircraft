@@ -1,10 +1,9 @@
 // @ts-strict-ignore
 import { EventBus, ReadonlyLifecycle, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
-import { BaseFlightPlan } from './BaseFlightPlan';
 import { FlightPlanInterface } from '../FlightPlanInterface';
 import { FixInfoData } from './FixInfo';
-import { FlightPlan } from './FlightPlan';
+import { ReadonlyMainFlightPlan } from './ReadonlyFlightPlan';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
 /**
@@ -61,13 +60,11 @@ export class ObservableFlightPlan implements Subscription {
     }
   }
 
-  private initializeFromPlan(plan: BaseFlightPlan): void {
-    if (plan instanceof FlightPlan) {
-      for (let i = 1; i < plan.fixInfos.length; i++) {
-        const fix = plan.fixInfos[i] ?? null;
+  private initializeFromPlan(plan: ReadonlyMainFlightPlan): void {
+    for (let i = 1; i < plan.fixInfos.length; i++) {
+      const fix = plan.fixInfos[i] ?? null;
 
-        this._fixInfos[i].set(fix);
-      }
+      this._fixInfos[i].set(fix);
     }
 
     this.subscriptions.push(

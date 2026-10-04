@@ -6,7 +6,7 @@ import { Footer } from '../../common/Footer';
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from '../../common/FmsPage';
 import { DropdownMenu } from '../../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { ADIRS } from '../../../shared/Adirs';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -56,7 +56,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       const wpt = activeFpln.allLegs
         .slice(activeFpln.activeLegIndex, activeFpln.firstMissedApproachLegIndex)
         .map((el, idx) => {
-          if (el instanceof FlightPlanLeg && el.isXF()) {
+          if (isLeg(el) && el.isXF()) {
             this.availableWaypointsToLegIndex.push(idx + activeFpln.activeLegIndex);
             return el.ident;
           }
@@ -86,7 +86,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       }
 
       // TODO Display ETA; target waypoint is now activeLeg termination in temporary fpln
-      if (this.loadedFlightPlan?.activeLeg instanceof FlightPlanLeg) {
+      if (isLeg(this.loadedFlightPlan?.activeLeg)) {
         // No predictions for temporary fpln atm, so only distance is displayed
         this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
       }
