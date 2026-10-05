@@ -17,7 +17,7 @@ export class PendingWindUplinkParser {
     flightPhase: FmgcFlightPhase,
     config: FpmConfig,
     maxCertifiedFlightLevel: number,
-    sortClimbWindsAscending: boolean,
+    sortClimbWindsAscending = false,
   ) {
     switch (flightPhase) {
       case FmgcFlightPhase.Preflight:
