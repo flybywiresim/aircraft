@@ -348,7 +348,6 @@ export class CDUWindPage {
                 scratchpadCallback();
                 return;
               }
-
               await mcdu.flightPlanService.deleteCruiseWindEntry(nextSuitableLegIndex, wind.altitude!, forPlan);
             } else {
               const entry = this.parseWindEntryEdit(mcdu, value, wind, NaN);
@@ -829,6 +828,7 @@ export class CDUWindPage {
   ): FlightPlanWindEntry | null {
     const elements = input.split('/');
     if (elements.length === 1) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;
     } else if (elements.length === 2) {
       // Either "120/40" or "/40"
