@@ -53,6 +53,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     maxDescentWindLevels: number,
     time?: number,
     draftOnWindsOnWindEdit = false,
+    sortClimbWindsByDescendingAltitude = true,
   ): FlightPlan<P> {
     return new FlightPlan<P>(
       context,
@@ -64,6 +65,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       maxDescentWindLevels,
       time,
       draftOnWindsOnWindEdit,
+      sortClimbWindsByDescendingAltitude,
     );
   }
 
@@ -123,6 +125,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     private readonly maxDescentWindLevels: number,
     time?: number,
     private readonly draftOnWindsOnWindEdit = false,
+    private readonly sortClimbWindsByDescendingAltitude = true,
   ) {
     super(
       context,
@@ -160,6 +163,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.maxDescentWindLevels,
       time,
       this.draftOnWindsOnWindEdit,
+      this.sortClimbWindsByDescendingAltitude,
     );
 
     newPlan.version = this.version;
@@ -685,6 +689,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     maxClimbWindLevels: number,
     maxCruiseWindLevels: number,
     maxDescentWindLevels: number,
+    sortClimbDescending: boolean,
   ): Promise<FlightPlan<P>> {
     const newPlan = FlightPlan.empty<P>(
       context,
@@ -696,6 +701,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       maxDescentWindLevels,
       time,
       draftOnWindsOnWindEdit,
+      sortClimbDescending,
     );
 
     // TODO init performance data
@@ -854,11 +860,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     entry: FlightPlanWindEntry | null,
     checkDraftConfig = true,
   ): Promise<void> {
-    this.modifyClimbWindEntry(altitude, entry, checkDraftConfig);
+    this.modifyClimbWindEntry(altitude, entry, checkDraftConfig, this.sortClimbWindsByDescendingAltitude);
   }
 
   async editClimbWindEntry(index: number, entry: FlightPlanWindEntry) {
-    this.modifyClimbWindEntry(entry.altitude, entry, true, index);
+    this.modifyClimbWindEntry(entry.altitude, entry, true, this.sortClimbWindsByDescendingAltitude, index);
   }
 
   /**
@@ -888,6 +894,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     altitude: number | undefined,
     entry: FlightPlanWindEntry | null,
     checkDraft: boolean,
+    sortClimbWindsByDescendingAltitude: boolean = true,
     entryIndex: number | undefined = undefined,
   ) {
     if (altitude === undefined && entryIndex === undefined) {
@@ -914,7 +921,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const existingEntryIndex =
       entryIndex !== undefined ? entryIndex : entries.findIndex((e) => e.altitude === altitudeOrGround);
 
-    this.setClbDesWindEntry(entries, altitudeOrGround, entry, existingEntryIndex ?? -1, true);
+    this.setClbDesWindEntry(
+      entries,
+      altitudeOrGround,
+      entry,
+      existingEntryIndex ?? -1,
+      true,
+      sortClimbWindsByDescendingAltitude,
+    );
     if (!hasDraft) {
       // Only send the event if we are not modifying the draft winds.
       // Do this so the RPC event is sent
@@ -993,6 +1007,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     entry: FlightPlanWindEntry | null,
     existingEntryIndex: number,
     climb: boolean,
+    sortClimbWindsByDescendingAltitude: boolean = true,
   ) {
     let sortEntries = false;
 
@@ -1046,7 +1061,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
     }
     if (sortEntries) {
-      const sortedEntries = this.sortWindEntriesByAltitude(windEntries);
+      const sortedEntries = this.sortWindEntriesByAltitude(windEntries, climb && !sortClimbWindsByDescendingAltitude);
       windEntries.splice(0, windEntries.length, ...sortedEntries);
     }
   }
@@ -1389,8 +1404,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     };
   }
 
-  private sortWindEntriesByAltitude(entries: WindEntry[]) {
-    const altitudeSorted = entries.filter((e) => e.altitude !== undefined).sort((a, b) => b.altitude! - a.altitude!);
+  private sortWindEntriesByAltitude(entries: WindEntry[], sortAscending: boolean = false) {
+    const altitudeSorted = entries
+      .filter((e) => e.altitude !== undefined)
+      .sort((a, b) => (sortAscending ? a.altitude! - b.altitude! : b.altitude! - a.altitude!));
     let sortIndex = 0;
     // Retain the order of undefined altitudes, others are sorted as is.
     return entries.map((v) => (v.altitude === undefined ? v : altitudeSorted[sortIndex++]));

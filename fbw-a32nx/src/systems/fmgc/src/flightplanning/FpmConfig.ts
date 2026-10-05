@@ -51,6 +51,9 @@ export interface FpmConfig {
   /** The number of different flight levels for which cruise wind entries may be made */
   NUM_CRUISE_WIND_LEVELS: number;
 
+  /** Whether to sort climb wind entries in descending order (highest FL to lowest FL) */
+  SORT_CLIMB_WIND_DESCENDING: boolean;
+
   /** The number of different flight levels for which climb wind entries may be made */
   NUM_CLIMB_WIND_LEVELS: number;
 
@@ -73,6 +76,7 @@ export class FpmConfigs {
     NUM_SECONDARY_FLIGHT_PLANS: 3,
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
+    SORT_CLIMB_WIND_DESCENDING: true,
     NUM_DESCENT_WIND_LEVELS: 5,
     DRAFT_ON_WIND_EDIT: true,
   };
@@ -91,6 +95,7 @@ export class FpmConfigs {
     NUM_SECONDARY_FLIGHT_PLANS: 1,
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
+    SORT_CLIMB_WIND_DESCENDING: false,
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
     DRAFT_ON_WIND_EDIT: false,

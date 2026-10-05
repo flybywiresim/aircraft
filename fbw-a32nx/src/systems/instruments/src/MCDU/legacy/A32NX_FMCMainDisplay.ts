@@ -5474,6 +5474,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.flightPhaseManager.phase,
           FpmConfigs.A320_HONEYWELL_H4,
           MAXIMUM_CERTIFIED_FLIGHT_LEVEL,
+          true,
         );
 
         this.addMessageToQueue(
@@ -5514,7 +5515,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public async getHistoryWinds() {
-    return await this.flightPlanService.getHistoryWindsEntries(true);
+    return await this.flightPlanService.getHistoryWindsEntries(
+      !FpmConfigs.A320_HONEYWELL_H4.SORT_CLIMB_WIND_DESCENDING,
+    );
   }
   // ---------------------------
   // CDUMainDisplay Types
