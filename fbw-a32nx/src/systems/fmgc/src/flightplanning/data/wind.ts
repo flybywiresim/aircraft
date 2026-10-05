@@ -45,7 +45,7 @@ export const extractWindDirectionFromVector = (vector: WindVector, zeroIfUndefin
     : vector.direction ?? (zeroIfUndefined ? 0 : undefined);
 
 export const formatWindVector = (vector: WindVector) =>
-  `${vector.direction !== undefined ? formatWindTrueDegrees(vector) : '---'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
+  `${vector.direction !== undefined ? formatWindTrueDegrees(vector) : '---°'}/${vector.magnitude !== undefined ? formatWindMagnitude(vector) : '---'}`;
 
 export const debugFormatWindEntry = (entry: WindEntry) =>
   `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;

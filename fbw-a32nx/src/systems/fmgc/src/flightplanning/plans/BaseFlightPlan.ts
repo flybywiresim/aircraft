@@ -3019,18 +3019,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (checkDraftConfig) {
       this.prepareCruiseWindDraftModification();
     }
-    let entries = this.draftCruiseWindEntries?.get()?.get(atIndex) ?? leg.cruiseWindEntries;
+    const draftEntries = this.draftCruiseWindEntries?.get()?.get(atIndex) ?? null;
+    const hasDraft = draftEntries != null;
+    const legWindEntries = draftEntries ?? leg.cruiseWindEntries;
 
-    if (!entries.some((e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(altitude / 100))) {
+    if (
+      !legWindEntries.some(
+        (e) => e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(altitude / 100),
+      )
+    ) {
       console.error('[FMS/FPM] Tried to delete a cruise wind entry that does not exist');
       return;
     }
 
-    // You cannot delete a propagated wind entry (FCOM)
-    entries = entries.filter(
-      (e) => e.altitude !== undefined && Math.round(e.altitude / 100) !== Math.round(altitude / 100),
-    );
-    if (this.draftCruiseWindEntries === undefined) {
+    for (let i = 0; i < legWindEntries.length; i++) {
+      const e = legWindEntries[i];
+      // You cannot delete a propagated wind entry (FCOM)
+      if (e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(altitude / 100)) {
+        legWindEntries.splice(i, 1);
+      }
+    }
+    if (hasDraft) {
       this.syncCruiseWindChange(atIndex);
     } else {
       this.incrementVersion();
