@@ -2061,6 +2061,7 @@ export class FlightManagementComputer implements FmcInterface {
                 this.flightPhaseManager.phase,
                 FpmConfigs.A380,
                 maxCertifiedFlightLevel,
+                false,
               );
               // Remove messages related to failed wind uplink.
               this.removeMessageFromQueue(NXSystemMessages.receivedCpnyWindNotValid.text);

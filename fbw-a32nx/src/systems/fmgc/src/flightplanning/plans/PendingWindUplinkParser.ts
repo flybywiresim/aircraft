@@ -17,12 +17,13 @@ export class PendingWindUplinkParser {
     flightPhase: FmgcFlightPhase,
     config: FpmConfig,
     maxCertifiedFlightLevel: number,
+    sortClimbWindsAscending: boolean,
   ) {
     switch (flightPhase) {
       case FmgcFlightPhase.Preflight:
       case FmgcFlightPhase.Takeoff:
       case FmgcFlightPhase.Done:
-        this.setClimbWinds(uplink, plan, config, maxCertifiedFlightLevel);
+        this.setClimbWinds(uplink, plan, config, maxCertifiedFlightLevel, sortClimbWindsAscending);
       // eslint-disable-next-line no-fallthrough
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
@@ -39,6 +40,7 @@ export class PendingWindUplinkParser {
     plan: FlightPlan,
     config: FpmConfig,
     maxCertifiedFlightLevel: number,
+    sortAscending: boolean,
   ) {
     const originElevationLevel = (plan.originAirport?.location.alt ?? 0) / 100;
 
@@ -47,7 +49,7 @@ export class PendingWindUplinkParser {
       .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source, originElevationLevel))
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, config.NUM_CLIMB_WIND_LEVELS)
-      .sort((a, b) => a.altitude! - b.altitude!);
+      .sort((a, b) => (sortAscending ? a.altitude! - b.altitude! : b.altitude! - a.altitude!));
   }
 
   /**
