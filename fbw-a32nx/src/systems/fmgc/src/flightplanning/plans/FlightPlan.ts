@@ -590,7 +590,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         flightNumber,
       });
     }
-
     this.incrementVersion();
   }
 

@@ -30,10 +30,11 @@ import {
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
 import { LegType, MathUtils } from '@flybywiresim/fbw-sdk';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
 import { isLeg } from '../../flightplanning/legs/FlightPlanLeg';
+import { VnavEvents } from '../../events/VnavEvents';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -71,6 +72,9 @@ export class VnavDriver implements GuidanceComponent {
   private requestDescentProfileRecomputation: boolean = false;
 
   private prevMcduPredReadyToDisplay = false;
+
+  /** In knots */
+  private readonly vnavManagedSpeed = Subject.create<number | null>(null);
 
   constructor(
     private readonly bus: EventBus,
@@ -112,6 +116,9 @@ export class VnavDriver implements GuidanceComponent {
       this.aircraftToDescentProfileRelation,
       this.acConfig,
     );
+    this.vnavManagedSpeed.sub((v) => {
+      this.bus.getPublisher<VnavEvents>().pub('fms_vnav_managed_speed_descent_phase', v);
+    });
   }
 
   init(): void {
@@ -285,6 +292,7 @@ export class VnavDriver implements GuidanceComponent {
 
     // Speed guidance for holds is handled elsewhere for now, so we don't want to interfere here
     if (flightPhase !== FmgcFlightPhase.Descent || fcuExpediteModeActive || isHoldActive) {
+      this.vnavManagedSpeed.set(null);
       return;
     }
 
@@ -332,11 +340,7 @@ export class VnavDriver implements GuidanceComponent {
     const vLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
     const vMan = this.getVman(approachSpeed);
     const econMachAsCas = this.atmosphericConditions.computeCasFromMach(presentPosition.alt, managedDescentSpeedMach);
-    SimVar.SetSimVarValue(
-      'L:A32NX_SPEEDS_MANAGED_PFD',
-      'knots',
-      Math.max(vLs, vMan, Math.min(newSpeedTarget, econMachAsCas)),
-    );
+    this.vnavManagedSpeed.set(Math.max(vLs, vMan, Math.min(newSpeedTarget, econMachAsCas)));
   }
 
   // TODO: This appears too many times in different places. Centralize

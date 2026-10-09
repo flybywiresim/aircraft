@@ -422,7 +422,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
                 dataEntryFormat={new LongAlphanumericFormat()}
                 disabled={this.noFlightPlan}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).setFlightNumber(v!);
+                  this.props.flightPlanInterface.setFlightNumber(v!, this.loadedFlightPlanIndex.get());
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 readonlyValue={this.flightNumber}
