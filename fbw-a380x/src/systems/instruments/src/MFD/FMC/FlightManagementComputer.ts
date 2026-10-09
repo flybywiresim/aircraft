@@ -1563,15 +1563,25 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   handleFcuAltKnobPushPull(): void {
-    this.flightPhaseManager.handleFcuAltKnobPushPull(this.fmgc.getDistanceToDestination() ?? -1);
+    this.flightPhaseManager.handleFcuAltKnobPushPull(
+      this.fmgc.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+    );
   }
 
   handleFcuAltKnobTurn(): void {
-    this.flightPhaseManager.handleFcuAltKnobTurn(this.fmgc.getDistanceToDestination() ?? -1);
+    this.flightPhaseManager.handleFcuAltKnobTurn(
+      this.fmgc.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+    );
   }
 
   handleFcuVSKnob(onStepClimbDescent: () => void): void {
-    this.flightPhaseManager.handleFcuVSKnob(this.fmgc.getDistanceToDestination() ?? -1, onStepClimbDescent);
+    this.flightPhaseManager.handleFcuVSKnob(
+      this.fmgc.getDistanceToDestination() ?? -1,
+      this.guidanceController.hasStepDescent(),
+      onStepClimbDescent,
+    );
   }
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
