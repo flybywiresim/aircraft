@@ -324,8 +324,9 @@ export class FlightManagementComputer implements FmcInterface {
   );
 
   private readonly windUplinkRecievedActive = Subject.create(false);
-  private readonly windUplinkRecievedSec = Array.from({ length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS }, () =>
-    Subject.create(false),
+  private readonly windUplinkRecievedSec = Array.from(
+    { length: A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS },
+    () => Subject.create(false),
   );
   private readonly isAnyWindUplinkRecieved = MappedSubject.create(
     SubscribableMapFunctions.or(),
@@ -342,7 +343,7 @@ export class FlightManagementComputer implements FmcInterface {
   );
 
   private readonly uplinkWaitingInsertionSec = Array.from(
-    { length: FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS },
+    { length: A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS },
     (_, i) =>
       MappedSubject.create(
         ([uplinkPendingDuetoTmpy, hasUplink]) => !uplinkPendingDuetoTmpy && hasUplink,
@@ -1183,9 +1184,9 @@ export class FlightManagementComputer implements FmcInterface {
    */
   private async onActiveFlightPlanChanged(): Promise<void> {
     this.hasActiveFlightPlanWithCityPair.set(
-      this.#flightPlanService.hasActive &&
-        this.#flightPlanService.active.originAirport !== undefined &&
-        this.#flightPlanService.active.destinationAirport !== undefined,
+      this.flightPlanInterface.hasActive &&
+        this.flightPlanInterface.active.originAirport !== undefined &&
+        this.flightPlanInterface.active.destinationAirport !== undefined,
     );
 
     if (this.flightPlanService.hasActive) {
@@ -1777,7 +1778,7 @@ export class FlightManagementComputer implements FmcInterface {
         }
       }
       this.companyWindUplinkPending.set(
-        this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get()) && this.#flightPlanService.hasTemporary,
+        this.windUplinkPulse.write(this.isAnyWindUplinkRecieved.get()) && this.flightPlanInterface.hasTemporary,
       );
       // TODO port over from legacy code
       // this.updatePerfPageAltPredictions();
@@ -1793,8 +1794,8 @@ export class FlightManagementComputer implements FmcInterface {
           this.updateEfisPlanCentre(
             this.mfdReference?.uiService.captOrFo === 'FO' ? 'R' : 'L',
             FlightPlanIndex.Active,
-            this.#flightPlanService.active.activeLegIndex,
-            this.#flightPlanService.active.activeLegIndex >= this.#flightPlanService.active.allLegs.length,
+            this.flightPlanInterface.active.activeLegIndex,
+            this.flightPlanInterface.active.activeLegIndex >= this.flightPlanInterface.active.allLegs.length,
           );
         }
 
@@ -1852,8 +1853,8 @@ export class FlightManagementComputer implements FmcInterface {
 
   tryGoInApproachPhase(): void {
     const appr = this.flightPhaseManager.tryGoInApproachPhase();
-    if (appr && this.#flightPlanService.hasActive) {
-      this.#flightPlanService.active.setPerformanceData('cruiseFlightLevel', null);
+    if (appr && this.flightPlanInterface.hasActive) {
+      this.flightPlanInterface.active.setPerformanceData('cruiseFlightLevel', null);
     }
   }
 
@@ -2050,16 +2051,16 @@ export class FlightManagementComputer implements FmcInterface {
 
   setApproachWindDirection(value: number | null, forPlan: number): void {
     if (value === null) {
-      this.#flightPlanService.deleteApproachWind(forPlan);
+      this.flightPlanInterface.deleteApproachWind(forPlan);
     } else {
-      this.#flightPlanService.setApproachWind(value, null, forPlan);
+      this.flightPlanInterface.setApproachWind(value, null, forPlan);
     }
   }
   setApproachWindSpeed(value: number | null, forPlan: number): void {
     if (value === null) {
-      this.#flightPlanService.deleteApproachWind(forPlan);
+      this.flightPlanInterface.deleteApproachWind(forPlan);
     } else {
-      this.#flightPlanService.setApproachWind(null, value, forPlan);
+      this.flightPlanInterface.setApproachWind(null, value, forPlan);
     }
   }
 
@@ -2173,7 +2174,7 @@ export class FlightManagementComputer implements FmcInterface {
                 message,
                 plan,
                 this.flightPhaseManager.phase,
-                FpmConfigs.A380,
+                A380AircraftConfig.fpmConfig,
                 maxCertifiedFlightLevel,
                 false,
               );
@@ -2210,7 +2211,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   // Deletes all the company wind uplinks or draft winds from flightplans which wind modification is disabled starting in descent phase (active & secs copy of active)
   private deleteWindUplinkOrDraftFromAllPlans(): void {
-    for (let i = 0; i < FpmConfigs.A380.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+    for (let i = 0; i < A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const planIndex = i + FlightPlanIndex.FirstSecondary;
       if (this.flightPlanInterface.has(planIndex)) {
         const plan = this.flightPlanInterface.get(planIndex);
