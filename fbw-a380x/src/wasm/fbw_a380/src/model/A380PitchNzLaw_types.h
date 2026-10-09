@@ -9,10 +9,15 @@ struct base_pitch_data_computed
   real_T eta_trim_deg_limit_lo;
   real_T eta_trim_deg_limit_up;
   real_T delta_eta_deg;
-  real_T in_flight;
-  real_T in_flare;
+  boolean_T in_flight;
+  boolean_T in_flare;
   real_T in_flight_gain;
   real_T in_flare_gain;
+  boolean_T rotation_feedback_active;
+  real_T rotation_feedback_gain;
+  boolean_T rotation_damping_active;
+  real_T rotation_damping_gain;
+  boolean_T rotation_integral_reset;
   real_T nz_limit_up_g;
   real_T nz_limit_lo_g;
   boolean_T eta_trim_deg_should_freeze;
