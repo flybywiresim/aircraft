@@ -156,6 +156,7 @@ class FadecSimData_A380X {
     FLOAT64 simEngineN1[4];          // in Percent
     FLOAT64 simEngineN2[4];          // in Percent
     FLOAT64 simEngineThrust[4];      // in Pounds
+    FLOAT64 bleedDuctPressure[4];    // in Psi
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -188,6 +189,10 @@ class FadecSimData_A380X {
       {"TURB ENG JET THRUST",          2, UNITS.Pounds   }, //
       {"TURB ENG JET THRUST",          3, UNITS.Pounds   }, //
       {"TURB ENG JET THRUST",          4, UNITS.Pounds   }, //
+      {"BLEED AIR DUCT PRESSURE",      1, UNITS.Psi      }, //
+      {"BLEED AIR DUCT PRESSURE",      2, UNITS.Psi      }, //
+      {"BLEED AIR DUCT PRESSURE",      3, UNITS.Psi      }, //
+      {"BLEED AIR DUCT PRESSURE",      4, UNITS.Psi      }, //
   };
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 
@@ -249,6 +254,15 @@ class FadecSimData_A380X {
   NamedVariablePtr thrustLimitToga;
   NamedVariablePtr thrustLimitType;
   NamedVariablePtr wingAntiIce;
+
+  // Trent 900 EPR L-Vars
+  NamedVariablePtr engineEpr[4];
+  NamedVariablePtr engineEprCmd[4];
+  NamedVariablePtr thrustLimitEprIdle;
+  NamedVariablePtr thrustLimitEprClimb;
+  NamedVariablePtr thrustLimitEprFlex;
+  NamedVariablePtr thrustLimitEprMct;
+  NamedVariablePtr thrustLimitEprToga;
 
   NamedVariablePtr fadecQuickMode;  // 0 or 1
   NamedVariablePtr engineTla[4];
@@ -433,6 +447,23 @@ class FadecSimData_A380X {
     thrustLimitFlex  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
     thrustLimitMct   = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
     thrustLimitToga  = dm->make_named_var("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
+
+    // Initialize Trent 900 EPR L-Vars
+    engineEpr[E1] = dm->make_named_var("A32NX_ENGINE_EPR:1", UNITS.Number, AUTO_READ_WRITE);
+    engineEpr[E2] = dm->make_named_var("A32NX_ENGINE_EPR:2", UNITS.Number, AUTO_READ_WRITE);
+    engineEpr[E3] = dm->make_named_var("A32NX_ENGINE_EPR:3", UNITS.Number, AUTO_READ_WRITE);
+    engineEpr[E4] = dm->make_named_var("A32NX_ENGINE_EPR:4", UNITS.Number, AUTO_READ_WRITE);
+
+    engineEprCmd[E1] = dm->make_named_var("A32NX_ENGINE_EPR_COMMANDED:1", UNITS.Number, AUTO_READ_WRITE);
+    engineEprCmd[E2] = dm->make_named_var("A32NX_ENGINE_EPR_COMMANDED:2", UNITS.Number, AUTO_READ_WRITE);
+    engineEprCmd[E3] = dm->make_named_var("A32NX_ENGINE_EPR_COMMANDED:3", UNITS.Number, AUTO_READ_WRITE);
+    engineEprCmd[E4] = dm->make_named_var("A32NX_ENGINE_EPR_COMMANDED:4", UNITS.Number, AUTO_READ_WRITE);
+
+    thrustLimitEprIdle  = dm->make_named_var("A32NX_AUTOTHRUST_EPR_LIMIT_IDLE", UNITS.Number, AUTO_WRITE);
+    thrustLimitEprClimb = dm->make_named_var("A32NX_AUTOTHRUST_EPR_LIMIT_CLB", UNITS.Number, AUTO_WRITE);
+    thrustLimitEprFlex  = dm->make_named_var("A32NX_AUTOTHRUST_EPR_LIMIT_FLX", UNITS.Number, AUTO_WRITE);
+    thrustLimitEprMct   = dm->make_named_var("A32NX_AUTOTHRUST_EPR_LIMIT_MCT", UNITS.Number, AUTO_WRITE);
+    thrustLimitEprToga  = dm->make_named_var("A32NX_AUTOTHRUST_EPR_LIMIT_TOGA", UNITS.Number, AUTO_WRITE);
 
     packsState[0]       = dm->make_named_var("A32NX_COND_PACK_1_IS_OPERATING", UNITS.Number, AUTO_READ);
     packsState[1]       = dm->make_named_var("A32NX_COND_PACK_2_IS_OPERATING", UNITS.Number, AUTO_READ);

@@ -96,6 +96,9 @@ void EngineControl_A380X::update() {
         updateSecondaryParameters(engine, engineState, deltaTime, simOnGround, ambientTemperature, deltaN3);
         break;
     }
+
+    // High-Fidelity Rolls-Royce Trent 900 3-spool & EPR FADEC execution
+    updateTrentEngine(engine, engineState, deltaTime, pressureAltitude, mach, ambientTemperature, ambientPressure);
   }
 
   // Update fuel & tank data
@@ -1041,6 +1044,13 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   simData.thrustLimitClimb->set(clb);
   simData.thrustLimitMct->set(mct);
 
+  // write Trent 900 EPR limits -------------------------------------------------------------------------------------
+  simData.thrustLimitEprIdle->set(1.015);
+  simData.thrustLimitEprClimb->set(1.42);
+  simData.thrustLimitEprFlex->set(latchedFlexTemperature > 0 ? 1.54 : 1.65);
+  simData.thrustLimitEprMct->set(1.52);
+  simData.thrustLimitEprToga->set(1.65);
+
 #ifdef PROFILING
   profilerUpdateThrustLimits.stop();
 #endif
@@ -1108,4 +1118,76 @@ void EngineControl_A380X::updateOil(int          engine,
   simData.engineOilTotal[engineIdx]->set(oilTotalActual);
   simData.oilPsiDataPtr[engineIdx]->data().oilPsi = oilPressure;
   simData.oilPsiDataPtr[engineIdx]->writeDataToSim();
+}
+
+// =====================================================================================================================
+// High-Fidelity Rolls-Royce Trent 900 & FADEC Implementation
+// =====================================================================================================================
+
+void EngineControl_A380X::initializeTrentEngines() {
+  trent900_engine_sim_init();
+  for (int i = 0; i < 4; i++) {
+    trent900_engine_sim_multi(i, 0.0, 0.0, 0.0, 288.15, 0.05, 2.0, true,
+                              &trentEngineState[i], &trentFadecState[i], &trentAccState[i]);
+  }
+  trentInitialized = true;
+  LOG_INFO("EngineControl_A380X::initializeTrentEngines() - High-fidelity Trent 900 4-engine simulation initialized");
+}
+
+void EngineControl_A380X::updateTrentEngine(int         engine,
+                                            EngineState engineState,
+                                            double      deltaTime,
+                                            double      pressureAltitude,
+                                            double      mach,
+                                            double      ambientTemperature,
+                                            double      ambientPressure) {
+  const int engineIdx = engine - 1;
+  if (!trentInitialized) {
+    initializeTrentEngines();
+  }
+
+  // Convert inputs to physical units expected by Trent 900 simulation
+  const double alt_meters = std::max(0.0, pressureAltitude * 0.3048);
+  const double oat_kelvin = ambientTemperature + 273.15;
+  const double tla        = simData.engineTla[engineIdx]->get();
+  double       throttle   = std::max(-0.2, std::min(1.0, tla / 45.0));
+
+  // Determine scenario based on engineState
+  double scenario = 0.0;  // Normal running
+  if (engineState == STARTING || engineState == RESTARTING) {
+    scenario = 1.0;       // Engine Start sequence
+  } else if (engineState == OFF || engineState == SHUTTING) {
+    scenario = 2.0;       // Windmilling / OFF mode
+  } else {
+    // Engine is ON / running
+    const double thrustLimitType = simData.thrustLimitType->get();
+    const double flexTemp        = simData.airlinerToFlexTemp->get();
+    if (thrustLimitType == 3 && flexTemp > 0) {  // FLX Takeoff
+      scenario                              = 5.0;
+      trentFadecState[engineIdx].flex_active = true;
+      trentFadecState[engineIdx].flex_temp   = flexTemp;
+    }
+  }
+
+  // Pass real pneumatic bleed duct pressure to starter model (supports APU & cross-bleed start)
+  const double ductPressPsi = simData.simVarsDataPtr->data().bleedDuctPressure[engineIdx];
+  trentAccState[engineIdx].starter_pressure_psi = ductPressPsi;
+
+  // Execute 1 tick of Trent 900 high-fidelity 3-spool simulation
+  trent900_engine_sim_multi(engineIdx, throttle, alt_meters, mach, oat_kelvin, deltaTime,
+                            scenario, false,
+                            &trentEngineState[engineIdx],
+                            &trentFadecState[engineIdx],
+                            &trentAccState[engineIdx]);
+
+  // Publish true 3-spool rotational speeds and thermodynamics
+  simData.engineN1[engineIdx]->set(trentEngineState[engineIdx].N1_perc);
+  simData.engineN2[engineIdx]->set(trentEngineState[engineIdx].N2_perc);
+  simData.engineN3[engineIdx]->set(trentEngineState[engineIdx].N3_perc);
+  simData.engineEgt[engineIdx]->set(trentEngineState[engineIdx].EGT);
+  simData.engineFF[engineIdx]->set(trentEngineState[engineIdx].FF_actual * 3600.0);  // kg/hr
+
+  // Publish Trent 900 Rolls-Royce EPR parameters
+  simData.engineEpr[engineIdx]->set(trentFadecState[engineIdx].EPR);
+  simData.engineEprCmd[engineIdx]->set(trentFadecState[engineIdx].EPR_cmd);
 }
