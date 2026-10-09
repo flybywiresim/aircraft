@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -35,6 +35,7 @@ import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PayloadProps } from '../PayloadPage';
+import { selectPerformanceEnvelopeVariant } from './PerformanceEnvelopeSelector';
 
 export const A380Payload: React.FC<PayloadProps> = ({
   airframeInfo,
@@ -48,6 +49,9 @@ export const A380Payload: React.FC<PayloadProps> = ({
   simbriefPax,
   simbriefBag,
   simbriefFreight,
+  simbriefMlw,
+  simbriefMtow,
+  simbriefMzfw,
   simbriefDataLoaded,
   payloadImported,
   massUnitForDisplay,
@@ -58,6 +62,25 @@ export const A380Payload: React.FC<PayloadProps> = ({
   setBoardingRate,
 }) => {
   const { showModal } = useModals();
+  const performanceEnvelopeVariant = useMemo(
+    () =>
+      selectPerformanceEnvelopeVariant(
+        flypadInfo.payload.performanceEnvelopeVariants,
+        simbriefDataLoaded ? { mlw: simbriefMlw, mtow: simbriefMtow, mzfw: simbriefMzfw } : undefined,
+        simbriefUnits,
+      ),
+    [
+      airframeInfo.designLimits.performanceEnvelope,
+      flypadInfo.payload.performanceEnvelopeVariants,
+      simbriefDataLoaded,
+      simbriefMlw,
+      simbriefMtow,
+      simbriefMzfw,
+      simbriefUnits,
+    ],
+  );
+  const performanceEnvelope = performanceEnvelopeVariant?.envelope ?? airframeInfo.designLimits.performanceEnvelope;
+  const chartLimits = performanceEnvelopeVariant?.chartLimits ?? flypadInfo.payload.chartLimits;
 
   const [mainFwdA] = useSeatFlags(`L:${cabinInfo.seatMap[0].simVar}`, cabinInfo.seatMap[0].capacity, 509);
   const [mainFwdB] = useSeatFlags(`L:${cabinInfo.seatMap[1].simVar}`, cabinInfo.seatMap[1].capacity, 521);
@@ -846,8 +869,8 @@ export const A380Payload: React.FC<PayloadProps> = ({
             <ChartWidget
               width={525}
               height={511}
-              envelope={airframeInfo.designLimits.performanceEnvelope}
-              limits={flypadInfo.payload.chartLimits}
+              envelope={performanceEnvelope}
+              limits={chartLimits}
               cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
               gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
               mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -29,6 +29,9 @@ export interface PayloadProps {
   simbriefPax: number;
   simbriefBag: number;
   simbriefFreight: number;
+  simbriefMlw: number;
+  simbriefMtow: number;
+  simbriefMzfw: number;
   simbriefDataLoaded: boolean;
   payloadImported: boolean;
   massUnitForDisplay: string;
@@ -46,6 +49,9 @@ export const PayloadPage = () => {
   const simbriefPax = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerCount));
   const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
   const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
+  const simbriefMlw = parseInt(useAppSelector((state) => state.simbrief.data.weights.maxLandingWeight));
+  const simbriefMtow = parseInt(useAppSelector((state) => state.simbrief.data.weights.maxTakeOffWeight));
+  const simbriefMzfw = parseInt(useAppSelector((state) => state.simbrief.data.weights.maxZeroFuelWeight));
 
   const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_059);
   const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 509);
@@ -75,6 +81,9 @@ export const PayloadPage = () => {
           simbriefPax={simbriefPax}
           simbriefBag={simbriefBag}
           simbriefFreight={simbriefFreight}
+          simbriefMlw={simbriefMlw}
+          simbriefMtow={simbriefMtow}
+          simbriefMzfw={simbriefMzfw}
           simbriefDataLoaded={simbriefDataLoaded}
           payloadImported={payloadImported}
           massUnitForDisplay={massUnitForDisplay}
@@ -100,6 +109,9 @@ export const PayloadPage = () => {
           simbriefPax={simbriefPax}
           simbriefBag={simbriefBag}
           simbriefFreight={simbriefFreight}
+          simbriefMlw={simbriefMlw}
+          simbriefMtow={simbriefMtow}
+          simbriefMzfw={simbriefMzfw}
           simbriefDataLoaded={simbriefDataLoaded}
           payloadImported={payloadImported}
           massUnitForDisplay={massUnitForDisplay}

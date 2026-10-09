@@ -26,6 +26,7 @@
     "weightVariant": "WV055",
     "designLimits": {
         "weights": {
+            "maxRw": 79400,     // kg
             "maxGw": 79000,     // kg
             "maxZfw": 64300,    // kg
             "minZfw": 42500,    // kg
