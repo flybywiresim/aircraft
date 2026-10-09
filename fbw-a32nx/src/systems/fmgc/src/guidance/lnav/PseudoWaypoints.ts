@@ -20,7 +20,6 @@ import {
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { pathVectorLength } from './PathVector';
-import { Vec2Math } from '@microsoft/msfs-sdk';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -740,7 +739,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       checkpoint.distanceFromStart,
       checkpoint.altitude,
       checkpoint.profilePhase,
-      Vec2Math.create(),
+      { direction: 0, magnitude: 0 },
     );
 
     return {

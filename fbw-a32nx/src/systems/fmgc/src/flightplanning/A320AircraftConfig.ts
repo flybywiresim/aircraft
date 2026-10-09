@@ -152,5 +152,5 @@ export const A320AircraftConfig: AircraftConfig = {
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
   fmSymbolConfig: fmsSymbolConfig,
-  fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
+  fpmConfig: FpmConfigs.A320_HONEYWELL_H4,
 };
