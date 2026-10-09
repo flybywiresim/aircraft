@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
@@ -13,7 +13,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
-import { Arinc429LocalVarConsumerSubject, ArincEventBus, CpiomData } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
 import { EngineGauge } from './elements/EngineGauge';
 import { Idle } from './elements/Idle';
@@ -29,9 +29,10 @@ import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFaile
 import { FGVars } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustMode } from '@shared/autopilot';
 import { EcuBusEvents } from '@shared/publishers/EcuPublisher';
+import { CpiomData } from '../MsfsAvionicsCommon/providers/CpiomPublisher';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars & EcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars & CpiomData & EcuBusEvents>();
 
   private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
   private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus, this.fwsAvailChecker);
