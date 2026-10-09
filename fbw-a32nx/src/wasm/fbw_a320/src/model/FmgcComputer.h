@@ -5,7 +5,6 @@
 #include "FmgcOuterLoops.h"
 
 extern base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct;
-extern ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct;
 extern base_fmgc_athr_outputs rtP_fmgc_athr_output_MATLABStruct;
 extern base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct;
 class FmgcComputer final
@@ -51,8 +50,8 @@ class FmgcComputer final
   };
 
   struct D_Work_FmgcComputer_T {
-    base_fmgc_ap_fd_logic_outputs Delay_DSTATE;
     ap_raw_output Delay2_DSTATE;
+    base_fmgc_ap_fd_logic_outputs Delay_DSTATE;
     base_fmgc_athr_outputs Delay1_DSTATE;
     real_T DelayInput1_DSTATE;
     real_T DelayInput1_DSTATE_n;
@@ -1027,8 +1026,9 @@ class FmgcComputer final
     fmgc_outputs out_Y0;
     base_fmgc_logic_outputs Constant1_Value;
     base_fmgc_bus_outputs Constant4_Value;
-    base_fmgc_ap_fd_logic_outputs Delay_InitialCondition;
+    ap_raw_output Constant5_Value;
     ap_raw_output Delay2_InitialCondition;
+    base_fmgc_ap_fd_logic_outputs Delay_InitialCondition;
     base_fmgc_athr_outputs Delay1_InitialCondition;
     real_T Constant2_Value;
     real_T RETARD_Value;
@@ -1174,7 +1174,7 @@ class FmgcComputer final
     boolean_T Constant10_Value;
     boolean_T Constant3_Value_m;
     boolean_T Constant4_Value_g;
-    boolean_T Constant5_Value;
+    boolean_T Constant5_Value_a;
     boolean_T Constant6_Value;
     boolean_T Constant7_Value;
     boolean_T Constant8_Value;

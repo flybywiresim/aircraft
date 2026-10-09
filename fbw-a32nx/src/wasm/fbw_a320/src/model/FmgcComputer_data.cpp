@@ -96,33 +96,6 @@ base_fmgc_ap_fd_logic_outputs rtP_fmgc_ap_fd_logic_output_MATLABStruct{
   false
 } ;
 
-ap_raw_output rtP_fmgc_ap_fd_outer_loops_output_MATLABStruct{
-  0.0,
-  0.0,
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    false,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  }
-} ;
-
 base_fmgc_athr_outputs rtP_fmgc_athr_output_MATLABStruct{
   false,
   false,
@@ -2872,6 +2845,18 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0.0,
         0.0,
         0.0
+      },
+
+      {
+        false,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
       }
     },
 
@@ -3847,6 +3832,84 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   },
 
   {
+    0.0,
+    0.0,
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    }
+  },
+
+  {
+    0.0,
+    0.0,
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
+
+    {
+      false,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    }
+  },
+
+  {
     {
       false,
       false,
@@ -3940,33 +4003,6 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     false,
     false,
     false
-  },
-
-  {
-    0.0,
-    0.0,
-
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-
-    {
-      false,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
-    }
   },
 
   {

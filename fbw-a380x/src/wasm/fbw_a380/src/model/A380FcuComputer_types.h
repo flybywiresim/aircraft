@@ -153,7 +153,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -376,6 +376,19 @@ struct base_fcu_afs_panel_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
+
+struct base_fcu_discrete_outputs
+{
+  base_fcu_efis_panel_outputs efis_outputs;
+  base_fcu_afs_panel_outputs afs_outputs;
+  boolean_T true_selected;
+  boolean_T fcu_healthy;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
 #define DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
 
@@ -406,19 +419,6 @@ struct base_fcu_efis_logic_outputs
   real32_T baro_value_inhg;
   boolean_T baro_preset_active;
   boolean_T efis_cp_panel_activate;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_outputs_
-
-struct base_fcu_discrete_outputs
-{
-  base_fcu_efis_panel_outputs efis_outputs;
-  base_fcu_afs_panel_outputs afs_outputs;
-  boolean_T true_selected;
-  boolean_T fcu_healthy;
 };
 
 #endif
