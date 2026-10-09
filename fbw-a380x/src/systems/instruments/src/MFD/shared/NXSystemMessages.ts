@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -78,32 +78,48 @@ export class ATCCOMMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
-  awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
+  awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'), // TODO
   crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
-  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
+  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'), // TODO
+  checkAltnWind: new TypeIIMessage('CHECK ALTN WIND'),
+  checkDestData: new TypeIIMessage('CHECK DEST DATA', true),
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
   checkZfw: new TypeIIMessage('CHECK ZFW', true),
   comFplnReceivedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
-  comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
+  comWindRecievedPendingInsertionActive: new TypeIIMessage(
+    'COMPANY WIND RECIEVED\nWAITING FOR INSERTION IN ACTIVE',
+    false,
+  ),
+  comWindRecievedPendingInsertionInSecondary: new TypeIIMessage(
+    'COMPANY WIND RECIEVED\nWAITING FOR INSERTION IN SEC X',
+    false,
+    'X',
+  ),
+  comWindUplinkPending: new TypeIIMessage('COMPANY WIND UPLINK PENDING', true),
+  comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'), // TODO
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
-  databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
+  draftWindsInserted: new TypeIMessage('DRAFT WINDS INSERTED'),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
+  EntryNotInList: new TypeIMessage('ENTRY NOT IN LIST'),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   formatError: new TypeIMessage('FORMAT ERROR'),
-  fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
+  fmsDatalinkNotAvail: new TypeIIMessage('FMS DATALINK NOT AVAIL'), // TODO
+  fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'), // TODO
   initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
   newAccAlt: new TypeIIMessage('NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
   newCrzAlt: new TypeIIMessage('NEW CRZ ALT: HHHHH', false, 'HHHHH'),
   newThrRedAlt: new TypeIIMessage('NEW THR RED ALT: HHHHH', false, 'HHHHH'),
+  noCompanyReply: new TypeIIMessage('NO COMPANY REPLY'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
-  notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
+  notTransmittedToAcr: new TypeIIMessage('NOT TRANSMITTED TO ACR', false),
   receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
-  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
+  receivedCpnyWindNotValid: new TypeIIMessage('RECEIVED COMPANY WIND NOT VALID', false),
+  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true), // TODO
   setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
   tdReached: new TypeIIMessage('T/D REACHED'),
   spdLimExceeded: new TypeIIMessage('SPD LIMIT EXCEEDED', true),
