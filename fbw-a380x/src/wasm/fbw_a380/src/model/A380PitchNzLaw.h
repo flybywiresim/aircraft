@@ -385,12 +385,11 @@ class A380PitchNzLaw final
     real_T Constant_Value_mx;
     real_T Constant_Value_mo;
     real_T Gain2_Gain_p;
-    real_T Gain1_Gain;
     real_T Saturation1_UpperSat_i;
     real_T Saturation1_LowerSat_h;
     real_T Loaddemand1_tableData[3];
     real_T Loaddemand1_bp01Data[3];
-    real_T Gain1_Gain_c;
+    real_T Gain1_Gain;
     real_T Gain1_Gain_l;
     real_T uDLookupTable_tableData_a[7];
     real_T uDLookupTable_bp01Data_l[7];

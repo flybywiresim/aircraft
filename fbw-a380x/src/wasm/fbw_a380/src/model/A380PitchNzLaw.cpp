@@ -499,8 +499,6 @@ A380PitchNzLaw::Parameters_A380PitchNzLaw_T A380PitchNzLaw::A380PitchNzLaw_rtP{
 
   0.2,
 
-  0.2,
-
   1.0,
 
   -0.25,
@@ -1386,15 +1384,14 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   real_T rtb_Sum1_mw;
   real_T rtb_Sum_ma;
   real_T rtb_Tsxlo;
-  real_T rtb_Y_a;
-  real_T rtb_Y_a0;
-  real_T rtb_Y_g;
-  real_T rtb_Y_h;
-  real_T rtb_Y_ht;
-  real_T rtb_Y_kl;
+  real_T rtb_Y_d;
+  real_T rtb_Y_if;
+  real_T rtb_Y_j;
+  real_T rtb_Y_k;
   real_T rtb_Y_l;
+  real_T rtb_Y_my;
   real_T rtb_Y_n;
-  real_T rtb_Y_of;
+  real_T rtb_Y_p;
   real_T rtb_alpha_err_gain;
   real_T rtb_eta_trim_deg_rate_limit_lo_deg_s;
   real_T rtb_eta_trim_deg_rate_limit_up_deg_s;
@@ -1403,7 +1400,6 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   real_T y;
   real_T y_0;
   real_T y_1;
-  int32_T tmp;
   boolean_T rtb_Compare_j;
   boolean_T rtb_Logic_idx_0_tmp;
   boolean_T rtb_NAND;
@@ -1478,7 +1474,7 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
               (*rtu_In_H_radio_ft <= A380PitchNzLaw_rtP.CompareToConstant_const)) && (!*rtu_In_any_ap_engaged));
   A380PitchNzLaw_RateLimiter(static_cast<real_T>(rtb_y_k), A380PitchNzLaw_rtP.RateLimiterVariableTs4_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs4_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs4_InitialCondition, &rtb_Y_h, &A380PitchNzLaw_DWork.sf_RateLimiter_l);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs4_InitialCondition, &rtb_Y_if, &A380PitchNzLaw_DWork.sf_RateLimiter_l);
   if (static_cast<real_T>(rtb_OR4) > A380PitchNzLaw_rtP.Saturation_UpperSat_c) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation_UpperSat_c;
   } else if (static_cast<real_T>(rtb_OR4) < A380PitchNzLaw_rtP.Saturation_LowerSat_n) {
@@ -1489,14 +1485,14 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
 
   A380PitchNzLaw_RateLimiter(rtb_Max_d, A380PitchNzLaw_rtP.RateLimiterVariableTs_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_RateLimiter);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_p, &A380PitchNzLaw_DWork.sf_RateLimiter);
   rtb_Gain = A380PitchNzLaw_rtP.Gain_Gain * *rtu_In_delta_eta_pos;
   rtb_Compare_j = (*rtu_In_Theta_deg < A380PitchNzLaw_rtP.CompareToConstant5_const);
   rtb_OR1 = (*rtu_In_gnd_splr_cmd_deg > A380PitchNzLaw_rtP.CompareToConstant6_const);
   rtb_NAND = ((!*rtu_In_on_ground) || (!rtb_Compare_j) || (!rtb_OR1));
   A380PitchNzLaw_MATLABFunction((rtb_OR4 || rtb_OR1), rtu_In_time_dt, A380PitchNzLaw_rtP.ConfirmNode1_isRisingEdge,
     A380PitchNzLaw_rtP.ConfirmNode1_timeDelay, &rtb_y_o, &A380PitchNzLaw_DWork.sf_MATLABFunction);
-  rtb_OR1 = (rtb_y_k || (rtb_Y_n < A380PitchNzLaw_rtP.CompareToConstant1_const) || (*rtu_In_nz_g >=
+  rtb_OR1 = (rtb_y_k || (rtb_Y_p < A380PitchNzLaw_rtP.CompareToConstant1_const) || (*rtu_In_nz_g >=
               A380PitchNzLaw_rtP.CompareToConstant3_const) || (*rtu_In_nz_g <=
               A380PitchNzLaw_rtP.CompareToConstant4_const) || (std::abs(*rtu_In_Phi_deg) >
               A380PitchNzLaw_rtP.CompareToConstant2_const));
@@ -1579,46 +1575,38 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
 
   A380PitchNzLaw_RateLimiter_p(!rtb_y_o, A380PitchNzLaw_rtP.RateLimiterVariableTs1_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs1_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_a0, &A380PitchNzLaw_DWork.sf_RateLimiter_p);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_d, &A380PitchNzLaw_DWork.sf_RateLimiter_p);
   A380PitchNzLaw_RateLimiter(rtb_nz_limit_up_g, A380PitchNzLaw_rtP.RateLimiterVariableTs2_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs2_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs2_InitialCondition, &rtb_Y_ht, &A380PitchNzLaw_DWork.sf_RateLimiter_c);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs2_InitialCondition, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_RateLimiter_c);
   A380PitchNzLaw_RateLimiter(rtb_nz_limit_lo_g, A380PitchNzLaw_rtP.RateLimiterVariableTs3_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs3_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_a, &A380PitchNzLaw_DWork.sf_RateLimiter_n);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_RateLimiter_n);
   A380PitchNzLaw_RateLimiter_p(rtb_NAND, A380PitchNzLaw_rtP.RateLimiterVariableTs5_up,
     A380PitchNzLaw_rtP.RateLimiterVariableTs5_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs5_InitialCondition, &rtb_Y_of, &A380PitchNzLaw_DWork.sf_RateLimiter_j);
-  A380PitchNzLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_aoa_prot_active, &rtb_Y_g,
+    A380PitchNzLaw_rtP.RateLimiterVariableTs5_InitialCondition, &rtb_Y_k, &A380PitchNzLaw_DWork.sf_RateLimiter_j);
+  A380PitchNzLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_aoa_prot_active, &rtb_Y_my,
     &A380PitchNzLaw_DWork.sf_eta_trim_limit_lofreeze);
   if (*rtu_In_high_aoa_prot_active) {
-    *rty_Out_eta_trim_limit_lo = rtb_Y_g;
+    *rty_Out_eta_trim_limit_lo = rtb_Y_my;
   } else {
     *rty_Out_eta_trim_limit_lo = A380PitchNzLaw_rtP.Constant3_Value;
   }
 
-  A380PitchNzLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_speed_prot_active, &rtb_Y_g,
+  A380PitchNzLaw_eta_trim_limit_lofreeze(rtu_In_eta_trim_deg, rtu_In_high_speed_prot_active, &rtb_Y_my,
     &A380PitchNzLaw_DWork.sf_eta_trim_limit_upfreeze);
   if (*rtu_In_high_speed_prot_active) {
-    *rty_Out_eta_trim_limit_up = rtb_Y_g;
+    *rty_Out_eta_trim_limit_up = rtb_Y_my;
   } else {
     *rty_Out_eta_trim_limit_up = A380PitchNzLaw_rtP.Constant2_Value;
   }
 
-  if (*rtu_In_flaps_handle_index == 5.0) {
-    tmp = 25;
-  } else {
-    tmp = 30;
-  }
-
-  A380PitchNzLaw_RateLimiter(static_cast<real_T>(tmp) - std::fmin(5.0, std::fmax(0.0, 5.0 - (*rtu_In_V_ias_kn -
-    (*rtu_In_VLS_kn + 5.0)) * 0.25)), A380PitchNzLaw_rtP.RateLimiterVariableTs6_up,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs6_lo, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs6_InitialCondition, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_RateLimiter_o);
-  rtb_Y_kl = A380PitchNzLaw_rtP.Gain1_Gain * *rtu_In_Theta_deg;
-  rtb_Minup = std::cos(A380PitchNzLaw_rtP.Gain1_Gain_c * *rtu_In_Theta_deg);
+  A380PitchNzLaw_RateLimiter(30.0 - std::fmin(5.0, std::fmax(0.0, 5.0 - (*rtu_In_V_ias_kn - (*rtu_In_VLS_kn + 5.0)) *
+    0.25)), A380PitchNzLaw_rtP.RateLimiterVariableTs6_up, A380PitchNzLaw_rtP.RateLimiterVariableTs6_lo, rtu_In_time_dt,
+    A380PitchNzLaw_rtP.RateLimiterVariableTs6_InitialCondition, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_RateLimiter_o);
+  rtb_Minup = std::cos(A380PitchNzLaw_rtP.Gain1_Gain * *rtu_In_Theta_deg);
   rtb_Objectiveattenuation = rtb_Minup / std::cos(A380PitchNzLaw_rtP.Gain1_Gain_l * *rtu_In_Phi_deg);
-  rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain2_Gain_p * rtb_Y_g - rtb_Y_kl;
+  rtb_Saturation_ix = (rtb_Y_my - *rtu_In_Theta_deg) * A380PitchNzLaw_rtP.Gain2_Gain_p;
   if (*rtu_In_V_tas_kn > A380PitchNzLaw_rtP.Saturation3_UpperSat) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation3_UpperSat;
   } else if (*rtu_In_V_tas_kn < A380PitchNzLaw_rtP.Saturation3_LowerSat) {
@@ -1645,25 +1633,25 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     A380PitchNzLaw_rtP.DLUT_tableData, 1U) * A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs_Gain;
   rtb_Gain_ha = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain * *rtu_In_V_tas_kn;
   A380PitchNzLaw_LagFilter((rtb_Gain_ha - A380PitchNzLaw_DWork.Delay_DSTATE_c) / *rtu_In_time_dt,
-    A380PitchNzLaw_rtP.LagFilter_C1, rtu_In_time_dt, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_LagFilter_k);
-  if (rtb_Y_g > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat) {
-    rtb_Y_g = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat;
-  } else if (rtb_Y_g < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat) {
-    rtb_Y_g = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat;
+    A380PitchNzLaw_rtP.LagFilter_C1, rtu_In_time_dt, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_LagFilter_k);
+  if (rtb_Y_my > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat) {
+    rtb_Y_my = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat;
+  } else if (rtb_Y_my < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat) {
+    rtb_Y_my = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat;
   }
 
   rtb_Sum1 = (((rtb_Gain_dj - A380PitchNzLaw_DWork.Delay_DSTATE) / *rtu_In_time_dt * A380PitchNzLaw_rtP.Gain3_Gain_l +
                rtb_Saturation_ix * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.PLUT_bp01Data,
     A380PitchNzLaw_rtP.PLUT_tableData, 1U)) + (rtb_Gain_c - A380PitchNzLaw_DWork.Delay_DSTATE_n) / *rtu_In_time_dt) +
-    A380PitchNzLaw_rtP.Gain_Gain_l * rtb_Y_g;
+    A380PitchNzLaw_rtP.Gain_Gain_l * rtb_Y_my;
   A380PitchNzLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
-    A380PitchNzLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_WashoutFilter_k);
-  if (rtb_Y_g > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat) {
+    A380PitchNzLaw_rtP.WashoutFilter_C1, rtu_In_time_dt, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_WashoutFilter_k);
+  if (rtb_Y_my > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat) {
     y = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat;
-  } else if (rtb_Y_g < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat) {
+  } else if (rtb_Y_my < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat) {
     y = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat;
   } else {
-    y = rtb_Y_g;
+    y = rtb_Y_my;
   }
 
   rtb_Gain_dv = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs1_Gain_i * *rtu_In_qk_deg_s;
@@ -1678,43 +1666,43 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   rtb_Saturation_ix = (A380PitchNzLaw_rtP.Gain1_Gain_o * *rtu_In_qk_deg_s * (A380PitchNzLaw_rtP.Gain_Gain_a *
     A380PitchNzLaw_rtP.Vm_currentms_Value_e) + rtb_Gain_m2) - (look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNzLaw_rtP.uDLookupTable_bp01Data_o, A380PitchNzLaw_rtP.uDLookupTable_tableData_e, 6U) /
-    (A380PitchNzLaw_rtP.Gain5_Gain_d * rtb_Max_d) + A380PitchNzLaw_rtP.Bias_Bias_a) * (rtb_Y_ht -
+    (A380PitchNzLaw_rtP.Gain5_Gain_d * rtb_Max_d) + A380PitchNzLaw_rtP.Bias_Bias_a) * (rtb_Y_l -
     rtb_Objectiveattenuation);
   rtb_Gain_g = rtb_Saturation_ix * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.DLUT_bp01Data_h,
     A380PitchNzLaw_rtP.DLUT_tableData_p, 1U) * A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs_Gain_j;
   rtb_Gain_gm = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain_e * *rtu_In_V_tas_kn;
   A380PitchNzLaw_LagFilter((rtb_Gain_gm - A380PitchNzLaw_DWork.Delay_DSTATE_d) / *rtu_In_time_dt,
-    A380PitchNzLaw_rtP.LagFilter_C1_p, rtu_In_time_dt, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_LagFilter_g3);
-  if (rtb_Y_g > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j) {
-    rtb_Y_g = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j;
-  } else if (rtb_Y_g < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_e) {
-    rtb_Y_g = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_e;
+    A380PitchNzLaw_rtP.LagFilter_C1_p, rtu_In_time_dt, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_LagFilter_g3);
+  if (rtb_Y_my > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j) {
+    rtb_Y_my = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j;
+  } else if (rtb_Y_my < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_e) {
+    rtb_Y_my = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_e;
   }
 
   rtb_Sum1_mw = (((rtb_Gain_dv - A380PitchNzLaw_DWork.Delay_DSTATE_l) / *rtu_In_time_dt *
                   A380PitchNzLaw_rtP.Gain3_Gain_m + rtb_Saturation_ix * look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNzLaw_rtP.PLUT_bp01Data_b, A380PitchNzLaw_rtP.PLUT_tableData_b, 1U)) + (rtb_Gain_g -
-    A380PitchNzLaw_DWork.Delay_DSTATE_k) / *rtu_In_time_dt) + A380PitchNzLaw_rtP.Gain_Gain_j * rtb_Y_g;
+    A380PitchNzLaw_DWork.Delay_DSTATE_k) / *rtu_In_time_dt) + A380PitchNzLaw_rtP.Gain_Gain_j * rtb_Y_my;
   A380PitchNzLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
-    A380PitchNzLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_WashoutFilter_c);
-  if (rtb_Y_g > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_g) {
+    A380PitchNzLaw_rtP.WashoutFilter_C1_n, rtu_In_time_dt, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_WashoutFilter_c);
+  if (rtb_Y_my > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_g) {
     y_0 = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_g;
-  } else if (rtb_Y_g < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_j) {
+  } else if (rtb_Y_my < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_j) {
     y_0 = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_j;
   } else {
-    y_0 = rtb_Y_g;
+    y_0 = rtb_Y_my;
   }
 
   A380PitchNzLaw_RateLimiter_h(rtu_In_delta_eta_pos, A380PitchNzLaw_rtP.RateLimiterVariableTs2_up_m,
     A380PitchNzLaw_rtP.RateLimiterVariableTs2_lo_k, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs2_InitialCondition_f, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_RateLimiter_nx);
-  rtb_y_dm = (*rtu_In_alpha_max - *rtu_In_alpha_prot) * rtb_Y_l;
-  A380PitchNzLaw_LagFilter_m(rtu_In_alpha_deg, A380PitchNzLaw_rtP.LagFilter1_C1, rtu_In_time_dt, &rtb_Y_g,
+    A380PitchNzLaw_rtP.RateLimiterVariableTs2_InitialCondition_f, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_RateLimiter_nx);
+  rtb_y_dm = (*rtu_In_alpha_max - *rtu_In_alpha_prot) * rtb_Y_j;
+  A380PitchNzLaw_LagFilter_m(rtu_In_alpha_deg, A380PitchNzLaw_rtP.LagFilter1_C1, rtu_In_time_dt, &rtb_Y_my,
     &A380PitchNzLaw_DWork.sf_LagFilter_m);
   A380PitchNzLaw_WashoutFilter(std::fmax(std::fmax(0.0, *rtu_In_Theta_deg - 22.5), std::fmax(0.0, (std::abs
-    (*rtu_In_Phi_deg) - 3.0) / 6.0)), A380PitchNzLaw_rtP.WashoutFilter_C1_b, rtu_In_time_dt, &rtb_Y_l,
+    (*rtu_In_Phi_deg) - 3.0) / 6.0)), A380PitchNzLaw_rtP.WashoutFilter_C1_b, rtu_In_time_dt, &rtb_Y_j,
     &A380PitchNzLaw_DWork.sf_WashoutFilter_h);
-  rtb_Saturation_ix = (rtb_y_dm - (rtb_Y_g - *rtu_In_alpha_prot)) - rtb_Y_l;
+  rtb_Saturation_ix = (rtb_y_dm - (rtb_Y_my - *rtu_In_alpha_prot)) - rtb_Y_j;
   rtb_y_dm = A380PitchNzLaw_rtP.Subsystem1_Gain * rtb_Saturation_ix;
   rtb_Divide_dr = (rtb_y_dm - A380PitchNzLaw_DWork.Delay_DSTATE_f) / *rtu_In_time_dt;
   rtb_Tsxlo = *rtu_In_time_dt * A380PitchNzLaw_rtP.Subsystem1_C1;
@@ -1756,10 +1744,10 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   rtb_alpha_err_gain = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs1_Gain_m * *rtu_In_qk_deg_s;
   A380PitchNzLaw_RateLimiter_h(rtu_In_ap_theta_c_deg, A380PitchNzLaw_rtP.RateLimiterVariableTs1_up_d,
     A380PitchNzLaw_rtP.RateLimiterVariableTs1_lo_g, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs1_InitialCondition_l, &rtb_Y_ht, &A380PitchNzLaw_DWork.sf_RateLimiter_d);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs1_InitialCondition_l, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_RateLimiter_d);
   A380PitchNzLaw_RateLimiter_h(rtu_In_delta_eta_pos, A380PitchNzLaw_rtP.RateLimiterVariableTs_up_n,
     A380PitchNzLaw_rtP.RateLimiterVariableTs_lo_c, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition_o, &rtb_Y_g, &A380PitchNzLaw_DWork.sf_RateLimiter_c2);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition_o, &rtb_Y_my, &A380PitchNzLaw_DWork.sf_RateLimiter_c2);
   A380PitchNzLaw_DWork.Delay_DSTATE_b += std::fmax(std::fmin(*rtu_In_delta_eta_pos - A380PitchNzLaw_DWork.Delay_DSTATE_b,
     A380PitchNzLaw_rtP.RateLimiterVariableTs3_up_i * *rtu_In_time_dt), *rtu_In_time_dt *
     A380PitchNzLaw_rtP.RateLimiterVariableTs3_lo_b);
@@ -1784,13 +1772,13 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     A380PitchNzLaw_DWork.Delay_DSTATE_mz, A380PitchNzLaw_rtP.RateLimiterVariableTs4_up_b * *rtu_In_time_dt),
     *rtu_In_time_dt * A380PitchNzLaw_rtP.RateLimiterVariableTs4_lo_o);
   if (*rtu_In_any_ap_engaged) {
-    rtb_Sum_ma = (rtb_Y_ht - *rtu_In_Theta_deg) * look1_binlxpw(*rtu_In_V_tas_kn,
+    rtb_Sum_ma = (rtb_Y_l - *rtu_In_Theta_deg) * look1_binlxpw(*rtu_In_V_tas_kn,
       A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_h, A380PitchNzLaw_rtP.ScheduledGain_Table_j, 6U);
   } else {
-    rtb_Y_ht = look1_binlxpw(rtb_Y_g, A380PitchNzLaw_rtP.Loaddemand_bp01Data, A380PitchNzLaw_rtP.Loaddemand_tableData,
+    rtb_Y_l = look1_binlxpw(rtb_Y_my, A380PitchNzLaw_rtP.Loaddemand_bp01Data, A380PitchNzLaw_rtP.Loaddemand_tableData,
       2U);
     if (*rtu_In_protections_available) {
-      rtb_Y_g = A380PitchNzLaw_rtP.Constant3_Value_m;
+      rtb_Y_my = A380PitchNzLaw_rtP.Constant3_Value_m;
     } else {
       rtb_Saturation_ix = (look1_binlxpw(*rtu_In_flaps_handle_index, A380PitchNzLaw_rtP.uDLookupTable_bp01Data,
         A380PitchNzLaw_rtP.uDLookupTable_tableData, 5U) - *rtu_In_V_ias_kn) * A380PitchNzLaw_rtP.Gain4_Gain;
@@ -1807,7 +1795,7 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
         rtb_Max_d = A380PitchNzLaw_rtP.Saturation5_LowerSat;
       }
 
-      rtb_Y_g = rtb_Saturation_ix + rtb_Max_d;
+      rtb_Y_my = rtb_Saturation_ix + rtb_Max_d;
     }
 
     if (A380PitchNzLaw_DWork.Delay_DSTATE_mz > A380PitchNzLaw_rtP.Saturation_UpperSat_e) {
@@ -1825,12 +1813,12 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
                             A380PitchNzLaw_rtP.qk_gain_HSP_Gain * *rtu_In_qk_deg_s) +
                            A380PitchNzLaw_rtP.qk_dot_gain1_Gain * *rtu_In_qk_dot_deg_s2) *
         A380PitchNzLaw_rtP.HSP_gain_Gain;
-      if (rtb_Y_ht > A380PitchNzLaw_rtP.Saturation8_UpperSat) {
+      if (rtb_Y_l > A380PitchNzLaw_rtP.Saturation8_UpperSat) {
         rtb_Max_d = A380PitchNzLaw_rtP.Saturation8_UpperSat;
-      } else if (rtb_Y_ht < A380PitchNzLaw_rtP.Saturation8_LowerSat) {
+      } else if (rtb_Y_l < A380PitchNzLaw_rtP.Saturation8_LowerSat) {
         rtb_Max_d = A380PitchNzLaw_rtP.Saturation8_LowerSat;
       } else {
-        rtb_Max_d = rtb_Y_ht;
+        rtb_Max_d = rtb_Y_l;
       }
 
       if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation4_UpperSat) {
@@ -1844,8 +1832,8 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
       rtb_v_target = A380PitchNzLaw_rtP.Constant1_Value_g;
     }
 
-    rtb_Sum_ma = ((A380PitchNzLaw_rtP.Constant_Value_m - rtb_Saturation_an) * rtb_Y_ht + rtb_v_target *
-                  rtb_Saturation_an) + rtb_Y_g;
+    rtb_Sum_ma = ((A380PitchNzLaw_rtP.Constant_Value_m - rtb_Saturation_an) * rtb_Y_l + rtb_v_target * rtb_Saturation_an)
+      + rtb_Y_my;
   }
 
   if (*rtu_In_V_tas_kn > A380PitchNzLaw_rtP.Saturation3_UpperSat_b) {
@@ -1857,45 +1845,45 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   }
 
   if (*rtu_In_Phi_deg > A380PitchNzLaw_rtP.Saturation_UpperSat_f) {
-    rtb_Y_ht = A380PitchNzLaw_rtP.Saturation_UpperSat_f;
+    rtb_Y_l = A380PitchNzLaw_rtP.Saturation_UpperSat_f;
   } else if (*rtu_In_Phi_deg < A380PitchNzLaw_rtP.Saturation_LowerSat_o1) {
-    rtb_Y_ht = A380PitchNzLaw_rtP.Saturation_LowerSat_o1;
+    rtb_Y_l = A380PitchNzLaw_rtP.Saturation_LowerSat_o1;
   } else {
-    rtb_Y_ht = *rtu_In_Phi_deg;
+    rtb_Y_l = *rtu_In_Phi_deg;
   }
 
   rtb_Sum_ma = (A380PitchNzLaw_rtP.Gain1_Gain_en * *rtu_In_qk_deg_s * (A380PitchNzLaw_rtP.Gain_Gain_b *
     A380PitchNzLaw_rtP.Vm_currentms_Value_h) + rtb_Gain_m2) - ((rtb_Minup / std::cos(A380PitchNzLaw_rtP.Gain1_Gain_lm *
-    rtb_Y_ht) + rtb_Sum_ma) - rtb_Objectiveattenuation) * (look1_binlxpw(*rtu_In_V_tas_kn,
+    rtb_Y_l) + rtb_Sum_ma) - rtb_Objectiveattenuation) * (look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNzLaw_rtP.uDLookupTable_bp01Data_b, A380PitchNzLaw_rtP.uDLookupTable_tableData_h, 6U) /
     (A380PitchNzLaw_rtP.Gain5_Gain_e * rtb_Max_d) + A380PitchNzLaw_rtP.Bias_Bias_f);
   rtb_Minup = rtb_Sum_ma * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.DLUT_bp01Data_m,
     A380PitchNzLaw_rtP.DLUT_tableData_a, 1U) * A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs_Gain_b;
-  rtb_Y_ht = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain_c * *rtu_In_V_tas_kn;
-  A380PitchNzLaw_LagFilter((rtb_Y_ht - A380PitchNzLaw_DWork.Delay_DSTATE_dy) / *rtu_In_time_dt,
-    A380PitchNzLaw_rtP.LagFilter_C1_pt, rtu_In_time_dt, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_LagFilter_i);
-  if (rtb_Y_l > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_b) {
+  rtb_Y_l = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain_c * *rtu_In_V_tas_kn;
+  A380PitchNzLaw_LagFilter((rtb_Y_l - A380PitchNzLaw_DWork.Delay_DSTATE_dy) / *rtu_In_time_dt,
+    A380PitchNzLaw_rtP.LagFilter_C1_pt, rtu_In_time_dt, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_LagFilter_i);
+  if (rtb_Y_j > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_b) {
     y_1 = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_b;
-  } else if (rtb_Y_l < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_m) {
+  } else if (rtb_Y_j < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_m) {
     y_1 = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_m;
   } else {
-    y_1 = rtb_Y_l;
+    y_1 = rtb_Y_j;
   }
 
   A380PitchNzLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
-    A380PitchNzLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_WashoutFilter_l);
-  if (rtb_Y_l > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_o) {
-    rtb_Y_l = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_o;
-  } else if (rtb_Y_l < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_jl) {
-    rtb_Y_l = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_jl;
+    A380PitchNzLaw_rtP.WashoutFilter_C1_l, rtu_In_time_dt, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_WashoutFilter_l);
+  if (rtb_Y_j > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_o) {
+    rtb_Y_j = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_o;
+  } else if (rtb_Y_j < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_jl) {
+    rtb_Y_j = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_jl;
   }
 
   rtb_Saturation_ix = ((((rtb_alpha_err_gain - A380PitchNzLaw_DWork.Delay_DSTATE_kd) / *rtu_In_time_dt *
     A380PitchNzLaw_rtP.Gain3_Gain_c + rtb_Sum_ma * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.PLUT_bp01Data_f,
     A380PitchNzLaw_rtP.PLUT_tableData_k, 1U)) + (rtb_Minup - A380PitchNzLaw_DWork.Delay_DSTATE_jh) / *rtu_In_time_dt) +
-                       A380PitchNzLaw_rtP.Gain_Gain_f * y_1) + rtb_Y_l * look1_binlxpw(*rtu_In_H_radio_ft,
+                       A380PitchNzLaw_rtP.Gain_Gain_f * y_1) + rtb_Y_j * look1_binlxpw(*rtu_In_H_radio_ft,
     A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_c, A380PitchNzLaw_rtP.ScheduledGain_Table_g, 3U);
-  rtb_Y_g = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs1_Gain_c * *rtu_In_qk_deg_s;
+  rtb_Y_my = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs1_Gain_c * *rtu_In_qk_deg_s;
   if (*rtu_In_V_tas_kn > A380PitchNzLaw_rtP.Saturation3_UpperSat_n) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation3_UpperSat_n;
   } else if (*rtu_In_V_tas_kn < A380PitchNzLaw_rtP.Saturation3_LowerSat_a) {
@@ -1907,35 +1895,35 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   rtb_Sum_ma = (A380PitchNzLaw_rtP.Gain1_Gain_b * *rtu_In_qk_deg_s * (A380PitchNzLaw_rtP.Gain_Gain_p *
     A380PitchNzLaw_rtP.Vm_currentms_Value_p) + rtb_Gain_m2) - (look1_binlxpw(*rtu_In_V_tas_kn,
     A380PitchNzLaw_rtP.uDLookupTable_bp01Data_a, A380PitchNzLaw_rtP.uDLookupTable_tableData_p, 6U) /
-    (A380PitchNzLaw_rtP.Gain5_Gain_n * rtb_Max_d) + A380PitchNzLaw_rtP.Bias_Bias_ai) * (rtb_Y_a -
+    (A380PitchNzLaw_rtP.Gain5_Gain_n * rtb_Max_d) + A380PitchNzLaw_rtP.Bias_Bias_ai) * (rtb_Y_n -
     rtb_Objectiveattenuation);
   rtb_v_target = rtb_Sum_ma * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.DLUT_bp01Data_k,
     A380PitchNzLaw_rtP.DLUT_tableData_e, 1U) * A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs_Gain_p;
   rtb_Saturation_an = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain_a * *rtu_In_V_tas_kn;
   A380PitchNzLaw_LagFilter((rtb_Saturation_an - A380PitchNzLaw_DWork.Delay_DSTATE_lf) / *rtu_In_time_dt,
-    A380PitchNzLaw_rtP.LagFilter_C1_l, rtu_In_time_dt, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_LagFilter_g);
-  if (rtb_Y_l > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_m) {
+    A380PitchNzLaw_rtP.LagFilter_C1_l, rtu_In_time_dt, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_LagFilter_g);
+  if (rtb_Y_j > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_m) {
     y_1 = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_m;
-  } else if (rtb_Y_l < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_ek) {
+  } else if (rtb_Y_j < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_ek) {
     y_1 = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_ek;
   } else {
-    y_1 = rtb_Y_l;
+    y_1 = rtb_Y_j;
   }
 
   A380PitchNzLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
-    A380PitchNzLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_WashoutFilter_d);
+    A380PitchNzLaw_rtP.WashoutFilter_C1_h, rtu_In_time_dt, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_WashoutFilter_d);
   rtb_Max_d = y_0 * look1_binlxpw(*rtu_In_H_radio_ft, A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_n,
     A380PitchNzLaw_rtP.ScheduledGain_Table_b, 3U) + rtb_Sum1_mw;
-  if (rtb_Y_l > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_h) {
-    rtb_Y_l = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_h;
-  } else if (rtb_Y_l < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_l) {
-    rtb_Y_l = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_l;
+  if (rtb_Y_j > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_h) {
+    rtb_Y_j = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_h;
+  } else if (rtb_Y_j < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_l) {
+    rtb_Y_j = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_l;
   }
 
-  rtb_Sum1_mw = ((((rtb_Y_g - A380PitchNzLaw_DWork.Delay_DSTATE_e5) / *rtu_In_time_dt * A380PitchNzLaw_rtP.Gain3_Gain_b
+  rtb_Sum1_mw = ((((rtb_Y_my - A380PitchNzLaw_DWork.Delay_DSTATE_e5) / *rtu_In_time_dt * A380PitchNzLaw_rtP.Gain3_Gain_b
                    + rtb_Sum_ma * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.PLUT_bp01Data_a,
     A380PitchNzLaw_rtP.PLUT_tableData_o, 1U)) + (rtb_v_target - A380PitchNzLaw_DWork.Delay_DSTATE_gz) / *rtu_In_time_dt)
-                 + A380PitchNzLaw_rtP.Gain_Gain_k * y_1) + rtb_Y_l * look1_binlxpw(*rtu_In_H_radio_ft,
+                 + A380PitchNzLaw_rtP.Gain_Gain_k * y_1) + rtb_Y_j * look1_binlxpw(*rtu_In_H_radio_ft,
     A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_f, A380PitchNzLaw_rtP.ScheduledGain_Table_h, 3U);
   if (rtb_Max_d > A380PitchNzLaw_rtP.Saturation_UpperSat_hc) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation_UpperSat_hc;
@@ -1956,21 +1944,21 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   }
 
   A380PitchNzLaw_VoterAttitudeProtection(rtb_Max_d, rtb_Product_fu + rtb_Sum1_c * rtb_Saturation_ix, rtb_Sum1_mw,
-    &rtb_Y_l);
+    &rtb_Y_j);
   rtb_Sum1_mw = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs1_Gain_k * *rtu_In_qk_deg_s;
-  rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain3_Gain_g * A380PitchNzLaw_rtP.Theta_max3_Value - rtb_Y_kl;
-  if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation2_UpperSat) {
-    rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_UpperSat;
-  } else if (rtb_Saturation_ix < A380PitchNzLaw_rtP.Saturation2_LowerSat) {
-    rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_LowerSat;
-  }
-
+  rtb_Saturation_ix = (A380PitchNzLaw_rtP.Theta_max3_Value - *rtu_In_Theta_deg) * A380PitchNzLaw_rtP.Gain3_Gain_g;
   if (*rtu_In_V_tas_kn > A380PitchNzLaw_rtP.Saturation3_UpperSat_e) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation3_UpperSat_e;
   } else if (*rtu_In_V_tas_kn < A380PitchNzLaw_rtP.Saturation3_LowerSat_k) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation3_LowerSat_k;
   } else {
     rtb_Max_d = *rtu_In_V_tas_kn;
+  }
+
+  if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation2_UpperSat) {
+    rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_UpperSat;
+  } else if (rtb_Saturation_ix < A380PitchNzLaw_rtP.Saturation2_LowerSat) {
+    rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_LowerSat;
   }
 
   rtb_Sum_ma = (A380PitchNzLaw_rtP.Gain1_Gain_lk * *rtu_In_qk_deg_s * (A380PitchNzLaw_rtP.Gain_Gain_jq *
@@ -1983,29 +1971,29 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     A380PitchNzLaw_rtP.DLUT_tableData_l, 1U) * A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs_Gain_c;
   rtb_Product_fu = A380PitchNzLaw_rtP.DiscreteDerivativeVariableTs2_Gain_p * *rtu_In_V_tas_kn;
   A380PitchNzLaw_LagFilter((rtb_Product_fu - A380PitchNzLaw_DWork.Delay_DSTATE_jt) / *rtu_In_time_dt,
-    A380PitchNzLaw_rtP.LagFilter_C1_f, rtu_In_time_dt, &rtb_Y_a, &A380PitchNzLaw_DWork.sf_LagFilter);
-  if (rtb_Y_a > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j2) {
+    A380PitchNzLaw_rtP.LagFilter_C1_f, rtu_In_time_dt, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_LagFilter);
+  if (rtb_Y_n > A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j2) {
     y_0 = A380PitchNzLaw_rtP.SaturationV_dot_UpperSat_j2;
-  } else if (rtb_Y_a < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_n) {
+  } else if (rtb_Y_n < A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_n) {
     y_0 = A380PitchNzLaw_rtP.SaturationV_dot_LowerSat_n;
   } else {
-    y_0 = rtb_Y_a;
+    y_0 = rtb_Y_n;
   }
 
   A380PitchNzLaw_WashoutFilter(std::fmin(*rtu_In_spoilers_left_pos, *rtu_In_spoilers_right_pos),
-    A380PitchNzLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Y_a, &A380PitchNzLaw_DWork.sf_WashoutFilter);
+    A380PitchNzLaw_rtP.WashoutFilter_C1_j, rtu_In_time_dt, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_WashoutFilter);
   rtb_Saturation_ix = y * look1_binlxpw(*rtu_In_H_radio_ft, A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1,
     A380PitchNzLaw_rtP.ScheduledGain_Table, 3U) + rtb_Sum1;
-  if (rtb_Y_a > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_m) {
-    rtb_Y_a = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_m;
-  } else if (rtb_Y_a < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_d) {
-    rtb_Y_a = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_d;
+  if (rtb_Y_n > A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_m) {
+    rtb_Y_n = A380PitchNzLaw_rtP.SaturationSpoilers_UpperSat_m;
+  } else if (rtb_Y_n < A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_d) {
+    rtb_Y_n = A380PitchNzLaw_rtP.SaturationSpoilers_LowerSat_d;
   }
 
   rtb_Max_d = ((((rtb_Sum1_mw - A380PitchNzLaw_DWork.Delay_DSTATE_h) / *rtu_In_time_dt * A380PitchNzLaw_rtP.Gain3_Gain_n
                  + rtb_Sum_ma * look1_binlxpw(*rtu_In_V_tas_kn, A380PitchNzLaw_rtP.PLUT_bp01Data_e,
     A380PitchNzLaw_rtP.PLUT_tableData_g, 1U)) + (rtb_Gain_m2 - A380PitchNzLaw_DWork.Delay_DSTATE_ds) / *rtu_In_time_dt)
-               + A380PitchNzLaw_rtP.Gain_Gain_l0 * y_0) + rtb_Y_a * look1_binlxpw(*rtu_In_H_radio_ft,
+               + A380PitchNzLaw_rtP.Gain_Gain_l0 * y_0) + rtb_Y_n * look1_binlxpw(*rtu_In_H_radio_ft,
     A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_b, A380PitchNzLaw_rtP.ScheduledGain_Table_e, 3U);
   if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation_UpperSat_h) {
     rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation_UpperSat_h;
@@ -2019,16 +2007,16 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation_LowerSat_k;
   }
 
-  A380PitchNzLaw_VoterAttitudeProtection(rtb_Saturation_ix, rtb_Y_l, rtb_Max_d, &rtb_Y_a);
+  A380PitchNzLaw_VoterAttitudeProtection(rtb_Saturation_ix, rtb_Y_j, rtb_Max_d, &rtb_Y_n);
   if (*rtu_In_protections_available) {
-    rtb_Y_l = rtb_Y_a;
+    rtb_Y_j = rtb_Y_n;
   }
 
-  rtb_Sum_ma = rtb_Y_l * look1_binlxpw(*rtu_In_V_ias_kn, A380PitchNzLaw_rtP.ScheduledGain1_BreakpointsForDimension1,
+  rtb_Sum_ma = rtb_Y_j * look1_binlxpw(*rtu_In_V_ias_kn, A380PitchNzLaw_rtP.ScheduledGain1_BreakpointsForDimension1,
     A380PitchNzLaw_rtP.ScheduledGain1_Table, 4U) * look1_binlxpw(*rtu_In_time_dt,
     A380PitchNzLaw_rtP.ScheduledGain_BreakpointsForDimension1_d, A380PitchNzLaw_rtP.ScheduledGain_Table_hh, 5U) *
     A380PitchNzLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
-  A380PitchNzLaw_DWork.icLoad = ((rtb_Y_n == A380PitchNzLaw_rtP.CompareToConstant1_const_m) || (rtb_Y_h ==
+  A380PitchNzLaw_DWork.icLoad = ((rtb_Y_p == A380PitchNzLaw_rtP.CompareToConstant1_const_m) || (rtb_Y_if ==
     A380PitchNzLaw_rtP.CompareToConstant_const_b) || (*rtu_In_tracking_mode_on) || A380PitchNzLaw_DWork.icLoad);
   if (A380PitchNzLaw_DWork.icLoad) {
     A380PitchNzLaw_DWork.Delay_DSTATE_o = *rtu_In_eta_deg - rtb_Sum_ma;
@@ -2047,26 +2035,26 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Max_d = A380PitchNzLaw_DWork.Delay_DSTATE_o;
   }
 
-  rtb_Y_kl = A380PitchNzLaw_rtP.Gain_Gain_cy * rtb_Max_d;
-  if (rtb_Y_kl > rtb_eta_trim_deg_rate_limit_up_deg_s) {
+  rtb_Y_n = A380PitchNzLaw_rtP.Gain_Gain_cy * rtb_Max_d;
+  if (rtb_Y_n > rtb_eta_trim_deg_rate_limit_up_deg_s) {
     *rty_Out_eta_trim_dot_deg_s = rtb_eta_trim_deg_rate_limit_up_deg_s;
-  } else if (rtb_Y_kl < rtb_eta_trim_deg_rate_limit_lo_deg_s) {
+  } else if (rtb_Y_n < rtb_eta_trim_deg_rate_limit_lo_deg_s) {
     *rty_Out_eta_trim_dot_deg_s = rtb_eta_trim_deg_rate_limit_lo_deg_s;
   } else {
-    *rty_Out_eta_trim_dot_deg_s = rtb_Y_kl;
+    *rty_Out_eta_trim_dot_deg_s = rtb_Y_n;
   }
 
-  if (rtb_Y_n > A380PitchNzLaw_rtP.Saturation_UpperSat_la) {
+  if (rtb_Y_p > A380PitchNzLaw_rtP.Saturation_UpperSat_la) {
     rtb_Sum_ma = A380PitchNzLaw_rtP.Saturation_UpperSat_la;
-  } else if (rtb_Y_n < A380PitchNzLaw_rtP.Saturation_LowerSat_kp) {
+  } else if (rtb_Y_p < A380PitchNzLaw_rtP.Saturation_LowerSat_kp) {
     rtb_Sum_ma = A380PitchNzLaw_rtP.Saturation_LowerSat_kp;
   } else {
-    rtb_Sum_ma = rtb_Y_n;
+    rtb_Sum_ma = rtb_Y_p;
   }
 
   A380PitchNzLaw_MATLABFunction_c(rtu_In_on_ground, rtu_In_time_dt, A380PitchNzLaw_rtP.ConfirmNode2_isRisingEdge_m,
     A380PitchNzLaw_rtP.ConfirmNode2_timeDelay_i, &rtb_y_k, &A380PitchNzLaw_DWork.sf_MATLABFunction_h);
-  A380PitchNzLaw_LagFilter_m(rtu_In_H_radio_ft, A380PitchNzLaw_rtP.LagFilter2_C1, rtu_In_time_dt, &rtb_Y_n,
+  A380PitchNzLaw_LagFilter_m(rtu_In_H_radio_ft, A380PitchNzLaw_rtP.LagFilter2_C1, rtu_In_time_dt, &rtb_Y_p,
     &A380PitchNzLaw_DWork.sf_LagFilter_l);
   if (*rtu_In_H_radio_ft > A380PitchNzLaw_rtP.Saturation1_UpperSat_p) {
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation1_UpperSat_p;
@@ -2076,17 +2064,17 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Max_d = *rtu_In_H_radio_ft;
   }
 
-  A380PitchNzLaw_LagFilter(rtb_Max_d, A380PitchNzLaw_rtP.LagFilter1_C1_d, rtu_In_time_dt, &rtb_Y_kl,
+  A380PitchNzLaw_LagFilter(rtb_Max_d, A380PitchNzLaw_rtP.LagFilter1_C1_d, rtu_In_time_dt, &rtb_Objectiveattenuation,
     &A380PitchNzLaw_DWork.sf_LagFilter_b);
-  A380PitchNzLaw_LagFilter_m(rtu_In_V_ias_kn, A380PitchNzLaw_rtP.LagFilter_C1_n, rtu_In_time_dt, &rtb_Y_a,
+  A380PitchNzLaw_LagFilter_m(rtu_In_V_ias_kn, A380PitchNzLaw_rtP.LagFilter_C1_n, rtu_In_time_dt, &rtb_Y_n,
     &A380PitchNzLaw_DWork.sf_LagFilter_g5);
-  if (rtb_Y_a <= A380PitchNzLaw_rtP.CompareToConstant_const_a) {
-    A380PitchNzLaw_B.u = rtb_Y_kl;
+  if (rtb_Y_n <= A380PitchNzLaw_rtP.CompareToConstant_const_a) {
+    A380PitchNzLaw_B.u = rtb_Objectiveattenuation;
   }
 
   rtb_Max_d = A380PitchNzLaw_rtP.Gain1_Gain_a * *rtu_In_Theta_deg;
-  rtb_Y_a = A380PitchNzLaw_rtP.Gain_Gain_i * std::cos(rtb_Max_d) - A380PitchNzLaw_rtP.Gain1_Gain_g * std::sin(rtb_Max_d);
-  if (rtb_Y_n > A380PitchNzLaw_rtP.Constant2_Value_a) {
+  rtb_Y_n = A380PitchNzLaw_rtP.Gain_Gain_i * std::cos(rtb_Max_d) - A380PitchNzLaw_rtP.Gain1_Gain_g * std::sin(rtb_Max_d);
+  if (rtb_Y_p > A380PitchNzLaw_rtP.Constant2_Value_a) {
     rtb_Max_d = A380PitchNzLaw_rtP.Constant2_Value_a;
   } else {
     if (A380PitchNzLaw_B.u > A380PitchNzLaw_rtP.Saturation_UpperSat_lg) {
@@ -2097,103 +2085,104 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
       rtb_Max_d = A380PitchNzLaw_B.u;
     }
 
-    rtb_Max_d = std::fmax((rtb_Y_a + A380PitchNzLaw_rtP.Bias_Bias) * A380PitchNzLaw_rtP.Gain2_Gain_g + rtb_Max_d,
+    rtb_Max_d = std::fmax((rtb_Y_n + A380PitchNzLaw_rtP.Bias_Bias) * A380PitchNzLaw_rtP.Gain2_Gain_g + rtb_Max_d,
                           A380PitchNzLaw_rtP.Constant1_Value_b);
-    if (rtb_Y_n >= rtb_Max_d) {
-      rtb_Max_d = rtb_Y_n;
+    if (rtb_Y_p >= rtb_Max_d) {
+      rtb_Max_d = rtb_Y_p;
     }
   }
 
   rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain1_Gain_d * *rtu_In_Theta_deg;
-  rtb_eta_trim_deg_rate_limit_up_deg_s = (A380PitchNzLaw_rtP.Gain_Gain_i4 * std::cos(rtb_Saturation_ix) -
+  rtb_eta_trim_deg_rate_limit_lo_deg_s = (A380PitchNzLaw_rtP.Gain_Gain_i4 * std::cos(rtb_Saturation_ix) -
     A380PitchNzLaw_rtP.Gain1_Gain_k * std::sin(rtb_Saturation_ix)) + A380PitchNzLaw_rtP.Bias_Bias_am;
-  rtb_Y_n = rtb_Max_d + rtb_eta_trim_deg_rate_limit_up_deg_s;
-  A380PitchNzLaw_WashoutFilter(rtb_Y_n, A380PitchNzLaw_rtP.WashoutFilter_C1_nt, rtu_In_time_dt,
-    &rtb_eta_trim_deg_rate_limit_lo_deg_s, &A380PitchNzLaw_DWork.sf_WashoutFilter_ow);
-  A380PitchNzLaw_WashoutFilter(A380PitchNzLaw_rtP.Gain3_Gain_o * (rtb_Y_a + A380PitchNzLaw_rtP.Bias1_Bias_d),
-    A380PitchNzLaw_rtP.WashoutFilter_C1_j5, rtu_In_time_dt, &rtb_Y_kl, &A380PitchNzLaw_DWork.sf_WashoutFilter_o);
-  rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain4_Gain_k * rtb_Y_kl;
+  rtb_Y_p = rtb_Max_d + rtb_eta_trim_deg_rate_limit_lo_deg_s;
+  A380PitchNzLaw_WashoutFilter(rtb_Y_p, A380PitchNzLaw_rtP.WashoutFilter_C1_nt, rtu_In_time_dt, &rtb_Sum1,
+    &A380PitchNzLaw_DWork.sf_WashoutFilter_ow);
+  A380PitchNzLaw_WashoutFilter(A380PitchNzLaw_rtP.Gain3_Gain_o * (rtb_Y_n + A380PitchNzLaw_rtP.Bias1_Bias_d),
+    A380PitchNzLaw_rtP.WashoutFilter_C1_j5, rtu_In_time_dt, &rtb_Objectiveattenuation,
+    &A380PitchNzLaw_DWork.sf_WashoutFilter_o);
+  rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain4_Gain_k * rtb_Objectiveattenuation;
   if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation2_UpperSat_k) {
     rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_UpperSat_k;
   } else if (rtb_Saturation_ix < A380PitchNzLaw_rtP.Saturation2_LowerSat_b) {
     rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation2_LowerSat_b;
   }
 
-  rtb_Objectiveattenuation = rtb_Saturation_ix + A380PitchNzLaw_rtP.Bias2_Bias;
-  A380PitchNzLaw_WashoutFilter(rtb_eta_trim_deg_rate_limit_up_deg_s, A380PitchNzLaw_rtP.WashoutFilter1_C1,
-    rtu_In_time_dt, &rtb_Y_kl, &A380PitchNzLaw_DWork.sf_WashoutFilter_m);
+  rtb_eta_trim_deg_rate_limit_up_deg_s = rtb_Saturation_ix + A380PitchNzLaw_rtP.Bias2_Bias;
+  A380PitchNzLaw_WashoutFilter(rtb_eta_trim_deg_rate_limit_lo_deg_s, A380PitchNzLaw_rtP.WashoutFilter1_C1,
+    rtu_In_time_dt, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_WashoutFilter_m);
   if (rtb_y_k) {
-    rtb_Y_a = A380PitchNzLaw_rtP.Gain4_Gain_h * rtb_eta_trim_deg_rate_limit_lo_deg_s;
-    if (rtb_Y_a > A380PitchNzLaw_rtP.Constant_Value_o) {
-      rtb_Y_a = A380PitchNzLaw_rtP.Constant_Value_o;
+    rtb_Objectiveattenuation = A380PitchNzLaw_rtP.Gain4_Gain_h * rtb_Sum1;
+    if (rtb_Objectiveattenuation > A380PitchNzLaw_rtP.Constant_Value_o) {
+      rtb_Objectiveattenuation = A380PitchNzLaw_rtP.Constant_Value_o;
     } else {
-      rtb_Y_kl = A380PitchNzLaw_rtP.Gain2_Gain_f * rtb_Y_kl + rtb_Objectiveattenuation;
-      if (rtb_Y_a < rtb_Y_kl) {
-        rtb_Y_a = rtb_Y_kl;
+      rtb_Y_n = A380PitchNzLaw_rtP.Gain2_Gain_f * rtb_Y_n + rtb_eta_trim_deg_rate_limit_up_deg_s;
+      if (rtb_Objectiveattenuation < rtb_Y_n) {
+        rtb_Objectiveattenuation = rtb_Y_n;
       }
     }
 
-    if (rtb_Y_n > A380PitchNzLaw_rtP.Saturation_UpperSat_n) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation_UpperSat_n;
-    } else if (rtb_Y_n < A380PitchNzLaw_rtP.Saturation_LowerSat_f) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation_LowerSat_f;
+    if (rtb_Y_p > A380PitchNzLaw_rtP.Saturation_UpperSat_n) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation_UpperSat_n;
+    } else if (rtb_Y_p < A380PitchNzLaw_rtP.Saturation_LowerSat_f) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation_LowerSat_f;
     }
 
-    rtb_Y_n = ((rtb_Y_n + rtb_Y_a) + A380PitchNzLaw_rtP.Bias1_Bias_n) * A380PitchNzLaw_rtP.Gain5_Gain_c;
-    if (rtb_Y_n > A380PitchNzLaw_rtP.Saturation1_UpperSat_f) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation1_UpperSat_f;
-    } else if (rtb_Y_n < A380PitchNzLaw_rtP.Saturation1_LowerSat_b) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation1_LowerSat_b;
+    rtb_Y_p = ((rtb_Y_p + rtb_Objectiveattenuation) + A380PitchNzLaw_rtP.Bias1_Bias_n) * A380PitchNzLaw_rtP.Gain5_Gain_c;
+    if (rtb_Y_p > A380PitchNzLaw_rtP.Saturation1_UpperSat_f) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation1_UpperSat_f;
+    } else if (rtb_Y_p < A380PitchNzLaw_rtP.Saturation1_LowerSat_b) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation1_LowerSat_b;
     }
   } else {
-    rtb_Y_n = A380PitchNzLaw_rtP.Constant2_Value_gc;
+    rtb_Y_p = A380PitchNzLaw_rtP.Constant2_Value_gc;
   }
 
-  A380PitchNzLaw_RateLimiter_n(rtb_Y_n, A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_up,
-    A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_lo, rtu_In_time_dt, rtb_y_k, &rtb_Y_kl,
+  A380PitchNzLaw_RateLimiter_n(rtb_Y_p, A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_up,
+    A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_lo, rtu_In_time_dt, rtb_y_k, &rtb_Objectiveattenuation,
     &A380PitchNzLaw_DWork.sf_RateLimiter_m);
   A380PitchNzLaw_MATLABFunction_c(rtu_In_on_ground, rtu_In_time_dt, A380PitchNzLaw_rtP.ConfirmNode2_isRisingEdge_e,
     A380PitchNzLaw_rtP.ConfirmNode2_timeDelay_h, &rtb_y_k, &A380PitchNzLaw_DWork.sf_MATLABFunction_c);
   rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain1_Gain_a4 * *rtu_In_Theta_deg;
-  rtb_eta_trim_deg_rate_limit_lo_deg_s = (A380PitchNzLaw_rtP.Gain_Gain_jr * std::cos(rtb_Saturation_ix) -
-    A380PitchNzLaw_rtP.Gain1_Gain_kc * std::sin(rtb_Saturation_ix)) + A380PitchNzLaw_rtP.Bias_Bias_b;
-  rtb_eta_trim_deg_rate_limit_up_deg_s = rtb_Max_d + rtb_eta_trim_deg_rate_limit_lo_deg_s;
-  A380PitchNzLaw_WashoutFilter(rtb_eta_trim_deg_rate_limit_up_deg_s, A380PitchNzLaw_rtP.WashoutFilter_C1_hq,
-    rtu_In_time_dt, &rtb_Y_a, &A380PitchNzLaw_DWork.sf_WashoutFilter_f);
-  A380PitchNzLaw_WashoutFilter(rtb_eta_trim_deg_rate_limit_lo_deg_s, A380PitchNzLaw_rtP.WashoutFilter1_C1_n,
-    rtu_In_time_dt, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_WashoutFilter_i);
+  rtb_Saturation_ix = (A380PitchNzLaw_rtP.Gain_Gain_jr * std::cos(rtb_Saturation_ix) - A380PitchNzLaw_rtP.Gain1_Gain_kc *
+                       std::sin(rtb_Saturation_ix)) + A380PitchNzLaw_rtP.Bias_Bias_b;
+  rtb_eta_trim_deg_rate_limit_lo_deg_s = rtb_Max_d + rtb_Saturation_ix;
+  A380PitchNzLaw_WashoutFilter(rtb_eta_trim_deg_rate_limit_lo_deg_s, A380PitchNzLaw_rtP.WashoutFilter_C1_hq,
+    rtu_In_time_dt, &rtb_Y_n, &A380PitchNzLaw_DWork.sf_WashoutFilter_f);
+  A380PitchNzLaw_WashoutFilter(rtb_Saturation_ix, A380PitchNzLaw_rtP.WashoutFilter1_C1_n, rtu_In_time_dt, &rtb_Y_p,
+    &A380PitchNzLaw_DWork.sf_WashoutFilter_i);
   if (rtb_y_k) {
-    rtb_Y_a *= A380PitchNzLaw_rtP.Gain4_Gain_o;
-    if (rtb_Y_a > A380PitchNzLaw_rtP.Constant_Value_a) {
-      rtb_Y_a = A380PitchNzLaw_rtP.Constant_Value_a;
+    rtb_Y_n *= A380PitchNzLaw_rtP.Gain4_Gain_o;
+    if (rtb_Y_n > A380PitchNzLaw_rtP.Constant_Value_a) {
+      rtb_Y_n = A380PitchNzLaw_rtP.Constant_Value_a;
     } else {
-      rtb_Y_n = A380PitchNzLaw_rtP.Gain2_Gain * rtb_Y_n + rtb_Objectiveattenuation;
-      if (rtb_Y_a < rtb_Y_n) {
-        rtb_Y_a = rtb_Y_n;
+      rtb_Y_p = A380PitchNzLaw_rtP.Gain2_Gain * rtb_Y_p + rtb_eta_trim_deg_rate_limit_up_deg_s;
+      if (rtb_Y_n < rtb_Y_p) {
+        rtb_Y_n = rtb_Y_p;
       }
     }
 
-    if (rtb_eta_trim_deg_rate_limit_up_deg_s > A380PitchNzLaw_rtP.Saturation_UpperSat_l) {
-      rtb_eta_trim_deg_rate_limit_up_deg_s = A380PitchNzLaw_rtP.Saturation_UpperSat_l;
-    } else if (rtb_eta_trim_deg_rate_limit_up_deg_s < A380PitchNzLaw_rtP.Saturation_LowerSat_i) {
-      rtb_eta_trim_deg_rate_limit_up_deg_s = A380PitchNzLaw_rtP.Saturation_LowerSat_i;
+    if (rtb_eta_trim_deg_rate_limit_lo_deg_s > A380PitchNzLaw_rtP.Saturation_UpperSat_l) {
+      rtb_eta_trim_deg_rate_limit_lo_deg_s = A380PitchNzLaw_rtP.Saturation_UpperSat_l;
+    } else if (rtb_eta_trim_deg_rate_limit_lo_deg_s < A380PitchNzLaw_rtP.Saturation_LowerSat_i) {
+      rtb_eta_trim_deg_rate_limit_lo_deg_s = A380PitchNzLaw_rtP.Saturation_LowerSat_i;
     }
 
-    rtb_Y_n = ((rtb_eta_trim_deg_rate_limit_up_deg_s + rtb_Y_a) + A380PitchNzLaw_rtP.Bias1_Bias) *
+    rtb_Y_p = ((rtb_eta_trim_deg_rate_limit_lo_deg_s + rtb_Y_n) + A380PitchNzLaw_rtP.Bias1_Bias) *
       A380PitchNzLaw_rtP.Gain3_Gain;
-    if (rtb_Y_n > A380PitchNzLaw_rtP.Saturation1_UpperSat) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation1_UpperSat;
-    } else if (rtb_Y_n < A380PitchNzLaw_rtP.Saturation1_LowerSat) {
-      rtb_Y_n = A380PitchNzLaw_rtP.Saturation1_LowerSat;
+    if (rtb_Y_p > A380PitchNzLaw_rtP.Saturation1_UpperSat) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation1_UpperSat;
+    } else if (rtb_Y_p < A380PitchNzLaw_rtP.Saturation1_LowerSat) {
+      rtb_Y_p = A380PitchNzLaw_rtP.Saturation1_LowerSat;
     }
   } else {
-    rtb_Y_n = A380PitchNzLaw_rtP.Constant2_Value_g;
+    rtb_Y_p = A380PitchNzLaw_rtP.Constant2_Value_g;
   }
 
-  A380PitchNzLaw_RateLimiter_n(rtb_Y_n, A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_up_j,
-    A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_lo_j, rtu_In_time_dt, rtb_y_k, &rtb_Y_l,
+  A380PitchNzLaw_RateLimiter_n(rtb_Y_p, A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_up_j,
+    A380PitchNzLaw_rtP.RateLimiterGenericVariableTs_lo_j, rtu_In_time_dt, rtb_y_k, &rtb_Y_j,
     &A380PitchNzLaw_DWork.sf_RateLimiter_n5);
-  rtb_Y_n = std::fmax(rtb_Y_kl, rtb_Y_l);
+  rtb_Y_p = std::fmax(rtb_Objectiveattenuation, rtb_Y_j);
   A380PitchNzLaw_MATLABFunction(rtb_OR4, rtu_In_time_dt, A380PitchNzLaw_rtP.ConfirmNode1_isRisingEdge_c,
     A380PitchNzLaw_rtP.ConfirmNode1_timeDelay_p, &rtb_y_k, &A380PitchNzLaw_DWork.sf_MATLABFunction_e);
   A380PitchNzLaw_DWork.Delay_DSTATE_j5 += std::fmax(std::fmin(static_cast<real_T>(rtb_y_k) -
@@ -2207,7 +2196,7 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Objectiveattenuation = A380PitchNzLaw_DWork.Delay_DSTATE_j5;
   }
 
-  rtb_Y_kl = (A380PitchNzLaw_rtP.Constant_Value_by - rtb_Objectiveattenuation) * *rtu_In_Theta_deg + *rtu_In_alpha_deg *
+  rtb_Y_n = (A380PitchNzLaw_rtP.Constant_Value_by - rtb_Objectiveattenuation) * *rtu_In_Theta_deg + *rtu_In_alpha_deg *
     rtb_Objectiveattenuation;
   if (A380PitchNzLaw_DWork.Delay_DSTATE_j5 > A380PitchNzLaw_rtP.Saturation_UpperSat_kb) {
     rtb_Objectiveattenuation = A380PitchNzLaw_rtP.Saturation_UpperSat_kb;
@@ -2237,7 +2226,7 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation_LowerSat_ae;
   }
 
-  A380PitchNzLaw_DWork.Delay_DSTATE_kp += (rtb_Max_d - look1_binlcpw(rtb_Y_kl / rtb_Saturation_ix,
+  A380PitchNzLaw_DWork.Delay_DSTATE_kp += (rtb_Max_d - look1_binlcpw(rtb_Y_n / rtb_Saturation_ix,
     A380PitchNzLaw_rtP.Objectiveattenuation_bp01Data, A380PitchNzLaw_rtP.Objectiveattenuation_tableData, 1U) *
     look1_binlcpw(rtb_Gain, A380PitchNzLaw_rtP.Sticktopitchrate_bp01Data, A380PitchNzLaw_rtP.Sticktopitchrate_tableData,
                   4U)) * look1_binlcpw(*rtu_In_Theta_deg, A380PitchNzLaw_rtP.Pitchactivation_bp01Data,
@@ -2251,27 +2240,27 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
 
   rtb_Max_d = look1_binlcpw(rtb_Gain, A380PitchNzLaw_rtP.Largestickbypass_bp01Data,
     A380PitchNzLaw_rtP.Largestickbypass_tableData, 3U);
-  A380PitchNzLaw_LagFilter(rtb_Gain, A380PitchNzLaw_rtP.LagFilter_C1_g, rtu_In_time_dt, &rtb_Y_kl,
+  A380PitchNzLaw_LagFilter(rtb_Gain, A380PitchNzLaw_rtP.LagFilter_C1_g, rtu_In_time_dt, &rtb_Objectiveattenuation,
     &A380PitchNzLaw_DWork.sf_LagFilter_h);
-  rtb_Gain = (std::fmax(std::fmin((A380PitchNzLaw_rtP.Gain1_Gain_aq * *rtu_In_qk_deg_s * rtb_Y_of + rtb_Y_n) +
+  rtb_Gain = (std::fmax(std::fmin((A380PitchNzLaw_rtP.Gain1_Gain_aq * *rtu_In_qk_deg_s * rtb_Y_k + rtb_Y_p) +
     A380PitchNzLaw_DWork.Delay_DSTATE_kp, look1_binlcpw(rtb_Gain, A380PitchNzLaw_rtP.Upperfeedbackbound_bp01Data,
     A380PitchNzLaw_rtP.Upperfeedbackbound_tableData, 4U)), look1_binlcpw(rtb_Gain,
-    A380PitchNzLaw_rtP.Lowerfeedbackbound_bp01Data, A380PitchNzLaw_rtP.Lowerfeedbackbound_tableData, 2U)) * rtb_Y_a0 +
-              look1_binlcpw((rtb_Y_kl + rtb_Gain) * A380PitchNzLaw_rtP.Gain_Gain_k0 * (A380PitchNzLaw_rtP.Gain1_Gain_i *
-    rtb_Max_d + A380PitchNzLaw_rtP.Bias_Bias_j) + rtb_Max_d * rtb_Gain,
+    A380PitchNzLaw_rtP.Lowerfeedbackbound_bp01Data, A380PitchNzLaw_rtP.Lowerfeedbackbound_tableData, 2U)) * rtb_Y_d +
+              look1_binlcpw((rtb_Objectiveattenuation + rtb_Gain) * A380PitchNzLaw_rtP.Gain_Gain_k0 *
+    (A380PitchNzLaw_rtP.Gain1_Gain_i * rtb_Max_d + A380PitchNzLaw_rtP.Bias_Bias_j) + rtb_Max_d * rtb_Gain,
     A380PitchNzLaw_rtP.Sticktoelevatordegrees_bp01Data, A380PitchNzLaw_rtP.Sticktoelevatordegrees_tableData, 3U)) *
     (A380PitchNzLaw_rtP.Constant_Value_o1 - rtb_Sum_ma) + A380PitchNzLaw_DWork.Delay_DSTATE_o * rtb_Sum_ma;
-  if (rtb_Y_h > A380PitchNzLaw_rtP.Saturation_UpperSat_p) {
+  if (rtb_Y_if > A380PitchNzLaw_rtP.Saturation_UpperSat_p) {
     rtb_Sum_ma = A380PitchNzLaw_rtP.Saturation_UpperSat_p;
-  } else if (rtb_Y_h < A380PitchNzLaw_rtP.Saturation_LowerSat_hs) {
+  } else if (rtb_Y_if < A380PitchNzLaw_rtP.Saturation_LowerSat_hs) {
     rtb_Sum_ma = A380PitchNzLaw_rtP.Saturation_LowerSat_hs;
   } else {
-    rtb_Sum_ma = rtb_Y_h;
+    rtb_Sum_ma = rtb_Y_if;
   }
 
   A380PitchNzLaw_RateLimiter_h(rtu_In_delta_eta_pos, A380PitchNzLaw_rtP.RateLimiterVariableTs_up_i,
     A380PitchNzLaw_rtP.RateLimiterVariableTs_lo_f, rtu_In_time_dt,
-    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition_c, &rtb_Y_l, &A380PitchNzLaw_DWork.sf_RateLimiter_h);
+    A380PitchNzLaw_rtP.RateLimiterVariableTs_InitialCondition_c, &rtb_Y_j, &A380PitchNzLaw_DWork.sf_RateLimiter_h);
   rtb_Saturation_ix = A380PitchNzLaw_rtP.Gain3_Gain_f * *rtu_In_gnd_splr_cmd_deg;
   rtb_Max_d = (*rtu_In_nz_g + A380PitchNzLaw_rtP.Bias_Bias_d) * A380PitchNzLaw_rtP.Gain2_Gain_n +
     A380PitchNzLaw_rtP.Gain1_Gain_h * *rtu_In_qk_deg_s;
@@ -2287,7 +2276,7 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
     rtb_Max_d = A380PitchNzLaw_rtP.Saturation_LowerSat_kf;
   }
 
-  rtb_Saturation_ix = ((A380PitchNzLaw_rtP.Gain_Gain_m * rtb_Y_l + rtb_Max_d) + rtb_Saturation_ix) * rtb_Sum_ma +
+  rtb_Saturation_ix = ((A380PitchNzLaw_rtP.Gain_Gain_m * rtb_Y_j + rtb_Max_d) + rtb_Saturation_ix) * rtb_Sum_ma +
     (A380PitchNzLaw_rtP.Constant_Value_fw - rtb_Sum_ma) * rtb_Gain;
   if (rtb_Saturation_ix > A380PitchNzLaw_rtP.Saturation_UpperSat_kp) {
     rtb_Saturation_ix = A380PitchNzLaw_rtP.Saturation_UpperSat_kp;
@@ -2315,8 +2304,8 @@ void A380PitchNzLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_tim
   A380PitchNzLaw_DWork.Delay_DSTATE_m = rtb_Gain_i4;
   A380PitchNzLaw_DWork.Delay_DSTATE_k2 = rtb_Divide_n0;
   A380PitchNzLaw_DWork.Delay_DSTATE_jh = rtb_Minup;
-  A380PitchNzLaw_DWork.Delay_DSTATE_dy = rtb_Y_ht;
-  A380PitchNzLaw_DWork.Delay_DSTATE_e5 = rtb_Y_g;
+  A380PitchNzLaw_DWork.Delay_DSTATE_dy = rtb_Y_l;
+  A380PitchNzLaw_DWork.Delay_DSTATE_e5 = rtb_Y_my;
   A380PitchNzLaw_DWork.Delay_DSTATE_gz = rtb_v_target;
   A380PitchNzLaw_DWork.Delay_DSTATE_lf = rtb_Saturation_an;
   A380PitchNzLaw_DWork.Delay_DSTATE_h = rtb_Sum1_mw;
