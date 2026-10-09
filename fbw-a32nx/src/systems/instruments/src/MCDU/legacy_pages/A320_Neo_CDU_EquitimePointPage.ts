@@ -1,14 +1,16 @@
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FormatTemplate, Column } from '../legacy/A320_Neo_CDU_Format';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FmsFormatters } from '../legacy/FmsFormatters';
-import { Vec2Math } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { formatWindVector } from '@fmgc/flightplanning/data/wind';
 
 export class CDUEquitimePointPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -95,9 +97,7 @@ export class CDUEquitimePointPage {
 
       trueWindRef1Column.update(
         etpService.isWindToReferenceFix1PilotEntered
-          ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix1) * MathUtils.RADIANS_TO_DEGREES)
-              .toFixed(0)
-              .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix1).toFixed(0).padStart(3, '0')}`
+          ? `${formatWindVector(etpService.windToReferenceFix1)}`
           : '[ ]°/[ ]',
       );
 
@@ -156,9 +156,7 @@ export class CDUEquitimePointPage {
 
       trueWindRef2Column.update(
         etpService.isWindToReferenceFix2PilotEntered
-          ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix2) * MathUtils.RADIANS_TO_DEGREES)
-              .toFixed(0)
-              .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix2).toFixed(0).padStart(3, '0')}`
+          ? `${formatWindVector(etpService.windToReferenceFix2)}`
           : '[ ]°/[ ]',
       );
 

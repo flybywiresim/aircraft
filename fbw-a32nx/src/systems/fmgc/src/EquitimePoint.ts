@@ -1,5 +1,8 @@
+// Copyright (c) 2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import { Arinc429Register, Fix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { AeroMath, ConsumerValue, EventBus, UnitType, Vec2Math, Wait } from '@microsoft/msfs-sdk';
+import { AeroMath, ConsumerValue, EventBus, UnitType, Wait } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { Geometry } from './guidance/Geometry';
@@ -10,6 +13,7 @@ import { GuidanceController } from './guidance/GuidanceController';
 import { NavigationProvider } from './navigation/NavigationProvider';
 import { WindMeasurement } from './guidance/vnav/wind/WindObserver';
 import { WindUtils } from './guidance/vnav/wind/WindUtils';
+import { WindVector } from './flightplanning/data/wind';
 
 export interface EquitimePointInterface {
   etpTimeToRef1: number;
@@ -22,13 +26,16 @@ export interface EquitimePointInterface {
 }
 
 export class EquitimePoint {
-  private static readonly DefaultWind = Vec2Math.create();
+  private static readonly DefaultWind: WindVector = { magnitude: 0, direction: 0 };
 
   private static readonly AbsoluteToleranceSeconds = 10;
 
-  private static readonly WindVectorCache = Vec2Math.create();
+  private static readonly WindVectorCache = { direction: 0, magnitude: 0 };
 
-  private static readonly WindMeasurementCache: WindMeasurement = { altitude: NaN, vector: Vec2Math.create() };
+  private static readonly WindMeasurementCache: WindMeasurement = {
+    altitude: undefined,
+    vector: { direction: undefined, magnitude: undefined },
+  };
 
   private geometry: Geometry | undefined = undefined;
 
@@ -36,8 +43,8 @@ export class EquitimePoint {
 
   private pilotEnteredReferenceFix1: Fix | undefined;
   private pilotEnteredReferenceFix2: Fix | undefined;
-  private pilotEnteredWindToReferenceFix1: Float64Array | undefined;
-  private pilotEnteredWindToReferenceFix2: Float64Array | undefined;
+  private pilotEnteredWindToReferenceFix1: WindVector | undefined;
+  private pilotEnteredWindToReferenceFix2: WindVector | undefined;
 
   private result: Partial<EquitimePointInterface> = {};
 
@@ -203,12 +210,12 @@ export class EquitimePoint {
     this.reset();
   }
 
-  setPilotEnteredWindToReferenceFix1(windVector: Float64Array | undefined): void {
+  setPilotEnteredWindToReferenceFix1(windVector: WindVector | undefined): void {
     this.pilotEnteredWindToReferenceFix1 = windVector;
     this.reset();
   }
 
-  setPilotEnteredWindToReferenceFix2(windVector: Float64Array | undefined): void {
+  setPilotEnteredWindToReferenceFix2(windVector: WindVector | undefined): void {
     this.pilotEnteredWindToReferenceFix2 = windVector;
     this.reset();
   }
@@ -329,11 +336,11 @@ export class EquitimePoint {
     return this.result.etpTimeToRef2;
   }
 
-  get windToReferenceFix1(): Float64Array {
+  get windToReferenceFix1(): WindVector {
     return this.pilotEnteredWindToReferenceFix1 ?? EquitimePoint.DefaultWind;
   }
 
-  get windToReferenceFix2(): Float64Array {
+  get windToReferenceFix2(): WindVector {
     return this.pilotEnteredWindToReferenceFix2 ?? EquitimePoint.DefaultWind;
   }
 
@@ -359,15 +366,15 @@ export class EquitimePoint {
    * Computes the time to fly from one coordinate to another, taking into account the wind and true airspeed.
    * @param from the starting coordinates
    * @param to the destination coordinates
-   * @param toWind the wind vector as a Float64Array
+   * @param toWind the wind vector
    * @param tas the true airspeed in knots
    * @returns the time in hours to fly from `from` to `to`
    */
   private static timeTo(
     from: Coordinates,
     to: Coordinates,
-    fromWind: Float64Array,
-    toWind: Float64Array,
+    fromWind: WindVector,
+    toWind: WindVector,
     tas: number,
   ): number {
     const distance = distanceTo(from, to);
