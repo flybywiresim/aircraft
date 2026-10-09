@@ -41,7 +41,6 @@
         "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
         "@instruments/common/*": ["./instruments/src/Common/*"],
         "@localization/*": ["../localization/*"],
-        "@sentry/*": ["./sentry-client/src/*"],
         "@shared/*": ["./shared/src/*"],
         "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
         "@tcas/*": ["./tcas/src/*"],

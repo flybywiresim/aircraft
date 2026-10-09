@@ -1,14 +1,17 @@
 // @ts-strict-ignore
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
+
+import { SENTRY_CONSENT_KEY, SentryConsentState, usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
 import { t, useAppSelector } from '@flybywiresim/flypad';
-import { SettingsPage } from '../Settings';
+import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
+
+import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
 // @ts-ignore
 import { useTroubleshooting } from '../../TroubleshootingContext';
-import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
-import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
+import { SettingsPage } from '../Settings';
 
 export const TroubleshootingPage = () => {
   const errorLog = useTroubleshooting();
@@ -16,6 +19,8 @@ export const TroubleshootingPage = () => {
   const [naviInstalled, setNaviInstalled] = useState(false);
   const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
   const { mismatches: fileHashMismatches } = useAppSelector((state) => state.fileHashes);
+  const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+  const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
   useEffect(() => {
     fetch('/VFS/scenery/fs-base-jep/scenery/world/airaccycle.bgl', { method: 'HEAD' }).then((r) =>
@@ -37,6 +42,9 @@ export const TroubleshootingPage = () => {
         {'\n'}
         NavData Dates: {navDates + '\n'}
         Navigraph NavData: {naviInstalled ? 'True\n' : 'False\n'}
+        Sentry ID:{' '}
+        {sentryEnabled === SentryConsentState.Given ? sessionId : 'Disabled (Settings > ATSU/AOC > Error Reporting)'}
+        {'\n'}
         {fileHashMismatches.length > 0
           ? fileHashMismatches.map(
               (m) => `File tampered: ${m.vfsPath}; expected ${m.expectedHash}, actual ${m.actualHash}\n`,

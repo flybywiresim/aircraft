@@ -79,6 +79,4 @@ render(
   >
     <EfbWrapper failures={A320FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
   </AircraftContext.Provider>,
-  true,
-  true,
 );
