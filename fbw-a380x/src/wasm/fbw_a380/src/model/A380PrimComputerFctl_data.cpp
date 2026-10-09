@@ -192,19 +192,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   14.0,
 
-  11.0,
-
-  12.0,
-
-  13.0,
-
   21.0,
-
-  11.0,
-
-  12.0,
-
-  13.0,
 
   21.0,
 
@@ -229,18 +217,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   19.0,
 
   21.0,
-
-  17.0,
-
-  18.0,
-
-  19.0,
-
-  20.0,
-
-  21.0,
-
-  26.0,
 
   17.0,
 
@@ -326,27 +302,23 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   0.02,
 
-  0.0,
-
-  0.0,
+  1.0,
 
   1.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
 
   2.0,
 
-  3.0,
+  2.0,
 
-  4.0,
+  0.1,
 
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  5.0,
-
-  1.0,
+  0.1,
 
   -1.0,
 
@@ -433,6 +405,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   -30.0,
 
   -30.0,
+
+  0.1,
+
+  0.1,
 
   0.2,
 
@@ -546,15 +522,17 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   SignStatusMatrix::NormalOperation,
 
-  a380_lateral_efcs_law::NormalLaw,
+  a380_efcs_law::DirectLaw,
 
-  a380_pitch_efcs_law::DirectLaw,
+  a380_efcs_law::NormalLaw,
 
-  a380_pitch_efcs_law::AlternateLaw2,
+  a380_efcs_law::AlternateLaw1A,
 
-  a380_pitch_efcs_law::NormalLaw,
+  a380_efcs_law::NormalLaw,
 
-  a380_pitch_efcs_law::NormalLaw,
+  a380_efcs_law::NormalLaw,
+
+  a380_lateral_law::YStarLaw,
 
   0.0F,
 
@@ -1824,6 +1802,11 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
             {
               0U,
               0.0F
+            },
+
+            {
+              0U,
+              0.0F
             }
           },
 
@@ -2059,6 +2042,11 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
         {
           {
+            {
+              0U,
+              0.0F
+            },
+
             {
               0U,
               0.0F
@@ -3343,6 +3331,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
         0.0,
         0.0,
         0.0,
+        0.0,
+        0.0,
         0.0
       },
       0.0,
@@ -3394,6 +3384,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       0.0,
       0.0,
       0.0,
+      false,
       false,
       false
     },
@@ -3494,12 +3485,14 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
         0.0,
         0.0
       },
-      a380_lateral_efcs_law::NormalLaw,
-      a380_lateral_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
+      a380_efcs_law::None,
+      a380_efcs_law::None,
+      a380_pitch_law::None,
+      a380_lateral_law::None,
       false,
       false,
+      false,
+      0U,
       false,
       false,
       false,
@@ -4136,6 +4129,11 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
         {
           0U,
           0.0F
+        },
+
+        {
+          0U,
+          0.0F
         }
       },
 
@@ -4476,6 +4474,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
 
+  30.0,
+
+  0.0,
+
 
   { 9.0, 9.0, 9.0, 9.0, 13.0, 13.0, 13.0, 13.0, 13.0, 13.0, 13.0, 13.0, 12.0, 12.0, 12.0, 12.0, 11.3, 11.3, 11.3, 11.3,
     11.3, 11.3, 11.3, 11.3 },
@@ -4485,6 +4487,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
 
   { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+  30.0,
+
+  0.0,
 
 
   { -0.93, -1.39, -2.74, -4.2, -8.36, -9.77 },
@@ -4593,10 +4599,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   30.0,
 
   -30.0,
-
-  0.25,
-
-  0.0,
 
   0.25,
 
@@ -4784,5 +4786,32 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   false,
 
-  false
+  false,
+
+  {
+
+    false,
+
+    true,
+
+    true,
+
+
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+  ,
+
+
+  {
+
+    false,
+
+    true,
+
+    true,
+
+
+    { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
+  }
+
 };

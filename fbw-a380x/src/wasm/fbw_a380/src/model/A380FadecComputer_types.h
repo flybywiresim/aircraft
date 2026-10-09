@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -70,6 +70,7 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
@@ -169,19 +170,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
-#define DEFINED_TYPEDEF_FOR_athr_data_computed_
-
-struct athr_data_computed
-{
-  boolean_T TLA_in_active_range;
-  boolean_T is_FLX_active;
-  boolean_T ATHR_disabled;
-  real_T time_since_touchdown;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_eec_
 #define DEFINED_TYPEDEF_FOR_base_eec_
 
@@ -200,6 +188,19 @@ struct base_eec
   base_arinc_429 selected_n2_actual_percent;
   base_arinc_429 selected_n1_actual_percent;
   base_arinc_429 ecu_maintenance_word_6;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
+#define DEFINED_TYPEDEF_FOR_athr_data_computed_
+
+struct athr_data_computed
+{
+  boolean_T TLA_in_active_range;
+  boolean_T is_FLX_active;
+  boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
 };
 
 #endif

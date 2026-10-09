@@ -3,8 +3,8 @@
 #include <map>
 #include <memory>
 #include <set>
-#include "../LocalVariable.h"
 #include "FailureList.h"
+#include "LocalVariable.h"
 
 class FailuresConsumer {
  public:
