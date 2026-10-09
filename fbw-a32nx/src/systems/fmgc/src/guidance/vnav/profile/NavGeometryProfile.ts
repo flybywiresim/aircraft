@@ -11,7 +11,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { WindProfile } from '../wind/WindProfile';
-import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
@@ -245,7 +245,10 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       const altitudeConstraint = leg.altitudeConstraint;
       const speedConstraint = leg.speedConstraint;
 
-      const windPrediction = this.winds.getWindForecastAtLeg(i, altitude, profilePhase, Vec2Math.create());
+      const windPrediction = this.winds.getWindForecastAtLeg(i, altitude, profilePhase, {
+        direction: 0,
+        magnitude: 0,
+      });
 
       predictions.set(i, {
         distanceFromStart,
