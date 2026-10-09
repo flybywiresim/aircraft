@@ -1,5 +1,7 @@
 use systems::{
-    hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock},
+    hydraulic::flap_slat::{
+        SecondarySurfaceSide, SolenoidStatus, ValveBlockController, WingTipBrakeController,
+    },
     shared::PositionPickoffUnit,
 };
 use uom::si::{angle::degree, f64::*};
@@ -38,7 +40,7 @@ impl SlatsChannel {
         feedback_position: &impl PositionPickoffUnit,
     ) {
         self.demanded_angle = Self::demanded_slats_fppu_angle_from_conf(flaps_conf);
-        self.feedback_angle = feedback_position.angle();
+        self.feedback_angle = feedback_position.fppu_angle();
     }
 
     pub(super) fn get_demanded_angle(&self) -> Angle {
@@ -52,7 +54,7 @@ impl SlatsChannel {
 // When the POB (Pressure OFF Brake) solenoid is energised, then the hydraulic motors are allowed to move.
 // When the POB solenoid is de-energised (due to SFCC command or no SFCC power), then the hydraulic motors
 // are held in position and can't move.
-impl ValveBlock for SlatsChannel {
+impl ValveBlockController for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
@@ -64,19 +66,38 @@ impl ValveBlock for SlatsChannel {
         }
     }
 
-    fn get_command_status(&self) -> Option<ChannelCommand> {
+    fn get_retract_status(&self) -> SolenoidStatus {
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
         let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
             demanded_angle,
             feedback_angle,
         );
-        if in_target_position {
-            None
-        } else if demanded_angle > feedback_angle {
-            Some(ChannelCommand::Extend)
+        if feedback_angle > demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
         } else {
-            Some(ChannelCommand::Retract)
+            SolenoidStatus::DeEnergised
         }
+    }
+
+    fn get_extend_status(&self) -> SolenoidStatus {
+        let demanded_angle = self.get_demanded_angle();
+        let feedback_angle = self.get_feedback_angle();
+        let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
+        );
+        if feedback_angle < demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
+        } else {
+            SolenoidStatus::DeEnergised
+        }
+    }
+}
+impl WingTipBrakeController for SlatsChannel {
+    fn get_wtb_status(&self, _side: SecondarySurfaceSide) -> SolenoidStatus {
+        // TODO: need to connect the slats WTB to the electrical system.
+        // This is just a placeholder.
+        SolenoidStatus::DeEnergised
     }
 }
