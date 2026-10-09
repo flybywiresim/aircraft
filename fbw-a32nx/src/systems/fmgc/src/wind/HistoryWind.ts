@@ -91,7 +91,7 @@ export class HistoryWind {
     const windDirection = this.windDirection.get();
 
     if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
-      this.recordedCruiseWind.altitude = cruiseAltitude;
+      this.recordedCruiseWind.altitude = Math.round(cruiseAltitude / 100) * 100; // Round to nearest 100 feet as we only store FLs in history winds
       this.recordedCruiseWind.vector = {
         direction: windDirection * MathUtils.DEGREES_TO_RADIANS,
         magnitude: windSpeed,
@@ -120,15 +120,7 @@ export class HistoryWind {
     const shouldAddInterpolatedWind =
       cruiseAltitude !== null &&
       !interpolationSourceWinds.some((wind) => wind.altitude === cruiseAltitude) &&
-      interpolationSourceWinds.length >= 0 && //we only want to interpolate if there are entries between the CRZ FL.
-      interpolationSourceWinds.some(
-        (wind) =>
-          wind.altitude! < cruiseAltitude && wind.vector.direction !== undefined && wind.vector.magnitude !== undefined,
-      ) &&
-      interpolationSourceWinds.some(
-        (wind) =>
-          wind.altitude! > cruiseAltitude && wind.vector.direction !== undefined && wind.vector.magnitude !== undefined,
-      );
+      interpolationSourceWinds.length > 0; //we only want to interpolate if there are complete entries in the list.
 
     if (shouldAddInterpolatedWind) {
       this.interpolationCache.altitude = cruiseAltitude;
