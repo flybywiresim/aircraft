@@ -43,7 +43,7 @@ export interface Fmgc {
   getFOB(forPlan: FlightPlanIndex): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
-  getTropoPause(): Feet;
+  getTropoPause(): Feet | null;
   getManagedClimbSpeed(): Knots;
   getManagedClimbSpeedMach(): Mach;
   getAccelerationAltitude(): Feet;
@@ -595,5 +595,12 @@ export class GuidanceController {
 
       this.automaticSequencing = true;
     }
+  }
+
+  /**
+   * @return true if the vertical profile has a step descent, false otherwise.
+   */
+  public hasStepDescent(): boolean {
+    return this.vnavDriver.hasStepDescent();
   }
 }

@@ -12,7 +12,7 @@ import { ApproachUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -46,7 +46,7 @@ const ApproachTypeOrder = Object.freeze({
 
 interface MfdFmsFplnArrProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
+export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
   private readonly toIcao = Subject.create<string>('');
 
   private readonly rwyIdent = Subject.create<string>('');
