@@ -1182,7 +1182,7 @@ void A380PrimComputerFg::step()
                  (!A380PrimComputerFg_DWork.Memory_PreviousInput) && rtb_OR_lr &&
                  (!A380PrimComputerFg_U.in.flight_envelope.speed_scale_lost));
     rtb_ap_fd_2_condition = (rtb_OR_lr && (A380PrimComputerFg_DWork.Delay_DSTATE_c.manual_spd_control_active ||
-      A380PrimComputerFg_DWork.Delay_DSTATE_c.auto_spd_control_active) && ((rtb_ap_fd_1_condition &&
+      A380PrimComputerFg_DWork.Delay_DSTATE_c.auto_spd_control_active || rtb_y_d) && ((rtb_ap_fd_1_condition &&
       ((A380PrimComputerFg_U.in.general_logic.ra_computation_data_ft > 100.0) ||
        A380PrimComputerFg_U.in.general_logic.all_ra_failure)) || rtb_y_p3 || rtb_y_d || rtb_y_av));
     A380PrimComputerFg_MATLABFunction_e(&A380PrimComputerFg_DWork.Delay_DSTATE[0U].fg.ats_discrete_word,
