@@ -13,7 +13,7 @@ import './MfdFmsFplnHold.scss';
 import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from '../../common/DataEntryFormats';
 import { RadioButtonColor, RadioButtonGroup } from '../../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -23,7 +23,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
+export class MfdFmsFplnHold extends FmsFlightPlanPage<MfdFmsFplnHoldProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );
