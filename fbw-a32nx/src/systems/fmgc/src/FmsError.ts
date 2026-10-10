@@ -13,6 +13,7 @@ export enum FmsErrorType {
   EntryOutOfRange,
   ListOf99InUse,
   AwyWptMismatch,
+  NotAllowed,
 }
 
 export class FmsError extends Error {

@@ -62,6 +62,5 @@ export class AtsuSystem implements Instrument {
 
   public onUpdate(): void {
     this.simVarHandling.update();
-    this.router.update();
   }
 }
