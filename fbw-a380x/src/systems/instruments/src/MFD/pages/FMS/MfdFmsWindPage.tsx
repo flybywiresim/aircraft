@@ -33,7 +33,6 @@ import {
   PropagationType,
   WindEntry,
 } from '@fmgc/flightplanning/data/wind';
-import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import { InputField } from '../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   FlightLevelFormat,
@@ -49,6 +48,7 @@ import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
+import { A380AircraftConfig } from '../../FMC/A380AircraftConfig';
 
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
