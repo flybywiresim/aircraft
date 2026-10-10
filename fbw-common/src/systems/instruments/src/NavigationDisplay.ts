@@ -86,6 +86,7 @@ export enum NdPwpSymbolTypeFlags {
   PwpTimeMarker = 1 << 8,
   PwpCdaFlap1 = 1 << 9,
   PwpCdaFlap2 = 1 << 10,
+  PwpEtp = 1 << 11,
 }
 
 export enum EfisRecomputingReason {
