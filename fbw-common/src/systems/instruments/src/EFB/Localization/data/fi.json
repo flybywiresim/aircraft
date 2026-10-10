@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Kiihdytyskorkeus (ft)",
       "EngineOutAccelerationHeight": "Lentoonlähdön jälkeisen tehonmuutoksen korkeus (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS Baro-yksikkö",
       "IsisMetricAltitude": "ISIS metrinen korkeus",
       "LatLonExtendedFormat": "FMGC Lat/Lon reittipisteen muoto",

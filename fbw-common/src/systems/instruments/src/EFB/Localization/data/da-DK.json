@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Højde (ft)",
       "EngineOutAccelerationHeight": "Accelerationshøjde for motorfejl (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS Baro Unit",
       "IsisMetricAltitude": "Højde ISIS Metric",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",

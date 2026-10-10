@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "加速高度（英尺/ft）",
       "EngineOutAccelerationHeight": "引擎失效速度高度（英尺/ft）",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS 氣壓單位",
       "IsisMetricAltitude": "ISIS 公制高度顯示",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",

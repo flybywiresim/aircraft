@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Высота ускорения (фт)",
       "EngineOutAccelerationHeight": "Высота ускорения на выходе двигателя (фт)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Единица измерения барометра на ISIS",
       "IsisMetricAltitude": "Метрическая высота на ISIS",
       "LatLonExtendedFormat": "Формат промежуточных точек FMGC для широты/долготы",

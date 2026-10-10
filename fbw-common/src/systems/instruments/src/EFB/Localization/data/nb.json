@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Akselerasjonshøyde (ft)",
       "EngineOutAccelerationHeight": "Akselerasjonshøyde for tap av motor (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS Baro-enhet",
       "IsisMetricAltitude": "ISIS Metrisk høyde",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",

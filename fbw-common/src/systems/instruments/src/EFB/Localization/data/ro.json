@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Înălțimea de accelerație (ft)",
       "EngineOutAccelerationHeight": "Înălțime de accelerație fără motor (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Unitatea ISIS Baro",
       "IsisMetricAltitude": "ISIS Altitudine metrică",
       "LatLonExtendedFormat": "FMGC Lat/Lon format puncte de trecere",

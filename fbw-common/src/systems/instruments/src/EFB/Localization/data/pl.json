@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Wysokość Zwiększenia Prędkości (ft)",
       "EngineOutAccelerationHeight": "Wysokość Przyspieszania z Jednym Silnikiem (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Ustawienie Jednostki Barometrycznej na ISIS",
       "IsisMetricAltitude": "Ustawienie Wysokości Metrycznej na ISIS",
       "LatLonExtendedFormat": "Format Punktów Trasy FMGC Szer/Dł Geog.",
