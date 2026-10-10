@@ -4,13 +4,12 @@
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FormatTemplate, Column } from '../legacy/A320_Neo_CDU_Format';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { formatWindVector } from '@fmgc/flightplanning/data/wind';
+import { FmsError } from '@fmgc/FmsError';
 
 export class CDUEquitimePointPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -26,9 +25,6 @@ export class CDUEquitimePointPage {
     }, mcdu.PageTimeout.Medium);
 
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
-
-    const flightPhase = mcdu.flightPhaseManager.phase;
-    const isFlying = flightPhase >= FmgcFlightPhase.Takeoff && flightPhase !== FmgcFlightPhase.Done;
 
     const ref1IdentColumn = new Column(0, '[     ]', Column.cyan, Column.big);
     const ref1BrgColumn = new Column(9, '---', Column.white, Column.big);
@@ -67,7 +63,6 @@ export class CDUEquitimePointPage {
     const acToUtcColumn = new Column(20, '----', Column.white, Column.big);
 
     const etpService = mcdu.equitimePoint;
-    const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
     if (etpService.referenceFix1 !== undefined) {
       const ref1Ident = etpService.referenceFix1.ident;
@@ -86,9 +81,7 @@ export class CDUEquitimePointPage {
 
       if (etpService.pposTimeToReferenceFix1 !== undefined) {
         ref1UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix1 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.pposTimeToReferenceFix1 * 3600),
+          mcdu.getTimePrediction(etpService.pposTimeToReferenceFix1 * 3600, FlightPlanIndex.Active),
           Column.green,
         );
       }
@@ -118,8 +111,6 @@ export class CDUEquitimePointPage {
           }
 
           CDUEquitimePointPage.ShowPage(mcdu);
-          await etpService.resetAndRecompute();
-          CDUEquitimePointPage.ShowPage(mcdu);
         } catch (err) {
           console.error(err);
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
@@ -145,9 +136,7 @@ export class CDUEquitimePointPage {
 
       if (etpService.pposTimeToReferenceFix2 !== undefined) {
         ref2UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix2 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.pposTimeToReferenceFix2 * 3600),
+          mcdu.getTimePrediction(etpService.pposTimeToReferenceFix2 * 3600, FlightPlanIndex.Active),
           Column.green,
         );
       }
@@ -176,8 +165,6 @@ export class CDUEquitimePointPage {
             etpService.setPilotEnteredWindToReferenceFix2(wind);
           }
 
-          CDUEquitimePointPage.ShowPage(mcdu);
-          await etpService.resetAndRecompute();
           CDUEquitimePointPage.ShowPage(mcdu);
         } catch (err) {
           console.error(err);
@@ -226,30 +213,20 @@ export class CDUEquitimePointPage {
         acToDistColumn.update(etpService.pposDistanceToEtp.toFixed(0), Column.green);
 
         acToUtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToEtp * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.pposTimeToEtp * 3600),
+          mcdu.getTimePrediction(etpService.pposTimeToEtp * 3600, FlightPlanIndex.Active),
           Column.green,
         );
 
         if (etpService.etpTimeToReferenceFix1 !== undefined) {
           etpToRef1UtcColumn.update(
-            isFlying
-              ? FmsFormatters.secondsToUTC(
-                  utcTime + etpService.pposTimeToEtp + etpService.etpTimeToReferenceFix1 * 3600,
-                )
-              : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
+            mcdu.getTimePrediction(etpService.etpTimeToReferenceFix1 * 3600, FlightPlanIndex.Active),
             Column.green,
           );
         }
 
         if (etpService.etpTimeToReferenceFix2 !== undefined) {
           etpToRef2UtcColumn.update(
-            isFlying
-              ? FmsFormatters.secondsToUTC(
-                  utcTime + etpService.pposTimeToEtp + etpService.etpTimeToReferenceFix2 * 3600,
-                )
-              : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
+            mcdu.getTimePrediction(etpService.etpTimeToReferenceFix2 * 3600, FlightPlanIndex.Active),
             Column.green,
           );
         }
@@ -258,41 +235,49 @@ export class CDUEquitimePointPage {
 
     // Reference 1
     mcdu.onLeftInput[0] = async (value, scratchpadCallback) => {
-      try {
-        if (value === Keypad.clrValue) {
-          etpService.setPilotEnteredReferenceFix1(undefined);
-        } else {
-          etpService.setPilotEnteredReferenceFix1(await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false));
-        }
-
-        CDUEquitimePointPage.ShowPage(mcdu);
-        await etpService.resetAndRecompute();
-        CDUEquitimePointPage.ShowPage(mcdu);
-      } catch (err) {
-        console.error(err);
-        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-        scratchpadCallback();
-      }
+      etpService
+        .setPilotEnteredReferenceFix1(
+          value === Keypad.clrValue ? undefined : await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false),
+        )
+        .then(() => {
+          CDUEquitimePointPage.ShowPage(mcdu);
+        })
+        .catch((err) => {
+          if (err instanceof FmsError) {
+            mcdu.showFmsErrorMessage(err.type);
+          } else {
+            console.error(err);
+            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          }
+        })
+        .finally(() => {
+          scratchpadCallback();
+        });
     };
 
     // Reference 2
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-      try {
-        if (value === Keypad.clrValue) {
-          etpService.setPilotEnteredReferenceFix2(undefined);
-        } else {
-          etpService.setPilotEnteredReferenceFix2(await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false));
-        }
-
-        CDUEquitimePointPage.ShowPage(mcdu);
-        await etpService.resetAndRecompute();
-        CDUEquitimePointPage.ShowPage(mcdu);
-      } catch (err) {
-        console.error(err);
-        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-        scratchpadCallback();
-      }
+      etpService
+        .setPilotEnteredReferenceFix2(
+          value === Keypad.clrValue ? undefined : await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false),
+        )
+        .then(() => {
+          CDUEquitimePointPage.ShowPage(mcdu);
+        })
+        .catch((err) => {
+          if (err instanceof FmsError) {
+            mcdu.showFmsErrorMessage(err.type);
+          } else {
+            console.error(err);
+            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          }
+        })
+        .finally(() => {
+          scratchpadCallback();
+        });
     };
+
+    const timeHeader = mcdu.getTimePredictionHeader(FlightPlanIndex.Active);
 
     mcdu.setTemplate(
       FormatTemplate([
@@ -301,7 +286,7 @@ export class CDUEquitimePointPage {
           new Column(0, 'A/C TO', Column.white, Column.small),
           new Column(9, 'BRG', Column.white, Column.small),
           new Column(18, 'DIST', Column.white, Column.small, Column.right),
-          new Column(20, isFlying ? 'UTC' : 'TIME', Column.white, Column.small),
+          new Column(20, timeHeader, Column.white, Column.small),
         ],
         [ref1IdentColumn, ref1BrgColumn, ref1DistColumn, ref1UtcColumn],
         [trueWindRef1LabelColumn, etpToRef1LabelColumn],
@@ -312,7 +297,7 @@ export class CDUEquitimePointPage {
         [trueWindRef2Column, etpToRef2BrgColumn, etpToRef2DistColumn, etpToRef2UtcColumn],
         [etpLocationLabelColumn],
         [etpLocationLegColumn, etpLocationLegDistanceColumn],
-        [acToLabelColumn, new Column(15, 'DIST'), new Column(20, isFlying ? 'UTC' : 'TIME')],
+        [acToLabelColumn, new Column(15, 'DIST'), new Column(20, timeHeader)],
         [acToColumn, acToDistColumn, acToUtcColumn],
       ]),
     );

@@ -105,6 +105,7 @@ import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
 import { MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstants';
 import { EquitimePoint } from '@fmgc/EquitimePoint';
+import { GuidanceToFmsEvents as GuidanceToFmsEvents } from '@fmgc/events/GuidanceToFmsEvents';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -444,6 +445,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
 
+  private readonly fgSelectedSpeed = MappedSubject.create(
+    ([fgDiscreteWord5, fgSpeedSel1, fgSpeedSel2]) => {
+      return fgDiscreteWord5.isNormalOperation() ? fgSpeedSel1.valueOr(fgSpeedSel2.valueOr(null)) : null;
+    },
+    this.fmgcDiscreteWord5,
+    Arinc429LocalVarConsumerSubject.create(this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_selected_speed_1')),
+    Arinc429LocalVarConsumerSubject.create(this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_selected_speed_2')),
+  );
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
     this.currFlightPlanService.createFlightPlans();
@@ -633,6 +643,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.destinationRunwayMagneticBearing.sub((v) => {
         const pd = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
         this.updateTowerHeadwind(pd?.approachWindMagnitude.get() ?? null, pd?.approachWindDirection.get() ?? null, v);
+      }),
+      this.fgSelectedSpeed.sub((v) => {
+        this.bus.getPublisher<GuidanceToFmsEvents>().pub('fg_selected_speed', v);
       }),
     );
   }

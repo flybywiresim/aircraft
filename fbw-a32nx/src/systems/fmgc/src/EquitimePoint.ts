@@ -1,8 +1,8 @@
 // Copyright (c) 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-import { Arinc429Register, Fix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { AeroMath, ConsumerValue, EventBus, UnitType, Wait } from '@microsoft/msfs-sdk';
+import { Fix, MathUtils } from '@flybywiresim/fbw-sdk';
+import { AeroMath, ClockEvents, ConsumerValue, EventBus, UnitType } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { Geometry } from './guidance/Geometry';
@@ -14,6 +14,8 @@ import { NavigationProvider } from './navigation/NavigationProvider';
 import { WindMeasurement } from './guidance/vnav/wind/WindObserver';
 import { WindUtils } from './guidance/vnav/wind/WindUtils';
 import { WindVector } from './flightplanning/data/wind';
+import { FmsError, FmsErrorType } from './FmsError';
+import { GuidanceToFmsEvents } from './events/GuidanceToFmsEvents';
 
 export interface EquitimePointInterface {
   etpTimeToRef1: number;
@@ -39,8 +41,6 @@ export class EquitimePoint {
 
   private geometry: Geometry | undefined = undefined;
 
-  private inhibitAutoRecompute = false;
-
   private pilotEnteredReferenceFix1: Fix | undefined;
   private pilotEnteredReferenceFix2: Fix | undefined;
   private pilotEnteredWindToReferenceFix1: WindVector | undefined;
@@ -53,7 +53,14 @@ export class EquitimePoint {
     FmgcFlightPhase.Preflight,
   );
 
-  private readonly casTargetRegister: Arinc429Register = Arinc429Register.empty();
+  private readonly clock = ConsumerValue.create(this.bus.getSubscriber<ClockEvents>().on('realTime'), 0);
+
+  private readonly selectedSpeed = ConsumerValue.create(
+    this.bus.getSubscriber<GuidanceToFmsEvents>().on('fg_selected_speed'),
+    null,
+  );
+
+  private lastUpdateTime: number | null = null;
 
   constructor(
     private readonly bus: EventBus,
@@ -64,114 +71,130 @@ export class EquitimePoint {
 
   acceptMultipleLegGeometry(geometry: Geometry): void {
     this.geometry = geometry;
-
-    if (!this.inhibitAutoRecompute) {
-      this.updateEtp();
-    }
+    this.updateEtp();
   }
 
   private updateEtp() {
-    this.reset();
+    const time = this.clock.get();
+    // Only update ETP every 2 seconds.
+    if (this.lastUpdateTime !== null && time - this.lastUpdateTime >= 2000) {
+      this.reset();
 
-    const ref1 = this.referenceFix1;
-    const ref2 = this.referenceFix2;
+      const ref1 = this.referenceFix1;
+      const ref2 = this.referenceFix2;
 
-    const ppos = this.navigation.getPpos();
-    const plan = this.flightPlanService.get(FlightPlanIndex.Active);
+      const ppos = this.navigation.getPpos();
+      const plan = this.flightPlanService.get(FlightPlanIndex.Active);
 
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-    const casRegister = this.casTargetRegister.setFromSimVar('L:A32NX_FMGC_1_PFD_SELECTED_SPEED').isInvalid()
-      ? this.casTargetRegister.setFromSimVar('L:A32NX_FMGC_2_PFD_SELECTED_SPEED')
-      : this.casTargetRegister;
+      const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
-    const predictions = this.guidanceController.vnavDriver.mcduProfile;
-    const { managedCruiseSpeed, managedCruiseSpeedMach } =
-      this.guidanceController.verticalProfileComputationParametersObserver.get();
+      const predictions = this.guidanceController.vnavDriver.mcduProfile;
+      const { managedCruiseSpeed, managedCruiseSpeedMach } =
+        this.guidanceController.verticalProfileComputationParametersObserver.get();
 
-    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel || !predictions?.isReadyToDisplay) {
-      return undefined;
-    }
+      if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel || !predictions?.isReadyToDisplay) {
+        return undefined;
+      }
 
-    const cruiseAltitude = cruiseLevel * 100;
-    const managedCruiseCas = Math.min(
-      AeroMath.casToTasIsa(
-        UnitType.KNOT.convertTo(managedCruiseSpeed, UnitType.MPS),
-        UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
-      ),
-      AeroMath.machToTasIsa(managedCruiseSpeedMach, UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER)),
-    );
-
-    const cas =
-      this.flightPhase.get() === FmgcFlightPhase.Cruise ? casRegister.valueOr(managedCruiseCas) : managedCruiseCas;
-    const tas = UnitType.MPS.convertTo(
-      AeroMath.casToTasIsa(
-        UnitType.KNOT.convertTo(cas, UnitType.MPS),
-        UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
-      ),
-      UnitType.KNOT,
-    );
-
-    const pposWind =
-      predictions.winds.getCurrentWindMeasurement(EquitimePoint.WindMeasurementCache)?.vector ??
-      EquitimePoint.DefaultWind;
-
-    // Time to reference waypoints is only computed in cruise phase
-    if (this.flightPhase.get() === FmgcFlightPhase.Cruise) {
-      this.result.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, pposWind, this.windToReferenceFix1, tas);
-      this.result.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, pposWind, this.windToReferenceFix2, tas);
-    }
-
-    let numIterations = 0;
-    let etpAlongTrackDistanceGuess = MathUtils.clamp(
-      distanceTo(ref1.location, ref2.location) / 2,
-      0,
-      this.geometry.legs.get(plan.activeLegIndex - 1)?.calculated?.cumulativeDistanceToEndWithTransitions ?? Infinity,
-    );
-
-    do {
-      this.result.etp = this.geometry.pointFromEndOfPath(
-        plan.activeLegIndex,
-        plan.firstMissedApproachLegIndex,
-        etpAlongTrackDistanceGuess,
-        false,
-        'ETP',
+      const cruiseAltitude = cruiseLevel * 100;
+      const managedCruiseCas = Math.min(
+        AeroMath.casToTasIsa(
+          UnitType.KNOT.convertTo(managedCruiseSpeed, UnitType.MPS),
+          UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
+        ),
+        AeroMath.machToTasIsa(managedCruiseSpeedMach, UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER)),
+      );
+      const cas =
+        this.flightPhase.get() === FmgcFlightPhase.Cruise
+          ? this.selectedSpeed.get() ?? managedCruiseCas
+          : managedCruiseCas;
+      const tas = UnitType.MPS.convertTo(
+        AeroMath.casToTasIsa(
+          UnitType.KNOT.convertTo(cas, UnitType.MPS),
+          UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
+        ),
+        UnitType.KNOT,
       );
 
-      if (!this.result.etp) {
+      const pposWind =
+        predictions.winds.getCurrentWindMeasurement(EquitimePoint.WindMeasurementCache)?.vector ??
+        EquitimePoint.DefaultWind;
+
+      // Time to reference waypoints is only computed in cruise phase
+      if (this.flightPhase.get() === FmgcFlightPhase.Cruise) {
+        this.result.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, pposWind, this.windToReferenceFix1, tas);
+        this.result.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, pposWind, this.windToReferenceFix2, tas);
+      }
+
+      let numIterations = 0;
+      let etpAlongTrackDistanceGuess = MathUtils.clamp(
+        distanceTo(ref1.location, ref2.location) / 2,
+        0,
+        this.geometry.legs.get(plan.activeLegIndex - 1)?.calculated?.cumulativeDistanceToEndWithTransitions ?? Infinity,
+      );
+
+      do {
+        this.result.etp = this.geometry.pointFromEndOfPath(
+          plan.activeLegIndex,
+          plan.firstMissedApproachLegIndex,
+          etpAlongTrackDistanceGuess,
+          false,
+          'ETP',
+        );
+
+        if (!this.result.etp) {
+          this.reset();
+          return undefined;
+        }
+
+        const [etpLla, _] = this.result.etp;
+
+        const windAtEtp =
+          predictions.winds.getCruiseWind(
+            etpAlongTrackDistanceGuess,
+            0,
+            cruiseAltitude,
+            EquitimePoint.WindVectorCache,
+          ) ?? EquitimePoint.DefaultWind;
+
+        this.result.etpTimeToRef1 = EquitimePoint.timeTo(
+          etpLla,
+          ref1.location,
+          windAtEtp,
+          this.windToReferenceFix1,
+          tas,
+        );
+        this.result.etpTimeToRef2 = EquitimePoint.timeTo(
+          etpLla,
+          ref2.location,
+          windAtEtp,
+          this.windToReferenceFix2,
+          tas,
+        );
+
+        etpAlongTrackDistanceGuess -= ((this.result.etpTimeToRef2 - this.result.etpTimeToRef1) * tas) / 2;
+      } while (
+        numIterations++ < 10 &&
+        3600 * Math.abs(this.result.etpTimeToRef2 - this.result.etpTimeToRef1) > EquitimePoint.AbsoluteToleranceSeconds
+      );
+
+      if (numIterations >= 10) {
         this.reset();
         return undefined;
       }
 
-      const [etpLla, _] = this.result.etp;
+      const [_, distanceFromLegTermination, legIndex] = this.result.etp;
+      const legPredictions = predictions.waypointPredictions.get(legIndex);
 
-      const windAtEtp =
-        predictions.winds.getCruiseWind(etpAlongTrackDistanceGuess, 0, cruiseAltitude, EquitimePoint.WindVectorCache) ??
-        EquitimePoint.DefaultWind;
+      if (!legPredictions) {
+        this.reset();
+        return;
+      }
 
-      this.result.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, windAtEtp, this.windToReferenceFix1, tas);
-      this.result.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, windAtEtp, this.windToReferenceFix2, tas);
-
-      etpAlongTrackDistanceGuess -= ((this.result.etpTimeToRef2 - this.result.etpTimeToRef1) * tas) / 2;
-    } while (
-      numIterations++ < 10 &&
-      3600 * Math.abs(this.result.etpTimeToRef2 - this.result.etpTimeToRef1) > EquitimePoint.AbsoluteToleranceSeconds
-    );
-
-    if (numIterations >= 10) {
-      this.reset();
-      return undefined;
+      this.result.pposDistanceToEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
+      this.result.pposTimeToEtp = predictions.interpolateTimeAtDistance(this.result.pposDistanceToEtp) / 3600;
     }
-
-    const [_, distanceFromLegTermination, legIndex] = this.result.etp;
-    const legPredictions = predictions.waypointPredictions.get(legIndex);
-
-    if (!legPredictions) {
-      this.reset();
-      return;
-    }
-
-    this.result.pposDistanceToEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
-    this.result.pposTimeToEtp = predictions.interpolateTimeAtDistance(this.result.pposDistanceToEtp) / 3600;
+    this.lastUpdateTime = time;
   }
 
   private reset(): void {
@@ -184,12 +207,9 @@ export class EquitimePoint {
     this.result.pposTimeToEtp = undefined;
   }
 
-  async resetAndRecompute() {
+  private resetAndRecompute() {
     this.reset();
-    this.inhibitAutoRecompute = true;
-    await Wait.awaitDelay(2000);
-    this.updateEtp();
-    this.inhibitAutoRecompute = false;
+    this.lastUpdateTime = null;
   }
 
   isComputed(): boolean {
@@ -200,24 +220,30 @@ export class EquitimePoint {
     return this.result.etp;
   }
 
-  setPilotEnteredReferenceFix1(fix: Fix | undefined): void {
+  async setPilotEnteredReferenceFix1(fix: Fix | undefined): Promise<void> {
+    if (fix && fix.databaseId === this.pilotEnteredReferenceFix2?.databaseId) {
+      throw new FmsError(FmsErrorType.NotAllowed);
+    }
     this.pilotEnteredReferenceFix1 = fix;
-    this.reset();
+    this.resetAndRecompute();
   }
 
-  setPilotEnteredReferenceFix2(fix: Fix | undefined): void {
+  async setPilotEnteredReferenceFix2(fix: Fix | undefined): Promise<void> {
+    if (fix && fix.databaseId === this.pilotEnteredReferenceFix1?.databaseId) {
+      throw new FmsError(FmsErrorType.NotAllowed);
+    }
     this.pilotEnteredReferenceFix2 = fix;
-    this.reset();
+    this.resetAndRecompute();
   }
 
-  setPilotEnteredWindToReferenceFix1(windVector: WindVector | undefined): void {
+  async setPilotEnteredWindToReferenceFix1(windVector: WindVector | undefined): Promise<void> {
     this.pilotEnteredWindToReferenceFix1 = windVector;
-    this.reset();
+    this.resetAndRecompute();
   }
 
-  setPilotEnteredWindToReferenceFix2(windVector: WindVector | undefined): void {
+  async setPilotEnteredWindToReferenceFix2(windVector: WindVector | undefined): Promise<void> {
     this.pilotEnteredWindToReferenceFix2 = windVector;
-    this.reset();
+    this.resetAndRecompute();
   }
 
   get referenceFix1(): Fix | undefined {
