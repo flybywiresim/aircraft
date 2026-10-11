@@ -1112,6 +1112,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
       existingAlternateDraft.direction = vector.direction;
       existingAlternateDraft.magnitude = vector.magnitude;
+      this.alternateDraftWind.set(existingAlternateDraft);
       this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', vector);
