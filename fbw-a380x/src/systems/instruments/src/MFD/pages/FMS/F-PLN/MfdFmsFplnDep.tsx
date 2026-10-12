@@ -12,7 +12,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button, ButtonMenuItem } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
@@ -21,7 +21,7 @@ import './MfdFmsFpln.scss';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
+export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
   private readonly fromIcao = Subject.create<string>('');
 
   private readonly rwyIdent = Subject.create<string>('');
