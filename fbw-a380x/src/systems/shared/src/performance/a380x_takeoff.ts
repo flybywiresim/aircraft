@@ -11,7 +11,7 @@ import {
   TakeoffPerformanceParameters,
   TakeoffPerformanceResult,
 } from '@flybywiresim/fbw-sdk';
-import { ApproachConf, SpeedsLookupTables } from '@shared/OperatingSpeeds';
+import { ApproachConf, getApproachVls } from './a380x_vls';
 
 const REFERENCE_TORA = 4_315;
 const REFERENCE_PRESSURE_ALT = 62;
@@ -183,7 +183,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     }
 
     const lookupConf = conf === 1 ? ApproachConf.CONF_1 : conf === 2 ? ApproachConf.CONF_2 : ApproachConf.CONF_3;
-    const vls = SpeedsLookupTables.getApproachVls(lookupConf, cg ?? (forwardCg ? 29 : 36), tow);
+    const vls = getApproachVls(lookupConf, cg ?? (forwardCg ? 29 : 36), tow) - (conf === 1 ? 2 : 0);
     const altitudeCorrection = Math.max(0, pressureAlt - REFERENCE_PRESSURE_ALT) / 3_000;
     const v2 = Math.ceil(vls + (conf === 1 ? 4 : conf === 2 ? 5 : 6) + altitudeCorrection);
     const vr = v2 - (conf === 1 ? 1 : 2);

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 dancebunny98
 // SPDX-License-Identifier: GPL-3.0
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   LandingFlapsConfig,
   LandingRunwayConditions,
@@ -11,14 +11,6 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { A380XLandingPerformanceCalculator } from './a380x_landing';
 import { A380XTakeoffPerformanceCalculator } from './a380x_takeoff';
-
-vi.mock('@shared/OperatingSpeeds', () => ({
-  ApproachConf: { CONF_1: 1, CONF_2: 3, CONF_3: 4, CONF_FULL: 5 },
-  SpeedsLookupTables: {
-    getApproachVls: (conf: number, _cg: number, weight: number) =>
-      conf === 1 ? 150 : conf === 3 ? 139 : Math.round(130 + (weight - 354_380) / 6_000),
-  },
-}));
 
 describe('A380X performance estimates', () => {
   it('returns the OMDB dry-runway takeoff reference speeds', () => {

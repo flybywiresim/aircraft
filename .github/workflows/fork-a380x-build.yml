@@ -15,6 +15,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - run: ./scripts/dev-env/run.sh npm run lint
+
+  test-js:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Tests (JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - run: ./scripts/dev-env/run.sh npm test
+
+  test-rust:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Tests (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh scripts/test-rust.sh
+
   build:
     if: github.repository == 'dancebunny98/aircraft'
     name: Build A380X package
@@ -59,6 +91,29 @@ jobs:
 
       - name: Build A380X
         run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
+
+      - name: Verify installable package and EFB
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = 'fbw-a380x/out/flybywire-aircraft-a380-842';
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
+          const layout = JSON.parse(fs.readFileSync(path.join(root, 'layout.json')));
+          const entries = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/EFB\//i.test(name));
+          const files = entries.map(({ path: name }) => name);
+          if (!manifest.package_version || !files.some((name) => /\.js$/i.test(name)) || !files.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X EFB or package metadata is missing');
+          }
+          for (const entry of entries) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched EFB file: ${entry.path}`);
+            }
+          }
+          console.log(`Verified A380X package ${manifest.package_version} with ${entries.length} EFB files`);
+          NODE
 
       - name: Upload aircraft package
         uses: actions/upload-artifact@v4

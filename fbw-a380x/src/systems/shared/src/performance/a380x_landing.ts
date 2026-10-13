@@ -7,7 +7,7 @@ import {
   LandingPerformanceCalculator,
   LandingRunwayConditions,
 } from '@flybywiresim/fbw-sdk';
-import { ApproachConf, SpeedsLookupTables } from '@shared/OperatingSpeeds';
+import { ApproachConf, getApproachVls } from './a380x_vls';
 
 const REFERENCE_WEIGHT = 354_380;
 const REFERENCE_HEADWIND = -4.37;
@@ -27,7 +27,7 @@ const surfaceFactor: Record<LandingRunwayConditions, number> = {
 export class A380XLandingPerformanceCalculator implements LandingPerformanceCalculator {
   public getEstimatedVapp(weight: number, flaps: LandingFlapsConfig, windComponent = 0, cg = 36): number {
     const conf = flaps === LandingFlapsConfig.Full ? ApproachConf.CONF_FULL : ApproachConf.CONF_3;
-    const vls = SpeedsLookupTables.getApproachVls(conf, cg, weight);
+    const vls = getApproachVls(conf, cg, weight);
     return Math.ceil(vls + Math.max(5, Math.min(15, windComponent / 3)));
   }
 

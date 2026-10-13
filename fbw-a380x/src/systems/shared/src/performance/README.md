@@ -4,7 +4,9 @@ The EFB calculators in this directory are simulator estimates for the A380-842
 with Trent 972B-84 engines. They are not Airbus performance data and must not
 be used for real flight planning.
 
-The speed estimates use the A380X `OperatingSpeeds` lookup tables. The modeled
+The speed estimates use a standalone copy of the A380X `OperatingSpeeds` VLS
+schedule in `a380x_vls.ts`, keeping FMGC and MFD modules out of the EFB startup
+path. Keep this schedule synchronized when the aircraft speed tables change. The modeled
 empty weight comes from the A380X `flight_model.cfg`. The reference calculations
 below came from the FlyByWire A380-842 airframe in SimBrief Dispatch on
 2026-10-13. SimBrief's OFP API supplies flight and weather inputs; it does not
