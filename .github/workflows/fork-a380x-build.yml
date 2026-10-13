@@ -1,0 +1,67 @@
+name: Fork A380X build
+run-name: A380X ${{ github.ref_name }} @ ${{ github.sha }}
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fork-a380x-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Build A380X package
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      FBW_PRODUCTION_BUILD: 1
+      FBW_TYPECHECK: 1
+      AIRCRAFT_PROJECT_PREFIX: a380x
+      AIRCRAFT_VARIANT: a380-842
+    steps:
+      - name: Free build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+
+      - name: Checkout source and assets
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Configure build
+        run: |
+          printf '%s\n' \
+            'FBW_PRODUCTION_BUILD=1' \
+            'FBW_TYPECHECK=1' \
+            'AIRCRAFT_PROJECT_PREFIX=a380x' \
+            'AIRCRAFT_VARIANT=a380-842' > fbw-a380x/.env
+          printf '%s\n' 'VITE_BUILD=false' > .env
+
+      - name: Install dependencies
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+
+      - name: Build A380X
+        run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
+
+      - name: Upload aircraft package
+        uses: actions/upload-artifact@v4
+        with:
+          name: flybywire-aircraft-a380-842
+          path: fbw-a380x/out/flybywire-aircraft-a380-842/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
