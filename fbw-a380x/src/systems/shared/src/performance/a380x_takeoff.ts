@@ -217,7 +217,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
         interpolate(referenceFlexTemps, tow) +
         (adjustedTora - REFERENCE_TORA) * 0.008 -
         (pressureAlt - REFERENCE_PRESSURE_ALT) / 500 -
-        (oat - REFERENCE_OAT) * 0.25 +
+        Math.max(0, oat - 45) * 0.25 +
         (headwind - REFERENCE_HEADWIND) * 0.1 -
         (conf - 1) * 1.5 -
         (antiIce === TakeoffAntiIceSetting.Off ? 0 : 3) -

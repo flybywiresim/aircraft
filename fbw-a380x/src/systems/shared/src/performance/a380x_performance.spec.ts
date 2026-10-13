@@ -139,6 +139,29 @@ describe('A380X performance estimates', () => {
     expect(result(500_000).asd).toBeCloseTo(3_882, -1);
   });
 
+  it('keeps the measured FLEX setting across the sampled OAT range', () => {
+    const calculator = new A380XTakeoffPerformanceCalculator();
+    const flex = (oat: number) =>
+      calculator.calculateTakeoffPerformance(
+        361_546,
+        false,
+        1,
+        4_315,
+        0,
+        0,
+        4,
+        62,
+        1014,
+        oat,
+        TakeoffAntiIceSetting.Off,
+        true,
+        false,
+        RunwayCondition.Dry,
+      ).flex;
+    expect(flex(10)).toBe(75);
+    expect(flex(40)).toBe(75);
+  });
+
   it('tracks both SimBrief OMDB landing reference directions', () => {
     const calculator = new A380XLandingPerformanceCalculator();
     const landing = (heading: number) =>
