@@ -28,6 +28,7 @@ render(
       },
       performanceDisclaimer: 'A380X performance figures are simulator estimates. Cross-check with SimBrief Dispatch.',
       landingWeightLimits: { minKg: 300_000, maxKg: 395_000 },
+      landingReverseThrustDefault: true,
       pushbackPage: {
         turnIndicatorTuningDefault: 1.35,
       },

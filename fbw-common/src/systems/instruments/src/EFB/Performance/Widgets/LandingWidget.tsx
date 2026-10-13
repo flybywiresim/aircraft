@@ -65,7 +65,9 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const { performanceCalculators: calculators, landingWeightLimits } = useContext(AircraftContext);
+  const { performanceCalculators: calculators, landingWeightLimits, landingReverseThrustDefault } = useContext(
+    AircraftContext,
+  );
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -232,6 +234,7 @@ export const LandingWidget = () => {
         windEntry: undefined,
         temperature: parsedMetar.temperature.celsius,
         pressure: parsedMetar.barometer.mb,
+        reverseThrust: weight === undefined ? (landingReverseThrustDefault ?? reverseThrust) : reverseThrust,
       };
       if (calculators.landing?.getEstimatedVapp) {
         values.approachSpeed = calculators.landing.getEstimatedVapp(weightKgs, flaps);

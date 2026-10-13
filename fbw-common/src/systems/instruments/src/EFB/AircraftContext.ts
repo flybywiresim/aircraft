@@ -66,6 +66,7 @@ interface AircraftEfbContext {
   performanceCalculators: PerformanceCalculators;
   performanceDisclaimer?: string;
   landingWeightLimits?: { minKg: number; maxKg: number };
+  landingReverseThrustDefault?: boolean;
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
   /** File containing critical file hashes to be checked for integrity. */
