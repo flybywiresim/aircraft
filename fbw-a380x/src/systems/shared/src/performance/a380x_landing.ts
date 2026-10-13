@@ -58,7 +58,10 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
     const reverserFactor = reverseThrust ? 1 : 1.09;
     const autolandFactor = autoland ? 1.04 : 1;
     const overweightFactor = overweightProcedure ? 1.1 : 1;
-    const nominalVapp = this.getEstimatedVapp(weight, flaps, headwind, cg);
+    const nominalVapp =
+      flaps === LandingFlapsConfig.Full
+        ? Math.round(135 + (weight - REFERENCE_WEIGHT) / 6_000)
+        : this.getEstimatedVapp(weight, flaps, headwind, cg);
     const energyDistance =
       Math.max(0, 2_082 + (weight - REFERENCE_WEIGHT) * 0.00326) *
       Math.pow(vapp / nominalVapp, 2) *

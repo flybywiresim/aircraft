@@ -24,7 +24,7 @@ jobs:
         with:
           persist-credentials: false
       - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-      - run: ./scripts/dev-env/run.sh npm run lint
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/shared/src/performance/a380x_*.ts
 
   test-js:
     if: github.repository == 'dancebunny98/aircraft'
@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-      - run: ./scripts/dev-env/run.sh npm test
+      - run: ./scripts/dev-env/run.sh pnpm exec vitest run fbw-a380x
 
   test-rust:
     if: github.repository == 'dancebunny98/aircraft'
