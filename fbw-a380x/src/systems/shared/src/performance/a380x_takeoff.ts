@@ -13,7 +13,6 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { ApproachConf, SpeedsLookupTables } from '@shared/OperatingSpeeds';
 
-const REFERENCE_WEIGHT = 361_546;
 const REFERENCE_TORA = 4_315;
 const REFERENCE_PRESSURE_ALT = 62;
 const REFERENCE_HEADWIND = 4;
