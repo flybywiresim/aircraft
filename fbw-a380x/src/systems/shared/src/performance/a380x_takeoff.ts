@@ -160,14 +160,14 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     result.vR = vr;
     result.v2 = v2;
 
-    // Reference dry, near sea-level A380X stop run at 361.5 t and V1 143 kt.
+    // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
-      1_313 *
+      3_401 *
         Math.pow(tow / REFERENCE_WEIGHT, 1.15) *
         Math.pow(v1 / 143, 2) *
         surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
-        (conf - 1) * 230 +
+        (conf - 1) * 80 +
         Math.max(0, slope) * 110,
     );
     if (result.asd > adjustedTora) {

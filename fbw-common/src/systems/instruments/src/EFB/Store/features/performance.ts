@@ -31,6 +31,7 @@ interface TPerformanceLanding {
 
   weight?: number;
   overweightProcedure: boolean;
+  cg?: number;
   approachSpeed?: number;
   flaps: LandingFlapsConfig;
   reverseThrust: boolean;

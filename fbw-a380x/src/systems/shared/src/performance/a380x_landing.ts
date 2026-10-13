@@ -47,9 +47,10 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
     overweightProcedure: boolean,
     pressure: number,
     autoland: boolean,
+    cg = 36,
   ): LandingPerformanceDistances {
     const headwind = windMagnitude * Math.cos(((windDirection - runwayHeading) * Math.PI) / 180);
-    const vapp = approachSpeed > 0 ? approachSpeed : this.getEstimatedVapp(weight, flaps, headwind);
+    const vapp = approachSpeed > 0 ? approachSpeed : this.getEstimatedVapp(weight, flaps, headwind, cg);
     const densityFactor = 1 + Math.max(-0.08, (altitude - REFERENCE_ALTITUDE) / 40_000);
     const tempFactor = 1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / 400);
     const pressureFactor = 1 + Math.max(-0.04, (1014 - pressure) / 2_000);

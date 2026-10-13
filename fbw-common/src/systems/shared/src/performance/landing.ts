@@ -30,7 +30,7 @@ export interface LandingPerformanceDistances {
 
 export interface LandingPerformanceCalculator {
   /** Optional aircraft-specific VAPP estimate for EFB autofill. */
-  getEstimatedVapp?(weight: number, flaps: LandingFlapsConfig, windComponent?: number): number;
+  getEstimatedVapp?(weight: number, flaps: LandingFlapsConfig, windComponent?: number, cg?: number): number;
   /**
    * Calculates the landing distances for each autobrake mode for the given conditions
    * @param weight Aircraft weight in KGs
@@ -62,5 +62,6 @@ export interface LandingPerformanceCalculator {
     overweightProcedure: boolean,
     pressure: number,
     autoland: boolean,
+    cg?: number,
   ): LandingPerformanceDistances;
 }

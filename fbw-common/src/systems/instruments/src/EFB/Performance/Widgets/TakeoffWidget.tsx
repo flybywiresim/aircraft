@@ -15,6 +15,7 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
+  useSimVar,
 } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -56,7 +57,8 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const TakeoffWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(AircraftContext).performanceCalculators;
+  const { performanceCalculators: calculators, performanceCgLimits } = useContext(AircraftContext);
+  const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
 
@@ -462,6 +464,12 @@ export const TakeoffWidget = () => {
     dispatch(setTakeoffValues({ takeoffCg }));
   };
 
+  const handleCgChange = (value: string): void => {
+    clearResult();
+    const parsed = parseFloat(value);
+    dispatch(setTakeoffValues({ cg: Number.isFinite(parsed) ? parsed : undefined }));
+  };
+
   const handleLineupAngle = (lineupAngle: LineupAngle): void => {
     clearResult();
 
@@ -524,7 +532,9 @@ export const TakeoffWidget = () => {
     runwaySlope !== undefined &&
     oat !== undefined &&
     qnh !== undefined &&
-    runwayLength !== undefined;
+    runwayLength !== undefined &&
+    (!performanceCgLimits ||
+      (cg !== undefined && cg >= performanceCgLimits.minPercentMac && cg <= performanceCgLimits.maxPercentMac));
 
   const syncValuesWithOfp = async () => {
     const parsedMetar: MetarParserType = parseMetar(ofpDepartingMetar);
@@ -557,6 +567,7 @@ export const TakeoffWidget = () => {
             runwaySlope,
             elevation: newRunway.elevation,
             weight: weightKgs,
+            ...(performanceCgLimits && Number.isFinite(aircraftCg) && aircraftCg > 0 ? { cg: aircraftCg } : {}),
             windDirection,
             windMagnitude: parsedMetar.wind.speed_kts,
             windEntry,
@@ -929,6 +940,22 @@ export const TakeoffWidget = () => {
                       />
                     </div>
                   </Label>
+                  {performanceCgLimits && (
+                    <Label text="CG (% MAC)">
+                      <div className="flex w-48 flex-row">
+                        <SimpleInput
+                          className="w-full"
+                          value={cg}
+                          placeholder="% MAC"
+                          min={performanceCgLimits.minPercentMac}
+                          max={performanceCgLimits.maxPercentMac}
+                          decimalPrecision={1}
+                          onChange={handleCgChange}
+                          number
+                        />
+                      </div>
+                    </Label>
+                  )}
                   <Label text={t('Performance.Takeoff.CoGPosition')}>
                     <SelectInput
                       className="w-48"

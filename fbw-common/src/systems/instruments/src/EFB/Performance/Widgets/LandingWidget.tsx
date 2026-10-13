@@ -65,11 +65,12 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const { performanceCalculators: calculators, landingWeightLimits, landingReverseThrustDefault } = useContext(
+  const { performanceCalculators: calculators, landingWeightLimits, landingReverseThrustDefault, performanceCgLimits } = useContext(
     AircraftContext,
   );
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
+  const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
 
   const { usingMetric } = Units;
@@ -90,6 +91,7 @@ export const LandingWidget = () => {
     temperature,
     pressure,
     weight,
+    cg,
     overweightProcedure,
     approachSpeed,
     flaps,
@@ -132,6 +134,7 @@ export const LandingWidget = () => {
       overweightProcedure,
       pressure ?? 0,
       autoland,
+      cg,
     );
 
     dispatch(
@@ -229,6 +232,7 @@ export const LandingWidget = () => {
       const values: Partial<typeof initialState.landing> = {
         icao: arrivingAirport,
         weight: weightKgs,
+        ...(performanceCgLimits && Number.isFinite(aircraftCg) && aircraftCg > 0 ? { cg: aircraftCg } : {}),
         windDirection,
         windMagnitude: parsedMetar.wind.speed_kts,
         windEntry: undefined,
@@ -237,7 +241,7 @@ export const LandingWidget = () => {
         reverseThrust: weight === undefined ? (landingReverseThrustDefault ?? reverseThrust) : reverseThrust,
       };
       if (calculators.landing?.getEstimatedVapp) {
-        values.approachSpeed = calculators.landing.getEstimatedVapp(weightKgs, flaps);
+        values.approachSpeed = calculators.landing.getEstimatedVapp(weightKgs, flaps, 0, values.cg ?? cg);
       }
 
       try {
@@ -378,6 +382,7 @@ export const LandingWidget = () => {
   };
 
   const handleWeightChange = (value: string): void => {
+    clearResult();
     let weight: number | undefined = parseInt(value);
 
     if (Number.isNaN(weight)) {
@@ -387,6 +392,12 @@ export const LandingWidget = () => {
     }
 
     dispatch(setLandingValues({ weight }));
+  };
+
+  const handleCgChange = (value: string): void => {
+    clearResult();
+    const parsed = parseFloat(value);
+    dispatch(setLandingValues({ cg: Number.isFinite(parsed) ? parsed : undefined }));
   };
 
   const handleRunwayHeadingChange = (value: string): void => {
@@ -529,7 +540,10 @@ export const LandingWidget = () => {
     slope !== undefined &&
     temperature !== undefined &&
     pressure !== undefined &&
-    runwayLength !== undefined;
+    runwayLength !== undefined &&
+    (!landingWeightLimits || (weight >= landingWeightLimits.minKg && weight <= landingWeightLimits.maxKg)) &&
+    (!performanceCgLimits ||
+      (cg !== undefined && cg >= performanceCgLimits.minPercentMac && cg <= performanceCgLimits.maxPercentMac));
 
   const handleAutoFill = () => {
     clearResult();
@@ -845,6 +859,20 @@ export const LandingWidget = () => {
                     />
                   </div>
                 </Label>
+                {performanceCgLimits && (
+                  <Label text="CG (% MAC)">
+                    <SimpleInput
+                      className="w-64"
+                      value={cg}
+                      placeholder="% MAC"
+                      min={performanceCgLimits.minPercentMac}
+                      max={performanceCgLimits.maxPercentMac}
+                      decimalPrecision={1}
+                      onChange={handleCgChange}
+                      number
+                    />
+                  </Label>
+                )}
                 <Label text={t('Performance.Landing.OverweightProcedure')}>
                   <SelectInput
                     className="w-64"
