@@ -197,8 +197,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
 
     // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
-      interpolate(referenceStopRuns, tow) * Math.pow(v1 / 143, 2) *
-        surfaceFactor[runwayCondition] +
+      interpolate(referenceStopRuns, tow) * Math.pow(v1 / 143, 2) * surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
         (conf - 1) * 80 +
         Math.max(0, slope) * 110,
