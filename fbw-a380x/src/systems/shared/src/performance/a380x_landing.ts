@@ -51,8 +51,7 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
     const headwind = windMagnitude * Math.cos(((windDirection - runwayHeading) * Math.PI) / 180);
     const vapp = approachSpeed > 0 ? approachSpeed : this.getEstimatedVapp(weight, flaps, headwind, cg);
     const densityFactor = 1 + Math.max(-0.08, (altitude - REFERENCE_ALTITUDE) / 40_000);
-    const tempFactor =
-      1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / (temperature > REFERENCE_OAT ? 300 : 400));
+    const tempFactor = 1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / (temperature > REFERENCE_OAT ? 300 : 400));
     const pressureFactor = 1 + Math.max(-0.04, (1014 - pressure) / 850);
     const confFactor = flaps === LandingFlapsConfig.Full ? 1 : 1.11;
     const reverserFactor = reverseThrust ? 1 : 1.09;

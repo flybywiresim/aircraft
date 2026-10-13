@@ -188,9 +188,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     const v2 = Math.ceil(vls + (conf === 1 ? 4 : conf === 2 ? 5 : 6) + altitudeCorrection);
     const vr = v2 - (conf === 1 ? 1 : 2);
     const runwayV1Correction =
-      (adjustedTora < REFERENCE_TORA
-        ? (adjustedTora - REFERENCE_TORA) / 105
-        : (adjustedTora - REFERENCE_TORA) / 600) +
+      (adjustedTora < REFERENCE_TORA ? (adjustedTora - REFERENCE_TORA) / 105 : (adjustedTora - REFERENCE_TORA) / 600) +
       (Math.min(headwind, REFERENCE_HEADWIND) - REFERENCE_HEADWIND) / 8;
     const v1 = clamp(Math.round(143 + runwayV1Correction), 110, vr);
     result.v1 = v1;
@@ -199,8 +197,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
 
     // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
-      interpolate(referenceStopRuns, tow) *
-        Math.pow(v1 / 143, 2) *
+      interpolate(referenceStopRuns, tow) * Math.pow(v1 / 143, 2) *
         surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
         (conf - 1) * 80 +

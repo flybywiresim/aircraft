@@ -40,7 +40,10 @@ export function getApproachVls(conf: ApproachConf, cg: number, weight: number): 
   if (!schedule) throw new Error('Invalid A380 approach configuration');
 
   const boundedWeight = Math.max(weights[0], Math.min(weights[weights.length - 1], weight));
-  const upper = Math.max(1, weights.findIndex((value) => value >= boundedWeight));
+  const upper = Math.max(
+    1,
+    weights.findIndex((value) => value >= boundedWeight),
+  );
   const fraction = (boundedWeight - weights[upper - 1]) / (weights[upper] - weights[upper - 1]);
   const atCg29 = schedule[0][upper - 1] + fraction * (schedule[0][upper] - schedule[0][upper - 1]);
   const atCg43 = schedule[1][upper - 1] + fraction * (schedule[1][upper] - schedule[1][upper - 1]);
