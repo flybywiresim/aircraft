@@ -152,7 +152,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     const v2 = Math.ceil(vls + (conf === 1 ? 4 : conf === 2 ? 5 : 6) + altitudeCorrection);
     const vr = v2 - (conf === 1 ? 1 : 2);
     const v1 = clamp(
-      Math.round(vr - (conf === 1 ? 10 : conf === 2 ? 2 : 3) + (adjustedTora - REFERENCE_TORA) / 600 + headwind / 15),
+      Math.round(vr - (conf === 1 ? 10 : conf === 2 ? 0 : 2) + (adjustedTora - REFERENCE_TORA) / 600 + headwind / 15),
       110,
       vr,
     );
@@ -167,6 +167,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
         Math.pow(v1 / 143, 2) *
         surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
+        (conf - 1) * 230 +
         Math.max(0, slope) * 110,
     );
     if (result.asd > adjustedTora) {
@@ -182,8 +183,8 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
         (tow - REFERENCE_WEIGHT) / 5_000 -
         (pressureAlt - REFERENCE_PRESSURE_ALT) / 500 -
         (oat - REFERENCE_OAT) * 0.25 +
-        (headwind - REFERENCE_HEADWIND) * 0.3 -
-        (conf - 1) * 2 -
+        (headwind - REFERENCE_HEADWIND) * 0.1 -
+        (conf - 1) * 1.5 -
         (antiIce === TakeoffAntiIceSetting.Off ? 0 : 3) -
         (packs ? 0 : 1);
       if (flex >= oat + 1) result.flex = Math.round(clamp(flex, oat + 1, params.tFlexMax));

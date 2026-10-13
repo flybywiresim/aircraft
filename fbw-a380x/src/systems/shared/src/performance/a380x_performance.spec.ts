@@ -65,6 +65,31 @@ describe('A380X performance estimates', () => {
     expect(result.v1).toBeUndefined();
   });
 
+  it('tracks the OMDB 30L flaps 2 and tailwind reference', () => {
+    const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
+      361_546,
+      false,
+      2,
+      4_447,
+      0,
+      0,
+      -4,
+      62,
+      1014,
+      32,
+      TakeoffAntiIceSetting.Off,
+      true,
+      false,
+      RunwayCondition.Dry,
+    );
+    expect(result.error).toBe(TakeoffPerfomanceError.None);
+    expect(result.v1).toBe(142);
+    expect(result.vR).toBe(142);
+    expect(result.v2).toBe(144);
+    expect(result.flex).toBe(74);
+    expect(result.asd).toBeCloseTo(1_700, -1);
+  });
+
   it('tracks both SimBrief OMDB landing reference directions', () => {
     const calculator = new A380XLandingPerformanceCalculator();
     const landing = (heading: number) =>
