@@ -15,7 +15,8 @@ import { A380XTakeoffPerformanceCalculator } from './a380x_takeoff';
 vi.mock('@shared/OperatingSpeeds', () => ({
   ApproachConf: { CONF_1: 1, CONF_2: 3, CONF_3: 4, CONF_FULL: 5 },
   SpeedsLookupTables: {
-    getApproachVls: (conf: number) => (conf === 1 ? 150 : conf === 3 ? 139 : 130),
+    getApproachVls: (conf: number, _cg: number, weight: number) =>
+      conf === 1 ? 150 : conf === 3 ? 139 : Math.round(130 + (weight - 354_380) / 6_000),
   },
 }));
 
@@ -112,6 +113,32 @@ describe('A380X performance estimates', () => {
     expect(result.asd).toBeCloseTo(3_610, -1);
   });
 
+  it('tracks the observed takeoff weight effects on FLEX and stop run', () => {
+    const calculator = new A380XTakeoffPerformanceCalculator();
+    const result = (weight: number) =>
+      calculator.calculateTakeoffPerformance(
+        weight,
+        false,
+        1,
+        4_315,
+        0,
+        0,
+        5,
+        62,
+        1014,
+        32,
+        TakeoffAntiIceSetting.Off,
+        true,
+        false,
+        RunwayCondition.Dry,
+      );
+    expect(result(320_000).flex).toBe(75);
+    expect(result(400_000).flex).toBe(74);
+    expect(result(500_000).flex).toBe(55);
+    expect(result(320_000).asd).toBeCloseTo(3_280, -1);
+    expect(result(500_000).asd).toBeCloseTo(3_882, -1);
+  });
+
   it('tracks both SimBrief OMDB landing reference directions', () => {
     const calculator = new A380XLandingPerformanceCalculator();
     const landing = (heading: number) =>
@@ -138,5 +165,52 @@ describe('A380X performance estimates', () => {
 
   it('estimates a plausible A380X VAPP from its own speed table', () => {
     expect(new A380XLandingPerformanceCalculator().getEstimatedVapp(354_380, LandingFlapsConfig.Full)).toBe(135);
+  });
+
+  it('tracks the measured landing weight trend at fixed runway and weather', () => {
+    const calculator = new A380XLandingPerformanceCalculator();
+    const distance = (weight: number, vapp: number) =>
+      calculator.calculateLandingDistances(
+        weight,
+        LandingFlapsConfig.Full,
+        LandingRunwayConditions.Dry,
+        vapp,
+        90,
+        5,
+        299,
+        true,
+        62,
+        32,
+        0,
+        false,
+        1014,
+        false,
+      ).lowAutobrakeDist;
+    expect(distance(320_000, 129)).toBeCloseTo(1_974, -1);
+    expect(distance(395_000, 142)).toBeCloseTo(2_217, -1);
+  });
+
+  it('penalizes stronger tailwind and low pressure in the landing estimate', () => {
+    const calculator = new A380XLandingPerformanceCalculator();
+    const distance = (windDirection: number, windMagnitude: number, pressure: number) =>
+      calculator.calculateLandingDistances(
+        354_380,
+        LandingFlapsConfig.Full,
+        LandingRunwayConditions.Dry,
+        135,
+        windDirection,
+        windMagnitude,
+        299,
+        true,
+        62,
+        32,
+        0,
+        false,
+        pressure,
+        false,
+      ).lowAutobrakeDist;
+    expect(distance(90, 20, 1014)).toBeCloseTo(2_536, -1);
+    expect(distance(300, 10, 1014)).toBeCloseTo(1_826, -1);
+    expect(distance(90, 5, 980)).toBeCloseTo(2_165, -1);
   });
 });

@@ -17,6 +17,13 @@ supply the Dispatch calculator outputs to the EFB.
 | Landing OMDB 30R | 354,380 kg, dry, 32 C, QNH 1014 hPa, wind 090/05, FULL, VREF +5, reverse on | VAPP 135 kt, AUTO 1 actual 6,831 ft, factored 8,614 ft |
 | Landing OMDB 12R | Same mass and weather, opposite runway direction | AUTO 1 actual 6,197 ft, factored 7,804 ft |
 
+Additional OMDB 12R dry takeoff samples with 090/06 wind and the same weather
+give FLEX 75 C at 320 t, 74 C at 400 t, and 55 C at 500 t. The corresponding
+stop margins are 3,395, 1,434 and 1,420 ft. At OMDB 30R, FULL/dry/reverse,
+090/05 wind, the landing calculator gives 6,476 ft actual at 320 t and 7,273 ft
+at 395 t. The models interpolate these samples; they do not reproduce the
+underlying SimBrief performance engine.
+
 The takeoff model estimates runway limits, speeds, FLEX and accelerate-stop
 distance for dry, wet and contaminated surfaces. The landing model estimates
 distances for three brake modes and a factored distance. Its correction factors

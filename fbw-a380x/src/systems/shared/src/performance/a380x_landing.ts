@@ -10,7 +10,6 @@ import {
 import { ApproachConf, SpeedsLookupTables } from '@shared/OperatingSpeeds';
 
 const REFERENCE_WEIGHT = 354_380;
-const REFERENCE_VAPP = 135;
 const REFERENCE_HEADWIND = -4.37;
 const REFERENCE_ALTITUDE = 62;
 const REFERENCE_OAT = 32;
@@ -52,16 +51,17 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
     const headwind = windMagnitude * Math.cos(((windDirection - runwayHeading) * Math.PI) / 180);
     const vapp = approachSpeed > 0 ? approachSpeed : this.getEstimatedVapp(weight, flaps, headwind, cg);
     const densityFactor = 1 + Math.max(-0.08, (altitude - REFERENCE_ALTITUDE) / 40_000);
-    const tempFactor = 1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / 400);
-    const pressureFactor = 1 + Math.max(-0.04, (1014 - pressure) / 2_000);
+    const tempFactor =
+      1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / (temperature > REFERENCE_OAT ? 300 : 400));
+    const pressureFactor = 1 + Math.max(-0.04, (1014 - pressure) / 850);
     const confFactor = flaps === LandingFlapsConfig.Full ? 1 : 1.11;
     const reverserFactor = reverseThrust ? 1 : 1.09;
     const autolandFactor = autoland ? 1.04 : 1;
     const overweightFactor = overweightProcedure ? 1.1 : 1;
+    const nominalVapp = this.getEstimatedVapp(weight, flaps, headwind, cg);
     const energyDistance =
-      2_082 *
-      Math.pow(weight / REFERENCE_WEIGHT, 1.1) *
-      Math.pow(vapp / REFERENCE_VAPP, 2) *
+      Math.max(0, 2_082 + (weight - REFERENCE_WEIGHT) * 0.00326) *
+      Math.pow(vapp / nominalVapp, 2) *
       surfaceFactor[runwayCondition] *
       confFactor *
       reverserFactor *
@@ -70,10 +70,11 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
       pressureFactor *
       autolandFactor *
       overweightFactor;
-    const lowAutobrakeDist = Math.max(
-      0,
-      energyDistance + (REFERENCE_HEADWIND - headwind) * 22 + Math.max(0, -slope) * 90,
-    );
+    const windCorrection =
+      (REFERENCE_HEADWIND - Math.min(headwind, 5)) * 22 +
+      Math.max(0, -headwind - 5) * 13 -
+      Math.max(0, headwind - 5) * 10;
+    const lowAutobrakeDist = Math.max(0, energyDistance + windCorrection + Math.max(0, -slope) * 90);
     return {
       maxAutobrakeDist: Math.round(lowAutobrakeDist * 0.73),
       mediumAutobrakeDist: Math.round(lowAutobrakeDist * 0.86),

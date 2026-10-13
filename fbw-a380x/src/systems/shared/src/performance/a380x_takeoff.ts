@@ -19,6 +19,43 @@ const REFERENCE_PRESSURE_ALT = 62;
 const REFERENCE_HEADWIND = 4;
 const REFERENCE_OAT = 32;
 
+// SimBrief A380-842 OMDB 12R dry-runway samples, 14,157 ft TORA, normalized to 4 kt headwind.
+// The mass sweep used 090/06 wind; its stop runs include a 22 m correction to the 090/05 reference wind.
+const referenceStopRuns: ReadonlyArray<readonly [number, number]> = [
+  [320_000, 3_302],
+  [340_000, 3_329],
+  [360_000, 3_389],
+  [361_546, 3_401],
+  [380_000, 3_611],
+  [400_000, 3_900],
+  [420_000, 3_915],
+  [450_000, 3_990],
+  [480_000, 3_985],
+  [500_000, 3_904],
+];
+
+const referenceFlexTemps: ReadonlyArray<readonly [number, number]> = [
+  [320_000, 75],
+  [380_000, 75],
+  [400_000, 74],
+  [420_000, 70],
+  [450_000, 65],
+  [480_000, 60],
+  [500_000, 55],
+];
+
+const interpolate = (points: ReadonlyArray<readonly [number, number]>, x: number): number => {
+  if (x <= points[0][0]) return points[0][1];
+  for (let i = 1; i < points.length; i++) {
+    const [upperX, upperY] = points[i];
+    if (x <= upperX) {
+      const [lowerX, lowerY] = points[i - 1];
+      return lowerY + ((x - lowerX) * (upperY - lowerY)) / (upperX - lowerX);
+    }
+  }
+  return points[points.length - 1][1];
+};
+
 const surfaceFactor: Record<RunwayCondition, number> = {
   [RunwayCondition.Dry]: 1,
   [RunwayCondition.Wet]: 1.15,
@@ -151,19 +188,19 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     const altitudeCorrection = Math.max(0, pressureAlt - REFERENCE_PRESSURE_ALT) / 3_000;
     const v2 = Math.ceil(vls + (conf === 1 ? 4 : conf === 2 ? 5 : 6) + altitudeCorrection);
     const vr = v2 - (conf === 1 ? 1 : 2);
-    const v1 = clamp(
-      Math.round(vr - (conf === 1 ? 10 : conf === 2 ? 0 : 2) + (adjustedTora - REFERENCE_TORA) / 600 + headwind / 15),
-      110,
-      vr,
-    );
+    const runwayV1Correction =
+      (adjustedTora < REFERENCE_TORA
+        ? (adjustedTora - REFERENCE_TORA) / 105
+        : (adjustedTora - REFERENCE_TORA) / 600) +
+      (Math.min(headwind, REFERENCE_HEADWIND) - REFERENCE_HEADWIND) / 8;
+    const v1 = clamp(Math.round(143 + runwayV1Correction), 110, vr);
     result.v1 = v1;
     result.vR = vr;
     result.v2 = v2;
 
     // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
-      3_401 *
-        Math.pow(tow / REFERENCE_WEIGHT, 1.15) *
+      interpolate(referenceStopRuns, tow) *
         Math.pow(v1 / 143, 2) *
         surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
@@ -178,9 +215,8 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     if (!forceToga && runwayCondition !== RunwayCondition.Dry && runwayCondition !== RunwayCondition.Wet) return result;
     if (!forceToga) {
       const flex =
-        75 +
+        interpolate(referenceFlexTemps, tow) +
         (adjustedTora - REFERENCE_TORA) * 0.008 -
-        (tow - REFERENCE_WEIGHT) / 5_000 -
         (pressureAlt - REFERENCE_PRESSURE_ALT) / 500 -
         (oat - REFERENCE_OAT) * 0.25 +
         (headwind - REFERENCE_HEADWIND) * 0.1 -
