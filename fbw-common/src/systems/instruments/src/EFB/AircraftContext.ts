@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2024 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { createContext } from 'react';
@@ -64,6 +64,8 @@ interface ThrottleOptions {
 }
 interface AircraftEfbContext {
   performanceCalculators: PerformanceCalculators;
+  performanceDisclaimer?: string;
+  landingWeightLimits?: { minKg: number; maxKg: number };
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
   /** File containing critical file hashes to be checked for integrity. */

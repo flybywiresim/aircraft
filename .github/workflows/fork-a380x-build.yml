@@ -54,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
 
+      - name: Test A380X performance estimates
+        run: ./scripts/dev-env/run.sh pnpm exec vitest run fbw-a380x/src/systems/shared/src/performance/a380x_performance.spec.ts
+
       - name: Build A380X
         run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
 

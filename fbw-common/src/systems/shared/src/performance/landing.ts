@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 export enum LandingRunwayConditions {
@@ -21,7 +21,16 @@ export enum AutobrakeMode {
   Max, // Manual brake is the same as max auto
 }
 
+export interface LandingPerformanceDistances {
+  maxAutobrakeDist: number;
+  mediumAutobrakeDist: number;
+  lowAutobrakeDist: number;
+  factoredLandingDist?: number;
+}
+
 export interface LandingPerformanceCalculator {
+  /** Optional aircraft-specific VAPP estimate for EFB autofill. */
+  getEstimatedVapp?(weight: number, flaps: LandingFlapsConfig, windComponent?: number): number;
   /**
    * Calculates the landing distances for each autobrake mode for the given conditions
    * @param weight Aircraft weight in KGs
@@ -53,5 +62,5 @@ export interface LandingPerformanceCalculator {
     overweightProcedure: boolean,
     pressure: number,
     autoland: boolean,
-  ): { maxAutobrakeDist: number; mediumAutobrakeDist: number; lowAutobrakeDist: number };
+  ): LandingPerformanceDistances;
 }

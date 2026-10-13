@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
@@ -65,7 +65,7 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(AircraftContext).performanceCalculators;
+  const { performanceCalculators: calculators, landingWeightLimits } = useContext(AircraftContext);
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -97,11 +97,14 @@ export const LandingWidget = () => {
     maxAutobrakeLandingDist,
     mediumAutobrakeLandingDist,
     lowAutobrakeLandingDist,
+    factoredLandingDist,
     runwayVisualizationLabels,
     displayedRunwayLength,
   } = useAppSelector((state) => state.performance.landing);
 
-  const { arrivingAirport, arrivingMetar, arrivingRunway } = useAppSelector((state) => state.simbrief.data);
+  const { arrivingAirport, arrivingMetar, arrivingRunway, weights: ofpWeights, units: ofpUnits } = useAppSelector(
+    (state) => state.simbrief.data,
+  );
 
   useEffect(() => {
     // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
@@ -134,6 +137,7 @@ export const LandingWidget = () => {
         maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
         mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
         lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
+        factoredLandingDist: landingDistances.factoredLandingDist,
         runwayVisualizationLabels: [
           {
             label: 'LOW',
@@ -162,6 +166,7 @@ export const LandingWidget = () => {
         maxAutobrakeLandingDist: 0,
         mediumAutobrakeLandingDist: 0,
         lowAutobrakeLandingDist: 0,
+        factoredLandingDist: undefined,
         runwayVisualizationLabels: [],
       }),
     );
@@ -208,7 +213,11 @@ export const LandingWidget = () => {
     try {
       const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
 
-      const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+      const ofpLandingWeight = parseInt(ofpWeights.estLandingWeight);
+      const weightKgs =
+        Number.isFinite(ofpLandingWeight) && ofpLandingWeight > 0
+          ? Math.round(ofpUnits === 'lbs' ? Units.poundToKilogram(ofpLandingWeight) : ofpLandingWeight)
+          : Math.round(Units.poundToKilogram(totalWeight));
 
       if (!isValidIcao(arrivingAirport)) {
         toast.error('OFP airport is invalid');
@@ -224,6 +233,9 @@ export const LandingWidget = () => {
         temperature: parsedMetar.temperature.celsius,
         pressure: parsedMetar.barometer.mb,
       };
+      if (calculators.landing?.getEstimatedVapp) {
+        values.approachSpeed = calculators.landing.getEstimatedVapp(weightKgs, flaps);
+      }
 
       try {
         values.availableRunways = await getRunways(arrivingAirport);
@@ -805,8 +817,16 @@ export const LandingWidget = () => {
                         Units.kilogramToPound,
                       )}
                       placeholder={weightUnit}
-                      min={weightUnit === 'kg' ? 41000 : 90389}
-                      max={weightUnit === 'kg' ? 100000 : 220462}
+                      min={
+                        weightUnit === 'kg'
+                          ? (landingWeightLimits?.minKg ?? 41_000)
+                          : Units.kilogramToPound(landingWeightLimits?.minKg ?? 41_000)
+                      }
+                      max={
+                        weightUnit === 'kg'
+                          ? (landingWeightLimits?.maxKg ?? 100_000)
+                          : Units.kilogramToPound(landingWeightLimits?.maxKg ?? 100_000)
+                      }
                       decimalPrecision={0}
                       onChange={handleWeightChange}
                       number
@@ -936,6 +956,16 @@ export const LandingWidget = () => {
               error={lowAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
             />
           </div>
+          {factoredLandingDist !== undefined && (
+            <div className="mt-3 flex justify-between border-t border-theme-accent pt-3 text-theme-text">
+              <span>Factored landing distance</span>
+              <strong>
+                {distanceUnit === 'ft'
+                  ? `${Math.round(Units.metreToFoot(factoredLandingDist))} ft`
+                  : `${factoredLandingDist} m`}
+              </strong>
+            </div>
+          )}
         </div>
       </div>
       <div className="mt-4">
