@@ -27,6 +27,7 @@ jobs:
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/shared/src/performance/a380x_*.ts
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/EFB/index.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/FMS/MfdFmsPerf.tsx fbw-common/src/systems/instruments/src/EFB/AircraftContext.ts fbw-common/src/systems/instruments/src/EFB/Performance/Widgets/TakeoffWidget.tsx
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/ND/WeatherRadar.tsx fbw-a380x/src/systems/instruments/src/ND/instrument.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/SURV/MfdSurvControls.tsx fbw-common/src/systems/instruments/src/ND/ND.tsx
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/MFD/pages/ATCCOM/MfdAtccomRequest.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/common/DataEntryFormats.tsx fbw-a380x/src/systems/instruments/src/MFD/ATCCOM/AtcDatalinkSystem.ts fbw-a380x/src/systems/instruments/src/SDv2/AtcMailbox.tsx
 
   test-js:
     if: github.repository == 'dancebunny98/aircraft'
