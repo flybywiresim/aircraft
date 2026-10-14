@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
-import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
+import {
+  AtisMessage,
+  AtisType,
+  AtsuStatusCodes,
+  DatalinkModeCode,
+  DatalinkStatusCode,
+  DclMessage,
+} from '@datalink/common';
 import { RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
 import { FmsData } from '@flybywiresim/fbw-sdk';
@@ -251,6 +258,11 @@ export class AtcDatalinkSystem implements Instrument {
       this.atcErrors.removeAt(exists);
     }
     this.atcErrors.insert(msg, 0);
+  }
+
+  /** Register a locally created departure clearance in the ATSU mailbox. */
+  public registerMessages(messages: DclMessage[]): void {
+    this.publisher.pub('atcRegisterDclMessages', messages, true, false);
   }
 
   // TODO: improve icao checks
