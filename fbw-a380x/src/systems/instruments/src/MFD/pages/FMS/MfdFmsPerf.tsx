@@ -93,6 +93,12 @@ interface EfbTakeoffData {
   publishedAt: number;
 }
 
+const runwayIdentForComparison = (ident: string | undefined): string | undefined => {
+  if (!ident) return undefined;
+  const normalized = ident.toUpperCase();
+  return normalized.length > 4 ? normalized.substring(4).replace(/^RW/i, '') : normalized.replace(/^RW/i, '');
+};
+
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
@@ -367,7 +373,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
         .split('')
         .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
     const airport = this.loadedFlightPlan?.originAirport?.ident;
-    const loadedRunway = this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '');
+    const loadedRunway = runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident);
     const runway = loadedRunway ?? 'EFB';
     const publishedAt = read('VALID');
     const data: EfbTakeoffData = {
@@ -423,8 +429,8 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     if (
       !data ||
       this.loadedFlightPlan?.originAirport?.ident !== data.airport ||
-      (this.loadedFlightPlan?.originRunway &&
-        this.loadedFlightPlan.originRunway.ident.substring(4).replace(/^RW/i, '') !== data.runway) ||
+      (runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== undefined &&
+        runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== data.runway) ||
       Date.now() - data.publishedAt >= 30 * 60_000 ||
       SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number') !== data.publishedAt
     ) {
@@ -960,7 +966,9 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.showNoiseFields(pd.noiseEnabled!.get());
 
     this.takeoffShiftDisabled.set(this.loadedFlightPlan.originRunway === undefined);
-    this.originRunwayIdent.set(this.loadedFlightPlan.originRunway?.ident.substring(4).padEnd(4, ' ') ?? '---');
+    this.originRunwayIdent.set(
+      runwayIdentForComparison(this.loadedFlightPlan.originRunway?.ident)?.padEnd(4, ' ') ?? '---',
+    );
     this.takeoffShiftMaxValueMeters.set(this.loadedFlightPlan.originRunway?.length ?? Infinity);
 
     // V-speeds to be confirmed due to rwy change?

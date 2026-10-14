@@ -118,7 +118,9 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private readonly minimumFuelAtDestination = Subject.create<number | null>(null);
   private readonly minimumFuelAtDestinationIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
+  // Keep the request available even before the first EFB publication. This lets the crew
+  // request data after entering or importing the OFP on the EFB without reopening the page.
+  private readonly fuelPlanningIsDisabled = Subject.create<boolean>(false);
   private lastEfbOfpValid = 0;
 
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
@@ -408,6 +410,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private importEfbOfpData(): void {
     const publishedAt = SimVar.GetSimVarValue('L:A380X_EFB_OFP_VALID', 'number');
     if (!Number.isFinite(publishedAt) || publishedAt <= this.lastEfbOfpValid) {
+      this.fuelPlanningIsDisabled.set(false);
       return;
     }
 
