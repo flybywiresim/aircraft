@@ -180,10 +180,6 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     // Comparing against the unrounded value could reject a TOW that exactly
     // matches the displayed limit (for example, 414156 kg vs 414155.6 kg).
     result.mtow = Math.round(mtow);
-    if (tow > result.mtow) {
-      result.error = TakeoffPerfomanceError.TooHeavy;
-      return result;
-    }
 
     const lookupConf = conf === 1 ? ApproachConf.CONF_1 : conf === 2 ? ApproachConf.CONF_2 : ApproachConf.CONF_3;
     const vls = getApproachVls(lookupConf, cg ?? (forwardCg ? 29 : 36), tow) - (conf === 1 ? 2 : 0);
@@ -205,11 +201,6 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
         (conf - 1) * 80 +
         Math.max(0, slope) * 110,
     );
-    if (result.asd > adjustedTora) {
-      result.error = TakeoffPerfomanceError.TooHeavy;
-      return result;
-    }
-
     if (!forceToga && runwayCondition !== RunwayCondition.Dry && runwayCondition !== RunwayCondition.Wet) return result;
     if (!forceToga) {
       const flex =

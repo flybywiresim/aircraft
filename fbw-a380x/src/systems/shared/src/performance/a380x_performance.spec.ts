@@ -100,6 +100,29 @@ describe('A380X performance estimates', () => {
     expect(atLimit.error).toBe(TakeoffPerfomanceError.None);
   });
 
+  it('continues the experimental calculation above runway performance limits', () => {
+    const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
+      500_000,
+      false,
+      1,
+      3_000,
+      0,
+      0,
+      0,
+      0,
+      1_014,
+      32,
+      TakeoffAntiIceSetting.Off,
+      true,
+      false,
+      RunwayCondition.Dry,
+    );
+    expect(result.error).toBe(TakeoffPerfomanceError.None);
+    expect(result.mtow).toBeLessThan(500_000);
+    expect(result.v1).toBeDefined();
+    expect(result.asd).toBeGreaterThan(3_000);
+  });
+
   it('rejects a takeoff CG outside the configured envelope', () => {
     const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
       361_546,
