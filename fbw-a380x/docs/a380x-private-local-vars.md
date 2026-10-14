@@ -222,3 +222,7 @@ Please keep all vars under the correct ATA chapter where they relate to aircraft
 - `L:A380X_PILOT_IN_FO_SEAT`
     - Boolean
     - Whether the pilot is sitting on the first officer's half of the cockpit.
+
+- `L:A380X_WXR_AUTO`
+    - Boolean
+    - Enables the simulated weather precipitation overlay on the navigation displays when WXR is selected on the EFIS control panel.

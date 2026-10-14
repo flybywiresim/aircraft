@@ -32,7 +32,7 @@ module.exports = {
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('FCU'),
     msfsAvionicsInstrument('MFD'),
-    msfsAvionicsInstrument('ND'),
+    msfsAvionicsInstrument('ND', 'instrument.tsx', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
     msfsAvionicsInstrument('OIT'),
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('RMP'),
@@ -48,7 +48,7 @@ module.exports = {
   ],
 };
 
-function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
+function msfsAvionicsInstrument(name, index = 'instrument.tsx', additionalImports) {
   return {
     name,
     index: `src/systems/instruments/src/${name}/${index}`,
@@ -57,7 +57,7 @@ function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
       templateId: `A380X_${name}`,
       mountElementId: `${name}_CONTENT`,
       fileName: name.toLowerCase(),
-      imports: ['/JS/dataStorage.js'],
+      imports: ['/JS/dataStorage.js', ...(additionalImports ?? [])],
     },
   };
 }

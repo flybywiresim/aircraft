@@ -26,6 +26,7 @@ jobs:
       - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/shared/src/performance/a380x_*.ts
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/EFB/index.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/FMS/MfdFmsPerf.tsx fbw-common/src/systems/instruments/src/EFB/AircraftContext.ts fbw-common/src/systems/instruments/src/EFB/Performance/Widgets/TakeoffWidget.tsx
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/ND/WeatherRadar.tsx fbw-a380x/src/systems/instruments/src/ND/instrument.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/SURV/MfdSurvControls.tsx fbw-common/src/systems/instruments/src/ND/ND.tsx
 
   test-js:
     if: github.repository == 'dancebunny98/aircraft'
@@ -104,7 +105,7 @@ jobs:
       - name: Build A380X
         run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
 
-      - name: Verify installable package and EFB
+      - name: Verify installable package, EFB and ND
         shell: bash
         run: |
           node <<'NODE'
@@ -126,6 +127,17 @@ jobs:
           }
           const efbScript = files.find((name) => /\/efb\.js$/i.test(name));
           if (!efbScript) throw new Error('A380X EFB JavaScript is missing');
+          const ndFiles = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/ND\//i.test(name));
+          const ndNames = ndFiles.map(({ path: name }) => name);
+          if (!ndNames.some((name) => /\.js$/i.test(name)) || !ndNames.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X ND instrument is missing');
+          }
+          for (const entry of ndFiles) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched ND file: ${entry.path}`);
+            }
+          }
           const script = fs.readFileSync(path.join(root, efbScript), 'utf8');
           const unresolved = [...new Set(script.match(/process\.env\.[A-Z][A-Z0-9_]*/g) ?? [])].filter(
             (name) => name !== 'process.env.NODE_DEBUG',
