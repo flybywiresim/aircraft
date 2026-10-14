@@ -80,7 +80,12 @@ jobs:
             'FBW_PRODUCTION_BUILD=1' \
             'FBW_TYPECHECK=1' \
             'AIRCRAFT_PROJECT_PREFIX=a380x' \
-            'AIRCRAFT_VARIANT=a380-842' > fbw-a380x/.env
+            'AIRCRAFT_VARIANT=a380-842' \
+            'VITE_BUILD=false' \
+            'CLIENT_ID=' \
+            'CLIENT_SECRET=' \
+            'CHARTFOX_SECRET=' \
+            'SENTRY_DSN=' > fbw-a380x/.env
           printf '%s\n' 'VITE_BUILD=false' > .env
 
       - name: Install dependencies
@@ -112,6 +117,13 @@ jobs:
               throw new Error(`Missing or mismatched EFB file: ${entry.path}`);
             }
           }
+          const efbScript = files.find((name) => /\/efb\.js$/i.test(name));
+          if (!efbScript) throw new Error('A380X EFB JavaScript is missing');
+          const script = fs.readFileSync(path.join(root, efbScript), 'utf8');
+          const unresolved = [...new Set(script.match(/process\.env\.[A-Z][A-Z0-9_]*/g) ?? [])].filter(
+            (name) => name !== 'process.env.NODE_DEBUG',
+          );
+          if (unresolved.length) throw new Error(`Unresolved EFB environment variables: ${unresolved.join(', ')}`);
           console.log(`Verified A380X package ${manifest.package_version} with ${entries.length} EFB files`);
           NODE
 
