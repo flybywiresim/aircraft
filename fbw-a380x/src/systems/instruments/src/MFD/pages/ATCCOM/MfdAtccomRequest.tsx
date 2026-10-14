@@ -31,7 +31,10 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
 
   private readonly canTransfer = MappedSubject.create(
     ([callsign, origin, destination, transferred]) =>
-      !transferred && /^[A-Z0-9]{2,10}$/i.test(callsign) && /^[A-Z]{4}$/i.test(origin) && /^[A-Z]{4}$/i.test(destination),
+      !transferred &&
+      /^[A-Z0-9]{2,10}$/i.test(callsign) &&
+      /^[A-Z]{4}$/i.test(origin) &&
+      /^[A-Z]{4}$/i.test(destination),
     this.callsign,
     this.origin,
     this.destination,
@@ -103,7 +106,11 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
             <div class="mfd-atccom-dcl-title">DEPARTURE CLEARANCE</div>
             <div class="mfd-atccom-dcl-row">
               <span>CALLSIGN</span>
-              <InputField<string> dataEntryFormat={new LongAlphanumericFormat()} value={this.callsign} {...inputProps} />
+              <InputField<string>
+                dataEntryFormat={new LongAlphanumericFormat()}
+                value={this.callsign}
+                {...inputProps}
+              />
             </div>
             <div class="mfd-atccom-dcl-row">
               <span>DEPARTURE ARPT</span>
@@ -123,7 +130,11 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
             </div>
             <div class="mfd-atccom-dcl-row">
               <span>FREE TEXT</span>
-              <InputField<string> dataEntryFormat={new LongAlphanumericFormat()} value={this.freeText} {...inputProps} />
+              <InputField<string>
+                dataEntryFormat={new LongAlphanumericFormat()}
+                value={this.freeText}
+                {...inputProps}
+              />
             </div>
             <div class="mfd-atccom-dcl-status">{this.status}</div>
           </div>
@@ -143,7 +154,13 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               buttonStyle="width: 190px; height: 64px;"
             />
             <Button
-              label={<span>XFR TO<br />MAILBOX</span>}
+              label={
+                <span>
+                  XFR TO
+                  <br />
+                  MAILBOX
+                </span>
+              }
               disabled={this.transferDisabled}
               onClick={() => this.transferToMailbox()}
               buttonStyle="width: 190px; height: 64px;"
