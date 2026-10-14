@@ -100,6 +100,7 @@ export const TakeoffWidget = () => {
     selectedRunwayIndex !== undefined && selectedRunwayIndex >= 0 ? availableRunways[selectedRunwayIndex] : undefined;
 
   const importedOfp = useRef('');
+  const autoCalculatePending = useRef(false);
 
   useEffect(() => {
     if (!takeoffFmsIntegration) {
@@ -262,6 +263,32 @@ export const TakeoffWidget = () => {
       performCalculateTakeoff(headwind);
     }
   };
+
+  useEffect(() => {
+    if (!autoCalculatePending.current || !areInputsValid()) {
+      return;
+    }
+
+    autoCalculatePending.current = false;
+    handleCalculateTakeoff();
+  }, [
+    windMagnitude,
+    windDirection,
+    windEntry,
+    weight,
+    runwayBearing,
+    elevation,
+    runwaySlope,
+    runwayLength,
+    oat,
+    qnh,
+    config,
+    antiIce,
+    packs,
+    forceToga,
+    runwayCondition,
+    cg,
+  ]);
 
   const clearResult = () => {
     if (result === undefined) {
@@ -645,6 +672,7 @@ export const TakeoffWidget = () => {
       return;
     }
     importedOfp.current = ofpKey;
+    autoCalculatePending.current = true;
     clearResult();
     syncValuesWithOfp();
   }, [
