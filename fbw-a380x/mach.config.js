@@ -30,6 +30,7 @@ module.exports = {
   instruments: [
     msfsAvionicsInstrument('Clock'),
     msfsAvionicsInstrument('EWD'),
+    msfsAvionicsInstrument('HUD'),
     msfsAvionicsInstrument('FCU'),
     msfsAvionicsInstrument('MFD'),
     msfsAvionicsInstrument('ND', 'instrument.tsx', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),

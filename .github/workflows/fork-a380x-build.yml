@@ -105,7 +105,7 @@ jobs:
       - name: Build A380X
         run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
 
-      - name: Verify installable package, EFB and ND
+      - name: Verify installable package and instruments
         shell: bash
         run: |
           node <<'NODE'
@@ -136,6 +136,17 @@ jobs:
             const file = path.join(root, entry.path);
             if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
               throw new Error(`Missing or mismatched ND file: ${entry.path}`);
+            }
+          }
+          const hudFiles = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/HUD\//i.test(name));
+          const hudNames = hudFiles.map(({ path: name }) => name);
+          if (!hudNames.some((name) => /\.js$/i.test(name)) || !hudNames.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X HUD instrument is missing');
+          }
+          for (const entry of hudFiles) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched HUD file: ${entry.path}`);
             }
           }
           const script = fs.readFileSync(path.join(root, efbScript), 'utf8');

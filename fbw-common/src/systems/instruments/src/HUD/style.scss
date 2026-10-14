@@ -1,0 +1,283 @@
+@import "../MsfsAvionicsCommon/definitions.scss";
+@import "./animations.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.pfd-svg {
+  position: absolute;
+  width: 768px;
+  height: 1024px;
+  background: $display-background;
+  font-family: "Ecam", monospace !important;
+}
+
+.PulseCyanFill {
+  @include GenericPulsingFill($display-cyan, pulse-cyan-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.PulseAmber9Seconds {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: 9;
+}
+
+.BarAmber {
+  fill: $display-amber;
+  stroke: $display-amber;
+  stroke-width: 0.13px;
+}
+.BarRed {
+  fill: $display-red;
+  stroke: $display-red;
+  stroke-width: 0.11px;
+}
+
+.SmallStroke {
+  stroke-width: 0.10mm;
+  stroke-linecap: round;
+}
+
+.NormalStroke {
+  stroke-width: 0.16mm;
+  stroke-linecap: round;
+}
+
+.ThickStroke {
+  stroke-width: 0.22mm;
+  stroke-linecap: round;
+}
+
+.HugeStroke {
+  stroke-width: 0.32mm;
+  stroke-linecap: round;
+}
+
+.SmallOutline {
+  stroke-width: 0.09mm;
+  stroke: $display-background !important;
+  paint-order: markers stroke fill;
+}
+.NormalOutline {
+  stroke-width: 0.21mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.ThickOutline {
+  stroke-width: 0.29mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.HugeOutline {
+  stroke-width: 0.39mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.CornerRound {
+  stroke-linejoin: round;
+}
+
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.05mm;
+  stroke: $display-background !important;
+}
+
+.FontLargest {
+  font-size: 7px;
+}
+
+.FontLarge {
+  font-size: 6.5px;
+}
+
+.FontMedium {
+  font-size: 6px;
+}
+
+.FontIntermediate {
+  font-size: 5.5px;
+}
+
+.FontMediumSmaller {
+  font-size: 5.4px;
+}
+
+.FontSmall {
+  font-size: 5px;
+}
+
+.FontSmallest {
+  font-size: 4.5px;
+}
+
+.FontTiny {
+  font-size: 4px;
+}
+
+.StartAlign {
+  text-align: start;
+  text-anchor: start;
+}
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+.EndAlign {
+  text-align: end;
+  text-anchor: end;
+}
+
+.Magenta {
+  fill: none;
+  stroke: $display-magenta;
+}
+text.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+
+.Cyan {
+  fill: none;
+  stroke: $display-cyan;
+}
+.Cyan.Fill.Stroke {
+  fill: $display-cyan;
+  stroke: $display-cyan;
+}
+text.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.None {
+  fill: none;
+  stroke: none;
+}
+
+.White {
+  fill: none;
+  stroke: $display-white;
+}
+.White.Fill {
+  fill: $display-white;
+  stroke: none;
+}
+.White.Fill.Stroke {
+  fill: $display-white;
+  stroke: $display-white;
+}
+text.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+
+.Green.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+
+text.Green {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Amber {
+  stroke: $display-amber;
+  fill: none;
+}
+text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+
+.Yellow {
+  stroke: $display-yellow;
+  fill: none;
+}
+.Yellow.Fill {
+  fill: $display-yellow;
+  stroke: none;
+}
+text.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
+
+.Red {
+  stroke: $display-red;
+  fill: none;
+}
+.Red.Fill {
+  fill: $display-red;
+  stroke: none;
+}
+text.Red {
+  fill: $display-red;
+  stroke: none;
+}
+
+.Grey {
+  stroke: $display-grey;
+  fill: none;
+}
+
+.EarthFill {
+  fill: #5D2518;
+}
+.SkyFill {
+  fill: #0073DE;
+}
+.BlackFill {
+  fill: $display-background;
+}
+
+.TapeBackground {
+  fill: $display-grey;
+  stroke: none;
+}
+
+.BackgroundFill {
+  fill: $display-background;
+  stroke: none;
+  fill-rule: evenodd;
+}
+
+.ModeChangedPath {
+  visibility: visible !important;
+}
+
+.HiddenElement {
+  display: none;
+}
+
+/* .BacklightBleed {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 998;
+  opacity: 0.75;
+  background-color: rgba(0, 0, 255, 0.025);
+  box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
+} */
